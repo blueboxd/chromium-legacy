@@ -165,6 +165,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NOTREACHED();
 }
 
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileLanguageSettingsBack"));
+}
+
 - (void)settingsWillBeDismissed {
   [self.dataSource stopObservingModel];
 }

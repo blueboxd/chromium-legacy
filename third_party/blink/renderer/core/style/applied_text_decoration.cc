@@ -8,13 +8,16 @@ namespace blink {
 
 AppliedTextDecoration::AppliedTextDecoration(TextDecoration line,
                                              ETextDecorationStyle style,
-                                             Color color)
+                                             Color color,
+                                             TextDecorationThickness thickness)
     : lines_(static_cast<unsigned>(line)),
       style_(static_cast<unsigned>(style)),
-      color_(color) {}
+      color_(color),
+      thickness_(thickness) {}
 
 bool AppliedTextDecoration::operator==(const AppliedTextDecoration& o) const {
-  return color_ == o.color_ && lines_ == o.lines_ && style_ == o.style_;
+  return color_ == o.color_ && lines_ == o.lines_ && style_ == o.style_ &&
+         thickness_ == o.thickness_;
 }
 
 }  // namespace blink

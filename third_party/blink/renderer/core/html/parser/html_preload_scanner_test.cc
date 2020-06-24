@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
@@ -256,7 +257,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
                                                         kViewportEnabled);
     GetDocument().GetSettings()->SetDoHtmlPreloadScanning(preload_state ==
                                                           kPreloadEnabled);
-    GetDocument().SetReferrerPolicy(document_referrer_policy);
+    GetFrame().DomWindow()->SetReferrerPolicy(document_referrer_policy);
     scanner_ = std::make_unique<HTMLPreloadScanner>(
         options, document_url,
         std::make_unique<CachedDocumentParameters>(&GetDocument()),

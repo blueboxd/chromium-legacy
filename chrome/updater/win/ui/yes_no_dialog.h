@@ -54,15 +54,9 @@ class YesNoDialog : public CAxDialogImpl<YesNoDialog>,
   LRESULT OnClickedButton(WORD notify_code,
                           WORD id,
                           HWND wnd_ctl,
-                          BOOL& handled);  // NOLINT(runtime/references)
-  LRESULT OnClose(UINT msg,
-                  WPARAM wparam,
-                  LPARAM lparam,
-                  BOOL& handled);  // NOLINT(runtime/references)
-  LRESULT OnNCDestroy(UINT msg,
-                      WPARAM wparam,
-                      LPARAM lparam,
-                      BOOL& handled);  // NOLINT(runtime/references)
+                          BOOL& handled);
+  LRESULT OnClose(UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnNCDestroy(UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
   WTL::CMessageLoop* message_loop_;
   HWND parent_;

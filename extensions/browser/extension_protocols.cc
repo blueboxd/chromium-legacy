@@ -28,6 +28,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -56,6 +57,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/media_router_extension_access_logger.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -83,6 +85,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "url/origin.h"
 #include "url/url_util.h"
 
 using content::BrowserContext;
@@ -143,10 +146,8 @@ void ReadResourceFilePathAndLastModifiedTime(
                                 base::TimeDelta::FromDays(30).InSeconds(), 50);
   } else {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedNegativeDelta",
-                                -delta_seconds,
-                                1,
-                                base::TimeDelta::FromDays(30).InSeconds(),
-                                50);
+                                -delta_seconds, 1,
+                                base::TimeDelta::FromDays(30).InSeconds(), 50);
   }
 }
 
@@ -461,6 +462,20 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       GetSecurityPolicyForURL(request.url, extension.get(),
                               is_web_view_request_, &content_security_policy,
                               &send_cors_header, &follow_symlinks_anywhere);
+    }
+
+    // If the extension is the Media Router Component Extension used to support
+    // Casting scenarios, log metrics needed to track migration away from this
+    // extension.
+    // TODO(crbug.com/1097594): Remove this metric logging once migration away
+    // from the Media Router Component Extension completes.
+    const MediaRouterExtensionAccessLogger* media_router_access_logger =
+        ExtensionsBrowserClient::Get()->GetMediaRouterAccessLogger();
+    if (media_router_access_logger && request.request_initiator.has_value() &&
+        (extension.get()->id() == extension_misc::kCastExtensionIdRelease ||
+         extension.get()->id() == extension_misc::kCastExtensionIdDev)) {
+      media_router_access_logger->LogMediaRouterComponentExtensionUse(
+          request.request_initiator.value(), browser_context_);
     }
 
     if (IsBackgroundPageURL(request.url)) {

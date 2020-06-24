@@ -661,6 +661,10 @@ group("telemetry_gpu_integration_test_support") {
 
     # For Skia Gold pixel test functionality.
     "//testing/skia_gold_common/",
+
+    # For isolate contract.
+    "//testing/scripts/gpu_integration_test_adapter.py",
+    "//testing/scripts/run_gpu_integration_test_as_googletest.py",
   ]
 
   data_deps = [

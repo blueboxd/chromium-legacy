@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
@@ -14,10 +15,25 @@
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 
+using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
 namespace ui {
+
+#define EXPECT_UIA_BSTR_EQ(node, property_id, expected)                  \
+  {                                                                      \
+    ScopedVariant expectedVariant(expected);                             \
+    ASSERT_EQ(VT_BSTR, expectedVariant.type());                          \
+    ASSERT_NE(nullptr, expectedVariant.ptr()->bstrVal);                  \
+    ScopedVariant actual;                                                \
+    ASSERT_HRESULT_SUCCEEDED(                                            \
+        node->GetPropertyValue(property_id, actual.Receive()));          \
+    ASSERT_EQ(VT_BSTR, actual.type());                                   \
+    ASSERT_NE(nullptr, actual.ptr()->bstrVal);                           \
+    EXPECT_STREQ(expectedVariant.ptr()->bstrVal, actual.ptr()->bstrVal); \
+  }
 
 class AXFragmentRootTest : public AXPlatformNodeWinTest {
  public:
@@ -26,6 +42,92 @@ class AXFragmentRootTest : public AXPlatformNodeWinTest {
   AXFragmentRootTest(const AXFragmentRootTest&) = delete;
   AXFragmentRootTest& operator=(const AXFragmentRootTest&) = delete;
 };
+
+TEST_F(AXFragmentRootTest, UIAFindItemByProperty) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("root");
+  root.child_ids = {2, 3};
+
+  AXNodeData text1;
+  text1.id = 2;
+  text1.role = ax::mojom::Role::kStaticText;
+  text1.SetName("text1");
+
+  AXNodeData button;
+  button.id = 3;
+  button.role = ax::mojom::Role::kButton;
+  button.SetName("button");
+  button.child_ids = {4};
+
+  AXNodeData text2;
+  text2.id = 4;
+  text2.role = ax::mojom::Role::kStaticText;
+  text2.SetName("text2");
+
+  Init(root, text1, button, text2);
+  InitFragmentRoot();
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple;
+  ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(&raw_element_provider_simple));
+
+  ComPtr<IItemContainerProvider> item_container_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_ItemContainerPatternId, &item_container_provider));
+  ASSERT_NE(nullptr, item_container_provider.Get());
+
+  // Fetch the AxUniqueId of "root", and verify we can retrieve its
+  // corresponding IRawElementProviderSimple through FindItemByProperty().
+  ScopedVariant unique_id_variant;
+  int32_t unique_id = AXPlatformNodeFromNode(GetRootAsAXNode())->GetUniqueId();
+  unique_id_variant.Set(
+      SysAllocString(base::NumberToString16(-unique_id).c_str()));
+  ComPtr<IRawElementProviderSimple> result;
+  EXPECT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+      nullptr, UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+      unique_id_variant, &result));
+  EXPECT_UIA_BSTR_EQ(result, UIA_NamePropertyId, L"root");
+  result.Reset();
+  unique_id_variant.Release();
+
+  // Fetch the AxUniqueId of "text1", and verify we can retrieve its
+  // corresponding IRawElementProviderSimple through FindItemByProperty().
+  unique_id =
+      AXPlatformNodeFromNode(GetRootAsAXNode()->children()[0])->GetUniqueId();
+  unique_id_variant.Set(
+      SysAllocString(base::NumberToString16(-unique_id).c_str()));
+  EXPECT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+      nullptr, UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+      unique_id_variant, &result));
+  EXPECT_UIA_BSTR_EQ(result, UIA_NamePropertyId, L"text1");
+  result.Reset();
+  unique_id_variant.Release();
+
+  // Fetch the AxUniqueId of "button", and verify we can retrieve its
+  // corresponding IRawElementProviderSimple through FindItemByProperty().
+  AXNode* button_node = GetRootAsAXNode()->children()[1];
+  unique_id = AXPlatformNodeFromNode(button_node)->GetUniqueId();
+  unique_id_variant.Set(
+      SysAllocString(base::NumberToString16(-unique_id).c_str()));
+  EXPECT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+      nullptr, UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+      unique_id_variant, &result));
+  EXPECT_UIA_BSTR_EQ(result, UIA_NamePropertyId, L"button");
+  result.Reset();
+  unique_id_variant.Release();
+
+  // Fetch the AxUniqueId of "text2", and verify we can retrieve its
+  // corresponding IRawElementProviderSimple through FindItemByProperty().
+  unique_id = AXPlatformNodeFromNode(button_node->children()[0])->GetUniqueId();
+  unique_id_variant.Set(
+      SysAllocString(base::NumberToString16(-unique_id).c_str()));
+  EXPECT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+      nullptr, UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+      unique_id_variant, &result));
+  EXPECT_UIA_BSTR_EQ(result, UIA_NamePropertyId, L"text2");
+}
 
 TEST_F(AXFragmentRootTest, TestUIAGetFragmentRoot) {
   AXNodeData root;
@@ -227,7 +329,7 @@ TEST_F(AXFragmentRootTest, TestGetPropertyValue) {
   // IsControlElement and IsContentElement should follow the setting on the
   // fragment root delegate.
   test_fragment_root_delegate_->is_control_element_ = true;
-  base::win::ScopedVariant result;
+  ScopedVariant result;
   EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
       UIA_IsControlElementPropertyId, result.Receive()));
   EXPECT_EQ(result.type(), VT_BOOL);

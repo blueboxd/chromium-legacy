@@ -279,7 +279,9 @@ bool ShouldBlockBySpoofCheckResult(
   // Here, only a subset of spoof checks that cause an IDN to fallback to
   // punycode are configured to show an interstitial.
   return spoof_check_result ==
-         url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot;
+             url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot ||
+         spoof_check_result ==
+             url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks;
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(

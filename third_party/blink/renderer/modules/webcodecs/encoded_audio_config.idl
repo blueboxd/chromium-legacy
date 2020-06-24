@@ -1,0 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/WICG/web-codecs
+
+dictionary EncodedAudioConfig {
+  // TODO(chcunningham): reference spec registry.
+  required DOMString codec;
+
+  // 44100, 48000, etc.
+  unsigned long samplesPerSecond;
+
+  // 1, 2, etc.
+  unsigned long numChannels;
+
+  // Optional byte data required to initialize audio decoders such as Vorbis
+  // codebooks.
+  BufferSource extraData;
+};

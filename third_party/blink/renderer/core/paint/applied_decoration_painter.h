@@ -28,12 +28,15 @@ class AppliedDecorationPainter final {
                            const DecorationInfo& decoration_info,
                            float start_point_y_offset,
                            const AppliedTextDecoration& decoration,
+                           size_t decoration_info_thickness_index,
                            float double_offset,
                            int wavy_offset_factor)
       : context_(context),
         start_point_(decoration_info.local_origin +
                      FloatPoint(0, start_point_y_offset)),
         decoration_info_(decoration_info),
+        resolved_thickness_(decoration_info.applied_decorations_thickness
+                                [decoration_info_thickness_index]),
         decoration_(decoration),
         double_offset_(double_offset),
         wavy_offset_factor_(wavy_offset_factor) {}
@@ -50,6 +53,7 @@ class AppliedDecorationPainter final {
   GraphicsContext& context_;
   const FloatPoint start_point_;
   const DecorationInfo& decoration_info_;
+  float resolved_thickness_;
   const AppliedTextDecoration& decoration_;
   const float double_offset_;
   const int wavy_offset_factor_;

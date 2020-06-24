@@ -13,6 +13,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
+#include "chrome/browser/subresource_redirect/subresource_redirect_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -262,6 +263,16 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
         num_images);
   }
 
+  void VerifyImageCompressionPageInfoState(
+      bool is_https_image_compression_applied,
+      content::WebContents* web_contents = nullptr) {
+    if (!web_contents)
+      web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(is_https_image_compression_applied,
+              subresource_redirect::SubresourceRedirectObserver::
+                  IsHttpsImageCompressionApplied(web_contents));
+  }
+
   GURL GetSubresourceURLForURL(const std::string& path) {
     GURL compressed_url = compression_url();
     std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
@@ -451,6 +462,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 //  This test loads private_url_image.html, which triggers a subresource
@@ -478,12 +490,13 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
             https_url().port());
-  // The image will be marked as compressible even though the private image
-  // redirect was bypassed.
+  // The image will be marked as compressible and page info will show even
+  // though the private image redirect was bypassed.
   VerifyCompressibleImageUkm(1);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
@@ -511,6 +524,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(false);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerInIncognito) {
@@ -545,6 +559,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerInIncognito) {
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(
+      false, incognito_browser->tab_strip_model()->GetActiveWebContents());
 }
 
 //  This test loads image.html, from a non secure site. This triggers a
@@ -574,6 +590,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 //  This test loads page_with_favicon.html, which creates a subresource
@@ -597,6 +614,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerOnNonImage) {
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 }  // namespace
@@ -637,6 +655,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(1);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 //  This test verifies that the client will utilize the fallback logic if the
@@ -668,6 +687,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(1);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 //  This test verifies that the client will utilize the fallback logic if the
@@ -701,6 +721,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // This test verifies that accessing the compression server directly will not do
@@ -734,6 +755,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(false);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -763,6 +785,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // This test verifies that only the images in the public image URL list are
@@ -795,6 +818,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(1);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // This test verifies that the fragments in the image URL are removed before
@@ -827,6 +851,7 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 //  This test loads image_js.html, which triggers a javascript request
@@ -854,6 +879,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyCompressibleImageUkm(0);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // This test verifies that no image redirect happens when empty hints is sent.
@@ -882,6 +908,8 @@ IN_PROC_BROWSER_TEST_F(
   VerifyCompressibleImageUkm(0);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  // Empty hints will not show up in page info.
+  VerifyImageCompressionPageInfoState(false);
 }
 
 // This test verifies that no image redirect happens when hints are not yet
@@ -909,6 +937,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyCompressibleImageUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  // Page info not updated when hints are missing.
+  VerifyImageCompressionPageInfoState(false);
 }
 
 // This test verifies that two images in a page are not redirected, when hints
@@ -934,6 +964,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(2);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  // Page info not updated when hints are missing.
+  VerifyImageCompressionPageInfoState(false);
 }
 
 // This test initiates same-origin navigation and verifies the hints from the
@@ -967,6 +999,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 
   // Initiate a same-origin navigation without hints, and let the timeout ukm be
   // recorded.
@@ -984,6 +1017,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(2);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(false);
 }
 
 // This test verifies that the image redirect to lite page is disabled via
@@ -1015,6 +1049,7 @@ IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(false);
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarEnabledSubresourceRedirectBrowserTest,
@@ -1269,6 +1304,7 @@ IN_PROC_BROWSER_TEST_F(
       "SubresourceRedirect.DidCompress.CompressionPercent", 0);
   EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
             https_url().port());
+  VerifyImageCompressionPageInfoState(false);
 
   // One image will be recorded as compressible, but image hints not received in
   // time. Another image is recorded as not compressible, and image hints not
@@ -1280,10 +1316,10 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // Tests CSS background images are redirected.
-// Disabled due to flakes. See https://crbug.com/1063736.
 IN_PROC_BROWSER_TEST_F(
     SubresourceRedirectBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
@@ -1313,13 +1349,11 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
 }
 
 // Tests CSS background image coverage metrics is recorded but not redirected,
 // when redirect is disabled.
-// Disabling for all as it was already Disabled on Mac, Win and ChromeOS and it
-// now seems to be flaky on Linux
-// Disabled due to flakes. See https://crbug.com/1063736.
 IN_PROC_BROWSER_TEST_F(
     RedirectDisabledSubresourceRedirectBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(TestCSSBackgroundImageRedirect)) {
@@ -1347,4 +1381,5 @@ IN_PROC_BROWSER_TEST_F(
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);
   VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(false);
 }

@@ -97,7 +97,8 @@ keyboard.onKeyDown_ = function(event) {
   // eslint-disable-next-line no-restricted-properties
   if (document.activeElement === document.getElementById('network-selection') &&
       document.activeElement.shadowRoot.activeElement.tagName ==
-          'NETWORK-SELECT-LOGIN') {
+      'NETWORK-SELECT-LOGIN' &&
+      (event.key == 'ArrowUp' || event.key == 'ArrowDown')) {
     return;
   }
 

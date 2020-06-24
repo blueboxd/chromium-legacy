@@ -253,10 +253,11 @@ window.addEventListener('DOMContentLoaded', () => {
   observer.observe(document.body, {childList: true});
 });
 
-// Attempting to execute chooseFileSystemEntries is guaranteed to result in a
-// SecurityError due to the fact that we are running in a unprivileged iframe.
-// Note, we can not do window.chooseFileSystemEntries due to the fact that
-// closure does not yet know that 'chooseFileSystemEntries' is on the window.
+// Attempting to show file pickers in the sandboxed <iframe> is guaranteed to
+// result in a SecurityError: hide them.
 // TODO(crbug/1040328): Remove this when we have a polyfill that allows us to
 // talk to the privileged frame.
 window['chooseFileSystemEntries'] = null;
+window['showOpenFilePicker'] = null;
+window['showSaveFilePicker'] = null;
+window['showDirectoryPicker'] = null;

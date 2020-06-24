@@ -222,50 +222,14 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
   }
 #endif
 
-  struct {
-    const char* group_name;
-    SettingsEnforcementGroup group;
-  } static const kEnforcementLevelMap[] = {
-    { chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
-      GROUP_NO_ENFORCEMENT },
-    { chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
-      GROUP_ENFORCE_ALWAYS },
-    { chrome_prefs::internals::
-          kSettingsEnforcementGroupEnforceAlwaysWithDSE,
-      GROUP_ENFORCE_ALWAYS_WITH_DSE },
-    { chrome_prefs::internals::
-          kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE,
-      GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS_AND_DSE },
-  };
-
-  // Use the strongest enforcement setting in the absence of a field trial
-  // config on Windows and MacOS. Remember to update the OFFICIAL_BUILD section
-  // of extension_startup_browsertest.cc and pref_hash_browsertest.cc when
-  // updating the default value below.
-  // TODO(gab): Enforce this on all platforms.
-  SettingsEnforcementGroup enforcement_group =
+  // Use the strongest enforcement setting on Windows and MacOS. Remember to
+  // update the OFFICIAL_BUILD section of extension_startup_browsertest.cc and
+  // pref_hash_browsertest.cc when updating the default value below.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      GROUP_ENFORCE_DEFAULT;
+  return GROUP_ENFORCE_DEFAULT;
 #else
-      GROUP_NO_ENFORCEMENT;
+  return GROUP_NO_ENFORCEMENT;
 #endif
-  bool group_determined_from_trial = false;
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(
-          chrome_prefs::internals::kSettingsEnforcementTrialName);
-  if (trial) {
-    const std::string& group_name = trial->group_name();
-    for (size_t i = 0; i < base::size(kEnforcementLevelMap); ++i) {
-      if (kEnforcementLevelMap[i].group_name == group_name) {
-        enforcement_group = kEnforcementLevelMap[i].group;
-        group_determined_from_trial = true;
-        break;
-      }
-    }
-  }
-  UMA_HISTOGRAM_BOOLEAN("Settings.EnforcementGroupDeterminedFromTrial",
-                        group_determined_from_trial);
-  return enforcement_group;
 }
 
 // Returns the effective preference tracking configuration.

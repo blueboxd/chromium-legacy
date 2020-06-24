@@ -79,6 +79,7 @@ if (is_win) {
         "$root_out_dir/cdb/api-ms-win-crt-string-l1-1-0.dll",
         "$root_out_dir/cdb/api-ms-win-crt-time-l1-1-0.dll",
         "$root_out_dir/cdb/api-ms-win-crt-utility-l1-1-0.dll",
+        "$root_out_dir/cdb/api-ms-win-downlevel-kernel32-l2-1-0.dll",
         "$root_out_dir/cdb/api-ms-win-eventing-provider-l1-1-0.dll",
         "$root_out_dir/cdb/ucrtbase.dll",
       ]
@@ -162,6 +163,8 @@ if (is_win) {
           "$root_out_dir/api-ms-win-crt-string-l1-1-0.dll",
           "$root_out_dir/api-ms-win-crt-time-l1-1-0.dll",
           "$root_out_dir/api-ms-win-crt-utility-l1-1-0.dll",
+          "$root_out_dir/api-ms-win-downlevel-kernel32-l2-1-0.dll",
+          "$root_out_dir/api-ms-win-eventing-provider-l1-1-0.dll",
         ]
         if (!is_debug) {
           data += [ "$root_out_dir/ucrtbase.dll" ]

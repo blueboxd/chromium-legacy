@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -148,6 +151,38 @@ public class TrustedWebActivityPermissionManagerTest {
                 mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
         verifyPermissionNotUpdated();
     }
+    @Test
+    @Feature("TrustedWebActivities")
+    public void locationDelegationEnabled_withCoarseOrFineLocation() {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = PACKAGE_NAME;
+
+        packageInfo.requestedPermissions = new String[] {ACCESS_COARSE_LOCATION};
+        packageInfo.requestedPermissionsFlags =
+                new int[] {PackageInfo.REQUESTED_PERMISSION_GRANTED};
+        mShadowPackageManager.installPackage(packageInfo);
+        assertEquals(ContentSettingValues.ALLOW,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+
+        packageInfo.requestedPermissions = new String[] {ACCESS_FINE_LOCATION};
+        mShadowPackageManager.installPackage(packageInfo);
+        assertEquals(ContentSettingValues.ALLOW,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+
+        // When one of the two location permission is granted, return ALLOW.
+        packageInfo.requestedPermissions =
+                new String[] {ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION};
+        packageInfo.requestedPermissionsFlags =
+                new int[] {0, PackageInfo.REQUESTED_PERMISSION_GRANTED};
+        mShadowPackageManager.installPackage(packageInfo);
+        assertEquals(ContentSettingValues.ALLOW,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+
+        packageInfo.requestedPermissions = new String[] {};
+        mShadowPackageManager.installPackage(packageInfo);
+        assertEquals(ContentSettingValues.DEFAULT,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+    }
 
     private void setNoPermissionRequested() {
         PackageInfo packageInfo = new PackageInfo();
@@ -160,8 +195,7 @@ public class TrustedWebActivityPermissionManagerTest {
     private void setClientLocationPermission(boolean enabled) {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = PACKAGE_NAME;
-        packageInfo.requestedPermissions =
-                new String[] {android.Manifest.permission.ACCESS_COARSE_LOCATION};
+        packageInfo.requestedPermissions = new String[] {ACCESS_COARSE_LOCATION};
         packageInfo.requestedPermissionsFlags =
                 new int[] {(enabled ? PackageInfo.REQUESTED_PERMISSION_GRANTED : 0)};
         mShadowPackageManager.installPackage(packageInfo);

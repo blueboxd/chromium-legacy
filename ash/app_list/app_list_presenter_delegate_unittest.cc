@@ -47,10 +47,14 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
+#include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
@@ -2732,10 +2736,85 @@ TEST_F(AppListPresenterDelegateTest, TapAutoHideShelfWithAppListOpened) {
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
-  // Test that tapping the auto-hidden shelf keeps shelf visible but dismiss the
-  // app list.
+  // Make sure the shelf has at least one item.
+  ShelfItem item =
+      ShelfTestUtil::AddAppShortcut(base::NumberToString(1), TYPE_PINNED_APP);
+
+  // Wait for shelf view's bounds animation to end. Otherwise the scrollable
+  // shelf's bounds are not updated yet.
+  ShelfView* const shelf_view = shelf->GetShelfViewForTesting();
+  ShelfViewTestAPI shelf_view_test_api(shelf_view);
+  shelf_view_test_api.RunMessageLoopUntilAnimationsDone();
+
+  // Test that tapping the auto-hidden shelf dismisses the app list when tapping
+  // part of the shelf that does not contain the apps.
+  generator->GestureTapAt(shelf_view->GetBoundsInScreen().left_center() +
+                          gfx::Vector2d(10, 0));
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Show the AppList again.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // App list should remain visible when tapping on a shelf app button.
+  ASSERT_TRUE(shelf_view_test_api.GetButton(0));
   generator->GestureTapAt(
-      shelf->GetShelfViewForTesting()->GetBoundsInScreen().CenterPoint());
+      shelf_view_test_api.GetButton(0)->GetBoundsInScreen().CenterPoint());
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+}
+
+TEST_F(AppListPresenterDelegateTest, ClickingShelfArrowDoesNotHideAppList) {
+  // Add enough shelf items for the shelf to enter overflow.
+  Shelf* const shelf = GetPrimaryShelf();
+  ScrollableShelfView* const scrollable_shelf_view =
+      shelf->hotseat_widget()->scrollable_shelf_view();
+  ShelfView* const shelf_view = shelf->GetShelfViewForTesting();
+  int index = 0;
+  while (scrollable_shelf_view->layout_strategy_for_test() ==
+         ScrollableShelfView::kNotShowArrowButtons) {
+    ShelfItem item = ShelfTestUtil::AddAppShortcut(
+        base::NumberToString(index++), TYPE_PINNED_APP);
+  }
+
+  ShelfViewTestAPI shelf_view_test_api(shelf_view);
+  shelf_view_test_api.RunMessageLoopUntilAnimationsDone();
+
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Click right scrollable shelf arrow - verify the the app list remains
+  // visible.
+  const views::View* right_arrow = scrollable_shelf_view->right_arrow();
+  ASSERT_TRUE(right_arrow->GetVisible());
+  GetEventGenerator()->MoveMouseTo(
+      right_arrow->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Click left button - verify the app list stays visible.
+  const views::View* left_arrow = scrollable_shelf_view->left_arrow();
+  ASSERT_TRUE(left_arrow->GetVisible());
+  GetEventGenerator()->MoveMouseTo(
+      left_arrow->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+
+  GetAppListTestHelper()->CheckVisibility(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Click right of the right arrow - verify the app list gets dismissed.
+  ASSERT_TRUE(right_arrow->GetVisible());
+  GetEventGenerator()->MoveMouseTo(
+      right_arrow->GetBoundsInScreen().right_center() + gfx::Vector2d(10, 0));
+  GetEventGenerator()->ClickLeftButton();
+
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }

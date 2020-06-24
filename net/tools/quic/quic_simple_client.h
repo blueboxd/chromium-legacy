@@ -41,6 +41,7 @@ class QuicSimpleClient : public quic::QuicSpdyClientBase {
   QuicSimpleClient(quic::QuicSocketAddress server_address,
                    const quic::QuicServerId& server_id,
                    const quic::ParsedQuicVersionVector& supported_versions,
+                   const quic::QuicConfig& config,
                    std::unique_ptr<quic::ProofVerifier> proof_verifier);
 
   ~QuicSimpleClient() override;

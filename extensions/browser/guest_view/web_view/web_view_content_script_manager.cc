@@ -14,7 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/declarative_user_script_manager.h"
-#include "extensions/browser/declarative_user_script_master.h"
+#include "extensions/browser/declarative_user_script_set.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -53,10 +53,10 @@ void WebViewContentScriptManager::AddContentScripts(
     std::unique_ptr<UserScriptList> scripts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DeclarativeUserScriptMaster* master =
+  DeclarativeUserScriptSet* script_set =
       DeclarativeUserScriptManager::Get(browser_context_)
-          ->GetDeclarativeUserScriptMasterByID(host_id);
-  DCHECK(master);
+          ->GetDeclarativeUserScriptSetByID(host_id);
+  DCHECK(script_set);
 
   // We need to update WebViewRenderState.
   std::set<int> ids_to_add;
@@ -90,18 +90,18 @@ void WebViewContentScriptManager::AddContentScripts(
   }
 
   if (!to_delete.empty())
-    master->RemoveScripts(to_delete);
+    script_set->RemoveScripts(to_delete);
 
   // Step 3: makes WebViewContentScriptManager become an observer of the
   // |loader| for scripts loaded event.
-  UserScriptLoader* loader = master->loader();
+  UserScriptLoader* loader = script_set->loader();
   DCHECK(loader);
   if (!user_script_loader_observer_.IsObserving(loader))
     user_script_loader_observer_.Add(loader);
 
-  // Step 4: adds new scripts to the master.
-  master->AddScripts(std::move(scripts), embedder_process_id,
-                     render_frame_host->GetRoutingID());
+  // Step 4: adds new scripts to the set.
+  script_set->AddScripts(std::move(scripts), embedder_process_id,
+                         render_frame_host->GetRoutingID());
 
   // Step 5: creates an entry in |webview_host_id_map_| for the given
   // |embedder_process_id| and |view_instance_id| if it doesn't exist.
@@ -146,16 +146,16 @@ void WebViewContentScriptManager::RemoveContentScripts(
   if (script_map_iter == guest_content_script_map_.end())
     return;
 
-  DeclarativeUserScriptMaster* master =
+  DeclarativeUserScriptSet* script_set =
       DeclarativeUserScriptManager::Get(browser_context_)
-          ->GetDeclarativeUserScriptMasterByID(host_id);
-  CHECK(master);
+          ->GetDeclarativeUserScriptSetByID(host_id);
+  CHECK(script_set);
 
   // We need to update WebViewRenderState.
   std::set<int> ids_to_delete;
   std::set<UserScriptIDPair> scripts_to_delete;
 
-  // Step 1: removes content scripts from |master| and updates
+  // Step 1: removes content scripts from |set| and updates
   // |guest_content_script_map_|.
   std::map<std::string, UserScriptIDPair>& map = script_map_iter->second;
   // If the |script_name_list| is empty, all the content scripts added by the
@@ -182,13 +182,13 @@ void WebViewContentScriptManager::RemoveContentScripts(
 
   // Step 2: makes WebViewContentScriptManager become an observer of the
   // |loader| for scripts loaded event.
-  UserScriptLoader* loader = master->loader();
+  UserScriptLoader* loader = script_set->loader();
   DCHECK(loader);
   if (!user_script_loader_observer_.IsObserving(loader))
     user_script_loader_observer_.Add(loader);
 
-  // Step 3: removes content scripts from master.
-  master->RemoveScripts(scripts_to_delete);
+  // Step 3: removes content scripts from set.
+  script_set->RemoveScripts(scripts_to_delete);
 
   // Step 4: updates WebViewRenderState.
   if (!ids_to_delete.empty()) {

@@ -355,8 +355,9 @@ AccessibilityManager::AccessibilityManager() {
               extension_misc::kAccessibilityCommonExtensionPath),
           extension_misc::kAccessibilityCommonManifestFilename,
           extension_misc::kAccessibilityCommonGuestManifestFilename,
-          base::BindRepeating(&AccessibilityManager::PostUnloadAutoclick,
-                              weak_ptr_factory_.GetWeakPtr())));
+          base::BindRepeating(
+              &AccessibilityManager::PostUnloadAccessibilityCommon,
+              weak_ptr_factory_.GetWeakPtr())));
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kChromeVoxExtensionId,
       resources_path.Append(extension_misc::kChromeVoxExtensionPath),
@@ -713,11 +714,15 @@ void AccessibilityManager::OnAutoclickChanged() {
 
   autoclick_enabled_ = enabled;
   if (enabled) {
-    accessibility_common_extension_loader_->Load(
-        profile_, base::BindRepeating(&AccessibilityManager::PostLoadAutoclick,
-                                      weak_ptr_factory_.GetWeakPtr()));
-    // TODO: Construct a delegate to connect Autoclick and its controller in
-    // ash.
+    if (!accessibility_common_extension_loader_->loaded()) {
+      accessibility_common_extension_loader_->Load(
+          profile_, base::BindRepeating(
+                        &AccessibilityManager::PostLoadAccessibilityCommon,
+                        weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      // It's already loaded. Just run the callback.
+      PostLoadAccessibilityCommon();
+    }
   } else {
     accessibility_common_extension_loader_->Unload();
   }
@@ -858,6 +863,12 @@ void AccessibilityManager::OnFocusHighlightChanged() {
   AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
                                           enabled);
   NotifyAccessibilityStatusChanged(details);
+
+  // TODO(crbug.com/1096759): Load or unload the AccessibilityCommon extension
+  // which will be used to get the currently focused view. This will enable us
+  // to get views where focus is only represented in the accessibility tree,
+  // like those set by aria-activedescendant. It will also possibly eliminate
+  // the need for OnViewFocusedInArc.
 }
 
 void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
@@ -1496,12 +1507,17 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
   RemoveFocusRings(extension_misc::kSwitchAccessExtensionId);
 }
 
-void AccessibilityManager::PostLoadAutoclick() {
+void AccessibilityManager::PostLoadAccessibilityCommon() {
+  // Do any setup work needed immediately after the Accessibility Common
+  // extension actually loads. This may be used by all features which make
+  // use of the Accessibility Common extension.
   InitializeFocusRings(extension_misc::kAccessibilityCommonExtensionId);
 }
 
-void AccessibilityManager::PostUnloadAutoclick() {
-  // Clear the accessibility focus ring.
+void AccessibilityManager::PostUnloadAccessibilityCommon() {
+  // Do any teardown work needed immediately after the Accessibility Common
+  // extension actually unloads. This may be used by all features which make
+  // use of the Accessibility Common extension.
   RemoveFocusRings(extension_misc::kAccessibilityCommonExtensionId);
 }
 

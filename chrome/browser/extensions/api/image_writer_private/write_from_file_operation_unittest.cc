@@ -45,7 +45,7 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
       test_utils_.GetDevicePath().AsUTF8Unsafe(),
       base::FilePath(FILE_PATH_LITERAL("/var/tmp")));
 
-  base::DeleteFile(test_utils_.GetImagePath(), false);
+  base::DeleteFile(test_utils_.GetImagePath());
 
   EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
   EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(0);

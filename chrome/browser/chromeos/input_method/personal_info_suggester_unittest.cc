@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_pref_names.h"
@@ -32,13 +33,11 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   }
 
   bool SetSuggestion(int context_id,
-                     const base::string16& text,
-                     const size_t confirmed_length,
-                     const bool show_tab,
+                     const ui::ime::SuggestionDetails& details,
                      std::string* error) override {
-    suggestion_text_ = text;
-    confirmed_length_ = confirmed_length;
-    show_tab_ = show_tab;
+    suggestion_text_ = details.text;
+    confirmed_length_ = details.confirmed_length;
+    show_tab_ = details.show_tab;
     return true;
   }
 

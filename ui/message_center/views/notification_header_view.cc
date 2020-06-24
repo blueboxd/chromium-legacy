@@ -150,7 +150,6 @@ gfx::Insets CalculateTopPadding(int font_list_height) {
   }
 #endif
 
-  DCHECK_EQ(15, font_list_height);
   return kTextViewPaddingDefault;
 }
 
@@ -193,7 +192,6 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
     label->SetLineHeight(font_list_height);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetBorder(views::CreateEmptyBorder(text_view_padding));
-    DCHECK_EQ(kInnerHeaderHeight, label->GetPreferredSize().height());
     return label;
   };
 

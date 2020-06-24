@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -464,6 +465,15 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   base::Thread decoder_thread_;
   // Decoder state machine state.
   State decoder_state_;
+
+  // Cancelable callback for running ServiceDeviceTask(). Must only be accessed
+  // on |decoder_thread_|.
+  base::CancelableRepeatingCallback<void(bool)> cancelable_service_device_task_;
+  // Concrete callback from |cancelable_service_device_task_| that can be copied
+  // on |device_poll_thread_|. This exists because
+  // CancelableRepeatingCallback::callback() creates a WeakPtr internally, which
+  // must be created/destroyed from the same thread.
+  base::RepeatingCallback<void(bool)> cancelable_service_device_task_callback_;
 
   // Waitable event signaled when the decoder is destroying.
   base::WaitableEvent destroy_pending_;

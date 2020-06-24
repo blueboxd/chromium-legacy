@@ -53,8 +53,14 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
   // google3/google/internal/chrome/reporting/v1/chromereporting.proto.
   static base::Value BuildReport(base::Value events, base::Value context);
 
+  // Configures a request to send real-time reports to the |server_url|
+  // endpoint.  If |add_connector_url_params| is true then URL parameters
+  // specific to enterprise connectors are added to the request uploading
+  // the report.  |callback| is invoked once the report is uploaded.
   RealtimeReportingJobConfiguration(CloudPolicyClient* client,
                                     std::unique_ptr<DMAuth> auth_data,
+                                    const std::string& server_url,
+                                    bool add_connector_url_params,
                                     Callback callback);
 
   ~RealtimeReportingJobConfiguration() override;

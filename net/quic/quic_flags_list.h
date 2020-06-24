@@ -283,11 +283,6 @@ QUIC_FLAG(
 // network timeout.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_idle_network_detector, true)
 
-// If true, QUIC will enable connection options LRTT+BBQ2 by default.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_default_exit_startup_on_loss,
-          true)
-
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
 
@@ -389,9 +384,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_update_ack_alarm_in_send_all_pending_acks,
     true)
 
-// If true, enable QUIC version h3-28.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, true)
-
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
@@ -401,7 +393,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, true)
 
 // If true, SendAllPendingAcks always send the earliest ACK.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, true)
 
 // If true, check connection level flow control for send control stream and
 // qpack streams in QuicSession::WillingAndAbleToWrite.
@@ -425,7 +417,7 @@ QUIC_FLAG(
 // If true, session does not send duplicate MAX_STREAMS.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_sending_duplicate_max_streams,
-          false)
+          true)
 
 // If true, enable QUIC version h3-29.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_29, true)
@@ -460,7 +452,7 @@ QUIC_FLAG(
 // If true, try to bundle INITIAL data when trying to send INITIAL ACK.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bundle_crypto_data_with_initial_ack,
-          false)
+          true)
 
 // If true, do not use QuicUtil::IsBidirectionalStreamId() to determine gQUIC
 // stream type.
@@ -469,3 +461,14 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_gquic_stream_type, true)
 // When true, do not pad the QUIC_CRYPTO CHLO message itself. Note that the
 // packet containing the CHLO will still be padded.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, false)
+
+// If true, include MinPlaintextPacketSize when determine whether removing soft
+// limit for crypto frames.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_min_crypto_frame_size, true)
+
+// When true, QuicDispatcher supports decapsulation of Legacy Version
+// Encapsulation packets.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_dispatcher_legacy_version_encapsulation,
+    false)

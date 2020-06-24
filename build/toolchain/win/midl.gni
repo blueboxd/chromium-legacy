@@ -123,6 +123,8 @@ template("midl") {
       dlldata_file,
       interface_identifier_file,
       proxy_file,
+      rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang-cl.exe",
+                  root_build_dir),
       "{{source}}",
       "/char",
       "signed",

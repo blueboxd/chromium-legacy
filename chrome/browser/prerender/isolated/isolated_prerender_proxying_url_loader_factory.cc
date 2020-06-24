@@ -6,6 +6,9 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
@@ -19,6 +22,24 @@ namespace {
 
 const char kAllowedUAClientHint[] = "sec-ch-ua";
 const char kAllowedUAMobileClientHint[] = "sec-ch-ua-mobile";
+
+void RecordSubresourceMetricsDuringPrerender(
+    const network::URLLoaderCompletionStatus& status,
+    base::Optional<int> http_response_code) {
+  base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Subresources.NetError",
+                           std::abs(status.error_code));
+  if (http_response_code) {
+    base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Subresources.RespCode",
+                             *http_response_code);
+  }
+}
+
+void RecordSubresourceMetricsAfterClick(
+    const network::URLLoaderCompletionStatus& status,
+    base::Optional<int> http_response_code) {
+  UMA_HISTOGRAM_BOOLEAN("IsolatedPrerender.AfterClick.Subresources.UsedCache",
+                        status.exists_in_cache);
+}
 
 }  // namespace
 
@@ -124,8 +145,17 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
   target_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
+void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
+    SetOnCompleteRecordMetricsCallback(
+        OnCompleteRecordMetricsCallback callback) {
+  on_complete_metrics_callback_ = std::move(callback);
+}
+
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  if (on_complete_metrics_callback_) {
+    std::move(on_complete_metrics_callback_).Run(status, http_response_code_);
+  }
   MaybeReportResourceLoadSuccess(status);
   target_client_->OnComplete(status);
 }
@@ -238,12 +268,16 @@ void IsolatedPrerenderProxyingURLLoaderFactory::CreateLoaderAndStart(
   const std::set<GURL>& cached_subresources = *previously_cached_subresources_;
   if (cached_subresources.find(request.url) != cached_subresources.end()) {
     // Load this resource from |isolated_factory_|'s cache.
-    requests_.insert(std::make_unique<InProgressRequest>(
+    auto in_progress_request = std::make_unique<InProgressRequest>(
         this, isolated_factory_.get(), base::DoNothing(),
         std::move(loader_receiver), routing_id, request_id, options, request,
-        std::move(client), traffic_annotation));
+        std::move(client), traffic_annotation);
+    in_progress_request->SetOnCompleteRecordMetricsCallback(
+        base::BindOnce(&RecordSubresourceMetricsAfterClick));
+    requests_.insert(std::move(in_progress_request));
   } else {
     // Resource was not cached during the NSP, so load it normally.
+    // No metrics callback here, since there's nothing important to record.
     requests_.insert(std::make_unique<InProgressRequest>(
         this, network_process_factory_.get(), base::DoNothing(),
         std::move(loader_receiver), routing_id, request_id, options, request,
@@ -296,18 +330,22 @@ void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
 
   // If this subresource is eligible for prefetching then it can be cached. If
   // not, it must still be put on the wire to avoid privacy attacks but should
-  // not be cached.
+  // not be cached or change any cookies.
   if (!eligible) {
     isolated_request.load_flags |= net::LOAD_DISABLE_CACHE;
+    isolated_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
 
     // Don't report loaded resources that won't go in the cache.
     resource_load_successful_callback = base::DoNothing();
   }
 
-  requests_.insert(std::make_unique<InProgressRequest>(
+  auto in_progress_request = std::make_unique<InProgressRequest>(
       this, isolated_factory_.get(), resource_load_successful_callback,
       std::move(loader_receiver), routing_id, request_id, options,
-      isolated_request, std::move(client), traffic_annotation));
+      isolated_request, std::move(client), traffic_annotation);
+  in_progress_request->SetOnCompleteRecordMetricsCallback(
+      base::BindOnce(&RecordSubresourceMetricsDuringPrerender));
+  requests_.insert(std::move(in_progress_request));
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::Clone(

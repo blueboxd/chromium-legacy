@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CREDIT_CARD_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_CREDIT_CARD_TABLE_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 class Browser;
@@ -12,7 +13,7 @@ class ChromeBrowserState;
 
 // The table view for the Autofill settings.
 @interface AutofillCreditCardTableViewController
-    : SettingsRootTableViewController
+    : SettingsRootTableViewController <SettingsControllerProtocol>
 
 // The designated initializer. |browser| must not be nil.
 - (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;

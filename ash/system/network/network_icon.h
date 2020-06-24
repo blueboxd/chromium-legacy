@@ -27,8 +27,10 @@ enum IconType {
   ICON_TYPE_LIST,          // dark icons without VPN badges; in-line status
   ICON_TYPE_FEATURE_POD,   // icons in the network feature pod button in system
                            // menu
-  ICON_TYPE_FEATURE_POD_TOGGLED,  // toggled icons in the network feature pod
-                                  // button in system menu
+  ICON_TYPE_FEATURE_POD_TOGGLED,   // toggled icons in the network feature pod
+                                   // button in system menu
+  ICON_TYPE_FEATURE_POD_DISABLED,  // disabled icons in the network feature pod
+                                   // button in system menu
   ICON_TYPE_MENU_LIST,  // dark icons without VPN badges; separate status
 };
 

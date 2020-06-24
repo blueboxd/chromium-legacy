@@ -71,8 +71,11 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
 #endif
         configuration_(&client_,
                        DMAuth::FromDMToken(kDummyToken),
+                       service_.configuration()->GetReportingServerUrl(),
+                       false,
                        base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
-                                      base::Unretained(&callback_observer_))) {}
+                                      base::Unretained(&callback_observer_))) {
+  }
 
   void SetUp() override {
     base::Value context(base::Value::Type::DICTIONARY);

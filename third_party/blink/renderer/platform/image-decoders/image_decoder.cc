@@ -66,9 +66,22 @@ cc::ImageType FileExtensionToImageType(String image_extension) {
   return cc::ImageType::kInvalid;
 }
 
-}  // namespace
+size_t CalculateMaxDecodedBytes(
+    ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option,
+    const SkISize& desired_size) {
+  const size_t max_decoded_bytes =
+      Platform::Current() ? Platform::Current()->MaxDecodedImageBytes()
+                          : ImageDecoder::kNoDecodedImageByteLimit;
+  if (desired_size.isEmpty())
+    return max_decoded_bytes;
 
-const size_t ImageDecoder::kNoDecodedImageByteLimit;
+  const size_t num_pixels = desired_size.width() * desired_size.height();
+  if (high_bit_depth_decoding_option == ImageDecoder::kDefaultBitDepth)
+    return std::min(4 * num_pixels, max_decoded_bytes);
+
+  // ImageDecoder::kHighBitDepthToHalfFloat
+  return std::min(8 * num_pixels, max_decoded_bytes);
+}
 
 inline bool MatchesJPEGSignature(const char* contents) {
   return !memcmp(contents, "\xFF\xD8\xFF", 3);
@@ -98,94 +111,18 @@ inline bool MatchesBMPSignature(const char* contents) {
   return !memcmp(contents, "BM", 2) || !memcmp(contents, "BA", 2);
 }
 
-static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
-static const size_t k4BytesPerPixel = 4;
-static const size_t k8BytesPerPixel = 8;
-
-std::unique_ptr<ImageDecoder> ImageDecoder::Create(
-    scoped_refptr<SegmentReader> data,
-    bool data_complete,
-    AlphaOption alpha_option,
-    HighBitDepthDecodingOption high_bit_depth_decoding_option,
-    const ColorBehavior& color_behavior,
-    const OverrideAllowDecodeToYuv allow_decode_to_yuv,
-    const SkISize& desired_size) {
-  // At least kLongestSignatureLength bytes are needed to sniff the signature.
-  if (data->size() < kLongestSignatureLength)
-    return nullptr;
-  // On low end devices, always decode to 8888.
-  if (high_bit_depth_decoding_option == kHighBitDepthToHalfFloat &&
-      Platform::Current() && Platform::Current()->IsLowEndDevice()) {
-    high_bit_depth_decoding_option = kDefaultBitDepth;
-  }
-
-  size_t max_decoded_bytes = Platform::Current()
-                                 ? Platform::Current()->MaxDecodedImageBytes()
-                                 : kNoDecodedImageByteLimit;
-  if (!desired_size.isEmpty()) {
-    size_t num_pixels = desired_size.width() * desired_size.height();
-    if (high_bit_depth_decoding_option == kDefaultBitDepth) {
-      max_decoded_bytes =
-          std::min(k4BytesPerPixel * num_pixels, max_decoded_bytes);
-    } else {  // kHighBitDepthToHalfFloat
-      max_decoded_bytes =
-          std::min(k8BytesPerPixel * num_pixels, max_decoded_bytes);
-    }
-  }
-
-  // Access the first kLongestSignatureLength chars to sniff the signature.
-  // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)
-  char buffer[kLongestSignatureLength];
-  const FastSharedBufferReader fast_reader(data);
-  const char* contents =
-      fast_reader.GetConsecutiveData(0, kLongestSignatureLength, buffer);
-
-  std::unique_ptr<ImageDecoder> decoder;
-  if (MatchesJPEGSignature(contents)) {
-    decoder = std::make_unique<JPEGImageDecoder>(
-        alpha_option, color_behavior, max_decoded_bytes, allow_decode_to_yuv);
-  } else if (MatchesPNGSignature(contents)) {
-    decoder = std::make_unique<PNGImageDecoder>(
-        alpha_option, high_bit_depth_decoding_option, color_behavior,
-        max_decoded_bytes);
-  } else if (MatchesGIFSignature(contents)) {
-    decoder = std::make_unique<GIFImageDecoder>(alpha_option, color_behavior,
-                                                max_decoded_bytes);
-  } else if (MatchesWebPSignature(contents)) {
-    decoder = std::make_unique<WEBPImageDecoder>(alpha_option, color_behavior,
-                                                 max_decoded_bytes);
-  } else if (MatchesICOSignature(contents) || MatchesCURSignature(contents)) {
-    decoder = std::make_unique<ICOImageDecoder>(alpha_option, color_behavior,
-                                                max_decoded_bytes);
-  } else if (MatchesBMPSignature(contents)) {
-    decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
-                                                max_decoded_bytes);
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-  } else if (base::FeatureList::IsEnabled(features::kAVIF) &&
-             AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
-    decoder = std::make_unique<AVIFImageDecoder>(
-        alpha_option, high_bit_depth_decoding_option, color_behavior,
-        max_decoded_bytes);
-#endif
-  }
-
-  if (decoder)
-    decoder->SetData(std::move(data), data_complete);
-
-  return decoder;
-}
-
-bool ImageDecoder::HasSufficientDataToSniffImageType(const SharedBuffer& data) {
-  return data.size() >= kLongestSignatureLength;
-}
+constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
 // static
-String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
+String SniffImageTypeInternal(scoped_refptr<SegmentReader> reader) {
+  // At least kLongestSignatureLength bytes are needed to sniff the signature.
+  if (reader->size() < kLongestSignatureLength)
+    return String();
+
   // Access the first kLongestSignatureLength chars to sniff the signature.
   // (note: FastSharedBufferReader only makes a copy if the bytes are segmented)
   char buffer[kLongestSignatureLength];
-  const FastSharedBufferReader fast_reader(
-      SegmentReader::CreateFromSharedBuffer(std::move(image_data)));
+  const FastSharedBufferReader fast_reader(reader);
   const char* contents =
       fast_reader.GetConsecutiveData(0, kLongestSignatureLength, buffer);
 
@@ -208,7 +145,97 @@ String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
     return "image/avif";
   }
 #endif
+
   return String();
+}
+
+}  // namespace
+
+const size_t ImageDecoder::kNoDecodedImageByteLimit;
+
+std::unique_ptr<ImageDecoder> ImageDecoder::Create(
+    scoped_refptr<SegmentReader> data,
+    bool data_complete,
+    AlphaOption alpha_option,
+    HighBitDepthDecodingOption high_bit_depth_decoding_option,
+    const ColorBehavior& color_behavior,
+    const OverrideAllowDecodeToYuv allow_decode_to_yuv,
+    const SkISize& desired_size) {
+  auto type = SniffImageTypeInternal(data);
+  if (type.IsEmpty())
+    return nullptr;
+
+  // On low end devices, always decode to 8888.
+  if (high_bit_depth_decoding_option == kHighBitDepthToHalfFloat &&
+      Platform::Current() && Platform::Current()->IsLowEndDevice()) {
+    high_bit_depth_decoding_option = kDefaultBitDepth;
+  }
+
+  return CreateByImageType(type, std::move(data), data_complete, alpha_option,
+                           high_bit_depth_decoding_option, color_behavior,
+                           allow_decode_to_yuv, desired_size);
+}
+
+std::unique_ptr<ImageDecoder> ImageDecoder::CreateByImageType(
+    String image_type,
+    scoped_refptr<SegmentReader> data,
+    bool data_complete,
+    AlphaOption alpha_option,
+    HighBitDepthDecodingOption high_bit_depth_decoding_option,
+    const ColorBehavior& color_behavior,
+    const OverrideAllowDecodeToYuv allow_decode_to_yuv,
+    const SkISize& desired_size) {
+  const size_t max_decoded_bytes =
+      CalculateMaxDecodedBytes(high_bit_depth_decoding_option, desired_size);
+
+  // Note: The mime types below should match those supported by
+  // MimeUtil::IsSupportedImageMimeType().
+  std::unique_ptr<ImageDecoder> decoder;
+  if (image_type == "image/jpeg" || image_type == "image/pjpeg" ||
+      image_type == "image/jpg") {
+    decoder = std::make_unique<JPEGImageDecoder>(
+        alpha_option, color_behavior, max_decoded_bytes, allow_decode_to_yuv);
+  } else if (image_type == "image/png" || image_type == "image/x-png" ||
+             image_type == "image/apng") {
+    decoder = std::make_unique<PNGImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
+  } else if (image_type == "image/gif") {
+    decoder = std::make_unique<GIFImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
+  } else if (image_type == "image/webp") {
+    decoder = std::make_unique<WEBPImageDecoder>(alpha_option, color_behavior,
+                                                 max_decoded_bytes);
+  } else if (image_type == "image/x-icon" ||
+             image_type == "image/vnd.microsoft.icon") {
+    decoder = std::make_unique<ICOImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
+  } else if (image_type == "image/bmp" || image_type == "image/x-xbitmap") {
+    decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
+                                                max_decoded_bytes);
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  } else if (base::FeatureList::IsEnabled(features::kAVIF) &&
+             image_type == "image/avif") {
+    decoder = std::make_unique<AVIFImageDecoder>(
+        alpha_option, high_bit_depth_decoding_option, color_behavior,
+        max_decoded_bytes);
+#endif
+  }
+
+  if (decoder)
+    decoder->SetData(std::move(data), data_complete);
+
+  return decoder;
+}
+
+bool ImageDecoder::HasSufficientDataToSniffImageType(const SharedBuffer& data) {
+  return data.size() >= kLongestSignatureLength;
+}
+
+// static
+String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
+  return SniffImageTypeInternal(
+      SegmentReader::CreateFromSharedBuffer(std::move(image_data)));
 }
 
 // static
@@ -353,10 +380,10 @@ size_t ImageDecoder::FrameBytesAtIndex(size_t index) const {
       frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameEmpty)
     return 0;
 
-  size_t decoded_bytes_per_pixel = k4BytesPerPixel;
+  size_t decoded_bytes_per_pixel = 4;
   if (frame_buffer_cache_[index].GetPixelFormat() ==
       ImageFrame::PixelFormat::kRGBA_F16) {
-    decoded_bytes_per_pixel = k8BytesPerPixel;
+    decoded_bytes_per_pixel = 8;
   }
   IntSize size = FrameSizeAtIndex(index);
   base::CheckedNumeric<size_t> area = size.Width();
@@ -564,11 +591,11 @@ void ImageDecoder::UpdateAggressivePurging(size_t index) {
   // As we decode we will learn the total number of frames, and thus total
   // possible image memory used.
 
-  size_t decoded_bytes_per_pixel = k4BytesPerPixel;
+  size_t decoded_bytes_per_pixel = 4;
 
   if (frame_buffer_cache_.size() && frame_buffer_cache_[0].GetPixelFormat() ==
                                         ImageFrame::PixelFormat::kRGBA_F16) {
-    decoded_bytes_per_pixel = k8BytesPerPixel;
+    decoded_bytes_per_pixel = 8;
   }
   const uint64_t frame_memory_usage =
       DecodedSize().Area() * decoded_bytes_per_pixel;

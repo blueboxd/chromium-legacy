@@ -33,6 +33,47 @@ class WTF_EXPORT StringView {
   DISALLOW_NEW();
 
  public:
+  // A buffer that allows for short strings to be held on the stack during a
+  // transform. This is a performance optimization for very hot paths and
+  // should rarely need to be used.
+  class StackBackingStore {
+   public:
+    // Returns a pointer to a buffer of size |length| that is valid for as long
+    // the StackBackingStore object is alive and Realloc() has not been called
+    // again.
+    template <typename CharT>
+    CharT* Realloc(int length) {
+      size_t size = length * sizeof(CharT);
+      if (UNLIKELY(size > sizeof(stackbuf16_))) {
+        heapbuf_.reset(reinterpret_cast<char*>(
+            WTF::Partitions::BufferMalloc(size, "StackBackingStore")));
+        return reinterpret_cast<CharT*>(heapbuf_.get());
+      }
+
+      // If the Realloc() shrinks the buffer size, |heapbuf_| will keep a copy
+      // of the old string. A reset can be added here, but given this is a
+      // transient usage, deferring to the destructor is just as good and avoids
+      // another branch.
+      static_assert(alignof(decltype(stackbuf16_)) % alignof(CharT) == 0,
+                    "stack buffer must be sufficiently aligned");
+      return reinterpret_cast<CharT*>(&stackbuf16_[0]);
+    }
+
+   public:
+    struct BufferDeleter {
+      void operator()(void* buffer) { WTF::Partitions::BufferFree(buffer); }
+    };
+
+    static_assert(sizeof(UChar) != sizeof(char),
+                  "A char array will trigger -fstack-protect an produce "
+                  "overkill stack canaries all over v8 bindings");
+
+    // The size 64 is just a guess on a good size. No data was used in its
+    // selection.
+    UChar stackbuf16_[64];
+    std::unique_ptr<char[], BufferDeleter> heapbuf_;
+  };
+
   // Null string.
   StringView() { Clear(); }
 
@@ -102,6 +143,15 @@ class WTF_EXPORT StringView {
     return impl_->Is8Bit();
   }
 
+  bool IsAtomic() const { return SharedImpl() && SharedImpl()->IsAtomic(); }
+
+  bool IsLowerASCII() const {
+    if (Is8Bit()) {
+      return WTF::IsLowerASCII(Characters8(), length());
+    }
+    return WTF::IsLowerASCII(Characters16(), length());
+  }
+
   void Clear();
 
   UChar operator[](unsigned i) const {
@@ -154,6 +204,15 @@ class WTF_EXPORT StringView {
       return GetPtr(impl_);
     return nullptr;
   }
+
+  // This will return a StringView with a version of |this| that has all ASCII
+  // characters lowercased. The returned StringView is guarantee to be valid for
+  // as long as |backing_store| is valid.
+  //
+  // The odd lifetime of the returned object occurs because lowercasing may
+  // require allocation. When that happens, |backing_store| is used as the
+  // backing store and the returned StringView has the same lifetime.
+  StringView LowerASCIIMaybeUsingBuffer(StackBackingStore& backing_store) const;
 
   String ToString() const;
   AtomicString ToAtomicString() const;

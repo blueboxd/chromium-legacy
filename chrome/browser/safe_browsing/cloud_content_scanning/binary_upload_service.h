@@ -255,7 +255,6 @@ class BinaryUploadService : public KeyedService {
   void OnGetLegacyResponse(Request* request,
                            DeepScanningClientResponse response);
 
-  void MaybeFinishRequest(Request* request);
   void MaybeFinishConnectorRequest(Request* request);
   void MaybeFinishLegacyRequest(Request* request);
 

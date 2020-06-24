@@ -22,14 +22,14 @@ class ExportNotifierTest(LoggingTestCase):
         gerrit_comment = self.generate_notifier_comment(
             123, 'bar', 'num', None)
 
-        actual = PRStatusInfo.get_gerrit_sha_from_comment(gerrit_comment, 123)
+        actual = PRStatusInfo.get_gerrit_sha_from_comment(gerrit_comment)
 
         self.assertEqual(actual, 'num')
 
     def test_get_gerrit_sha_from_comment_fail(self):
         gerrit_comment = 'ABC'
 
-        actual = PRStatusInfo.get_gerrit_sha_from_comment(gerrit_comment, 123)
+        actual = PRStatusInfo.get_gerrit_sha_from_comment(gerrit_comment)
 
         self.assertIsNone(actual)
 
@@ -174,7 +174,7 @@ class ExportNotifierTest(LoggingTestCase):
 
         self.notifier.process_failing_prs(gerrit_dict)
 
-        self.assertEqual(self.notifier.gerrit.cls_queried, ['I4fd5039cd4ec991bb8f840eabe55574b37243ef2', 'abc'])
+        self.assertEqual(self.notifier.gerrit.cls_queried, ['abc'])
         self.assertEqual(self.notifier.gerrit.request_posted,
                          [('/a/changes/abc/revisions/current/review', {
                              'message': expected
@@ -186,7 +186,7 @@ class ExportNotifierTest(LoggingTestCase):
         self.notifier.gerrit.cl = MockGerritCL(
             data={
                 'change_id':
-                'I4fd5039cd4ec991bb8f840eabe55574b37243ef2',
+                'abc',
                 'messages': [
                     {
                         "date": "2019-08-20 17:42:05.000000000",
@@ -212,7 +212,7 @@ class ExportNotifierTest(LoggingTestCase):
 
         self.notifier.process_failing_prs(gerrit_dict)
 
-        self.assertEqual(self.notifier.gerrit.cls_queried, ['I4fd5039cd4ec991bb8f840eabe55574b37243ef2', 'abc'])
+        self.assertEqual(self.notifier.gerrit.cls_queried, ['abc'])
         self.assertEqual(self.notifier.gerrit.request_posted, [])
 
     def test_process_failing_prs_with_latest_sha(self):
@@ -248,7 +248,7 @@ class ExportNotifierTest(LoggingTestCase):
 
         self.notifier.process_failing_prs(gerrit_dict)
 
-        self.assertEqual(self.notifier.gerrit.cls_queried, ['I4fd5039cd4ec991bb8f840eabe55574b37243ef2', 'abc'])
+        self.assertEqual(self.notifier.gerrit.cls_queried, ['abc'])
         self.assertEqual(self.notifier.gerrit.request_posted,
                          [('/a/changes/abc/revisions/current/review', {
                              'message': expected
@@ -261,11 +261,11 @@ class ExportNotifierTest(LoggingTestCase):
 
         self.notifier.process_failing_prs(gerrit_dict)
 
-        self.assertEqual(self.notifier.gerrit.cls_queried, ['I4fd5039cd4ec991bb8f840eabe55574b37243ef2'])
+        self.assertEqual(self.notifier.gerrit.cls_queried, ['abc'])
         self.assertEqual(self.notifier.gerrit.request_posted, [])
         self.assertLog([
             'INFO: Processing 1 CLs with failed Taskcluster status.\n',
-            'ERROR: Could not process Dummy CL: Error from query_cl\n'
+            'ERROR: Could not process Gerrit CL abc: Error from query_cl\n'
         ])
 
     def test_export_notifier_success(self):
@@ -323,7 +323,7 @@ class ExportNotifierTest(LoggingTestCase):
             'get_pr_branch',
             'get_branch_statuses',
         ])
-        self.assertEqual(self.notifier.gerrit.cls_queried, ['I4fd5039cd4ec991bb8f840eabe55574b37243ef2', 'decafbad'])
+        self.assertEqual(self.notifier.gerrit.cls_queried, ['decafbad'])
         self.assertEqual(self.notifier.gerrit.request_posted,
                          [('/a/changes/decafbad/revisions/current/review', {
                              'message': expected
@@ -337,11 +337,11 @@ class ExportNotifierTest(LoggingTestCase):
                 'cross-browser failures on the exported changes. Please contact '
                 'ecosystem-infra@chromium.org for more information.\n\n'
                 'Taskcluster Link: {}\n'
-                '{}Gerrit CL SHA: {}\n'
+                'Gerrit CL SHA: {}\n'
                 'Patchset Number: {}'
                 '\n\nAny suggestions to improve this service are welcome; '
                 'crbug.com/1027618.').format(
-                pr_number, link, pr_number, sha, patchset
+                pr_number, link, sha, patchset
             )
         else:
             comment = (
@@ -350,9 +350,9 @@ class ExportNotifierTest(LoggingTestCase):
                 'cross-browser failures on the exported changes. Please contact '
                 'ecosystem-infra@chromium.org for more information.\n\n'
                 'Taskcluster Link: {}\n'
-                '{}Gerrit CL SHA: {}'
+                'Gerrit CL SHA: {}'
                 '\n\nAny suggestions to improve this service are welcome; '
                 'crbug.com/1027618.').format(
-                pr_number, link, pr_number, sha
+                pr_number, link, sha
             )
         return comment

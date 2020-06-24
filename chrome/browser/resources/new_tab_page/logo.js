@@ -70,14 +70,18 @@ class LogoElement extends PolymerElement {
       loaded_: Boolean,
 
       /** @private {newTabPage.mojom.Doodle} */
-      doodle_: {
-        observer: 'onDoodleChange_',
+      doodle_: Object,
+
+      /** @private {newTabPage.mojom.ImageDoodle} */
+      imageDoodle_: {
+        observer: 'onImageDoodleChange_',
+        computed: 'computeImageDoodle_(dark, doodle_)',
         type: Object,
       },
 
       /** @private */
       canShowDoodle_: {
-        computed: 'computeCanShowDoodle_(doodle_)',
+        computed: 'computeCanShowDoodle_(doodle_, imageDoodle_)',
         type: Boolean,
       },
 
@@ -97,12 +101,12 @@ class LogoElement extends PolymerElement {
       doodleBoxed_: {
         reflectToAttribute: true,
         type: Boolean,
-        computed: 'computeDoodleBoxed_(backgroundColor, doodle_)',
+        computed: 'computeDoodleBoxed_(backgroundColor, imageDoodle_)',
       },
 
       /** @private */
       imageUrl_: {
-        computed: 'computeImageUrl_(doodle_)',
+        computed: 'computeImageUrl_(imageDoodle_)',
         type: String,
       },
 
@@ -114,7 +118,7 @@ class LogoElement extends PolymerElement {
 
       /** @private */
       animationUrl_: {
-        computed: 'computeAnimationUrl_(doodle_)',
+        computed: 'computeAnimationUrl_(imageDoodle_)',
         type: String,
       },
 
@@ -199,22 +203,44 @@ class LogoElement extends PolymerElement {
   }
 
   /** @private */
-  onDoodleChange_() {
-    const imageDoodle = this.doodle_ && this.doodle_.content.imageDoodle;
-    this.updateStyles({
-      '--ntp-logo-share-button-background-color':
-          imageDoodle && skColorToRgba(imageDoodle.shareButton.backgroundColor),
-      '--ntp-logo-share-button-height':
-          imageDoodle && `${SHARE_BUTTON_SIZE_PX / imageDoodle.height * 100}%`,
-      '--ntp-logo-share-button-width':
-          imageDoodle && `${SHARE_BUTTON_SIZE_PX / imageDoodle.width * 100}%`,
-      '--ntp-logo-share-button-x': imageDoodle &&
-          `${imageDoodle.shareButton.x / imageDoodle.width * 100}%`,
-      '--ntp-logo-share-button-y': imageDoodle &&
-          `${imageDoodle.shareButton.y / imageDoodle.height * 100}%`,
-      '--ntp-logo-box-color':
-          imageDoodle && skColorToRgba(imageDoodle.backgroundColor),
-    });
+  onImageDoodleChange_() {
+    if (this.imageDoodle_) {
+      const shareButton = this.imageDoodle_.shareButton;
+      const height = this.imageDoodle_.height;
+      const width = this.imageDoodle_.width;
+      this.updateStyles({
+        '--ntp-logo-share-button-background-color':
+            skColorToRgba(shareButton.backgroundColor),
+        '--ntp-logo-share-button-height':
+            `${SHARE_BUTTON_SIZE_PX / height * 100}%`,
+        '--ntp-logo-share-button-width':
+            `${SHARE_BUTTON_SIZE_PX / width * 100}%`,
+        '--ntp-logo-share-button-x': `${shareButton.x / width * 100}%`,
+        '--ntp-logo-share-button-y': `${shareButton.y / height * 100}%`,
+        '--ntp-logo-box-color':
+            skColorToRgba(this.imageDoodle_.backgroundColor),
+      });
+    } else {
+      this.updateStyles({
+        '--ntp-logo-share-button-background-color': null,
+        '--ntp-logo-share-button-height': null,
+        '--ntp-logo-share-button-width': null,
+        '--ntp-logo-share-button-x': null,
+        '--ntp-logo-share-button-y': null,
+        '--ntp-logo-box-color': null,
+      });
+    }
+  }
+
+  /**
+   * @return {newTabPage.mojom.ImageDoodle}
+   * @private
+   */
+  computeImageDoodle_() {
+    return this.doodle_ && this.doodle_.content.imageDoodle &&
+        (this.dark ? this.doodle_.content.imageDoodle.dark :
+                     this.doodle_.content.imageDoodle.light) ||
+        null;
   }
 
   /**
@@ -222,10 +248,11 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeCanShowDoodle_() {
-    return !!this.doodle_ &&
+    return !!this.imageDoodle_ ||
         /* We hide interactive doodles when offline. Otherwise, the iframe
            would show an ugly error page. */
-        (!this.doodle_.content.interactiveDoodle || window.navigator.onLine);
+        !!this.doodle_ && !!this.doodle_.content.interactiveDoodle &&
+        window.navigator.onLine;
   }
 
   /**
@@ -250,9 +277,8 @@ class LogoElement extends PolymerElement {
    */
   computeDoodleBoxed_() {
     return !this.backgroundColor ||
-        !!this.doodle_ && !!this.doodle_.content.imageDoodle &&
-        this.doodle_.content.imageDoodle.backgroundColor.value !==
-            this.backgroundColor.value;
+        !!this.imageDoodle_ &&
+        this.imageDoodle_.backgroundColor.value !== this.backgroundColor.value;
   }
 
   /**
@@ -342,8 +368,7 @@ class LogoElement extends PolymerElement {
    * @private
    */
   isCtaImageShown_() {
-    return !this.showAnimation_ && !!this.doodle_ &&
-        !!this.doodle_.content.imageDoodle.animationUrl;
+    return !this.showAnimation_ && !!this.imageDoodle_.animationUrl;
   }
 
   /**
@@ -378,10 +403,7 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeImageUrl_() {
-    return (this.doodle_ && this.doodle_.content.imageDoodle &&
-            this.doodle_.content.imageDoodle.imageUrl) ?
-        this.doodle_.content.imageDoodle.imageUrl.url :
-        '';
+    return this.imageDoodle_ ? this.imageDoodle_.imageUrl.url : '';
   }
 
   /**
@@ -389,9 +411,8 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeAnimationUrl_() {
-    return (this.doodle_ && this.doodle_.content.imageDoodle &&
-            this.doodle_.content.imageDoodle.animationUrl) ?
-        `image?${this.doodle_.content.imageDoodle.animationUrl.url}` :
+    return this.imageDoodle_ && this.imageDoodle_.animationUrl ?
+        `image?${this.imageDoodle_.animationUrl.url}` :
         '';
   }
 

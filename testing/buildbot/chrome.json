@@ -815,6 +815,11 @@
       }
     ]
   },
+  "chromeos-eve-arc-r-chrome": {
+    "additional_compile_targets": [
+      "chromiumos_preflight"
+    ]
+  },
   "chromeos-eve-chrome": {
     "additional_compile_targets": [
       "chromiumos_preflight"

@@ -302,9 +302,10 @@ class POLICY_EXPORT CloudPolicyClient {
           chrome_os_user_report,
       StatusCallback callback);
 
-  // Uploads |report| using the real-time reporting API.  As above, the client
-  // must be in a registered state.  The |callback| will be called when the
-  // operation completes.
+  // Uploads a report containing enterprise connectors real-time security
+  // events. As above, the client must be in a registered state.  The |callback|
+  // will be called when the operation completes.
+  // TODO(crbug.com/1098437): Pick a more specific name.
   virtual void UploadRealtimeReport(base::Value report,
                                     StatusCallback callback);
 
@@ -551,6 +552,10 @@ class POLICY_EXPORT CloudPolicyClient {
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
+  void add_connector_url_params(bool value) {
+    add_connector_url_params_ = value;
+  }
+
   // Returns the number of active requests.
   int GetActiveRequestCountForTest() const;
 
@@ -763,9 +768,15 @@ class POLICY_EXPORT CloudPolicyClient {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
  private:
-  // Creates new realtime reporting job and appends it to |request_jobs_|.
+  // Creates a new real-time reporting job and appends it to |request_jobs_|.
+  // The job will send its report to the |server_url| endpoint.  If
+  // |add_connector_url_params| is true then URL paramaters specific to
+  // enterprise connectors are added to the request uploading the report.
+  // |callback| is invoked once the report is uploaded.
   DeviceManagementService::Job* CreateNewRealtimeReportingJob(
       base::Value report,
+      const std::string& server_url,
+      bool add_connector_url_params,
       StatusCallback callback);
 
   void SetClientId(const std::string& client_id);
@@ -795,6 +806,11 @@ class POLICY_EXPORT CloudPolicyClient {
   // during re-registration, which gets triggered by a failed policy fetch with
   // error |DM_STATUS_SERVICE_DEVICE_NOT_FOUND|.
   std::string reregistration_dm_token_;
+
+  // Whether extra enterprise connectors URL parameters should be included
+  // in real-time reports.  Only reports uploaded using UploadRealtimeReport()
+  // are affected.
+  bool add_connector_url_params_ = false;
 
   // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_{this};

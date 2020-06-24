@@ -32,6 +32,9 @@ NETWORK_SWITCH(kOriginToForceQuicOn, "origin-to-force-quic-on")
 // the server.
 NETWORK_SWITCH(kQuicConnectionOptions, "quic-connection-options")
 
+// Specifies a comma separated list of QUIC client connection options.
+NETWORK_SWITCH(kQuicClientConnectionOptions, "quic-client-connection-options")
+
 // Specifies the maximum length for a QUIC packet.
 NETWORK_SWITCH(kQuicMaxPacketLength, "quic-max-packet-length")
 

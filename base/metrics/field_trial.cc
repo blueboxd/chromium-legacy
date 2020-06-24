@@ -719,9 +719,7 @@ void FieldTrialList::GetInitiallyActiveFieldTrials(
 }
 
 // static
-bool FieldTrialList::CreateTrialsFromString(
-    const std::string& trials_string,
-    const std::set<std::string>& ignored_trial_names) {
+bool FieldTrialList::CreateTrialsFromString(const std::string& trials_string) {
   DCHECK(global_);
   if (trials_string.empty() || !global_)
     return true;
@@ -733,14 +731,6 @@ bool FieldTrialList::CreateTrialsFromString(
   for (const auto& entry : entries) {
     const std::string trial_name = entry.trial_name.as_string();
     const std::string group_name = entry.group_name.as_string();
-
-    if (Contains(ignored_trial_names, trial_name)) {
-      // This is to warn that the field trial forced through command-line
-      // input is unforcable.
-      // Use --enable-logging or --enable-logging=stderr to see this warning.
-      LOG(WARNING) << "Field trial: " << trial_name << " cannot be forced.";
-      continue;
-    }
 
     FieldTrial* trial = CreateFieldTrial(trial_name, group_name);
     if (!trial)
@@ -787,8 +777,7 @@ void FieldTrialList::CreateTrialsFromCommandLine(
 
   if (cmd_line.HasSwitch(switches::kForceFieldTrials)) {
     bool result = FieldTrialList::CreateTrialsFromString(
-        cmd_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-        std::set<std::string>());
+        cmd_line.GetSwitchValueASCII(switches::kForceFieldTrials));
     UMA_HISTOGRAM_BOOLEAN("ChildProcess.FieldTrials.CreateFromSwitchSuccess",
                           result);
     DCHECK(result);

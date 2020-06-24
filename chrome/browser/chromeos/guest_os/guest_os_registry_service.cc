@@ -46,6 +46,9 @@ constexpr char kCrostiniIconFolder[] = "crostini.icons";
 constexpr char kCrostiniAppsInstalledHistogram[] =
     "Crostini.AppsInstalledAtLogin";
 
+constexpr char kPluginVmAppsInstalledHistogram[] =
+    "PluginVm.AppsInstalledAtLogin";
+
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
                           const std::string& container_name) {
@@ -559,23 +562,44 @@ void GuestOsRegistryService::RecordStartupMetrics() {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
 
-  if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_))
+  bool crostini_enabled =
+      crostini::CrostiniFeatures::Get()->IsEnabled(profile_);
+  bool plugin_vm_enabled = plugin_vm::IsPluginVmEnabled(profile_);
+  if (!crostini_enabled && !plugin_vm_enabled)
     return;
 
-  size_t num_apps = 0;
+  int num_crostini_apps = 0;
+  int num_plugin_vm_apps = 0;
 
   for (const auto& item : apps->DictItems()) {
     if (item.first == crostini::GetTerminalId())
       continue;
 
-    const base::Value* no_display = item.second.FindKeyOfType(
-        guest_os::prefs::kAppNoDisplayKey, base::Value::Type::BOOLEAN);
-    if (no_display && no_display->GetBool())
+    base::Optional<bool> no_display =
+        item.second.FindBoolKey(guest_os::prefs::kAppNoDisplayKey);
+    if (no_display && no_display.value())
       continue;
 
-    num_apps++;
+    base::Optional<int> vm_type =
+        item.second.FindIntKey(guest_os::prefs::kAppVmTypeKey);
+    if (!vm_type ||
+        vm_type ==
+            GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA) {
+      num_crostini_apps++;
+    } else if (vm_type == GuestOsRegistryService::VmType::
+                              ApplicationList_VmType_PLUGIN_VM) {
+      num_plugin_vm_apps++;
+    } else {
+      NOTREACHED();
+    }
   }
-  UMA_HISTOGRAM_COUNTS_1000(kCrostiniAppsInstalledHistogram, num_apps);
+
+  if (crostini_enabled)
+    UMA_HISTOGRAM_COUNTS_1000(kCrostiniAppsInstalledHistogram,
+                              num_crostini_apps);
+  if (plugin_vm_enabled)
+    UMA_HISTOGRAM_COUNTS_1000(kPluginVmAppsInstalledHistogram,
+                              num_plugin_vm_apps);
 }
 
 base::FilePath GuestOsRegistryService::GetAppPath(

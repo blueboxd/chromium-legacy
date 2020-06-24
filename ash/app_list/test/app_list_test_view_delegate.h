@@ -108,12 +108,11 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       const base::string16& raw_query,
       const ash::SearchResultIdWithPositionIndices& results,
       int position_index) override;
+  void MaybeIncreasePrivacyInfoShownCounts() override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
-  void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
   bool ShouldShowSuggestedContentInfo() const override;
-  void MaybeIncreaseSuggestedContentInfoShownCount() override;
   void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;

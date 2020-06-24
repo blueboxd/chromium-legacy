@@ -772,12 +772,23 @@ void MoveTabsToNewWindow(Browser* browser,
 
   base::Optional<tab_groups::TabGroupId> new_group = base::nullopt;
   if (group.has_value()) {
+    // Recreate the group in the new window with a different ID but the same
+    // title and color. Also ensure that the group is not collapsed. This is
+    // consistent with the behavior when dragging a group out of a window.
+
     new_group = tab_groups::TabGroupId::GenerateNew();
+
+    const tab_groups::TabGroupVisualData* old_visual_data =
+        browser->tab_strip_model()
+            ->group_model()
+            ->GetTabGroup(group.value())
+            ->visual_data();
+    tab_groups::TabGroupVisualData new_visual_data(old_visual_data->title(),
+                                                   old_visual_data->color(),
+                                                   false /* is_collapsed */);
+
     new_browser->tab_strip_model()->group_model()->AddTabGroup(
-        new_group.value(), *browser->tab_strip_model()
-                                ->group_model()
-                                ->GetTabGroup(group.value())
-                                ->visual_data());
+        new_group.value(), new_visual_data);
   }
 
   int indices_size = tab_indices.size();

@@ -271,7 +271,7 @@ void ScopedFeatureList::InitWithFeaturesImpl(
   // Restore other field trials. Note: We don't need to do anything for params
   // here because the param associator already has the right state, which has
   // been backed up via |original_params_| to be restored later.
-  FieldTrialList::CreateTrialsFromString(existing_trial_state, {});
+  FieldTrialList::CreateTrialsFromString(existing_trial_state);
 
   OverrideFeatures(current_enabled_features,
                    FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE,

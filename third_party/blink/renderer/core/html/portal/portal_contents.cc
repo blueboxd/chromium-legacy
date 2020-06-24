@@ -157,10 +157,11 @@ void PortalContents::Navigate(
     return;
   }
 
+  ExecutionContext* context = GetDocument().GetExecutionContext();
   if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy_to_use = GetDocument().GetReferrerPolicy();
+    referrer_policy_to_use = context->GetReferrerPolicy();
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      referrer_policy_to_use, url, GetDocument().OutgoingReferrer());
+      referrer_policy_to_use, url, context->OutgoingReferrer());
   auto mojo_referrer = mojom::blink::Referrer::New(
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
 

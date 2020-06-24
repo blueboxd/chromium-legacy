@@ -37,6 +37,7 @@ public class PlayerManager {
     private Runnable mViewReadyCallback;
     private static final String sInitEvent = "paint_preview PlayerManager init";
     private PlayerSwipeRefreshHandler mPlayerSwipeRefreshHandler;
+    private boolean mIgnoreInitialScrollOffset;
 
     /**
      * Creates a new {@link PlayerManager}.
@@ -50,12 +51,14 @@ public class PlayerManager {
      * @param backgroundColor The color used for the background.
      * @param compositorErrorCallback Called when the compositor has had an error (either during
      *     initialization or due to a disconnect).
+     * @param ignoreInitialScrollOffset If true the initial scroll state that is recorded at capture
+     *     time is ignored.
      */
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
             String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
             @Nullable Runnable refreshCallback, Runnable viewReadyCallback, int backgroundColor,
-            Runnable compositorErrorCallback) {
+            Runnable compositorErrorCallback, boolean ignoreInitialScrollOffset) {
         TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
@@ -68,6 +71,7 @@ public class PlayerManager {
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mHostView.setBackgroundColor(backgroundColor);
         mViewReadyCallback = viewReadyCallback;
+        mIgnoreInitialScrollOffset = ignoreInitialScrollOffset;
     }
 
     /**
@@ -76,13 +80,15 @@ public class PlayerManager {
      * {@link #mHostView}.
      */
     private void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
-            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
-            int[] subFrameClipRects) {
+            int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
         PaintPreviewFrame rootFrame = buildFrameTreeHierarchy(rootFrameGuid, frameGuids,
-                frameContentSize, subFramesCount, subFrameGuids, subFrameClipRects);
+                frameContentSize, scrollOffsets, subFramesCount, subFrameGuids, subFrameClipRects,
+                mIgnoreInitialScrollOffset);
 
         mRootFrameCoordinator = new PlayerFrameCoordinator(mContext, mDelegate, rootFrame.getGuid(),
-                rootFrame.getContentWidth(), rootFrame.getContentHeight(), true,
+                rootFrame.getContentWidth(), rootFrame.getContentHeight(),
+                rootFrame.getInitialScrollX(), rootFrame.getInitialScrollY(), true,
                 mPlayerSwipeRefreshHandler);
         buildSubFrameCoordinators(mRootFrameCoordinator, rootFrame);
         mHostView.addView(mRootFrameCoordinator.getView(),
@@ -104,13 +110,16 @@ public class PlayerManager {
      */
     @VisibleForTesting
     static PaintPreviewFrame buildFrameTreeHierarchy(UnguessableToken rootFrameGuid,
-            UnguessableToken[] frameGuids, int[] frameContentSize, int[] subFramesCount,
-            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
+            UnguessableToken[] frameGuids, int[] frameContentSize, int[] scrollOffsets,
+            int[] subFramesCount, UnguessableToken[] subFrameGuids, int[] subFrameClipRects,
+            boolean ignoreInitialScrollOffset) {
         Map<UnguessableToken, PaintPreviewFrame> framesMap = new HashMap<>();
         for (int i = 0; i < frameGuids.length; i++) {
+            int initalScrollX = ignoreInitialScrollOffset ? 0 : scrollOffsets[i * 2];
+            int initalScrollY = ignoreInitialScrollOffset ? 0 : scrollOffsets[(i * 2) + 1];
             framesMap.put(frameGuids[i],
-                    new PaintPreviewFrame(
-                            frameGuids[i], frameContentSize[i * 2], frameContentSize[(i * 2) + 1]));
+                    new PaintPreviewFrame(frameGuids[i], frameContentSize[i * 2],
+                            frameContentSize[(i * 2) + 1], initalScrollX, initalScrollY));
         }
 
         int subFrameIdIndex = 0;
@@ -148,7 +157,8 @@ public class PlayerManager {
             PaintPreviewFrame childFrame = frame.getSubFrames()[i];
             PlayerFrameCoordinator childCoordinator = new PlayerFrameCoordinator(mContext,
                     mDelegate, childFrame.getGuid(), childFrame.getContentWidth(),
-                    childFrame.getContentHeight(), false, null);
+                    childFrame.getContentHeight(), childFrame.getInitialScrollX(),
+                    childFrame.getInitialScrollY(), false, null);
             buildSubFrameCoordinators(childCoordinator, childFrame);
             frameCoordinator.addSubFrame(childCoordinator, frame.getSubFrameClips()[i]);
         }

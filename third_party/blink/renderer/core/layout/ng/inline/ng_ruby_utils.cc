@@ -217,29 +217,28 @@ LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info) {
   return end_overhang;
 }
 
-NGLineHeightMetrics ComputeAnnotationOverflow(
+NGAnnotationMetrics ComputeAnnotationOverflow(
     const NGLogicalLineItems& logical_line,
     const NGLineHeightMetrics& line_box_metrics,
-    LayoutUnit line_block_start,
+    LayoutUnit line_over,
     const ComputedStyle& line_style) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
   // Min/max position of content without line-height.
-  LayoutUnit content_block_start = line_block_start + line_box_metrics.ascent;
-  LayoutUnit content_block_end = content_block_start;
+  LayoutUnit content_over = line_over + line_box_metrics.ascent;
+  LayoutUnit content_under = content_over;
 
   // Min/max position of annotations.
-  LayoutUnit annotation_block_start = content_block_start;
-  LayoutUnit annotation_block_end = content_block_start;
+  LayoutUnit annotation_over = content_over;
+  LayoutUnit annotation_under = content_over;
 
-  const LayoutUnit line_block_end =
-      line_block_start + line_box_metrics.LineHeight();
+  const LayoutUnit line_under = line_over + line_box_metrics.LineHeight();
   bool has_over_emphasis = false;
   bool has_under_emphasis = false;
   for (const NGLogicalLineItem& item : logical_line) {
     if (item.HasInFlowFragment()) {
       if (!item.IsControl()) {
-        content_block_start = std::min(content_block_start, item.BlockOffset());
-        content_block_end = std::max(content_block_end, item.BlockEndOffset());
+        content_over = std::min(content_over, item.BlockOffset());
+        content_under = std::max(content_under, item.BlockEndOffset());
       }
       if (const auto* style = item.Style()) {
         if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
@@ -260,49 +259,47 @@ NGLineHeightMetrics ComputeAnnotationOverflow(
     if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
       overflow = -overflow;
     if (overflow < LayoutUnit()) {
-      annotation_block_start = std::min(
-          annotation_block_start, item.rect.offset.block_offset + overflow);
+      annotation_over =
+          std::min(annotation_over, item.rect.offset.block_offset + overflow);
     } else if (overflow > LayoutUnit()) {
-      const LayoutUnit block_end =
+      const LayoutUnit logical_bottom =
           item.rect.offset.block_offset +
           layout_result->PhysicalFragment()
               .Size()
               .ConvertToLogical(line_style.GetWritingMode())
               .block_size;
-      annotation_block_end =
-          std::max(annotation_block_end, block_end + overflow);
+      annotation_under = std::max(annotation_under, logical_bottom + overflow);
     }
   }
 
   // Probably this is an empty line. We should secure font-size space.
   const LayoutUnit font_size(line_style.ComputedFontSize());
-  if (content_block_end - content_block_start < font_size) {
+  if (content_under - content_over < font_size) {
     LayoutUnit half_leading = (line_box_metrics.LineHeight() - font_size) / 2;
     half_leading = half_leading.ClampNegativeToZero();
-    content_block_start = line_block_start + half_leading;
-    content_block_end = line_block_end - half_leading;
+    content_over = line_over + half_leading;
+    content_under = line_under - half_leading;
   }
 
   // Don't provide annotation space if text-emphasis exists.
-  // TODO(layout-dev): If the text-emphasis is in
-  // [line_block_start, line_block_end], this line can provide annotation space.
+  // TODO(layout-dev): If the text-emphasis is in [line_over, line_under],
+  // this line can provide annotation space.
   if (has_over_emphasis)
-    content_block_start = line_block_start;
+    content_over = line_over;
   if (has_under_emphasis)
-    content_block_end = line_block_end;
+    content_under = line_under;
 
-  // With some fonts, text fragment sizes can exceed line-height.
-  // We should not handle them as annotation overflow.
-  content_block_start = std::max(content_block_start, line_block_start);
-  content_block_end = std::min(content_block_end, line_block_end);
-
-  const LayoutUnit content_or_annotation_block_start =
-      std::min(content_block_start, annotation_block_start);
-  const LayoutUnit content_or_annotation_block_end =
-      std::max(content_block_end, annotation_block_end);
-  return NGLineHeightMetrics(
-      line_block_start - content_or_annotation_block_start,
-      content_or_annotation_block_end - line_block_end);
+  const LayoutUnit overflow_over =
+      (line_over - annotation_over).ClampNegativeToZero();
+  const LayoutUnit overflow_under =
+      (annotation_under - line_under).ClampNegativeToZero();
+  return {overflow_over, overflow_under,
+          // With some fonts, text fragment sizes can exceed line-height.
+          // We need ClampNegativeToZero().
+          overflow_over ? LayoutUnit()
+                        : (content_over - line_over).ClampNegativeToZero(),
+          overflow_under ? LayoutUnit()
+                         : (line_under - content_under).ClampNegativeToZero()};
 }
 
 }  // namespace blink

@@ -102,23 +102,25 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
 #endif
 
   StartSwapBuffers(std::move(feedback));
-  auto image_size = vulkan_surface_->image_size();
-  gfx::SwapResult result = gfx::SwapResult::SWAP_ACK;
-  // If the swapchain is new created, but rect doesn't cover the whole buffer,
-  // we will still present it even it causes a artifact in this frame and
-  // recovered when the next frame is presented. We do that because the old
-  // swapchain's present thread is blocked on waiting a reply from xserver, and
-  // presenting a new image with the new create swapchain will somehow makes
-  // xserver send a reply to us, and then unblock the old swapchain's present
-  // thread. So the old swapchain can be destroyed properly.
-  if (!rect.IsEmpty())
-    result = vulkan_surface_->PostSubBuffer(rect);
-  if (is_new_swapchain_) {
-    is_new_swapchain_ = false;
-    result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
+
+  if (!rect.IsEmpty()) {
+    // If the swapchain is new created, but rect doesn't cover the whole buffer,
+    // we will still present it even it causes a artifact in this frame and
+    // recovered when the next frame is presented. We do that because the old
+    // swapchain's present thread is blocked on waiting a reply from xserver,
+    // and presenting a new image with the new create swapchain will somehow
+    // makes xserver send a reply to us, and then unblock the old swapchain's
+    // present thread. So the old swapchain can be destroyed properly.
+    vulkan_surface_->PostSubBufferAsync(
+        rect, base::BindOnce(&SkiaOutputDeviceVulkan::OnPostSubBufferFinished,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(latency_info), is_new_swapchain_));
+  } else {
+    OnPostSubBufferFinished(std::move(latency_info), is_new_swapchain_,
+                            gfx::SwapResult::SWAP_ACK);
   }
-  FinishSwapBuffers(gfx::SwapCompletionResult(result), image_size,
-                    std::move(latency_info));
+
+  is_new_swapchain_ = false;
 }
 
 SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
@@ -243,7 +245,8 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   vulkan_surface_ = std::move(vulkan_surface);
 
   capabilities_.uses_default_gl_framebuffer = false;
-  capabilities_.max_frames_pending = vulkan_surface_->image_count() - 1;
+  capabilities_.max_frames_pending = 1;
+  capabilities_.number_of_buffers = vulkan_surface_->image_count();
   // Vulkan FIFO swap chain should return vk images in presenting order, so set
   // preserve_buffer_content & supports_post_sub_buffer to true to let
   // SkiaOutputBufferImpl to manager damages.
@@ -286,6 +289,16 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
   }
 
   return true;
+}
+
+void SkiaOutputDeviceVulkan::OnPostSubBufferFinished(
+    std::vector<ui::LatencyInfo> latency_info,
+    bool is_new_swapchain,
+    gfx::SwapResult result) {
+  if (is_new_swapchain)
+    result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
+  FinishSwapBuffers(gfx::SwapCompletionResult(result),
+                    vulkan_surface_->image_size(), std::move(latency_info));
 }
 
 SkiaOutputDeviceVulkan::SkSurfaceSizePair::SkSurfaceSizePair() = default;

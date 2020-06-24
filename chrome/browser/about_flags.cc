@@ -3605,11 +3605,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxDisableInstantExtendedLimitDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxDisableInstantExtendedLimit)},
 
-    {"use-new-accept-language-header",
-     flag_descriptions::kUseNewAcceptLanguageHeaderName,
-     flag_descriptions::kUseNewAcceptLanguageHeaderDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kUseNewAcceptLanguageHeader)},
-
 #if defined(OS_CHROMEOS)
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
@@ -5737,6 +5732,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableOffersInDownstreamName,
      flag_descriptions::kAutofillEnableOffersInDownstreamDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOffersInDownstream)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-sharesheet", flag_descriptions::kSharesheetName,
+     flag_descriptions::kSharesheetDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kSharesheet)},
+#endif  // OS_CHROMEOS
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -55,6 +55,7 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
       const base::flat_map<base::UnguessableToken, mojom::FrameDataPtr>& frames,
       std::vector<base::UnguessableToken>* all_guids,
       std::vector<int>* scroll_extents,
+      std::vector<int>* scroll_offsets,
       std::vector<int>* subframe_count,
       std::vector<base::UnguessableToken>* subframe_ids,
       std::vector<int>* subframe_rects);

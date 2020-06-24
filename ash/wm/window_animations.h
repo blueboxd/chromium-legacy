@@ -20,8 +20,20 @@ class LayerTreeOwner;
 }
 
 // This is only for animations specific to Ash. For window animations shared
-// with desktop Chrome, see ui/views/corewm/window_animations.h.
+// with desktop Chrome, see ui/wm/core/window_animations.h.
 namespace ash {
+
+// Direction for ash-specific window animations used in workspaces and
+// lock/unlock animations.
+enum LayerScaleAnimationDirection {
+  LAYER_SCALE_ANIMATION_ABOVE,
+  LAYER_SCALE_ANIMATION_BELOW,
+};
+
+// Applies scale related to the specified LayerScaleAnimationDirection.
+ASH_EXPORT void SetTransformForScaleAnimation(
+    ui::Layer* layer,
+    LayerScaleAnimationDirection type);
 
 // Implementation of cross fading. Window is the window being cross faded. It
 // should be at the target bounds. |old_layer_owner| contains the previous layer

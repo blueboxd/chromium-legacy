@@ -265,9 +265,10 @@ class NavigationManager {
     this.group_.onFocus();
     this.node_.onFocus();
 
-    this.desktop_.addEventListener(
-        chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
-        false);
+    new RepeatedEventHandler(
+        this.desktop_, chrome.automation.EventType.FOCUS,
+        this.onFocusChange_.bind(this));
+
     // The status tray fires a SHOW event when it opens.
     this.desktop_.addEventListener(
         chrome.automation.EventType.SHOW, this.onModalDialog_.bind(this),

@@ -531,7 +531,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   // If hrefTranslate is enabled and set restrict processing it
   // to same frame or navigations with noopener set.
-  if (RuntimeEnabledFeatures::HrefTranslateEnabled(&GetDocument()) &&
+  if (RuntimeEnabledFeatures::HrefTranslateEnabled(GetExecutionContext()) &&
       FastHasAttribute(html_names::kHreftranslateAttr) &&
       (target_frame == frame || frame_request.GetWindowFeatures().noopener)) {
     frame_request.SetHrefTranslate(

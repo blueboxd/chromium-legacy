@@ -557,7 +557,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
         RuntimeEnabledFeatures::
             SignedExchangePrefetchCacheForNavigationsEnabled() ||
         RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-            &document));
+            document.GetExecutionContext()));
     return LinkPrefetchResource::Fetch(link_fetch_params, document.Fetcher());
   }
   return nullptr;
@@ -600,7 +600,7 @@ void PreloadHelper::LoadLinksFromHeader(
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
       DCHECK(document);
       DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-          document));
+          document->GetExecutionContext()));
       KURL url = params.href;
       base::Optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);

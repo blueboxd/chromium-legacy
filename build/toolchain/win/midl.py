@@ -173,8 +173,8 @@ def overwrite_cls_guid(h_file, iid_file, tlb_file, dynamic_guid):
   overwrite_cls_guid_tlb(tlb_file, dynamic_guid)
 
 
-def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
-         *flags):
+def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, clang,
+         idl, *flags):
   # Copy checked-in outputs to final location.
   source = gendir
   if os.path.isdir(os.path.join(source, os.path.basename(idl))):
@@ -192,16 +192,6 @@ def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
   if sys.platform != 'win32':
     return 0
 
-  # Skip the verification step on Windows 7 to avoid issues running the
-  # compiler.
-  ver = sys.getwindowsversion()
-  # Impossible version number, but just in case...
-  if ver.major < 6:
-    return 0
-  # Check for before Windows 8.
-  if ver.major == 6 and ver.minor < 2:
-    return 0;
-
   # On Windows, run midl.exe on the input and check that its outputs are
   # identical to the checked-in outputs (after possibly replacing their main
   # class guid).
@@ -214,6 +204,10 @@ def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
   env_pairs = open(arch).read()[:-2].split('\0')
   env_dict = dict([item.split('=', 1) for item in env_pairs])
 
+  # Extract the /D options and send them to the preprocessor.
+  preprocessor_options = '-E -nologo -Wno-nonportable-include-path'
+  preprocessor_options += ''.join(
+      [' ' + flag for flag in flags if flag.startswith('/D')])
   args = ['midl', '/nologo'] + list(flags) + [
       '/out', tmp_dir,
       '/tlb', tlb,
@@ -221,6 +215,8 @@ def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
       '/dlldata', dlldata,
       '/iid', iid,
       '/proxy', proxy,
+      '/cpp_cmd', clang,
+      '/cpp_opt', preprocessor_options,
       idl]
   try:
     popen = subprocess.Popen(args, shell=True, env=env_dict,

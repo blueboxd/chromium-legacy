@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/browser/declarative_user_script_master.h"
+#include "extensions/browser/declarative_user_script_set.h"
 #include "extensions/common/user_script.h"
 
 namespace base {
@@ -74,7 +74,7 @@ class RequestContentScript : public ContentAction {
   RequestContentScript(content::BrowserContext* browser_context,
                        const Extension* extension,
                        const ScriptData& script_data);
-  RequestContentScript(DeclarativeUserScriptMaster* master,
+  RequestContentScript(DeclarativeUserScriptSet* script_set,
                        const Extension* extension,
                        const ScriptData& script_data);
 
@@ -87,7 +87,7 @@ class RequestContentScript : public ContentAction {
       std::string* error);
 
   static std::unique_ptr<ContentAction> CreateForTest(
-      DeclarativeUserScriptMaster* master,
+      DeclarativeUserScriptSet* master,
       const Extension* extension,
       const base::Value& json_action,
       std::string* error);
@@ -112,7 +112,7 @@ class RequestContentScript : public ContentAction {
                                      const Extension* extension) const;
 
   UserScript script_;
-  DeclarativeUserScriptMaster* master_;
+  DeclarativeUserScriptSet* script_set_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestContentScript);
 };

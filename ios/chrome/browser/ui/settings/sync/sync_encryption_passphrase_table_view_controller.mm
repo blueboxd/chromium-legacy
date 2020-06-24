@@ -515,6 +515,10 @@ const CGFloat kSpinnerButtonPadding = 18;
       base::UserMetricsAction("MobileSyncPassphraseSettingsClose"));
 }
 
+- (void)reportBackUserAction {
+  NOTREACHED();
+}
+
 - (void)settingsWillBeDismissed {
   [self stopObserving];
 }

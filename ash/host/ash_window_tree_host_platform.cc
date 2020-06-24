@@ -23,18 +23,36 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
-#include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ash {
 
+class ScopedEnableUnadjustedMouseEventsOzone
+    : public aura::ScopedEnableUnadjustedMouseEvents {
+ public:
+  explicit ScopedEnableUnadjustedMouseEventsOzone(
+      ui::InputController* input_controller) {
+    input_controller_ = input_controller;
+    input_controller_->SuspendMouseAcceleration();
+  }
+
+  ~ScopedEnableUnadjustedMouseEventsOzone() override {
+    input_controller_->EndMouseAccelerationSuspension();
+  }
+
+ private:
+  ui::InputController* input_controller_;
+};
+
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties)
     : aura::WindowTreeHostPlatform(std::move(properties),
                                    window_factory::NewWindow()),
-      transformer_helper_(this) {
+      transformer_helper_(this),
+      input_controller_(
+          ui::OzonePlatform::GetInstance()->GetInputController()) {
   CommonInit();
 }
 
@@ -155,6 +173,12 @@ void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
   // Temporarily pause tap-to-click when the cursor is hidden.
   ui::OzonePlatform::GetInstance()->GetInputController()->SetTapToClickPaused(
       state);
+}
+
+std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+AshWindowTreeHostPlatform::RequestUnadjustedMovement() {
+  return std::make_unique<ScopedEnableUnadjustedMouseEventsOzone>(
+      input_controller_);
 }
 
 void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {

@@ -6,6 +6,8 @@
 
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -216,6 +218,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)localProfilesExist {
   return !_personalDataManager->GetProfiles().empty();
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAddressesSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAddressesSettingsBack"));
 }
 
 #pragma mark - SettingsRootTableViewController

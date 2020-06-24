@@ -74,16 +74,16 @@ gfx::Rect GraphicsDelegateWin::GetTextureSize() {
   return gfx::Rect(width, height);
 }
 
-void GraphicsDelegateWin::PreRender() {
+bool GraphicsDelegateWin::PreRender() {
   if (!gl_)
-    return;
+    return false;
 
   BindContext();
   gfx::Rect size = GetTextureSize();
 
   // Create a memory buffer, and an image referencing that memory buffer.
   if (!EnsureMemoryBuffer(size.width(), size.height()))
-    return;
+    return false;
 
   // Create a texture id, and associate it with our image.
   gl_->GenTextures(1, &dest_texture_id_);
@@ -100,6 +100,15 @@ void GraphicsDelegateWin::PreRender() {
   gl_->BindFramebuffer(GL_DRAW_FRAMEBUFFER, draw_frame_buffer_);
   gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                             GL_TEXTURE_2D, dest_texture_id_, 0);
+
+  if (gl_->GetError() != GL_NO_ERROR) {
+    // Clear any remaining GL errors.
+    while (gl_->GetError() != GL_NO_ERROR) {
+    }
+    return false;
+  }
+
+  return true;
 }
 
 void GraphicsDelegateWin::PostRender() {

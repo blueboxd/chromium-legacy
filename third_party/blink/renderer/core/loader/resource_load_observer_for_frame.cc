@@ -153,7 +153,7 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
     CountUsage(WebFeature::kLinkRelPrefetchForSignedExchanges);
 
     if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-            document_) &&
+            document_->GetExecutionContext()) &&
         resource->LastResourceResponse()) {
       // See if the outer response (which must be the last response in
       // the redirect chain) had provided alternate links for the prefetch.

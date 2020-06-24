@@ -113,9 +113,7 @@ std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
 
 std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
   std::string accept_languages_str =
-      base::FeatureList::IsEnabled(features::kUseNewAcceptLanguageHeader)
-          ? net::HttpUtil::ExpandLanguageList(language_pref)
-          : language_pref;
+      net::HttpUtil::ExpandLanguageList(language_pref);
   return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
 }
 

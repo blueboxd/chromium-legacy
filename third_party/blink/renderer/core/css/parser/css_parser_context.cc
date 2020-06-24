@@ -283,7 +283,8 @@ bool CSSParserContext::CustomElementsV0Enabled() const {
   // Support features conservatively.
   if (!document_)
     return true;
-  return RuntimeEnabledFeatures::CustomElementsV0Enabled(document_);
+  return RuntimeEnabledFeatures::CustomElementsV0Enabled(
+      document_->GetExecutionContext());
 }
 
 bool CSSParserContext::IsForMarkupSanitization() const {

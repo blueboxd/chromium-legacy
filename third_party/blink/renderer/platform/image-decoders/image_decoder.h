@@ -178,6 +178,19 @@ class PLATFORM_EXPORT ImageDecoder {
                   color_behavior, allow_decode_to_yuv, desired_size);
   }
 
+  // Similar to above, but does not allow mime sniffing. Creates explicitly
+  // based on the |image_type| value.
+  static std::unique_ptr<ImageDecoder> CreateByImageType(
+      String image_type,
+      scoped_refptr<SegmentReader> data,
+      bool data_complete,
+      AlphaOption alpha_option,
+      HighBitDepthDecodingOption high_bit_depth_decoding_option,
+      const ColorBehavior& color_behavior,
+      const OverrideAllowDecodeToYuv allow_decode_to_yuv =
+          OverrideAllowDecodeToYuv::kDefault,
+      const SkISize& desired_size = SkISize::MakeEmpty());
+
   virtual String FilenameExtension() const = 0;
 
   bool IsAllDataReceived() const { return is_all_data_received_; }

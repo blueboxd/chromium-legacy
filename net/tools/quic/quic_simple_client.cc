@@ -37,11 +37,12 @@ QuicSimpleClient::QuicSimpleClient(
     quic::QuicSocketAddress server_address,
     const quic::QuicServerId& server_id,
     const quic::ParsedQuicVersionVector& supported_versions,
+    const quic::QuicConfig& config,
     std::unique_ptr<quic::ProofVerifier> proof_verifier)
     : quic::QuicSpdyClientBase(
           server_id,
           supported_versions,
-          quic::QuicConfig(),
+          config,
           CreateQuicConnectionHelper(),
           CreateQuicAlarmFactory(),
           quic::QuicWrapUnique(

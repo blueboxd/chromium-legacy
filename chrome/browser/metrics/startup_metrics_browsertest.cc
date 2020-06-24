@@ -23,7 +23,6 @@ constexpr const char* kStartupMetrics[] = {
     "Startup.BrowserWindowDisplay",
     "Startup.FirstWebContents.MainNavigationFinished",
     "Startup.FirstWebContents.MainNavigationStart",
-    "Startup.FirstWebContents.NonEmptyPaint2",
     "Startup.FirstWebContents.NonEmptyPaint3",
     "Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint",
     "Startup.LoadTime.ApplicationStartToChromeMain",

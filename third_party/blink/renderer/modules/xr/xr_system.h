@@ -351,7 +351,6 @@ class XRSystem final : public EventTargetWithInlineData,
       const PendingRequestSessionQuery& query);
 
   RequestedXRSessionFeatureSet ParseRequestedFeatures(
-      Document* doc,
       const HeapVector<ScriptValue>& features,
       const device::mojom::blink::XRSessionMode& session_mode,
       XRSessionInit* session_init,

@@ -403,6 +403,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
+  virtual std::unique_ptr<media::SpeechRecognitionClient>
+  CreateSpeechRecognitionClient(
+      media::SpeechRecognitionClient::OnReadyCallback callback) {
+    return nullptr;
+  }
+
   virtual void SetMouseCapture(bool) {}
 
   // Returns whether we are associated with a print context who suggests to use

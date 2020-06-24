@@ -191,6 +191,10 @@ crbug.com/1097338 [ fuchsia ] conformance/glsl/bugs/conditional-discard-optimiza
 crbug.com/1097338 [ fuchsia ] conformance/glsl/variables/glsl-built-ins.html [ Skip ]
 crbug.com/1097338 [ fuchsia ] conformance/misc/invalid-passed-params.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/rendering/line-rendering-quality.html [ Skip ]
+crbug.com/1096746 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip ]
+
+# Fails only on Swarming
+crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-ceil.html [ Skip ]
 
 ####################
 # Win failures     #

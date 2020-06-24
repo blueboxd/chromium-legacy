@@ -27,6 +27,7 @@ class SequencedTaskRunner;
 namespace media {
 
 class DmabufVideoFramePool;
+class MediaLog;
 
 // An interface that defines methods to operate on video decoder components
 // inside the VideoDecoderPipeline. The interface is similar to
@@ -137,6 +138,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
+      std::unique_ptr<MediaLog> media_log,
       GetCreateVDFunctionsCB get_create_vd_functions_cb);
 
   ~VideoDecoderPipeline() override;

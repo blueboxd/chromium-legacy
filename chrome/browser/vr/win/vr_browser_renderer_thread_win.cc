@@ -412,6 +412,9 @@ void VRBrowserRendererThreadWin::OnPose(int request_id,
     return;
   }
 
+  if (!graphics_->PreRender())
+    return;
+
   data = ValidateFrameData(data);
 
   // Deliver pose to input and scheduler.
@@ -435,7 +438,6 @@ void VRBrowserRendererThreadWin::OnPose(int request_id,
       head_from_unoriented_head * unoriented_head_from_world;
 
   input_->OnPose(head_from_world);
-  graphics_->PreRender();
 
   // base::Unretained is safe because scheduler_ will be destroyed without
   // calling the callback if we are destroyed.

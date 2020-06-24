@@ -57,6 +57,12 @@ Polymer({
    * @private
    */
   onIronSelect_(e) {
+    // Ignore bubbling 'iron-select' events not originating from
+    // |animatedPages| itself.
+    if (e.target !== this.$.animatedPages) {
+      return;
+    }
+
     // Call focusBackButton() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be

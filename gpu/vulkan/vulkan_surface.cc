@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -68,6 +69,9 @@ gfx::OverlayTransform FromVkSurfaceTransformFlag(
       return gfx::OVERLAY_TRANSFORM_INVALID;
   }
 }
+
+// Minimum VkImages in a vulkan swap chain.
+uint32_t kMinImageCount = 3u;
 
 }  // namespace
 
@@ -166,7 +170,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
     return false;
   }
 
-  image_count_ = std::max(surface_caps.minImageCount, 3u);
+  image_count_ = std::max(surface_caps.minImageCount, kMinImageCount);
 
   return true;
 }
@@ -185,10 +189,18 @@ gfx::SwapResult VulkanSurface::SwapBuffers() {
 }
 
 gfx::SwapResult VulkanSurface::PostSubBuffer(const gfx::Rect& rect) {
-  return swap_chain_->PresentBuffer(rect);
+  return swap_chain_->PostSubBuffer(rect);
+}
+
+void VulkanSurface::PostSubBufferAsync(
+    const gfx::Rect& rect,
+    VulkanSwapChain::PostSubBufferCompletionCallback callback) {
+  swap_chain_->PostSubBufferAsync(rect, std::move(callback));
 }
 
 void VulkanSurface::Finish() {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   vkQueueWaitIdle(device_queue_->GetVulkanQueue());
 }
 
@@ -262,7 +274,7 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   auto swap_chain = std::make_unique<VulkanSwapChain>();
 
   // Create swap chain.
-  DCHECK_EQ(image_count_, std::max(surface_caps.minImageCount, 3u));
+  DCHECK_EQ(image_count_, std::max(surface_caps.minImageCount, kMinImageCount));
   if (!swap_chain->Initialize(
           device_queue_, surface_, surface_format_, image_size_, image_count_,
           vk_transform, enforce_protected_memory_, std::move(swap_chain_))) {

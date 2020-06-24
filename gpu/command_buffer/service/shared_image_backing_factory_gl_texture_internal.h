@@ -16,15 +16,22 @@ namespace gpu {
 class SharedImageRepresentationGLTextureImpl
     : public SharedImageRepresentationGLTexture {
  public:
+  class Client {
+   public:
+    virtual bool OnGLTextureBeginAccess(GLenum mode) = 0;
+  };
   SharedImageRepresentationGLTextureImpl(SharedImageManager* manager,
                                          SharedImageBacking* backing,
+                                         Client* client,
                                          MemoryTypeTracker* tracker,
                                          gles2::Texture* texture);
 
  private:
-  // SharedImageRepresentationGLTexturePassthrough:
+  // SharedImageRepresentationGLTexture:
   gles2::Texture* GetTexture() override;
+  bool BeginAccess(GLenum mode) override;
 
+  Client* const client_ = nullptr;
   gles2::Texture* texture_;
 };
 
@@ -33,9 +40,14 @@ class SharedImageRepresentationGLTextureImpl
 class SharedImageRepresentationGLTexturePassthroughImpl
     : public SharedImageRepresentationGLTexturePassthrough {
  public:
+  class Client {
+   public:
+    virtual bool OnGLTexturePassthroughBeginAccess(GLenum mode) = 0;
+  };
   SharedImageRepresentationGLTexturePassthroughImpl(
       SharedImageManager* manager,
       SharedImageBacking* backing,
+      Client* client,
       MemoryTypeTracker* tracker,
       scoped_refptr<gles2::TexturePassthrough> texture_passthrough);
   ~SharedImageRepresentationGLTexturePassthroughImpl() override;
@@ -44,8 +56,9 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   // SharedImageRepresentationGLTexturePassthrough:
   const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
       override;
-  void EndAccess() override;
+  bool BeginAccess(GLenum mode) override;
 
+  Client* const client_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
@@ -83,9 +96,15 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
 // Skia representation for both SharedImageBackingGLCommon.
 class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
  public:
+  class Client {
+   public:
+    virtual bool OnSkiaBeginReadAccess() = 0;
+    virtual bool OnSkiaBeginWriteAccess() = 0;
+  };
   SharedImageRepresentationSkiaImpl(
       SharedImageManager* manager,
       SharedImageBacking* backing,
+      Client* client,
       scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> promise_texture,
       MemoryTypeTracker* tracker);
@@ -110,7 +129,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
   void CheckContext();
 
-  base::RepeatingClosure begin_read_access_callback_;
+  Client* const client_ = nullptr;
   scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
@@ -179,7 +198,11 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 // Implementation of SharedImageBacking that creates a GL Texture that is backed
 // by a GLImage and stores it as a gles2::Texture. Can be used with the legacy
 // mailbox implementation.
-class SharedImageBackingGLImage : public SharedImageBacking {
+class SharedImageBackingGLImage
+    : public SharedImageBacking,
+      public SharedImageRepresentationGLTextureImpl::Client,
+      public SharedImageRepresentationGLTexturePassthroughImpl::Client,
+      public SharedImageRepresentationSkiaImpl::Client {
  public:
   SharedImageBackingGLImage(
       scoped_refptr<gl::GLImage> image,
@@ -188,6 +211,7 @@ class SharedImageBackingGLImage : public SharedImageBacking {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
+      const SharedImageBackingGLCommon::InitializeGLTextureParams& params,
       const SharedImageBackingFactoryGLTexture::UnpackStateAttribs& attribs,
       bool is_passthrough);
   SharedImageBackingGLImage(const SharedImageBackingGLImage& other) = delete;
@@ -195,8 +219,7 @@ class SharedImageBackingGLImage : public SharedImageBacking {
       delete;
   ~SharedImageBackingGLImage() override;
 
-  bool InitializeGLTexture(
-      const SharedImageBackingGLCommon::InitializeGLTextureParams& params);
+  bool InitializeGLTexture();
   void InitializePixels(GLenum format, GLenum type, const uint8_t* data);
 
   GLenum GetGLTarget() const;
@@ -231,12 +254,28 @@ class SharedImageBackingGLImage : public SharedImageBacking {
                                MemoryTypeTracker* tracker) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
 
-  void BeginSkiaReadAccess();
+  // SharedImageRepresentationGLTextureImpl::Client:
+  bool OnGLTextureBeginAccess(GLenum mode) override;
+
+  // SharedImageRepresentationGLTexturePassthroughImpl::Client:
+  bool OnGLTexturePassthroughBeginAccess(GLenum mode) override;
+
+  // SharedImageRepresentationGLTextureImpl::Client:
+  bool OnSkiaBeginReadAccess() override;
+  bool OnSkiaBeginWriteAccess() override;
+
   bool IsPassthrough() const { return is_passthrough_; }
 
   scoped_refptr<gl::GLImage> image_;
-  const SharedImageBackingFactoryGLTexture::UnpackStateAttribs attribs_;
-  scoped_refptr<gfx::NativePixmap> native_pixmap_;
+
+  // If |image_bind_or_copy_needed_| is true, then either bind or copy |image_|
+  // to the GL texture, and un-set |image_bind_or_copy_needed_|.
+  bool BindOrCopyImageIfNeeded();
+  bool image_bind_or_copy_needed_ = true;
+
+  const SharedImageBackingGLCommon::InitializeGLTextureParams gl_params_;
+  const SharedImageBackingFactoryGLTexture::UnpackStateAttribs
+      gl_unpack_attribs_;
   const bool is_passthrough_;
 
   gles2::Texture* rgb_emulation_texture_ = nullptr;

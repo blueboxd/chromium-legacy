@@ -234,6 +234,47 @@ ntp_tiles::NTPTileImpression MakeNTPTileImpression(
       /*url_for_rappor=*/GURL() /* unused */);
 }
 
+SkColor ParseHexColor(const std::string& color) {
+  SkColor result;
+  if (color.size() == 7 && color[0] == '#' &&
+      base::HexStringToUInt(color.substr(1), &result)) {
+    return SkColorSetA(result, 255);
+  }
+  return SK_ColorTRANSPARENT;
+}
+
+new_tab_page::mojom::ImageDoodlePtr MakeImageDoodle(
+    search_provider_logos::LogoType type,
+    const std::string& data,
+    const std::string& mime_type,
+    const GURL& animated_url,
+    int width_px,
+    int height_px,
+    const std::string& background_color,
+    int share_button_x,
+    int share_button_y,
+    const std::string& share_button_icon,
+    const std::string& share_button_bg) {
+  auto doodle = new_tab_page::mojom::ImageDoodle::New();
+  std::string base64;
+  base::Base64Encode(data, &base64);
+  doodle->image_url = GURL(base::StringPrintf(
+      "data:%s;base64,%s", mime_type.c_str(), base64.c_str()));
+  if (type == search_provider_logos::LogoType::ANIMATED) {
+    doodle->animation_url = animated_url;
+  }
+  doodle->width = width_px;
+  doodle->height = height_px;
+  doodle->background_color = ParseHexColor(background_color);
+  doodle->share_button = new_tab_page::mojom::DoodleShareButton::New();
+  doodle->share_button->x = share_button_x;
+  doodle->share_button->y = share_button_y;
+  doodle->share_button->icon_url = GURL(base::StringPrintf(
+      "data:image/png;base64,%s", share_button_icon.c_str()));
+  doodle->share_button->background_color = ParseHexColor(share_button_bg);
+  return doodle;
+}
+
 }  // namespace
 
 NewTabPageHandler::NewTabPageHandler(
@@ -1212,34 +1253,25 @@ void NewTabPageHandler::OnLogoAvailable(
       std::move(callback).Run(nullptr);
       return;
     }
-    SkColor doodle_share_button_background_color;
-    if (logo->metadata.share_button_bg.size() != 7 ||
-        logo->metadata.share_button_bg[0] != '#' ||
-        !base::HexStringToUInt(logo->metadata.share_button_bg.substr(1),
-                               &doodle_share_button_background_color)) {
-      std::move(callback).Run(nullptr);
-      return;
-    }
     auto image_doodle_content = new_tab_page::mojom::ImageDoodleContent::New();
-    std::string base64;
-    base::Base64Encode(logo->encoded_image->data(), &base64);
-    image_doodle_content->image_url = GURL(base::StringPrintf(
-        "data:%s;base64,%s", logo->metadata.mime_type.c_str(), base64.c_str()));
-    image_doodle_content->on_click_url = logo->metadata.on_click_url;
-    if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
-      image_doodle_content->animation_url = logo->metadata.animated_url;
+    image_doodle_content->light = MakeImageDoodle(
+        logo->metadata.type, logo->encoded_image->data(),
+        logo->metadata.mime_type, logo->metadata.animated_url,
+        logo->metadata.width_px, logo->metadata.height_px, "#ffffff",
+        logo->metadata.share_button_x, logo->metadata.share_button_y,
+        logo->metadata.share_button_icon, logo->metadata.share_button_bg);
+    if (logo->dark_encoded_image) {
+      image_doodle_content->dark = MakeImageDoodle(
+          logo->metadata.type, logo->dark_encoded_image->data(),
+          logo->metadata.dark_mime_type, logo->metadata.dark_animated_url,
+          logo->metadata.dark_width_px, logo->metadata.dark_height_px,
+          logo->metadata.dark_background_color,
+          logo->metadata.dark_share_button_x,
+          logo->metadata.dark_share_button_y,
+          logo->metadata.dark_share_button_icon,
+          logo->metadata.dark_share_button_bg);
     }
-    image_doodle_content->width = logo->metadata.width_px;
-    image_doodle_content->height = logo->metadata.height_px;
-    image_doodle_content->background_color = SK_ColorWHITE;
-    image_doodle_content->share_button =
-        new_tab_page::mojom::DoodleShareButton::New();
-    image_doodle_content->share_button->x = logo->metadata.share_button_x;
-    image_doodle_content->share_button->y = logo->metadata.share_button_y;
-    image_doodle_content->share_button->icon_url = GURL(base::StringPrintf(
-        "data:image/png;base64,%s", logo->metadata.share_button_icon.c_str()));
-    image_doodle_content->share_button->background_color =
-        SkColorSetA(doodle_share_button_background_color, 255);
+    image_doodle_content->on_click_url = logo->metadata.on_click_url;
     image_doodle_content->share_url = logo->metadata.short_link;
     if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
       image_doodle_content->image_impression_log_url =

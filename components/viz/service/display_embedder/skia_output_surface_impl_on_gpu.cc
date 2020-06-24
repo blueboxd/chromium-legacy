@@ -891,12 +891,16 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     base::Optional<gfx::Rect> draw_rectangle) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(ddl);
   DCHECK(!scoped_output_device_paint_);
 
   bool need_fbo0 = gl_surface_ && !gl_surface_->IsSurfaceless();
   if (!MakeCurrent(need_fbo0))
     return false;
+
+  if (!ddl) {
+    MarkContextLost(CONTEXT_LOST_UNKNOWN);
+    return false;
+  }
 
   if (draw_rectangle)
     output_device_->SetDrawRectangle(*draw_rectangle);
@@ -1080,6 +1084,11 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
   if (!MakeCurrent(false /* need_fbo0 */))
     return;
+
+  if (!ddl) {
+    MarkContextLost(CONTEXT_LOST_UNKNOWN);
+    return;
+  }
 
   PullTextureUpdates(std::move(sync_tokens));
 

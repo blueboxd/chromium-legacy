@@ -186,6 +186,8 @@ const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUIOfflineInternalsHost[] = "offline-internals";
 const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 const char kChromeUIWebApksHost[] = "webapks";
+#else
+const char kChromeUINearbyInternalsHost[] = "nearby-internals";
 #endif
 
 #if defined(OS_CHROMEOS)

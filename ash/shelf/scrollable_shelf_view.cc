@@ -2081,10 +2081,8 @@ void ScrollableShelfView::UpdateAvailableSpace() {
 
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
-  if (HotseatWidget::ShouldShowHotseatBackground()) {
-    GetShelf()->hotseat_widget()->SetTranslucentBackground(
-        GetHotseatBackgroundBounds());
-  }
+  if (HotseatWidget::ShouldShowHotseatBackground())
+    GetShelf()->hotseat_widget()->UpdateTranslucentBackground();
 }
 
 gfx::Rect ScrollableShelfView::CalculateVisibleSpace(

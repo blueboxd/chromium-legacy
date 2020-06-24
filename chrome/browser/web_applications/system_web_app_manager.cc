@@ -143,6 +143,7 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
         std::forward_as_tuple("PrintManagement",
                               GURL("chrome://print-management/pwa.html")));
     infos.at(SystemAppType::PRINT_MANAGEMENT).show_in_launcher = false;
+    infos.at(SystemAppType::PRINT_MANAGEMENT).minimum_window_size = {600, 320};
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TELEMETRY)) {

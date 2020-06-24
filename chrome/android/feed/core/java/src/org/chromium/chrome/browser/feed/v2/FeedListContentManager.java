@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -76,17 +77,30 @@ public class FeedListContentManager implements ListContentManager {
      * For the content that is supported by the native view.
      */
     public static class NativeViewContent extends FeedContent {
-        private final View mNativeView;
+        private View mNativeView;
+        private int mResId;
 
+        /** Holds an inflated native view. */
         public NativeViewContent(String key, View nativeView) {
             super(key);
+            assert nativeView != null;
             mNativeView = nativeView;
+        }
+
+        /** Holds a resource ID used to inflate a native view. */
+        public NativeViewContent(String key, int resId) {
+            super(key);
+            mResId = resId;
         }
 
         /**
          * Returns the native view if the content is supported by it. Null otherwise.
          */
-        public View getNativeView() {
+        public View getNativeView(ViewGroup parent) {
+            if (mNativeView == null) {
+                mNativeView =
+                        LayoutInflater.from(parent.getContext()).inflate(mResId, parent, false);
+            }
             return mNativeView;
         }
 
@@ -231,12 +245,12 @@ public class FeedListContentManager implements ListContentManager {
     public View getNativeView(int index, ViewGroup parent) {
         assert mFeedContentList.get(index).isNativeView();
         NativeViewContent nativeViewContent = (NativeViewContent) mFeedContentList.get(index);
-        return nativeViewContent.getNativeView();
+        return nativeViewContent.getNativeView(parent);
     }
 
     @Override
     public void bindNativeView(int index, View v) {
-        // TODO(jianli): to be implemented.
+        // Nothing to do.
     }
 
     @Override

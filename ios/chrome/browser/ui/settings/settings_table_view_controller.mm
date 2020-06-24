@@ -821,25 +821,32 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                                               closeSettingsOnAddAccount:NO];
       break;
     case ItemGoogleServices:
+      base::RecordAction(base::UserMetricsAction("Settings.GoogleServices"));
       [self showSyncGoogleService];
       break;
     case ItemTypeSearchEngine:
+      base::RecordAction(base::UserMetricsAction("EditSearchEngines"));
       controller = [[SearchEngineTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypePasswords:
+      base::RecordAction(
+          base::UserMetricsAction("Options_ShowPasswordManager"));
       controller = [[PasswordsTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAutofillCreditCard:
+      base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
       controller = [[AutofillCreditCardTableViewController alloc]
           initWithBrowser:_browser];
       break;
     case ItemTypeAutofillProfile:
+      base::RecordAction(base::UserMetricsAction("AutofillAddressesViewed"));
       controller = [[AutofillProfileTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeVoiceSearch:
+      base::RecordAction(base::UserMetricsAction("Settings.VoiceSearch"));
       controller = [[VoiceSearchTableViewController alloc]
           initWithPrefs:_browserState->GetPrefs()];
       break;
@@ -847,9 +854,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       [self showSafetyCheck];
       break;
     case ItemTypePrivacy:
+      base::RecordAction(base::UserMetricsAction("Settings.Privacy"));
       [self showPrivacy];
       break;
     case ItemTypeLanguageSettings: {
+      base::RecordAction(base::UserMetricsAction("Settings.Language"));
       LanguageSettingsMediator* mediator =
           [[LanguageSettingsMediator alloc] initWithBrowserState:_browserState];
       LanguageSettingsTableViewController* languageSettingsTableViewController =
@@ -861,14 +870,17 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       break;
     }
     case ItemTypeContentSettings:
+      base::RecordAction(base::UserMetricsAction("Settings.ContentSettings"));
       controller = [[ContentSettingsTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeBandwidth:
+      base::RecordAction(base::UserMetricsAction("Settings.Bandwidth"));
       controller = [[BandwidthManagementTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeAboutChrome:
+      base::RecordAction(base::UserMetricsAction("AboutChrome"));
       controller = [[AboutChromeTableViewController alloc] init];
       break;
     case ItemTypeMemoryDebugging:
@@ -1123,6 +1135,11 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 - (void)reportDismissalUserAction {
   base::RecordAction(base::UserMetricsAction("MobileSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  // Not called for root settings controller.
+  NOTREACHED();
 }
 
 - (void)settingsWillBeDismissed {

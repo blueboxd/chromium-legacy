@@ -48,6 +48,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1975,6 +1976,79 @@ TEST_F(ShelfViewTest, ReplacingDelegateCancelsContextMenu) {
   model_->SetShelfItemDelegate(app_button_id,
                                std::make_unique<ShelfItemSelectionTracker>());
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+}
+
+// Verifies that shelf is shown with the app list in fullscreen mode, and that
+// shelf app buttons are clickable.
+TEST_F(ShelfViewTest, ClickItemInFullscreen) {
+  ShelfID app_button_id = AddAppShortcut();
+  auto selection_tracker_owned = std::make_unique<ShelfItemSelectionTracker>();
+  ShelfItemSelectionTracker* selection_tracker = selection_tracker_owned.get();
+  model_->SetShelfItemDelegate(app_button_id,
+                               std::move(selection_tracker_owned));
+
+  // Create a fullscreen widget.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->SetFullscreen(true);
+  WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
+  window_state->SetHideShelfWhenFullscreen(true);
+
+  Shelf* const shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+
+  // Show app list, which will bring the shelf up.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Verify that clicking a shelf button activates it.
+  EXPECT_EQ(0u, selection_tracker->item_selected_count());
+  const ShelfAppButton* shelf_button = GetButtonByID(app_button_id);
+  GetEventGenerator()->MoveMouseTo(
+      shelf_button->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_EQ(1u, selection_tracker->item_selected_count());
+
+  // Shelf gets hidden when the app list is dismissed.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+}
+
+// Verifies that shelf is shown with the app list in fullscreen mode, and that
+// shelf app buttons are tappable.
+TEST_F(ShelfViewTest, TapInFullscreen) {
+  ShelfID app_button_id = AddAppShortcut();
+  auto selection_tracker_owned = std::make_unique<ShelfItemSelectionTracker>();
+  ShelfItemSelectionTracker* selection_tracker = selection_tracker_owned.get();
+  model_->SetShelfItemDelegate(app_button_id,
+                               std::move(selection_tracker_owned));
+
+  // Create a fullscreen widget.
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->SetFullscreen(true);
+  WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
+  window_state->SetHideShelfWhenFullscreen(true);
+
+  Shelf* const shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
+
+  // Show app list, which will bring the shelf up.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Verify that tapping a shelf button activates it.
+  EXPECT_EQ(0u, selection_tracker->item_selected_count());
+  const ShelfAppButton* shelf_button = GetButtonByID(app_button_id);
+  GetEventGenerator()->GestureTapAt(
+      shelf_button->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(1u, selection_tracker->item_selected_count());
+
+  // Shelf gets hidden when the app list is dismissed.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }
 
 // Test class that tests both context and application menus.

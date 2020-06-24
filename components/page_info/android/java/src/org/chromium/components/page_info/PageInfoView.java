@@ -225,6 +225,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     private TextView mPermissionsTitle;
     private View mPermissionsSeparator;
     private LinearLayout mPermissionsList;
+    private TextView mHttpsImageCompressionMessage;
     private View mCookieControlsSeparator;
     private CookieControlsView mCookieControlsView;
 
@@ -243,6 +244,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         initPreview(params);
         initConnection(params);
         initPerformance(params);
+        initHttpsImageCompression(params);
         initPermissions(params);
         initCookies(params);
         initInstantApp(params);
@@ -292,6 +294,12 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         mPerformanceMessage = findViewById(R.id.page_info_performance_message);
         initializePageInfoViewChild(mPerformanceSummary, false, 0f, null);
         initializePageInfoViewChild(mPerformanceMessage, false, 0f, null);
+    }
+
+    protected void initHttpsImageCompression(PageInfoViewParams params) {
+        mHttpsImageCompressionMessage =
+                findViewById(R.id.page_info_lite_mode_https_image_compression_message);
+        initializePageInfoViewChild(mHttpsImageCompressionMessage, false, 0f, null);
     }
 
     protected void initPermissions(PageInfoViewParams params) {
@@ -375,6 +383,14 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         } else {
             mPerformanceSummary.setVisibility(View.GONE);
             mPerformanceMessage.setVisibility(View.GONE);
+        }
+    }
+
+    public void showHttpsImageCompressionInfo(boolean show) {
+        if (show) {
+            mHttpsImageCompressionMessage.setVisibility(View.VISIBLE);
+        } else {
+            mHttpsImageCompressionMessage.setVisibility(View.GONE);
         }
     }
 
@@ -466,6 +482,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         animatableViews.add(mPreviewMessage);
         animatableViews.add(mPreviewStaleTimestamp);
         animatableViews.add(mPreviewLoadOriginal);
+        animatableViews.add(mHttpsImageCompressionMessage);
         animatableViews.add(mInstantAppButton);
         animatableViews.add(mCookieControlsSeparator);
         animatableViews.add(mCookieControlsView);

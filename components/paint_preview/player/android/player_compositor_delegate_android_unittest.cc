@@ -32,6 +32,10 @@ TEST(PlayerCompositorDelegateAndroidTest,
   frame_data_subframe_1->scroll_extents = gfx::Size(50, 60);
   frame_data_subframe_2->scroll_extents = gfx::Size(10, 20);
 
+  frame_data_main->scroll_offsets = gfx::Size(150, 250);
+  frame_data_subframe_1->scroll_offsets = gfx::Size(55, 65);
+  frame_data_subframe_2->scroll_offsets = gfx::Size(15, 25);
+
   mojom::SubframeClipRect clip_rect1(subframe_1_guid, gfx::Rect(5, 10, 50, 60));
   mojom::SubframeClipRect clip_rect2(subframe_2_guid,
                                      gfx::Rect(15, 25, 30, 40));
@@ -44,16 +48,18 @@ TEST(PlayerCompositorDelegateAndroidTest,
 
   std::vector<base::UnguessableToken> all_guids;
   std::vector<int> scroll_extents;
+  std::vector<int> scroll_offsets;
   std::vector<int> subframe_count;
   std::vector<base::UnguessableToken> subframe_ids;
   std::vector<int> subframe_rects;
 
   PlayerCompositorDelegateAndroid::CompositeResponseFramesToVectors(
-      frames, &all_guids, &scroll_extents, &subframe_count, &subframe_ids,
-      &subframe_rects);
+      frames, &all_guids, &scroll_extents, &scroll_offsets, &subframe_count,
+      &subframe_ids, &subframe_rects);
 
   EXPECT_EQ(all_guids.size(), frames.size());
   EXPECT_EQ(scroll_extents.size(), 2 * frames.size());
+  EXPECT_EQ(scroll_offsets.size(), 2 * frames.size());
   EXPECT_EQ(subframe_count.size(), frames.size());
   EXPECT_EQ(subframe_ids.size(), 2U);         // 2 subframes.
   EXPECT_EQ(subframe_rects.size(), 2U * 4U);  // 2 * subframes * 4 per rect.
@@ -62,11 +68,13 @@ TEST(PlayerCompositorDelegateAndroidTest,
     auto it = frames.find(all_guids[i]);
     ASSERT_NE(it, frames.end());
 
-    const size_t scroll_offset = i * 2;
-    EXPECT_EQ(scroll_extents[scroll_offset],
-              it->second->scroll_extents.width());
-    EXPECT_EQ(scroll_extents[scroll_offset + 1],
+    const size_t scroll_index = i * 2;
+    EXPECT_EQ(scroll_extents[scroll_index], it->second->scroll_extents.width());
+    EXPECT_EQ(scroll_extents[scroll_index + 1],
               it->second->scroll_extents.height());
+    EXPECT_EQ(scroll_offsets[scroll_index], it->second->scroll_offsets.width());
+    EXPECT_EQ(scroll_offsets[scroll_index + 1],
+              it->second->scroll_offsets.height());
     EXPECT_EQ(subframe_count[i],
               static_cast<int>(it->second->subframes.size()));
     for (size_t j = 0; j < it->second->subframes.size(); ++j) {

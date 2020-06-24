@@ -19,6 +19,7 @@ if (enable_feed_in_chrome) {
       "core/java/res/drawable/hairline_border_card_background_with_inset.xml",
       "core/java/res/layout/feed_more_button.xml",
       "core/java/res/layout/feed_simple_list_item.xml",
+      "core/java/res/layout/feed_spinner.xml",
       "core/java/res/layout/feed_spinner_gone.xml",
       "core/java/res/layout/no_content.xml",
       "core/java/res/layout/zero_state.xml",

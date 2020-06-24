@@ -29,7 +29,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/web_test/secondary_test_window_observer.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/grit/shell_resources.h"
@@ -202,8 +201,6 @@ scoped_refptr<DevToolsAgentHost>
 ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_, url, nullptr,
                                         Shell::GetShellDefaultSize());
-  if (switches::IsRunWebTestsSwitchPresent())
-    SecondaryTestWindowObserver::CreateForWebContents(shell->web_contents());
   return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
 }
 

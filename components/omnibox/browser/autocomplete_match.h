@@ -464,6 +464,21 @@ struct AutocompleteMatch {
   void TryAutocompleteWithTitle(const base::string16& title,
                                 const AutocompleteInput& input);
 
+  // Tries, in order, to:
+  // - Prefix autocomplete |primary_text|,
+  // - Prefix autocomplete |secondary_text|,
+  // - Non-prefix autocomplete |primary_text|, and
+  // - Non-prefix autocomplete |secondary_text|.
+  // Midword and title autocompletion are only attempted if
+  // |OmniboxFieldTrial::RichAutocompletionAutocompleteTitles()| and
+  // |OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix()| are true
+  // respectively.
+  // Returns false if none of the autocompletions were appropriate (or the
+  // features were disabled).
+  bool TryRichAutocompletion(const base::string16& primary_text,
+                             const base::string16& secondary_text,
+                             const AutocompleteInput& input);
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
@@ -496,10 +511,19 @@ struct AutocompleteMatch {
   // by pressing the arrow keys. This may be different than a URL, for example,
   // for search suggestions, this would just be the search terms.
   base::string16 fill_into_edit;
+  // This string is displayed adjacent to |fill_into_edit|. Will usually be
+  // either the |description| or |content|, whichever isn't represented by
+  // |fill_into_edit|. Always empty if kRichAutocompletionShowTitlesParam is
+  // disabled.
+  base::string16 fill_into_edit_additional_text;
 
-  // The inline autocompletion to display after the user's typing in the
+  // The inline autocompletion to display after the user's input in the
   // omnibox, if this match becomes the default match.  It may be empty.
   base::string16 inline_autocompletion;
+  // The inline autocompletion to display before the user's input in the
+  // omnibox, if this match becomes the default match. Always empty if
+  // kRichAutocompletionAutocompleteNonPrefix is disabled.
+  base::string16 prefix_autocompletion;
 
   // If false, the omnibox should prevent this match from being the
   // default match.  Providers should set this to true only if the

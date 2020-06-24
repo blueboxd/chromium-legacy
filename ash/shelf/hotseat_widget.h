@@ -96,9 +96,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // Returns the target opacity for the shelf view given current conditions.
   float CalculateShelfViewOpacity() const;
 
-  // Sets the bounds of the translucent background which functions as the
+  // Updates the bounds of the translucent background which functions as the
   // hotseat background.
-  void SetTranslucentBackground(const gfx::Rect& background_bounds);
+  void UpdateTranslucentBackground();
 
   // Calculates the hotseat y position for |hotseat_target_state| in screen
   // coordinates.
@@ -125,6 +125,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   void SetFocusCycler(FocusCycler* focus_cycler);
 
   bool IsShowingShelfMenu() const;
+
+  // Whether the event is located in the hotseat area containing shelf apps.
+  bool EventTargetsShelfView(const ui::LocatedEvent& event) const;
 
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;

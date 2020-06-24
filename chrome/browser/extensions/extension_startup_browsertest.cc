@@ -119,7 +119,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   }
 
   void TearDown() override {
-    EXPECT_TRUE(base::DeleteFile(preferences_file_, false));
+    EXPECT_TRUE(base::DeleteFile(preferences_file_));
 
     // TODO(phajdan.jr): Check return values of the functions below, carefully.
     base::DeleteFileRecursively(user_scripts_dir_);

@@ -351,7 +351,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   // Old files removed from cache (kept in the directory though).
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash11, NULL, &version));
   EXPECT_EQ(version, "3.0");
-  EXPECT_TRUE(base::DeleteFile(temp1, false));
+  EXPECT_TRUE(base::DeleteFile(temp1));
 
   // 2. Cache contains a newer version.
   base::FilePath temp2;
@@ -363,7 +363,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, "", NULL, &version));
   EXPECT_EQ(version, "3.0");
-  EXPECT_TRUE(base::DeleteFile(temp2, false));
+  EXPECT_TRUE(base::DeleteFile(temp2));
 
   // 3. Cache contains the same version without hash, our file is unhashed.
   base::FilePath temp3;
@@ -373,7 +373,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   EXPECT_EQ(base::File(unhashed, base::File::FLAG_READ | base::File::FLAG_OPEN)
                 .GetLength(),
             110);
-  EXPECT_TRUE(base::DeleteFile(temp3, false));
+  EXPECT_TRUE(base::DeleteFile(temp3));
 
   // 4. Cache contains the same version without hash, our file is hashed.
   base::FilePath temp4;
@@ -389,8 +389,8 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   base::FilePath unhashed_path;
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, "", &unhashed_path, NULL));
   EXPECT_EQ(unhashed_path, hashed);
-  EXPECT_TRUE(base::DeleteFile(temp4, false));
-  EXPECT_TRUE(base::DeleteFile(unhashed, false));
+  EXPECT_TRUE(base::DeleteFile(temp4));
+  EXPECT_TRUE(base::DeleteFile(unhashed));
 
   // 5. Cache contains the same version with hash, our file is unhashed.
   base::FilePath temp5;
@@ -400,7 +400,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   EXPECT_FALSE(base::PathExists(unhashed));
   // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash3, NULL, NULL));
-  EXPECT_TRUE(base::DeleteFile(temp5, false));
+  EXPECT_TRUE(base::DeleteFile(temp5));
 
   // 6. Cache contains the same version with hash, our file has the "same" hash.
   base::FilePath temp6;
@@ -410,7 +410,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   EXPECT_EQ(base::File(hashed, base::File::FLAG_READ | base::File::FLAG_OPEN)
                 .GetLength(),
             140);
-  EXPECT_TRUE(base::DeleteFile(temp6, false));
+  EXPECT_TRUE(base::DeleteFile(temp6));
 
   // 7. Cache contains the same version with hash, our file is different.
   base::FilePath temp7;
@@ -424,7 +424,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash4, NULL, NULL));
   // Old file kept.
   EXPECT_TRUE(cache.GetExtension(kTestExtensionId1, hash3, NULL, NULL));
-  EXPECT_TRUE(base::DeleteFile(temp7, false));
+  EXPECT_TRUE(base::DeleteFile(temp7));
 }
 
 }  // namespace extensions

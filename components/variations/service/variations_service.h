@@ -6,7 +6,6 @@
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_SERVICE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -194,7 +193,6 @@ class VariationsService
       const char* kEnableGpuBenchmarking,
       const char* kEnableFeatures,
       const char* kDisableFeatures,
-      const std::set<std::string>& unforceable_field_trials,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,

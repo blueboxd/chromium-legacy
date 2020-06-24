@@ -6,6 +6,8 @@
 
 #include "base/check_op.h"
 #include "base/feature_list.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -109,6 +111,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [model addItem:[self composeEmailItem]
         toSectionWithIdentifier:SectionIdentifierSettings];
   }
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileContentSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileContentSettingsBack"));
 }
 
 #pragma mark - ContentSettingsTableViewController

@@ -970,10 +970,6 @@ Location* Document::location() const {
   return domWindow()->location();
 }
 
-bool Document::FeatureEnabled(OriginTrialFeature feature) const {
-  return GetOriginTrialContext()->IsFeatureEnabled(feature);
-}
-
 bool Document::DocumentPolicyFeatureObserved(
     mojom::blink::DocumentPolicyFeature feature) {
   wtf_size_t feature_index = static_cast<wtf_size_t>(feature);
@@ -1011,10 +1007,6 @@ bool Document::IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const {
 
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
-}
-
-void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
-  GetExecutionContext()->SetReferrerPolicy(policy);
 }
 
 OriginTrialContext* Document::GetOriginTrialContext() const {
@@ -1182,7 +1174,8 @@ Element* Document::CreateElementForBinding(
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
   // V0 is only allowed with the flag.
-  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(this));
+  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(
+                      GetExecutionContext()));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
@@ -1260,7 +1253,8 @@ Element* Document::createElementNS(
   bool is_v1 =
       string_or_options.IsElementCreationOptions() || !RegistrationContext();
   // V0 is only allowed with the flag.
-  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(this));
+  DCHECK(is_v1 || RuntimeEnabledFeatures::CustomElementsV0Enabled(
+                      GetExecutionContext()));
   bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
@@ -1338,7 +1332,7 @@ ScriptValue Document::registerElement(ScriptState* script_state,
 }
 
 V0CustomElementRegistrationContext* Document::RegistrationContext() const {
-  if (RuntimeEnabledFeatures::CustomElementsV0Enabled(this))
+  if (RuntimeEnabledFeatures::CustomElementsV0Enabled(GetExecutionContext()))
     return registration_context_.Get();
   return nullptr;
 }
@@ -3455,6 +3449,9 @@ void Document::open(Document* entered_document,
     return;
   }
 
+  if (entered_document && !entered_document->GetExecutionContext())
+    return;
+
   // If |document| has an active parser whose script nesting level is greater
   // than 0, then return |document|.
   if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
@@ -3490,7 +3487,8 @@ void Document::open(Document* entered_document,
 
     GetSecurityContext().SetSecurityOrigin(
         entered_document->GetMutableSecurityOrigin());
-    SetReferrerPolicy(entered_document->GetReferrerPolicy());
+    GetExecutionContext()->SetReferrerPolicy(
+        entered_document->GetExecutionContext()->GetReferrerPolicy());
     SetCookieURL(entered_document->CookieURL());
   }
 
@@ -4374,7 +4372,7 @@ void Document::writeln(v8::Isolate* isolate,
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
   write(text->toString(), EnteredDOMWindow(isolate)->document(),
         exception_state);
 }
@@ -4382,7 +4380,7 @@ void Document::write(v8::Isolate* isolate,
 void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this));
+  DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
   writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
           exception_state);
 }
@@ -4686,35 +4684,6 @@ void Document::MaybeHandleHttpRefresh(const String& content,
 
 bool Document::IsHttpRefreshScheduledWithin(base::TimeDelta interval) {
   return http_refresh_scheduler_->IsScheduledWithin(interval);
-}
-
-// https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-String Document::OutgoingReferrer() const {
-  // Step 3.1: "If environment's global object is a Window object, then"
-
-  // Step 3.1.1: "Let document be the associated Document of environment's
-  // global object."
-  const Document* referrer_document = this;
-
-  // Step 3.1.2: "If document's origin is an opaque origin, return no referrer."
-  if (GetSecurityOrigin()->IsOpaque())
-    return String();
-
-  // Step 3.1.3: "While document is an iframe srcdoc document, let document be
-  // document's browsing context's browsing context container's node document."
-  if (LocalFrame* frame = GetFrame()) {
-    while (frame->GetDocument()->IsSrcdocDocument()) {
-      // Srcdoc documents must be local within the containing frame.
-      frame = To<LocalFrame>(frame->Tree().Parent());
-      // Srcdoc documents cannot be top-level documents, by definition,
-      // because they need to be contained in iframes with the srcdoc.
-      DCHECK(frame);
-    }
-    referrer_document = frame->GetDocument();
-  }
-
-  // Step: 3.1.4: "Let referrerSource be document's URL."
-  return referrer_document->url_.StrippedForUseAsReferrer();
 }
 
 network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {

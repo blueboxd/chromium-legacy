@@ -295,7 +295,7 @@ void HTMLIFrameElement::ParseAttribute(
 
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(&GetDocument()))
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(GetExecutionContext()))
     return {};
 
   if (!required_policy_.IsEmpty()) {

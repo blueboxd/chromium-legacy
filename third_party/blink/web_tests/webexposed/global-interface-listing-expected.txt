@@ -4537,6 +4537,7 @@ interface ImageData
     method constructor
     method getColorSettings
 interface ImageDecoder
+    static method canDecodeType
     attribute @@toStringTag
     getter complete
     getter frameCount

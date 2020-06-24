@@ -348,6 +348,10 @@ test("aura_unittests") {
     "//ui/wm",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   data_deps = [ "//third_party/mesa_headers" ]
 }
 

@@ -1741,7 +1741,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the current common case, which uses no home country or previous
   // event.
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      2, 1, std::string(), 0, 0, false, std::string(), std::string());
+      2, 1, std::string(), 0, 0, false, std::string(), std::string(),
+      std::string());
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1754,7 +1755,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the home country and non-zero event data case.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 2, "CH", 1657713458, 5, false, std::string(), std::string());
+          2, 2, "CH", 1657713458, 5, false, std::string(), std::string(),
+          std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
 
@@ -1770,7 +1772,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test exact-search.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 1, std::string(), 0, 0, true, std::string(), std::string());
+          2, 1, std::string(), 0, 0, true, std::string(), std::string(),
+          std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
   // Find our param.
@@ -1780,7 +1783,7 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test source and target languages.
   search_terms_args.contextual_search_params =
       TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
-          2, 1, std::string(), 0, 0, true, "es", "de");
+          2, 1, std::string(), 0, 0, true, "es", "de", std::string());
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
   // Find our params.
@@ -1788,6 +1791,17 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   EXPECT_NE(source_pos, std::string::npos);
   size_t target_pos = result.find("tlitetl=de");
   EXPECT_NE(target_pos, std::string::npos);
+
+  // Test fluent languages.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 1, std::string(), 0, 0, true, std::string(), std::string(),
+          "es,de");
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+  // Find our param.  These may actually be URL encoded.
+  size_t fluent_pos = result.find("&ctxs_fls=es,de");
+  EXPECT_NE(fluent_pos, std::string::npos);
 }
 
 TEST_F(TemplateURLTest, GenerateKeyword) {

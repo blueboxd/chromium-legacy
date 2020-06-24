@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.v2;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
+import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.feed.proto.FeedUiProto.SharedState;
@@ -161,20 +163,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
      * client implementation.
      */
-    public FeedStreamSurface(Activity activity, SnackbarManager snackbarManager,
-            NativePageNavigationDelegate pageNavigationDelegate,
+    public FeedStreamSurface(Activity activity, boolean isBackgroundDark,
+            SnackbarManager snackbarManager, NativePageNavigationDelegate pageNavigationDelegate,
             BottomSheetController bottomSheetController) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mSnackbarManager = snackbarManager;
         mActivity = activity;
+
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
 
         mContentManager = new FeedListContentManager(this, this);
 
+        Context context = new ContextThemeWrapper(
+                activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
+
         ProcessScope processScope = xSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = processScope.obtainSurfaceScope(mActivity);
+            mSurfaceScope = processScope.obtainSurfaceScope(context);
         } else {
             mSurfaceScope = null;
         }
@@ -182,7 +188,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (mSurfaceScope != null) {
             mHybridListRenderer = mSurfaceScope.provideListRenderer();
         } else {
-            mHybridListRenderer = new NativeViewListRenderer(mActivity);
+            mHybridListRenderer = new NativeViewListRenderer(context);
         }
 
         if (mHybridListRenderer != null) {
@@ -345,9 +351,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (slice.getSliceDataCase() == SliceDataCase.XSURFACE_SLICE) {
             return new FeedListContentManager.ExternalViewContent(
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
+        } else if (slice.getSliceDataCase() == SliceDataCase.LOADING_SPINNER_SLICE) {
+            return new FeedListContentManager.NativeViewContent(sliceId, R.layout.feed_spinner);
         } else {
             // TODO(jianli): Create native view for ZeroStateSlice.
-            TextView view = new TextView(ContextUtils.getApplicationContext());
+            TextView view = new TextView(mActivity);
             view.setText(sliceId);
             return new FeedListContentManager.NativeViewContent(sliceId, view);
         }

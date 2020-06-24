@@ -959,7 +959,10 @@ bool HistoryURLProvider::FixupExactSuggestion(
       DCHECK_EQ(VisitClassifier::VISITED, classifier.type());
       // We have data for this match, use it.
       params->what_you_typed_match.deletable = true;
-      params->what_you_typed_match.description = classifier.url_row().title();
+      auto title = classifier.url_row().title();
+      if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+        params->what_you_typed_match.fill_into_edit_additional_text = title;
+      params->what_you_typed_match.description = title;
       params->what_you_typed_match.destination_url = classifier.url_row().url();
       RecordAdditionalInfoFromUrlRow(classifier.url_row(),
                                      &params->what_you_typed_match);
@@ -1236,20 +1239,6 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
-  // |inline_autocomplete_offset| was guaranteed not to be npos before the call
-  // to FormatUrl().  If it is npos now, that means the represented location no
-  // longer exists as such in the formatted string, e.g. if the offset pointed
-  // into the middle of a punycode sequence fixed up to Unicode.  In this case,
-  // there can be no inline autocompletion, and the match must not be allowed to
-  // be default.
-  const bool autocomplete_offset_valid =
-      inline_autocomplete_offset != base::string16::npos;
-  if (autocomplete_offset_valid) {
-    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
-    match.inline_autocompletion =
-        match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.SetAllowedToBeDefault(params.input_before_fixup);
-  }
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(
       params.input.parts().scheme.len > 0 || !params.trim_http ||
@@ -1267,6 +1256,22 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   match.description = info.title();
   match.description_class =
       ClassifyDescription(params.input.text(), match.description);
+
+  // |inline_autocomplete_offset| was guaranteed not to be npos before the call
+  // to FormatUrl().  If it is npos now, that means the represented location no
+  // longer exists as such in the formatted string, e.g. if the offset pointed
+  // into the middle of a punycode sequence fixed up to Unicode.  In this case,
+  // there can be no inline autocompletion, and the match must not be allowed to
+  // be default.
+  if (match.TryRichAutocompletion(match.contents, match.description,
+                                  params.input)) {
+    // If rich autocompletion applies, we skip trying the alternatives below.
+  } else if (inline_autocomplete_offset != base::string16::npos) {
+    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
+    match.SetAllowedToBeDefault(params.input_before_fixup);
+  }
 
   RecordAdditionalInfoFromUrlRow(info, &match);
   return match;

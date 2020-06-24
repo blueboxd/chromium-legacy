@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
+#include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
@@ -73,10 +74,12 @@ ChromeosVideoDecoderFactory::GetSupportedConfigs() {
 std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter) {
+    std::unique_ptr<VideoFrameConverter> frame_converter,
+    std::unique_ptr<MediaLog> media_log) {
   return VideoDecoderPipeline::Create(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), base::BindRepeating(&GetCreateVDFunctions));
+      std::move(frame_converter), std::move(media_log),
+      base::BindRepeating(&GetCreateVDFunctions));
 }
 
 }  // namespace media

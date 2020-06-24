@@ -683,7 +683,7 @@ bool XWindow::IsFullscreen() const {
                            gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"));
 }
 
-gfx::Rect XWindow::GetOutterBounds() const {
+gfx::Rect XWindow::GetOuterBounds() const {
   gfx::Rect outer_bounds(bounds_in_pixels_);
   outer_bounds.Inset(-native_window_frame_borders_in_pixels_);
   return outer_bounds;

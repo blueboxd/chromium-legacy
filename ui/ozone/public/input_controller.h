@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(OZONE_BASE) InputController {
   virtual void SetPrimaryButtonRight(bool right) = 0;
   virtual void SetMouseReverseScroll(bool enabled) = 0;
   virtual void SetMouseAcceleration(bool enabled) = 0;
+  virtual void SuspendMouseAcceleration() = 0;
+  virtual void EndMouseAccelerationSuspension() = 0;
   virtual void SetMouseScrollAcceleration(bool enabled) = 0;
 
   // Touch log collection.

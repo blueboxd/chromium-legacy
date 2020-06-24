@@ -111,6 +111,10 @@ void FeaturePodIconButton::SetVectorIcon(const gfx::VectorIcon& icon) {
       views::Button::STATE_DISABLED,
       gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
                             AshColorProvider::GetDisabledColor(icon_color)));
+  SetToggledImage(views::Button::STATE_DISABLED,
+                  new gfx::ImageSkia(gfx::CreateVectorIcon(
+                      icon, kUnifiedFeaturePodVectorIconSize,
+                      AshColorProvider::GetDisabledColor(icon_color))));
 }
 
 void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {

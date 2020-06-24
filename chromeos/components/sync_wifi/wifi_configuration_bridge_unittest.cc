@@ -18,6 +18,7 @@
 #include "chromeos/components/sync_wifi/fake_local_network_collector.h"
 #include "chromeos/components/sync_wifi/fake_timer_factory.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
+#include "chromeos/components/sync_wifi/network_test_helper.h"
 #include "chromeos/components/sync_wifi/synced_network_metrics_logger.h"
 #include "chromeos/components/sync_wifi/synced_network_updater.h"
 #include "chromeos/components/sync_wifi/test_data_generator.h"
@@ -137,11 +138,12 @@ class TestSyncedNetworkUpdater : public SyncedNetworkUpdater {
 class WifiConfigurationBridgeTest : public testing::Test {
  protected:
   WifiConfigurationBridgeTest()
-      : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {}
+      : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
+    network_test_helper_ = std::make_unique<NetworkTestHelper>();
+  }
 
   void SetUp() override {
-    shill_clients::InitializeFakes();
-    NetworkHandler::Initialize();
+    network_test_helper_->SetUp();
 
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
     timer_factory_ = std::make_unique<FakeTimerFactory>();
@@ -158,8 +160,9 @@ class WifiConfigurationBridgeTest : public testing::Test {
     network_metadata_store_ = std::make_unique<NetworkMetadataStore>(
         /*network_configuration_handler=*/nullptr,
         /*network_connection_handler=*/nullptr,
-        /*network_state_handler=*/nullptr, user_prefs_.get(),
-        device_prefs_.get(), /*is_enterprise_enrolled=*/false);
+        network_test_helper_->network_state_helper().network_state_handler(),
+        user_prefs_.get(), device_prefs_.get(),
+        /*is_enterprise_enrolled=*/false);
 
     bridge_ = std::make_unique<WifiConfigurationBridge>(
         synced_network_updater(), local_network_collector(),
@@ -168,11 +171,6 @@ class WifiConfigurationBridgeTest : public testing::Test {
         syncer::ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store_)));
     bridge_->SetNetworkMetadataStore(network_metadata_store_->GetWeakPtr());
     base::RunLoop().RunUntilIdle();
-  }
-
-  void TearDown() override {
-    NetworkHandler::Shutdown();
-    shill_clients::Shutdown();
   }
 
   void DisableBridge() {
@@ -218,6 +216,12 @@ class WifiConfigurationBridgeTest : public testing::Test {
   }
 
   FakeTimerFactory* timer_factory() { return timer_factory_.get(); }
+  NetworkMetadataStore* network_metadata_store() {
+    return network_metadata_store_.get();
+  }
+  NetworkTestHelper* network_test_helper() {
+    return network_test_helper_.get();
+  }
 
   const NetworkIdentifier& woof_network_id() const { return woof_network_id_; }
   const NetworkIdentifier& meow_network_id() const { return meow_network_id_; }
@@ -235,6 +239,7 @@ class WifiConfigurationBridgeTest : public testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> user_prefs_;
   std::unique_ptr<NetworkMetadataStore> network_metadata_store_;
   std::unique_ptr<SyncedNetworkMetricsLogger> metrics_logger_;
+  std::unique_ptr<NetworkTestHelper> network_test_helper_;
 
   const NetworkIdentifier woof_network_id_ = GeneratePskNetworkId(kSsidWoof);
   const NetworkIdentifier meow_network_id_ = GeneratePskNetworkId(kSsidMeow);
@@ -436,6 +441,22 @@ TEST_F(WifiConfigurationBridgeTest, LocalConfigured_BadPassword) {
 
   std::string guid = meow_network_id().SerializeToString();
   bridge()->OnNetworkCreated(guid);
+  base::RunLoop().RunUntilIdle();
+
+  timer_factory()->FireAll();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WifiConfigurationBridgeTest, LocalConfigured_FromSync) {
+  WifiConfigurationSpecifics meow_local =
+      GenerateTestWifiSpecifics(meow_network_id(), kSyncPsk, /*timestamp=*/0);
+  local_network_collector()->AddNetwork(meow_local);
+
+  EXPECT_CALL(*processor(), Put(_, _, _)).Times(testing::Exactly(0));
+
+  std::string guid = meow_network_id().SerializeToString();
+  bridge()->OnNetworkCreated(guid);
+  network_metadata_store()->SetIsConfiguredBySync(guid);
   base::RunLoop().RunUntilIdle();
 
   timer_factory()->FireAll();

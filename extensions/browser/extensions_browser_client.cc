@@ -104,4 +104,9 @@ bool ExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
   return false;
 }
 
+const MediaRouterExtensionAccessLogger*
+ExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
+  return nullptr;
+}
+
 }  // namespace extensions

@@ -31,7 +31,6 @@ group("all") {
 
       # List all the test targets that need to be built on iOS by default.
       "//ios/chrome/test:all_tests",
-      "//ios/chrome/test/earl_grey:all_tests",
       "//ios/chrome/test/earl_grey2:all_tests",
       "//ios/chrome/test/wpt:all_tests",
       "//ios/components:all_tests",
@@ -41,7 +40,6 @@ group("all") {
       "//ios/web:all_tests",
       "//ios/web/shell/test:all_tests",
       "//ios/web_view:all_tests",
-      "//ios/web_view/shell/test:all_tests",
     ]
   }
 }

@@ -179,16 +179,11 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
       about_flags::RegisterAllFeatureVariationParameters(&flags_storage,
                                                          feature_list.get());
 
-  std::set<std::string> unforceable_field_trials;
-#if defined(OFFICIAL_BUILD)
-  unforceable_field_trials.insert("SettingsEnforcement");
-#endif  // defined(OFFICIAL_BUILD)
-
   variations::VariationsService* variations_service =
       metrics_services_manager_->GetVariationsService();
   variations_service->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials, variation_ids,
+      switches::kDisableFeatures, variation_ids,
       content::GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), browser_field_trials_.get());

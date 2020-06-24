@@ -37,6 +37,8 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   ImageDecoderExternal(ScriptState*, const ImageDecoderInit*, ExceptionState&);
   ~ImageDecoderExternal() override;
 
+  static bool canDecodeType(String type);
+
   // image_decoder.idl implementation.
   ScriptPromise decode(uint32_t frame_index, bool complete_frames_only);
   ScriptPromise decodeMetadata();
@@ -53,9 +55,10 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   void Trace(Visitor*) const override;
 
  private:
+  void CreateImageDecoder();
+
   void MaybeSatisfyPendingDecodes();
   void MaybeSatisfyPendingMetadataDecodes();
-  void MaybeCreateImageDecoder();
   void MaybeUpdateMetadata();
 
   Member<ScriptState> script_state_;

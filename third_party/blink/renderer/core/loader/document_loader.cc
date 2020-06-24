@@ -1558,8 +1558,10 @@ void DocumentLoader::InstallNewDocument(
   }
 
   // Re-validate Document Policy feature before installing the new document.
-  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(owner_document))
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(
+          owner_document ? owner_document->GetExecutionContext() : nullptr)) {
     document_policy_ = DocumentPolicy::ParsedDocumentPolicy{};
+  }
 
   if (document_policy_.feature_state.contains(
           mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
@@ -1734,7 +1736,7 @@ void DocumentLoader::InstallNewDocument(
     document->SetDeferredCompositorCommitIsAllowed(false);
   }
 
-  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(document))
+  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()))
     CountUse(WebFeature::kForceLoadAtTop);
 
   // Log if the document was blocked by CSP checks now that the new Document has

@@ -513,7 +513,7 @@ void X11Window::OnCompleteSwapAfterResize() {
 }
 
 gfx::Rect X11Window::GetXRootWindowOuterBounds() const {
-  return XWindow::GetOutterBounds();
+  return XWindow::GetOuterBounds();
 }
 
 bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {

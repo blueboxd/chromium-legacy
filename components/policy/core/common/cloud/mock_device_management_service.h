@@ -32,6 +32,7 @@ class MockDeviceManagementServiceConfiguration
   std::string GetAgentParameter() override;
   std::string GetPlatformParameter() override;
   std::string GetReportingServerUrl() override;
+  std::string GetReportingConnectorServerUrl() override;
 
  private:
   const std::string server_url_;

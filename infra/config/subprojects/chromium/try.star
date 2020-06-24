@@ -103,6 +103,11 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = 'android-marshmallow-x86-rel',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_android_builder(
     name = 'android-nougat-arm64-rel',
     goma_jobs = goma.jobs.J150,
 )

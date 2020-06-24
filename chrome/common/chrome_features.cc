@@ -540,12 +540,6 @@ const base::Feature kOomIntervention{"OomIntervention",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Adds the base language code to the Language-Accept headers if at least one
-// corresponding language+region code is present in the user preferences.
-// For example: "en-US, fr-FR" --> "en-US, en, fr-FR, fr".
-const base::Feature kUseNewAcceptLanguageHeader{
-    "UseNewAcceptLanguageHeader", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables usage of Parent Access Code to authorize certain actions on child
 // user device.
@@ -611,6 +605,11 @@ const base::Feature kRemoveSupervisedUsersOnStartup{
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+const base::Feature kSharesheet{"Sharesheet",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if defined(OS_ANDROID)
 const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",

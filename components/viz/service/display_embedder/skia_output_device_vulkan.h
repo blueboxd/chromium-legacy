@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
@@ -72,6 +73,9 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   bool RecreateSwapChain(const gfx::Size& size,
                          sk_sp<SkColorSpace> color_space,
                          gfx::OverlayTransform transform);
+  void OnPostSubBufferFinished(std::vector<ui::LatencyInfo> latency_info,
+                               bool is_new_swapchain,
+                               gfx::SwapResult result);
 
   VulkanContextProvider* const context_provider_;
 
@@ -89,6 +93,8 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
 
   sk_sp<SkColorSpace> color_space_;
   bool is_new_swapchain_ = true;
+
+  base::WeakPtrFactory<SkiaOutputDeviceVulkan> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceVulkan);
 };

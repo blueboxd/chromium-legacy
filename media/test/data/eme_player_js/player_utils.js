@@ -148,11 +148,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
               // As the tests run with a different origin every time, there is
               // no way currently to create a session in one test and then load
               // it in a subsequent test (https://crbug.com/715349).
-              // So if |sessionToLoad| is 'LoadableSession', create a session
+              // So if |sessionToLoad| is 'PersistentLicense', create a session
               // that can be loaded and use that session to load. Otherwise
               // use the name provided (which allows for testing load() on a
               // session which doesn't exist).
-              if (player.testConfig.sessionToLoad == 'LoadableSession') {
+              if (player.testConfig.sessionToLoad == 'PersistentLicense') {
                 return Utils.createSessionToLoad(
                     mediaKeys, player.testConfig.sessionToLoad);
               } else {

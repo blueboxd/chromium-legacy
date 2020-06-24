@@ -461,6 +461,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)navigationController:(UINavigationController*)navigationController
       willShowViewController:(UIViewController*)viewController
                     animated:(BOOL)animated {
+  if ([viewController isMemberOfClass:[SettingsTableViewController class]] &&
+      [self.currentPresentedViewController
+          conformsToProtocol:@protocol(SettingsControllerProtocol)]) {
+    // Navigated back to SettingsTableViewController.
+    [self.currentPresentedViewController
+        performSelector:@selector(reportBackUserAction)];
+  }
   self.currentPresentedViewController = base::mac::ObjCCast<
       UIViewController<UIAdaptivePresentationControllerDelegate>>(
       viewController);

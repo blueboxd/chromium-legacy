@@ -13,9 +13,6 @@ import re
 # chrome/PRESUBMIT.py blocks several linters due to the infeasibility of
 # enforcing them on a large codebase. Here we'll start by enforcing all
 # linters, and add exclusions if necessary.
-#
-# Note that this list must be non-empty, or cpplint will use its default set of
-# filters.
 LINT_FILTERS = [
   '-build/include',
 ]

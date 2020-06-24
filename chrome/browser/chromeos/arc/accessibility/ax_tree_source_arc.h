@@ -68,7 +68,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
 
   // Returns true if the node id is the root of the node tree (which can have a
   // parent window).
-  bool IsRootOfNodeTree(int32_t id) const;
+  // virtual for testing.
+  virtual bool IsRootOfNodeTree(int32_t id) const;
 
   AccessibilityInfoDataWrapper* GetFirstImportantAncestor(
       AccessibilityInfoDataWrapper* info_data) const;

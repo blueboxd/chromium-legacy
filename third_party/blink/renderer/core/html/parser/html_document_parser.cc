@@ -1043,7 +1043,8 @@ void HTMLDocumentParser::StartBackgroundParser() {
   // the status of the Priority Hints Origin Trial, and has no way of figuring
   // this out on its own. See https://crbug.com/821464.
   bool priority_hints_origin_trial_enabled =
-      RuntimeEnabledFeatures::PriorityHintsEnabled(GetDocument());
+      RuntimeEnabledFeatures::PriorityHintsEnabled(
+          GetDocument()->GetExecutionContext());
 
   background_parser_->Init(
       GetDocument()->Url(),

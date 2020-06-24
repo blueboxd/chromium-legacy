@@ -382,6 +382,22 @@ void CrossFadeAnimationInternal(
 
 }  // namespace
 
+void SetTransformForScaleAnimation(ui::Layer* layer,
+                                   LayerScaleAnimationDirection type) {
+  // Scales for windows above and below the current workspace.
+  constexpr float kLayerScaleAboveSize = 1.1f;
+  constexpr float kLayerScaleBelowSize = .9f;
+
+  const float scale = type == LAYER_SCALE_ANIMATION_ABOVE
+                          ? kLayerScaleAboveSize
+                          : kLayerScaleBelowSize;
+  gfx::Transform transform;
+  transform.Translate(-layer->bounds().width() * (scale - 1.0f) / 2,
+                      -layer->bounds().height() * (scale - 1.0f) / 2);
+  transform.Scale(scale, scale);
+  layer->SetTransform(transform);
+}
+
 void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // Recalculate the transform at restore time since the launcher item may have
   // moved while the window was minimized.

@@ -116,7 +116,8 @@ void TouchExplorationManager::PlayPassthroughEarcon() {
   GetA11yController()->PlayEarcon(chromeos::SOUND_PASSTHROUGH);
 }
 
-void TouchExplorationManager::PlayExitScreenEarcon() {
+void TouchExplorationManager::PlayLongPressRightClickEarcon() {
+  // TODO: Rename this sound to SOUND_LONG_PRESS_RIGHT_CLICK.
   GetA11yController()->PlayEarcon(chromeos::SOUND_EXIT_SCREEN);
 }
 

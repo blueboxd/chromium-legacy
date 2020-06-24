@@ -334,7 +334,7 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
   frame_policy_.required_document_policy.clear();
   for (auto i = new_required_policy.begin(), last = new_required_policy.end();
        i != last;) {
-    if (!DisabledByOriginTrial(i->first, &GetDocument()))
+    if (!DisabledByOriginTrial(i->first, GetExecutionContext()))
       frame_policy_.required_document_policy.insert(*i);
     ++i;
   }

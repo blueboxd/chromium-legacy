@@ -503,6 +503,18 @@ void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
           LayoutUnit(1));
     AddLayoutOverflow(rect_to_apply);
     SetLayoutClientAfterEdge(old_client_after_edge);
+
+    if (PaddingEnd() && !ChildrenInline()) {
+      EOverflow overflow = StyleRef().OverflowInlineDirection();
+      if (overflow == EOverflow::kAuto) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kInlineOverflowAutoWithInlineEndPadding);
+      } else if (overflow == EOverflow::kScroll) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::kInlineOverflowScrollWithInlineEndPadding);
+      }
+    }
   }
 }
 

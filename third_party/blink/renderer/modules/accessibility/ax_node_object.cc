@@ -4398,7 +4398,7 @@ String AXNodeObject::Description(
   // aria-description overrides any HTML-based accessible description,
   // but not aria-describedby.
   if (RuntimeEnabledFeatures::AccessibilityExposeARIAAnnotationsEnabled(
-          GetDocument())) {
+          element->GetExecutionContext())) {
     const AtomicString& aria_desc =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kDescription);
     if (!aria_desc.IsNull()) {

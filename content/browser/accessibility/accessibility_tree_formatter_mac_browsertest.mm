@@ -211,4 +211,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 )~~");
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_UIElement) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p contentEditable='true'>Text</p>)~~",
+               {":2;AXIndexForChildUIElement(:3)=*"}, R"~~(AXWebArea
+++AXTextArea AXIndexForChildUIElement(:3)=0 AXValue='Text'
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_UIElement_WrongArgs) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p contentEditable='true'>Text</p>)~~",
+               {":2;AXIndexForChildUIElement(:4)=*"}, R"~~(AXWebArea
+++AXTextArea AXIndexForChildUIElement(:4)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
 }  // namespace content

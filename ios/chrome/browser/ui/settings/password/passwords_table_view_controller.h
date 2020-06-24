@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORDS_TABLE_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 

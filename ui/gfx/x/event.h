@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(X11) Event {
 
   template <typename T>
   const T* As() const {
-    return const_cast<const Event*>(this)->As<T>();
+    return const_cast<Event*>(this)->As<T>();
   }
 
   bool sequence_valid() const { return sequence_valid_; }

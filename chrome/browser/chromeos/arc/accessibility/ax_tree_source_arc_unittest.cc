@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +19,6 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
 
@@ -42,91 +40,51 @@ using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 using AXWindowStringProperty = mojom::AccessibilityWindowStringProperty;
 
+namespace {
+
 void SetProperty(AXNodeInfoData* node, AXBooleanProperty prop, bool value) {
-  if (!node->boolean_properties) {
-    node->boolean_properties = base::flat_map<AXBooleanProperty, bool>();
-  }
-  auto& prop_map = node->boolean_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(node->boolean_properties, prop, value);
 }
 
 void SetProperty(AXNodeInfoData* node,
                  AXStringProperty prop,
                  const std::string& value) {
-  if (!node->string_properties) {
-    node->string_properties = base::flat_map<AXStringProperty, std::string>();
-  }
-  auto& prop_map = node->string_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(node->string_properties, prop, value);
 }
 
 void SetProperty(AXNodeInfoData* node, AXIntProperty prop, int32_t value) {
-  if (!node->int_properties) {
-    node->int_properties = base::flat_map<AXIntProperty, int>();
-  }
-  auto& prop_map = node->int_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(node->int_properties, prop, value);
 }
 
 void SetProperty(AXWindowInfoData* window,
                  AXWindowStringProperty prop,
                  const std::string& value) {
-  if (!window->string_properties) {
-    window->string_properties =
-        base::flat_map<AXWindowStringProperty, std::string>();
-  }
-  auto& prop_map = window->string_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(window->string_properties, prop, value);
 }
 
 void SetProperty(AXNodeInfoData* node,
                  AXIntListProperty prop,
                  const std::vector<int>& value) {
-  if (!node->int_list_properties) {
-    node->int_list_properties =
-        base::flat_map<AXIntListProperty, std::vector<int>>();
-  }
-  auto& prop_map = node->int_list_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(node->int_list_properties, prop, value);
 }
 
 void SetProperty(AXWindowInfoData* window,
                  AXWindowIntListProperty prop,
                  const std::vector<int>& value) {
-  if (!window->int_list_properties) {
-    window->int_list_properties =
-        base::flat_map<AXWindowIntListProperty, std::vector<int>>();
-  }
-  auto& prop_map = window->int_list_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(window->int_list_properties, prop, value);
 }
 
 void SetProperty(AXEventData* event, AXEventIntProperty prop, int32_t value) {
-  if (!event->int_properties) {
-    event->int_properties = base::flat_map<AXEventIntProperty, int>();
-  }
-  auto& prop_map = event->int_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(event->int_properties, prop, value);
 }
 
 void SetProperty(AXEventData* event,
                  AXEventIntListProperty prop,
                  const std::vector<int>& value) {
-  if (!event->int_list_properties) {
-    event->int_list_properties =
-        base::flat_map<AXEventIntListProperty, std::vector<int>>();
-  }
-  auto& prop_map = event->int_list_properties.value();
-  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
-  prop_map.insert(std::make_pair(prop, value));
+  arc::SetProperty(event->int_list_properties, prop, value);
 }
+
+}  // namespace
 
 class MockAutomationEventRouter
     : public extensions::AutomationEventRouterInterface {
@@ -240,7 +198,9 @@ class AXTreeSourceArcTest : public testing::Test,
     EXPECT_EQ(expected, tree_text.substr(first_new_line));
   }
 
-  void SetScreenReaderMode(bool enabled) { screen_reader_enabled_ = enabled; }
+  void set_screen_reader_mode(bool enabled) {
+    screen_reader_enabled_ = enabled;
+  }
 
   bool IsScreenReaderEnabled() const override { return screen_reader_enabled_; }
 
@@ -400,322 +360,6 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
       "restriction=disabled class_name=android.widget.Button name=button2\n");
 }
 
-TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
-  auto event = AXEventData::New();
-  event->source_id = 0;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 10;
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 10;
-  SetProperty(root, AXStringProperty::CLASS_NAME, "");
-
-  // Populate the tree source with the data.
-  CallNotifyAccessibilityEvent(event.get());
-
-  // No attributes.
-  ui::AXNodeData data;
-  data = GetSerializedNode(root->id);
-  std::string name;
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  // Text (empty).
-  SetProperty(root, AXStringProperty::TEXT, "");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  // With crrev.com/c/1786363, empty text on node will not set the name.
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  // Text (non-empty).
-  SetProperty(root, AXStringProperty::TEXT, "label text");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("label text", name);
-
-  // Content description (empty), text (non-empty).
-  SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION, "");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("label text", name);
-
-  // Content description (non-empty), text (empty).
-  SetProperty(root, AXStringProperty::TEXT, "");
-  SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION,
-              "label content description");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("label content description", name);
-
-  // Content description (non-empty), text (non-empty).
-  SetProperty(root, AXStringProperty::TEXT, "label text");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  EXPECT_EQ("label content description label text", name);
-}
-
-TEST_F(AXTreeSourceArcTest, AccessibleNameComputationFromDescendants) {
-  auto event = AXEventData::New();
-  event->source_id = 0;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 10;
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 10;
-  SetProperty(root, AXStringProperty::CLASS_NAME, "");
-  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({1, 2}));
-
-  // Add child node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child1 = event->node_data.back().get();
-  child1->id = 1;
-  SetProperty(child1, AXBooleanProperty::IMPORTANCE, true);
-
-  // Add another child.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child2 = event->node_data.back().get();
-  child2->id = 2;
-  SetProperty(child2, AXBooleanProperty::IMPORTANCE, true);
-
-  // Root node has no name, but has descendants with name.
-  // Name from contents can happen if a node is focusable.
-  SetProperty(root, AXBooleanProperty::FOCUSABLE, true);
-  SetProperty(child1, AXStringProperty::TEXT, "child1 label text");
-  SetProperty(child2, AXStringProperty::TEXT, "child2 label text");
-
-  // If the screen reader mode is off, do not compute from descendants.
-  SetScreenReaderMode(false);
-  CallNotifyAccessibilityEvent(event.get());
-
-  ui::AXNodeData data;
-  data = GetSerializedNode(root->id);
-  std::string name;
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  data = GetSerializedNode(child1->id);
-  ASSERT_FALSE(data.IsIgnored());
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child1 label text", name);
-
-  data = GetSerializedNode(child2->id);
-  ASSERT_FALSE(data.IsIgnored());
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child2 label text", name);
-
-  // Enable screen reader.
-  // Compute the name of the clickable node from descendants, and ignore them.
-  SetScreenReaderMode(true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child1 label text child2 label text", name);
-
-  data = GetSerializedNode(child1->id);
-  ASSERT_TRUE(data.IsIgnored());
-  data = GetSerializedNode(child2->id);
-  ASSERT_TRUE(data.IsIgnored());
-
-  // Don't compute name from descendants for scrollable, e.g. ScrollView.
-  SetProperty(root, AXBooleanProperty::SCROLLABLE, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  SetProperty(root, AXBooleanProperty::SCROLLABLE, false);
-
-  // Don't compute name from descendants for virtual views, e.g. WebView.
-  root->is_virtual_node = true;
-  child1->is_virtual_node = true;
-  child2->is_virtual_node = true;
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  root->is_virtual_node = false;
-  child1->is_virtual_node = false;
-  child2->is_virtual_node = false;
-
-  // If one child is clickable, do not use clickable child.
-  SetProperty(child1, AXBooleanProperty::CLICKABLE, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child2 label text", name);
-
-  data = GetSerializedNode(child1->id);
-  ASSERT_FALSE(data.IsIgnored());
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child1 label text", name);
-
-  data = GetSerializedNode(child2->id);
-  ASSERT_TRUE(data.IsIgnored());
-
-  // If both children are also clickable, do not use child properties.
-  SetProperty(child2, AXBooleanProperty::CLICKABLE, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  // If the node has a name, it should override the contents.
-  child1->boolean_properties->clear();
-  child2->boolean_properties->clear();
-  SetProperty(root, AXStringProperty::TEXT, "root label text");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("root label text", name);
-
-  // Clearing both clickable and name from root, the name should not be
-  // populated.
-  root->boolean_properties->clear();
-  root->string_properties->clear();
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-}
-
-TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 1;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 1;
-
-  ui::AXNodeData data;
-  SetProperty(root, AXBooleanProperty::EDITABLE, true);
-
-  struct AndroidState {
-    std::string content_description, text, hint_text;
-    bool showingHint = false;
-  };
-  struct ChromeState {
-    std::string name, value;
-  };
-
-  std::vector<std::pair<AndroidState, ChromeState>> test_cases = {
-      {
-          {"email", "editing_text", "", false},
-          {"email", "editing_text"},
-      },
-      {
-          {"email", "", "", false},
-          {"email", ""},
-      },
-      {
-          {"", "editing_text", "", false},
-          {"", "editing_text"},
-      },
-      {
-          // User input and hint text.
-          {"", "editing_text", "hint@example.com", false},
-          {"hint@example.com", "editing_text"},
-      },
-      {
-          // No user input. Hint text is non-empty.
-          {"", "hint@example.com", "hint@example.com", true},
-          {"hint@example.com", ""},
-      },
-      {
-          // User input is the same as hint text.
-          {"", "example@example.com", "example@example.com", false},
-          {"example@example.com", "example@example.com"},
-      },
-      {
-          // No user input. Content description and hint tex are non-empty.
-          {"email", "hint@example.com", "hint@example.com", true},
-          {"email hint@example.com", ""},
-      },
-      {
-          {"email", "editing_text", "hint@example.com", false},
-          {"email hint@example.com", "editing_text"},
-      },
-      {
-          {"", "", "", false},
-          {"", ""},
-      },
-  };
-
-  for (const auto& test_case : test_cases) {
-    SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION,
-                test_case.first.content_description);
-    SetProperty(root, AXStringProperty::TEXT, test_case.first.text);
-    SetProperty(root, AXStringProperty::HINT_TEXT, test_case.first.hint_text);
-    SetProperty(root, AXBooleanProperty::SHOWING_HINT_TEXT,
-                test_case.first.showingHint);
-
-    CallNotifyAccessibilityEvent(event.get());
-    data = GetSerializedNode(root->id);
-
-    std::string prop;
-    ASSERT_EQ(
-        !test_case.second.name.empty(),
-        data.GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
-    if (!test_case.second.name.empty())
-      EXPECT_EQ(test_case.second.name, prop);
-
-    ASSERT_EQ(
-        !test_case.second.value.empty(),
-        data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
-    if (!test_case.second.value.empty())
-      EXPECT_EQ(test_case.second.value, prop);
-  }
-}
-
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {
   auto event = AXEventData::New();
   event->source_id = 1;
@@ -834,223 +478,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   EXPECT_NE(ax::mojom::Role::kRootWebArea, data.role);
 
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
-}
-
-TEST_F(AXTreeSourceArcTest, StringPropertiesComputations) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 1;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 1;
-
-  // Add a child node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child = event->node_data.back().get();
-  child->id = 2;
-
-  // Set properties to the root.
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
-  SetProperty(root, AXStringProperty::PACKAGE_NAME, "com.android.vending");
-
-  // Set properties to the child.
-  SetProperty(child, AXStringProperty::TOOLTIP, "tooltip text");
-
-  // Populate the tree source with the data.
-  CallNotifyAccessibilityEvent(event.get());
-
-  ui::AXNodeData data;
-  data = GetSerializedNode(root->id);
-
-  std::string prop;
-  // Url includes AXTreeId, which is unguessable. Just verifies the prefix.
-  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kUrl, &prop));
-  EXPECT_EQ(0U, prop.find("com.android.vending/"));
-
-  data = GetSerializedNode(child->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kTooltip, &prop));
-  ASSERT_EQ("tooltip text", prop);
-}
-
-TEST_F(AXTreeSourceArcTest, StateComputations) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  // Window.
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 1;
-
-  // Node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* node = event->node_data.back().get();
-  node->id = 1;
-
-  // Node is checkable, but not checked.
-  SetProperty(node, AXBooleanProperty::CHECKABLE, true);
-  SetProperty(node, AXBooleanProperty::CHECKED, false);
-  CallNotifyAccessibilityEvent(event.get());
-
-  ui::AXNodeData data;
-  data = GetSerializedNode(node->id);
-  EXPECT_EQ(ax::mojom::CheckedState::kFalse, data.GetCheckedState());
-
-  // Make the node checked.
-  SetProperty(node, AXBooleanProperty::CHECKED, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_EQ(ax::mojom::CheckedState::kTrue, data.GetCheckedState());
-
-  // Make the node expandable (i.e. collapsed).
-  SetProperty(node, AXIntListProperty::STANDARD_ACTION_IDS,
-              std::vector<int>({static_cast<int>(AXActionType::EXPAND)}));
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_TRUE(data.HasState(ax::mojom::State::kCollapsed));
-  EXPECT_FALSE(data.HasState(ax::mojom::State::kExpanded));
-
-  // Make the node collapsible (i.e. expanded).
-  SetProperty(node, AXIntListProperty::STANDARD_ACTION_IDS,
-              std::vector<int>({static_cast<int>(AXActionType::COLLAPSE)}));
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_FALSE(data.HasState(ax::mojom::State::kCollapsed));
-  EXPECT_TRUE(data.HasState(ax::mojom::State::kExpanded));
-}
-
-TEST_F(AXTreeSourceArcTest, SelectedStateComputations) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  // Window.
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 1;
-
-  // Node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 1;
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({2, 3}));
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* grid = event->node_data.back().get();
-  grid->id = 2;
-  SetProperty(grid, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({10, 11, 12, 13}));
-  grid->collection_info = AXCollectionInfoData::New();
-  grid->collection_info->row_count = 2;
-  grid->collection_info->column_count = 2;
-
-  // Make child of grid have cell role, which supports selected state.
-  std::vector<AXNodeInfoData*> cells;
-  for (int i = 0; i < 4; i++) {
-    event->node_data.push_back(AXNodeInfoData::New());
-    AXNodeInfoData* node = event->node_data.back().get();
-    node->id = 10 + i;
-    node->collection_item_info = AXCollectionItemInfoData::New();
-    node->collection_item_info->row_index = i % 2;
-    node->collection_item_info->column_index = i / 2;
-    SetProperty(node, AXBooleanProperty::SELECTED, true);
-    cells.emplace_back(node);
-  }
-
-  // text_node is simple static text, which doesn't supports selected state in
-  // Chrome.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* text_node = event->node_data.back().get();
-  text_node->id = 3;
-  SetProperty(text_node, AXStringProperty::CONTENT_DESCRIPTION, "text.");
-  SetProperty(text_node, AXBooleanProperty::SELECTED, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-
-  ui::AXNodeData data;
-  data = GetSerializedNode(cells[0]->id);
-  ASSERT_EQ(ax::mojom::Role::kCell, data.role);
-  ASSERT_TRUE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
-  ASSERT_FALSE(
-      data.HasStringAttribute(ax::mojom::StringAttribute::kDescription));
-
-  std::string description;
-  data = GetSerializedNode(text_node->id);
-  ASSERT_FALSE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
-  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                      &description));
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS),
-            description);
-}
-
-TEST_F(AXTreeSourceArcTest, RoleComputationEditText) {
-  auto event = AXEventData::New();
-  event->source_id = 1;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
-  root->id = 1;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 1;
-
-  // Add a child node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* node = event->node_data.back().get();
-  node->id = 2;
-
-  ui::AXNodeData data;
-
-  // Editable node is textField.
-  SetProperty(node, AXStringProperty::CLASS_NAME, ui::kAXEditTextClassname);
-  SetProperty(node, AXBooleanProperty::EDITABLE, true);
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_EQ(ax::mojom::Role::kTextField, data.role);
-
-  // Non-editable node is not textField even if it has EditTextClassname.
-  // When it has text and no children, it is staticText. Otherwise, it's
-  // genericContainer.
-  SetProperty(node, AXBooleanProperty::EDITABLE, false);
-  SetProperty(node, AXStringProperty::TEXT, "text");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_EQ(ax::mojom::Role::kStaticText, data.role);
-
-  // Add a child.
-  SetProperty(node, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child = event->node_data.back().get();
-  child->id = 3;
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(node->id);
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, data.role);
 }
 
 TEST_F(AXTreeSourceArcTest, ComplexTreeStructure) {
@@ -1451,7 +878,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   // |node2| is ignored by default because
   // AXBooleanProperty::IMPORTANCE has a default false value.
 
-  SetScreenReaderMode(true);
+  set_screen_reader_mode(true);
 
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
@@ -1684,58 +1111,6 @@ TEST_F(AXTreeSourceArcTest, LiveRegion) {
   CallNotifyAccessibilityEvent(event.get());
 
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLiveRegionChanged));
-}
-
-TEST_F(AXTreeSourceArcTest, StateDescriptionWithRange) {
-  auto event = AXEventData::New();
-  event->source_id = 0;
-  event->task_id = 1;
-  event->event_type = AXEventType::VIEW_FOCUSED;
-
-  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->push_back(AXWindowInfoData::New());
-  AXWindowInfoData* root_window = event->window_data->back().get();
-  root_window->window_id = 100;
-  root_window->root_node_id = 10;
-
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* root = event->node_data.back().get();
-  root->id = 10;
-
-  // Populate the tree source with the data.
-  CallNotifyAccessibilityEvent(event.get());
-
-  // No attributes.
-  ui::AXNodeData data;
-  data = GetSerializedNode(root->id);
-  std::string description;
-  ASSERT_FALSE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                       &description));
-  std::string value;
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
-
-  // State Description without Range Value should be stored as kDescription
-  SetProperty(root, AXStringProperty::STATE_DESCRIPTION, "state description");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                      &description));
-  EXPECT_EQ("state description", description);
-  ASSERT_FALSE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
-
-  // State Description with Range Value should be stored as kValue
-  root->range_info = AXRangeInfoData::New();
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(root->id);
-  ASSERT_FALSE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                       &description));
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
-  EXPECT_EQ("state description", value);
 }
 
 TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {

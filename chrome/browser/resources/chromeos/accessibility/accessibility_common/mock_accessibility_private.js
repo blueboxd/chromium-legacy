@@ -29,6 +29,15 @@ var MockAccessibilityPrivate = {
      */
     addListener: (listener) => {
       boundsListener_ = listener;
+    },
+
+    /**
+     * Removes the listener.
+     */
+    removeListener: (listener) => {
+      if (boundsListener_ == listener) {
+        boundsListener_ = null;
+      }
     }
   },
 

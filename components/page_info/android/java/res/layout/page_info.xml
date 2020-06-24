@@ -99,6 +99,15 @@
             android:paddingTop="12dp"
             android:textAppearance="@style/TextAppearance.TextLarge.Primary"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/page_info_lite_mode_https_image_compression_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:textAppearance="@style/TextAppearance.TextMedium.Primary"
+            android:text="@string/page_info_lite_mode_https_image_compression"
+            android:visibility="gone" />
     </LinearLayout>
 
     <org.chromium.ui.widget.ButtonCompat

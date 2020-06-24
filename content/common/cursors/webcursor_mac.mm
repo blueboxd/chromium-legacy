@@ -232,11 +232,7 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return GetCoreCursorWithFallback(kMoveCursor,
                                        IDR_MOVE_CURSOR, 7, 7);
     case ui::mojom::CursorType::kVerticalText:
-      // IBeamCursorForVerticalLayout is >= 10.7.
-      if ([NSCursor respondsToSelector:@selector(IBeamCursorForVerticalLayout)])
-        return [NSCursor IBeamCursorForVerticalLayout];
-      else
-        return LoadCursor(IDR_VERTICALTEXT_CURSOR, 7, 7);
+      return [NSCursor IBeamCursorForVerticalLayout];
     case ui::mojom::CursorType::kCell:
       return GetCoreCursorWithFallback(kCellCursor,
                                        IDR_CELL_CURSOR, 7, 7);

@@ -170,7 +170,7 @@ void InstalledWebappGeolocationBridge::OnNewLocationAvailable(
 
   // If position is invalid, mark it as unavailable.
   if (!device::ValidateGeoposition(position)) {
-    current_position_.error_code =
+    position.error_code =
         device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
     base::UmaHistogramEnumeration(kLocationUpdateHistogramName,
                                   LocationUpdateError::kInvalidPosition);

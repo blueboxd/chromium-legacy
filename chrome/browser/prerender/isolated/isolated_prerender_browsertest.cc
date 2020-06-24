@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -1817,7 +1818,9 @@ class IsolatedPrerenderWithNSPBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(StartsAndInterceptsNSP)) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(SuccessfulNSPEndToEnd)) {
+  base::HistogramTester histogram_tester;
+
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), starting_page);
@@ -1933,6 +1936,136 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   // Check that the JavaScript ran.
   EXPECT_EQ(base::ASCIIToUTF16("JavaScript Executed"),
             GetWebContents()->GetTitle());
+
+  // Navigate one more time to destroy the SubresourceManager so that its UMA is
+  // recorded and to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 16 = |PrefetchStatus::kPrefetchUsedNoProbeWithNSP|.
+  EXPECT_EQ(base::Optional<int64_t>(16),
+            GetUKMMetric(eligible_link,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Subresources.NetError", net::OK, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Subresources.Quantity", 4, 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Subresources.RespCode", 200, 2);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.AfterClick.Subresources.UsedCache", true, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchButNSPDenied)) {
+  // NSP is disabled on low-end devices.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLowEndDeviceMode);
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 19 = |PrefetchStatus::kPrefetchUsedNoProbeNSPAttemptDenied|.
+  EXPECT_EQ(base::Optional<int64_t>(19),
+            GetUKMMetric(eligible_link,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(OnlyOneNSP)) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_1 =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+  GURL eligible_link_2 =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html?page=2");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+
+  // Do the prefetches separately so that we know only the first link will ever
+  // get prerendered.
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_1});
+
+  base::RunLoop nsp_run_loop;
+  base::RunLoop prefetch_1_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_1_run_loop.QuitClosure());
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_1});
+
+  // This run loop will quit when the first prefetch response has been
+  // successfully done and processed.
+  prefetch_1_run_loop.Run();
+
+  nsp_run_loop.Run();
+
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_2});
+
+  base::RunLoop prefetch_2_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_2_run_loop.QuitClosure());
+
+  MakeNavigationPrediction(doc_url, {eligible_link_2});
+
+  // This run loop will quit when the second prefetch response has been
+  // successfully done and processed.
+  prefetch_2_run_loop.Run();
+
+  // Navigate to the second predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_2);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 22 = |PrefetchStatus::kPrefetchUsedNoProbeNSPNotStarted|.
+  EXPECT_EQ(base::Optional<int64_t>(22),
+            GetUKMMetric(eligible_link_2,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
@@ -2020,4 +2153,330 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   // There should not have been any additional requests.
   EXPECT_EQ(origin_requests_before_prerender.size(),
             origin_requests_after_prerender.size());
+}
+
+class ProbingAndNSPEnabledIsolatedPrerenderBrowserTest
+    : public IsolatedPrerenderBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    IsolatedPrerenderBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch("isolated-prerender-nsp-enabled");
+  }
+
+  void SetFeatures() override {
+    IsolatedPrerenderBrowserTest::SetFeatures();
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatePrerendersMustProbeOrigin,
+         blink::features::kLightweightNoStatePrefetch},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood_NSPSuccess)) {
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  base::RunLoop nsp_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when a NSP finishes.
+  nsp_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 17 = |PrefetchStatus::kPrefetchUsedProbeSuccessWithNSP|.
+  EXPECT_EQ(base::Optional<int64_t>(17),
+            GetUKMMetric(eligible_link,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood_NSPDenied)) {
+  // NSP is disabled on low-end devices.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLowEndDeviceMode);
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 20 = |PrefetchStatus::kPrefetchUsedProbeSuccessNSPAttemptDenied|.
+  EXPECT_EQ(base::Optional<int64_t>(20),
+            GetUKMMetric(eligible_link,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood_NSPNotStarted)) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_1 =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+  GURL eligible_link_2 =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html?page=2");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+
+  // Do the prefetches separately so that we know only the first link will ever
+  // get prerendered.
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_1});
+
+  base::RunLoop nsp_run_loop;
+  base::RunLoop prefetch_1_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_1_run_loop.QuitClosure());
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_1});
+
+  // This run loop will quit when the first prefetch response has been
+  // successfully done and processed.
+  prefetch_1_run_loop.Run();
+
+  nsp_run_loop.Run();
+
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_2});
+
+  base::RunLoop prefetch_2_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_2_run_loop.QuitClosure());
+
+  MakeNavigationPrediction(doc_url, {eligible_link_2});
+
+  // This run loop will quit when the second prefetch response has been
+  // successfully done and processed.
+  prefetch_2_run_loop.Run();
+
+  // Navigate to the second predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_2);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 23 = |PrefetchStatus::kPrefetchUsedProbeSuccessNSPNotStarted|.
+  EXPECT_EQ(base::Optional<int64_t>(23),
+            GetUKMMetric(eligible_link_2,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad_NSPSuccess)) {
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_bad_probe =
+      GetOriginServerURLWithBadProbe("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_bad_probe});
+
+  base::RunLoop prefetch_run_loop;
+  base::RunLoop nsp_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_bad_probe});
+
+  // This run loop will quit when a NSP finishes.
+  nsp_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_bad_probe);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 18 = |PrefetchStatus::kPrefetchNotUsedProbeFailedWithNSP|.
+  EXPECT_EQ(base::Optional<int64_t>(18),
+            GetUKMMetric(eligible_link_bad_probe,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad_NSPDenied)) {
+  // NSP is disabled on low-end devices.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableLowEndDeviceMode);
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_bad_probe =
+      GetOriginServerURLWithBadProbe("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_bad_probe});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_bad_probe});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_bad_probe);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 21 = |PrefetchStatus::kPrefetchNotUsedProbeFailedNSPAttemptDenied|.
+  EXPECT_EQ(base::Optional<int64_t>(21),
+            GetUKMMetric(eligible_link_bad_probe,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
+}
+
+IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad_NSPNotStarted)) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "isolated-prerender-unlimited-prefetches");
+
+  SetDataSaverEnabled(true);
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link_1 =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+  GURL eligible_link_2_bad_probe = GetOriginServerURLWithBadProbe(
+      "/prerender/isolated/prefetch_page.html?page=2");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+
+  // Do the prefetches separately so that we know only the first link will ever
+  // get prerendered.
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_1});
+
+  base::RunLoop nsp_run_loop;
+  base::RunLoop prefetch_1_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_1_run_loop.QuitClosure());
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link_1});
+
+  // This run loop will quit when the first prefetch response has been
+  // successfully done and processed.
+  prefetch_1_run_loop.Run();
+
+  nsp_run_loop.Run();
+
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_2_bad_probe});
+
+  base::RunLoop prefetch_2_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_2_run_loop.QuitClosure());
+
+  MakeNavigationPrediction(doc_url, {eligible_link_2_bad_probe});
+
+  // This run loop will quit when the second prefetch response has been
+  // successfully done and processed.
+  prefetch_2_run_loop.Run();
+
+  // Navigate to the second predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link_2_bad_probe);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 24 = |PrefetchStatus::kPrefetchNotUsedProbeFailedNSPNotStarted|.
+  EXPECT_EQ(base::Optional<int64_t>(24),
+            GetUKMMetric(eligible_link_2_bad_probe,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
 }

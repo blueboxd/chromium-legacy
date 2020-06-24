@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
 import android.app.Activity;
@@ -263,14 +266,20 @@ public class TrustedWebActivityPermissionManager {
             int[] requestedPermissionsFlags = packageInfo.requestedPermissionsFlags;
 
             if (requestedPermissions != null) {
+                boolean locationRequested = false;
                 for (int i = 0; i < requestedPermissions.length; ++i) {
-                    if (TextUtils.equals(requestedPermissions[i],
-                                android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                        return (requestedPermissionsFlags[i]
-                                       & PackageInfo.REQUESTED_PERMISSION_GRANTED)
-                                != 0;
+                    if (ACCESS_COARSE_LOCATION.equals(requestedPermissions[i])
+                            || ACCESS_FINE_LOCATION.equals(requestedPermissions[i])) {
+                        if ((requestedPermissionsFlags[i]
+                                    & PackageInfo.REQUESTED_PERMISSION_GRANTED)
+                                != 0) {
+                            return true;
+                        }
+                        locationRequested = true;
                     }
                 }
+                // Coarse or fine Location requested but not granted.
+                if (locationRequested) return false;
             }
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Couldn't find name for client package: %s", packageName);

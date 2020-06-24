@@ -86,6 +86,13 @@ class IsolatedPrerenderProxyingURLLoaderFactory
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
     ~InProgressRequest() override;
 
+    // Sets a callback that will be run during |OnComplete| to record metrics.
+    using OnCompleteRecordMetricsCallback = base::OnceCallback<void(
+        const network::URLLoaderCompletionStatus& status,
+        base::Optional<int> http_response_code)>;
+    void SetOnCompleteRecordMetricsCallback(
+        OnCompleteRecordMetricsCallback callback);
+
     // network::mojom::URLLoader:
     void FollowRedirect(
         const std::vector<std::string>& removed_headers,
@@ -120,6 +127,9 @@ class IsolatedPrerenderProxyingURLLoaderFactory
 
     // Back pointer to the factory which owns this class.
     IsolatedPrerenderProxyingURLLoaderFactory* const parent_factory_;
+
+    // Callback for recording metrics during |OnComplete|. Not always set.
+    OnCompleteRecordMetricsCallback on_complete_metrics_callback_;
 
     // This should be run on destruction of |this|.
     base::OnceClosure destruction_callback_;

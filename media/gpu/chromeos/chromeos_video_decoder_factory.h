@@ -18,6 +18,7 @@ class SequencedTaskRunner;
 namespace media {
 
 class DmabufVideoFramePool;
+class MediaLog;
 class VideoDecoder;
 class VideoFrameConverter;
 
@@ -30,7 +31,8 @@ class MEDIA_GPU_EXPORT ChromeosVideoDecoderFactory {
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<VideoFrameConverter> frame_converter,
+      std::unique_ptr<MediaLog> media_log);
 };
 
 }  // namespace media

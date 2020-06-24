@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -85,6 +86,36 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
   env.RunUntilIdle();
 
   base::DeleteFile(temp_path, false);
+}
+
+// Ensure that it's possible to create a Trust Tokens persister on top of a
+// directory that does not already exist (regression test for
+// crbug.com/1098019).
+TEST(SQLiteTrustTokenPersister, NonexistentDirectory) {
+  base::test::TaskEnvironment env;
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_path = temp_dir.GetPath().Append(
+      FILE_PATH_LITERAL("some-nonexistent-directory/my-database"));
+  ASSERT_FALSE(base::PathExists(temp_path.DirName()));
+
+  std::unique_ptr<SQLiteTrustTokenPersister> persister;
+  SQLiteTrustTokenPersister::CreateForFilePath(
+      base::ThreadTaskRunnerHandle::Get(), temp_path,
+      /*flush_delay_for_writes=*/base::TimeDelta(),
+      base::BindLambdaForTesting(
+          [&persister](std::unique_ptr<SQLiteTrustTokenPersister> created) {
+            persister = std::move(created);
+            base::RunLoop().Quit();
+          }));
+  env.RunUntilIdle();  // Allow initialization to complete.
+  ASSERT_TRUE(persister);
+
+  persister.reset();
+  // Wait until the persister's TrustTokenDatabaseOwner finishes closing its
+  // database asynchronously, so as not to leak after the test concludes.
+  env.RunUntilIdle();
 }
 
 }  // namespace network

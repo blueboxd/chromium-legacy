@@ -158,13 +158,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
             // Use the wrong URL to simulate a failure.
             mPlayerManager = new PlayerManager(new GURL("about:blank"), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
-                    ()
-                            -> { Assert.fail("Unexpected overscroll refresh attempted."); },
-                    ()
-                            -> {
+                    () -> { Assert.fail("Unexpected overscroll refresh attempted."); },
+                    () -> {
                         Assert.fail("View Ready callback occurred, but expected a failure.");
                     },
-                    0xffffffff, () -> { compositorErrorCallback.notifyCalled(); });
+                    0xffffffff, () -> { compositorErrorCallback.notifyCalled(); }, false);
         });
         compositorErrorCallback.waitForFirst();
     }
@@ -218,11 +216,10 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
-                    ()
-                            -> { mRefreshedCallback.notifyCalled(); },
-                    ()
-                            -> { viewReady.notifyCalled(); },
-                    0xffffffff, () -> { Assert.fail("Compositor initialization failed."); });
+                    () -> { mRefreshedCallback.notifyCalled(); },
+                    () -> { viewReady.notifyCalled(); },
+                    0xffffffff, () -> { Assert.fail("Compositor initialization failed."); },
+                    false);
             getActivity().setContentView(mPlayerManager.getView());
         });
 

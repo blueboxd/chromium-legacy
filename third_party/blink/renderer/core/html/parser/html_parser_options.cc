@@ -33,15 +33,15 @@
 namespace blink {
 
 HTMLParserOptions::HTMLParserOptions(Document* document) {
-  if (!document || !document->domWindow())
+  auto* window = document ? document->domWindow() : nullptr;
+  if (!window)
     return;
 
-  scripting_flag =
-      (document->GetSettings()->GetParserScriptingFlagPolicy() ==
-       ParserScriptingFlagPolicy::kEnabled) ||
-      document->domWindow()->CanExecuteScripts(kNotAboutToExecuteScript);
+  scripting_flag = (document->GetSettings()->GetParserScriptingFlagPolicy() ==
+                    ParserScriptingFlagPolicy::kEnabled) ||
+                   window->CanExecuteScripts(kNotAboutToExecuteScript);
   priority_hints_origin_trial_enabled =
-      RuntimeEnabledFeatures::PriorityHintsEnabled(document);
+      RuntimeEnabledFeatures::PriorityHintsEnabled(window);
 }
 
 }  // namespace blink

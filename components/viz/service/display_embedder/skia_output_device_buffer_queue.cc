@@ -4,6 +4,10 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/command_line.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
@@ -29,7 +33,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.preserve_buffer_content = true;
   capabilities_.only_invalidates_damage_rect = false;
-  capabilities_.max_frames_pending = 2;
+  capabilities_.number_of_buffers = 3;
 
   // Force the number of max pending frames to one when the switch
   // "double-buffer-compositing" is passed.
@@ -37,7 +41,8 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   // allocates at most one additional buffer.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDoubleBufferCompositing))
-    capabilities_.max_frames_pending = 1;
+    capabilities_.number_of_buffers = 2;
+  capabilities_.max_frames_pending = capabilities_.number_of_buffers - 1;
 
   presenter_->InitializeCapabilities(&capabilities_);
 }
@@ -214,7 +219,7 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   FreeAllSurfaces();
 
   images_ = presenter_->AllocateImages(color_space_, image_size_,
-                                       capabilities_.max_frames_pending + 1);
+                                       capabilities_.number_of_buffers);
   if (images_.empty())
     return false;
 

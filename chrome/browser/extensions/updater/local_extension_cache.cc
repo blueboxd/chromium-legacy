@@ -576,7 +576,7 @@ void LocalExtensionCache::BackendRemoveCacheEntry(
                                   file_pattern);
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
     VLOG(1) << "Removed cached file " << path.value();
   }
 }

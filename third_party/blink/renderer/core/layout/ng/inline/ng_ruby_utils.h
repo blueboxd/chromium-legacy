@@ -55,19 +55,29 @@ bool CanApplyStartOverhang(const NGLineInfo& line_info,
 // in |line_info|
 LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info);
 
-// Compute over/under annotation overflow/space for the specified line.
+// Stores ComputeAnnotationOverflow() results.
 //
-// Return value:
-//   .ascent > 0: The amount of annotation overflow at the line-top side
-//   .ascent < 0: The amount of annotation space which the next line at the
-//                line-top side can consume.
-//   .descent > 0: The amount of annotation overflow at the line-bottom side.
-//   .descent < 0: The amount of annotation space which the next line at the
-//                 line-bottom side can consume.
-NGLineHeightMetrics ComputeAnnotationOverflow(
+// |overflow_over| and |space_over| are exclusive. Only one of them can be
+// non-zero. |overflow_under| and |space_under| are exclusive too.
+// All fields never be negative.
+struct NGAnnotationMetrics {
+  // The amount of annotation overflow at the line-over side.
+  LayoutUnit overflow_over;
+  // The amount of annotation overflow at the line-under side.
+  LayoutUnit overflow_under;
+  // The amount of annotation space which the next line at the line-over
+  // side can consume.
+  LayoutUnit space_over;
+  // The amount of annotation space which the next line at the line-under
+  // side can consume.
+  LayoutUnit space_under;
+};
+
+// Compute over/under annotation overflow/space for the specified line.
+NGAnnotationMetrics ComputeAnnotationOverflow(
     const NGLogicalLineItems& logical_line,
     const NGLineHeightMetrics& line_box_metrics,
-    LayoutUnit line_block_start,
+    LayoutUnit line_over,
     const ComputedStyle& line_style);
 
 }  // namespace blink

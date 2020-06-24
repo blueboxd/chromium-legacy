@@ -167,8 +167,8 @@ public class PlayerFrameMediatorTest {
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
-        mMediator = new PlayerFrameMediator(
-                mModel, mCompositorDelegate, mScroller, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT);
+        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mScroller, mFrameGuid,
+                CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
     }
 
     private static Rect getRectForTile(int tileWidth, int tileHeight, int row, int col) {

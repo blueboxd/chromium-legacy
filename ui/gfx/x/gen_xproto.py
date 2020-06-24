@@ -1460,12 +1460,14 @@ class GenReadEvent(FileWriter):
             # GenericEvent extension event
             conds.extend([
                 'evtype == GeGenericEvent::opcode',
+                '%s.present()' % ext,
                 'ge->extension == %s.major_opcode()' % ext,
             ])
             opcode = 'ge->event_type'
         else:
             # Extension event
             opcode = 'evtype - %s.first_event()' % ext
+            conds.append('%s.present()' % ext)
 
         if len(event.opcodes) == 1:
             conds.append('%s == %s::opcode' % (opcode, typename))

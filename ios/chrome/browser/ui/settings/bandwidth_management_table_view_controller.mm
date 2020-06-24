@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -106,6 +108,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model setFooter:[self footerItem]
       forSectionWithIdentifier:SectionIdentifierActions];
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileBandwidthSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileBandwidthSettingsBack"));
 }
 
 #pragma mark - UITableViewDelegate

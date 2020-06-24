@@ -37,7 +37,6 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/browser/web_test/secondary_test_window_observer.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
@@ -151,6 +150,10 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
             switches::kForceWebRtcIPHandlingPolicy);
   }
 
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (web_test_control_host)
+    web_test_control_host->DidOpenNewWindowOrTab(shell->web_contents());
+
   return shell;
 }
 
@@ -222,6 +225,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   Shell* shell =
       CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
+
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;
@@ -297,12 +301,9 @@ void Shell::AddNewContents(WebContents* source,
                            const gfx::Rect& initial_rect,
                            bool user_gesture,
                            bool* was_blocked) {
-  WebContents* raw_new_contents = new_contents.get();
   CreateShell(
       std::move(new_contents), AdjustWindowSize(initial_rect.size()),
       !delay_popup_contents_delegate_for_testing_ /* should_set_delegate */);
-  if (switches::IsRunWebTestsSwitchPresent())
-    SecondaryTestWindowObserver::CreateForWebContents(raw_new_contents);
 }
 
 void Shell::GoBackOrForward(int offset) {
@@ -422,8 +423,6 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
                                  params.source_site_instance,
                                  gfx::Size());  // Use default size.
       target = new_window->web_contents();
-      if (switches::IsRunWebTestsSwitchPresent())
-        SecondaryTestWindowObserver::CreateForWebContents(target);
       break;
     }
 
@@ -582,8 +581,9 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
 }
 
 void Shell::PortalWebContentsCreated(WebContents* portal_web_contents) {
-  if (switches::IsRunWebTestsSwitchPresent())
-    SecondaryTestWindowObserver::CreateForWebContents(portal_web_contents);
+  WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+  if (web_test_control_host)
+    web_test_control_host->DidOpenNewWindowOrTab(portal_web_contents);
 }
 
 void Shell::RendererUnresponsive(

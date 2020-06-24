@@ -22,7 +22,10 @@ group("build") {
 run_jsbundler("accessibility_common_copied_files") {
   mode = "copy"
   dest_dir = accessibility_common_dir
-  sources = [ "autoclick.js" ]
+  sources = [
+    "accessibility_common_loader.js",
+    "autoclick/autoclick.js",
+  ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
     rebase_path(closure_library_dir, root_build_dir) + ":closure",
@@ -79,5 +82,6 @@ js_library("accessibility_common") {
   externs_list = [
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
+    "$externs_path/accessibility_features.js",
   ]
 }

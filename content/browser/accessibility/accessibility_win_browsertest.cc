@@ -52,6 +52,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -4715,6 +4716,196 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestGetFragmentRoot) {
   Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> fragment_root;
   ASSERT_HRESULT_SUCCEEDED(content_root->get_FragmentRoot(&fragment_root));
   ASSERT_NE(nullptr, fragment_root.Get());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, IA2ElementToUIAElement) {
+  // This test validates looking up an UIA element from an IA2 element.
+  // We start by retrieving an IA2 element then its corresponding unique id. We
+  // then use the unique id to retrieve the corresponding UIA element through
+  // IItemContainerProvider::FindItemByProperty().
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(
+      <html>
+        <div role="button">button</div>
+        <div role="listbox" aria-label="listbox"></div>
+      </html>
+     )HTML");
+
+  // Obtain the fragment root from the top-level HWND.
+  HWND hwnd = shell()->window()->GetHost()->GetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  ui::AXFragmentRootWin* fragment_root =
+      ui::AXFragmentRootWin::GetForAcceleratedWidget(hwnd);
+  ASSERT_NE(nullptr, fragment_root);
+
+  Microsoft::WRL::ComPtr<IItemContainerProvider> item_container_provider;
+  ASSERT_HRESULT_SUCCEEDED(
+      fragment_root->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&item_container_provider)));
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+
+  // Look up button's UIA element from its IA2 element.
+  {
+    // Retrieve button's IA2 element.
+    Microsoft::WRL::ComPtr<IAccessible2> button_ia2;
+    ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+        GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+            .Get(),
+        &button_ia2));
+    LONG button_role = 0;
+    ASSERT_HRESULT_SUCCEEDED(button_ia2->role(&button_role));
+    ASSERT_EQ(ROLE_SYSTEM_PUSHBUTTON, button_role);
+
+    // Retrieve button's IA2 unique id.
+    LONG button_unique_id;
+    button_ia2->get_uniqueID(&button_unique_id);
+    base::win::ScopedVariant ia2_unique_id;
+    ia2_unique_id.Set(
+        SysAllocString(base::NumberToString16(button_unique_id).c_str()));
+
+    // Verify we can find the button's UIA element based on its unique id.
+    Microsoft::WRL::ComPtr<IRawElementProviderSimple> button_uia;
+    ASSERT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+        nullptr, ui::UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+        ia2_unique_id, &button_uia));
+
+    // UIA and IA2 elements should have the same unique id.
+    base::win::ScopedVariant uia_unique_id;
+    ASSERT_HRESULT_SUCCEEDED(button_uia->GetPropertyValue(
+        ui::UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+        uia_unique_id.Receive()));
+    ASSERT_STREQ(ia2_unique_id.ptr()->bstrVal, uia_unique_id.ptr()->bstrVal);
+
+    // Verify the retrieved UIA element is button through its name property.
+    base::win::ScopedVariant name_property;
+    ASSERT_HRESULT_SUCCEEDED(button_uia->GetPropertyValue(
+        UIA_NamePropertyId, name_property.Receive()));
+    ASSERT_EQ(name_property.type(), VT_BSTR);
+    BSTR name_bstr = name_property.ptr()->bstrVal;
+    base::string16 actual_name(name_bstr, ::SysStringLen(name_bstr));
+    ASSERT_EQ(L"button", actual_name);
+
+    // Verify that the button's IA2 element and UIA element are the same through
+    // comparing their IUnknown interfaces.
+    Microsoft::WRL::ComPtr<IUnknown> iunknown_button_from_uia;
+    ASSERT_HRESULT_SUCCEEDED(
+        button_uia->QueryInterface(IID_PPV_ARGS(&iunknown_button_from_uia)));
+
+    Microsoft::WRL::ComPtr<IUnknown> iunknown_button_from_ia2;
+    ASSERT_HRESULT_SUCCEEDED(
+        button_ia2->QueryInterface(IID_PPV_ARGS(&iunknown_button_from_ia2)));
+
+    ASSERT_EQ(iunknown_button_from_uia.Get(), iunknown_button_from_ia2.Get());
+  }
+
+  // Look up listbox's UIA element from its IA2 element.
+  {
+    // Retrieve listbox's IA2 element.
+    Microsoft::WRL::ComPtr<IAccessible2> listbox_ia2;
+    ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+        GetAccessibleFromVariant(document.Get(), document_children[1].AsInput())
+            .Get(),
+        &listbox_ia2));
+    LONG listbox_role = 0;
+    ASSERT_HRESULT_SUCCEEDED(listbox_ia2->role(&listbox_role));
+    ASSERT_EQ(ROLE_SYSTEM_LIST, listbox_role);
+
+    // Retrieve listbox's IA2 unique id.
+    LONG listbox_unique_id;
+    listbox_ia2->get_uniqueID(&listbox_unique_id);
+    base::win::ScopedVariant ia2_unique_id;
+    ia2_unique_id.Set(
+        SysAllocString(base::NumberToString16(listbox_unique_id).c_str()));
+
+    // Verify we can find the listbox's UIA element based on its unique id.
+    Microsoft::WRL::ComPtr<IRawElementProviderSimple> listbox_uia;
+    ASSERT_HRESULT_SUCCEEDED(item_container_provider->FindItemByProperty(
+        nullptr, ui::UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+        ia2_unique_id, &listbox_uia));
+
+    // UIA and IA2 elements should have the same unique id.
+    base::win::ScopedVariant uia_unique_id;
+    ASSERT_HRESULT_SUCCEEDED(listbox_uia->GetPropertyValue(
+        ui::UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+        uia_unique_id.Receive()));
+    ASSERT_STREQ(ia2_unique_id.ptr()->bstrVal, uia_unique_id.ptr()->bstrVal);
+
+    // Verify the retrieved UIA element is listbox through its name property.
+    base::win::ScopedVariant name_property;
+    ASSERT_HRESULT_SUCCEEDED(listbox_uia->GetPropertyValue(
+        UIA_NamePropertyId, name_property.Receive()));
+    ASSERT_EQ(name_property.type(), VT_BSTR);
+    BSTR name_bstr = name_property.ptr()->bstrVal;
+    base::string16 actual_name(name_bstr, ::SysStringLen(name_bstr));
+    ASSERT_EQ(L"listbox", actual_name);
+
+    // Verify that the listbox's IA2 element and UIA element are the same
+    // through comparing their IUnknown interfaces.
+    Microsoft::WRL::ComPtr<IUnknown> iunknown_listbox_from_uia;
+    ASSERT_HRESULT_SUCCEEDED(
+        listbox_uia->QueryInterface(IID_PPV_ARGS(&iunknown_listbox_from_uia)));
+
+    Microsoft::WRL::ComPtr<IUnknown> iunknown_listbox_from_ia2;
+    ASSERT_HRESULT_SUCCEEDED(
+        listbox_ia2->QueryInterface(IID_PPV_ARGS(&iunknown_listbox_from_ia2)));
+
+    ASSERT_EQ(iunknown_listbox_from_uia.Get(), iunknown_listbox_from_ia2.Get());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, UIAElementToIA2Element) {
+  // This test validates looking up an IA2 element from an UIA element.
+  // We start by retrieving an UIA element then its corresponding unique id. We
+  // then use the unique id to retrieve the corresponding IA2 element.
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(
+      <html>
+        <div role="button">button</div>
+      </html>
+     )HTML");
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple> button_uia =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          FindNode(ax::mojom::Role::kButton, "button"));
+
+  // Retrieve the UIA element's unique id.
+  base::win::ScopedVariant uia_unique_id;
+  ASSERT_HRESULT_SUCCEEDED(button_uia->GetPropertyValue(
+      ui::UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId(),
+      uia_unique_id.Receive()));
+
+  int32_t unique_id_value;
+  ASSERT_EQ(VT_BSTR, uia_unique_id.type());
+  ASSERT_TRUE(
+      base::StringToInt(uia_unique_id.ptr()->bstrVal, &unique_id_value));
+
+  // Retrieve the corresponding IA2 element through the unique id.
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  base::win::ScopedVariant ia2_unique_id(unique_id_value);
+  Microsoft::WRL::ComPtr<IAccessible2> button_ia2;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), ia2_unique_id.AsInput()).Get(),
+      &button_ia2));
+
+  // Verify that the retrieved IA2 element shares the same unique id as the UIA
+  // element.
+  LONG button_ia2_unique_id;
+  button_ia2->get_uniqueID(&button_ia2_unique_id);
+  ASSERT_EQ(unique_id_value, button_ia2_unique_id);
+
+  // Verify that the IA2 element and UIA element are the same through
+  // comparing their IUnknown interfaces.
+  Microsoft::WRL::ComPtr<IUnknown> iunknown_button_from_uia;
+  ASSERT_HRESULT_SUCCEEDED(
+      button_uia->QueryInterface(IID_PPV_ARGS(&iunknown_button_from_uia)));
+
+  Microsoft::WRL::ComPtr<IUnknown> iunknown_button_from_ia2;
+  ASSERT_HRESULT_SUCCEEDED(
+      button_ia2->QueryInterface(IID_PPV_ARGS(&iunknown_button_from_ia2)));
+
+  ASSERT_EQ(iunknown_button_from_uia.Get(), iunknown_button_from_ia2.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,

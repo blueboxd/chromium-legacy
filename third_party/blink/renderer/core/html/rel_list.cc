@@ -50,17 +50,17 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
       return true;
     }
     if (RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
-            &GetElement().GetDocument()) &&
+            GetElement().GetExecutionContext()) &&
         token_value == "allowed-alt-sxg") {
       return true;
     }
     if (RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-            &GetElement().GetDocument()) &&
+            GetElement().GetExecutionContext()) &&
         token_value == "webbundle") {
       return true;
     }
     if (RuntimeEnabledFeatures::MediaFeedsEnabled(
-            &GetElement().GetDocument()) ||
+            GetElement().GetExecutionContext()) ||
         token_value == "media-feed") {
       return true;
     }

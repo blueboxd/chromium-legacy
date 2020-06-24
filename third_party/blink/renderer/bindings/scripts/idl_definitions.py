@@ -331,7 +331,7 @@ class IdlInterface(object):
         custom_constructor_operations = []
         constructor_operations_extended_attributes = {}
 
-        def is_blacklisted_attribute_type(idl_type):
+        def is_invalid_attribute_type(idl_type):
             return idl_type.is_callback_function or \
                 idl_type.is_dictionary or \
                 idl_type.is_record_type or \
@@ -342,7 +342,7 @@ class IdlInterface(object):
             child_class = child.GetClass()
             if child_class == 'Attribute':
                 attr = IdlAttribute(child)
-                if is_blacklisted_attribute_type(attr.idl_type):
+                if is_invalid_attribute_type(attr.idl_type):
                     raise ValueError(
                         'Type "%s" cannot be used as an attribute.' %
                         attr.idl_type)

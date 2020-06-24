@@ -1310,7 +1310,7 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
 
 void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
                              int model_index) {
-  tab_at(model_index)->set_group(std::move(group));
+  tab_at(model_index)->set_group(group);
 
   // Expand the group if the tab that is getting grouped is the active tab. This
   // can result in the group expanding in a series of actions where the final
@@ -1481,20 +1481,28 @@ bool TabStrip::ShouldDrawStrokes() const {
 }
 
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
-  if (selected_tabs_.active() != new_selection.active()) {
-    if (selected_tabs_.active() >= 0)
-      tab_at(selected_tabs_.active())->ActiveStateChanged();
-    if (new_selection.active() >= 0) {
-      Tab* new_active_tab = tab_at(new_selection.active());
+  DCHECK_GE(new_selection.active(), 0)
+      << "We should never transition to a state where no tab is active.";
+  Tab* const new_active_tab = tab_at(new_selection.active());
+  Tab* const old_active_tab =
+      selected_tabs_.active() >= 0 ? tab_at(selected_tabs_.active()) : nullptr;
 
+  if (new_active_tab != old_active_tab) {
+    if (old_active_tab) {
+      old_active_tab->ActiveStateChanged();
+      if (old_active_tab->group().has_value())
+        UpdateTabGroupVisuals(old_active_tab->group().value());
+    }
+    if (new_active_tab->group().has_value()) {
+      const tab_groups::TabGroupId new_group = new_active_tab->group().value();
       // If the tab that is about to be activated is in a collapsed group,
       // automatically expand the group.
-      base::Optional<tab_groups::TabGroupId> group = new_active_tab->group();
-      if (group.has_value() && controller()->IsGroupCollapsed(group.value()))
-        controller()->ToggleTabGroupCollapsedState(group.value());
-
-      new_active_tab->ActiveStateChanged();
+      if (controller()->IsGroupCollapsed(new_group))
+        controller()->ToggleTabGroupCollapsedState(new_group);
+      UpdateTabGroupVisuals(new_group);
     }
+
+    new_active_tab->ActiveStateChanged();
     layout_helper_->SetActiveTab(selected_tabs_.active(),
                                  new_selection.active());
   }
@@ -1538,8 +1546,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       base::STLSetDifference<ui::ListSelectionModel::SelectedIndices>(
           new_selection.selected_indices(), selected_tabs_.selected_indices());
 
-  tab_at(new_selection.active())
-      ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  new_active_tab->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
 
   UpdateHoverCard(nullptr);

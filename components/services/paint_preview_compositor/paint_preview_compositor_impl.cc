@@ -201,6 +201,9 @@ bool PaintPreviewCompositorImpl::AddFrame(
   auto frame_data = mojom::FrameData::New();
   SkRect sk_rect = frame.skp->cullRect();
   frame_data->scroll_extents = gfx::Size(sk_rect.width(), sk_rect.height());
+  frame_data->scroll_offsets = gfx::Size(
+      frame_proto.has_scroll_offset_x() ? frame_proto.scroll_offset_x() : 0,
+      frame_proto.has_scroll_offset_y() ? frame_proto.scroll_offset_y() : 0);
   frame_data->subframes.reserve(frame.subframe_clip_rects.size());
   for (const auto& subframe_clip_rect : frame.subframe_clip_rects)
     frame_data->subframes.push_back(subframe_clip_rect.Clone());

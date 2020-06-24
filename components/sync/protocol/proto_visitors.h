@@ -86,11 +86,9 @@
 #define VISIT_REP(field) \
   visitor.Visit(proto, #field, proto.field());
 
-// NOLINT(runtime/references) is necessary to avoid a presubmit warning about
-// V& not being const.
 #define VISIT_PROTO_FIELDS(proto) \
   template <class V>              \
-  void VisitProtoFields(V& visitor, proto)  // NOLINT(runtime/references)
+  void VisitProtoFields(V& visitor, proto)
 
 namespace syncer {
 

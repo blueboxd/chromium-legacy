@@ -783,7 +783,7 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
   // via trusted user gestures.
   const newFileHandle = new FakeFileSystemFileHandle();
   const chooseEntries = new Promise(resolve => {
-    window.chooseFileSystemEntries = options => {
+    window.showSaveFilePicker = options => {
       resolve(options);
       return newFileHandle;
     };
@@ -795,11 +795,9 @@ TEST_F('MediaAppUIBrowserTest', 'SaveCopyIPC', async () => {
   assertEquals(result.testQueryResult, 'boo yah!');
   const options = await chooseEntries;
 
-  assertEquals(options.type, 'save-file');
-  assertEquals(options.accepts.length, 1);
-  assertEquals(options.accepts[0].extension, 'png');
-  assertEquals(options.accepts[0].mimeTypes.length, 1);
-  assertEquals(options.accepts[0].mimeTypes[0], 'image/png');
+  assertEquals(options.types.length, 1);
+  assertEquals(options.types[0].description, 'png');
+  assertDeepEquals(options.types[0].accept['image/png'], ['png']);
 
   const writeResult = await newFileHandle.lastWritable.closePromise;
   assertEquals(await writeResult.text(), await testImage.text());

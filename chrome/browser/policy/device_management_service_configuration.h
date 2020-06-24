@@ -18,15 +18,15 @@ namespace policy {
 class DeviceManagementServiceConfiguration
     : public DeviceManagementService::Configuration {
  public:
-  explicit DeviceManagementServiceConfiguration(
-      const std::string& server_url,
-      const std::string& reporting_server_url);
+  DeviceManagementServiceConfiguration(const std::string& server_url,
+                                       const std::string& reporting_server_url);
   ~DeviceManagementServiceConfiguration() override;
 
   std::string GetDMServerUrl() override;
   std::string GetAgentParameter() override;
   std::string GetPlatformParameter() override;
   std::string GetReportingServerUrl() override;
+  std::string GetReportingConnectorServerUrl() override;
 
  private:
   const std::string server_url_;

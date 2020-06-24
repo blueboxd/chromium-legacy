@@ -47,6 +47,7 @@
 #include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1262,6 +1263,14 @@ IFACEMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
 IFACEMETHODIMP AXPlatformNodeWin::get_uniqueID(LONG* id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNIQUE_ID);
   COM_OBJECT_VALIDATE_1_ARG(id);
+  // We want to negate the unique id for it to be consistent across different
+  // Windows accessiblity APIs. The negative unique id convention originated
+  // from ::NotifyWinEvent() takes an hwnd and a child id. A 0 child id means
+  // self, and a positive child id means child #n. In order to fire an event for
+  // an arbitrary descendant of the window, Firefox started the practice of
+  // using a negative unique id. We follow the same negative unique id
+  // convention here and when we fire events via
+  // ::NotifyWinEvent().
   *id = -GetUniqueId();
   return S_OK;
 }
@@ -3986,6 +3995,11 @@ IFACEMETHODIMP AXPlatformNodeWin::get_FragmentRoot(
 IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
                                                      IUnknown** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
+  return GetPatternProviderImpl(pattern_id, result);
+}
+
+HRESULT AXPlatformNodeWin::GetPatternProviderImpl(PATTERNID pattern_id,
+                                                  IUnknown** result) {
   UIA_VALIDATE_CALL_1_ARG(result);
 
   *result = nullptr;
@@ -4024,6 +4038,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
   int int_attribute;
   const AXNodeData& data = GetData();
 
+  // Default UIA Property Ids.
   switch (property_id) {
     case UIA_AriaPropertiesPropertyId:
       result->vt = VT_BSTR;
@@ -4383,6 +4398,21 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
     case UIA_ProviderDescriptionPropertyId:
     case UIA_RuntimeIdPropertyId:
       break;
+  }  // End of default UIA property ids.
+
+  // Custom UIA Property Ids.
+  if (property_id ==
+      UiaRegistrarWin::GetInstance().GetUiaUniqueIdPropertyId()) {
+    // We want to negate the unique id for it to be consistent across different
+    // Windows accessiblity APIs. The negative unique id convention originated
+    // from ::NotifyWinEvent() takes an hwnd and a child id. A 0 child id means
+    // self, and a positive child id means child #n. In order to fire an event
+    // for an arbitrary descendant of the window, Firefox started the practice
+    // of using a negative unique id. We follow the same negative unique id
+    // convention here and when we fire events via ::NotifyWinEvent().
+    result->vt = VT_BSTR;
+    result->bstrVal =
+        SysAllocString(base::NumberToString16(-GetUniqueId()).c_str());
   }
 
   return S_OK;

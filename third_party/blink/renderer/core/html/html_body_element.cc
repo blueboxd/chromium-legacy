@@ -66,8 +66,8 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
     if (!url.IsEmpty()) {
       CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
           url, GetDocument().CompleteURL(url),
-          Referrer(GetDocument().OutgoingReferrer(),
-                   GetDocument().GetReferrerPolicy()),
+          Referrer(GetExecutionContext()->OutgoingReferrer(),
+                   GetExecutionContext()->GetReferrerPolicy()),
           OriginClean::kTrue, false /* is_ad_related */);
       image_value->SetInitiator(localName());
       style->SetProperty(
@@ -215,7 +215,7 @@ void HTMLBodyElement::ParseAttribute(
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kLanguagechange,
         CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
-  } else if (RuntimeEnabledFeatures::PortalsEnabled(&GetDocument()) &&
+  } else if (RuntimeEnabledFeatures::PortalsEnabled(GetExecutionContext()) &&
              name == html_names::kOnportalactivateAttr) {
     GetDocument().SetWindowAttributeEventListener(
         event_type_names::kPortalactivate,

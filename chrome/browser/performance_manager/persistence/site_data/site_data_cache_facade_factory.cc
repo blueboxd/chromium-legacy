@@ -69,8 +69,7 @@ bool SiteDataCacheFacadeFactory::ServiceIsCreatedWithBrowserContext() const {
 }
 
 bool SiteDataCacheFacadeFactory::ServiceIsNULLWhileTesting() const {
-  // Tests that want to use this factory will have to explicitly enable it.
-  return true;
+  return false;
 }
 
 }  // namespace performance_manager

@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
-  gfx::Rect GetOutterBounds() const;
+  gfx::Rect GetOuterBounds() const;
 
   void SetCursor(::Cursor cursor);
   bool SetTitle(base::string16 title);

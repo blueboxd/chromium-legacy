@@ -199,10 +199,9 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // was initiated by something in the current document and should therefore
   // show the current document's url as the referrer.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
+    LocalDOMWindow* window = frame_->DomWindow();
     Referrer referrer = SecurityPolicy::GenerateReferrer(
-        frame_->GetDocument()->GetReferrerPolicy(),
-        frame_->GetDocument()->Url(),
-        frame_->GetDocument()->OutgoingReferrer());
+        window->GetReferrerPolicy(), window->Url(), window->OutgoingReferrer());
     request.SetReferrerString(referrer.referrer);
     request.SetReferrerPolicy(referrer.referrer_policy);
   }
@@ -1211,7 +1210,7 @@ void FrameLoader::CommitDocumentLoader(
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {
-  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->GetDocument()) ||
+  if (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) ||
       !frame_->GetPage() || !GetDocumentLoader() ||
       !GetDocumentLoader()->GetHistoryItem() ||
       !GetDocumentLoader()->GetHistoryItem()->GetViewState() ||
@@ -1339,7 +1338,7 @@ void FrameLoader::ProcessFragment(const KURL& url,
   // restoration type is manual, then we should not override it unless this
   // is a same document reload.
   bool should_scroll_to_fragment =
-      !RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->GetDocument()) &&
+      !RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) &&
       GetDocumentLoader()->NavigationScrollAllowed() &&
       ((load_start_type == kNavigationWithinSameDocument &&
         !IsBackForwardLoadType(frame_load_type)) ||

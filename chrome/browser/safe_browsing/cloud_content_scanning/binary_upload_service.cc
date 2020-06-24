@@ -359,17 +359,7 @@ void BinaryUploadService::OnGetLegacyResponse(
   MaybeFinishLegacyRequest(request);
 }
 
-void BinaryUploadService::MaybeFinishRequest(Request* request) {
-  if (request->use_legacy_proto())
-    MaybeFinishLegacyRequest(request);
-  else
-    MaybeFinishConnectorRequest(request);
-}
-
 void BinaryUploadService::MaybeFinishConnectorRequest(Request* request) {
-  if (!received_connector_responses_.contains(request))
-    return;
-
   for (const std::string& tag : request->content_analysis_request().tags()) {
     const auto& results = received_connector_responses_[request].results();
     if (std::none_of(

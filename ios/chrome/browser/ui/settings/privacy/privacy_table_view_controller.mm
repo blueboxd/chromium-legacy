@@ -6,6 +6,8 @@
 
 #include "base/check.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
@@ -209,6 +211,16 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   detailItem.accessibilityIdentifier = accessibilityIdentifier;
 
   return detailItem;
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePrivacySettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePrivacySettingsBack"));
 }
 
 #pragma mark - UITableViewDelegate

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_OBSERVER_H_
 
 #include "base/macros.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -23,6 +24,11 @@ class SubresourceRedirectObserver
  public:
   static void MaybeCreateForWebContents(content::WebContents* web_contents);
 
+  // Returns whether LiteMode https image compression was attempted on this
+  // page.
+  static bool IsHttpsImageCompressionApplied(
+      content::WebContents* web_contents);
+
   ~SubresourceRedirectObserver() override;
   SubresourceRedirectObserver(const SubresourceRedirectObserver&) = delete;
   SubresourceRedirectObserver& operator=(const SubresourceRedirectObserver&) =
@@ -36,6 +42,25 @@ class SubresourceRedirectObserver
   // content::WebContentsObserver.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // Invoked when the OptimizationGuideKeyedService has sufficient information
+  // to make a decision for whether we can send resource loading image hints.
+  // If |decision| is true, public image URLs contained in
+  // |optimization_metadata| will be sent to the render frame host as specified
+  // by |render_frame_host_routing_id| to later be compressed.
+  void OnResourceLoadingImageHintsReceived(
+      content::GlobalFrameRoutingId render_frame_host_routing_id,
+      optimization_guide::OptimizationGuideDecision decision,
+      const optimization_guide::OptimizationMetadata& optimization_metadata);
+
+  // Maintains whether https image compression was attempted for the last
+  // navigation. Even though image compression was attempted, it doesn't mean at
+  // least one image will get compressed, since that depends on a public image
+  // present in this page. This is not an issue since most pages tend to have at
+  // least one public image even though they are fully private.
+  bool is_https_image_compression_applied_ = false;
+
+  base::WeakPtrFactory<SubresourceRedirectObserver> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

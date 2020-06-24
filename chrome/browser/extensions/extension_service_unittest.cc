@@ -2056,7 +2056,7 @@ TEST_F(ExtensionServiceTest, PackExtension) {
 
   // Repeat the run with the pem file gone, and no special flags
   // Should refuse to overwrite the existing crx.
-  base::DeleteFile(privkey_path, false);
+  base::DeleteFile(privkey_path);
   ASSERT_FALSE(creator->Run(input_directory, crx_path, base::FilePath(),
       privkey_path, ExtensionCreator::kNoRunFlags));
 
@@ -2205,7 +2205,7 @@ TEST_F(ExtensionServiceTest, PackExtensionContainingKeyFails) {
   ASSERT_TRUE(base::PathExists(crx_path));
   ASSERT_TRUE(base::PathExists(privkey_path));
 
-  base::DeleteFile(crx_path, false);
+  base::DeleteFile(crx_path);
   // Move the pem file into the extension.
   base::Move(privkey_path,
                   input_directory.AppendASCII("privkey.pem"));
@@ -2322,7 +2322,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // directory, and we don't want to copy the whole extension for a unittest.
   base::FilePath theme_file = extension_path.Append(chrome::kThemePackFilename);
   ASSERT_TRUE(base::PathExists(theme_file));
-  ASSERT_TRUE(base::DeleteFile(theme_file, false));  // Not recursive.
+  ASSERT_TRUE(base::DeleteFile(theme_file));  // Not recursive.
 }
 
 #if defined(OS_POSIX)

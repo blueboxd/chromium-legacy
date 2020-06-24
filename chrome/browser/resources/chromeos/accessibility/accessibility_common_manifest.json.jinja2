@@ -11,11 +11,13 @@
 {% endif %}
   "background": {
     "scripts": [
-      "accessibility_common/autoclick.js"
+      "accessibility_common/autoclick/autoclick.js",
+      "accessibility_common/accessibility_common_loader.js"
     ]
   },
   "permissions": [
-    "accessibilityPrivate"
+    "accessibilityPrivate",
+    "accessibilityFeatures.read"
   ],
   "automation": {
     "desktop": true

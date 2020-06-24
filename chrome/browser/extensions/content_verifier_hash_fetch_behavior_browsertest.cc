@@ -111,7 +111,7 @@ class ContentVerifierHashTest
     }
 
     // Delete verified_contents.json:
-    if (!base::DeleteFile(verified_contents_path, false /* recursive */)) {
+    if (!base::DeleteFile(verified_contents_path)) {
       return testing::AssertionFailure()
              << "Could not delete verified_contents.json.";
     }
@@ -135,7 +135,7 @@ class ContentVerifierHashTest
     }
     base::FilePath computed_hashes_path =
         file_util::GetComputedHashesPath(info_->extension_root);
-    if (!base::DeleteFile(computed_hashes_path, false /* recursive */)) {
+    if (!base::DeleteFile(computed_hashes_path)) {
       return testing::AssertionFailure()
              << "Error deleting computed_hashes.json.";
     }

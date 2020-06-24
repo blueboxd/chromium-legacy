@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
@@ -28,6 +29,9 @@ using vm_tools::apps::ApplicationList;
 
 constexpr char kCrostiniAppsInstalledHistogram[] =
     "Crostini.AppsInstalledAtLogin";
+
+constexpr char kPluginVmAppsInstalledHistogram[] =
+    "PluginVm.AppsInstalledAtLogin";
 
 namespace guest_os {
 
@@ -54,7 +58,7 @@ class GuestOsRegistryServiceTest : public testing::Test {
   };
 
   guest_os::GuestOsRegistryService* service() { return service_.get(); }
-  Profile* profile() { return &profile_; }
+  TestingProfile* profile() { return &profile_; }
 
   std::vector<std::string> GetRegisteredAppIds() {
     std::vector<std::string> result;
@@ -249,6 +253,29 @@ TEST_F(GuestOsRegistryServiceTest, NAppsInstalledHistogram) {
   RecreateService();
 
   histogram_tester.ExpectUniqueSample(kCrostiniAppsInstalledHistogram, 4, 1);
+}
+
+TEST_F(GuestOsRegistryServiceTest, PluginVmAppsInstalledHistogram) {
+  base::HistogramTester histogram_tester;
+
+  plugin_vm::PluginVmTestHelper test_helper(profile());
+  test_helper.AllowPluginVm();
+
+  // Plugin VM needs to be enabled before we start counting.
+  RecreateService();
+  histogram_tester.ExpectTotalCount(kPluginVmAppsInstalledHistogram, 0);
+
+  test_helper.EnablePluginVm();
+  // Set up an app list with the expected number of apps.
+  ApplicationList app_list = crostini::CrostiniTestHelper::BasicAppList(
+      "app 1", "PvmDefault", "container");
+  *app_list.add_apps() = crostini::CrostiniTestHelper::BasicApp("app 2");
+  app_list.set_vm_type(vm_tools::apps::ApplicationList_VmType_PLUGIN_VM);
+  service()->UpdateApplicationList(app_list);
+
+  RecreateService();
+
+  histogram_tester.ExpectUniqueSample(kPluginVmAppsInstalledHistogram, 2, 1);
 }
 
 TEST_F(GuestOsRegistryServiceTest, InstallAndLaunchTime) {

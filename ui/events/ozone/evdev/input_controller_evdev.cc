@@ -169,8 +169,27 @@ void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
 }
 
 void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
+  if (mouse_acceleration_suspended_) {
+    stored_mouse_acceleration_setting_ = enabled;
+    return;
+  }
   input_device_settings_.mouse_acceleration_enabled = enabled;
   ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SuspendMouseAcceleration() {
+  // multiple calls to suspend are currently not supported.
+  DCHECK(!mouse_acceleration_suspended_);
+  stored_mouse_acceleration_setting_ =
+      input_device_settings_.mouse_acceleration_enabled;
+  mouse_acceleration_suspended_ = true;
+  input_device_settings_.mouse_acceleration_enabled = false;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::EndMouseAccelerationSuspension() {
+  mouse_acceleration_suspended_ = false;
+  SetMouseAcceleration(stored_mouse_acceleration_setting_);
 }
 
 void InputControllerEvdev::SetMouseScrollAcceleration(bool enabled) {

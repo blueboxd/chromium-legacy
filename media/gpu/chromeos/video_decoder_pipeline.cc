@@ -15,6 +15,7 @@
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "media/base/limits.h"
+#include "media/base/media_log.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/image_processor.h"
 #include "media/gpu/chromeos/image_processor_factory.h"
@@ -68,6 +69,7 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
+    std::unique_ptr<MediaLog> /*media_log*/,
     GetCreateVDFunctionsCB get_create_vd_functions_cb) {
   if (!client_task_runner || !frame_pool || !frame_converter) {
     VLOGF(1) << "One of arguments is nullptr.";

@@ -89,7 +89,7 @@ void ExtensionServiceTestWithInstall::PackCRX(const base::FilePath& dir_path,
     ASSERT_TRUE(base::PathExists(pem_path));
   }
 
-  ASSERT_TRUE(base::DeleteFile(crx_path, false));
+  ASSERT_TRUE(base::DeleteFile(crx_path));
 
   std::unique_ptr<ExtensionCreator> creator(new ExtensionCreator());
   ASSERT_TRUE(creator->Run(dir_path,

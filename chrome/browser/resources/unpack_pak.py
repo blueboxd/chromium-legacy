@@ -85,7 +85,11 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--pak_file')
   parser.add_argument('--out_folder')
+  # The expected reference point/root path for files appearing in the pak file.
+  # If this argument is not provided, the location of the pak file will be used
+  # by default.
   parser.add_argument('--pak_base_dir')
+  # Resources in the pak file which should not be unpacked.
   parser.add_argument('--excludes', nargs='*')
   args = parser.parse_args()
 

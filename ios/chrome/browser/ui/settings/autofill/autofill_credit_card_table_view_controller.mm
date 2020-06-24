@@ -123,7 +123,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.navigationController.toolbar.accessibilityIdentifier =
       kAutofillPaymentMethodsToolbarId;
 
-  base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
   [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
                animated:YES];
   [self updateUIForEditState];
@@ -258,6 +257,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)localCreditCardsExist {
   return !_personalDataManager->GetLocalCreditCards().empty();
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileCreditCardSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileCreditCardSettingsBack"));
 }
 
 #pragma mark - SettingsRootTableViewController

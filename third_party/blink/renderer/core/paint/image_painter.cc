@@ -41,7 +41,7 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
                                    scoped_refptr<Image> image) {
   DCHECK(image);
   if (!RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(
-          &layout_image.GetDocument()))
+          layout_image.GetDocument().GetExecutionContext()))
     return false;
 
   DoubleSize layout_size(layout_image.ContentSize());

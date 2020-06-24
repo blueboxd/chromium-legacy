@@ -8,6 +8,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -211,6 +213,17 @@ const char kUmaSelectDefaultSearchEngine[] =
           toSectionWithIdentifier:SectionIdentifierSecondList];
     }
   }
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(
+      base::UserMetricsAction("MobileSearchEngineSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileSearchEngineSettingsBack"));
 }
 
 #pragma mark - SettingsRootTableViewController

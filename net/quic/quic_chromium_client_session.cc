@@ -994,6 +994,13 @@ void QuicChromiumClientSession::Initialize() {
     quic::QuicSpdyClientSessionBase::SetMaxPushId(max_allowed_push_id_);
   }
   set_max_inbound_header_list_size(kQuicMaxHeaderListSize);
+  if (config()->HasClientRequestedIndependentOption(
+          quic::kQLVE, quic::Perspective::IS_CLIENT)) {
+    connection()->EnableLegacyVersionEncapsulation(session_key_.host());
+    // Legacy Version Encapsulation needs CHLO padding to be disabled.
+    // TODO(dschinazi) remove this line once we deprecate quic_dont_pad_chlo.
+    crypto_config_->GetConfig()->set_disable_chlo_padding(true);
+  }
   quic::QuicSpdyClientSessionBase::Initialize();
   SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());
   SetHpackDecoderDebugVisitor(std::make_unique<HpackDecoderDebugVisitor>());

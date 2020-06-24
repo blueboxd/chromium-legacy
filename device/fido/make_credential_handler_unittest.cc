@@ -13,6 +13,7 @@
 #include "components/cbor/values.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/fido/authenticator_get_info_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -331,6 +332,50 @@ MATCHER(IsResidentKeyRequest, "") {
   return true;
 }
 
+// Matches a CTAP command that is:
+// * A valid make credential request,
+// * if |is_uv| is true,
+//   * with an options map present,
+//   * and options.uv present and true.
+// * if |is_uv_| is false,
+//   * with an options map not present,
+//   * or options.uv not present or false.
+MATCHER_P(IsUvRequest, is_uv, "") {
+  if (arg.empty() ||
+      arg[0] != base::strict_cast<uint8_t>(
+                    CtapRequestCommand::kAuthenticatorMakeCredential)) {
+    *result_listener << "not make credential";
+    return false;
+  }
+
+  base::span<const uint8_t> param_bytes(arg);
+  param_bytes = param_bytes.subspan(1);
+  const auto maybe_map = cbor::Reader::Read(param_bytes);
+  if (!maybe_map || !maybe_map->is_map()) {
+    *result_listener << "not a map";
+    return false;
+  }
+  const auto& map = maybe_map->GetMap();
+
+  const auto options_it = map.find(cbor::Value(7));
+  if (options_it == map.end() || !options_it->second.is_map()) {
+    return is_uv == false;
+  }
+  const auto& options = options_it->second.GetMap();
+
+  const auto uv_it = options.find(cbor::Value("uv"));
+  if (uv_it == options.end()) {
+    return is_uv == false;
+  }
+
+  if (!uv_it->second.is_bool()) {
+    *result_listener << "'uv' is not a boolean";
+    return false;
+  }
+
+  return uv_it->second.GetBool() == is_uv;
+}
+
 ACTION_P(Reply, reply) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -639,6 +684,34 @@ TEST_F(FidoMakeCredentialHandlerTest,
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_TRUE(callback().was_called());
   EXPECT_EQ(MakeCredentialStatus::kUserConsentDenied, callback().status());
+}
+
+TEST_F(FidoMakeCredentialHandlerTest,
+       TestCrossPlatformAuthenticatorsForceUVWhenSupported) {
+  const auto& test_info_response = test_data::kTestAuthenticatorGetInfoResponse;
+  ASSERT_EQ(ReadCTAPGetInfoResponse(test_info_response)
+                ->options.user_verification_availability,
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured);
+
+  auto device =
+      MockFidoDevice::MakeCtapWithGetInfoExpectation(test_info_response);
+  device->SetDeviceTransport(FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponse, base::TimeDelta(),
+      IsUvRequest(true));
+
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorAttachment::kAny, /*require_resident_key=*/false,
+              UserVerificationRequirement::kDiscouraged));
+  discovery()->AddDevice(std::move(device));
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  callback().WaitForCallback();
+  EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
 }
 
 // If a device returns CTAP2_ERR_PIN_AUTH_INVALID, the request should complete

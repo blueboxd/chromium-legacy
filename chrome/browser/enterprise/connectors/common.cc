@@ -15,6 +15,7 @@ AnalysisSettings& AnalysisSettings::operator=(AnalysisSettings&&) = default;
 AnalysisSettings::~AnalysisSettings() = default;
 
 ReportingSettings::ReportingSettings() = default;
+ReportingSettings::ReportingSettings(GURL url) : reporting_url(url) {}
 ReportingSettings::ReportingSettings(ReportingSettings&&) = default;
 ReportingSettings& ReportingSettings::operator=(ReportingSettings&&) = default;
 ReportingSettings::~ReportingSettings() = default;

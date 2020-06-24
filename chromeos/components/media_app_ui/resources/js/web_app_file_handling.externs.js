@@ -188,29 +188,49 @@ class LaunchQueue {
 }
 
 /**
+ * https://wicg.github.io/native-file-system/#dictdef-filepickeraccepttype
  * @typedef {{
- *    description: (string|undefined),
- *    mimeTypes: (!Array<string>|undefined),
- *    extensions: (!Array<string>|undefined)
+ *    description: string,
+ *    accept: !Array<!Object<string, Array<string>>>,
  * }}
  */
-let ChooseFileSystemEntriesOptionsAccepts;
+let FilePickerAcceptType;
 
 /**
+ * https://wicg.github.io/native-file-system/#dictdef-filepickeroptions
+ * https://wicg.github.io/native-file-system/#dictdef-directorypickeroptions
+ * https://wicg.github.io/native-file-system/#dictdef-openfilepickeroptions
+ * https://wicg.github.io/native-file-system/#dictdef-savefilepickeroptions
+ * Note: `multiple` is only used for openfilepicker.
+ * `types` is required if excludeAcceptAllOption is true.
  * @typedef {{
- *    type: (string|undefined),
  *    multiple: (boolean|undefined),
- *    accepts: (!Array<!ChooseFileSystemEntriesOptionsAccepts>|undefined),
+ *    types: (!Array<!FilePickerAcceptType>|undefined),
  *    excludeAcceptAllOption: (boolean|undefined)
  * }}
  */
-let ChooseFileSystemEntriesOptions;
+let FilePickerOptions;
 
 /**
- * @param {(!ChooseFileSystemEntriesOptions|undefined)} options
+ * https://wicg.github.io/native-file-system/#native-filesystem
+ * @param {(!FilePickerOptions|undefined)} options
  * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
  */
-window.chooseFileSystemEntries;
+window.showOpenFilePicker;
+
+/**
+ * https://wicg.github.io/native-file-system/#native-filesystem
+ * @param {(!FilePickerOptions|undefined)} options
+ * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
+ */
+window.showSaveFilePicker;
+
+/**
+ * https://wicg.github.io/native-file-system/#native-filesystem
+ * @param {(!FilePickerOptions|undefined)} options
+ * @return {!Promise<(!FileSystemHandle|!Array<!FileSystemHandle>)>}
+ */
+window.showDirectoryPicker;
 
 /** @type {LaunchQueue} */
 window.launchQueue;

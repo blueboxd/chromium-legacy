@@ -50,12 +50,6 @@ class WebTestDevToolsBindings::SecondaryObserver : public WebContentsObserver {
     bindings_ = nullptr;
   }
 
-  // WebContentsObserver implementation.
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    if (WebTestControlHost::Get())
-      WebTestControlHost::Get()->HandleNewRenderFrameHost(render_frame_host);
-  }
-
  private:
   WebTestDevToolsBindings* bindings_;
   DISALLOW_COPY_AND_ASSIGN(SecondaryObserver);

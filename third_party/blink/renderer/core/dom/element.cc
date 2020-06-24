@@ -3535,7 +3535,7 @@ ElementInternals& Element::EnsureElementInternals() {
 }
 
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(&GetDocument()));
+  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(GetExecutionContext()));
   if (ShadowRoot* root = GetShadowRoot()) {
     if (root->IsUserAgent()) {
       exception_state.ThrowDOMException(
@@ -3570,7 +3570,7 @@ ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
 }
 
 ShadowRoot& Element::CreateShadowRootInternal() {
-  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(&GetDocument()));
+  DCHECK(RuntimeEnabledFeatures::ShadowDOMV0Enabled(GetExecutionContext()));
   DCHECK(!ClosedShadowRoot());
   DCHECK(AreAuthorShadowsAllowed());
   DCHECK(!AlwaysCreateUserAgentShadowRoot());

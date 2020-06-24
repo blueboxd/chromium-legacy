@@ -308,7 +308,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
       context->GetPreviousEventId(), context->GetPreviousEventResults(),
       context->GetExactResolve(),
       context->GetTranslationLanguages().detected_language,
-      context->GetTranslationLanguages().target_language);
+      context->GetTranslationLanguages().target_language, std::string());
 
   search_terms_args.contextual_search_params = params;
 

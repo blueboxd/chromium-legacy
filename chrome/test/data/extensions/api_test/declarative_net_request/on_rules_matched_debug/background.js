@@ -116,29 +116,29 @@ var tests = [
   // Ensure that requests that don't originate from a tab (such as those from
   // the extension background page) trigger the listener.
   function testBackgroundPageRequest() {
-    resetMatchedRules();
+    function listenOnce(target, callback) {
+      let innerCallback = function(info) {
+        target.removeListener(innerCallback);
+        callback(info);
+      };
+      target.addListener(innerCallback);
+    }
 
-    const url = getServerURL('abc.com');
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
+    listenOnce(
+        chrome.declarativeNetRequest.onRuleMatchedDebug,
+        function(fetchPromise, info) {
+          fetchPromise.then(function(response) {
+            chrome.test.fail('Request should be blocked by rule with ID 1');
+          }).catch(function(error) {
+            chrome.test.assertEq(1, info.rule.ruleId);
+            chrome.test.assertEq('rules1', info.rule.rulesetId);
 
-    xhr.onload = () => {
-      chrome.test.fail('Request should be blocked by rule with ID 1');
-    };
-
-    // The request from the background page to abc.com should be blocked.
-    xhr.onerror = () => {
-      chrome.test.assertEq(1, matchedRules.length);
-      const matchedRule = matchedRules[0];
-      chrome.test.assertEq(1, matchedRule.rule.ruleId);
-      chrome.test.assertEq('rules1', matchedRule.rule.rulesetId);
-
-      // Tab ID should be -1 since this request was made from a background page.
-      chrome.test.assertEq(-1, matchedRule.request.tabId);
-      chrome.test.succeed();
-    };
-
-    xhr.send();
+            // Tab ID should be -1 since this request was made from a background
+            // page.
+            chrome.test.assertEq(-1, info.request.tabId);
+            chrome.test.succeed();
+          });
+        }.bind(null, fetch(getServerURL('abc.com'), {method: 'GET'})));
   },
 
   function testNoRuleMatched() {

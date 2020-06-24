@@ -174,21 +174,24 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
   if (selection_.state == HEADER_BUTTON_FOCUSED) {
     // If the new selection is a Header, the temporary text is an empty string.
     edit_model_->OnPopupDataChanged(base::string16(),
-                                    /*is_temporary_text=*/true, keyword,
-                                    is_keyword_hint);
+                                    /*is_temporary_text=*/true,
+                                    base::string16(), keyword, is_keyword_hint,
+                                    base::string16());
   } else if (old_selection.line != selection_.line ||
              old_selection.state == HEADER_BUTTON_FOCUSED) {
     // Otherwise, only update the edit model for line number changes, or
     // when the old selection was a Header. Updating the edit model for every
     // state change breaks keyword mode.
     if (reset_to_default) {
-      edit_model_->OnPopupDataChanged(match.inline_autocompletion,
-                                      /*is_temporary_text=*/false, keyword,
-                                      is_keyword_hint);
+      edit_model_->OnPopupDataChanged(
+          match.inline_autocompletion,
+          /*is_temporary_text=*/false, match.prefix_autocompletion, keyword,
+          is_keyword_hint, match.fill_into_edit_additional_text);
     } else {
-      edit_model_->OnPopupDataChanged(match.fill_into_edit,
-                                      /*is_temporary_text=*/true, keyword,
-                                      is_keyword_hint);
+      edit_model_->OnPopupDataChanged(
+          match.fill_into_edit,
+          /*is_temporary_text=*/true, base::UTF8ToUTF16(""), keyword,
+          is_keyword_hint, match.fill_into_edit_additional_text);
     }
   }
 }

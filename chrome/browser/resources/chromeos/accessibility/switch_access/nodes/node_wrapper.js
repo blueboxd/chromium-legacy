@@ -23,8 +23,8 @@ class NodeWrapper extends SAChildNode {
     /** @private {boolean} */
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
 
-    /** @private {function(chrome.automation.AutomationEvent)} */
-    this.locationChangedHandler_ = () => FocusRingManager.setFocusedNode(this);
+    /** @private {RepeatedEventHandler} */
+    this.locationChangedHandler_;
   }
 
   // ================= Getters and setters =================
@@ -121,17 +121,17 @@ class NodeWrapper extends SAChildNode {
   /** @override */
   onFocus() {
     super.onFocus();
-    this.baseNode_.addEventListener(
-        chrome.automation.EventType.LOCATION_CHANGED,
-        this.locationChangedHandler_, false /* is_capture */);
+    this.locationChangedHandler_ = new RepeatedEventHandler(
+        this.baseNode_, chrome.automation.EventType.LOCATION_CHANGED,
+        () => FocusRingManager.setFocusedNode(this));
   }
 
   /** @override */
   onUnfocus() {
     super.onUnfocus();
-    this.baseNode_.removeEventListener(
-        chrome.automation.EventType.LOCATION_CHANGED,
-        this.locationChangedHandler_, false /* is_capture */);
+    if (this.locationChangedHandler_) {
+      this.locationChangedHandler_.stopListening();
+    }
   }
 
   /** @override */
@@ -237,8 +237,8 @@ class RootNodeWrapper extends SARootNode {
     /** @private {boolean} */
     this.invalidated_ = false;
 
-    /** @private {function(chrome.automation.AutomationEvent)} */
-    this.childrenChangedHandler_ = this.refresh.bind(this);
+    /** @private {RepeatedEventHandler} */
+    this.childrenChangedHandler_;
   }
 
   // ================= Getters and setters =================
@@ -289,17 +289,17 @@ class RootNodeWrapper extends SARootNode {
   /** @override */
   onFocus() {
     super.onFocus();
-    this.baseNode_.addEventListener(
-        chrome.automation.EventType.CHILDREN_CHANGED,
-        this.childrenChangedHandler_, false /* is_capture */);
+    this.childrenChangedHandler_ = new RepeatedEventHandler(
+        this.baseNode_, chrome.automation.EventType.CHILDREN_CHANGED,
+        this.refresh.bind(this));
   }
 
   /** @override */
   onUnfocus() {
     super.onUnfocus();
-    this.baseNode_.removeEventListener(
-        chrome.automation.EventType.CHILDREN_CHANGED,
-        this.childrenChangedHandler_, false /* is_capture */);
+    if (this.childrenChangedHandler_) {
+      this.childrenChangedHandler_.stopListening();
+    }
   }
 
   /** @override */

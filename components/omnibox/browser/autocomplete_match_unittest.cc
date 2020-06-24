@@ -29,6 +29,32 @@ bool EqualClassifications(const ACMatchClassifications& lhs,
   return true;
 }
 
+void TestSetAllowedToBeDefault(int caseI,
+                               const std::string input_text,
+                               bool input_prevent_inline_autocomplete,
+                               const std::string match_inline_autocompletion,
+                               const std::string match_prefix_autocompletion,
+                               const std::string expected_inline_autocompletion,
+                               bool expected_allowed_to_be_default_match) {
+  AutocompleteInput input(base::UTF8ToUTF16(input_text),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_prevent_inline_autocomplete(input_prevent_inline_autocomplete);
+
+  AutocompleteMatch match;
+  match.inline_autocompletion = base::UTF8ToUTF16(match_inline_autocompletion);
+  match.prefix_autocompletion = base::UTF8ToUTF16(match_prefix_autocompletion);
+
+  match.SetAllowedToBeDefault(input);
+
+  EXPECT_EQ(base::UTF16ToUTF8(match.inline_autocompletion).c_str(),
+            expected_inline_autocompletion)
+      << "case " << caseI;
+  EXPECT_EQ(match.allowed_to_be_default_match,
+            expected_allowed_to_be_default_match)
+      << "case " << caseI;
+}
+
 }  // namespace
 
 TEST(AutocompleteMatchTest, MoreRelevant) {
@@ -424,10 +450,61 @@ TEST(AutocompleteMatchTest, UpgradeMatchPropertiesWhileMergingDuplicates) {
 }
 
 TEST(AutocompleteMatchTest, SetAllowedToBeDefault) {
+  // Test all combinations of:
+  // 1) input text in ["goo", "goo ", "goo  "]
+  // 2) input prevent_inline_autocomplete in [false, true]
+  // 3) match inline_autocopmletion in ["", "gle.com", " gle.com", "  gle.com"]
+  // match_prefix_autocompletion will be "" for all these cases
+  TestSetAllowedToBeDefault(1, "goo", false, "", "", "", true);
+  TestSetAllowedToBeDefault(2, "goo", false, "gle.com", "", "gle.com", true);
+  TestSetAllowedToBeDefault(3, "goo", false, " gle.com", "", " gle.com", true);
+  TestSetAllowedToBeDefault(4, "goo", false, "  gle.com", "", "  gle.com",
+                            true);
+  TestSetAllowedToBeDefault(5, "goo ", false, "", "", "", true);
+  TestSetAllowedToBeDefault(6, "goo ", false, "gle.com", "", "gle.com", false);
+  TestSetAllowedToBeDefault(7, "goo ", false, " gle.com", "", "gle.com", true);
+  TestSetAllowedToBeDefault(8, "goo ", false, "  gle.com", "", " gle.com",
+                            true);
+  TestSetAllowedToBeDefault(9, "goo  ", false, "", "", "", true);
+  TestSetAllowedToBeDefault(10, "goo  ", false, "gle.com", "", "gle.com",
+                            false);
+  TestSetAllowedToBeDefault(11, "goo  ", false, " gle.com", "", " gle.com",
+                            false);
+  TestSetAllowedToBeDefault(12, "goo  ", false, "  gle.com", "", "gle.com",
+                            true);
+  TestSetAllowedToBeDefault(13, "goo", true, "", "", "", true);
+  TestSetAllowedToBeDefault(14, "goo", true, "gle.com", "", "gle.com", false);
+  TestSetAllowedToBeDefault(15, "goo", true, " gle.com", "", " gle.com", false);
+  TestSetAllowedToBeDefault(16, "goo", true, "  gle.com", "", "  gle.com",
+                            false);
+  TestSetAllowedToBeDefault(17, "goo ", true, "", "", "", true);
+  TestSetAllowedToBeDefault(18, "goo ", true, "gle.com", "", "gle.com", false);
+  TestSetAllowedToBeDefault(19, "goo ", true, " gle.com", "", " gle.com",
+                            false);
+  TestSetAllowedToBeDefault(20, "goo ", true, "  gle.com", "", "  gle.com",
+                            false);
+  TestSetAllowedToBeDefault(21, "goo  ", true, "", "", "", true);
+  TestSetAllowedToBeDefault(22, "goo  ", true, "gle.com", "", "gle.com", false);
+  TestSetAllowedToBeDefault(23, "goo  ", true, " gle.com", "", " gle.com",
+                            false);
+  TestSetAllowedToBeDefault(24, "goo  ", true, "  gle.com", "", "  gle.com",
+                            false);
+}
+
+TEST(AutocompleteMatchTest, SetAllowedToBeDefault_PrefixAutocompletion) {
+  // Verify that a non-empty prefix autocompletion will prevent an empty inline
+  // autocompletion from bypassing the other default match requirements.
+  TestSetAllowedToBeDefault(0, "xyz", true, "", "prefix", "", false);
+}
+
+TEST(AutocompleteMatchTest, TryRichAutocompletion) {
   auto test = [](int caseI, const std::string input_text,
                  bool input_prevent_inline_autocomplete,
-                 const std::string match_inline_autocompletion,
+                 const std::string primary_text,
+                 const std::string secondary_text, bool expected_return,
                  const std::string expected_inline_autocompletion,
+                 const std::string expected_prefix_autocompletion,
+                 const std::string expected_fill_into_edit_second_line,
                  bool expected_allowed_to_be_default_match) {
     AutocompleteInput input(base::UTF8ToUTF16(input_text),
                             metrics::OmniboxEventProto::OTHER,
@@ -435,45 +512,65 @@ TEST(AutocompleteMatchTest, SetAllowedToBeDefault) {
     input.set_prevent_inline_autocomplete(input_prevent_inline_autocomplete);
 
     AutocompleteMatch match;
-    match.inline_autocompletion =
-        base::UTF8ToUTF16(match_inline_autocompletion);
-
-    match.SetAllowedToBeDefault(input);
+    EXPECT_EQ(
+        match.TryRichAutocompletion(base::UTF8ToUTF16(primary_text),
+                                    base::UTF8ToUTF16(secondary_text), input),
+        expected_return);
 
     EXPECT_EQ(base::UTF16ToUTF8(match.inline_autocompletion).c_str(),
               expected_inline_autocompletion)
+        << "case " << caseI;
+    EXPECT_EQ(base::UTF16ToUTF8(match.prefix_autocompletion).c_str(),
+              expected_prefix_autocompletion)
+        << "case " << caseI;
+    EXPECT_EQ(base::UTF16ToUTF8(match.fill_into_edit_additional_text).c_str(),
+              expected_fill_into_edit_second_line)
         << "case " << caseI;
     EXPECT_EQ(match.allowed_to_be_default_match,
               expected_allowed_to_be_default_match)
         << "case " << caseI;
   };
 
-  // Test all combinations of:
-  // 1) input text in ["goo", "goo ", "goo  "]
-  // 2) input prevent_inline_autocomplete in [false, true]
-  // 3) match inline_autocopmletion in ["", "gle.com", " gle.com", "  gle.com"]
-  test(1, "goo", false, "", "", true);
-  test(2, "goo", false, "gle.com", "gle.com", true);
-  test(3, "goo", false, " gle.com", " gle.com", true);
-  test(4, "goo", false, "  gle.com", "  gle.com", true);
-  test(5, "goo ", false, "", "", true);
-  test(6, "goo ", false, "gle.com", "gle.com", false);
-  test(7, "goo ", false, " gle.com", "gle.com", true);
-  test(8, "goo ", false, "  gle.com", " gle.com", true);
-  test(9, "goo  ", false, "", "", true);
-  test(10, "goo  ", false, "gle.com", "gle.com", false);
-  test(11, "goo  ", false, " gle.com", " gle.com", false);
-  test(12, "goo  ", false, "  gle.com", "gle.com", true);
-  test(13, "goo", true, "", "", true);
-  test(14, "goo", true, "gle.com", "gle.com", false);
-  test(15, "goo", true, " gle.com", " gle.com", false);
-  test(16, "goo", true, "  gle.com", "  gle.com", false);
-  test(17, "goo ", true, "", "", true);
-  test(18, "goo ", true, "gle.com", "gle.com", false);
-  test(19, "goo ", true, " gle.com", " gle.com", false);
-  test(20, "goo ", true, "  gle.com", "  gle.com", false);
-  test(21, "goo  ", true, "", "", true);
-  test(22, "goo  ", true, "gle.com", "gle.com", false);
-  test(23, "goo  ", true, " gle.com", " gle.com", false);
-  test(24, "goo  ", true, "  gle.com", "  gle.com", false);
+  {
+    // We won't test every possible combination of rich autocompletion
+    // parameters, but for now, only the state were all are enabled. If we
+    // decide to launch a different combination, we can update these tests.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kRichAutocompletion,
+        {
+            {"RichAutocompletionAutocompleteTitles", "true"},
+            {"RichAutocompletionTwoLineOmnibox", "true"},
+            {"RichAutocompletionShowTitles", "true"},
+            {"RichAutocompletionAutocompleteNonPrefix", "true"},
+        });
+
+    // Prefer autocompleting primary text prefix.
+    test(0, "x", false, "x_mid_x_primary", "x_mid_x_secondary", true,
+         "_mid_x_primary", "", "x_mid_x_secondary", true);
+
+    // Otherwise, prefer secondary text prefix.
+    test(0, "x", false, "y_mid_x_primary", "x_mid_x_secondary", true,
+         "_mid_x_secondary", "", "y_mid_x_primary", true);
+
+    // Otherwise, prefer primary text non-prefix
+    test(0, "x", false, "y_mid_x_primary", "y_mid_x_secondary", true,
+         "_primary", "y_mid_", "y_mid_x_secondary", true);
+
+    // Otherwise, prefer secondary text non-prefix
+    test(0, "x", false, "y_mid_y_primary", "y_mid_x_secondary", true,
+         "_secondary", "y_mid_", "y_mid_y_primary", true);
+
+    // Otherwise, don't autocomplete
+    test(0, "x", false, "y_mid_y_primary", "y_mid_y_secondary", false, "", "",
+         "", false);
+
+    // Don't autocomplete if |prevent_inline_autocomplete| is true.
+    test(0, "x", true, "x_mid_x_primary", "x_mid_x_secondary", false, "", "",
+         "", false);
+  }
+
+  // Don't autocomplete if IsRichAutocompletionEnabled is disabled
+  test(0, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
+       false);
 }

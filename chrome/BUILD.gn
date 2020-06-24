@@ -1322,6 +1322,7 @@ group("extra_resources") {
       "//chrome/browser/resources:gaia_auth_host_resources",
       "//chrome/browser/resources:history_resources",
       "//chrome/browser/resources:local_ntp_resources",
+      "//chrome/browser/resources:nearby_internals_resources",
       "//chrome/browser/resources:new_tab_page_resources",
       "//chrome/browser/resources:settings_resources",
     ]

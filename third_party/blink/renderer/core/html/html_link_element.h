@@ -120,7 +120,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
     bool not_explicitly_enabled =
         !GetLinkStyle()->IsExplicitlyEnabled() ||
         !RuntimeEnabledFeatures::LinkDisabledNewSpecBehaviorEnabled(
-            &GetDocument());
+            GetExecutionContext());
     return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate() &&
            not_explicitly_enabled;
   }

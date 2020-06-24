@@ -595,7 +595,10 @@ void CloudPolicyClient::UploadRealtimeReport(base::Value report,
                                              StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
-  CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
+  CreateNewRealtimeReportingJob(
+      std::move(report),
+      service()->configuration()->GetReportingConnectorServerUrl(),
+      add_connector_url_params_, std::move(callback));
 }
 
 void CloudPolicyClient::UploadAppInstallReport(base::Value report,
@@ -603,8 +606,9 @@ void CloudPolicyClient::UploadAppInstallReport(base::Value report,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   CancelAppInstallReportUpload();
-  app_install_report_request_job_ =
-      CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
+  app_install_report_request_job_ = CreateNewRealtimeReportingJob(
+      std::move(report), service()->configuration()->GetReportingServerUrl(),
+      /* add_connector_url_params=*/false, std::move(callback));
   DCHECK(app_install_report_request_job_);
 }
 
@@ -622,8 +626,9 @@ void CloudPolicyClient::UploadExtensionInstallReport(base::Value report,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   CancelExtensionInstallReportUpload();
-  extension_install_report_request_job_ =
-      CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
+  extension_install_report_request_job_ = CreateNewRealtimeReportingJob(
+      std::move(report), service()->configuration()->GetReportingServerUrl(),
+      /* add_connector_url_params=*/false, std::move(callback));
   DCHECK(extension_install_report_request_job_);
 }
 
@@ -667,10 +672,13 @@ void CloudPolicyClient::FetchRemoteCommands(
 
 DeviceManagementService::Job* CloudPolicyClient::CreateNewRealtimeReportingJob(
     base::Value report,
+    const std::string& server_url,
+    bool add_connector_url_params,
     StatusCallback callback) {
   std::unique_ptr<RealtimeReportingJobConfiguration> config =
       std::make_unique<RealtimeReportingJobConfiguration>(
-          this, DMAuth::FromDMToken(dm_token_),
+          this, DMAuth::FromDMToken(dm_token_), server_url,
+          add_connector_url_params,
           base::BindOnce(&CloudPolicyClient::OnRealtimeReportUploadCompleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 

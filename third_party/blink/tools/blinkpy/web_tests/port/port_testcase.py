@@ -140,7 +140,7 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(
             self.make_port(options=optparse.Values({'configuration': 'Debug'
                                                     })).timeout_ms(),
-            3 * self.make_port().timeout_ms())
+            5 * self.make_port().timeout_ms())
 
     def make_dcheck_port(self, options):
         host = MockSystemHost(os_name=self.os_name, os_version=self.os_version)
@@ -159,7 +159,7 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(
             self.make_dcheck_port(options=optparse.Values(
                 {'configuration': 'Debug'})).timeout_ms(),
-            3 * default_timeout_ms)
+            5 * default_timeout_ms)
 
     def test_driver_cmd_line(self):
         port = self.make_port()

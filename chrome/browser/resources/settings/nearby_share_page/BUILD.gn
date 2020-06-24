@@ -20,11 +20,18 @@ js_library("nearby_share_subpage") {
   ]
 }
 
-# TODO: Uncomment as the Polymer3 migration makes progress.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [ ":nearby_share_subpage.m" ]
-#}
+group("polymer3_elements") {
+  public_deps = [
+    "../controls:polymer3_elements",
+    "../prefs:polymer3_elements",
+    ":nearby_share_subpage_module",
+  ]
+}
+
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [ ":nearby_share_subpage.m" ]
+}
 
 js_library("nearby_share_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/nearby_share_page/nearby_share_subpage.m.js" ]
@@ -42,4 +49,6 @@ polymer_modulizer("nearby_share_subpage") {
   js_file = "nearby_share_subpage.js"
   html_file = "nearby_share_subpage.html"
   html_type = "dom-module"
+  namespace_rewrites = settings_namespace_rewrites
+  auto_imports = settings_auto_imports
 }

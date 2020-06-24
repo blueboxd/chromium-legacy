@@ -438,6 +438,9 @@
       <message name="IDS_PAGE_INFO_PREVIEW_MESSAGE" desc="This text is displayed in the page info bubble when the currently viewed page has been modified by Google to be a lighter and faster version of the original page. The word 'Lite' should match the translation in TC ID 1019734090540434451">
         Lite page provided by Google
       </message>
+      <message name="IDS_PAGE_INFO_LITE_MODE_HTTPS_IMAGE_COMPRESSION" desc="This text is displayed in the page info bubble when the currently viewed page has https images that were optimized by Google">
+        To save you data, this page's images have been optimized by Google.
+      </message>
       <message name="IDS_PAGE_INFO_OPEN_ONLINE_BUTTON" desc="Text in the button that attempts to open an online version of the offline website displayed in the tab.">
         Open Online
       </message>

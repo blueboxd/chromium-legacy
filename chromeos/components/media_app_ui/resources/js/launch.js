@@ -152,20 +152,18 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   const extension = suggestedName.split('.').reverse()[0];
   // TODO(b/141587270): Add a default filename when it's supported by the native
   // file api.
-  /** @type {!ChooseFileSystemEntriesOptions} */
+  /** @type {!FilePickerOptions} */
   const options = {
-    type: 'save-file',
-    accepts: [{extension, mimeTypes: [blob.type]}],
-
-    // Without this, the file picker defaults to "All files" and will refuse to
-    // provide an extension automatically. See crbug/1082624#c23.
+    types: [
+      {description: extension, accept: {[blob.type]: [extension]}},
+    ],
     excludeAcceptAllOption: true,
   };
   // This may throw an error, but we can handle and recover from it on the
   // unprivileged side.
   /** @type {!FileSystemHandle} */
   const fileSystemHandle = /** @type {!FileSystemHandle} */ (
-      await window.chooseFileSystemEntries(options));
+      await window.showSaveFilePicker(options));
   const {handle} = await getFileFromHandle(fileSystemHandle);
   // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
   // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.

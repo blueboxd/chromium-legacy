@@ -138,6 +138,11 @@ void PluginVmTestHelper::AllowPluginVm() {
   ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
 }
 
+void PluginVmTestHelper::EnablePluginVm() {
+  testing_profile_->GetPrefs()->SetBoolean(
+      plugin_vm::prefs::kPluginVmImageExists, true);
+}
+
 void PluginVmTestHelper::OpenShelfItem() {
   ash::ShelfID shelf_id(kPluginVmShelfAppId);
   std::unique_ptr<ash::ShelfItemDelegate> delegate =

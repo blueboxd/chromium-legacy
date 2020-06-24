@@ -391,7 +391,8 @@ static void ConfigureRequest(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled(&element.GetDocument())) {
+  if (RuntimeEnabledFeatures::PriorityHintsEnabled(
+          element.GetExecutionContext())) {
     mojom::FetchImportanceMode importance_mode =
         GetFetchImportanceAttributeValue(
             element.FastGetAttribute(html_names::kImportanceAttr));

@@ -37,6 +37,7 @@
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "media/base/speech_recognition_client.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -152,6 +153,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // May return null.
   virtual std::unique_ptr<WebContentSettingsClient>
   CreateWorkerContentSettingsClient() {
+    return nullptr;
+  }
+
+  // May return null.
+  virtual std::unique_ptr<media::SpeechRecognitionClient>
+  CreateSpeechRecognitionClient(
+      media::SpeechRecognitionClient::OnReadyCallback callback) {
     return nullptr;
   }
 

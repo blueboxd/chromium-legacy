@@ -97,12 +97,36 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
 
 void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
+  // If the authenticator has UV configured then UV will be required in
+  // order to create a credential (as specified by CTAP 2.0), even if
+  // user-verification is "discouraged". However, if the request is U2F-only
+  // then that doesn't apply and UV must be set to discouraged so that the
+  // request can be translated to U2F.
+  if (!request.pin_auth &&
+      options_->user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured &&
+      !request.is_u2f_only) {
+    request.user_verification = UserVerificationRequirement::kRequired;
+  } else {
+    request.user_verification = UserVerificationRequirement::kDiscouraged;
+  }
+
   RunTask<MakeCredentialTask, AuthenticatorMakeCredentialResponse,
           CtapMakeCredentialRequest>(std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
+  if (!request.pin_auth &&
+      options_->user_verification_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured &&
+      request.user_verification != UserVerificationRequirement::kDiscouraged) {
+    request.user_verification = UserVerificationRequirement::kRequired;
+  } else {
+    request.user_verification = UserVerificationRequirement::kDiscouraged;
+  }
   RunTask<GetAssertionTask, AuthenticatorGetAssertionResponse,
           CtapGetAssertionRequest>(std::move(request), std::move(callback));
 }
@@ -774,6 +798,13 @@ void FidoDeviceAuthenticator::GetUvRetries(GetRetriesCallback callback) {
   RunOperation<pin::UvRetriesRequest, pin::RetriesResponse>(
       pin::UvRetriesRequest(), std::move(callback),
       base::BindOnce(&pin::RetriesResponse::ParseUvRetries));
+}
+
+bool FidoDeviceAuthenticator::CanGetUvToken() {
+  return options_->user_verification_availability ==
+             AuthenticatorSupportedOptions::UserVerificationAvailability::
+                 kSupportedAndConfigured &&
+         options_->supports_pin_uv_auth_token;
 }
 
 void FidoDeviceAuthenticator::GetUvToken(base::Optional<std::string> rp_id,

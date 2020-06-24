@@ -3208,13 +3208,14 @@ void Node::SetCustomElementState(CustomElementState new_state) {
 
   if (element->IsDefined() != was_defined) {
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
-    if (RuntimeEnabledFeatures::CustomElementsV0Enabled(&GetDocument()))
+    if (RuntimeEnabledFeatures::CustomElementsV0Enabled(GetExecutionContext()))
       element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
   }
 }
 
 void Node::SetV0CustomElementState(V0CustomElementState new_state) {
-  DCHECK(RuntimeEnabledFeatures::CustomElementsV0Enabled(&GetDocument()));
+  DCHECK(
+      RuntimeEnabledFeatures::CustomElementsV0Enabled(GetExecutionContext()));
   V0CustomElementState old_state = GetV0CustomElementState();
 
   switch (new_state) {

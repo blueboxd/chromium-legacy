@@ -65,7 +65,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 this::removePaintPreview, () -> {
                     mInitializing = false;
                     onShown.run();
-                }, TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview);
+                }, TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview,
+                /*ignoreInitialScrollOffset=*/false);
         mOnDismissed = onDismissed;
         mTab.getTabViewManager().addTabViewProvider(this);
         return true;

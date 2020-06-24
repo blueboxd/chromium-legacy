@@ -232,6 +232,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_reset_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/localized_link_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/nearby_share_subpage_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_reset_browser_proxy.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_lifetime_browser_proxy.m.js",
       ]

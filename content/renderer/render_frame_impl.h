@@ -614,7 +614,7 @@ class CONTENT_EXPORT RenderFrameImpl
   CreateWorkerContentSettingsClient() override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
-      media::SpeechRecognitionClient::OnReadyCallback callback);
+      media::SpeechRecognitionClient::OnReadyCallback callback) override;
 #endif
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;

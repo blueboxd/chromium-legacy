@@ -81,7 +81,7 @@ class ProfileErrorBrowserTest : public InProcessBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_P(ProfileErrorBrowserTest, MAYBE_CorruptedProfile) {
-  const char kPaintHistogram[] = "Startup.FirstWebContents.NonEmptyPaint2";
+  const char kPaintHistogram[] = "Startup.FirstWebContents.NonEmptyPaint3";
 
   // Navigate to a URL so the first non-empty paint is registered.
   ui_test_utils::NavigateToURL(browser(), GURL("http://www.example.com/"));

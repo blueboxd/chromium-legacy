@@ -153,10 +153,14 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     if (cpu != 'x64'):
       # x64 is default target CPU thus any other CPU requires a target set
       cpu_arg += '_' + cpu
-    args = [script_path, cpu_arg]
+    args = [script_path, cpu_arg, ]
     # Store target must come before any SDK version declaration
     if (target_store):
-      args.append(['store'])
+      args.append('store')
+    # Explicitly specifying the SDK version to build with to avoid accidentally
+    # building with a new and untested SDK. This should stay in sync with the
+    # packaged toolchain in build/vs_toolchain.py.
+    args.append('10.0.19041.0')
     variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 

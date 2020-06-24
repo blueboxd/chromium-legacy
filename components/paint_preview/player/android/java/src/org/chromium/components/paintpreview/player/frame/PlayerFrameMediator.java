@@ -104,8 +104,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private float mOverscrollAmount = 0f;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            OverScroller scroller, UnguessableToken frameGuid, int contentWidth,
-            int contentHeight) {
+            OverScroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight,
+            int initialScrollX, int initialScrollY) {
         mModel = model;
         mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mVisibleSubFrameViews);
         mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mVisibleSubFrameScaledRects);
@@ -117,6 +117,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mContentWidth = contentWidth;
         mContentHeight = contentHeight;
         mScrollerHandler = new Handler();
+        mViewportRect.offset(initialScrollX, initialScrollY);
+        mViewportScaleMatrix.postTranslate(-initialScrollX, -initialScrollY);
     }
 
     /**
@@ -170,8 +172,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     void updateViewportSize(int width, int height, float scaleFactor) {
         if (width <= 0 || height <= 0) return;
 
-        mViewportRect.set(mViewportRect.left, mViewportRect.top, mViewportRect.left + width,
-                mViewportRect.top + height);
+        // Ensure the viewport is within the bounds of the content.
+        final int left = Math.max(
+                0, Math.min(mViewportRect.left, Math.round(mContentWidth * scaleFactor) - width));
+        final int top = Math.max(
+                0, Math.min(mViewportRect.top, Math.round(mContentHeight * scaleFactor) - height));
+        mViewportRect.set(left, top, left + width, top + height);
         moveViewport(0, 0, scaleFactor);
     }
 

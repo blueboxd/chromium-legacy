@@ -40,6 +40,7 @@
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "components/download/public/task/task_manager_impl.h"
+#include "components/offline_items_collection/core/android/offline_item_bridge.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_request_utils.h"
@@ -51,6 +52,10 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using offline_items_collection::android::OfflineItemBridge;
+using DownloadSchedule = download::DownloadSchedule;
+using OfflineItemSchedule = offline_items_collection::OfflineItemSchedule;
+
 namespace {
 
 // The remaining time for a download item if it cannot be calculated.
@@ -68,10 +73,20 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
     JNIEnv* env,
     download::DownloadItem* item) {
   DCHECK(!item->IsTransient());
+
+  base::Optional<OfflineItemSchedule> offline_item_schedule;
+  auto download_schedule = item->GetDownloadSchedule();
+  if (download_schedule.has_value()) {
+    offline_item_schedule = base::make_optional<OfflineItemSchedule>(
+        download_schedule->only_on_wifi(), download_schedule->start_time());
+  }
+  auto j_offline_item_schedule =
+      OfflineItemBridge::CreateOfflineItemSchedule(env, offline_item_schedule);
+
   return Java_DownloadItem_createDownloadItem(
       env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
       item->GetStartTime().ToJavaTime(), item->GetEndTime().ToJavaTime(),
-      item->GetFileExternallyRemoved());
+      item->GetFileExternallyRemoved(), j_offline_item_schedule);
 }
 
 void RenameItemCallback(

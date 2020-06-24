@@ -277,8 +277,7 @@ void IOSChromeMainParts::SetupFieldTrials() {
   // feature overrides.
   application_context_->GetVariationsService()->SetupFieldTrials(
       "dummy-enable-gpu-benchmarking", switches::kEnableFeatures,
-      switches::kDisableFeatures,
-      /*unforceable_field_trials=*/std::set<std::string>(), variation_ids,
+      switches::kDisableFeatures, variation_ids,
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
       std::move(feature_list), &ios_field_trials_);
 }

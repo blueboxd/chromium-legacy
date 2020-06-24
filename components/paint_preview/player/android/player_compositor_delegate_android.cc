@@ -109,15 +109,16 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
 
   std::vector<base::UnguessableToken> all_guids;
   std::vector<int> scroll_extents;
+  std::vector<int> scroll_offsets;
   std::vector<int> subframe_count;
   std::vector<base::UnguessableToken> subframe_ids;
   std::vector<int> subframe_rects;
   base::UnguessableToken root_frame_guid;
 
   if (composite_response) {
-    CompositeResponseFramesToVectors(composite_response->frames, &all_guids,
-                                     &scroll_extents, &subframe_count,
-                                     &subframe_ids, &subframe_rects);
+    CompositeResponseFramesToVectors(
+        composite_response->frames, &all_guids, &scroll_extents,
+        &scroll_offsets, &subframe_count, &subframe_ids, &subframe_rects);
     root_frame_guid = composite_response->root_frame_guid;
   } else {
     // If there is no composite response due to a failure we don't have a root
@@ -130,6 +131,8 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
       ToJavaUnguessableTokenArray(env, all_guids);
   ScopedJavaLocalRef<jintArray> j_scroll_extents =
       base::android::ToJavaIntArray(env, scroll_extents);
+  ScopedJavaLocalRef<jintArray> j_scroll_offsets =
+      base::android::ToJavaIntArray(env, scroll_offsets);
   ScopedJavaLocalRef<jintArray> j_subframe_count =
       base::android::ToJavaIntArray(env, subframe_count);
   ScopedJavaLocalRef<jobjectArray> j_subframe_ids =
@@ -141,7 +144,7 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
 
   Java_PlayerCompositorDelegateImpl_onCompositorReady(
       env, java_ref_, j_root_frame_guid, j_all_guids, j_scroll_extents,
-      j_subframe_count, j_subframe_ids, j_subframe_rects);
+      j_scroll_offsets, j_subframe_count, j_subframe_ids, j_subframe_rects);
 }
 
 // static
@@ -149,6 +152,7 @@ void PlayerCompositorDelegateAndroid::CompositeResponseFramesToVectors(
     const base::flat_map<base::UnguessableToken, mojom::FrameDataPtr>& frames,
     std::vector<base::UnguessableToken>* all_guids,
     std::vector<int>* scroll_extents,
+    std::vector<int>* scroll_offsets,
     std::vector<int>* subframe_count,
     std::vector<base::UnguessableToken>* subframe_ids,
     std::vector<int>* subframe_rects) {
@@ -160,6 +164,8 @@ void PlayerCompositorDelegateAndroid::CompositeResponseFramesToVectors(
     all_guids->push_back(pair.first);
     scroll_extents->push_back(pair.second->scroll_extents.width());
     scroll_extents->push_back(pair.second->scroll_extents.height());
+    scroll_offsets->push_back(pair.second->scroll_offsets.width());
+    scroll_offsets->push_back(pair.second->scroll_offsets.height());
     subframe_count->push_back(pair.second->subframes.size());
     all_subframes_count += pair.second->subframes.size();
   }

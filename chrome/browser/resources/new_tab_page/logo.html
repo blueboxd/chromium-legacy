@@ -113,7 +113,7 @@
 <dom-if if="[[showDoodle_]]" restamp>
   <template>
     <div id="doodle" title="[[doodle_.description]]">
-      <div id="imageDoodle" hidden="[[!doodle_.content.imageDoodle]]"
+      <div id="imageDoodle" hidden="[[!imageDoodle_]]"
           tabindex="0" on-click="onImageClick_" on-keydown="onImageKeydown_">
         <div id="imageContainer">
           <!-- The static image is always visible and the animated image is
@@ -127,7 +127,7 @@
           <cr-button id="shareButton" title="$i18n{shareDoodle}"
               on-click="onShareButtonClick_">
             <img id="shareButtonImage"
-                src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
+                src="[[imageDoodle_.shareButton.iconUrl.url]]">
             </img>
           </cr-button>
         </div>

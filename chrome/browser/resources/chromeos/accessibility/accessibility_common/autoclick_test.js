@@ -15,8 +15,13 @@ AutoclickE2ETest = class extends testing.Test {
     this.mockAccessibilityPrivate = MockAccessibilityPrivate;
     chrome.accessibilityPrivate = this.mockAccessibilityPrivate;
 
-    // Re-initialize Autoclick with mock AccessibilityPrivate API.
-    autoclick = new Autoclick(false /* do not blink focus rings */);
+    // Re-initialize AccessibilityCommon with mock AccessibilityPrivate API.
+    accessibilityCommon = new AccessibilityCommon();
+
+    chrome.accessibilityFeatures.autoclick.get({}, () => {
+      // Turn off focus ring blinking for test after autoclick is initialized.
+      accessibilityCommon.getAutoclickForTest().setNoBlinkFocusRingsForTest();
+    });
   }
 
   /** @override */
@@ -165,6 +170,32 @@ TEST_F('AutoclickE2ETest', 'HighlightsScrollableDiv', function() {
               this.assertSameRect(
                   this.mockAccessibilityPrivate.getFocusRings()[0], expected);
             }));
+      });
+});
+
+TEST_F('AutoclickE2ETest', 'RemovesAndAddsAutoclick', function() {
+  this.runWithLoadedTree(
+      'data:text/html;charset=utf-8,<p>Cats rock!</p>', function(desktop) {
+        // Toggle autoclick off and on, ensure it still works and no crashes.
+        chrome.accessibilityFeatures.autoclick.set({value: false}, () => {
+          chrome.accessibilityFeatures.autoclick.set({value: true}, () => {
+            const node = desktop.find(
+                {role: 'staticText', attributes: {name: 'Cats rock!'}});
+            this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
+                // Offset slightly into the node to ensure the hittest
+                // happens within the node.
+                node.location.left + 1, node.location.top + 1,
+                this.newCallback(() => {
+                  const expected = node.root.location;
+                  this.assertSameRect(
+                      this.mockAccessibilityPrivate.getScrollableBounds(),
+                      expected);
+                  this.assertSameRect(
+                      this.mockAccessibilityPrivate.getFocusRings()[0],
+                      expected);
+                }));
+          });
+        });
       });
 });
 

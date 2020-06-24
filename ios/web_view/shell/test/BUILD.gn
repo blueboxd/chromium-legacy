@@ -5,6 +5,7 @@
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
 
+# TODO(crbug.com/698657): Remove these EarlGrey tests or convert to EarlGrey 2.
 group("all_tests") {
   testonly = true
   deps = [ ":ios_web_view_shell_egtests" ]

@@ -201,7 +201,6 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // downloading and disseminating seeds is handled by the WebView service,
   // which itself doesn't support variations; therefore a bad seed shouldn't be
   // able to break seed downloads. See https://crbug.com/801771 for more info.
-  std::set<std::string> unforceable_field_trials;
   variations::SafeSeedManager ignored_safe_seed_manager(true,
                                                         local_state_.get());
 
@@ -210,8 +209,7 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   // entropy provider.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials,
-      std::vector<std::string>(),
+      switches::kDisableFeatures, std::vector<std::string>(),
       content::GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),

@@ -334,29 +334,20 @@ void GetAssertionRequestHandler::DispatchRequest(
   }
 
   CtapGetAssertionRequest request(request_);
-  if (authenticator->Options()) {
-    if (authenticator->Options()->user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured &&
-        request_.user_verification !=
-            UserVerificationRequirement::kDiscouraged) {
-      if (authenticator->Options()->supports_pin_uv_auth_token) {
-        FIDO_LOG(DEBUG) << "Getting UV token from "
-                        << authenticator->GetDisplayName();
-        authenticator->GetUvToken(
-            request_.rp_id,
-            base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
-                           weak_factory_.GetWeakPtr(), authenticator));
-        return;
-      }
-      request.user_verification = UserVerificationRequirement::kRequired;
-    } else {
-      request.user_verification = UserVerificationRequirement::kDiscouraged;
-    }
-    if (android_client_data_ext_ && authenticator->Options() &&
-        authenticator->Options()->supports_android_client_data_ext) {
-      request.android_client_data_ext = *android_client_data_ext_;
-    }
+  if (request.user_verification != UserVerificationRequirement::kDiscouraged &&
+      authenticator->CanGetUvToken()) {
+    FIDO_LOG(DEBUG) << "Getting UV token from "
+                    << authenticator->GetDisplayName();
+    authenticator->GetUvToken(
+        request_.rp_id,
+        base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
+                       weak_factory_.GetWeakPtr(), authenticator));
+    return;
+  }
+
+  if (android_client_data_ext_ && authenticator->Options() &&
+      authenticator->Options()->supports_android_client_data_ext) {
+    request.android_client_data_ext = *android_client_data_ext_;
   }
 
   ReportGetAssertionRequestTransport(authenticator);
@@ -796,8 +787,6 @@ void GetAssertionRequestHandler::DispatchRequestWithToken(
   CtapGetAssertionRequest request(request_);
   request.pin_auth = token.PinAuth(request.client_data_hash);
   request.pin_protocol = pin::kProtocolVersion;
-  // Do not do internal UV again.
-  request.user_verification = UserVerificationRequirement::kDiscouraged;
 
   if (android_client_data_ext_ && authenticator_->Options() &&
       authenticator_->Options()->supports_android_client_data_ext) {

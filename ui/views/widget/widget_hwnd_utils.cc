@@ -118,6 +118,8 @@ void CalculateWindowStylesFromInitParams(
         else
           *style |= WS_BORDER;
       }
+      if (!params.force_show_in_taskbar)
+        *ex_style |= WS_EX_TOOLWINDOW;
       break;
     case Widget::InitParams::TYPE_TOOLTIP:
       *style |= WS_POPUP;

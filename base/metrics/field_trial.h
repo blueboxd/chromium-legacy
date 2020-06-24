@@ -59,7 +59,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -543,11 +542,8 @@ class BASE_EXPORT FieldTrialList {
   // browser process into this non-browser process, but could also be invoked
   // through a command line argument to the browser process. Created field
   // trials will be marked "used" for the purposes of active trial reporting
-  // if they are prefixed with |kActivationMarker|. Trial names in
-  // |ignored_trial_names| are ignored when parsing |trials_string|.
-  static bool CreateTrialsFromString(
-      const std::string& trials_string,
-      const std::set<std::string>& ignored_trial_names);
+  // if they are prefixed with |kActivationMarker|.
+  static bool CreateTrialsFromString(const std::string& trials_string);
 
   // Achieves the same thing as CreateTrialsFromString, except wraps the logic
   // by taking in the trials from the command line, either via shared memory

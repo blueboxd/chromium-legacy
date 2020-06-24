@@ -34,8 +34,7 @@ std::unique_ptr<base::FieldTrialList> SetUpFieldTrialsAndFeatureList() {
     // Create field trials without activating them, so that this behaves in a
     // consistent manner with field trials created from the server.
     bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials),
-        std::set<std::string>());
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials));
     CHECK(result) << "Invalid --" << ::switches::kForceFieldTrials
                   << " list specified.";
   }

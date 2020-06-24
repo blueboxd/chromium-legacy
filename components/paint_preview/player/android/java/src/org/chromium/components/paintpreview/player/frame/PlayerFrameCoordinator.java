@@ -30,13 +30,14 @@ public class PlayerFrameCoordinator {
      * binds them together.
      */
     public PlayerFrameCoordinator(Context context, PlayerCompositorDelegate compositorDelegate,
-            UnguessableToken frameGuid, int contentWidth, int contentHeight, boolean canDetectZoom,
+            UnguessableToken frameGuid, int contentWidth, int contentHeight, int initialScrollX,
+            int initialScrollY, boolean canDetectZoom,
             @Nullable OverscrollHandler overscrollHandler) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         OverScroller scroller = new OverScroller(context);
         scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
-        mMediator = new PlayerFrameMediator(
-                model, compositorDelegate, scroller, frameGuid, contentWidth, contentHeight);
+        mMediator = new PlayerFrameMediator(model, compositorDelegate, scroller, frameGuid,
+                contentWidth, contentHeight, initialScrollX, initialScrollY);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
         if (overscrollHandler != null) {
             mMediator.setOverscrollHandler(overscrollHandler);

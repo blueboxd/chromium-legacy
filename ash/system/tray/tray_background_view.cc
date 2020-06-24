@@ -28,6 +28,7 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/window_factory.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/scoped_observer.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/layer.h"
@@ -134,8 +135,11 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
     host_->AnchorUpdated();
   }
 
+  void Add(views::Widget* widget) { observer_.Add(widget); }
+
  private:
   TrayBackgroundView* host_;
+  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TrayWidgetObserver);
 };
@@ -187,13 +191,12 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
 
 TrayBackgroundView::~TrayBackgroundView() {
   Shell::Get()->system_tray_model()->virtual_keyboard()->RemoveObserver(this);
-  if (GetWidget())
-    GetWidget()->RemoveObserver(widget_observer_.get());
+  widget_observer_.reset();
   StopObservingImplicitAnimations();
 }
 
 void TrayBackgroundView::Initialize() {
-  GetWidget()->AddObserver(widget_observer_.get());
+  widget_observer_->Add(GetWidget());
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
 
   UpdateBackground();

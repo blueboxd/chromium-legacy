@@ -93,7 +93,8 @@ void HTMLScriptElement::ParseAttribute(
   } else if (params.name == html_names::kAsyncAttr) {
     loader_->HandleAsyncAttribute();
   } else if (params.name == html_names::kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(
+                 GetExecutionContext())) {
     // The only thing we need to do for the the importance attribute/Priority
     // Hints is count usage upon parsing. Processing the value happens when the
     // element loads.

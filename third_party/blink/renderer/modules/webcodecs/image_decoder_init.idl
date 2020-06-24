@@ -8,6 +8,10 @@ typedef (ArrayBuffer or ArrayBufferView or ReadableStream) ImageBufferSource;
 dictionary ImageDecoderInit {
   required ImageBufferSource data;
 
+  // Mime type for |data|. Providing the wrong mime type will lead to a decoding
+  // failure.
+  required USVString type;
+
   // Options to use when creating ImageBitmap objects from decoded frames. The
   // resize width and height are additionally used to facilitate reduced
   // resolution decoding.

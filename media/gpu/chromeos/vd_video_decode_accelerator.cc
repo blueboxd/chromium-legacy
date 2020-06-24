@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "media/base/media_util.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -136,7 +137,8 @@ bool VdVideoDecodeAccelerator::Initialize(const Config& config,
   std::unique_ptr<VdaVideoFramePool> frame_pool =
       std::make_unique<VdaVideoFramePool>(weak_this_, client_task_runner_);
   vd_ = create_vd_cb_.Run(client_task_runner_, std::move(frame_pool),
-                          std::make_unique<VideoFrameConverter>());
+                          std::make_unique<VideoFrameConverter>(),
+                          std::make_unique<NullMediaLog>());
   if (!vd_)
     return false;
 

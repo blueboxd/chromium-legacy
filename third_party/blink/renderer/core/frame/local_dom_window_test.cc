@@ -59,6 +59,76 @@ TEST_F(LocalDOMWindowTest, AttachExecutionContext) {
       window->GetAgent()->event_loop()->IsSchedulerAttachedForTest(scheduler));
 }
 
+TEST_F(LocalDOMWindowTest, referrerPolicyParsing) {
+  LocalDOMWindow* window = GetFrame().DomWindow();
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+            window->GetReferrerPolicy());
+
+  struct TestCase {
+    const char* policy;
+    network::mojom::ReferrerPolicy expected;
+    bool is_legacy;
+  } tests[] = {
+      {"", network::mojom::ReferrerPolicy::kDefault, false},
+      // Test that invalid policy values are ignored.
+      {"not-a-real-policy", network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,also-not-a-real-policy",
+       network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,unsafe-url", network::mojom::ReferrerPolicy::kAlways,
+       false},
+      {"unsafe-url,not-a-real-policy", network::mojom::ReferrerPolicy::kAlways,
+       false},
+      // Test parsing each of the policy values.
+      {"always", network::mojom::ReferrerPolicy::kAlways, true},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"never", network::mojom::ReferrerPolicy::kNever, true},
+      {"no-referrer", network::mojom::ReferrerPolicy::kNever, false},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"no-referrer-when-downgrade",
+       network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, false},
+      {"origin", network::mojom::ReferrerPolicy::kOrigin, false},
+      {"origin-when-crossorigin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, true},
+      {"origin-when-cross-origin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, false},
+      {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
+      {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
+      {"strict-origin-when-cross-origin",
+       network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin, false},
+      {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
+  };
+
+  for (auto test : tests) {
+    window->SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
+    if (test.is_legacy) {
+      // Legacy keyword support must be explicitly enabled for the policy to
+      // parse successfully.
+      window->ParseAndSetReferrerPolicy(test.policy);
+      EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+                window->GetReferrerPolicy());
+      window->ParseAndSetReferrerPolicy(test.policy, true);
+    } else {
+      window->ParseAndSetReferrerPolicy(test.policy);
+    }
+    EXPECT_EQ(test.expected, window->GetReferrerPolicy()) << test.policy;
+  }
+}
+
+TEST_F(LocalDOMWindowTest, OutgoingReferrer) {
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"));
+  EXPECT_EQ("https://www.example.com/hoge",
+            GetFrame().DomWindow()->OutgoingReferrer());
+}
+
+TEST_F(LocalDOMWindowTest, OutgoingReferrerWithUniqueOrigin) {
+  NavigateTo(KURL("https://www.example.com/hoge#fuga?piyo"),
+             {{http_names::kContentSecurityPolicy, "sandbox allow-scripts"}});
+  EXPECT_TRUE(GetFrame().DomWindow()->GetSecurityOrigin()->IsOpaque());
+  EXPECT_EQ(String(), GetFrame().DomWindow()->OutgoingReferrer());
+}
+
 // Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
 // enabled.
 class IsolatedWorldCSPTest : public PageTestBase,

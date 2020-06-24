@@ -194,12 +194,10 @@ enum DoodleImageType {
   STATIC,
 };
 
-// The contents of simple and animated doodles.
-struct ImageDoodleContent {
+// An image doodle in either dark or light mode.
+struct ImageDoodle {
   // Doodle image encoded as data URL.
   url.mojom.Url image_url;
-  // URL opened in new tab when the doodle is clicked.
-  url.mojom.Url on_click_url;
   // URL pointing to animated content (e.g. gif). Only set for animated doodles.
   url.mojom.Url? animation_url;
   // Dimensions of the original image in pixels.
@@ -210,6 +208,15 @@ struct ImageDoodleContent {
   skia.mojom.SkColor background_color;
   // Specification of the share button.
   DoodleShareButton share_button;
+};
+
+// The contents of simple and animated doodles.
+struct ImageDoodleContent {
+  // Doodles for respective modes.
+  ImageDoodle light;
+  ImageDoodle? dark;
+  // URL opened in new tab when the doodle is clicked.
+  url.mojom.Url on_click_url;
   // URL displayed to users, which they can use to share the doodle.
   url.mojom.Url share_url;
   // URLs to be pinged when an image has been shown.

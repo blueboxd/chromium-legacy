@@ -22,6 +22,7 @@ class CrOSComponentManager;
 
 namespace chromeos {
 
+class AshChromeServiceImpl;
 class LacrosLoader;
 
 // Manages the lifetime of lacros-chrome, and its loading status.
@@ -63,6 +64,11 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   // already launched and running.
   void StartForeground(bool already_running);
 
+  // Called when PendingReceiver of AshChromeService is passed from
+  // lacros-chrome.
+  void OnAshChromeServiceReceiverReceived(
+      mojo::PendingReceiver<lacros::mojom::AshChromeService> pending_receiver);
+
   // session_manager::SessionManagerObserver:
   // Starts to load the lacros-chrome executable.
   void OnUserSessionStarted(bool is_primary_user) override;
@@ -90,6 +96,10 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   // Proxy to LacrosChromeService mojo service in lacros-chrome.
   // Available during lacros-chrome is running.
   mojo::Remote<lacros::mojom::LacrosChromeService> lacros_chrome_service_;
+
+  // Implementation of AshChromeService Mojo APIs.
+  // Instantiated on receiving the PendingReceiver from lacros-chrome.
+  std::unique_ptr<AshChromeServiceImpl> ash_chrome_service_;
 
   base::WeakPtrFactory<LacrosManager> weak_factory_{this};
 };

@@ -1295,8 +1295,7 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InternalError) {
     // First delete the indexed ruleset file for the second ruleset. Enabling it
     // should cause re-indexing and succeed in enabling the ruleset.
     base::HistogramTester tester;
-    ASSERT_TRUE(base::DeleteFile(static_sources[1].indexed_path(),
-                                 false /* recursive */));
+    ASSERT_TRUE(base::DeleteFile(static_sources[1].indexed_path()));
 
     RunUpdateEnabledRulesetsFunction(*extension(), {kId1}, {kId2},
                                      base::nullopt);
@@ -1311,10 +1310,8 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InternalError) {
     // Now delete both the indexed and json ruleset file for the first ruleset.
     // This will prevent enabling the first ruleset since re-indexing will fail.
     base::HistogramTester tester;
-    ASSERT_TRUE(base::DeleteFile(static_sources[0].indexed_path(),
-                                 false /* recursive */));
-    ASSERT_TRUE(
-        base::DeleteFile(static_sources[0].json_path(), false /* recursive */));
+    ASSERT_TRUE(base::DeleteFile(static_sources[0].indexed_path()));
+    ASSERT_TRUE(base::DeleteFile(static_sources[0].json_path()));
 
     RunUpdateEnabledRulesetsFunction(*extension(), {}, {kId1},
                                      kInternalErrorUpdatingEnabledRulesets);

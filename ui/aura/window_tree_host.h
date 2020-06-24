@@ -247,7 +247,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Requests using unadjusted movement mouse events, i.e. WM_INPUT on Windows.
   // Returns a ScopedEnableUnadjustedMouseEvents instance which stops using
   // unadjusted mouse events when destroyed, returns nullptr if unadjusted mouse
-  // event is not not implemented or failed.
+  // event is not not implemented or failed. On some platforms this function may
+  // temporarily affect the global state of mouse settings.  This function is
+  // currently only intended to be used with PointerLock as it is not set up for
+  // multiple calls.
   virtual std::unique_ptr<ScopedEnableUnadjustedMouseEvents>
   RequestUnadjustedMovement();
 

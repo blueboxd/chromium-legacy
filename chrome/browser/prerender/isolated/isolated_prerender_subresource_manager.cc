@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxying_url_loader_factory.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/browser_context.h"
@@ -21,6 +22,8 @@ IsolatedPrerenderSubresourceManager::~IsolatedPrerenderSubresourceManager() {
     nsp_handle_->OnCancel();
     nsp_handle_->SetObserver(nullptr);
   }
+  UMA_HISTOGRAM_COUNTS_100("IsolatedPrerender.Prefetch.Subresources.Quantity",
+                           successfully_loaded_subresources_.size());
 }
 
 void IsolatedPrerenderSubresourceManager::ManageNoStatePrefetch(

@@ -14,6 +14,9 @@
 
 namespace ui {
 namespace ime {
+
+struct SuggestionDetails;
+
 // Font-related constants
 constexpr char kFontStyle[] = "Roboto";
 constexpr int kSuggestionFontSize = 14;
@@ -34,9 +37,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   SuggestionView();
   ~SuggestionView() override;
 
-  void SetView(const base::string16& text,
-               const size_t confirmed_length,
-               const bool show_tab);
+  void SetView(const SuggestionDetails& details);
 
   void SetViewWithIndex(const base::string16& index,
                         const base::string16& text);

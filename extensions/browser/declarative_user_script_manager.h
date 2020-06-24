@@ -19,9 +19,9 @@ class BrowserContext;
 }
 
 namespace extensions {
-class DeclarativeUserScriptMaster;
+class DeclarativeUserScriptSet;
 
-// Manages a set of DeclarativeUserScriptMaster objects for script injections.
+// Manages a set of DeclarativeUserScriptSet objects for script injections.
 class DeclarativeUserScriptManager : public KeyedService,
                                      public ExtensionRegistryObserver {
  public:
@@ -33,27 +33,27 @@ class DeclarativeUserScriptManager : public KeyedService,
   // |context|.
   static DeclarativeUserScriptManager* Get(content::BrowserContext* context);
 
-  // Gets the user script master for declarative scripts by the given
-  // HostID; if one does not exist, a new object will be created.
-  DeclarativeUserScriptMaster* GetDeclarativeUserScriptMasterByID(
+  // Gets the user script set for declarative scripts by the given HostId.
+  // If one does not exist, a new object will be created.
+  DeclarativeUserScriptSet* GetDeclarativeUserScriptSetByID(
       const HostID& host_id);
 
  private:
-  using UserScriptMasterMap =
-      std::map<HostID, std::unique_ptr<DeclarativeUserScriptMaster>>;
+  using UserScriptSetMap =
+      std::map<HostID, std::unique_ptr<DeclarativeUserScriptSet>>;
 
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  // Creates a DeclarativeUserScriptMaster object.
-  DeclarativeUserScriptMaster* CreateDeclarativeUserScriptMaster(
+  // Creates a DeclarativeUserScriptSet object.
+  DeclarativeUserScriptSet* CreateDeclarativeUserScriptSet(
       const HostID& host_id);
 
-  // A map of DeclarativeUserScriptMasters for each host; each master
-  // is lazily initialized.
-  UserScriptMasterMap declarative_user_script_masters_;
+  // A map of DeclarativeUserScriptSets for each host; each set is lazily
+  // initialized.
+  UserScriptSetMap declarative_user_script_sets_;
 
   content::BrowserContext* browser_context_;
 

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
@@ -253,6 +254,108 @@ void IsolatedPrerenderTabHelper::OnPrefetchStatusUpdate(const GURL& url,
   page_->prefetch_status_by_url_[url] = usage;
 }
 
+IsolatedPrerenderTabHelper::PrefetchStatus
+IsolatedPrerenderTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
+    const GURL& url,
+    PrefetchStatus status) const {
+  switch (status) {
+    // These are the statuses we want to update.
+    case PrefetchStatus::kPrefetchUsedNoProbe:
+    case PrefetchStatus::kPrefetchUsedProbeSuccess:
+    case PrefetchStatus::kPrefetchNotUsedProbeFailed:
+      break;
+    // These statuses are not applicable since the prefetch was not used after
+    // the click.
+    case PrefetchStatus::kPrefetchNotStarted:
+    case PrefetchStatus::kPrefetchNotEligibleGoogleDomain:
+    case PrefetchStatus::kPrefetchNotEligibleUserHasCookies:
+    case PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
+    case PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
+    case PrefetchStatus::kPrefetchNotEligibleHostIsIPAddress:
+    case PrefetchStatus::kPrefetchNotEligibleNonDefaultStoragePartition:
+    case PrefetchStatus::kPrefetchNotFinishedInTime:
+    case PrefetchStatus::kPrefetchFailedNetError:
+    case PrefetchStatus::kPrefetchFailedNon2XX:
+    case PrefetchStatus::kPrefetchFailedNotHTML:
+    case PrefetchStatus::kPrefetchSuccessful:
+    case PrefetchStatus::kNavigatedToLinkNotOnSRP:
+      return status;
+    // These statuses we are going to update to, and this is the only place that
+    // they are set so they are not expected to be passed in.
+    case PrefetchStatus::kPrefetchUsedNoProbeWithNSP:
+    case PrefetchStatus::kPrefetchUsedProbeSuccessWithNSP:
+    case PrefetchStatus::kPrefetchNotUsedProbeFailedWithNSP:
+    case PrefetchStatus::kPrefetchUsedNoProbeNSPAttemptDenied:
+    case PrefetchStatus::kPrefetchUsedProbeSuccessNSPAttemptDenied:
+    case PrefetchStatus::kPrefetchNotUsedProbeFailedNSPAttemptDenied:
+    case PrefetchStatus::kPrefetchUsedNoProbeNSPNotStarted:
+    case PrefetchStatus::kPrefetchUsedProbeSuccessNSPNotStarted:
+    case PrefetchStatus::kPrefetchNotUsedProbeFailedNSPNotStarted:
+      NOTREACHED();
+      return status;
+  }
+
+  bool no_state_prefetch_not_started =
+      base::Contains(page_->urls_to_no_state_prefetch_, url);
+
+  bool no_state_prefetch_complete =
+      base::Contains(page_->no_state_prefetched_urls_, url);
+
+  bool no_state_prefetch_failed =
+      base::Contains(page_->failed_no_state_prefetch_urls_, url);
+
+  if (!no_state_prefetch_not_started && !no_state_prefetch_complete &&
+      !no_state_prefetch_failed) {
+    return status;
+  }
+
+  // At most one of those bools should be true.
+  DCHECK(no_state_prefetch_not_started ^ no_state_prefetch_complete ^
+         no_state_prefetch_failed);
+
+  if (no_state_prefetch_complete) {
+    switch (status) {
+      case PrefetchStatus::kPrefetchUsedNoProbe:
+        return PrefetchStatus::kPrefetchUsedNoProbeWithNSP;
+      case PrefetchStatus::kPrefetchUsedProbeSuccess:
+        return PrefetchStatus::kPrefetchUsedProbeSuccessWithNSP;
+      case PrefetchStatus::kPrefetchNotUsedProbeFailed:
+        return PrefetchStatus::kPrefetchNotUsedProbeFailedWithNSP;
+      default:
+        break;
+    }
+  }
+
+  if (no_state_prefetch_failed) {
+    switch (status) {
+      case PrefetchStatus::kPrefetchUsedNoProbe:
+        return PrefetchStatus::kPrefetchUsedNoProbeNSPAttemptDenied;
+      case PrefetchStatus::kPrefetchUsedProbeSuccess:
+        return PrefetchStatus::kPrefetchUsedProbeSuccessNSPAttemptDenied;
+      case PrefetchStatus::kPrefetchNotUsedProbeFailed:
+        return PrefetchStatus::kPrefetchNotUsedProbeFailedNSPAttemptDenied;
+      default:
+        break;
+    }
+  }
+
+  if (no_state_prefetch_not_started) {
+    switch (status) {
+      case PrefetchStatus::kPrefetchUsedNoProbe:
+        return PrefetchStatus::kPrefetchUsedNoProbeNSPNotStarted;
+      case PrefetchStatus::kPrefetchUsedProbeSuccess:
+        return PrefetchStatus::kPrefetchUsedProbeSuccessNSPNotStarted;
+      case PrefetchStatus::kPrefetchNotUsedProbeFailed:
+        return PrefetchStatus::kPrefetchNotUsedProbeFailedNSPNotStarted;
+      default:
+        break;
+    }
+  }
+
+  NOTREACHED();
+  return status;
+}
+
 void IsolatedPrerenderTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -292,19 +395,12 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
 
     auto status_iter = page_->prefetch_status_by_url_.find(url);
     if (status_iter != page_->prefetch_status_by_url_.end()) {
-      new_page->after_srp_metrics_->prefetch_status_ = status_iter->second;
+      new_page->after_srp_metrics_->prefetch_status_ =
+          MaybeUpdatePrefetchStatusWithNSPContext(url, status_iter->second);
     } else {
       new_page->after_srp_metrics_->prefetch_status_ =
           PrefetchStatus::kNavigatedToLinkNotOnSRP;
     }
-
-    // Whenever probe latency is set, the status should reflect that a probe
-    // was attempted and vise versa.
-    DCHECK_EQ(new_page->after_srp_metrics_->probe_latency_.has_value(),
-              new_page->after_srp_metrics_->prefetch_status_ ==
-                      PrefetchStatus::kPrefetchUsedProbeSuccess ||
-                  new_page->after_srp_metrics_->prefetch_status_ ==
-                      PrefetchStatus::kPrefetchNotUsedProbeFailed);
 
     auto position_iter = page_->original_prediction_ordering_.find(url);
     if (position_iter != page_->original_prediction_ordering_.end()) {
@@ -665,6 +761,8 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
     // Clean up the prefetch response in |service| since it wasn't used.
     service->DestroySubresourceManagerForURL(url);
     // Don't use |manager| again!
+
+    page_->failed_no_state_prefetch_urls_.push_back(url);
 
     // Try the next URL.
     page_->urls_to_no_state_prefetch_.erase(

@@ -57,9 +57,9 @@ class TouchExplorationControllerDelegate {
   // played.
   virtual void PlayPassthroughEarcon() = 0;
 
-  // This function should be called when the exit screen earcon should be
-  // played.
-  virtual void PlayExitScreenEarcon() = 0;
+  // This function should be called when the long press right click earcon
+  // should be played.
+  virtual void PlayLongPressRightClickEarcon() = 0;
 
   // This function should be called when the enter screen earcon should be
   // played.
@@ -241,6 +241,9 @@ class ASH_EXPORT TouchExplorationController
   ui::EventDispatchDetails InTouchExploreSecondPress(
       const ui::TouchEvent& event,
       const Continuation continuation);
+  ui::EventDispatchDetails InTouchExploreLongPress(
+      const ui::TouchEvent& event,
+      const Continuation continuation);
   ui::EventDispatchDetails InWaitForNoFingers(const ui::TouchEvent& event,
                                               const Continuation continuation);
   ui::EventDispatchDetails InSlideGesture(const ui::TouchEvent& event,
@@ -257,6 +260,11 @@ class ASH_EXPORT TouchExplorationController
   // we treat that as a single mouse move (touch exploration) event.
   void StartTapTimer();
   void OnTapTimerFired();
+
+  // This timer is reset every time the anchor point changes. It only triggers a
+  // long press if the user is touch exploring in lift activated bounds.
+  void ResetLiftActivationLongPressTimer();
+  void OnLiftActivationLongPressTimerFired();
 
   // Dispatch a new event outside of the event rewriting flow.
   void DispatchEvent(ui::Event* event, const Continuation continuation);
@@ -384,6 +392,12 @@ class ASH_EXPORT TouchExplorationController
     // the user enters the wait state for the fingers to be removed.
     TOUCH_EXPLORE_SECOND_PRESS,
 
+    // The user was in touch exploration, but has remained in the same anchor
+    // point for a long period of time. The first event to handled in this state
+    // will be rewritten as a right mouse click and then re-enters touch
+    // exploration state.
+    TOUCH_EXPLORE_LONG_PRESS,
+
     // After the user double taps and holds with a single finger, all events
     // for that finger are passed through, displaced by an offset. Adding
     // extra fingers has no effect. This state is left when the user removes
@@ -442,6 +456,8 @@ class ASH_EXPORT TouchExplorationController
   // Gets enum name from integer value.
   const char* EnumStateToString(State state);
 
+  void SetAnchorPointInternal(const gfx::PointF& anchor_point);
+
   aura::Window* root_window_;
 
   // Handles volume control. Not owned.
@@ -495,6 +511,10 @@ class ASH_EXPORT TouchExplorationController
 
   // A timer that fires after the double-tap delay.
   base::OneShotTimer tap_timer_;
+
+  // A timer that fires after holding the anchor point in place.
+  // Only works within lift activation bounds.
+  base::OneShotTimer long_press_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
   base::RepeatingTimer sound_timer_;

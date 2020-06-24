@@ -63,6 +63,11 @@
       base::UserMetricsAction("MobileGoogleServicesSettingsClose"));
 }
 
+- (void)reportBackUserAction {
+  base::RecordAction(
+      base::UserMetricsAction("MobileGoogleServicesSettingsBack"));
+}
+
 #pragma mark - GoogleServicesSettingsConsumer
 
 - (void)insertSections:(NSIndexSet*)sections {

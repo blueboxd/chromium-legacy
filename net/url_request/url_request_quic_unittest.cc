@@ -705,14 +705,6 @@ TEST_P(URLRequestQuicTest, RequestHeadersCallback) {
 // Tests that if there's an Expect-CT failure at the QUIC layer, a report is
 // generated.
 TEST_P(URLRequestQuicTest, ExpectCT) {
-  // Expect-CT seems not to supported for quic::PROTOCOL_TLS1_3 handshakes.
-  // TODO(https://crbug.com/1090838): Remove this early exit once that is fixed.
-  if (GetParam().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // Need this to avoid a DCHECK.
-    Init();
-    return;
-  }
-
   TransportSecurityState::SetRequireCTForTesting(true);
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(

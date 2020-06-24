@@ -109,10 +109,14 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
     bool error;
   };
 
-  IdOrError ParamByPropertyNode(const PropertyNode&) const;
+  IdOrError ParamByPropertyNode(const PropertyNode&,
+                                const LineIndexesMap&) const;
   NSNumber* PropertyNodeToInt(const PropertyNode&) const;
   NSArray* PropertyNodeToIntArray(const PropertyNode&) const;
   NSValue* PropertyNodeToRange(const PropertyNode&) const;
+  gfx::NativeViewAccessible PropertyNodeToUIElement(
+      const PropertyNode&,
+      const LineIndexesMap&) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
@@ -266,7 +270,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
        [cocoa_node accessibilityParameterizedAttributeNames]) {
     auto propnode = GetMatchingPropertyNode(
         line_index, SysNSStringToUTF16(supportedAttribute));
-    IdOrError param = ParamByPropertyNode(propnode);
+    IdOrError param = ParamByPropertyNode(propnode, line_indexes_map);
     if (param.IsError()) {
       dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
                     base::Value(kFailedToParseArgsError));
@@ -288,7 +292,8 @@ void AccessibilityTreeFormatterMac::AddProperties(
 
 AccessibilityTreeFormatterMac::IdOrError
 AccessibilityTreeFormatterMac::ParamByPropertyNode(
-    const PropertyNode& property_node) const {
+    const PropertyNode& property_node,
+    const LineIndexesMap& line_indexes_map) const {
   IdOrError param;
   std::string property_name = base::UTF16ToASCII(property_node.name_or_value);
 
@@ -298,6 +303,8 @@ AccessibilityTreeFormatterMac::ParamByPropertyNode(
     param = PropertyNodeToIntArray(property_node);
   } else if (property_name == "AXStringForRange") {  // NSRange
     param = PropertyNodeToRange(property_node);
+  } else if (property_name == "AXIndexForChildUIElement") {  // UIElement
+    param = PropertyNodeToUIElement(property_node, line_indexes_map);
   }
 
   return param;
@@ -387,6 +394,32 @@ NSValue* AccessibilityTreeFormatterMac::PropertyNodeToRange(
   }
 
   return [NSValue valueWithRange:NSMakeRange(*loc, *len)];
+}
+
+// UIElement. Format: :line_num.
+gfx::NativeViewAccessible
+AccessibilityTreeFormatterMac::PropertyNodeToUIElement(
+    const PropertyNode& propnode,
+    const LineIndexesMap& line_indexes_map) const {
+  if (propnode.parameters.size() != 1) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to UIElement: single argument is expected";
+    return nil;
+  }
+
+  const auto& uielnode = propnode.parameters[0];
+  base::string16 line_index = uielnode.name_or_value;
+  for (std::pair<const gfx::NativeViewAccessible, base::string16> item :
+       line_indexes_map) {
+    if (item.second == line_index) {
+      return item.first;
+    }
+  }
+
+  LOG(ERROR)
+      << "Failed to parse " << propnode.original_property
+      << " to UIElement: no corresponding UIElement was found in the tree";
+  return nil;
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(

@@ -461,6 +461,9 @@ SkColor GetDefaultColorForIconType(IconType icon_type) {
       return AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kSystemMenuIconColorToggled,
           AshColorProvider::AshColorMode::kDark);
+    case ICON_TYPE_FEATURE_POD_DISABLED:
+      return AshColorProvider::GetDisabledColor(
+          GetDefaultColorForIconType(ICON_TYPE_FEATURE_POD));
     default:
       return AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary,

@@ -629,8 +629,6 @@ int CoalescePendingMotionEvents(const x11::Event* x11_event,
     }
   }
 
-  if (is_motion && num_coalesced > 0)
-    UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
   return num_coalesced;
 }
 

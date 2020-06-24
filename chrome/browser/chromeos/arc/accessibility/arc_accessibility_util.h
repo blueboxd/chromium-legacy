@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "components/arc/mojom/accessibility_helper.mojom-forward.h"
 #include "ui/accessibility/ax_enum_util.h"
 
@@ -86,6 +88,20 @@ bool HasNonEmptyStringProperty(InfoDataType* node, PropType prop) {
     return false;
 
   return !it->second.empty();
+}
+
+// Sets property to mojom struct. Used in test.
+template <class PropType, class ValueType>
+void SetProperty(
+    base::Optional<base::flat_map<PropType, ValueType>>& properties,
+    PropType prop,
+    const ValueType& value) {
+  if (!properties.has_value())
+    properties = base::flat_map<PropType, ValueType>();
+
+  auto& prop_map = properties.value();
+  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
+  prop_map.insert(std::make_pair(prop, value));
 }
 
 }  // namespace arc

@@ -176,6 +176,8 @@ void AppListTestViewDelegate::NotifySearchResultsForLogging(
     const ash::SearchResultIdWithPositionIndices& results,
     int position_index) {}
 
+void AppListTestViewDelegate::MaybeIncreasePrivacyInfoShownCounts() {}
+
 bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
   return false;
 }
@@ -184,15 +186,11 @@ bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
   return false;
 }
 
-void AppListTestViewDelegate::MaybeIncreaseAssistantPrivacyInfoShownCount() {}
-
 void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
 
 bool AppListTestViewDelegate::ShouldShowSuggestedContentInfo() const {
   return false;
 }
-
-void AppListTestViewDelegate::MaybeIncreaseSuggestedContentInfoShownCount() {}
 
 void AppListTestViewDelegate::MarkSuggestedContentInfoDismissed() {}
 

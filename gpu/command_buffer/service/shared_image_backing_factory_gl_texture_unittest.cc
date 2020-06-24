@@ -863,6 +863,22 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
   EXPECT_TRUE(stub_image->bound());
   int update_counter = stub_image->update_counter();
   ref->Update(nullptr);
+  EXPECT_EQ(stub_image->update_counter(), update_counter);
+  EXPECT_TRUE(stub_image->bound());
+
+  // TODO(https://crbug.com/1092155): When we lazily bind the GLImage, this
+  // will be needed to trigger binding the GLImage.
+  {
+    auto skia_representation =
+        shared_image_representation_factory_->ProduceSkia(mailbox,
+                                                          context_state_);
+    std::vector<GrBackendSemaphore> begin_semaphores;
+    std::vector<GrBackendSemaphore> end_semaphores;
+    std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
+        scoped_read_access;
+    skia_representation->BeginScopedReadAccess(&begin_semaphores,
+                                               &end_semaphores);
+  }
   EXPECT_TRUE(stub_image->bound());
   EXPECT_GT(stub_image->update_counter(), update_counter);
 }

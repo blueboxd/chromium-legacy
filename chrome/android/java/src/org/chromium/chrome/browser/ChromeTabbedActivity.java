@@ -1719,9 +1719,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             HomepagePromoVariationManager.getInstance().tagSyntheticHomepagePromoSeenGroup();
 
             DefaultBrowserPromoUtils.maybeRecordOutcomeOnStart();
-        });
 
-        DeferredStartupHandler.getInstance().addDeferredTask(() -> {
             if (mStartSurface != null && mOverviewShownOnStart) {
                 mStartSurface.onOverviewShownAtLaunch(getOnCreateTimestampUptimeMs());
             }

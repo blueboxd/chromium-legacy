@@ -44,7 +44,7 @@ HTMLElementType htmlElementTypeForTag(const AtomicString& tagName, const Documen
   {% for tag in tags|sort %}
   {% if tag.runtimeEnabled %}
   if (tagName == "{{tag.name}}") {
-    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled(document)) {
+    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled(document->GetExecutionContext())) {
       return HTMLElementType::kHTMLUnknownElement;
     }
   }

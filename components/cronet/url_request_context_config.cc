@@ -31,11 +31,11 @@
 #include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/nqe/network_quality_estimator_params.h"
-#include "net/quic/quic_utils_chromium.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/url_request/url_request_context_builder.h"
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -324,14 +324,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetString(kQuicConnectionOptions,
                                &quic_connection_options)) {
         quic_params->connection_options =
-            net::ParseQuicConnectionOptions(quic_connection_options);
+            quic::ParseQuicTagVector(quic_connection_options);
       }
 
       std::string quic_client_connection_options;
       if (quic_args->GetString(kQuicClientConnectionOptions,
                                &quic_client_connection_options)) {
         quic_params->client_connection_options =
-            net::ParseQuicConnectionOptions(quic_client_connection_options);
+            quic::ParseQuicTagVector(quic_client_connection_options);
       }
 
       // TODO(rtenneti): Delete this option after apps stop using it.

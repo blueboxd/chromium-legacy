@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/lacros/ash_chrome_service_impl.h"
 #include "chrome/browser/chromeos/lacros/lacros_loader.h"
 #include "chrome/browser/chromeos/lacros/lacros_util.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
@@ -238,9 +239,18 @@ void LacrosManager::StartForeground(bool already_running) {
                                      lacros_process_.Handle(),
                                      channel.TakeLocalEndpoint());
       binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
+      lacros_chrome_service_->RequestAshChromeServiceReceiver(
+          base::BindOnce(&LacrosManager::OnAshChromeServiceReceiverReceived,
+                         weak_factory_.GetWeakPtr()));
     }
   }
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
+}
+
+void LacrosManager::OnAshChromeServiceReceiverReceived(
+    mojo::PendingReceiver<lacros::mojom::AshChromeService> pending_receiver) {
+  ash_chrome_service_ =
+      std::make_unique<AshChromeServiceImpl>(std::move(pending_receiver));
 }
 
 void LacrosManager::OnUserSessionStarted(bool is_primary_user) {

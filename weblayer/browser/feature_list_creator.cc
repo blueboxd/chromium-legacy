@@ -85,13 +85,12 @@ void FeatureListCreator::SetUpFieldTrials() {
   variations_service_->OverridePlatform(
       variations::Study::PLATFORM_ANDROID_WEBLAYER, "android_weblayer");
 
-  std::set<std::string> unforceable_field_trials;
   std::vector<std::string> variation_ids;
   auto feature_list = std::make_unique<base::FeatureList>();
 
   variations_service_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, unforceable_field_trials, variation_ids,
+      switches::kDisableFeatures, variation_ids,
       content::GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), &weblayer_field_trials_);

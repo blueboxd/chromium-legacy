@@ -8,6 +8,8 @@
 
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -116,6 +118,16 @@ const CGFloat kDefaultHeight = 70;
   version.text = [self versionDescriptionString];
   version.accessibilityTraits = UIAccessibilityTraitButton;
   [model setFooter:version forSectionWithIdentifier:SectionIdentifierLinks];
+}
+
+#pragma mark - SettingsControllerProtocol
+
+- (void)reportDismissalUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAboutSettingsClose"));
+}
+
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAboutSettingsBack"));
 }
 
 #pragma mark - UITableViewDelegate

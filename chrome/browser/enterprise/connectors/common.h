@@ -54,6 +54,7 @@ struct AnalysisSettings {
 
 struct ReportingSettings {
   ReportingSettings();
+  explicit ReportingSettings(GURL url);
   ReportingSettings(ReportingSettings&&);
   ReportingSettings& operator=(ReportingSettings&&);
   ~ReportingSettings();

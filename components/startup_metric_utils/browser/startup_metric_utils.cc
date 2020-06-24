@@ -479,12 +479,6 @@ void RecordFirstWebContentsNonEmptyPaint(
   if (!ShouldLogStartupHistogram())
     return;
 
-  if (!g_process_creation_ticks.is_null()) {
-    UmaHistogramAndTraceWithTemperatureAndMaxPressure(
-        &base::UmaHistogramLongTimes100,
-        "Startup.FirstWebContents.NonEmptyPaint2", g_process_creation_ticks,
-        now);
-  }
   UmaHistogramAndTraceWithTemperatureAndMaxPressure(
       &base::UmaHistogramLongTimes100,
       "Startup.FirstWebContents.NonEmptyPaint3", g_application_start_ticks,

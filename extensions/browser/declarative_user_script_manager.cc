@@ -6,7 +6,7 @@
 
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
-#include "extensions/browser/declarative_user_script_master.h"
+#include "extensions/browser/declarative_user_script_set.h"
 
 namespace extensions {
 
@@ -26,24 +26,24 @@ DeclarativeUserScriptManager* DeclarativeUserScriptManager::Get(
       browser_context);
 }
 
-DeclarativeUserScriptMaster*
-DeclarativeUserScriptManager::GetDeclarativeUserScriptMasterByID(
+DeclarativeUserScriptSet*
+DeclarativeUserScriptManager::GetDeclarativeUserScriptSetByID(
     const HostID& host_id) {
-  auto it = declarative_user_script_masters_.find(host_id);
+  auto it = declarative_user_script_sets_.find(host_id);
 
-  if (it != declarative_user_script_masters_.end())
+  if (it != declarative_user_script_sets_.end())
     return it->second.get();
 
-  return CreateDeclarativeUserScriptMaster(host_id);
+  return CreateDeclarativeUserScriptSet(host_id);
 }
 
-DeclarativeUserScriptMaster*
-DeclarativeUserScriptManager::CreateDeclarativeUserScriptMaster(
+DeclarativeUserScriptSet*
+DeclarativeUserScriptManager::CreateDeclarativeUserScriptSet(
     const HostID& host_id) {
   // Inserts a new DeclarativeUserScriptManager and returns a ptr to it.
-  return declarative_user_script_masters_
+  return declarative_user_script_sets_
       .insert(
-          std::make_pair(host_id, std::make_unique<DeclarativeUserScriptMaster>(
+          std::make_pair(host_id, std::make_unique<DeclarativeUserScriptSet>(
                                       browser_context_, host_id)))
       .first->second.get();
 }
@@ -52,10 +52,10 @@ void DeclarativeUserScriptManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  for (const auto& val : declarative_user_script_masters_) {
-    DeclarativeUserScriptMaster* master = val.second.get();
-    if (master->host_id().id() == extension->id())
-      master->ClearScripts();
+  for (const auto& val : declarative_user_script_sets_) {
+    DeclarativeUserScriptSet* set = val.second.get();
+    if (set->host_id().id() == extension->id())
+      set->ClearScripts();
   }
 }
 

@@ -126,11 +126,11 @@ bool HTMLPortalElement::CheckWithinFrameLimitOrWarn() const {
 }
 
 bool HTMLPortalElement::CheckPortalsEnabledOrWarn() const {
-  Document& document = GetDocument();
-  if (RuntimeEnabledFeatures::PortalsEnabled(&document))
+  ExecutionContext* context = GetExecutionContext();
+  if (RuntimeEnabledFeatures::PortalsEnabled(context))
     return true;
 
-  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+  context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::blink::ConsoleMessageSource::kRendering,
       mojom::blink::ConsoleMessageLevel::kWarning,
       "An operation was prevented because a <portal> was moved to a document "
@@ -141,8 +141,7 @@ bool HTMLPortalElement::CheckPortalsEnabledOrWarn() const {
 
 bool HTMLPortalElement::CheckPortalsEnabledOrThrow(
     ExceptionState& exception_state) const {
-  Document& document = GetDocument();
-  if (RuntimeEnabledFeatures::PortalsEnabled(&document))
+  if (RuntimeEnabledFeatures::PortalsEnabled(GetExecutionContext()))
     return true;
 
   exception_state.ThrowDOMException(

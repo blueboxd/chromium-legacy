@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_status_consumer.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_status_description.h"
+#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 class Browser;
@@ -28,7 +29,8 @@ extern NSString* const kPrivacyTableViewId;
 @end
 
 @interface PrivacyTableViewController
-    : SettingsRootTableViewController <CookiesStatusConsumer>
+    : SettingsRootTableViewController <CookiesStatusConsumer,
+                                       SettingsControllerProtocol>
 
 // Presentation delegate.
 @property(nonatomic, weak) id<PrivacyTableViewControllerPresentationDelegate>

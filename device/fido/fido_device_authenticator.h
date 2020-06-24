@@ -50,6 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                    base::Optional<std::string> rp_id,
                    GetTokenCallback callback) override;
   void GetUvRetries(GetRetriesCallback callback) override;
+  bool CanGetUvToken() override;
   void GetUvToken(base::Optional<std::string> rp_id,
                   GetTokenCallback callback) override;
   void SetPIN(const std::string& pin,

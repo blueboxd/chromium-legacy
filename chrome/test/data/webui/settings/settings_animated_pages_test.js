@@ -105,4 +105,39 @@ suite('settings-animated-pages', function() {
     Router.getInstance().navigateToPreviousRoute();
     await whenDone;
   });
+
+  test('IgnoresBubblingIronSelect', async function() {
+    document.body.innerHTML = `
+      <settings-animated-pages section="${testRoutes.PRIVACY.section}">
+        <div route-path="default"></div>
+        <settings-subpage route-path="${testRoutes.SITE_SETTINGS.path}">
+          <div></div>
+        </settings-subpage>
+      </settings-animated-pages>`;
+
+    const subpage = document.body.querySelector('settings-subpage');
+    let counter = 0;
+
+    const whenFired = new Promise(resolve => {
+      // Override |focusBackButton| to check how many times it is called.
+      subpage.focusBackButton = () => {
+        counter++;
+
+        if (counter === 1) {
+          const other = document.body.querySelector('div');
+          other.dispatchEvent(new CustomEvent('iron-select', {bubbles: true}));
+          resolve();
+        }
+      };
+    });
+
+    Router.getInstance().navigateTo(testRoutes.PRIVACY);
+    Router.getInstance().navigateTo(testRoutes.SITE_SETTINGS);
+
+    await whenFired;
+
+    // Ensure that |focusBackButton| was only called once, ignoring the
+    // any unrelated 'iron-select' events.
+    assertEquals(1, counter);
+  });
 });

@@ -76,7 +76,7 @@ void HTMLLinkElement::ParseAttribute(
   if (name == html_names::kRelAttr) {
     rel_attribute_ = LinkRelAttribute(value);
     if (rel_attribute_.IsImport()) {
-      if (RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument())) {
+      if (RuntimeEnabledFeatures::HTMLImportsEnabled(GetExecutionContext())) {
         Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
       } else {
         // Show a warning that HTML Imports (<link rel=import>) were detected,
@@ -140,12 +140,13 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == html_names::kIntegrityAttr) {
     integrity_ = value;
   } else if (name == html_names::kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(
+                 GetExecutionContext())) {
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
   } else if (name == html_names::kResourcesAttr &&
              RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
-                 &GetDocument())) {
+                 GetExecutionContext())) {
     resources_->DidUpdateAttributeValue(params.old_value, value);
 
     // Parse the attribute value as a space-separated list of urls
@@ -166,7 +167,7 @@ void HTMLLinkElement::ParseAttribute(
     // TODO(crbug.com/1087043): Remove this if() condition once the feature has
     // landed and no compat issues are reported.
     if (RuntimeEnabledFeatures::LinkDisabledNewSpecBehaviorEnabled(
-            &GetDocument())) {
+            GetExecutionContext())) {
       LinkStyle* link = GetLinkStyle();
       if (!link) {
         link = MakeGarbageCollected<LinkStyle>(this);
@@ -238,13 +239,15 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   if (!link_) {
     if (rel_attribute_.IsImport()) {
       // Only create an import link when HTML imports are enabled.
-      if (!RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument()))
+      if (!RuntimeEnabledFeatures::HTMLImportsEnabled(GetExecutionContext()))
         return nullptr;
       link_ = MakeGarbageCollected<LinkImport>(this);
     } else if (rel_attribute_.IsWebBundle()) {
       // Only create a webbundle link when SubresourceWebBundles are enabled.
-      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(&GetDocument()))
+      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
+              GetExecutionContext())) {
         return nullptr;
+      }
       link_ = MakeGarbageCollected<LinkWebBundle>(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = MakeGarbageCollected<LinkManifest>(this);

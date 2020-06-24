@@ -65,6 +65,7 @@ class CORE_EXPORT TextPainterBase {
   void PaintDecorationUnderOrOverLine(GraphicsContext&,
                                       const DecorationInfo&,
                                       const AppliedTextDecoration&,
+                                      size_t decoration_info_thickness_index,
                                       int line_offset,
                                       float decoration_offset);
 

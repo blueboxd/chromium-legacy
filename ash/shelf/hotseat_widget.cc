@@ -389,8 +389,10 @@ void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
     return;
   }
 
-  SetTranslucentBackground(
-      scrollable_shelf_view_->GetHotseatBackgroundBounds());
+  // Layer::SetBounds() does not mirror bounds under RTL. So set the mirrored
+  // bounds explicitly.
+  SetTranslucentBackground(scrollable_shelf_view_->GetMirroredRect(
+      scrollable_shelf_view_->GetHotseatBackgroundBounds()));
 }
 
 void HotseatWidget::DelegateView::SetTranslucentBackground(
@@ -646,9 +648,8 @@ float HotseatWidget::CalculateShelfViewOpacity() const {
   return (state() == HotseatState::kExtended) ? 1.0f : target_opacity;
 }
 
-void HotseatWidget::SetTranslucentBackground(
-    const gfx::Rect& translucent_background_bounds) {
-  delegate_view_->SetTranslucentBackground(translucent_background_bounds);
+void HotseatWidget::UpdateTranslucentBackground() {
+  delegate_view_->UpdateTranslucentBackground();
 }
 
 int HotseatWidget::CalculateHotseatYInScreen(
@@ -901,6 +902,15 @@ bool HotseatWidget::GetIsTranslucentBackgroundVisibleForTest() const {
 
 bool HotseatWidget::IsShowingShelfMenu() const {
   return GetShelfView()->IsShowingMenu();
+}
+
+bool HotseatWidget::EventTargetsShelfView(const ui::LocatedEvent& event) const {
+  DCHECK_EQ(event.target(), GetNativeWindow());
+  gfx::Point location_in_shelf_view = event.location();
+  views::View::ConvertPointFromWidget(scrollable_shelf_view_,
+                                      &location_in_shelf_view);
+  return scrollable_shelf_view_->GetHotseatBackgroundBounds().Contains(
+      location_in_shelf_view);
 }
 
 const ShelfView* HotseatWidget::GetShelfView() const {

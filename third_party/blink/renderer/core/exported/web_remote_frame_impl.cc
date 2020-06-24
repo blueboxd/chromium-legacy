@@ -118,7 +118,8 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
 
   Element* element = portal_element;
   DCHECK(element->HasTagName(html_names::kPortalTag));
-  DCHECK(RuntimeEnabledFeatures::PortalsEnabled(&element->GetDocument()));
+  DCHECK(
+      RuntimeEnabledFeatures::PortalsEnabled(element->GetExecutionContext()));
   HTMLPortalElement* portal = static_cast<HTMLPortalElement*>(element);
   LocalFrame* host_frame = portal->GetDocument().GetFrame();
   frame->InitializeCoreFrame(*host_frame->GetPage(), portal, g_null_atom,

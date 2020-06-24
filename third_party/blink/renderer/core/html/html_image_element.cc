@@ -290,7 +290,8 @@ void HTMLImageElement::ParseAttribute(
              EqualIgnoringASCIICase(params.new_value, "eager")) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else if (name == html_names::kImportanceAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+             RuntimeEnabledFeatures::PriorityHintsEnabled(
+                 GetExecutionContext())) {
     // We only need to keep track of usage here, as the communication of the
     // |importance| attribute to the loading pipeline takes place in
     // ImageLoader.

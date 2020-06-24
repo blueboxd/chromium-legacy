@@ -154,6 +154,12 @@ void NetworkFeaturePodButton::Update() {
           ActiveNetworkIcon::Type::kSingle,
           network_icon::ICON_TYPE_FEATURE_POD_TOGGLED,
           &toggled_image_animating);
+
+  gfx::ImageSkia image_disabled =
+      Shell::Get()->system_tray_model()->active_network_icon()->GetImage(
+          ActiveNetworkIcon::Type::kSingle,
+          network_icon::ICON_TYPE_FEATURE_POD_DISABLED, &image_animating);
+
   if (image_animating || toggled_image_animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
@@ -167,7 +173,10 @@ void NetworkFeaturePodButton::Update() {
                                 DeviceStateType::kEnabled;
   SetToggled(toggled);
   icon_button()->SetImage(views::Button::STATE_NORMAL, image);
+  icon_button()->SetImage(views::Button::STATE_DISABLED, image_disabled);
   icon_button()->SetToggledImage(views::Button::STATE_NORMAL, &image_toggled);
+  icon_button()->SetToggledImage(views::Button::STATE_DISABLED,
+                                 &image_disabled);
 
   base::string16 network_name;
   if (network) {

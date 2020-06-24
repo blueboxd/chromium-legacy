@@ -113,7 +113,7 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     bool same_document_navigation,
     bool should_scroll) {
   DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
-      frame.GetDocument()));
+      frame.DomWindow()));
 
   if (!frame.GetDocument()->GetFragmentDirective())
     return nullptr;

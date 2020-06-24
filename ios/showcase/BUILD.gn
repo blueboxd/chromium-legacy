@@ -43,10 +43,7 @@ group("features") {
 
 group("all_tests") {
   testonly = true
-  deps = [
-    ":ios_showcase_eg2tests",
-    ":ios_showcase_egtests",
-  ]
+  deps = [ ":ios_showcase_eg2tests" ]
 }
 
 ios_eg2_test_app_host("ios_showcase_eg2tests") {

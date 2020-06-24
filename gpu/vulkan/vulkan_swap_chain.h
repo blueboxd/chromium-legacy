@@ -10,12 +10,21 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace gpu {
 
@@ -72,12 +81,30 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   void Destroy();
 
   // Present the current buffer.
-  gfx::SwapResult PresentBuffer(const gfx::Rect& rect);
+  gfx::SwapResult PostSubBuffer(const gfx::Rect& rect);
+  using PostSubBufferCompletionCallback =
+      base::OnceCallback<void(gfx::SwapResult)>;
+  void PostSubBufferAsync(const gfx::Rect& rect,
+                          PostSubBufferCompletionCallback callback);
 
-  uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
-  const gfx::Size& size() const { return size_; }
-  bool use_protected_memory() const { return use_protected_memory_; }
-  VkResult state() const { return state_; }
+  uint32_t num_images() const {
+    // size of |images_| will not be changed after initializing, so it is safe
+    // to read it here.
+    return static_cast<uint32_t>(TS_UNCHECKED_READ(images_).size());
+  }
+  const gfx::Size& size() const {
+    // |size_| is never changed after initialization.
+    return size_;
+  }
+  bool use_protected_memory() const {
+    // |use_protected_memory_| is never changed after initialization.
+    return use_protected_memory_;
+  }
+
+  VkResult state() const {
+    base::AutoLock auto_lock(lock_);
+    return state_;
+  }
 
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
@@ -86,26 +113,31 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
                            uint32_t min_image_count,
                            VkSurfaceTransformFlagBitsKHR pre_transform,
                            bool use_protected_memory,
-                           std::unique_ptr<VulkanSwapChain> old_swap_chain);
-  void DestroySwapChain();
+                           std::unique_ptr<VulkanSwapChain> old_swap_chain)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void DestroySwapChain() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  bool InitializeSwapImages(const VkSurfaceFormatKHR& surface_format);
-  void DestroySwapImages();
+  bool InitializeSwapImages(const VkSurfaceFormatKHR& surface_format)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void DestroySwapImages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   bool BeginWriteCurrentImage(VkImage* image,
                               uint32_t* image_index,
                               VkImageLayout* layout,
                               VkSemaphore* semaphore);
   void EndWriteCurrentImage(VkImageLayout layout, VkSemaphore semaphore);
-  bool AcquireNextImage();
+  bool PresentBuffer(const gfx::Rect& rect) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  bool AcquireNextImage() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  // Wait until PostSubBufferAsync() is finished on ThreadPool.
+  void WaitUntilPostSubBufferAsyncFinished() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  mutable base::Lock lock_;
 
   bool use_protected_memory_ = false;
   VulkanDeviceQueue* device_queue_ = nullptr;
   bool is_incremental_present_supported_ = false;
-  VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
-
+  VkSwapchainKHR swap_chain_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
   std::unique_ptr<VulkanCommandPool> command_pool_;
-
   gfx::Size size_;
 
   struct ImageData {
@@ -126,14 +158,33 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     // to swapchain for presenting.
     bool is_acquired = false;
   };
-  std::vector<ImageData> images_;
 
-  // Acquired image index.
-  base::circular_deque<uint32_t> in_present_images_;
-  base::Optional<uint32_t> acquired_image_;
-  bool is_writing_ = false;
-  VkSemaphore end_write_semaphore_ = VK_NULL_HANDLE;
-  VkResult state_ = VK_SUCCESS;
+  // Images in the swap chain.
+  std::vector<ImageData> images_ GUARDED_BY(lock_);
+
+  base::circular_deque<uint32_t> in_present_images_ GUARDED_BY(lock_);
+  bool is_writing_ GUARDED_BY(lock_) = false;
+  VkSemaphore end_write_semaphore_ GUARDED_BY(lock_) = VK_NULL_HANDLE;
+
+  // Condition variable is signalled when a PostSubBufferAsync() is finished.
+  base::ConditionVariable condition_variable_{&lock_};
+
+  // Count of pending unfinished PostSubBufferAsync() calls.
+  uint32_t pending_post_sub_buffer_ GUARDED_BY(lock_) = 0;
+
+  // The current swapchain state_.
+  VkResult state_ GUARDED_BY(lock_) = VK_SUCCESS;
+
+  // Acquired images queue.
+  base::circular_deque<uint32_t> acquired_images_ GUARDED_BY(lock_);
+
+  // For executing task on GPU main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // For executing PosSubBufferAsync tasks off the GPU main thread.
+  scoped_refptr<base::SequencedTaskRunner> post_sub_buffer_task_runner_;
+
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSwapChain);
 };

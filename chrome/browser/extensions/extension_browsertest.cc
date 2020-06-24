@@ -453,7 +453,7 @@ base::FilePath ExtensionBrowserTest::PackExtension(
     int extra_run_flags) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath crx_path = temp_dir_.GetPath().AppendASCII("temp.crx");
-  if (!base::DeleteFile(crx_path, false)) {
+  if (!base::DeleteFile(crx_path)) {
     ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
     return base::FilePath();
   }
@@ -466,7 +466,7 @@ base::FilePath ExtensionBrowserTest::PackExtension(
   if (!base::PathExists(pem_path)) {
     pem_path = base::FilePath();
     pem_path_out = crx_path.DirName().AppendASCII("temp.pem");
-    if (!base::DeleteFile(pem_path_out, false)) {
+    if (!base::DeleteFile(pem_path_out)) {
       ADD_FAILURE() << "Failed to delete pem: " << pem_path_out.value();
       return base::FilePath();
     }

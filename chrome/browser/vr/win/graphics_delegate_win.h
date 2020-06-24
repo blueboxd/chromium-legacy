@@ -43,7 +43,7 @@ class GraphicsDelegateWin : public GraphicsDelegate {
   void InitializeOnGLThread();
   void SetVRDisplayInfo(device::mojom::VRDisplayInfoPtr info);
   void Cleanup();
-  void PreRender();
+  bool PreRender();
   void PostRender();
   mojo::PlatformHandle GetTexture();
   gfx::RectF GetLeft();

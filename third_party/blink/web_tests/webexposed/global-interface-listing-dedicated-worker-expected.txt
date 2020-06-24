@@ -731,6 +731,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method getColorSettings
 [Worker] interface ImageDecoder
+[Worker]     static method canDecodeType
 [Worker]     attribute @@toStringTag
 [Worker]     getter complete
 [Worker]     getter frameCount

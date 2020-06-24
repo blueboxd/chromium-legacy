@@ -54,13 +54,19 @@ const ActionInfo* GetActionInfoOfType(const Extension& extension,
 std::unique_ptr<ScopedCurrentChannel> GetOverrideChannelForActionType(
     ActionInfo::Type action_type) {
   std::unique_ptr<ScopedCurrentChannel> channel;
-  // The "action" key is currently restricted to trunk. Use a fake channel iff
-  // we're testing that key, so that we still get multi-channel coverage for
-  // browser and page actions.
+  // The "action" key is currently restricted to canary. Use a fake channel iff
+  // it would be restricted otherwise. This way, we still get all-channel
+  // coverage for browser and page actions, and cover all channels that "action"
+  // is supported in.
+  constexpr version_info::Channel kMaxChannelForActionKey =
+      version_info::Channel::CANARY;
+
   switch (action_type) {
     case ActionInfo::TYPE_ACTION:
-      channel = std::make_unique<ScopedCurrentChannel>(
-          version_info::Channel::UNKNOWN);
+      if (GetCurrentChannel() > kMaxChannelForActionKey) {
+        channel =
+            std::make_unique<ScopedCurrentChannel>(kMaxChannelForActionKey);
+      }
       break;
     case ActionInfo::TYPE_PAGE:
     case ActionInfo::TYPE_BROWSER:

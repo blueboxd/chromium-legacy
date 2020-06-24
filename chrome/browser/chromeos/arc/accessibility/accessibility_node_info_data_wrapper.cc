@@ -176,8 +176,8 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     // need additional information contained only in the CollectionInfo. The
     // CollectionInfo should be an ancestor of this node.
     AXCollectionInfoData* collection_info = nullptr;
-    for (const AccessibilityInfoDataWrapper* container =
-             static_cast<const AccessibilityInfoDataWrapper*>(this);
+    for (AccessibilityInfoDataWrapper* container =
+             const_cast<AccessibilityNodeInfoDataWrapper*>(this);
          container;) {
       if (!container || !container->IsNode())
         break;
@@ -186,8 +186,7 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
         break;
       }
 
-      container =
-          tree_source_->GetParent(tree_source_->GetFromId(container->GetId()));
+      container = tree_source_->GetParent(container);
     }
 
     if (collection_info) {

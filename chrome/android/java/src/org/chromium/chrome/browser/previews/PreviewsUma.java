@@ -66,4 +66,12 @@ public final class PreviewsUma {
         if (!isInMainFrame) return;
         recordHistogram(previewType, ACTION_LITE_PAGE_AT_COMMIT);
     }
+
+    /**
+     * Records that the user opened the page info dialog, and https image compression message was
+     * shown in the page info.
+     */
+    public static void recordHttpsImageCompressionPageInfoOpened() {
+        recordHistogram("HttpsImageCompression", ACTION_PAGE_INFO_OPENED);
+    }
 }

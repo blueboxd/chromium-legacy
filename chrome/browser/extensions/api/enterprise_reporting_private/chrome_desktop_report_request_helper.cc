@@ -485,9 +485,9 @@ void StoreDeviceData(const std::string& id,
     success = base::Move(tmp_path, data_file);
   } else {
     // Not passing a second parameter means clear the data sored under |id|.
-    success = base::DeleteFile(data_file, false);
+    success = base::DeleteFile(data_file);
     if (base::IsDirectoryEmpty(data_file.DirName()))
-      base::DeleteFile(data_file.DirName(), false);
+      base::DeleteFile(data_file.DirName());
   }
 
   std::move(callback).Run(success);

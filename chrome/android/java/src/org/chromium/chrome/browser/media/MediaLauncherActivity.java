@@ -14,6 +14,7 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.IntentUtils;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 
@@ -26,6 +27,8 @@ import java.util.Locale;
  * content:// URI from the Intent and properly routes it to a media-viewing CustomTabActivity.
  */
 public class MediaLauncherActivity extends Activity {
+    private static final String TAG = "MediaLauncher";
+
     // UMA histogram values for media types the user can open.
     // Keep in sync with MediaLauncherActivityMediaType enum in enums.xml.
     @IntDef({MediaType.AUDIO, MediaType.IMAGE, MediaType.VIDEO})
@@ -64,7 +67,16 @@ public class MediaLauncherActivity extends Activity {
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
                 CustomTabIntentDataProvider.LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY);
-        startActivity(intent);
+
+        boolean success = false;
+        try {
+            startActivity(intent);
+            success = true;
+        } catch (SecurityException e) {
+            Log.w(TAG, "Cannot open content URI: " + contentUri.toString(), e);
+        }
+
+        RecordHistogram.recordBooleanHistogram("MediaLauncherActivity.LaunchResult", success);
 
         finish();
     }

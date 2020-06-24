@@ -1879,6 +1879,10 @@ bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
+  cancelable_service_device_task_.Reset(base::BindRepeating(
+      &V4L2VideoDecodeAccelerator::ServiceDeviceTask, base::Unretained(this)));
+  cancelable_service_device_task_callback_ =
+      cancelable_service_device_task_.callback();
   device_poll_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::DevicePollTask,
                                 base::Unretained(this), 0));
@@ -1900,6 +1904,10 @@ bool V4L2VideoDecodeAccelerator::StopDevicePoll() {
     return false;
   }
   device_poll_thread_.Stop();
+  // Must be done after the Stop() above to ensure
+  // |cancelable_service_device_task_callback_| is not copied.
+  cancelable_service_device_task_.Cancel();
+  cancelable_service_device_task_callback_ = {};
   // Clear the interrupt now, to be sure.
   if (!device_->ClearDevicePollInterrupt()) {
     PLOG(ERROR) << "ClearDevicePollInterrupt: failed";
@@ -2026,8 +2034,8 @@ void V4L2VideoDecodeAccelerator::DevicePollTask(bool poll_device) {
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch decoder state from this thread.
   decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::ServiceDeviceTask,
-                                base::Unretained(this), event_pending));
+      FROM_HERE,
+      base::BindOnce(cancelable_service_device_task_callback_, event_pending));
 }
 
 bool V4L2VideoDecodeAccelerator::IsDestroyPending() {

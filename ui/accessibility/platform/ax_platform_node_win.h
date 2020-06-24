@@ -285,6 +285,7 @@ enum {
   UMA_API_GET_FOCUS = 247,
   UMA_API_ADVISE_EVENT_ADDED = 248,
   UMA_API_ADVISE_EVENT_REMOVED = 249,
+  UMA_API_ITEMCONTAINER_FINDITEMBYPROPERTY = 250,
 
   // This must always be the last enum. It's okay for its value to
   // increase, but none of the other enum values may change.
@@ -1063,6 +1064,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // IRawElementProviderSimple support method.
   bool IsPatternProviderSupported(PATTERNID pattern_id);
+
+  // Prefer GetPatternProviderImpl when calling internally. We should avoid
+  // calling external APIs internally as it will cause the histograms to become
+  // innaccurate.
+  HRESULT GetPatternProviderImpl(PATTERNID pattern_id, IUnknown** result);
 
   // Prefer GetPropertyValueImpl when calling internally. We should avoid
   // calling external APIs internally as it will cause the histograms to become

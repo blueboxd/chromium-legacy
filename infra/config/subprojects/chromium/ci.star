@@ -424,6 +424,14 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = 'android-marshmallow-x86-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'builder_tester|x86',
+        short_name = 'M',
+    ),
+)
+
+ci.android_builder(
     name = 'android-nougat-arm64-rel',
     console_view_entry = ci.console_view_entry(
         category = 'builder_tester|arm64',
@@ -651,6 +659,15 @@ ci.fyi_builder(
     triggered_by = [builder_name('Mac Builder')],
 )
 
+ci.fyi_builder(
+    name = 'mac-arm64',
+    console_view_entry = ci.console_view_entry(
+        category = 'mac',
+        short_name = 'arm64',
+    ),
+    main_console_view = None,
+    os = os.MAC_ANY,
+)
 
 ci.fyi_ios_builder(
     name = 'ios-simulator-cronet',

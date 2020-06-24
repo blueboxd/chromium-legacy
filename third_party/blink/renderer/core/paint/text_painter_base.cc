@@ -289,7 +289,6 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
   UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
-  context.SetStrokeThickness(decoration_info.thickness);
 
   if (has_combined_text_)
     context.ConcatCTM(Rotation(text_bounds_, kClockwise));
@@ -303,20 +302,31 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
     underline_position = ResolvedUnderlinePosition::kUnder;
   }
 
-  for (const AppliedTextDecoration& decoration : decorations) {
+  DCHECK_EQ(decorations.size(),
+            decoration_info.applied_decorations_thickness.size());
+  for (size_t applied_decorations_index = 0;
+       applied_decorations_index < decorations.size();
+       ++applied_decorations_index) {
+    const AppliedTextDecoration& decoration =
+        decorations[applied_decorations_index];
     TextDecoration lines = decoration.Lines();
     bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
     bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
     if (flip_underline_and_overline)
       std::swap(has_underline, has_overline);
 
+    float resolved_thickness =
+        decoration_info
+            .applied_decorations_thickness[applied_decorations_index];
+    context.SetStrokeThickness(resolved_thickness);
+
     if (has_underline && decoration_info.font_data) {
       const int underline_offset = decoration_offset.ComputeUnderlineOffset(
           underline_position, decoration_info.font_data->GetFontMetrics(),
-          decoration_info.thickness);
-      PaintDecorationUnderOrOverLine(context, decoration_info, decoration,
-                                     underline_offset,
-                                     decoration_info.double_offset);
+          resolved_thickness);
+      PaintDecorationUnderOrOverLine(
+          context, decoration_info, decoration, applied_decorations_index,
+          underline_offset, DoubleOffsetFromThickness(resolved_thickness));
     }
 
     if (has_overline) {
@@ -324,11 +334,11 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
           flip_underline_and_overline ? FontVerticalPositionType::TopOfEmHeight
                                       : FontVerticalPositionType::TextTop;
       const int overline_offset =
-          decoration_offset.ComputeUnderlineOffsetForUnder(
-              decoration_info.thickness, position);
-      PaintDecorationUnderOrOverLine(context, decoration_info, decoration,
-                                     overline_offset,
-                                     -decoration_info.double_offset);
+          decoration_offset.ComputeUnderlineOffsetForUnder(resolved_thickness,
+                                                           position);
+      PaintDecorationUnderOrOverLine(
+          context, decoration_info, decoration, applied_decorations_index,
+          overline_offset, -DoubleOffsetFromThickness(resolved_thickness));
     }
 
     // We could instead build a vector of the TextDecoration instances needing
@@ -350,26 +360,36 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
   UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
-  context.SetStrokeThickness(decoration_info.thickness);
 
   if (has_combined_text_)
     context.ConcatCTM(Rotation(text_bounds_, kClockwise));
 
-  for (const AppliedTextDecoration& decoration : decorations) {
+  DCHECK_EQ(decorations.size(),
+            decoration_info.applied_decorations_thickness.size());
+  for (size_t applied_decoration_index = 0;
+       applied_decoration_index < decorations.size();
+       ++applied_decoration_index) {
+    const AppliedTextDecoration& decoration =
+        decorations[applied_decoration_index];
     TextDecoration lines = decoration.Lines();
     if (EnumHasFlags(lines, TextDecoration::kLineThrough)) {
+      float resolved_thickness =
+          decoration_info
+              .applied_decorations_thickness[applied_decoration_index];
+      context.SetStrokeThickness(resolved_thickness);
       // For increased line thickness, the line-through decoration needs to grow
       // in both directions from its origin, subtract half the thickness to keep
       // it centered at the same origin.
       const float line_through_offset =
-          2 * decoration_info.baseline / 3 - decoration_info.thickness / 2;
+          2 * decoration_info.baseline / 3 - resolved_thickness / 2;
       // Floor double_offset in order to avoid double-line gap to appear
       // of different size depending on position where the double line
       // is drawn because of rounding downstream in
       // GraphicsContext::DrawLineForText.
       AppliedDecorationPainter decoration_painter(
           context, decoration_info, line_through_offset, decoration,
-          floorf(decoration_info.double_offset), 0);
+          applied_decoration_index,
+          floorf(DoubleOffsetFromThickness(resolved_thickness)), 0);
       // No skip: ink for line-through,
       // compare https://github.com/w3c/csswg-drafts/issues/711
       decoration_painter.Paint();
@@ -404,11 +424,15 @@ void TextPainterBase::ComputeDecorationInfo(
           ? decoration_info.font_data->GetFontMetrics().FloatAscent()
           : 0;
 
-  decoration_info.thickness = ComputeUnderlineThickness(
-      decoration_info.underline_position, style.GetTextDecorationThickness(),
-      style, decorating_box_style);
-  decoration_info.double_offset =
-      DoubleOffsetFromThickness(decoration_info.thickness);
+  for (const AppliedTextDecoration& decoration :
+       style.AppliedTextDecorations()) {
+    decoration_info.applied_decorations_thickness.push_back(
+        ComputeUnderlineThickness(decoration_info.underline_position,
+                                  decoration.Thickness(), style,
+                                  decorating_box_style));
+  }
+  DCHECK_EQ(style.AppliedTextDecorations().size(),
+            decoration_info.applied_decorations_thickness.size());
 }
 
 float TextPainterBase::ComputeUnderlineThickness(
@@ -444,10 +468,12 @@ void TextPainterBase::PaintDecorationUnderOrOverLine(
     GraphicsContext& context,
     const DecorationInfo& decoration_info,
     const AppliedTextDecoration& decoration,
+    size_t decoration_info_thickness_index,
     int line_offset,
     float decoration_offset) {
   AppliedDecorationPainter decoration_painter(
-      context, decoration_info, line_offset, decoration, decoration_offset, 1);
+      context, decoration_info, line_offset, decoration,
+      decoration_info_thickness_index, decoration_offset, 1);
   if (decoration_info.style->TextDecorationSkipInk() ==
       ETextDecorationSkipInk::kAuto) {
     FloatRect decoration_bounds = decoration_painter.Bounds();
@@ -455,7 +481,10 @@ void TextPainterBase::PaintDecorationUnderOrOverLine(
         -decoration_info.baseline + decoration_bounds.Y() -
             decoration_info.local_origin.Y(),
         decoration_bounds.Height(),
-        std::min(decoration_info.thickness, kDecorationClipMaxDilation));
+        std::min(
+            decoration_info
+                .applied_decorations_thickness[decoration_info_thickness_index],
+            kDecorationClipMaxDilation));
   }
   decoration_painter.Paint();
 }

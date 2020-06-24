@@ -19,6 +19,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
@@ -247,17 +248,21 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) && !presenter_->HandleCloseOpenFolder() &&
       !switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
+    // Do not dismiss the app list if the event is targeting shelf area
+    // containing app icons.
+    if (target == shelf->hotseat_widget()->GetNativeWindow() &&
+        shelf->hotseat_widget()->EventTargetsShelfView(*event)) {
+      return;
+    }
+
+    // Don't dismiss the auto-hide shelf if event happened in status area. Then
+    // the event can still be propagated.
+    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-    const aura::Window* hotseat_window =
-        shelf->hotseat_widget()->GetNativeWindow();
-    // Don't dismiss the auto-hide shelf if event happened in status area or the
-    // hotseat. Then the event can still be propagated.
-    base::Optional<Shelf::ScopedAutoHideLock> auto_hide_lock;
-    if ((status_window && status_window->Contains(target)) ||
-        (hotseat_window && hotseat_window->Contains(target))) {
+    if (status_window && status_window->Contains(target))
       auto_hide_lock.emplace(shelf);
-    }
+
     // Record the current AppListViewState to be used later for metrics. The
     // AppListViewState will change on app launch, so this will record the
     // AppListViewState before the app was launched.

@@ -837,8 +837,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   switch (draw_mode_) {
     case DrawMode::DDL: {
       root_canvas_ = skia_output_surface_->BeginPaintCurrentFrame();
-      // TODO(https://crbug.com/1038107): Handle BeginPaintCurrentFrame() fail.
-      CHECK(root_canvas_);
       break;
     }
     case DrawMode::SKPRECORD: {

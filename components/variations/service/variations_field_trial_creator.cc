@@ -441,7 +441,6 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     const char* kEnableGpuBenchmarking,
     const char* kEnableFeatures,
     const char* kDisableFeatures,
-    const std::set<std::string>& unforceable_field_trials,
     const std::vector<std::string>& variation_ids,
     const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -475,8 +474,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     // Create field trials without activating them, so that this behaves in a
     // consistent manner with field trials created from the server.
     bool result = base::FieldTrialList::CreateTrialsFromString(
-        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials),
-        unforceable_field_trials);
+        command_line->GetSwitchValueASCII(::switches::kForceFieldTrials));
     if (!result) {
       ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
                                          ::switches::kForceFieldTrials));

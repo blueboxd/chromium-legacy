@@ -3299,7 +3299,8 @@
     "ImprovedCookieControls": [
         {
             "platforms": [
-                "android"
+                "android",
+                "android_weblayer"
             ],
             "experiments": [
                 {
@@ -3931,22 +3932,6 @@
             ]
         }
     ],
-    "MediaCapabilitiesWithParameters": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DBWindow5000Frames_20190225"
-                }
-            ]
-        }
-    ],
     "MediaFoundationAsyncH264Encoding": [
         {
             "platforms": [
@@ -3991,6 +3976,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseMediaHistoryStore"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaLearningSmoothnessExperiment": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaLearningFramework",
+                        "MediaLearningSmoothnessExperiment"
                     ]
                 }
             ]
@@ -4377,7 +4382,6 @@
                     },
                     "enable_features": [
                         "NtpRealbox",
-                        "NtpRealboxMatchOmniboxTheme",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
@@ -6197,19 +6201,6 @@
                     "enable_features": [
                         "ServiceWorkerOnUI"
                     ]
-                }
-            ]
-        }
-    ],
-    "SettingsEnforcement": [
-        {
-            "platforms": [
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "enforce_always_with_extensions_and_dse"
                 }
             ]
         }

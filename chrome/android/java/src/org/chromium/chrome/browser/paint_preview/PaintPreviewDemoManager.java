@@ -55,13 +55,15 @@ public class PaintPreviewDemoManager implements TabViewProvider {
                     PaintPreviewDemoManager.this::onLinkClicked,
                     PaintPreviewDemoManager.this::removePaintPreviewDemo,
                     PaintPreviewDemoManager.this::addPlayerView,
-                    TabThemeColorHelper.getBackgroundColor(mTab), () -> {
+                    TabThemeColorHelper.getBackgroundColor(mTab),
+                    () -> {
                         Toast.makeText(mTab.getContext(),
                                      R.string.paint_preview_demo_playback_failure,
                                      Toast.LENGTH_LONG)
                                 .show();
                         removePaintPreviewDemo();
-                    });
+                    },
+                    /*ignoreInitialScrollOffset=*/false);
         }
         int toastStringRes = success ? R.string.paint_preview_demo_capture_success
                                      : R.string.paint_preview_demo_capture_failure;

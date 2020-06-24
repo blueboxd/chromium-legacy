@@ -34,6 +34,11 @@ class OfflineItemBridge {
       JNIEnv* env,
       const base::Optional<UpdateDelta>& update_delta);
 
+  // Creates a Java OfflineItemSchedule.
+  static base::android::ScopedJavaLocalRef<jobject> CreateOfflineItemSchedule(
+      JNIEnv* env,
+      const base::Optional<OfflineItemSchedule>& schedule);
+
  private:
   OfflineItemBridge();
 };

@@ -9,6 +9,26 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
+namespace {
+class StackStringViewAllocator {
+ public:
+  explicit StackStringViewAllocator(
+      StringView::StackBackingStore& backing_store)
+      : backing_store_(backing_store) {}
+  using ResultStringType = StringView;
+
+  template <typename CharType>
+  StringView Alloc(wtf_size_t length, CharType*& buffer) {
+    buffer = backing_store_.Realloc<CharType>(length);
+    return StringView(buffer, length);
+  }
+
+  StringView CoerceOriginal(StringView string) { return string; }
+
+ private:
+  StringView::StackBackingStore& backing_store_;
+};
+}  // namespace
 
 StringView::StringView(const UChar* chars)
     : StringView(chars, chars ? LengthOfNullTerminatedString(chars) : 0) {}
@@ -107,6 +127,12 @@ bool EqualIgnoringASCIICase(const StringView& a, const StringView& b) {
     return EqualIgnoringASCIICase(a.Characters16(), b.Characters8(),
                                   a.length());
   return EqualIgnoringASCIICase(a.Characters16(), b.Characters16(), a.length());
+}
+
+StringView StringView::LowerASCIIMaybeUsingBuffer(
+    StackBackingStore& buffer) const {
+  return ConvertASCIICase(*this, LowerConverter(),
+                          StackStringViewAllocator(buffer));
 }
 
 }  // namespace WTF

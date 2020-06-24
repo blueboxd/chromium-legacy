@@ -77,6 +77,12 @@
           ],
         },
       },
+      'chromeos-eve-arc-r-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        # TODO(crbug.com/1092973): Add tests once the test fleet is ready.
+      },
       'chromeos-eve-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -2221,6 +2227,11 @@
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests',
         },
+      },
+      'mac-arm64': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'mac-code-coverage': {
         'mixins': [

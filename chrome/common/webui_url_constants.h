@@ -187,6 +187,8 @@ extern const char kChromeUINativeHistoryURL[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
+#else
+extern const char kChromeUINearbyInternalsHost[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -280,7 +282,6 @@ extern const char kChromeUIDiscardsURL[];
 extern const char kChromeUIHatsHost[];
 extern const char kChromeUIHatsURL[];
 extern const char kChromeUIProfilePickerHost[];
-
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

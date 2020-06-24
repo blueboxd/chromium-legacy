@@ -176,17 +176,9 @@ bool SupportsRegistryValidation() {
 }
 
 #define PREF_HASH_BROWSER_TEST(fixture, test_name)                             \
-  IN_PROC_BROWSER_TEST_P(fixture, PRE_##test_name) { SetupPreferences(); }     \
-  IN_PROC_BROWSER_TEST_P(fixture, test_name) { VerifyReactionToPrefAttack(); } \
-  INSTANTIATE_TEST_SUITE_P(                                                    \
-      fixture##Instance, fixture,                                              \
-      testing::Values(                                                         \
-          chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,     \
-          chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,     \
-          chrome_prefs::internals::                                            \
-              kSettingsEnforcementGroupEnforceAlwaysWithDSE,                   \
-          chrome_prefs::internals::                                            \
-              kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE))
+  IN_PROC_BROWSER_TEST_F(fixture, PRE_##test_name) { SetupPreferences(); }     \
+  IN_PROC_BROWSER_TEST_F(fixture, test_name) { VerifyReactionToPrefAttack(); } \
+  static_assert(true, "")
 
 // A base fixture designed such that implementations do two things:
 //  1) Override all three pure-virtual methods below to setup, attack, and
@@ -194,9 +186,7 @@ bool SupportsRegistryValidation() {
 //  2) Instantiate their test via the PREF_HASH_BROWSER_TEST macro above.
 // Based on top of ExtensionBrowserTest to allow easy interaction with the
 // ExtensionRegistry.
-class PrefHashBrowserTestBase
-    : public extensions::ExtensionBrowserTest,
-      public testing::WithParamInterface<std::string> {
+class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
  public:
   // List of potential protection levels for this test in strict increasing
   // order of protection levels.
@@ -211,17 +201,10 @@ class PrefHashBrowserTestBase
     PROTECTION_ENABLED_ALL
   };
 
-  PrefHashBrowserTestBase()
-      : protection_level_(GetProtectionLevelFromTrialGroup(GetParam())) {
-  }
+  PrefHashBrowserTestBase() : protection_level_(GetProtectionLevel()) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    EXPECT_FALSE(command_line->HasSwitch(switches::kForceFieldTrials));
-    command_line->AppendSwitchASCII(
-        switches::kForceFieldTrials,
-        std::string(chrome_prefs::internals::kSettingsEnforcementTrialName) +
-            "/" + GetParam() + "/");
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);
@@ -428,14 +411,9 @@ class PrefHashBrowserTestBase
   const SettingsProtectionLevel protection_level_;
 
  private:
-  SettingsProtectionLevel GetProtectionLevelFromTrialGroup(
-      const std::string& trial_group) {
+  SettingsProtectionLevel GetProtectionLevel() {
     if (!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking)
       return PROTECTION_DISABLED_ON_PLATFORM;
-
-// Protection levels can't be adjusted via --force-fieldtrials in official
-// builds.
-#if defined(OFFICIAL_BUILD)
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
     // The strongest mode is enforced on Windows and MacOS in the absence of a
@@ -444,23 +422,6 @@ class PrefHashBrowserTestBase
 #else
     return PROTECTION_DISABLED_FOR_GROUP;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
-
-#else  // defined(OFFICIAL_BUILD)
-
-    namespace internals = chrome_prefs::internals;
-    if (trial_group == internals::kSettingsEnforcementGroupNoEnforcement)
-      return PROTECTION_DISABLED_FOR_GROUP;
-    if (trial_group == internals::kSettingsEnforcementGroupEnforceAlways)
-      return PROTECTION_ENABLED_BASIC;
-    if (trial_group == internals::kSettingsEnforcementGroupEnforceAlwaysWithDSE)
-      return PROTECTION_ENABLED_DSE;
-    if (trial_group ==
-        internals::kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE) {
-      return PROTECTION_ENABLED_EXTENSIONS;
-    }
-    ADD_FAILURE();
-    return static_cast<SettingsProtectionLevel>(-1);
-#endif  // defined(OFFICIAL_BUILD)
   }
 
   int num_tracked_prefs_;

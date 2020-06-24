@@ -68,6 +68,12 @@ function Main() {
     domAutomationController.send('ERROR');
   }, false);
 
+  // We set a poster and preload=metadata to ensure that no frames are decoded
+  // before the gpu crash -- otherwise the media pipeline can't guarantee that
+  // we'll fall over to the software decoder.
+  video.poster = 'single_face.jpg';
+  video.preload = 'metadata';
+
   // src needs to be set after listeners are added.
   video.src = QueryString.src;
 }

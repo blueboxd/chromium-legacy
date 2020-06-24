@@ -2669,6 +2669,8 @@ enum WebFeature {
   kContentVisibilityAuto = 3332,
   kContentVisibilityHidden = 3333,
   kContentVisibilityHiddenMatchable = 3334,
+  kInlineOverflowAutoWithInlineEndPadding = 3335,
+  kInlineOverflowScrollWithInlineEndPadding = 3336,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

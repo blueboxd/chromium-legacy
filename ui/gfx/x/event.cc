@@ -46,6 +46,10 @@ Event::Event(xcb_generic_event_t* xcb_event,
     }
   }
 
+  // Xlib sometimes modifies |xcb_event|, so let it handle the event after
+  // we parse it with ReadEvent().
+  ReadEvent(this, connection, reinterpret_cast<uint8_t*>(xcb_event));
+
   _XEnq(display, reinterpret_cast<xEvent*>(xcb_event));
   if (!XEventsQueued(display, QueuedAlready)) {
     // If Xlib gets an event it doesn't recognize (eg. from an
@@ -60,8 +64,6 @@ Event::Event(xcb_generic_event_t* xcb_event,
   XNextEvent(display, &xlib_event_);
   if (xlib_event_.type == x11::GeGenericEvent::opcode)
     XGetEventData(display, &xlib_event_.xcookie);
-
-  ReadEvent(this, connection, reinterpret_cast<uint8_t*>(xcb_event));
 }
 
 Event::Event(Event&& event) {

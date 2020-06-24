@@ -129,6 +129,25 @@ class IsolatedPrerenderTabHelper
     // The navigation off of the Google SRP was to a url that was not on the
     // SRP.
     kNavigatedToLinkNotOnSRP = 15,
+
+    // Variants of the first three statuses with the additional context of a
+    // successfully completed NoStatePrefetch.
+    kPrefetchUsedNoProbeWithNSP = 16,
+    kPrefetchUsedProbeSuccessWithNSP = 17,
+    kPrefetchNotUsedProbeFailedWithNSP = 18,
+
+    // Variants of the first three statuses within the additional context of a
+    // link that was eligible for NoStatePrefetch, but was not started because
+    // the Prerender code denied the request.
+    kPrefetchUsedNoProbeNSPAttemptDenied = 19,
+    kPrefetchUsedProbeSuccessNSPAttemptDenied = 20,
+    kPrefetchNotUsedProbeFailedNSPAttemptDenied = 21,
+
+    // Variants of the first three statuses with in the additional context of a
+    // link that was eligible for NoStatePrefetch that was never started.
+    kPrefetchUsedNoProbeNSPNotStarted = 22,
+    kPrefetchUsedProbeSuccessNSPNotStarted = 23,
+    kPrefetchNotUsedProbeFailedNSPNotStarted = 24,
   };
 
   // Container for several metrics which pertain to prefetching actions
@@ -308,6 +327,10 @@ class IsolatedPrerenderTabHelper
     // All urls have have been successfully no state prefetched and finished.
     std::vector<GURL> no_state_prefetched_urls_;
 
+    // URLs for which a NoStatePrefetch was attempted and was denied by the
+    // Prerender code.
+    std::vector<GURL> failed_no_state_prefetch_urls_;
+
     // If the current page load was prerendered, then this subresource manager
     // is taken from |IsolatedPrerenderService| and used to facilitate loading
     // of prefetched resources from cache. Note: An
@@ -361,6 +384,14 @@ class IsolatedPrerenderTabHelper
   // NoStatePrefetch now and later reused if the user navigates to that page.
   std::unique_ptr<PrefetchedMainframeResponseContainer>
   CopyPrefetchResponseForNSP(const GURL& url);
+
+  // Updates any status like kPrefetchUsed or kPrefetchNotUsed with additional
+  // information about applicable NoStatePrefetches given |self|. Note: This is
+  // done here because the navigation loader interceptor doesn't have visibility
+  // itself and can't report it. Static and public to enable testing.
+  PrefetchStatus MaybeUpdatePrefetchStatusWithNSPContext(
+      const GURL& url,
+      PrefetchStatus status) const;
 
   // NavigationPredictorKeyedService::Observer:
   void OnPredictionUpdated(

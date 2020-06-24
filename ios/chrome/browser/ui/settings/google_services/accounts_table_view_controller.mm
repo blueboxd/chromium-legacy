@@ -162,6 +162,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::RecordAction(base::UserMetricsAction("MobileAccountsSettingsClose"));
 }
 
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobileAccountsSettingsBack"));
+}
+
 - (void)settingsWillBeDismissed {
   [_alertCoordinator stop];
   [self.removeAccountCoordinator stop];

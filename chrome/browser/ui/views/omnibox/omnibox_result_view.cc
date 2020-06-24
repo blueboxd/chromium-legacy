@@ -477,10 +477,10 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 
 void OmniboxResultView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  views::SetImageFromVectorIcon(remove_suggestion_button_,
-                                vector_icons::kCloseRoundedIcon,
-                                GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                GetColor(OmniboxPart::RESULTS_ICON));
+  views::SetImageFromVectorIconWithColor(
+      remove_suggestion_button_, vector_icons::kCloseRoundedIcon,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetColor(OmniboxPart::RESULTS_ICON));
   ApplyThemeAndRefreshIcons(true);
 }
 

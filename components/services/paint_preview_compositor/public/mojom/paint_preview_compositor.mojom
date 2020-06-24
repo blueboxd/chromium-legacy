@@ -32,6 +32,9 @@ struct FrameData {
   // The dimensions of the frame.
   gfx.mojom.Size scroll_extents;
 
+  // The initial scroll offsets of the frame.
+  gfx.mojom.Size scroll_offsets;
+
   // This is not a map because a parent can, in theory, embed the same subframe
   // multiple times.
   array<SubframeClipRect> subframes;

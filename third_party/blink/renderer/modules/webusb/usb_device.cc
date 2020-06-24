@@ -56,8 +56,8 @@ const char kOpenRequired[] = "The device must be opened first.";
 #if defined(OS_CHROMEOS)
 const char kExtensionProtocol[] = "chrome-extension";
 
-// These whitelisted Imprivata extensions can claim the protected HID interface
-// class (used as badge readers), see crbug.com/1065112 and crbug.com/995294.
+// These Imprivata extensions can claim the protected HID interface class (used
+// as badge readers), see crbug.com/1065112 and crbug.com/995294.
 // This list needs to be alphabetically sorted for quick access via binary
 // search.
 const char* kImprivataExtensionIds[] = {
@@ -80,7 +80,7 @@ bool IsCStrBefore(const char* first, const char* second) {
   return strcmp(first, second) < 0;
 }
 
-bool IsClassWhitelistedForExtension(uint8_t class_code, const KURL& url) {
+bool IsClassAllowedForExtension(uint8_t class_code, const KURL& url) {
   if (url.Protocol() != kExtensionProtocol)
     return false;
 
@@ -670,8 +670,8 @@ bool USBDevice::IsProtectedInterfaceClass(wtf_size_t interface_index) const {
                            std::end(kProtectedClasses),
                            alternate->class_code)) {
 #if defined(OS_CHROMEOS)
-      return !IsClassWhitelistedForExtension(alternate->class_code,
-                                             GetExecutionContext()->Url());
+      return !IsClassAllowedForExtension(alternate->class_code,
+                                         GetExecutionContext()->Url());
 #else
       return true;
 #endif

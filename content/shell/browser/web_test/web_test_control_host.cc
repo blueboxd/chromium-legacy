@@ -426,6 +426,37 @@ void WebTestResultPrinter::CloseStderr() {
   }
 }
 
+// WebTestWindowObserver -----------------------------------------------------
+
+class WebTestControlHost::WebTestWindowObserver : WebContentsObserver {
+ public:
+  WebTestWindowObserver(WebContents* web_contents,
+                        WebTestControlHost* web_test_control)
+      : WebContentsObserver(web_contents), web_test_control_(web_test_control) {
+    // If the WebContents was already set up before given to the Shell, it may
+    // have a set of RenderFrames already, and we need to notify about them
+    // here.
+    if (web_contents->GetMainFrame()->IsRenderFrameLive()) {
+      for (RenderFrameHost* frame : web_contents->GetAllFrames()) {
+        if (frame->IsRenderFrameLive())
+          RenderFrameCreated(frame);
+      }
+    }
+  }
+
+  void WebContentsDestroyed() override {
+    // Deletes |this| and removes the pointer to it from WebTestControlHost.
+    web_test_control_->test_opened_window_observers_.erase(web_contents());
+  }
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    web_test_control_->HandleNewRenderFrameHost(render_frame_host);
+  }
+
+ private:
+  WebTestControlHost* const web_test_control_;
+};
+
 // WebTestControlHost -------------------------------------------------------
 
 WebTestControlHost* WebTestControlHost::instance_ = nullptr;
@@ -465,8 +496,6 @@ WebTestControlHost::WebTestControlHost()
   InjectTestSharedWorkerService(BrowserContext::GetStoragePartition(
       ShellContentBrowserClient::Get()->browser_context(), nullptr));
 
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 NotificationService::AllSources());
   GpuDataManager::GetInstance()->AddObserver(this);
   ResetBrowserAfterWebTest();
 }
@@ -482,7 +511,6 @@ WebTestControlHost::~WebTestControlHost() {
 
 bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  test_phase_ = DURING_TEST;
   current_working_directory_ = test_info.current_working_directory;
   expected_pixel_hash_ = test_info.expected_pixel_hash;
   bool is_devtools_js_test = false;
@@ -521,8 +549,6 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
         browser_context, GURL(url::kAboutBlankURL), nullptr, window_size);
     WebContentsObserver::Observe(main_window_->web_contents());
 
-    current_pid_ = base::kNullProcessId;
-
     main_render_view_host = main_window_->web_contents()->GetRenderViewHost();
     default_prefs_ = main_render_view_host->GetWebkitPreferences();
   } else {
@@ -543,18 +569,12 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     main_window_->web_contents()->WasShown();
   }
 
-  if (is_devtools_js_test && !secondary_window_) {
-    secondary_window_ = content::Shell::CreateNewWindow(
-        ShellContentBrowserClient::Get()->browser_context(),
-        GURL(url::kAboutBlankURL), nullptr, window_size);
-  }
-
-  // The main frame is constructed along with the Shell, which is before we can
-  // observe it happening. Further, we clear all observers and re-add the main
-  // frame here before each test.
+  // We did not track the |main_window_| RenderFrameHost during the creation of
+  // |main_window_|, since we need the pointer value in this class set first. So
+  // we update the |test_phase_| here allowing us to now track the RenderFrames
+  // in that window, and call HandleNewRenderFrameHost() explicitly.
+  test_phase_ = DURING_TEST;
   HandleNewRenderFrameHost(main_window_->web_contents()->GetMainFrame());
-  if (secondary_window_)
-    HandleNewRenderFrameHost(secondary_window_->web_contents()->GetMainFrame());
 
   if (is_devtools_protocol_test) {
     devtools_protocol_test_bindings_ =
@@ -578,6 +598,11 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   main_render_view_host->GetWidget()->FlushForTesting();
 
   if (is_devtools_js_test) {
+    if (!secondary_window_) {
+      secondary_window_ = content::Shell::CreateNewWindow(
+          ShellContentBrowserClient::Get()->browser_context(),
+          GURL(url::kAboutBlankURL), nullptr, window_size);
+    }
     // This navigates the secondary (devtools inspector) window, and then
     // navigates the main window once that has loaded to a devtools html test
     // page, based on the test url.
@@ -638,6 +663,13 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   weak_factory_.InvalidateWeakPtrs();
 
   return true;
+}
+
+void WebTestControlHost::DidOpenNewWindowOrTab(WebContents* web_contents) {
+  auto result = test_opened_window_observers_.emplace(
+      web_contents,
+      std::make_unique<WebTestWindowObserver>(web_contents, this));
+  CHECK(result.second);  // The WebContents should not already be in the map!
 }
 
 void WebTestControlHost::SetTempPath(const base::FilePath& temp_path) {
@@ -924,12 +956,6 @@ void WebTestControlHost::PluginCrashed(const base::FilePath& plugin_path,
                      weak_factory_.GetWeakPtr()));
 }
 
-void WebTestControlHost::RenderFrameCreated(
-    RenderFrameHost* render_frame_host) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  HandleNewRenderFrameHost(render_frame_host);
-}
-
 void WebTestControlHost::TitleWasSet(NavigationEntry* entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> logs = DumpTitleWasSet(main_window_->web_contents());
@@ -1004,30 +1030,6 @@ void WebTestControlHost::RenderProcessExited(
   }
 }
 
-void WebTestControlHost::Observe(int type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (type) {
-    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      if (!main_window_)
-        return;
-      RenderViewHost* render_view_host =
-          main_window_->web_contents()->GetRenderViewHost();
-      if (!render_view_host)
-        return;
-      RenderProcessHost* render_process_host =
-          Source<RenderProcessHost>(source).ptr();
-      if (render_process_host != render_view_host->GetProcess())
-        return;
-      current_pid_ = render_process_host->GetProcess().Pid();
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 void WebTestControlHost::OnGpuProcessCrashed(
     base::TerminationStatus exit_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1050,21 +1052,20 @@ void WebTestControlHost::DiscardMainWindow() {
     main_window_->Close();
   }
   main_window_ = nullptr;
-  current_pid_ = base::kNullProcessId;
 }
 
 void WebTestControlHost::HandleNewRenderFrameHost(RenderFrameHost* frame) {
-  RenderProcessHost* process_host = frame->GetProcess();
-  RenderViewHost* view_host = frame->GetRenderViewHost();
-  bool main_window =
+  // When creating the main window, we don't have a |main_window_| pointer yet.
+  // So we will explicitly call this for the main window after moving  to
+  // DURING_TEST.
+  if (test_phase_ != DURING_TEST)
+    return;
+
+  const bool main_window =
       WebContents::FromRenderFrameHost(frame) == main_window_->web_contents();
 
-  // Track pid of the renderer handling the main frame.
-  if (main_window && frame->GetParent() == nullptr) {
-    const base::Process& process = process_host->GetProcess();
-    if (process.IsValid())
-      current_pid_ = process.Pid();
-  }
+  RenderProcessHost* process_host = frame->GetProcess();
+  RenderViewHost* view_host = frame->GetRenderViewHost();
 
   // If this the first time this renderer contains parts of the main test
   // window, we need to make sure that it gets configured correctly (including
@@ -1474,10 +1475,12 @@ void WebTestControlHost::ResetRendererAfterWebTestDone() {
   if (leak_detector_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+      RenderProcessHost* rph = rvh->GetProcess();
+      CHECK(rph->GetProcess().IsValid());
       leak_detector_->TryLeakDetection(
-          rvh->GetProcess(),
+          rph,
           base::BindOnce(&WebTestControlHost::OnLeakDetectionDone,
-                         weak_factory_.GetWeakPtr()));
+                         weak_factory_.GetWeakPtr(), rph->GetProcess().Pid()));
     }
     return;
   }
@@ -1486,14 +1489,15 @@ void WebTestControlHost::ResetRendererAfterWebTestDone() {
 }
 
 void WebTestControlHost::OnLeakDetectionDone(
+    int pid,
     const LeakDetector::LeakDetectionReport& report) {
   if (!report.leaked) {
     Shell::QuitMainMessageLoopForTesting();
     return;
   }
 
-  printer_->AddErrorMessage(base::StringPrintf(
-      "#LEAK - renderer pid %d (%s)", current_pid_, report.detail.c_str()));
+  printer_->AddErrorMessage(base::StringPrintf("#LEAK - renderer pid %d (%s)",
+                                               pid, report.detail.c_str()));
   CHECK(!crash_when_leak_found_);
 
   DiscardMainWindow();

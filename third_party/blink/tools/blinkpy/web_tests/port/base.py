@@ -383,8 +383,8 @@ class Port(object):
     def timeout_ms(self):
         timeout_ms = self._default_timeout_ms()
         if self.get_option('configuration') == 'Debug':
-            # Debug is usually 2x-3x slower than Release.
-            return 3 * timeout_ms
+            # Debug is about 5x slower than Release.
+            return 5 * timeout_ms
         if self._build_has_dcheck_always_on():
             # Release with DCHECK is also slower than pure Release.
             return 2 * timeout_ms

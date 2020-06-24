@@ -76,6 +76,14 @@ public final class PreviewsAndroidBridge {
                 mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
     }
 
+    /**
+     * Returns whether LiteMode https image compression is applied.
+     */
+    public boolean isHttpsImageCompressionApplied(WebContents webContents) {
+        return PreviewsAndroidBridgeJni.get().isHttpsImageCompressionApplied(
+                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
+    }
+
     @CalledByNative
     private static void createHttpsImageCompressionInfoBar(final Tab tab) {
         HttpsImageCompressionUtils.createInfoBar(tab);
@@ -92,5 +100,7 @@ public final class PreviewsAndroidBridge {
                 WebContents webContents);
         String getPreviewsType(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
                 WebContents webContents);
+        boolean isHttpsImageCompressionApplied(long nativePreviewsAndroidBridge,
+                PreviewsAndroidBridge caller, WebContents webContents);
     }
 }

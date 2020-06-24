@@ -6,7 +6,6 @@
 #define COMPONENTS_VARIATIONS_SERVICE_VARIATIONS_FIELD_TRIAL_CREATOR_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -62,8 +61,6 @@ class VariationsFieldTrialCreator {
   // setup completed successfully.
   // |kEnableGpuBenchmarking|, |kEnableFeatures|, |kDisableFeatures| are
   // feature controlling flags not directly accesible from variations.
-  // |unforcable_field_trials| contains the list of trials that can not be
-  // overridden.
   // |variation_ids| allows for forcing ids selected in chrome://flags and/or
   // specified using the command-line flag.
   // |low_entropy_provider| allows for field trial randomization.
@@ -84,7 +81,6 @@ class VariationsFieldTrialCreator {
       const char* kEnableGpuBenchmarking,
       const char* kEnableFeatures,
       const char* kDisableFeatures,
-      const std::set<std::string>& unforceable_field_trials,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,

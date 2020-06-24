@@ -8191,10 +8191,10 @@ Unknown properties are collapsed to zero. -->
   <obsolete>
     Removed in March 2016.
   </obsolete>
-  <details>
+  <summary>
     See include/openssl/ssl.h at the corresponding BoringSSL revision for the
     corresponding values.
-  </details>
+  </summary>
 </enum>
 
 <enum name="BottomSheet.StateChangeReason">
@@ -9369,8 +9369,6 @@ histogram as enum -->
   <int value="504" label="Shelf Alignment Bottom"/>
   <int value="505" label="Change Wallpaper"/>
   <int value="506" label="Display Settings"/>
-<!-- Please put in checks to ensure Command IDs are stable before adding them to this enum. -->
-
 </enum>
 
 <enum name="ChromeOSUsbEventTiming">
@@ -28063,6 +28061,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3332" label="ContentVisibilityAuto"/>
   <int value="3333" label="ContentVisibilityHidden"/>
   <int value="3334" label="ContentVisibilityHiddenMatchable"/>
+  <int value="3335" label="InlineOverflowAutoWithInlineEndPadding"/>
+  <int value="3336" label="InlineOverflowScrollWithInlineEndPadding"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31994,8 +31994,7 @@ Called by update_feature_policy_enum.py.-->
 </enum>
 
 <enum name="GenericEnum">
-<!-- Generic enums where the label is just the raw number -->
-
+  <summary>Generic enums where the label is just the raw number</summary>
 </enum>
 
 <enum name="GeolocationAuthorizationAction">
@@ -36855,6 +36854,47 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="15" label="Navigated To Link Not On SRP">
     The navigation off of the Google SRP was to a url that was not on the SRP.
   </int>
+  <int value="16" label="Prefetch Used, No Probe, Did NoStatePrefetch">
+    The url was prefetched and No State Prerendered and committed without a
+    probe to the origin.
+  </int>
+  <int value="17" label="Prefetch Used, Probe Success, Did NoStatePrefetch">
+    The url was prefetched and No State Prerendered and committed with a
+    successful probe to the origin.
+  </int>
+  <int value="18" label="Prefetch Not Used, Probe Failed, Did NoStatePrefetch">
+    The url was prefetched and No State Prerendered but the origin probe failed
+    and the prefetch was not used.
+  </int>
+  <int value="19"
+      label="Prefetch Used, No Probe, NoStatePrefetch Attempt Denied">
+    The url was prefetched but was not No State Prerendered despite attempting
+    to do so and committed without a probe to the origin.
+  </int>
+  <int value="20"
+      label="Prefetch Used, Probe Success, NoStatePrefetch Attempt Denied">
+    The url was prefetched but was not No State Prerendered despite attempting
+    to do so and committed with a successful probe to the origin.
+  </int>
+  <int value="21"
+      label="Prefetch Not Used, Probe Failed, NoStatePrefetch Attempt Denied">
+    The url was prefetched but was not No State Prerendered despite attempting
+    to do so, and the origin probe failed and the prefetch was not used.
+  </int>
+  <int value="22" label="Prefetch Used, No Probe, NoStatePrefetch Not Started">
+    The url was prefetched and eligible for NoStatePrerender but wasn't started
+    and committed without a probe to the origin.
+  </int>
+  <int value="23"
+      label="Prefetch Used, Probe Success, NoStatePrefetch Not Started">
+    The url was prefetched and eligible for NoStatePrerender but wasn't started
+    and committed with a successful probe to the origin.
+  </int>
+  <int value="24"
+      label="Prefetch Not Used, Probe Failed, NoStatePrefetch Not Started">
+    The url was prefetched and eligible for NoStatePrerender but wasn't started
+    and the origin probe failed and the prefetch was not used.
+  </int>
 </enum>
 
 <enum name="IsPinnedToTaskbarResult">
@@ -40158,6 +40198,7 @@ from previous Chrome versions.
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
   <int value="-1044244605"
       label="UpdateNotificationSchedulingIntegration:enabled"/>
+  <int value="-1043883835" label="Sharesheet:enabled"/>
   <int value="-1042723808"
       label="HappinessTrackingSurveysForDesktopSettingsPrivacy:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
@@ -40680,6 +40721,7 @@ from previous Chrome versions.
       label="AutofillUpstreamEditableExpirationDate:enabled"/>
   <int value="-468697885" label="ArcInputMethod:enabled"/>
   <int value="-466704882" label="webview-log-js-console-messages"/>
+  <int value="-465381408" label="Sharesheet:disabled"/>
   <int value="-462554210"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:enabled"/>
   <int value="-462404204" label="CryptAuthV2DeviceSync:disabled"/>
@@ -50373,10 +50415,10 @@ Called by update_net_trust_anchors.py.-->
 <enum name="OfflinePagesPrefetchUsage">
   <int value="0" label="Deprecated: Has prefetched offline pages">
     <obsolete>
-      This state was never reported.
+      Deprecated: This state was never reported. No prefetched offline pages
+      were downloaded nor opened by the user in a day but there are some
+      available locally.
     </obsolete>
-    Deprecated: No prefetched offline pages were downloaded nor opened by the
-    user in a day but there are some available locally.
   </int>
   <int value="1" label="Only prefetched new offline pages">
     Prefetched offline pages were downloaded in a day but none were opened by
@@ -55799,9 +55841,7 @@ Called by update_net_trust_anchors.py.-->
     Currently Chrome simply ignores the download if the dialog is already
     presented.
   </summary>
-  <int value="0" label="Successful">
-
-  </int>
+  <int value="0" label="Successful"/>
   <int value="1" label="Another Add Passes View Controller Is Presented">
     The dialog cannot be presented, because another PKAddPassesViewController is
     already presented.
@@ -68980,10 +69020,11 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UkmEventNameHash">
-<!-- Placeholder enum. The values are UKM event name hashes truncated to 31
-     bits. This gets populated by the GetEnumsNodes function in merge_xml.py
-     when producing the merged XML file. -->
-
+  <summary>
+    Placeholder enum. The values are UKM event name hashes truncated to 31 bits.
+    This gets populated by the GetEnumsNodes function in merge_xml.py when
+    producing the merged XML file.
+  </summary>
 </enum>
 
 <enum name="UkmResetReason">

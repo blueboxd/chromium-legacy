@@ -1569,7 +1569,7 @@ Marked functions are allowed to be nondeterministic, throw exceptions, force lay
 
 All DOM constructors are assumed to have side effects. However, an exception can be explicitly indicated when calling constructors using the V8 API method Function::NewInstanceWithSideEffectType().
 
-There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to whitelist Intrinsics.
+There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to allow Intrinsics.
 
 Usage for attributes and operations: `[Affects=Nothing]` can be specified on an operation, or on an attribute to indicate that its getter callback is side effect free:
 

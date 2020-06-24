@@ -431,6 +431,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsClose"));
 }
 
+- (void)reportBackUserAction {
+  base::RecordAction(base::UserMetricsAction("MobilePasswordsSettingsBack"));
+}
+
 - (void)settingsWillBeDismissed {
   // Dismiss the search bar if presented, otherwise the VC will be retained by
   // UIKit thus cause a memory leak.

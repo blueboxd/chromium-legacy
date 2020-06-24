@@ -6,7 +6,8 @@
 
 namespace blink {
 
-TextDecorationThickness::TextDecorationThickness() = default;
+TextDecorationThickness::TextDecorationThickness()
+    : thickness_(Length::Auto()) {}
 
 TextDecorationThickness::TextDecorationThickness(const Length& length)
     : thickness_(length) {}

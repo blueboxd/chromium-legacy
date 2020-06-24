@@ -37,6 +37,7 @@ js_modulizer("modulize") {
     "fake_settings_search_handler.js",
     "fake_user_action_recorder.js",
     "localized_link_test.js",
+    "nearby_share_subpage_tests.js",
     "os_reset_page_test.js",
     "test_os_reset_browser_proxy.js",
     "test_os_lifetime_browser_proxy.js",

@@ -37,6 +37,10 @@ namespace {
 // Delay between adjustment sounds.
 const int kSoundDelayInMS = 150;
 
+// How long the user must stay in the same anchor point in touch exploration
+// before a right-click is triggered.
+const base::TimeDelta kLongPressTimerDelay = base::TimeDelta::FromSeconds(5);
+
 void SetTouchAccessibilityFlag(ui::Event* event) {
   // This flag is used to identify mouse move events that were generated from
   // touch exploration in Chrome code.
@@ -72,7 +76,7 @@ TouchExplorationController::~TouchExplorationController() {
 void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point_dip) {
   gfx::Point native_point = anchor_point_dip;
-  anchor_point_dip_ = gfx::PointF(native_point.x(), native_point.y());
+  SetAnchorPointInternal(gfx::PointF(native_point.x(), native_point.y()));
   anchor_point_state_ = ANCHOR_POINT_EXPLICITLY_SET;
 }
 
@@ -247,6 +251,8 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
       return InGestureInProgress(touch_event_dip, continuation);
     case TOUCH_EXPLORE_SECOND_PRESS:
       return InTouchExploreSecondPress(touch_event_dip, continuation);
+    case TOUCH_EXPLORE_LONG_PRESS:
+      return InTouchExploreLongPress(touch_event_dip, continuation);
     case SLIDE_GESTURE:
       return InSlideGesture(touch_event_dip, continuation);
     case ONE_FINGER_PASSTHROUGH:
@@ -467,7 +473,7 @@ ui::EventDispatchDetails TouchExplorationController::InTouchExploration(
   SetTouchAccessibilityFlag(new_event.get());
   last_touch_exploration_ = std::make_unique<ui::TouchEvent>(event);
   if (anchor_point_state_ != ANCHOR_POINT_EXPLICITLY_SET)
-    anchor_point_dip_ = last_touch_exploration_->location_f();
+    SetAnchorPointInternal(last_touch_exploration_->location_f());
 
   return SendEventFinally(continuation, new_event.get());
 }
@@ -581,6 +587,28 @@ ui::EventDispatchDetails TouchExplorationController::InTouchExploreSecondPress(
   }
   NOTREACHED();
   return SendEvent(continuation, &event);
+}
+
+ui::EventDispatchDetails TouchExplorationController::InTouchExploreLongPress(
+    const ui::TouchEvent& event,
+    const Continuation continuation) {
+  // Simulate a right mouse click.
+  auto mouse_pressed = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_PRESSED, anchor_point_dip_, anchor_point_dip_, Now(),
+      ui::EF_IS_SYNTHESIZED | ui::EF_TOUCH_ACCESSIBILITY |
+          ui::EF_RIGHT_MOUSE_BUTTON,
+      ui::EF_RIGHT_MOUSE_BUTTON);
+  auto mouse_released = std::make_unique<ui::MouseEvent>(
+      ui::ET_MOUSE_RELEASED, anchor_point_dip_, anchor_point_dip_, Now(),
+      ui::EF_IS_SYNTHESIZED | ui::EF_TOUCH_ACCESSIBILITY,
+      ui::EF_LEFT_MOUSE_BUTTON);
+
+  DispatchEvent(mouse_pressed.get(), continuation);
+  DispatchEvent(mouse_released.get(), continuation);
+
+  SET_STATE(TOUCH_EXPLORATION);
+  EnterTouchToMouseMode();
+  return InTouchExploration(event, continuation);
 }
 
 ui::EventDispatchDetails TouchExplorationController::InWaitForNoFingers(
@@ -735,7 +763,7 @@ void TouchExplorationController::OnTapTimerFired() {
       SET_STATE(NO_FINGERS_DOWN);
       last_touch_exploration_ =
           std::make_unique<ui::TouchEvent>(*initial_press_);
-      anchor_point_dip_ = last_touch_exploration_->location_f();
+      SetAnchorPointInternal(last_touch_exploration_->location_f());
       anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
       return;
     case DOUBLE_TAP_PENDING: {
@@ -774,8 +802,28 @@ void TouchExplorationController::OnTapTimerFired() {
       initial_press_->location_f(), initial_press_->flags());
   DispatchEvent(mouse_move.get(), initial_press_continuation_);
   last_touch_exploration_ = std::make_unique<ui::TouchEvent>(*initial_press_);
-  anchor_point_dip_ = last_touch_exploration_->location_f();
+  SetAnchorPointInternal(last_touch_exploration_->location_f());
   anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
+}
+
+void TouchExplorationController::ResetLiftActivationLongPressTimer() {
+  long_press_timer_.Stop();
+  if (state_ == TOUCH_EXPLORATION &&
+      lift_activation_bounds_.Contains(
+          gfx::ToFlooredPoint(anchor_point_dip_))) {
+    long_press_timer_.Start(
+        FROM_HERE, kLongPressTimerDelay, this,
+        &TouchExplorationController::OnLiftActivationLongPressTimerFired);
+  }
+}
+
+void TouchExplorationController::OnLiftActivationLongPressTimerFired() {
+  if (state_ == TOUCH_EXPLORATION &&
+      lift_activation_bounds_.Contains(
+          gfx::ToFlooredPoint(anchor_point_dip_))) {
+    delegate_->PlayLongPressRightClickEarcon();
+    SET_STATE(TOUCH_EXPLORE_LONG_PRESS);
+  }
 }
 
 void TouchExplorationController::DispatchEvent(
@@ -1045,6 +1093,7 @@ void TouchExplorationController::SetState(State new_state,
     case TOUCH_RELEASE_PENDING:
     case TOUCH_EXPLORATION:
     case TOUCH_EXPLORE_SECOND_PRESS:
+    case TOUCH_EXPLORE_LONG_PRESS:
     case ONE_FINGER_PASSTHROUGH:
     case WAIT_FOR_NO_FINGERS:
       if (gesture_provider_.get())
@@ -1123,6 +1172,8 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "GESTURE_IN_PROGRESS";
     case TOUCH_EXPLORE_SECOND_PRESS:
       return "TOUCH_EXPLORE_SECOND_PRESS";
+    case TOUCH_EXPLORE_LONG_PRESS:
+      return "TOUCH_EXPLORE_LONG_PRESS";
     case SLIDE_GESTURE:
       return "SLIDE_GESTURE";
     case ONE_FINGER_PASSTHROUGH:
@@ -1133,6 +1184,12 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "TWO_FINGER_TAP";
   }
   return "Not a state";
+}
+
+void TouchExplorationController::SetAnchorPointInternal(
+    const gfx::PointF& anchor_point) {
+  anchor_point_dip_ = anchor_point;
+  ResetLiftActivationLongPressTimer();
 }
 
 float TouchExplorationController::GetSplitTapTouchSlop() {

@@ -186,6 +186,7 @@ api::automation::EventType ToAutomationEvent(
     // but mapping for backward compat).
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::EXPANDED:
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
@@ -201,7 +202,6 @@ api::automation::EventType ToAutomationEvent(
     case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
     case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
-    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
     case ui::AXEventGenerator::Event::FOCUS_CHANGED:

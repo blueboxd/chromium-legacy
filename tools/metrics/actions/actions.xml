@@ -12316,6 +12316,32 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileAboutSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Chrome About Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileAboutSettingsClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Chrome About Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobileAccountsSettingsBack">
+  <owner>msarda@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <description>
+    Reported when user goes back from Accounts Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
 <action name="MobileAccountsSettingsClose">
   <owner>msarda@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
@@ -12416,6 +12442,40 @@ should be able to be added at any place in this file.
   <description>
     User tapped on &quot;Use Camera&quot; from the settings add credit card
     screen.
+  </description>
+</action>
+
+<action name="MobileAddressesSettingsBack">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Addresses Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileAddressesSettingsClose">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Addresses Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobileBandwidthSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Bandwidth Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileBandwidthSettingsClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Bandwidth Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -12736,6 +12796,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileContentSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Content Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileContentSettingsClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    s Reported when Content Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobileContextMenuCopyImageLinkAddress">
   <obsolete>Deprecated as of 8/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -12895,6 +12972,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileCreditCardSettingsBack">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Credit Card Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileCreditCardSettingsClose">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Credit Card Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobileCustomFeedback">
   <obsolete>
     Deprecated 12/2018. CustomFeedback never shipped to 100% and is no longer
@@ -13049,6 +13143,15 @@ should be able to be added at any place in this file.
     User tapped on the TOS link on the first run welcome view. This metric is
     only recorded if and after the TOS are accepted. This metric is specific to
     iOS.
+  </description>
+</action>
+
+<action name="MobileGoogleServicesSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Google Services Settings UI to root
+    Settings screen. iOS only.
   </description>
 </action>
 
@@ -13872,6 +13975,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePasswordsSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Passwords Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
 <action name="MobilePasswordsSettingsClose">
   <owner>djean@chromium.org</owner>
   <owner>javierrobles@chromium.org</owner>
@@ -13917,6 +14029,23 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 7/2015</obsolete>
   <owner>ksimbili@chromium.org</owner>
   <description>User closes the tab while preview page is loaded.</description>
+</action>
+
+<action name="MobilePrivacySettingsBack">
+  <owner>msramek@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Privacy Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePrivacySettingsClose">
+  <owner>msramek@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Privacy Settings UI was dismissed. iOS only.
+  </description>
 </action>
 
 <action name="MobilePullGestureCloseTab">
@@ -14127,6 +14256,23 @@ should be able to be added at any place in this file.
   <description>
     The user pressed the Send Feedback button on a tab that is displaying the
     sad view.
+  </description>
+</action>
+
+<action name="MobileSearchEngineSettingsBack">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Search Engine Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileSearchEngineSettingsClose">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Search Engine Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -14885,6 +15031,23 @@ should be able to be added at any place in this file.
   <owner>kkimlabs@chromium.org</owner>
   <description>
     Only for Android. Menu is shown by tapping software menu button.
+  </description>
+</action>
+
+<action name="MobileVoiceSearchSettingsBack">
+  <owner>rohitrao@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user goes back from Voice Search Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileVoiceSearchSettingsClose">
+  <owner>rohitrao@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when Voice Search Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -19794,6 +19957,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.Bandwidth">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user navigates to Bandwidth Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.ContentSettings">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user navigates to Content Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.GoogleServices">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <description>
+    Reported when user navigates to Google Services Settings. iOS only.
+  </description>
+</action>
+
 <action name="Settings.Homepage.LocationChanged">
   <obsolete>
     Removed as original metrics is over counting. Replaced with
@@ -19838,6 +20025,14 @@ should be able to be added at any place in this file.
   <description>
     Recorded when the user taps on the account item in the settings. Recorded
     for iOS only.
+  </description>
+</action>
+
+<action name="Settings.Privacy">
+  <owner>thgreenfrog@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user navigates to Language Settings. iOS only.
   </description>
 </action>
 
@@ -19890,6 +20085,14 @@ should be able to be added at any place in this file.
     A new search has been started in the chrome://settings (preferences) page. A
     search is considered complete via timeout since there is no concrete way to
     define the end of a search (the search is incremental).
+  </description>
+</action>
+
+<action name="Settings.VoiceSearch">
+  <owner>rohitrao@chromium.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <description>
+    Reported when user navigates to Voice Search Settings. iOS only.
   </description>
 </action>
 

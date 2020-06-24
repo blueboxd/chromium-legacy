@@ -327,8 +327,7 @@ scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
         url_, initiator_origin_.get());
   }
 
-  if ((GetSandboxFlags() & network::mojom::blink::WebSandboxFlags::kOrigin) !=
-      network::mojom::blink::WebSandboxFlags::kNone) {
+  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
     auto sandbox_origin = document_origin->DeriveNewOpaqueOrigin();
 
     // If we're supposed to inherit our security origin from our
@@ -527,6 +526,12 @@ bool DocumentInit::ShouldReuseDOMWindow() const {
       GetDocumentOrigin().get());
 }
 
+bool DocumentInit::IsSandboxed(
+    network::mojom::blink::WebSandboxFlags mask) const {
+  return (GetSandboxFlags() & mask) !=
+         network::mojom::blink::WebSandboxFlags::kNone;
+}
+
 Document* DocumentInit::CreateDocument() const {
 #if DCHECK_IS_ON()
   DCHECK(document_loader_ || execution_context_ || for_test_);
@@ -539,16 +544,9 @@ Document* DocumentInit::CreateDocument() const {
     case Type::kImage:
       return MakeGarbageCollected<ImageDocument>(*this);
     case Type::kPlugin: {
-      Document* document = MakeGarbageCollected<PluginDocument>(*this);
-      // TODO(crbug.com/1029822): Final sandbox flags are calculated during
-      // document construction, so we have to construct a PluginDocument then
-      // replace it with a SinkDocument when plugins are sanboxed. If we move
-      // final sandbox flag calcuation earlier, we could construct the
-      // SinkDocument directly.
-      if (document->IsSandboxed(
-              network::mojom::blink::WebSandboxFlags::kPlugins))
-        document = MakeGarbageCollected<SinkDocument>(*this);
-      return document;
+      if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kPlugins))
+        return MakeGarbageCollected<SinkDocument>(*this);
+      return MakeGarbageCollected<PluginDocument>(*this);
     }
     case Type::kMedia:
       return MakeGarbageCollected<MediaDocument>(*this);

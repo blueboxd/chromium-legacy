@@ -485,7 +485,6 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
   sync_token.SetVerifyFlush();
 
   auto ddl = current_paint_->recorder()->detach();
-  DCHECK(ddl);
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -695,7 +694,7 @@ bool SkiaOutputSurfaceImpl::Initialize() {
       capabilities_.supports_post_sub_buffer) {
     capabilities_.only_invalidates_damage_rect = false;
     capabilities_.supports_target_damage = true;
-    damage_of_buffers_.resize(capabilities_.max_frames_pending + 1);
+    damage_of_buffers_.resize(capabilities_.number_of_buffers);
   }
 
   return result;
@@ -773,7 +772,7 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
             ? GrProtected::kYes
             : GrProtected::kNo);
     VkFormat vk_format = VK_FORMAT_UNDEFINED;
-    LOG_IF(FATAL, !characterization.isValid())
+    LOG_IF(DFATAL, !characterization.isValid())
         << "\n  surface_size=" << surface_size.ToString()
         << "\n  format=" << static_cast<int>(format)
         << "\n  color_type=" << static_cast<int>(color_type)

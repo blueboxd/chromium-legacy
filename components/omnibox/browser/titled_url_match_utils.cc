@@ -85,7 +85,10 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           scheme_classifier, &inline_autocomplete_offset);
-  if (inline_autocomplete_offset != base::string16::npos) {
+
+  if (match.TryRichAutocompletion(match.contents, match.description, input)) {
+    // If rich autocompletion applies, we skip trying the alternatives below.
+  } else if (inline_autocomplete_offset != base::string16::npos) {
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
     match.SetAllowedToBeDefault(input);

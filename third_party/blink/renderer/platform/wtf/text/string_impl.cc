@@ -338,79 +338,26 @@ wtf_size_t StringImpl::CopyTo(UChar* buffer,
   return number_of_characters_to_copy;
 }
 
+class StringImplAllocator {
+ public:
+  using ResultStringType = scoped_refptr<StringImpl>;
+
+  template <typename CharType>
+  scoped_refptr<StringImpl> Alloc(wtf_size_t length, CharType*& buffer) {
+    return StringImpl::CreateUninitialized(length, buffer);
+  }
+
+  scoped_refptr<StringImpl> CoerceOriginal(const StringImpl& string) {
+    return const_cast<StringImpl*>(&string);
+  }
+};
+
 scoped_refptr<StringImpl> StringImpl::LowerASCII() {
-  // First scan the string for uppercase and non-ASCII characters:
-  if (Is8Bit()) {
-    wtf_size_t first_index_to_be_lowered = length_;
-    for (wtf_size_t i = 0; i < length_; ++i) {
-      LChar ch = Characters8()[i];
-      if (IsASCIIUpper(ch)) {
-        first_index_to_be_lowered = i;
-        break;
-      }
-    }
-
-    // Nothing to do if the string is all ASCII with no uppercase.
-    if (first_index_to_be_lowered == length_) {
-      return this;
-    }
-
-    LChar* data8;
-    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
-    memcpy(data8, Characters8(), first_index_to_be_lowered);
-
-    for (wtf_size_t i = first_index_to_be_lowered; i < length_; ++i) {
-      LChar ch = Characters8()[i];
-      data8[i] = IsASCIIUpper(ch) ? ToASCIILower(ch) : ch;
-    }
-    return new_impl;
-  }
-  bool no_upper = true;
-  UChar ored = 0;
-
-  const UChar* end = Characters16() + length_;
-  for (const UChar* chp = Characters16(); chp != end; ++chp) {
-    if (IsASCIIUpper(*chp))
-      no_upper = false;
-    ored |= *chp;
-  }
-  // Nothing to do if the string is all ASCII with no uppercase.
-  if (no_upper && !(ored & ~0x7F))
-    return this;
-
-  CHECK_LE(length_, static_cast<wtf_size_t>(numeric_limits<wtf_size_t>::max()));
-  wtf_size_t length = length_;
-
-  UChar* data16;
-  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
-
-  for (wtf_size_t i = 0; i < length; ++i) {
-    UChar c = Characters16()[i];
-    data16[i] = IsASCIIUpper(c) ? ToASCIILower(c) : c;
-  }
-  return new_impl;
+  return ConvertASCIICase(*this, LowerConverter(), StringImplAllocator());
 }
 
 scoped_refptr<StringImpl> StringImpl::UpperASCII() {
-  if (Is8Bit()) {
-    LChar* data8;
-    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
-
-    for (wtf_size_t i = 0; i < length_; ++i) {
-      LChar c = Characters8()[i];
-      data8[i] = IsASCIILower(c) ? ToASCIIUpper(c) : c;
-    }
-    return new_impl;
-  }
-
-  UChar* data16;
-  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
-
-  for (wtf_size_t i = 0; i < length_; ++i) {
-    UChar c = Characters16()[i];
-    data16[i] = IsASCIILower(c) ? ToASCIIUpper(c) : c;
-  }
-  return new_impl;
+  return ConvertASCIICase(*this, UpperConverter(), StringImplAllocator());
 }
 
 scoped_refptr<StringImpl> StringImpl::Fill(UChar character) {

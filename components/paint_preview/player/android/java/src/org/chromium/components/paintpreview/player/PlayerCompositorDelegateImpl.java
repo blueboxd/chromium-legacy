@@ -25,8 +25,8 @@ import javax.annotation.Nonnull;
 class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     interface CompositorListener {
         void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
-                int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
-                int[] subFrameClipRects);
+                int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
+                UnguessableToken[] subFrameGuids, int[] subFrameClipRects);
     }
 
     private CompositorListener mCompositorListener;
@@ -56,6 +56,10 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      * scroll extent. The order corresponds to {@code frameGuids}. The content width and height for
      * the ith frame in {@code frameGuids} are respectively in the {@code 2*i} and {@code 2*i+1}
      * indices of {@code frameContentSize}.
+     * @param scrollOffsets Contains the initial scroll offsets for each frame. The order
+     * corresponds to {@code frameGuids}. The offset in x and y for the ith frame in
+     * {@code frameGuids} are respectively in the {@code 2*i} and {@code 2*i+1} indices of
+     * {@code scrollOffsets}.
      * @param subFramesCount Contains the number of sub-frames for each frame. The order corresponds
      * to {@code frameGuids}. The number of sub-frames for the {@code i}th frame in {@code
      * frameGuids} is {@code subFramesCount[i]}.
@@ -73,10 +77,10 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      */
     @CalledByNative
     void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
-            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
-            int[] subFrameClipRects) {
+            int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
         mCompositorListener.onCompositorReady(rootFrameGuid, frameGuids, frameContentSize,
-                subFramesCount, subFrameGuids, subFrameClipRects);
+                scrollOffsets, subFramesCount, subFrameGuids, subFrameClipRects);
     }
 
     @Override

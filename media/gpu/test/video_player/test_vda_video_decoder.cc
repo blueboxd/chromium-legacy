@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "media/base/media_log.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/waiting.h"

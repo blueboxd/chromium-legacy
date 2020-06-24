@@ -783,6 +783,11 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
       policy::CloudPolicyClient::DeviceDMTokenCallback());
   client = private_client_.get();
 
+  // TODO(crbug.com/1069049): when we decide to add the extra URL parameters to
+  // the uploaded reports, do the following:
+  //     client->add_connector_url_params(base::FeatureList::IsEnabled(
+  //        enterprise_connectors::kEnterpriseConnectorsEnabled));
+
   if (!client->is_registered()) {
     client->SetupRegistration(
         dm_token.value(), client_id,

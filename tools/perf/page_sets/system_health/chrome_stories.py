@@ -17,7 +17,7 @@ class BlankAboutBlankStory(system_health_story.SystemHealthStory):
 
   def _DidLoadDocument(self, action_runner):
     # Request a RAF and wait for it to be processed to ensure that the metric
-    # Startup.FirstWebContents.NonEmptyPaint2 is recorded.
+    # Startup.FirstWebContents.NonEmptyPaint3 is recorded.
     action_runner.ExecuteJavaScript(
         """
         window.__hasRunRAF = false;

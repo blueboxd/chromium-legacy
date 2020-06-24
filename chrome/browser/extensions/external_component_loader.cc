@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
@@ -45,8 +46,7 @@ void ExternalComponentLoader::StartLoading() {
 
   if (media_router::MediaRouterEnabled(profile_) &&
       FeatureSwitch::load_media_router_component_extension()->IsEnabled()) {
-    AddExternalExtension(extension_misc::kMediaRouterStableExtensionId,
-                         prefs.get());
+    AddExternalExtension(extension_misc::kCastExtensionIdRelease, prefs.get());
   }
 
   LoadFinished(std::move(prefs));

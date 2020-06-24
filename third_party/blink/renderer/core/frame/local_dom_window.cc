@@ -417,8 +417,28 @@ void LocalDOMWindow::ExceptionThrown(ErrorEvent* event) {
   MainThreadDebugger::Instance()->ExceptionThrown(this, event);
 }
 
+// https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
 String LocalDOMWindow::OutgoingReferrer() const {
-  return document()->OutgoingReferrer();
+  // Step 3.1: "If environment's global object is a Window object, then"
+  // Step 3.1.1: "Let document be the associated Document of environment's
+  // global object."
+
+  // Step 3.1.2: "If document's origin is an opaque origin, return no referrer."
+  if (GetSecurityOrigin()->IsOpaque())
+    return String();
+
+  // Step 3.1.3: "While document is an iframe srcdoc document, let document be
+  // document's browsing context's browsing context container's node document."
+  LocalFrame* referrer_frame = GetFrame();
+  while (referrer_frame->GetDocument()->IsSrcdocDocument()) {
+    // Srcdoc documents must be local within the containing frame.
+    referrer_frame = To<LocalFrame>(referrer_frame->Tree().Parent());
+    // Srcdoc documents cannot be top-level documents, by definition,
+    // because they need to be contained in iframes with the srcdoc.
+    DCHECK(referrer_frame);
+  }
+  // Step: 3.1.4: "Let referrerSource be document's URL."
+  return referrer_frame->GetDocument()->Url().StrippedForUseAsReferrer();
 }
 
 network::mojom::ReferrerPolicy LocalDOMWindow::GetReferrerPolicy() const {
@@ -1943,23 +1963,20 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
     return nullptr;
   if (!incumbent_window->GetFrame())
     return nullptr;
-  Document* active_document = incumbent_window->document();
-  if (!active_document)
-    return nullptr;
   LocalFrame* entered_window_frame = entered_window->GetFrame();
   if (!entered_window_frame)
     return nullptr;
 
-  UseCounter::Count(*active_document, WebFeature::kDOMWindowOpen);
+  UseCounter::Count(*incumbent_window, WebFeature::kDOMWindowOpen);
   if (!features.IsEmpty())
-    UseCounter::Count(*active_document, WebFeature::kDOMWindowOpenFeatures);
+    UseCounter::Count(*incumbent_window, WebFeature::kDOMWindowOpenFeatures);
 
   KURL completed_url =
       url_string.IsEmpty()
           ? KURL(g_empty_string)
           : entered_window_frame->GetDocument()->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
-    UseCounter::Count(active_document, WebFeature::kWindowOpenWithInvalidURL);
+    UseCounter::Count(incumbent_window, WebFeature::kWindowOpenWithInvalidURL);
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "Unable to open a window with invalid URL '" +
@@ -1969,7 +1986,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
 
-  FrameLoadRequest frame_request(active_document,
+  FrameLoadRequest frame_request(incumbent_window->document(),
                                  ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
 
@@ -1980,9 +1997,9 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   // for generating an embedder-initiated navigation's referrer, so we need to
   // ensure the proper referrer is set now.
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      active_document->GetReferrerPolicy(), completed_url,
+      incumbent_window->GetReferrerPolicy(), completed_url,
       window_features.noreferrer ? Referrer::NoReferrer()
-                                 : active_document->OutgoingReferrer());
+                                 : incumbent_window->OutgoingReferrer());
   frame_request.GetResourceRequest().SetReferrerString(referrer.referrer);
   frame_request.GetResourceRequest().SetReferrerPolicy(
       referrer.referrer_policy);
@@ -2000,7 +2017,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (window_features.x_set || window_features.y_set) {
     // This runs after FindOrCreateFrameForNavigation() so blocked popups are
     // not counted.
-    UseCounter::Count(*active_document,
+    UseCounter::Count(*incumbent_window,
                       WebFeature::kDOMWindowOpenPositioningFeatures);
   }
 

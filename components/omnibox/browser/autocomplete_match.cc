@@ -129,7 +129,9 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
+      fill_into_edit_additional_text(match.fill_into_edit_additional_text),
       inline_autocompletion(match.inline_autocompletion),
+      prefix_autocompletion(match.prefix_autocompletion),
       allowed_to_be_default_match(match.allowed_to_be_default_match),
       is_navigational_title_match(match.is_navigational_title_match),
       destination_url(match.destination_url),
@@ -187,7 +189,9 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
+  fill_into_edit_additional_text = match.fill_into_edit_additional_text;
   inline_autocompletion = match.inline_autocompletion;
+  prefix_autocompletion = match.prefix_autocompletion;
   allowed_to_be_default_match = match.allowed_to_be_default_match;
   is_navigational_title_match = match.is_navigational_title_match;
   destination_url = match.destination_url;
@@ -1041,15 +1045,9 @@ bool AutocompleteMatch::IsTrivialAutocompletion() const {
 }
 
 bool AutocompleteMatch::SupportsDeletion() const {
-  if (deletable)
-    return true;
-
-  for (auto it(duplicate_matches.begin()); it != duplicate_matches.end();
-       ++it) {
-    if (it->deletable)
-      return true;
-  }
-  return false;
+  return deletable ||
+         std::any_of(duplicate_matches.begin(), duplicate_matches.end(),
+                     [](auto m) { return m.deletable; });
 }
 
 AutocompleteMatch
@@ -1067,7 +1065,7 @@ AutocompleteMatch::GetMatchWithContentsAndDescriptionPossiblySwapped() const {
 }
 
 void AutocompleteMatch::SetAllowedToBeDefault(const AutocompleteInput& input) {
-  if (inline_autocompletion.empty())
+  if (inline_autocompletion.empty() && prefix_autocompletion.empty())
     allowed_to_be_default_match = true;
   else if (input.prevent_inline_autocomplete())
     allowed_to_be_default_match = false;
@@ -1119,7 +1117,9 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   size_t res = 0;
 
   res += base::trace_event::EstimateMemoryUsage(fill_into_edit);
+  res += base::trace_event::EstimateMemoryUsage(fill_into_edit_additional_text);
   res += base::trace_event::EstimateMemoryUsage(inline_autocompletion);
+  res += base::trace_event::EstimateMemoryUsage(prefix_autocompletion);
   res += base::trace_event::EstimateMemoryUsage(destination_url);
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
   res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
@@ -1166,8 +1166,9 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
       fill_into_edit == duplicate_match.fill_into_edit &&
       duplicate_match.allowed_to_be_default_match) {
     allowed_to_be_default_match = true;
-    if (inline_autocompletion.empty()) {
+    if (inline_autocompletion.empty() && prefix_autocompletion.empty()) {
       inline_autocompletion = duplicate_match.inline_autocompletion;
+      prefix_autocompletion = duplicate_match.prefix_autocompletion;
       is_navigational_title_match = duplicate_match.is_navigational_title_match;
     }
   }
@@ -1216,6 +1217,79 @@ void AutocompleteMatch::TryAutocompleteWithTitle(
   allowed_to_be_default_match =
       inline_autocompletion.empty() || !input.prevent_inline_autocomplete();
   is_navigational_title_match = true;
+}
+
+bool AutocompleteMatch::TryRichAutocompletion(
+    const base::string16& primary_text,
+    const base::string16& secondary_text,
+    const AutocompleteInput& input) {
+  if (!OmniboxFieldTrial::IsRichAutocompletionEnabled())
+    return false;
+
+  if (input.prevent_inline_autocomplete())
+    return false;
+
+  const base::string16 primary_text_lower{base::i18n::ToLower(primary_text)};
+  const base::string16 secondary_text_lower{
+      base::i18n::ToLower(secondary_text)};
+  const base::string16 input_text_lower{base::i18n::ToLower(input.text())};
+
+  // Try matching the prefix of |primary_text|.
+  if (base::StartsWith(primary_text_lower, input_text_lower,
+                       base::CompareCase::SENSITIVE)) {
+    // |fill_into_edit| should already be set to |primary_text|.
+    if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+      fill_into_edit_additional_text = secondary_text;
+    inline_autocompletion = primary_text.substr(input_text_lower.length());
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "primary & prefix");
+    return true;
+  }
+
+  // Try matching the prefix of |secondary_text|.
+  if (OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
+      base::StartsWith(secondary_text_lower, input_text_lower,
+                       base::CompareCase::SENSITIVE)) {
+    fill_into_edit = secondary_text;
+    fill_into_edit_additional_text = primary_text;
+    inline_autocompletion = secondary_text.substr(input_text_lower.length());
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "secondary & prefix");
+    return true;
+  }
+
+  if (!OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix())
+    return false;
+
+  // Try matching a non-prefix the |primary_text|.
+  size_t primary_find_index = primary_text_lower.find(input_text_lower);
+  if (primary_find_index != base::string16::npos) {
+    // |fill_into_edit| should already be set to |primary_text|.
+    if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+      fill_into_edit_additional_text = secondary_text;
+    inline_autocompletion =
+        primary_text.substr(primary_find_index + input_text_lower.length());
+    prefix_autocompletion = primary_text.substr(0, primary_find_index);
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "primary & non-prefix");
+    return true;
+  }
+
+  // Try matching a non-prefix the |secondary_text|.
+  size_t secondary_find_index = secondary_text_lower.find(input_text_lower);
+  if (OmniboxFieldTrial::RichAutocompletionAutocompleteTitles() &&
+      secondary_find_index != base::string16::npos) {
+    fill_into_edit = secondary_text;
+    fill_into_edit_additional_text = primary_text;
+    inline_autocompletion =
+        secondary_text.substr(secondary_find_index + input_text_lower.length());
+    prefix_autocompletion = secondary_text.substr(0, secondary_find_index);
+    allowed_to_be_default_match = true;
+    RecordAdditionalInfo("autocompletion", "secondary & non-prefix");
+    return true;
+  }
+
+  return false;
 }
 
 #if DCHECK_IS_ON()

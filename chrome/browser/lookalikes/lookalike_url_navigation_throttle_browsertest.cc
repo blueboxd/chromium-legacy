@@ -537,13 +537,26 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kSkeletonMatchTop500);
 }
 
-// The navigated domain will fall back to punycode because it fails spoof checks
-// in IDN spoof checker, but there won't be an interstitial because the domain
+// The navigated domain will fall back to punycode because it fails standard
+// ICU spoof checks in IDN spoof checker. If the feature flag to show
+// interstitials for punycode fallback is enabled, this will show a punycode
+// interstitial. Otherwise, the navigation won't be blocked.
+// but there won't be an interstitial because the domain
 // doesn't match a top domain.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        Punycode_NoSuggestedUrl_NoInterstitial) {
-  TestInterstitialNotShown(browser(), GetURL("ɴoτ-τoρ-ďoᛖaiɴ.com"));
-  CheckNoUkm();
+  const GURL kNavigatedUrl = GetURL("ɴoτ-τoρ-ďoᛖaiɴ.com");
+
+  if (!punycode_interstitial_enabled()) {
+    TestInterstitialNotShown(browser(), kNavigatedUrl);
+    CheckNoUkm();
+  } else {
+    TestPunycodeInterstitialShown(
+        browser(), kNavigatedUrl,
+        NavigationSuggestionEvent::kFailedSpoofChecks);
+    CheckUkm({kNavigatedUrl}, "MatchType",
+             LookalikeUrlMatchType::kFailedSpoofChecks);
+  }
 }
 
 // The navigated domain will fall back to punycode because it fails spoof checks

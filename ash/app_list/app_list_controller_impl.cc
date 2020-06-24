@@ -1349,6 +1349,16 @@ void AppListControllerImpl::NotifySearchResultsForLogging(
   }
 }
 
+void AppListControllerImpl::MaybeIncreasePrivacyInfoShownCounts() {
+  if (ShouldShowAssistantPrivacyInfo()) {
+    const int count = GetAssistantPrivacyInfoShownCount();
+    SetAssistantPrivacyInfoShownCount(count + 1);
+  } else if (ShouldShowSuggestedContentInfo()) {
+    const int count = GetSuggestedContentInfoShownCount();
+    SetSuggestedContentInfoShownCount(count + 1);
+  }
+}
+
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())
     return false;
@@ -1377,14 +1387,6 @@ bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {
   return count >= 0 && count <= kThresholdToShow;
 }
 
-void AppListControllerImpl::MaybeIncreaseAssistantPrivacyInfoShownCount() {
-  const bool should_show = ShouldShowAssistantPrivacyInfo();
-  if (should_show) {
-    const int count = GetAssistantPrivacyInfoShownCount();
-    SetAssistantPrivacyInfoShownCount(count + 1);
-  }
-}
-
 void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
   // User dismissed the privacy info view. Will not show the view again.
   SetAssistantPrivacyInfoDismissed();
@@ -1409,13 +1411,6 @@ bool AppListControllerImpl::ShouldShowSuggestedContentInfo() const {
   const int count = GetSuggestedContentInfoShownCount();
   constexpr int kThresholdToShow = 3;
   return count >= 0 && count <= kThresholdToShow;
-}
-
-void AppListControllerImpl::MaybeIncreaseSuggestedContentInfoShownCount() {
-  if (!ShouldShowAssistantPrivacyInfo() && ShouldShowSuggestedContentInfo()) {
-    const int count = GetSuggestedContentInfoShownCount();
-    SetSuggestedContentInfoShownCount(count + 1);
-  }
 }
 
 void AppListControllerImpl::MarkSuggestedContentInfoDismissed() {

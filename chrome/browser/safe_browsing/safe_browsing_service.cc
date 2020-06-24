@@ -351,6 +351,9 @@ void SafeBrowsingService::OnProfileAdded(Profile* profile) {
   registrar->Add(
       prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
+  registrar->Add(
+      prefs::kSafeBrowsingEnhanced,
+      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 

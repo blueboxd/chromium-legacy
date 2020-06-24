@@ -7,10 +7,12 @@ package org.chromium.components.page_info;
 import android.content.Intent;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.omnibox.AutocompleteSchemeClassifier;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
@@ -22,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  *  Provides embedder-level information to PageInfoController.
  */
-public class PageInfoControllerDelegate {
+public abstract class PageInfoControllerDelegate {
     @IntDef({OfflinePageState.NOT_OFFLINE_PAGE, OfflinePageState.TRUSTED_OFFLINE_PAGE,
             OfflinePageState.UNTRUSTED_OFFLINE_PAGE})
     @Retention(RetentionPolicy.SOURCE)
@@ -48,6 +50,7 @@ public class PageInfoControllerDelegate {
     private final boolean mCookieControlsShown;
     protected @PreviewPageState int mPreviewPageState;
     protected @OfflinePageState int mOfflinePageState;
+    protected boolean mIsHttpsImageCompressionApplied;
     protected String mOfflinePageUrl;
 
     public PageInfoControllerDelegate(Supplier<ModalDialogManager> modalDialogManager,
@@ -58,6 +61,7 @@ public class PageInfoControllerDelegate {
         mVrHandler = vrHandler;
         mIsSiteSettingsAvailable = isSiteSettingsAvailable;
         mCookieControlsShown = cookieControlsShown;
+        mIsHttpsImageCompressionApplied = false;
 
         // These sometimes get overwritten by derived classes.
         mPreviewPageState = PreviewPageState.NOT_PREVIEW;
@@ -116,6 +120,13 @@ public class PageInfoControllerDelegate {
      */
     public boolean isInstantAppAvailable(String url) {
         return false;
+    }
+
+    /**
+     * Returns whether LiteMode https image compression was applied on this page
+     */
+    public boolean isHttpsImageCompressionApplied() {
+        return mIsHttpsImageCompressionApplied;
     }
 
     /**
@@ -184,23 +195,14 @@ public class PageInfoControllerDelegate {
      * Show site settings for the URL passed in.
      * @param url The URL to show site settings for.
      */
-    public void showSiteSettings(String url) {}
+    public abstract void showSiteSettings(String url);
 
-    // TODO(crbug.com/1052375): Remove the next three methods when cookie controls UI
-    // has been componentized.
     /**
      * Creates Cookie Controls Bridge.
-     * @param The CookieControlsObserver to create the bridge with.
+     * @param observer The CookieControlsObserver to create the bridge with.
+     * @return the object that facilitates interfacing with native code.
      */
-    public void createCookieControlsBridge(CookieControlsObserver observer) {}
-
-    /**
-     * Called when cookie controls UI is closed.
-     */
-    public void onUiClosing() {}
-
-    /**
-     * Notes whether third party cookies should be blocked for the site.
-     */
-    public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {}
+    @NonNull
+    public abstract CookieControlsBridge createCookieControlsBridge(
+            CookieControlsObserver observer);
 }

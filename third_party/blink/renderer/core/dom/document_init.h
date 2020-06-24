@@ -219,6 +219,8 @@ class CORE_EXPORT DocumentInit final {
   // of its owning Document.
   DocumentLoader* MasterDocumentLoader() const;
 
+  bool IsSandboxed(network::mojom::blink::WebSandboxFlags) const;
+
   static PluginData* GetPluginData(LocalFrame* frame, const KURL& url);
 
   Type type_ = Type::kUnspecified;

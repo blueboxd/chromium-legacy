@@ -108,7 +108,7 @@ const char* SessionModeToString(device::mojom::blink::XRSessionMode mode) {
 // unrecognized, returns nullopt. Based on the spec:
 // https://immersive-web.github.io/webxr/#feature-name
 base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
-    const Document* doc,
+    const ExecutionContext* context,
     const String& feature_string) {
   if (feature_string == "viewer") {
     return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
@@ -120,18 +120,18 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
     return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
   } else if (feature_string == "unbounded") {
     return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
-  } else if (RuntimeEnabledFeatures::WebXRHitTestEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRHitTestEnabled(context) &&
              feature_string == "hit-test") {
     return device::mojom::XRSessionFeature::HIT_TEST;
-  } else if (RuntimeEnabledFeatures::WebXRAnchorsEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRAnchorsEnabled(context) &&
              feature_string == "anchors") {
     return device::mojom::XRSessionFeature::ANCHORS;
   } else if (feature_string == "dom-overlay") {
     return device::mojom::XRSessionFeature::DOM_OVERLAY;
-  } else if (RuntimeEnabledFeatures::WebXRLightEstimationEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRLightEstimationEnabled(context) &&
              feature_string == "light-estimation") {
     return device::mojom::XRSessionFeature::LIGHT_ESTIMATION;
-  } else if (RuntimeEnabledFeatures::WebXRCameraAccessEnabled(doc) &&
+  } else if (RuntimeEnabledFeatures::WebXRCameraAccessEnabled(context) &&
              feature_string == "camera-access") {
     return device::mojom::XRSessionFeature::CAMERA_ACCESS;
   }
@@ -1036,7 +1036,6 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
 }
 
 XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
-    Document* doc,
     const HeapVector<ScriptValue>& features,
     const device::mojom::blink::XRSessionMode& session_mode,
     XRSessionInit* session_init,
@@ -1050,7 +1049,8 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
   for (const auto& feature : features) {
     String feature_string;
     if (feature.ToString(feature_string)) {
-      auto feature_enum = StringToXRSessionFeature(doc, feature_string);
+      auto feature_enum =
+          StringToXRSessionFeature(GetExecutionContext(), feature_string);
 
       if (!feature_enum) {
         AddConsoleMessage(error_level,
@@ -1109,7 +1109,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
 
   // If the request is for immersive-ar, ensure that feature is enabled.
   if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
-      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
+      !RuntimeEnabledFeatures::WebXRARModuleEnabled(GetExecutionContext())) {
     exception_state.ThrowTypeError(
         String::Format(kImmersiveArModeNotValid, "requestSession"));
 
@@ -1127,7 +1127,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   RequestedXRSessionFeatureSet required_features;
   if (session_init && session_init->hasRequiredFeatures()) {
     required_features = ParseRequestedFeatures(
-        doc, session_init->requiredFeatures(), session_mode, session_init,
+        session_init->requiredFeatures(), session_mode, session_init,
         mojom::blink::ConsoleMessageLevel::kError);
   }
 
@@ -1135,7 +1135,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   RequestedXRSessionFeatureSet optional_features;
   if (session_init && session_init->hasOptionalFeatures()) {
     optional_features = ParseRequestedFeatures(
-        doc, session_init->optionalFeatures(), session_mode, session_init,
+        session_init->optionalFeatures(), session_mode, session_init,
         mojom::blink::ConsoleMessageLevel::kWarning);
   }
 

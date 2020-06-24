@@ -160,6 +160,7 @@ js_type_check("closure_compile") {
     "../common:automation_predicate",
     "../common:closure_shim",
     "../common:constants",
+    "../common:repeated_event_handler",
     "../common:tree_walker",
   ]
 }
@@ -322,6 +323,7 @@ js_library("navigation_manager") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../common:repeated_event_handler",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -338,6 +340,7 @@ js_library("node_wrapper") {
     ":switch_access_predicate",
     "../common:automation_predicate",
     "../common:constants",
+    "../common:repeated_event_handler",
     "../common:tree_walker",
   ]
   externs_list = [

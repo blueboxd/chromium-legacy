@@ -39,7 +39,8 @@ class SQLiteTrustTokenPersister : public TrustTokenPersister {
   // Constructs a SQLiteTrustTokenPersister backed by an on-disk
   // database:
   // - |db_task_runner| will be used for posting blocking database IO;
-  // - |path| will store the database.
+  // - |path| will store the database; if its parent directory doesn't exist,
+  // the method will attempt to create the directory.
   // - |flush_delay_for_writes| is the maximum time before each write is flushed
   // to the underlying database.
   //

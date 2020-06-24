@@ -115,12 +115,10 @@ void SuggestionWindowView::MakeVisible() {
   SizeToContents();
 }
 
-void SuggestionWindowView::Show(const base::string16& text,
-                                const size_t confirmed_length,
-                                const bool show_tab) {
+void SuggestionWindowView::Show(const SuggestionDetails& details) {
   MaybeInitializeSuggestionViews(1);
   candidate_views_[0]->SetEnabled(true);
-  candidate_views_[0]->SetView(text, confirmed_length, show_tab);
+  candidate_views_[0]->SetView(details);
   candidate_views_[0]->SetMinWidth(
       setting_link_view_->GetPreferredSize().width());
   setting_link_view_->SetVisible(true);

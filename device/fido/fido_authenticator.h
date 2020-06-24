@@ -105,9 +105,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                            const std::vector<pin::Permissions>& permissions,
                            base::Optional<std::string> rp_id,
                            GetTokenCallback callback);
+  // Returns |true| if the authenticator supports GetUvToken.
+  virtual bool CanGetUvToken();
   // GetUvToken uses internal user verification to request a PinUvAuthToken from
-  // an authenticator. It is only valid to call this method if |Options|
-  // indicates that the authenticator supports UV tokens.
+  // an authenticator. It is only valid to call this method if CanGetUvToken()
+  // returns true.
   // |rp_id| must be set if the PinUvAuthToken will be used for MakeCredential
   // or GetAssertion.
   virtual void GetUvToken(base::Optional<std::string> rp_id,

@@ -54796,6 +54796,11 @@
       }
     ]
   },
+  "mac-arm64": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "mac-code-coverage": {
     "gtest_tests": [
       {

@@ -86,6 +86,8 @@ source_set("platform") {
       "ax_platform_text_boundary.h",
       "ax_system_caret_win.cc",
       "ax_system_caret_win.h",
+      "uia_registrar_win.cc",
+      "uia_registrar_win.h",
     ]
 
     if (is_win) {

@@ -366,7 +366,7 @@ TEST(IntegrationTestsTest, RunChildFromInsideJobNoEscape) {
 }
 
 // Running without a job object should be ok regardless of the fact that we are
-// running inside an outter job.
+// running inside an outer job.
 TEST(IntegrationTestsTest, RunJoblessChildFromInsideJob) {
   TestRunner runner;
   runner.SetUnsandboxed(true);

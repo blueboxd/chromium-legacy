@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "pdf/geometry_conversions.h"
 #include "pdf/pdf_transform.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "printing/nup_parameters.h"

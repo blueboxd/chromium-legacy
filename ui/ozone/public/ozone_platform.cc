@@ -18,7 +18,6 @@
 namespace ui {
 
 namespace {
-
 OzonePlatform* g_instance = nullptr;
 
 void EnsureInstance() {

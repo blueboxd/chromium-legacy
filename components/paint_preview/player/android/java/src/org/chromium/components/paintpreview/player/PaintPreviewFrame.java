@@ -27,18 +27,27 @@ class PaintPreviewFrame {
     private PaintPreviewFrame[] mSubFrames;
     // The coordinates of the sub-frames relative to this frame.
     private Rect[] mSubFrameClips;
+    // The initial scroll position of this frame.
+    private int mInitialScrollX;
+    private int mInitialScrollY;
 
-    PaintPreviewFrame(UnguessableToken guid, int contentWidth, int contentHeight) {
+    PaintPreviewFrame(UnguessableToken guid, int contentWidth, int contentHeight,
+            int initialScrollX, int initialScrollY) {
         mGuid = guid;
         mContentWidth = contentWidth;
         mContentHeight = contentHeight;
+        mInitialScrollX = initialScrollX;
+        mInitialScrollY = initialScrollY;
     }
 
     private PaintPreviewFrame(UnguessableToken guid, int contentWidth, int contentHeight,
-            PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
+            int initialScrollX, int initialScrollY, PaintPreviewFrame[] subFrames,
+            Rect[] subFrameClips) {
         mGuid = guid;
         mContentWidth = contentWidth;
         mContentHeight = contentHeight;
+        mInitialScrollX = initialScrollX;
+        mInitialScrollY = initialScrollY;
         mSubFrames = subFrames;
         mSubFrameClips = subFrameClips;
     }
@@ -61,6 +70,14 @@ class PaintPreviewFrame {
 
     int getContentHeight() {
         return mContentHeight;
+    }
+
+    int getInitialScrollX() {
+        return mInitialScrollX;
+    }
+
+    int getInitialScrollY() {
+        return mInitialScrollY;
     }
 
     PaintPreviewFrame[] getSubFrames() {
@@ -107,7 +124,9 @@ class PaintPreviewFrame {
 
     @VisibleForTesting
     static PaintPreviewFrame createInstanceForTest(UnguessableToken guid, int contentWidth,
-            int contentHeight, PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
-        return new PaintPreviewFrame(guid, contentWidth, contentHeight, subFrames, subFrameClips);
+            int contentHeight, int initialScrollX, int initialScrollY,
+            PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
+        return new PaintPreviewFrame(guid, contentWidth, contentHeight, initialScrollX,
+                initialScrollY, subFrames, subFrameClips);
     }
 }

@@ -15,6 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/url_matcher/url_matcher.h"
+#include "url/gurl.h"
 
 namespace enterprise_connectors {
 
@@ -400,7 +401,8 @@ ConnectorsManager::GetReportingSettingsFromLegacyPolicies(
     return base::nullopt;
   }
 
-  return ReportingSettings();
+  return ReportingSettings(
+      GURL("https://chromereporting-pa.googleapis.com/v1/events"));
 }
 
 void ConnectorsManager::StartObservingPrefs() {

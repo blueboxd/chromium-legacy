@@ -56,6 +56,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     Capabilities(const Capabilities& capabilities);
 
     int max_frames_pending = 1;
+    // The number of buffers for the SkiaOutputDevice. If the
+    // |supports_post_sub_buffer| true, SkiaOutputSurfaceImpl will track target
+    // damaged area based on this number.
+    int number_of_buffers = 2;
     // Whether this output surface renders to the default OpenGL zero
     // framebuffer or to an offscreen framebuffer.
     bool uses_default_gl_framebuffer = true;

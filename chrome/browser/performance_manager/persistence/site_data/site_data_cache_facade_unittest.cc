@@ -113,8 +113,8 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 
   void TearDown() override {
     use_in_memory_db_for_testing_.reset();
-    facade_factory_.reset();
     profile_.reset();
+    facade_factory_.reset();
     testing::TestWithPerformanceManager::TearDown();
   }
 
@@ -142,6 +142,8 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
     return mock_cache_raw;
   }
 
+  SiteDataCacheFacadeFactory* facade_factory() { return facade_factory_.get(); }
+
  private:
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<SiteDataCacheFacadeFactory> facade_factory_;
@@ -151,12 +153,12 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   bool cache_is_recording = false;
 
-  SiteDataCacheFacade data_cache_facade(profile());
-  data_cache_facade.WaitUntilCacheInitializedForTesting();
+  auto* facade = facade_factory()->GetForProfile(profile());
+  facade->WaitUntilCacheInitializedForTesting();
   {
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();
-    data_cache_facade.IsDataCacheRecordingForTesting(
+    facade->IsDataCacheRecordingForTesting(
         base::BindLambdaForTesting([&](bool is_recording) {
           cache_is_recording = is_recording;
           std::move(quit_closure).Run();
@@ -165,12 +167,12 @@ TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   }
   EXPECT_TRUE(cache_is_recording);
 
-  SiteDataCacheFacade off_record_data_cache_facade(
-      profile()->GetPrimaryOTRProfile());
+  auto* off_record_data_cache_facade =
+      facade_factory()->GetForProfile(profile()->GetPrimaryOTRProfile());
   {
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();
-    off_record_data_cache_facade.IsDataCacheRecordingForTesting(
+    off_record_data_cache_facade->IsDataCacheRecordingForTesting(
         base::BindLambdaForTesting([&](bool is_recording) {
           cache_is_recording = is_recording;
           quit_closure.Run();
@@ -194,13 +196,13 @@ TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginNotReferenced) {
       {TestOrigin2().GetURL(), {0, base::Time::Now()}},
   });
 
-  SiteDataCacheFacade data_cache_facade(profile());
-  data_cache_facade.WaitUntilCacheInitializedForTesting();
+  auto* facade = facade_factory()->GetForProfile(profile());
+  facade->WaitUntilCacheInitializedForTesting();
 
   auto* mock_cache_raw = SetUpMockCache();
   mock_cache_raw->SetClearSiteDataForOriginsExpectations(
       {TestOrigin(), TestOrigin2()});
-  data_cache_facade.OnURLsDeleted(nullptr, deletion_info);
+  facade->OnURLsDeleted(nullptr, deletion_info);
   mock_cache_raw->WaitForExpectations();
 }
 
@@ -217,27 +219,26 @@ TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginStillReferenced) {
       {TestOrigin2().GetURL(), {3, base::Time::Now()}},
   });
 
-  SiteDataCacheFacade data_cache_facade(profile());
-  data_cache_facade.WaitUntilCacheInitializedForTesting();
+  auto* facade = facade_factory()->GetForProfile(profile());
+  facade->WaitUntilCacheInitializedForTesting();
 
   auto* mock_cache_raw = SetUpMockCache();
   // |TestOrigin2()| shouldn't be removed as there's still some references to it
   // in the history.
   mock_cache_raw->SetClearSiteDataForOriginsExpectations({TestOrigin()});
-  data_cache_facade.OnURLsDeleted(nullptr, deletion_info);
+  facade->OnURLsDeleted(nullptr, deletion_info);
   mock_cache_raw->WaitForExpectations();
 }
 
 // Verify that origins are removed from the data cache (in memory and on disk)
 // when the history is completely cleared.
 TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Full) {
-  SiteDataCacheFacade data_cache_facade(profile());
-  data_cache_facade.WaitUntilCacheInitializedForTesting();
+  auto* facade = facade_factory()->GetForProfile(profile());
+  facade->WaitUntilCacheInitializedForTesting();
 
   auto* mock_cache_raw = SetUpMockCache();
   mock_cache_raw->SetClearAllSiteDataExpectations();
-  data_cache_facade.OnURLsDeleted(nullptr,
-                                  history::DeletionInfo::ForAllHistory());
+  facade->OnURLsDeleted(nullptr, history::DeletionInfo::ForAllHistory());
   mock_cache_raw->WaitForExpectations();
 }
 

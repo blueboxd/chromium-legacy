@@ -234,7 +234,8 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);
   DCHECK(importance_mode == mojom::FetchImportanceMode::kImportanceAuto ||
-         RuntimeEnabledFeatures::PriorityHintsEnabled(&document));
+         RuntimeEnabledFeatures::PriorityHintsEnabled(
+             document.GetExecutionContext()));
   resource_request.SetFetchImportanceMode(importance_mode);
 
   ResourceLoaderOptions options;

@@ -16,6 +16,10 @@
 // method and report dismissal User Action.
 - (void)reportDismissalUserAction;
 
+// Called when user goes back to SettingsTableViewController. View controllers
+// must implement this method and report appropriate User Action.
+- (void)reportBackUserAction;
+
 @optional
 
 // Notifies the controller that the settings screen is being dismissed.

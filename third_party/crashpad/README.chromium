@@ -36,4 +36,3 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
  - codereview.settings has been excluded.
- - Fix EDO compile due to EDO mismath, revert after Chromium EDO roll.

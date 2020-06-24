@@ -6,6 +6,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
@@ -145,6 +146,11 @@ void SQLiteTrustTokenPersister::CreateForFilePath(
   TrustTokenDatabaseOwner::Create(
       /*db_opener=*/base::BindOnce(
           [](const base::FilePath& path, sql::Database* db) {
+            const base::FilePath directory = path.DirName();
+            if (!base::PathExists(directory) &&
+                !base::CreateDirectory(directory)) {
+              return false;
+            }
             return db->Open(path);
           },
           path),

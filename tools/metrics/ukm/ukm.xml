@@ -6345,6 +6345,20 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MediaRouter.CastWebSenderExtensionLoadUrl" singular="True">
+  <owner>rwkeane@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records that the a resource has been loaded from the Media Router Component
+    Extension.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
+    </summary>
+  </metric>
+</event>
+
 <event name="MediaRouter.TabMirroringStarted">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>

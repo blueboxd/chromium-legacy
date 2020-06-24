@@ -466,7 +466,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
 
   // Try to pack a final time when omitting (an existing) pem file. We should
   // get an error.
-  base::DeleteFile(crx_path, false);
+  base::DeleteFile(crx_path);
   EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the pem key argument.
   EXPECT_TRUE(pack_args.Remove(1u, nullptr));  // Remove the flags argument.
   EXPECT_TRUE(TestPackExtensionFunction(

@@ -12,6 +12,9 @@
 ] interface ImageDecoder {
   [CallWith=ScriptState, RaisesException] constructor(ImageDecoderInit init);
 
+  // Returns true if ImageDecoder supports decoding of the given mime type.
+  static boolean canDecodeType(USVString type);
+
   // Decodes the frame at the given index. If we're still receiving data, this
   // method will wait to resolve the promise until the given |frameIndex| is
   // available or reject the promise if we receive all data or fail before
@@ -36,10 +39,8 @@
   // value will increase as frames are received by the decoder.
   readonly attribute unsigned long frameCount;
 
-  // The detected mime type for the decoded image.
-  //
-  // When decoding a ReadableStream the value will be an empty string until
-  // enough data to decode metadata has been received.
+  // The mime type for the decoded image. This reflects the value provided
+  // during construction.
   readonly attribute USVString type;
 
   // The image's preferred repetition count.

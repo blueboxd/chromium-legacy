@@ -101,6 +101,11 @@ std::string MockDeviceManagementServiceConfiguration::GetReportingServerUrl() {
   return server_url_;
 }
 
+std::string
+MockDeviceManagementServiceConfiguration::GetReportingConnectorServerUrl() {
+  return server_url_;
+}
+
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService(std::unique_ptr<Configuration>(
           new MockDeviceManagementServiceConfiguration)) {}

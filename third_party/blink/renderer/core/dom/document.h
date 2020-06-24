@@ -286,7 +286,6 @@ using ExplicitlySetAttrElementsMap =
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public UseCounter,
-                             public FeatureContext,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
@@ -317,15 +316,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using TreeScope::getElementById;
 
-  // TODO(crbug.com/1029822) Former ExecutionContext overrides. Most of these
-  // should move to LocalDOMWindow.
+  // Gets the associated LocalDOMWindow even if this Document is associated with
+  // an HTMLImportsController.
   LocalDOMWindow* ExecutingWindow() const;
-  String OutgoingReferrer() const;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
-  // FeatureContext override
-  // TODO(crbug.com/1029822): this should migrate to LocalDOMWindow.
-  bool FeatureEnabled(OriginTrialFeature) const override;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   bool DocumentPolicyFeatureObserved(
       mojom::blink::DocumentPolicyFeature feature);
@@ -343,7 +338,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
   SecureContextMode GetSecureContextMode() const;
   void SetSecureContextModeForTesting(SecureContextMode);
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
   OriginTrialContext* GetOriginTrialContext() const;
 
   String addressSpaceForBindings(ScriptState*) const;

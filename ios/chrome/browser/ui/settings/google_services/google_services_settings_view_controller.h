@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_consumer.h"
+#import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 
 @class GoogleServicesSettingsViewController;
 @protocol GoogleServicesSettingsServiceDelegate;
@@ -25,7 +26,8 @@
 
 // View controller to related to Google services settings.
 @interface GoogleServicesSettingsViewController
-    : SettingsRootTableViewController <GoogleServicesSettingsConsumer>
+    : SettingsRootTableViewController <GoogleServicesSettingsConsumer,
+                                       SettingsControllerProtocol>
 
 // Presentation delegate.
 @property(nonatomic, weak)

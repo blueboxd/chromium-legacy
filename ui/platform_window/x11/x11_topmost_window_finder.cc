@@ -75,7 +75,7 @@ bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
   if (!window->IsVisible())
     return false;
 
-  gfx::Rect window_bounds = window->GetOutterBounds();
+  gfx::Rect window_bounds = window->GetOuterBounds();
   if (!window_bounds.Contains(screen_loc_in_pixels_))
     return false;
 

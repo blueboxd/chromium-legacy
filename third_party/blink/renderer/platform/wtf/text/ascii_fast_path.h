@@ -27,6 +27,7 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 #if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
@@ -77,8 +78,8 @@ inline bool IsAllASCII(MachineWord word) {
 // Note: This function assume the input is likely all ASCII, and
 // does not leave early if it is not the case.
 template <typename CharacterType>
-inline bool CharactersAreAllASCII(const CharacterType* characters,
-                                  size_t length) {
+ALWAYS_INLINE bool CharactersAreAllASCII(const CharacterType* characters,
+                                         size_t length) {
   DCHECK_GT(length, 0u);
   MachineWord all_char_bits = 0;
   const CharacterType* end = characters + length;
@@ -106,6 +107,88 @@ inline bool CharactersAreAllASCII(const CharacterType* characters,
   MachineWord non_ascii_bit_mask =
       NonASCIIMask<sizeof(MachineWord), CharacterType>::Value();
   return !(all_char_bits & non_ascii_bit_mask);
+}
+
+template <typename CharacterType>
+ALWAYS_INLINE bool IsLowerASCII(const CharacterType* characters,
+                                size_t length) {
+  bool contains_upper_case = false;
+  for (wtf_size_t i = 0; i < length; i++) {
+    contains_upper_case |= IsASCIIUpper(characters[i]);
+  }
+  return !contains_upper_case;
+}
+
+template <typename CharacterType>
+ALWAYS_INLINE bool IsUpperASCII(const CharacterType* characters,
+                                size_t length) {
+  bool contains_lower_case = false;
+  for (wtf_size_t i = 0; i < length; i++) {
+    contains_lower_case |= IsASCIILower(characters[i]);
+  }
+  return !contains_lower_case;
+}
+
+class LowerConverter {
+ public:
+  template <typename CharType>
+  ALWAYS_INLINE static bool IsCorrectCase(CharType* characters, size_t length) {
+    return IsLowerASCII(characters, length);
+  }
+
+  template <typename CharType>
+  ALWAYS_INLINE static CharType Convert(CharType ch) {
+    return ToASCIILower(ch);
+  }
+};
+
+class UpperConverter {
+ public:
+  template <typename CharType>
+  ALWAYS_INLINE static bool IsCorrectCase(CharType* characters, size_t length) {
+    return IsUpperASCII(characters, length);
+  }
+
+  template <typename CharType>
+  ALWAYS_INLINE static CharType Convert(CharType ch) {
+    return ToASCIIUpper(ch);
+  }
+};
+
+template <typename StringType, typename Converter, typename Allocator>
+ALWAYS_INLINE typename Allocator::ResultStringType ConvertASCIICase(
+    const StringType& string,
+    Converter&& converter,
+    Allocator&& allocator) {
+  CHECK_LE(string.length(), std::numeric_limits<wtf_size_t>::max());
+
+  // First scan the string for uppercase and non-ASCII characters:
+  wtf_size_t length = string.length();
+  if (string.Is8Bit()) {
+    if (converter.IsCorrectCase(string.Characters8(), length)) {
+      return allocator.CoerceOriginal(string);
+    }
+
+    LChar* data8;
+    auto new_impl = allocator.Alloc(length, data8);
+
+    for (wtf_size_t i = 0; i < length; ++i) {
+      data8[i] = converter.Convert(string.Characters8()[i]);
+    }
+    return new_impl;
+  }
+
+  if (converter.IsCorrectCase(string.Characters16(), length)) {
+    return allocator.CoerceOriginal(string);
+  }
+
+  UChar* data16;
+  auto new_impl = allocator.Alloc(length, data16);
+
+  for (wtf_size_t i = 0; i < length; ++i) {
+    data16[i] = converter.Convert(string.Characters16()[i]);
+  }
+  return new_impl;
 }
 
 inline void CopyLCharsFromUCharSource(LChar* destination,

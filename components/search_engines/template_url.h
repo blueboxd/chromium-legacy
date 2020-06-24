@@ -118,6 +118,10 @@ class TemplateURLRef {
       // The |target_lang| specifies the best language to translate into for
       // the user, which also indicates when translation is appropriate or
       // helpful.  This comes from the Chrome Language Model.
+      // The |fluent_languages| string specifies the languages the user
+      // is fluent in reading.  This acts as an alternate set of languages
+      // to consider translating into.  The languages are ordered by
+      // fluency, and encoded as a comma-separated list of BCP 47 languages.
       ContextualSearchParams(int version,
                              int contextual_cards_version,
                              std::string home_country,
@@ -125,7 +129,8 @@ class TemplateURLRef {
                              int previous_event_results,
                              bool is_exact_search,
                              std::string source_lang,
-                             std::string target_lang);
+                             std::string target_lang,
+                             std::string fluent_languages);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -162,6 +167,10 @@ class TemplateURLRef {
 
       // Target language string to be translated into.
       std::string target_lang;
+
+      // Alternate target languages that the user is fluent in, encoded in a
+      // single string.
+      std::string fluent_languages;
     };
 
     // Estimates dynamic memory usage.

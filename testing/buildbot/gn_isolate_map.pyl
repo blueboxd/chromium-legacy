@@ -782,7 +782,7 @@
       "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
     ],
     "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
-    "script": "//testing/scripts/run_isolated_script_test.py",
+    "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
     "type": "script",
   },
   "gcm_unit_tests": {

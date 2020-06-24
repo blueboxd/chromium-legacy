@@ -87,6 +87,10 @@ const char kJsonUrlPath[] = "/service/update2/json";
 // new chrome update.
 bool g_did_chrome_update_for_testing = false;
 
+// The fake metrics logger instance to use for testing.
+MediaRouterExtensionAccessLogger* g_media_router_access_logger_for_testing =
+    nullptr;
+
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(::switches::kDisableExtensions) ||
          command_line.HasSwitch(::switches::kDisableExtensionsExcept);
@@ -171,15 +175,14 @@ bool ChromeExtensionsBrowserClient::IsGuestSession(
 bool ChromeExtensionsBrowserClient::IsExtensionIncognitoEnabled(
     const std::string& extension_id,
     content::BrowserContext* context) const {
-  return IsGuestSession(context)
-      || util::IsIncognitoEnabled(extension_id, context);
+  return IsGuestSession(context) ||
+         util::IsIncognitoEnabled(extension_id, context);
 }
 
 bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
     const Extension* extension,
     content::BrowserContext* context) const {
-  return IsGuestSession(context)
-      || util::CanCrossIncognito(extension, context);
+  return IsGuestSession(context) || util::CanCrossIncognito(extension, context);
 }
 
 base::FilePath ChromeExtensionsBrowserClient::GetBundleResourcePath(
@@ -559,6 +562,19 @@ bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
       Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
           prefs::kCorsMitigationList);
   return apply_cors_mitigation_list;
+}
+
+const MediaRouterExtensionAccessLogger*
+ChromeExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
+  return g_media_router_access_logger_for_testing
+             ? g_media_router_access_logger_for_testing
+             : &media_router_access_logger_;
+}
+
+// static
+void ChromeExtensionsBrowserClient::SetMediaRouterAccessLoggerForTesting(
+    MediaRouterExtensionAccessLogger* media_router_access_logger) {
+  g_media_router_access_logger_for_testing = media_router_access_logger;
 }
 
 // static

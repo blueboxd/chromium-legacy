@@ -248,7 +248,7 @@ std::unique_ptr<ContentAction> RequestContentScript::Create(
 
 // static
 std::unique_ptr<ContentAction> RequestContentScript::CreateForTest(
-    DeclarativeUserScriptMaster* master,
+    DeclarativeUserScriptSet* script_set,
     const Extension* extension,
     const base::Value& json_action,
     std::string* error) {
@@ -269,10 +269,10 @@ std::unique_ptr<ContentAction> RequestContentScript::CreateForTest(
   if (!InitScriptData(action_dict, error, &script_data))
     return std::unique_ptr<ContentAction>();
 
-  // Inject provided DeclarativeUserScriptMaster, rather than looking it up
+  // Inject provided DeclarativeUserScriptSet, rather than looking it up
   // using a BrowserContext.
   return base::WrapUnique(
-      new RequestContentScript(master, extension, script_data));
+      new RequestContentScript(script_set, extension, script_data));
 }
 
 // static
@@ -322,25 +322,24 @@ RequestContentScript::RequestContentScript(
   HostID host_id(HostID::EXTENSIONS, extension->id());
   InitScript(host_id, extension, script_data);
 
-  master_ = DeclarativeUserScriptManager::Get(browser_context)
-                ->GetDeclarativeUserScriptMasterByID(host_id);
+  script_set_ = DeclarativeUserScriptManager::Get(browser_context)
+                    ->GetDeclarativeUserScriptSetByID(host_id);
   AddScript();
 }
 
-RequestContentScript::RequestContentScript(
-    DeclarativeUserScriptMaster* master,
-    const Extension* extension,
-    const ScriptData& script_data) {
+RequestContentScript::RequestContentScript(DeclarativeUserScriptSet* script_set,
+                                           const Extension* extension,
+                                           const ScriptData& script_data) {
   HostID host_id(HostID::EXTENSIONS, extension->id());
   InitScript(host_id, extension, script_data);
 
-  master_ = master;
+  script_set_ = script_set;
   AddScript();
 }
 
 RequestContentScript::~RequestContentScript() {
-  DCHECK(master_);
-  master_->RemoveScript(UserScriptIDPair(script_.id(), script_.host_id()));
+  DCHECK(script_set_);
+  script_set_->RemoveScript(UserScriptIDPair(script_.id(), script_.host_id()));
 }
 
 void RequestContentScript::InitScript(const HostID& host_id,
@@ -368,8 +367,8 @@ void RequestContentScript::InitScript(const HostID& host_id,
 }
 
 void RequestContentScript::AddScript() {
-  DCHECK(master_);
-  master_->AddScript(UserScript::CopyMetadataFrom(script_));
+  DCHECK(script_set_);
+  script_set_->AddScript(UserScript::CopyMetadataFrom(script_));
 }
 
 void RequestContentScript::Apply(const ApplyInfo& apply_info) const {

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_frame.h"
@@ -45,6 +46,12 @@ void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver);
 }
 
+// static
+bool ImageDecoderExternal::canDecodeType(String type) {
+  return type.ContainsOnlyASCIIOrEmpty() &&
+         IsSupportedImageMimeType(type.Ascii());
+}
+
 ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
                                            const ImageDecoderInit* init,
                                            ExceptionState& exception_state)
@@ -56,6 +63,13 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   options_ =
       init->hasOptions() ? init->options() : ImageBitmapOptions::Create();
 
+  mime_type_ = init->type();
+  if (!canDecodeType(mime_type_)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Unsupported image format.");
+    return;
+  }
+
   if (init->data().IsReadableStream()) {
     consumer_ = MakeGarbageCollected<ReadableStreamBytesConsumer>(
         script_state, init->data().GetAsReadableStream(), exception_state);
@@ -63,11 +77,11 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
       return;
 
     stream_buffer_ = WTF::SharedBuffer::Create();
-    consumer_->SetClient(this);
+    CreateImageDecoder();
 
-    // We can't create the ImageDecoder until we have some data, so we may be
-    // done for now; we need one initial call to OnStateChange(), but thereafter
-    // calls will be driven by the ReadableStreamBytesConsumer.
+    // We need one initial call to OnStateChange() to start reading, but
+    // thereafter calls will be driven by the ReadableStreamBytesConsumer.
+    consumer_->SetClient(this);
     OnStateChange();
     return;
   }
@@ -97,13 +111,8 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   }
 
   data_complete_ = true;
-  MaybeCreateImageDecoder();
-  if (!decoder_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
-                                      "Failed to create image decoder");
-    return;
-  }
 
+  CreateImageDecoder();
   MaybeUpdateMetadata();
   if (decoder_->Failed()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
@@ -174,10 +183,7 @@ void ImageDecoderExternal::OnStateChange() {
     }
 
     data_complete_ = result == BytesConsumer::Result::kDone;
-    if (!decoder_)
-      MaybeCreateImageDecoder();
-    else
-      decoder_->SetData(stream_buffer_, data_complete_);
+    decoder_->SetData(stream_buffer_, data_complete_);
 
     MaybeUpdateMetadata();
     MaybeSatisfyPendingDecodes();
@@ -198,15 +204,55 @@ void ImageDecoderExternal::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
+void ImageDecoderExternal::CreateImageDecoder() {
+  DCHECK(!decoder_);
+
+  // TODO: We should probably call ImageDecoder::SetMemoryAllocator() so that
+  // we can recycle frame buffers for decoded images.
+
+  constexpr char kNoneOption[] = "none";
+
+  auto color_behavior = ColorBehavior::Tag();
+  if (options_->colorSpaceConversion() == kNoneOption)
+    color_behavior = ColorBehavior::Ignore();
+
+  auto premultiply_alpha = ImageDecoder::kAlphaPremultiplied;
+  if (options_->premultiplyAlpha() == kNoneOption)
+    premultiply_alpha = ImageDecoder::kAlphaNotPremultiplied;
+
+  // TODO: Is it okay to use resize size like this?
+  auto desired_size = SkISize::MakeEmpty();
+  if (options_->hasResizeWidth() && options_->hasResizeHeight()) {
+    desired_size =
+        SkISize::Make(options_->resizeWidth(), options_->resizeHeight());
+  }
+
+  if (stream_buffer_) {
+    if (!segment_reader_)
+      segment_reader_ = SegmentReader::CreateFromSharedBuffer(stream_buffer_);
+  } else {
+    DCHECK(data_complete_);
+  }
+
+  DCHECK(canDecodeType(mime_type_));
+  decoder_ = ImageDecoder::CreateByImageType(
+      mime_type_, segment_reader_, data_complete_, premultiply_alpha,
+      ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
+      ImageDecoder::OverrideAllowDecodeToYuv::kDeny, desired_size);
+
+  // CreateByImageType() can't fail if we use a supported image type. Which we
+  // DCHECK above via canDecodeType().
+  DCHECK(decoder_);
+}
+
 void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
+  DCHECK(decoder_);
   for (auto& request : pending_decodes_) {
     if (!data_complete_) {
       // We can't fulfill this promise at this time.
       if (request->frame_index >= frame_count_)
         continue;
-
-      DCHECK(decoder_);
-    } else if (!decoder_ || request->frame_index >= frame_count_) {
+    } else if (request->frame_index >= frame_count_) {
       request->complete = true;
       // TODO: Include frameIndex in rejection?
       request->resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -281,68 +327,25 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
 
 void ImageDecoderExternal::MaybeSatisfyPendingMetadataDecodes() {
   DCHECK(decoder_);
-  DCHECK(decoder_->Failed() || frame_count_ > 0);
+  DCHECK(decoder_->Failed() || decoder_->IsDecodedSizeAvailable());
   for (auto& resolver : pending_metadata_decodes_)
     resolver->Resolve();
   pending_metadata_decodes_.clear();
 }
 
-void ImageDecoderExternal::MaybeCreateImageDecoder() {
-  // TODO: This does not handle SVG Images since they use another "decoder." It
-  // is highly coupled with the DOM today, so isn't suitable for this API.
-
-  // TODO: We should probably call ImageDecoder::SetMemoryAllocator() so that
-  // we can recycle frame buffers for decoded images.
-
-  constexpr char kNoneOption[] = "none";
-
-  auto color_behavior = ColorBehavior::Tag();
-  if (options_->colorSpaceConversion() == kNoneOption)
-    color_behavior = ColorBehavior::Ignore();
-
-  auto premultiply_alpha = ImageDecoder::kAlphaPremultiplied;
-  if (options_->premultiplyAlpha() == kNoneOption)
-    premultiply_alpha = ImageDecoder::kAlphaNotPremultiplied;
-
-  // TODO: Is it okay to use resize size like this?
-  auto desired_size = SkISize::MakeEmpty();
-  if (options_->hasResizeWidth() && options_->hasResizeHeight()) {
-    desired_size =
-        SkISize::Make(options_->resizeWidth(), options_->resizeHeight());
-  }
-
-  if (stream_buffer_) {
-    // TODO: If mime-type is supplied we must use that instead of sniffing.
-    if (!ImageDecoder::HasSufficientDataToSniffImageType(*stream_buffer_))
-      return;
-
-    decoder_ = ImageDecoder::Create(
-        stream_buffer_, data_complete_, premultiply_alpha,
-        ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
-        ImageDecoder::OverrideAllowDecodeToYuv::kDeny, desired_size);
-    return;
-  }
-
-  DCHECK(data_complete_);
-  decoder_ = ImageDecoder::Create(
-      segment_reader_, data_complete_, premultiply_alpha,
-      ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
-      ImageDecoder::OverrideAllowDecodeToYuv::kDeny, desired_size);
-}
-
 void ImageDecoderExternal::MaybeUpdateMetadata() {
-  if (!decoder_)
-    return;
-
   const size_t decoded_frame_count = decoder_->FrameCount();
   if (decoder_->Failed()) {
     MaybeSatisfyPendingMetadataDecodes();
     return;
   }
 
-  // TODO: Is this useful? We should have each decoder indicate its own mime
-  // type then.
-  mime_type_ = "image/todo";
+  // Since we always create the decoder at construction, we need to wait until
+  // at least the size is available before signaling that metadata has been
+  // retrieved.
+  if (!decoder_->IsSizeAvailable())
+    return;
+
   frame_count_ = static_cast<uint32_t>(decoded_frame_count);
 
   // The internal value has some magic negative numbers; for external purposes

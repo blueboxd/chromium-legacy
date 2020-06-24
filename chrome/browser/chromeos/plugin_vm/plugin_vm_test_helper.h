@@ -34,7 +34,10 @@ class PluginVmTestHelper {
   void EnablePluginVmFeature();
   void EnterpriseEnrollDevice();
 
+  // Naming follows plugin_vm_util. Allow indicates Plugin VM can be used, while
+  // enable indicates Plugin VM has been installed.
   void AllowPluginVm();
+  void EnablePluginVm();
 
   // Fakes the Plugin VM window being opened or closed.
   void OpenShelfItem();

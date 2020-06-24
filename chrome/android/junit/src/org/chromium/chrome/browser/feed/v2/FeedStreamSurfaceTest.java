@@ -63,8 +63,8 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface =
-                new FeedStreamSurface(mActivity, mSnackbarManager, null, mBottomSheetController);
+        mFeedStreamSurface = new FeedStreamSurface(
+                mActivity, false, mSnackbarManager, null, mBottomSheetController);
     }
 
     @Test
@@ -262,10 +262,10 @@ public class FeedStreamSurfaceTest {
         assertEquals(2, contentManager.getItemCount());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
     }
 
     @Test
@@ -281,10 +281,10 @@ public class FeedStreamSurfaceTest {
         assertEquals(2, contentManager.getItemCount());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
 
         View v2 = new View(mActivity);
         View v3 = new View(mActivity);
@@ -293,13 +293,13 @@ public class FeedStreamSurfaceTest {
         assertEquals(3, contentManager.getItemCount());
         assertEquals(v2,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v3,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(2))
-                        .getNativeView());
+                        .getNativeView(null));
     }
 
     @Test
@@ -315,10 +315,10 @@ public class FeedStreamSurfaceTest {
         assertEquals(2, contentManager.getItemCount());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
         final int headers = 2;
 
         // Add 3 new slices at first.
@@ -394,10 +394,10 @@ public class FeedStreamSurfaceTest {
         assertEquals(2, contentManager.getItemCount());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
         final int headers = 2;
 
         // Add 3 new slices.
@@ -414,10 +414,10 @@ public class FeedStreamSurfaceTest {
         assertEquals(headers, contentManager.getItemCount());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView());
+                        .getNativeView(null));
         assertEquals(v1,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView());
+                        .getNativeView(null));
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

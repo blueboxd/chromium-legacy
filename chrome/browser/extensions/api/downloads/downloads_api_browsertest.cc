@@ -792,7 +792,7 @@ class HTML5FileWriter {
                        base::Unretained(&result), run_loop.QuitClosure()));
     // Wait for that to finish.
     run_loop.Run();
-    base::DeleteFile(temp_file, false);
+    base::DeleteFile(temp_file);
     return result;
   }
 
@@ -1181,7 +1181,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
 
   // Finish the download and try again.
   FinishFirstSlowDownloads();
-  base::DeleteFile(download_item->GetTargetFilePath(), false);
+  base::DeleteFile(download_item->GetTargetFilePath());
 
   ASSERT_FALSE(download_item->GetFileExternallyRemoved());
   std::unique_ptr<base::Value> result(

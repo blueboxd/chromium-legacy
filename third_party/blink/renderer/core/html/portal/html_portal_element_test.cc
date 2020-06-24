@@ -35,7 +35,8 @@ TEST_F(HTMLPortalElementTest, PortalsDisabledInDocument) {
   Document& document = GetDocument();
   auto* portal = MakeGarbageCollected<HTMLPortalElement>(document);
   ScopedPortalsForTest disable_portals(false);
-  ASSERT_FALSE(RuntimeEnabledFeatures::PortalsEnabled(&document));
+  ASSERT_FALSE(
+      RuntimeEnabledFeatures::PortalsEnabled(document.GetExecutionContext()));
 
   DummyExceptionStateForTesting exception_state;
   ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());

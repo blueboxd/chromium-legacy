@@ -946,9 +946,6 @@ extern const char kOverlayStrategiesOccludedAndUnoccluded[];
 extern const char kUpdateHoverAtBeginFrameName[];
 extern const char kUpdateHoverAtBeginFrameDescription[];
 
-extern const char kUseNewAcceptLanguageHeaderName[];
-extern const char kUseNewAcceptLanguageHeaderDescription[];
-
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 
@@ -2271,6 +2268,9 @@ extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
+
+extern const char kSharesheetName[];
+extern const char kSharesheetDescription[];
 
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];

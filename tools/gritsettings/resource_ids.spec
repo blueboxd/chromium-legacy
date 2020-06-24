@@ -146,6 +146,9 @@
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [1620],
   },
+   "chrome/browser/resources/nearby_internals/nearby_internals_resources.grd": {
+    "includes": [1630],
+  },
   "chrome/browser/resources/new_tab_page/new_tab_page_resources_vulcanized.grd": {
     "includes": [1640],
   },

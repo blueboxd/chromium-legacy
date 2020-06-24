@@ -13,14 +13,18 @@
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/audio/audio_sink_parameters.h"
+#include "media/base/audio_bus.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/bind_to_current_loop.h"
+#include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -316,6 +320,15 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       sink_params_(kFormat, media::CHANNEL_LAYOUT_STEREO, 0, 0),
       output_device_id_(device_id),
       on_render_error_callback_(std::move(on_render_error_callback)) {
+  if (web_frame && web_frame->Client()) {
+    speech_recognition_client_ =
+        web_frame->Client()->CreateSpeechRecognitionClient(
+            media::BindToCurrentLoop(
+                ConvertToBaseOnceCallback(CrossThreadBindOnce(
+                    &WebRtcAudioRenderer::EnableSpeechRecognition,
+                    weak_factory_.GetWeakPtr()))));
+  }
+
   SendLogMessage(
       String::Format("%s({session_id=%s}, {device_id=%s})", __func__,
                      session_id.is_empty() ? "" : session_id.ToString().c_str(),
@@ -589,6 +602,14 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   std::move(callback).Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
 
+void WebRtcAudioRenderer::TranscribeAudio(
+    std::unique_ptr<media::AudioBus> audio_bus,
+    int sample_rate,
+    media::ChannelLayout channel_layout) {
+  speech_recognition_client_->AddAudio(std::move(audio_bus), sample_rate,
+                                       channel_layout);
+}
+
 int WebRtcAudioRenderer::Render(base::TimeDelta delay,
                                 base::TimeTicks delay_timestamp,
                                 int prior_frames_skipped,
@@ -632,6 +653,15 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
     // Mark the stream as alive the first time this method is called.
     audio_stream_tracker_->OnRenderCallbackCalled();
     audio_stream_tracker_->MeasurePower(*audio_bus, audio_bus->frames());
+  }
+
+  if (transcribe_audio_callback_) {
+    auto audio_bus_copy =
+        media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
+    audio_bus->CopyTo(audio_bus_copy.get());
+    transcribe_audio_callback_.Run(std::move(audio_bus_copy),
+                                   sink_params_.sample_rate(),
+                                   sink_params_.channel_layout());
   }
 
   return (state_ == PLAYING) ? audio_bus->frames() : 0;
@@ -923,6 +953,16 @@ void WebRtcAudioRenderer::SendLogMessage(const WTF::String& message) {
   WebRtcLogMessage(String::Format("WRAR::%s [label=%s]", message.Utf8().c_str(),
                                   media_stream_id_.c_str())
                        .Utf8());
+}
+
+void WebRtcAudioRenderer::EnableSpeechRecognition() {
+  if (speech_recognition_client_ &&
+      speech_recognition_client_->IsSpeechRecognitionAvailable()) {
+    transcribe_audio_callback_ =
+        media::BindToCurrentLoop(ConvertToBaseRepeatingCallback(
+            CrossThreadBindRepeating(&WebRtcAudioRenderer::TranscribeAudio,
+                                     weak_factory_.GetWeakPtr())));
+  }
 }
 
 }  // namespace blink

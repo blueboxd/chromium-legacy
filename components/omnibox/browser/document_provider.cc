@@ -899,7 +899,11 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
           base::UTF16ToUTF8(match.description_for_shortcuts));
     }
 
-    match.TryAutocompleteWithTitle(TitleForAutocompletion(match), input_);
+    if (!match.TryRichAutocompletion(
+            base::UTF8ToUTF16(match.destination_url.spec()), match.contents,
+            input_)) {
+      match.TryAutocompleteWithTitle(TitleForAutocompletion(match), input_);
+    }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     match.RecordAdditionalInfo("client score", client_score);
     match.RecordAdditionalInfo("server score", server_score);
@@ -925,8 +929,12 @@ void DocumentProvider::CopyCachedMatchesToMatches(
                   auto match = cache_key_match_pair.second;
                   match.relevance = 0;
                   match.allowed_to_be_default_match = false;
-                  match.TryAutocompleteWithTitle(TitleForAutocompletion(match),
-                                                 input_);
+                  if (!match.TryRichAutocompletion(
+                          base::UTF8ToUTF16(match.destination_url.spec()),
+                          match.contents, input_)) {
+                    match.TryAutocompleteWithTitle(
+                        TitleForAutocompletion(match), input_);
+                  }
                   match.contents_class =
                       DocumentProvider::Classify(match.contents, input_.text());
                   match.RecordAdditionalInfo("from cache", "true");

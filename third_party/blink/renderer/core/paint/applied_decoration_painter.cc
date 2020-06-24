@@ -59,13 +59,13 @@ Path AppliedDecorationPainter::PrepareDottedDashedStrokePath() {
   // These coordinate transforms need to match what's happening in
   // GraphicsContext's drawLineForText and drawLine.
   int y = floorf(start_point_.Y() +
-                 std::max<float>(decoration_info_.thickness / 2.0f, 0.5f));
+                 std::max<float>(resolved_thickness_ / 2.0f, 0.5f));
   Path stroke_path;
   FloatPoint rounded_start_point(start_point_.X(), y);
   FloatPoint rounded_end_point(rounded_start_point +
                                FloatPoint(decoration_info_.width, 0));
   context_.AdjustLineToPixelBoundaries(rounded_start_point, rounded_end_point,
-                                       roundf(decoration_info_.thickness));
+                                       roundf(resolved_thickness_));
   stroke_path.MoveTo(rounded_start_point);
   stroke_path.AddLineTo(rounded_end_point);
   return stroke_path;
@@ -73,7 +73,7 @@ Path AppliedDecorationPainter::PrepareDottedDashedStrokePath() {
 
 FloatRect AppliedDecorationPainter::Bounds() {
   StrokeData stroke_data;
-  stroke_data.SetThickness(decoration_info_.thickness);
+  stroke_data.SetThickness(resolved_thickness_);
 
   switch (decoration_.Style()) {
     case ETextDecorationStyle::kDotted:
@@ -88,14 +88,14 @@ FloatRect AppliedDecorationPainter::Bounds() {
       if (double_offset_ > 0) {
         return FloatRect(start_point_.X(), start_point_.Y(),
                          decoration_info_.width,
-                         double_offset_ + decoration_info_.thickness);
+                         double_offset_ + resolved_thickness_);
       }
       return FloatRect(start_point_.X(), start_point_.Y() + double_offset_,
                        decoration_info_.width,
-                       -double_offset_ + decoration_info_.thickness);
+                       -double_offset_ + resolved_thickness_);
     case ETextDecorationStyle::kSolid:
       return FloatRect(start_point_.X(), start_point_.Y(),
-                       decoration_info_.width, decoration_info_.thickness);
+                       decoration_info_.width, resolved_thickness_);
     default:
       break;
   }
@@ -165,7 +165,7 @@ Path AppliedDecorationPainter::PrepareWavyStrokePath() {
       start_point_ +
       FloatPoint(decoration_info_.width, double_offset_ * wavy_offset_factor_));
 
-  context_.AdjustLineToPixelBoundaries(p1, p2, decoration_info_.thickness);
+  context_.AdjustLineToPixelBoundaries(p1, p2, resolved_thickness_);
 
   Path path;
   path.MoveTo(p1);
@@ -178,13 +178,12 @@ Path AppliedDecorationPainter::PrepareWavyStrokePath() {
   // The minimum height of the curve is also approximately 3 pixels. Increases
   // the curve's height
   // as strockThickness increases to make the curve looks better.
-  float control_point_distance =
-      3 * std::max<float>(2, decoration_info_.thickness);
+  float control_point_distance = 3 * std::max<float>(2, resolved_thickness_);
 
   // Increment used to form the diamond shape between start point (p1), control
   // points and end point (p2) along the axis of the decoration. Makes the
   // curve wider as strockThickness increases to make the curve looks better.
-  float step = 2 * std::max<float>(2, decoration_info_.thickness);
+  float step = 2 * std::max<float>(2, resolved_thickness_);
 
   bool is_vertical_line = (p1.X() == p2.X());
 

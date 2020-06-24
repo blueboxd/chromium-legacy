@@ -359,14 +359,14 @@ TEST(PaymentMethodValidatorTest, IsValidPaymentMethod) {
   }
 }
 
-TEST(PaymentMethodValidatorTest, IsValidPaymentMethodWhitelisted) {
+TEST(PaymentMethodValidatorTest, IsValidPaymentMethodSafelisted) {
   EXPECT_FALSE(PaymentsValidators::IsValidMethodFormat("http://alicepay.com"))
       << "http://alicepay.com is not a valid method format by default";
 
   SecurityPolicy::AddOriginToTrustworthySafelist("http://alicepay.com");
 
   EXPECT_TRUE(PaymentsValidators::IsValidMethodFormat("http://alicepay.com"))
-      << "http://alicepay.com should be valid if whitelisted";
+      << "http://alicepay.com should be valid if safelisted";
 }
 
 }  // namespace

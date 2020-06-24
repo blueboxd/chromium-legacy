@@ -938,6 +938,26 @@ TEST_F('OSSettingsMultideviceSubpageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the Nearby Share settings subpage.
+// eslint-disable-next-line no-var
+var OSSettingsNearbyShareSubPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'nearby_share_page/nearby_share_subpage.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'nearby_share_subpage_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsNearbyShareSubPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // eslint-disable-next-line no-var
 var OSSettingsPeoplePageAccountManagerTest =
     class extends OSSettingsBrowserTest {

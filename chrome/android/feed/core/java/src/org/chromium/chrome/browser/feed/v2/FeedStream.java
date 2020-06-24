@@ -50,8 +50,8 @@ public class FeedStream implements Stream {
             BottomSheetController bottomSheetController) {
         // TODO(petewil): Use isBackgroundDark to turn on dark theme.
         this.mActivity = activity;
-        this.mFeedStreamSurface = new FeedStreamSurface(
-                activity, snackbarManager, nativePageNavigationDelegate, bottomSheetController);
+        this.mFeedStreamSurface = new FeedStreamSurface(activity, isBackgroundDark, snackbarManager,
+                nativePageNavigationDelegate, bottomSheetController);
         this.mScrollListeners = new ObserverList<ScrollListener>();
     }
 

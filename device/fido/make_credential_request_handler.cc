@@ -432,32 +432,19 @@ void MakeCredentialRequestHandler::DispatchRequest(
   }
 
   CtapMakeCredentialRequest request(request_);
-  if (authenticator->Options()) {
-    // If the authenticator has UV configured then UV will be required in
-    // order to create a credential (as specified by CTAP 2.0), even if
-    // user-verification is "discouraged". However, if the request is U2F-only
-    // then that doesn't apply and UV must be set to discouraged so that the
-    // request can be translated to U2F. Platform authenticators are exempted
-    // from this UV enforcement.
-    if (authenticator->Options()->user_verification_availability ==
-            AuthenticatorSupportedOptions::UserVerificationAvailability::
-                kSupportedAndConfigured &&
-        !request_.is_u2f_only &&
-        authenticator->AuthenticatorTransport() !=
-            FidoTransportProtocol::kInternal) {
-      if (authenticator->Options()->supports_pin_uv_auth_token) {
-        authenticator->GetUvToken(
-            request_.rp.id,
-            base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,
-                           weak_factory_.GetWeakPtr(), authenticator));
-        return;
-      }
-      request.user_verification = UserVerificationRequirement::kRequired;
-    } else {
-      request.user_verification = UserVerificationRequirement::kDiscouraged;
-    }
 
+  if (authenticator->Options()) {
     SpecializeRequestForAuthenticator(&request, authenticator);
+  }
+
+  if (!request_.is_u2f_only &&
+      request.user_verification != UserVerificationRequirement::kDiscouraged &&
+      authenticator->CanGetUvToken()) {
+    authenticator->GetUvToken(
+        request_.rp.id,
+        base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,
+                       weak_factory_.GetWeakPtr(), authenticator));
+    return;
   }
 
   ReportMakeCredentialRequestTransport(authenticator);
@@ -917,8 +904,6 @@ void MakeCredentialRequestHandler::DispatchRequestWithToken(
   CtapMakeCredentialRequest request(request_);
   request.pin_auth = token.PinAuth(request.client_data_hash);
   request.pin_protocol = pin::kProtocolVersion;
-  // Do not do internal UV again.
-  request.user_verification = UserVerificationRequirement::kDiscouraged;
   SpecializeRequestForAuthenticator(&request, authenticator_);
 
   ReportMakeCredentialRequestTransport(authenticator_);

@@ -452,7 +452,8 @@ class ServiceForManifestTests : public MockService {
   }
 
   void set_extensions(ExtensionList extensions,
-                      ExtensionList disabled_extensions) {
+                      ExtensionList disabled_extensions,
+                      ExtensionList blacklisted_extensions = ExtensionList()) {
     registry_->ClearAll();
     for (ExtensionList::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
@@ -461,6 +462,10 @@ class ServiceForManifestTests : public MockService {
     for (ExtensionList::const_iterator it = disabled_extensions.begin();
          it != disabled_extensions.end(); ++it) {
       registry_->AddDisabled(*it);
+    }
+    for (ExtensionList::const_iterator it = blacklisted_extensions.begin();
+         it != blacklisted_extensions.end(); ++it) {
+      registry_->AddBlacklisted(*it);
     }
   }
 
@@ -2567,6 +2572,49 @@ TEST_F(ExtensionUpdaterTest, TestUpdatingDisabledExtensions) {
                   _));
 
   service.set_extensions(enabled_extensions, disabled_extensions);
+  updater.Start();
+  updater.CheckNow(ExtensionUpdater::CheckParams());
+}
+
+// crbug.com/1098540: Tests that removely disabled extensions that are part of
+// the blacklisted extensions are still receive updates.
+TEST_F(ExtensionUpdaterTest, TestUpdatingRemotelyDisabledExtensions) {
+  ExtensionDownloaderTestHelper helper;
+  ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
+  ExtensionUpdater updater(&service, service.extension_prefs(),
+                           service.pref_service(), service.profile(),
+                           kUpdateFrequencySecs, nullptr,
+                           service.GetDownloaderFactory());
+  MockUpdateService update_service;
+  OverrideUpdateService(&updater, &update_service);
+
+  ExtensionList enabled_extensions;
+  ExtensionList blacklisted_extensions;
+  service.CreateTestExtensions(1, 1, &enabled_extensions, nullptr,
+                               Manifest::INTERNAL);
+  service.CreateTestExtensions(2, 1, &blacklisted_extensions, nullptr,
+                               Manifest::INTERNAL);
+  service.CreateTestExtensions(3, 1, &blacklisted_extensions, nullptr,
+                               Manifest::INTERNAL);
+  ASSERT_EQ(1u, enabled_extensions.size());
+  ASSERT_EQ(2u, blacklisted_extensions.size());
+  const std::string& enabled_id = enabled_extensions[0]->id();
+  const std::string& remotely_blacklisted_id = blacklisted_extensions[0]->id();
+  service.extension_prefs()->AddDisableReason(
+      remotely_blacklisted_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
+  // We expect that both enabled and remotely blacklisted extensions are
+  // auto-updated.
+  EXPECT_CALL(update_service, CanUpdate(enabled_id)).WillOnce(Return(true));
+  EXPECT_CALL(update_service, CanUpdate(remotely_blacklisted_id))
+      .WillOnce(Return(true));
+  EXPECT_CALL(update_service,
+              StartUpdateCheck(
+                  ::testing::Field(&ExtensionUpdateCheckParams::update_info,
+                                   ::testing::SizeIs(2)),
+                  _));
+
+  service.set_extensions(enabled_extensions, ExtensionList(),
+                         blacklisted_extensions);
   updater.Start();
   updater.CheckNow(ExtensionUpdater::CheckParams());
 }

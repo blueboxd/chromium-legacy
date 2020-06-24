@@ -795,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
 // This tests against a renderer crash that was present during development.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       DISABLED_AddExtensionMatchingExistingTabWithDeadFrames) {
+                       AddExtensionMatchingExistingTabWithDeadFrames) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   content::WebContents* const tab =
@@ -807,6 +807,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   // Replace the iframe to destroy its WebFrame.
   ASSERT_TRUE(content::ExecuteScript(
       tab, "document.body.innerHTML = '<span class=\"foo\">';"));
+
+  // Observer to track page action visibility. This helps avoid flakes by
+  // waiting to check visibility until there is an update to the page action.
+  ChromeExtensionTestNotificationObserver test_observer(browser());
 
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -823,13 +827,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                          "                   css: [\"span[class=foo]\"]})],\n"
                          "  actions: [new ShowAction()]\n"
                          "}], 'rule0');\n"));
-  // Give the renderer a chance to apply the rules change and notify the
-  // browser.  This takes one time through the Blink message loop to receive
-  // the rule change and apply the new stylesheet, and a second to dedupe the
-  // update.
-  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
-  ASSERT_TRUE(content::ExecuteScript(tab, std::string()));
 
+  test_observer.WaitForPageActionVisibilityChangeTo(1);
   EXPECT_FALSE(tab->IsCrashed());
   EXPECT_TRUE(action->GetIsVisible(tab_id))
       << "Loading an extension when an open page matches its rules "
@@ -841,6 +840,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                 "onPageChanged.removeRules(undefined, function() {\n"
                 "  window.domAutomationController.send('removed');\n"
                 "});\n"));
+  test_observer.WaitForPageActionVisibilityChangeTo(0);
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
 

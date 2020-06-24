@@ -85,7 +85,9 @@ class MockFidoDevice : public ::testing::StrictMock<FidoDevice> {
   void ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand command,
       base::Optional<base::span<const uint8_t>> response,
-      base::TimeDelta delay = base::TimeDelta());
+      base::TimeDelta delay = base::TimeDelta(),
+      testing::Matcher<base::span<const uint8_t>> request_matcher =
+          testing::A<base::span<const uint8_t>>());
   void ExpectCtap2CommandAndRespondWithError(
       CtapRequestCommand command,
       CtapDeviceResponseCode response_code,

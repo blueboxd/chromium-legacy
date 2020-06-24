@@ -1503,8 +1503,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   size_t match_start = (prefix == nullptr)
                            ? navigation.formatted_url().find(input)
                            : prefix->prefix.length();
-  bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
-      (!prefix || (match_start != 0));
+  bool trim_http =
+      !AutocompleteInput::HasHTTPScheme(input) && (!prefix || match_start != 0);
   const url_formatter::FormatUrlTypes format_types =
       url_formatter::kFormatUrlOmitDefaults &
       ~(trim_http ? 0 : url_formatter::kFormatUrlOmitHTTP);
@@ -1544,6 +1544,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.contents_class = navigation.match_contents_class();
   match.description = navigation.description();
   match.description_class = navigation.description_class();
+  if (OmniboxFieldTrial::RichAutocompletionShowTitles())
+    match.fill_into_edit_additional_text = match.description;
 
   match.RecordAdditionalInfo(
       kRelevanceFromServerKey,

@@ -58,19 +58,26 @@ base::Value RealtimeReportingJobConfiguration::BuildReport(
 RealtimeReportingJobConfiguration::RealtimeReportingJobConfiguration(
     CloudPolicyClient* client,
     std::unique_ptr<DMAuth> auth_data,
+    const std::string& server_url,
+    bool add_connector_url_params,
     Callback callback)
     : JobConfigurationBase(TYPE_UPLOAD_REAL_TIME_REPORT,
                            std::move(auth_data),
                            base::nullopt,
                            client->GetURLLoaderFactory()),
-      server_url_(client->service()->configuration()->GetReportingServerUrl()),
+      server_url_(server_url),
       payload_(base::Value::Type::DICTIONARY),
       callback_(std::move(callback)) {
   DCHECK(GetAuth().has_dm_token());
 
   AddParameter("key", google_apis::GetAPIKey());
-  AddParameter(enterprise::kUrlParamConnector, "OnSecurityEvent");
-  AddParameter(enterprise::kUrlParamDeviceToken, client->dm_token());
+
+  // If specified add extra enterprise connector URL params.
+  if (add_connector_url_params) {
+    AddParameter(enterprise::kUrlParamConnector, "OnSecurityEvent");
+    AddParameter(enterprise::kUrlParamDeviceToken, client->dm_token());
+  }
+
   InitializePayload(client);
 }
 

@@ -1176,10 +1176,8 @@ void AppListView::MaybeIncreasePrivacyInfoRowShownCounts(
   switch (transition) {
     case kPeekingToHalf:
     case kFullscreenAllAppsToFullscreenSearch:
-      if (app_list_main_view()->contents_view()->IsShowingSearchResults()) {
-        delegate_->MaybeIncreaseAssistantPrivacyInfoShownCount();
-        delegate_->MaybeIncreaseSuggestedContentInfoShownCount();
-      }
+      if (app_list_main_view()->contents_view()->IsShowingSearchResults())
+        delegate_->MaybeIncreasePrivacyInfoShownCounts();
       break;
     default:
       break;

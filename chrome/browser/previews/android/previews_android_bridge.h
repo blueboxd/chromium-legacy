@@ -46,6 +46,11 @@ class PreviewsAndroidBridge {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents);
 
+  jboolean IsHttpsImageCompressionApplied(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents);
+
  private:
   base::WeakPtrFactory<PreviewsAndroidBridge> weak_factory_{this};
 

@@ -46,6 +46,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanSurface {
 
   gfx::SwapResult SwapBuffers();
   gfx::SwapResult PostSubBuffer(const gfx::Rect& rect);
+  void PostSubBufferAsync(
+      const gfx::Rect& rect,
+      VulkanSwapChain::PostSubBufferCompletionCallback callback);
 
   void Finish();
 

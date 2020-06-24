@@ -23,12 +23,23 @@ UiaRegistrarWin::UiaRegistrarWin() {
       kUiaPropertyUniqueIdGuid, L"UniqueId", UIAutomationType_String};
   registrar->RegisterProperty(&unique_id_property_info,
                               &uia_unique_id_property_id_);
+
+  // Register the custom UIA event that represents the test end event for the
+  // UIA test suite.
+  UIAutomationEventInfo test_complete_event_info = {
+      kUiaEventTestCompleteSentinelGuid, L"kUiaTestCompleteSentinel"};
+  registrar->RegisterEvent(&test_complete_event_info,
+                           &uia_test_complete_event_id_);
 }
 
 UiaRegistrarWin::~UiaRegistrarWin() = default;
 
 PROPERTYID UiaRegistrarWin::GetUiaUniqueIdPropertyId() const {
   return uia_unique_id_property_id_;
+}
+
+EVENTID UiaRegistrarWin::GetUiaTestCompleteEventId() const {
+  return uia_test_complete_event_id_;
 }
 
 const UiaRegistrarWin& UiaRegistrarWin::GetInstance() {

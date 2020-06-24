@@ -29,6 +29,8 @@ class MEDIA_EXPORT SpeechRecognitionClient {
                         media::ChannelLayout channel_layout) = 0;
 
   virtual bool IsSpeechRecognitionAvailable() = 0;
+
+  virtual void SetOnReadyCallback(OnReadyCallback callback) = 0;
 };
 
 }  // namespace media

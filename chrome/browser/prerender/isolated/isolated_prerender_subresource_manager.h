@@ -83,6 +83,10 @@ class IsolatedPrerenderSubresourceManager
   // prefetched subresources should be loaded from cache.
   void NotifyPageNavigatedToAfterSRP();
 
+  // Informs |this| that the origin probe to this' |url_| failed and no
+  // prefetched subresources should be loaded from cache.
+  void NotifyProbeFailed();
+
   // prerender::PrerenderHandle::Observer:
   void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
   void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}

@@ -22,6 +22,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/power/power_status.h"
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -167,12 +168,23 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // This will be no-op if the view is already visible.
       container_view_->SetVisible(true);
 
-      AcquireWakeLock();
+      if (PowerStatus::Get()->IsBatteryCharging()) {
+        // Requires wake lock to prevent display from sleeping when the battery
+        // is charging.
+        AcquireWakeLock();
+      }
+      // Observes the |PowerStatus| on the battery charging status change for
+      // the current ambient session.
+      if (!power_status_observer_.IsObserving(PowerStatus::Get())) {
+        power_status_observer_.Add(PowerStatus::Get());
+      }
+
       StartRefreshingImages();
       break;
     case AmbientUiVisibility::kHidden:
       container_view_->GetWidget()->Hide();
 
+      // Has no effect if |wake_lock_| has already been released.
       ReleaseWakeLock();
       StopRefreshingImages();
 
@@ -238,6 +250,19 @@ void AmbientController::OnLockStateChanged(bool locked) {
     // Ambient screen will be destroyed along with the lock screen when user
     // logs in.
     ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);
+  }
+}
+
+void AmbientController::OnPowerStatusChanged() {
+  if (ambient_ui_model_.ui_visibility() != AmbientUiVisibility::kShown) {
+    // No action needed if ambient screen is not shown.
+    return;
+  }
+
+  if (PowerStatus::Get()->IsBatteryCharging()) {
+    AcquireWakeLock();
+  } else {
+    ReleaseWakeLock();
   }
 }
 
@@ -323,7 +348,8 @@ void AmbientController::AcquireWakeLock() {
 }
 
 void AmbientController::ReleaseWakeLock() {
-  DCHECK(wake_lock_);
+  if (!wake_lock_)
+    return;
 
   wake_lock_->CancelWakeLock();
   VLOG(1) << "Released wake lock";
@@ -358,6 +384,8 @@ void AmbientController::CleanUpOnClosed() {
   // Invalidates the view pointer.
   container_view_ = nullptr;
   inactivity_monitor_.reset();
+  power_status_observer_.Remove(PowerStatus::Get());
+
   // Should do nothing if the wake lock has already been released.
   ReleaseWakeLock();
 }

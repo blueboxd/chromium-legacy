@@ -56,6 +56,25 @@ void RecordCookieWaitTime(base::TimeDelta wait_time) {
       base::TimeDelta(), base::TimeDelta::FromSeconds(5), 50);
 }
 
+void NotifySubresourceManagerOfBadProbe(int frame_tree_node_id,
+                                        const GURL& url) {
+  Profile* profile = ProfileFromFrameTreeNodeID(frame_tree_node_id);
+  if (!profile)
+    return;
+
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile);
+  if (!service)
+    return;
+
+  IsolatedPrerenderSubresourceManager* subresource_manager =
+      service->GetSubresourceManagerForURL(url);
+  if (!subresource_manager)
+    return;
+
+  subresource_manager->NotifyProbeFailed();
+}
+
 }  // namespace
 
 IsolatedPrerenderURLLoaderInterceptor::IsolatedPrerenderURLLoaderInterceptor(
@@ -202,6 +221,10 @@ void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
     std::move(on_success_callback).Run();
     return;
   }
+
+  // Notify the SubresourceManager for this url so that subresources should not
+  // be loaded from the prefetch cache.
+  NotifySubresourceManagerOfBadProbe(frame_tree_node_id_, url_);
 
   NotifyPrefetchStatusUpdate(
       IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchNotUsedProbeFailed);

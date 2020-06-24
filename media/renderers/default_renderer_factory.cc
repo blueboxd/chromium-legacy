@@ -41,6 +41,12 @@ DefaultRendererFactory::DefaultRendererFactory(
       get_gpu_factories_cb_(get_gpu_factories_cb),
       speech_recognition_client_(std::move(speech_recognition_client)) {
   DCHECK(decoder_factory_);
+  if (speech_recognition_client_) {
+    // Unretained is safe because |this| owns the speech recognition client.
+    speech_recognition_client_->SetOnReadyCallback(media::BindToCurrentLoop(
+        base::BindOnce(&DefaultRendererFactory::EnableSpeechRecognition,
+                       base::Unretained(this))));
+  }
 }
 #endif
 
@@ -129,9 +135,16 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 void DefaultRendererFactory::TranscribeAudio(
     scoped_refptr<media::AudioBuffer> buffer) {
 #if !defined(OS_ANDROID)
-  if (speech_recognition_client_ &&
-      speech_recognition_client_->IsSpeechRecognitionAvailable()) {
+  if (is_speech_recognition_available_ && speech_recognition_client_)
     speech_recognition_client_->AddAudio(std::move(buffer));
+#endif
+}
+
+void DefaultRendererFactory::EnableSpeechRecognition() {
+#if !defined(OS_ANDROID)
+  if (speech_recognition_client_) {
+    is_speech_recognition_available_ =
+        speech_recognition_client_->IsSpeechRecognitionAvailable();
   }
 #endif
 }

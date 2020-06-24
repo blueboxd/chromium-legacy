@@ -19,6 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -68,6 +70,10 @@ void NetworkLogsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "storeLogs", base::BindRepeating(&NetworkLogsMessageHandler::OnStoreLogs,
                                        base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setShillDebugging",
+      base::BindRepeating(&NetworkLogsMessageHandler::OnSetShillDebugging,
+                          base::Unretained(this)));
 }
 
 void NetworkLogsMessageHandler::Respond(const std::string& callback_id,
@@ -173,6 +179,25 @@ void NetworkLogsMessageHandler::OnWriteSystemLogsCompleted(
   Respond(callback_id,
           l10n_util::GetStringUTF8(IDS_NETWORK_UI_NETWORK_LOGS_SUCCESS),
           /*is_error=*/false);
+}
+
+void NetworkLogsMessageHandler::OnSetShillDebugging(
+    const base::ListValue* list) {
+  CHECK_EQ(2u, list->GetSize());
+  std::string callback_id, subsystem;
+  CHECK(list->GetString(0, &callback_id));
+  CHECK(list->GetString(1, &subsystem));
+  AllowJavascript();
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->SetDebugMode(
+      subsystem,
+      base::BindOnce(&NetworkLogsMessageHandler::OnSetShillDebuggingCompleted,
+                     weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void NetworkLogsMessageHandler::OnSetShillDebuggingCompleted(
+    const std::string& callback_id,
+    bool succeeded) {
+  Respond(callback_id, "", !succeeded);
 }
 
 }  // namespace chromeos

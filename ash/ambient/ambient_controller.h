@@ -15,8 +15,10 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/session/session_observer.h"
+#include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/views/widget/widget.h"
@@ -33,7 +35,8 @@ class AmbientViewDelegateObserver;
 
 // Class to handle all ambient mode functionalities.
 class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
-                                     public SessionObserver {
+                                     public SessionObserver,
+                                     public PowerStatus::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -45,6 +48,9 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
 
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
+
+  // PowerStatus::Observer:
+  void OnPowerStatusChanged() override;
 
   void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
   void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
@@ -102,11 +108,11 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   void set_backend_controller_for_testing(
       std::unique_ptr<AmbientBackendController> photo_client);
 
-  // Creates (if not created) and acquires |wake_lock_|. Called when ambient
-  // screen starts to show.
+  // Creates (if not created) and acquires |wake_lock_|. Unbalanced call
+  // without subsequently |ReleaseWakeLock| will have no effect.
   void AcquireWakeLock();
 
-  // Release |wake_lock_|. Called when ambient screen is hidden/closed.
+  // Release |wake_lock_|. Unbalanced release call will have no effect.
   void ReleaseWakeLock();
 
   AmbientPhotoController* get_ambient_photo_controller_for_testing() {
@@ -132,6 +138,9 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
 
   // Lazily initialized on the first call of |AcquireWakeLock|.
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
+
+  ScopedObserver<PowerStatus, PowerStatus::Observer> power_status_observer_{
+      this};
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AmbientController);

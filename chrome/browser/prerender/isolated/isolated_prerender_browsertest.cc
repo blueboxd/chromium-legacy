@@ -617,7 +617,7 @@ class IsolatedPrerenderBrowserTest
     // will request the HTML file, i.e.: "/simple.html".
     if (request.headers.find("Host")->second.find("badprobe.a.test") !=
             std::string::npos &&
-        request.relative_url == "/") {
+        request.GetURL().path() == "/") {
       // This is an invalid response to the net stack and will cause a NetError.
       return std::make_unique<net::test_server::RawHttpResponse>("", "");
     }
@@ -2583,8 +2583,27 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,
   // This run loop will quit when a NSP finishes.
   nsp_run_loop.Run();
 
+  std::vector<net::test_server::HttpRequest> origin_requests_after_prerender =
+      origin_server_requests();
+  std::vector<net::test_server::HttpRequest> proxy_requests_after_prerender =
+      proxy_server_requests();
+
   // Navigate to the predicted site.
   ui_test_utils::NavigateToURL(browser(), eligible_link_bad_probe);
+
+  std::vector<net::test_server::HttpRequest> origin_requests_after_click =
+      origin_server_requests();
+  std::vector<net::test_server::HttpRequest> proxy_requests_after_click =
+      proxy_server_requests();
+
+  // All the resources should be loaded from the server since nothing was
+  // eligible to be reused from the prefetch on a bad probe.
+  EXPECT_EQ(origin_requests_after_prerender.size() + 7,
+            origin_requests_after_click.size());
+
+  // The proxy should not be used any further.
+  EXPECT_EQ(proxy_requests_after_prerender.size(),
+            proxy_requests_after_click.size());
 
   // Navigate again to trigger UKM recording.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));

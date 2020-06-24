@@ -43,6 +43,9 @@ class NetworkLogsMessageHandler : public content::WebUIMessageHandler {
                           base::Value&& options);
   void OnWritePolicies(const std::string& callback_id, bool result);
   void OnWriteSystemLogsCompleted(const std::string& callback_id);
+  void OnSetShillDebugging(const base::ListValue* list);
+  void OnSetShillDebuggingCompleted(const std::string& callback_id,
+                                    bool succeeded);
 
   base::FilePath out_dir_;
   base::WeakPtrFactory<NetworkLogsMessageHandler> weak_factory_{this};

@@ -34,11 +34,6 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -96,11 +91,6 @@ class NetInternalsMessageHandler
   void OnExpectCTTestReport(const base::ListValue* list);
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
-#if defined(OS_CHROMEOS)
-  void OnSetNetworkDebugMode(const base::ListValue* list);
-  void OnSetNetworkDebugModeCompleted(const std::string& subsystem,
-                                      bool succeeded);
-#endif
 
   content::WebUI* web_ui_;
 
@@ -156,12 +146,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "flushSocketPools",
       base::BindRepeating(&NetInternalsMessageHandler::OnFlushSocketPools,
                           base::Unretained(this)));
-#if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "setNetworkDebugMode",
-      base::BindRepeating(&NetInternalsMessageHandler::OnSetNetworkDebugMode,
-                          base::Unretained(this)));
-#endif
 }
 
 void NetInternalsMessageHandler::SendJavascriptCommand(
@@ -307,30 +291,6 @@ void NetInternalsMessageHandler::OnCloseIdleSockets(
     const base::ListValue* list) {
   GetNetworkContext()->CloseIdleConnections(base::NullCallback());
 }
-
-#if defined(OS_CHROMEOS)
-
-void NetInternalsMessageHandler::OnSetNetworkDebugMode(
-    const base::ListValue* list) {
-  std::string subsystem;
-  if (list->GetSize() != 1 || !list->GetString(0, &subsystem))
-    NOTREACHED();
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->SetDebugMode(
-      subsystem,
-      base::BindOnce(
-          &NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted,
-          AsWeakPtr(), subsystem));
-}
-
-void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
-    const std::string& subsystem,
-    bool succeeded) {
-  std::string status = succeeded ? "Debug mode is changed to "
-                                 : "Failed to change debug mode to ";
-  status += subsystem;
-  SendJavascriptCommand("receivedSetNetworkDebugMode", base::Value(status));
-}
-#endif  // defined(OS_CHROMEOS)
 
 network::mojom::NetworkContext*
 NetInternalsMessageHandler::GetNetworkContext() {

@@ -129,6 +129,7 @@ template("chrome_extra_paks") {
       # New paks should be added here by default.
       sources += [
         "$root_gen_dir/chrome/bookmarks_resources.pak",
+        "$root_gen_dir/chrome/browser/media/kaleidoscope/kaleidoscope_resources.pak",
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/dev_ui_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
@@ -143,6 +144,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/headless/headless_lib_resources.pak",
       ]
       deps += [
+        "//chrome/browser/media/kaleidoscope:kaleidoscope_resources",
         "//chrome/browser/resources:bookmarks_resources",
         "//chrome/browser/resources:component_extension_resources",
         "//chrome/browser/resources:dev_ui_paks",
@@ -241,10 +243,6 @@ template("chrome_extra_paks") {
     if (enable_webui_tab_strip) {
       sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
       deps += [ "//chrome/browser/resources:tab_strip_resources" ]
-    }
-    if (enable_kaleidoscope) {
-      sources += [ "$root_gen_dir/chrome/browser/media/kaleidoscope/internal/kaleidoscope_resources.pak" ]
-      deps += [ "//chrome/browser/media/kaleidoscope/internal:kaleidoscope_resources_grit" ]
     }
   }
 }

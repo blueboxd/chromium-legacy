@@ -29,7 +29,6 @@ crbug.com/1003224 external/wpt/clipboard-apis/async-write-image-read-image.html 
 # See https://chromium-review.googlesource.com/c/chromium/src/+/2252943
 crbug.com/867532 external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Crash ]
 crbug.com/867532 external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Crash ]
-crbug.com/867532 virtual/omt-worker-fetch/http/tests/workers/worker-usecounter.html [ Crash ]
 crbug.com/867532 http/tests/workers/worker-usecounter.html [ Crash ]
 
 # These tests crash with the leak detector enabled. Previously, crashes inside

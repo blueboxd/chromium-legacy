@@ -57,7 +57,18 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Shill debugging level.
+     * @private
+     */
+    shillDebugging_: {
+      type: String,
+      value: 'unknown',
+    }
   },
+
+  observers: ['onShillDebuggingChanged_(shillDebugging_)'],
 
   /** @override */
   attached() {},
@@ -65,6 +76,20 @@ Polymer({
   /* @private */
   validOptions_() {
     return this.systemLogs_ || this.policies_ || this.debugLogs_;
+  },
+
+  /* @private */
+  onShillDebuggingChanged_() {
+    const shillDebugging = this.shillDebugging_;
+    if (!shillDebugging || shillDebugging == 'unknown')
+      return;
+    cr.sendWithPromise('setShillDebugging', shillDebugging).then((response) => {
+      /*const result =*/ response.shift();
+      const isError = response.shift();
+      if (isError) {
+        console.error('setShillDebugging: ' + shillDebugging + ' failed.');
+      }
+    });
   },
 
   /* @private */

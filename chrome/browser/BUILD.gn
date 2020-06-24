@@ -3192,6 +3192,16 @@ static_library("browser") {
       "media/feeds/media_feeds_service.h",
       "media/feeds/media_feeds_service_factory.cc",
       "media/feeds/media_feeds_service_factory.h",
+      "media/kaleidoscope/constants.cc",
+      "media/kaleidoscope/constants.h",
+      "media/kaleidoscope/kaleidoscope_data_provider_impl.cc",
+      "media/kaleidoscope/kaleidoscope_data_provider_impl.h",
+      "media/kaleidoscope/kaleidoscope_tab_helper.cc",
+      "media/kaleidoscope/kaleidoscope_tab_helper.h",
+      "media/kaleidoscope/kaleidoscope_ui.cc",
+      "media/kaleidoscope/kaleidoscope_ui.h",
+      "media/kaleidoscope/switches.cc",
+      "media/kaleidoscope/switches.h",
       "media/unified_autoplay_config.cc",
       "media/unified_autoplay_config.h",
       "media/webrtc/desktop_capture_devices_util.cc",
@@ -3694,6 +3704,7 @@ static_library("browser") {
       "//base/util/memory_pressure",
       "//base/util/timer",
       "//chrome/app/vector_icons",
+      "//chrome/browser/media/kaleidoscope/mojom",
       "//chrome/browser/nearby_sharing/logging",
       "//chrome/browser/nearby_sharing/proto",
       "//chrome/browser/policy:path_parser",
@@ -4769,13 +4780,6 @@ static_library("browser") {
     sources += [
       "captive_portal/captive_portal_service_factory.cc",
       "captive_portal/captive_portal_service_factory.h",
-    ]
-  }
-
-  if (enable_kaleidoscope) {
-    deps += [
-      "//chrome/browser/media/kaleidoscope/internal",
-      "//chrome/browser/media/kaleidoscope/internal/mojom",
     ]
   }
 

@@ -86,6 +86,18 @@ bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
          is_recognizer_bound_ && speech_recognition_recognizer_.is_connected();
 }
 
+// The OnReadyCallback is set by the owner of |this| and is executed when speech
+// recognition becomes available. Setting the callback will override any
+// existing callback.
+void ChromeSpeechRecognitionClient::SetOnReadyCallback(
+    SpeechRecognitionClient::OnReadyCallback callback) {
+  on_ready_callback_ = std::move(callback);
+
+  // Immediately run the callback if speech recognition is already available.
+  if (IsSpeechRecognitionAvailable() && on_ready_callback_)
+    std::move(on_ready_callback_).Run();
+}
+
 void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
     media::mojom::SpeechRecognitionResultPtr result) {
   caption_host_->OnTranscription(

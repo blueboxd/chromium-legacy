@@ -150,6 +150,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_tab_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -164,10 +165,6 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
-
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
@@ -424,10 +421,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     web_app::WebAppMetrics::Get(profile);
 #endif
 
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(media::kKaleidoscope))
     KaleidoscopeTabHelper::CreateForWebContents(web_contents);
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);

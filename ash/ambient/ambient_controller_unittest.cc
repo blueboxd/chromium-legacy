@@ -11,9 +11,11 @@
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "ash/system/power/power_status.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 
 namespace ash {
 
@@ -121,24 +123,94 @@ TEST_F(AmbientControllerTest, ShouldRefreshAccessTokenAfterFailure) {
   EXPECT_TRUE(IsAccessTokenRequestPending());
 }
 
-TEST_F(AmbientControllerTest, CheckAcquireAndReleaseWakeLock) {
-  // Simulates screen lock to show ambient mode, will result in acquiring a wake
-  // lock.
-  LockScreen();
-  // Run loop to ensure the request has reached the wake lock provider.
+TEST_F(AmbientControllerTest,
+       CheckAcquireAndReleaseWakeLockWhenBatteryIsCharging) {
+  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
+  // status.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(ambient_controller()->IsShown());
+  // Simulate a device being connected to a charger initially.
+  power_manager::PowerSupplyProperties proto;
+  proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
+  PowerStatus::Get()->SetProtoForTesting(proto);
+
+  // Lock screen to start ambient mode, and flush the loop to ensure
+  // the acquire wake lock request has reached the wake lock provider.
+  LockScreen();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 
-  // Simulates user logs in to close ambient mode, will result in releasing the
-  // wake lock.
-  UnlockScreen();
-  // Run loop to ensure the request has reached the wake lock provider.
+  HideAmbientScreen();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(ambient_controller()->IsShown());
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // TODO(meilinw): refactor |AmbientAshTestBase| to make this built-in.
+  // Simulate the ambient screen being shown again.
+  ambient_controller()->OnAmbientUiVisibilityChanged(
+      AmbientUiVisibility::kShown);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Unlock screen to exit ambient mode.
+  UnlockScreen();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerTest,
+       CheckAcquireAndReleaseWakeLockWhenBatteryChargingStateChanged) {
+  // Flush the loop first to ensure the |PowerStatus| has picked up the initial
+  // status.
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate a device being disconnected with a charger initially.
+  power_manager::PowerSupplyProperties proto;
+  proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+  PowerStatus::Get()->SetProtoForTesting(proto);
+  // Lock screen to start ambient mode.
+  LockScreen();
+
+  // Should not acquire wake lock when device is not charging.
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Connect the device with a charger.
+  proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
+  PowerStatus::Get()->SetProtoForTesting(proto);
+  // Notify the controller about the power status change, and flush the loop to
+  // ensure the wake lock request has reached the wake lock provider.
+  ambient_controller()->OnPowerStatusChanged();
+  base::RunLoop().RunUntilIdle();
+
+  // Should acquire the wake lock when battery is charging.
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Disconnects the charger again.
+  proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+  PowerStatus::Get()->SetProtoForTesting(proto);
+  ambient_controller()->OnPowerStatusChanged();
+  base::RunLoop().RunUntilIdle();
+
+  // Should release the wake lock when battery is not charging.
+  EXPECT_TRUE(ambient_controller()->IsShown());
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // An unbalanced release should do nothing.
+  UnlockScreen();
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }

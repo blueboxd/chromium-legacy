@@ -20,6 +20,7 @@
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -110,14 +111,8 @@ void AccessibilityEventRecorderUia::Thread::ThreadMain() {
   CHECK(uia_.Get());
 
   // Register the custom event to mark the end of the test.
-  Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
-  CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL, CLSCTX_INPROC_SERVER,
-                   IID_IUIAutomationRegistrar, &registrar);
-  CHECK(registrar.Get());
-  UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
-                                        kUiaTestCompleteSentinel};
-  CHECK(
-      SUCCEEDED(registrar->RegisterEvent(&custom_event, &shutdown_sentinel_)));
+  shutdown_sentinel_ =
+      ui::UiaRegistrarWin::GetInstance().GetUiaTestCompleteEventId();
 
   // Find the IUIAutomationElement for the root content window
   uia_->ElementFromHandle(hwnd_, &root_);

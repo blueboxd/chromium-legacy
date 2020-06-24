@@ -102,6 +102,8 @@
 #include "chrome/browser/accessibility/caption_host_impl.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_ui.h"
+#include "chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
@@ -166,11 +168,6 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
 #endif
-
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_ui.h"
-#include "chrome/browser/media/kaleidoscope/internal/mojom/kaleidoscope.mojom.h"
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 namespace chrome {
 namespace internal {
@@ -597,10 +594,10 @@ void PopulateChromeWebUIFrameBinders(
                                          ResetPasswordUI>(map);
 #endif
 
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#if !defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<media::mojom::KaleidoscopeDataProvider,
                                          KaleidoscopeUI>(map);
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace internal

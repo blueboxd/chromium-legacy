@@ -43,6 +43,8 @@ class ChromeSpeechRecognitionClient
                 int sample_rate,
                 media::ChannelLayout channel_layout) override;
   bool IsSpeechRecognitionAvailable() override;
+  void SetOnReadyCallback(
+      SpeechRecognitionClient::OnReadyCallback callback) override;
 
   // Callback executed when the recognizer is bound. Sets the flag indicating
   // whether the speech recognition service supports multichannel audio.

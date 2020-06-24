@@ -3510,6 +3510,18 @@
   <message name="IDS_NETWORK_UI_NETWORK_LOGS_SUCCESS" desc="Message displayed when system logs are successfully written.">
     Logs successfully written to Downloads directory.
   </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_TITLE" desc="Title for the section for setting connection manager debugging.">
+    Network Debugging
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_DESCRIPTION" desc="Description for the section for setting network debugging.">
+    Sets the debugging level of the network connection manager and other services using ff_debug.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_NONE" desc="Text displayed when the Shill debugging mode is set to 'none'.">
+    None
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_UNKNOWN" desc="Text displayed when the Shill debugging mode is unknown.">
+    Unknown
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     To view network UI logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>

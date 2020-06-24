@@ -72,6 +72,8 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       const gfx::ColorSpace& target_color_space,
       GpuVideoAcceleratorFactories* gpu_factories);
 
+  void EnableSpeechRecognition();
+
   MediaLog* media_log_;
 
   // Factory to create extra audio and video decoders.
@@ -83,6 +85,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<SpeechRecognitionClient> speech_recognition_client_;
+  bool is_speech_recognition_available_ = false;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DefaultRendererFactory);

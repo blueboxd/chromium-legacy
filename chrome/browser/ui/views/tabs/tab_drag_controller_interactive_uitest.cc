@@ -2316,6 +2316,182 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 }
 
+// Drags a tab group by the header and while detached presses escape to revert
+// the drag.
+IN_PROC_BROWSER_TEST_P(
+    DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
+    RevertCollapsedHeaderDragWhileDetached) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  AddTabsAndResetBrowser(browser(), 1);
+  tab_groups::TabGroupId group = model->AddToNewGroup({0});
+  EXPECT_FALSE(model->IsGroupCollapsed(group));
+  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  StopAnimating(tab_strip);
+  EXPECT_TRUE(model->IsGroupCollapsed(group));
+
+  DragGroupAndNotify(tab_strip,
+                     base::BindOnce(&PressEscapeWhileDetachedHeaderStep2, this),
+                     group);
+
+  EXPECT_FALSE(tab_strip->group_header(group)->dragging());
+  ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ(1u, browser_list->size());
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  std::vector<tab_groups::TabGroupId> groups =
+      model->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_THAT(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
+              testing::ElementsAre(0));
+  EXPECT_TRUE(tab_strip->controller()->IsGroupCollapsed(group));
+}
+
+// Creates a browser with four tabs. The first two belong in Tab Group 1, and
+// the last two belong in Tab Group 2. Dragging the collapsed group header of
+// Tab Group 1 right will result in Tab Group 1 moving but avoiding Tab Group 2.
+IN_PROC_BROWSER_TEST_P(
+    DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
+    DragCollapsedGroupHeaderRightAvoidsOtherGroups) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
+
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group1 = model->AddToNewGroup({0, 1});
+  EXPECT_FALSE(model->IsGroupCollapsed(group1));
+  tab_strip->controller()->ToggleTabGroupCollapsedState(group1);
+  StopAnimating(tab_strip);
+  EXPECT_TRUE(model->IsGroupCollapsed(group1));
+  tab_groups::TabGroupId group2 = model->AddToNewGroup({2, 3});
+  StopAnimating(tab_strip);
+
+  ASSERT_EQ(4, model->count());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group1)->ListTabs().size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group2)->ListTabs().size());
+
+  // Drag group1 right, but not far enough to get to the other side of group2.
+  ASSERT_TRUE(PressInput(
+      GetCenterInScreenCoordinates(tab_strip->group_header(group1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+
+  // Expect group1 to "snap back" to its current position, avoiding group2.
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(2, 3));
+
+  // Drag group1 right, far enough to get to the other side of group2.
+  ASSERT_TRUE(PressInput(
+      GetCenterInScreenCoordinates(tab_strip->group_header(group1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+
+  // Expect group1 to "snap to" the other side of group2 and not land in the
+  // middle.
+  EXPECT_EQ("2 3 0 1", IDString(model));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0, 1));
+}
+
+// Creates a browser with four tabs. The first two belong in Tab Group 1, and
+// the last two belong in Tab Group 2. Dragging the collapsed group header of
+// Tab Group 2 left will result in Tab Group 2 moving but avoiding Tab Group 1.
+IN_PROC_BROWSER_TEST_P(
+    DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
+    DragCollapsedGroupHeaderLeftAvoidsOtherGroups) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
+
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group1 = model->AddToNewGroup({0, 1});
+  tab_groups::TabGroupId group2 = model->AddToNewGroup({2, 3});
+
+  EXPECT_FALSE(model->IsGroupCollapsed(group2));
+  tab_strip->controller()->ToggleTabGroupCollapsedState(group2);
+  StopAnimating(tab_strip);
+  EXPECT_TRUE(model->IsGroupCollapsed(group2));
+
+  ASSERT_EQ(4, model->count());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group1)->ListTabs().size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group2)->ListTabs().size());
+
+  // Drag group2 left, but not far enough to get to the other side of group1.
+  ASSERT_TRUE(PressInput(
+      GetCenterInScreenCoordinates(tab_strip->group_header(group2))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+
+  // Expect group2 to "snap back" to its current position, avoiding group1.
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(2, 3));
+
+  // Drag group2 left, far enough to get to the other side of group1.
+  ASSERT_TRUE(PressInput(
+      GetCenterInScreenCoordinates(tab_strip->group_header(group2))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
+  ASSERT_TRUE(ReleaseInput());
+  StopAnimating(tab_strip);
+
+  // Expect group2 to "snap to" the other side of group1 and not land in the
+  // middle.
+  EXPECT_EQ("2 3 0 1", IDString(model));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0, 1));
+}
+
+// Creates two browsers, then drags a collapsed group from one to the other.
+IN_PROC_BROWSER_TEST_P(
+    DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
+    DragCollapsedGroupHeaderToSeparateWindow) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+  AddTabsAndResetBrowser(browser(), 2);
+  tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
+  EXPECT_FALSE(model->IsGroupCollapsed(group));
+  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  StopAnimating(tab_strip);
+  EXPECT_TRUE(model->IsGroupCollapsed(group));
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherBrowserAndResize();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  TabStripModel* model2 = browser2->tab_strip_model();
+  StopAnimating(tab_strip2);
+
+  // Drag the group by its header into the second browser.
+  DragGroupAndNotify(
+      tab_strip,
+      base::BindOnce(&DragToSeparateWindowStep2, this, tab_strip, tab_strip2),
+      group);
+  ASSERT_TRUE(ReleaseInput());
+
+  // Expect the group to be in browser2, but with a new tab_groups::TabGroupId
+  // and not collapsed.
+  EXPECT_EQ("100 0 1", IDString(model2));
+  std::vector<tab_groups::TabGroupId> browser2_groups =
+      model2->group_model()->ListTabGroups();
+  EXPECT_EQ(1u, browser2_groups.size());
+  EXPECT_THAT(
+      model2->group_model()->GetTabGroup(browser2_groups[0])->ListTabs(),
+      testing::ElementsAre(1, 2));
+  ASSERT_FALSE(tab_strip->controller()->IsGroupCollapsed(browser2_groups[0]));
+  EXPECT_NE(browser2_groups[0], group);
+}
+
 namespace {
 
 // Invoked from the nested run loop.

@@ -102,7 +102,6 @@ BeginFrameArgs
 BeginFrameSource::BeginFrameArgsGenerator::GenerateBeginFrameArgs(
     uint64_t source_id,
     base::TimeTicks frame_time,
-    base::TimeTicks deadline,
     base::TimeTicks next_frame_time,
     base::TimeDelta vsync_interval) {
   uint64_t sequence_number =
@@ -112,7 +111,7 @@ BeginFrameSource::BeginFrameArgsGenerator::GenerateBeginFrameArgs(
   next_expected_frame_time_ = next_frame_time;
   next_sequence_number_ = sequence_number + 1;
   return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
-                                sequence_number, frame_time, deadline,
+                                sequence_number, frame_time, next_frame_time,
                                 vsync_interval, BeginFrameArgs::NORMAL);
 }
 
@@ -205,7 +204,8 @@ SyntheticBeginFrameSource::~SyntheticBeginFrameSource() = default;
 BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     std::unique_ptr<DelayBasedTimeSource> time_source)
     : SyntheticBeginFrameSource(kNotRestartableId),
-      time_source_(std::move(time_source)) {
+      time_source_(std::move(time_source)),
+      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber) {
   time_source_->SetClient(this);
   // The time_source_ ticks immediately, so we SetActive(true) for a single
   // tick when we need it, and keep it as SetActive(false) otherwise.
@@ -250,15 +250,12 @@ void BackToBackBeginFrameSource::OnGpuNoLongerBusy() {
 void BackToBackBeginFrameSource::OnTimerTick() {
   if (RequestCallbackOnGpuAvailable())
     return;
-  const base::TimeTicks frame_time = time_source_->LastTickTime();
-  const base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
-  const base::TimeTicks next_frame_time = frame_time + interval;
-  const base::TimeTicks deadline =
-      next_frame_time -
-      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
-
-  BeginFrameArgs args = begin_frame_args_generator_.GenerateBeginFrameArgs(
-      source_id(), frame_time, deadline, next_frame_time, interval);
+  base::TimeTicks frame_time = time_source_->LastTickTime();
+  base::TimeDelta default_interval = BeginFrameArgs::DefaultInterval();
+  BeginFrameArgs args = BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, source_id(), next_sequence_number_, frame_time,
+      frame_time + default_interval, default_interval, BeginFrameArgs::NORMAL);
+  next_sequence_number_++;
 
   // This must happen after getting the LastTickTime() from the time source.
   time_source_->SetActive(false);
@@ -296,12 +293,8 @@ void DelayBasedBeginFrameSource::OnUpdateVSyncParameters(
 BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time) {
   base::TimeDelta interval = time_source_->Interval();
-  base::TimeTicks next_frame_time = time_source_->NextTickTime();
-  base::TimeTicks deadline = next_frame_time;
-  if (apply_display_deadline_adjustment_)
-    deadline -= BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
   return begin_frame_args_generator_.GenerateBeginFrameArgs(
-      source_id(), frame_time, deadline, next_frame_time, interval);
+      source_id(), frame_time, time_source_->NextTickTime(), interval);
 }
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {

@@ -427,6 +427,19 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "networkLogsStatus",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_STATUS));
+  localized_strings->SetString(
+      "networkLogsDebuggingTitle",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_TITLE));
+  localized_strings->SetString(
+      "networkLogsDebuggingDescription",
+      l10n_util::GetStringUTF16(
+          IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_DESCRIPTION));
+  localized_strings->SetString(
+      "networkLogsDebuggingNone",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_NONE));
+  localized_strings->SetString(
+      "networkLogsDebuggingUnknown",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_DEBUGGING_UNKNOWN));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)

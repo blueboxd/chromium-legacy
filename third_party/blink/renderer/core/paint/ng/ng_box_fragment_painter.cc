@@ -2212,25 +2212,26 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
 
     const PhysicalOffset child_offset = accumulated_offset + child.offset;
 
-    if (block_child.IsPaintedAtomically()) {
-      if (HitTestAllPhasesInFragment(block_child, hit_test_location,
-                                     child_offset, &result)) {
-        if (const LayoutObject* child_object = block_child.GetLayoutObject()) {
-          child_object->UpdateHitTestResult(
-              result, hit_test_location.Point() - accumulated_offset);
-        }
-        return true;
-      }
+    bool hit_child =
+        block_child.IsPaintedAtomically()
+            ? HitTestAllPhasesInFragment(block_child, hit_test_location,
+                                         child_offset, &result)
+            : NodeAtPointInFragment(block_child, hit_test_location,
+                                    child_offset, action, &result);
 
-      continue;
-    }
-
-    if (NodeAtPointInFragment(block_child, hit_test_location, child_offset,
-                              action, &result)) {
+    if (hit_child) {
       if (const LayoutObject* child_object = block_child.GetLayoutObject()) {
         child_object->UpdateHitTestResult(
             result, hit_test_location.Point() - accumulated_offset);
       }
+
+      // Our child may have been an anonymous-block, update the hit-test node
+      // to include our node if needed.
+      if (const LayoutObject* object = box_fragment_.GetLayoutObject()) {
+        object->UpdateHitTestResult(
+            result, hit_test_location.Point() - accumulated_offset);
+      }
+
       return true;
     }
   }

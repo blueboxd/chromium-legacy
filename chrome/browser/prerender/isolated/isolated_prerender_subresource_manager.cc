@@ -158,6 +158,10 @@ void IsolatedPrerenderSubresourceManager::OnSubresourceLoadSuccessful(
   successfully_loaded_subresources_.emplace(url);
 }
 
+void IsolatedPrerenderSubresourceManager::NotifyProbeFailed() {
+  successfully_loaded_subresources_.clear();
+}
+
 void IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory(
     IsolatedPrerenderProxyingURLLoaderFactory* factory) {
   auto it = proxied_loader_factories_.find(factory);

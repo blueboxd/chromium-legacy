@@ -875,7 +875,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'bdfbdd275b297fbf23260f3567db98dfb824d4a6',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '87c8b91639837bc8518cdbe4842484633cf60b6e',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '29d59a14024890d731633c34a621140d167fc64d',
+    Var('webrtc_git') + '/src.git' + '@' + '75fd127640bdf1729af6b4a25875e6d01f1570e0',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

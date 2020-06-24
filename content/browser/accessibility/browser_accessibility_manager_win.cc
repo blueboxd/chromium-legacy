@@ -23,6 +23,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
+#include "ui/accessibility/platform/uia_registrar_win.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -95,24 +96,11 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
       if (node->GetData().IsInvocable())
         FireUiaAccessibilityEvent(UIA_Invoke_InvokedEventId, node);
       break;
-    case ax::mojom::Event::kEndOfTest: {
-      if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-        // Event tests use kEndOfTest as a sentinel to mark the end of the test.
-        Microsoft::WRL::ComPtr<IUIAutomationRegistrar> registrar;
-        CoCreateInstance(CLSID_CUIAutomationRegistrar, NULL,
-                         CLSCTX_INPROC_SERVER, IID_IUIAutomationRegistrar,
-                         &registrar);
-        CHECK(registrar.Get());
-        UIAutomationEventInfo custom_event = {kUiaTestCompleteSentinelGuid,
-                                              kUiaTestCompleteSentinel};
-        EVENTID custom_event_id = 0;
-        CHECK(SUCCEEDED(
-            registrar->RegisterEvent(&custom_event, &custom_event_id)));
-
-        FireUiaAccessibilityEvent(custom_event_id, node);
-      }
+    case ax::mojom::Event::kEndOfTest:
+      // Event tests use kEndOfTest as a sentinel to mark the end of the test.
+      FireUiaAccessibilityEvent(
+          ui::UiaRegistrarWin::GetInstance().GetUiaTestCompleteEventId(), node);
       break;
-    }
     case ax::mojom::Event::kLocationChanged:
       FireWinAccessibilityEvent(IA2_EVENT_VISIBLE_DATA_CHANGED, node);
       break;

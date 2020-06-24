@@ -59,12 +59,8 @@ class TestTaskRunner : public base::TestMockTimeTaskRunner {
 // ------------------------------------------
 class BackToBackBeginFrameSourceTest : public ::testing::Test {
  protected:
-  static constexpr int64_t kInterval =
-      BeginFrameArgs::DefaultInterval().InMicroseconds();
-  static constexpr int64_t kDeadline =
-      kInterval - BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
-                      base::TimeDelta::FromMicroseconds(kInterval))
-                      .InMicroseconds();
+  static const int64_t kDeadline;
+  static const int64_t kInterval;
 
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<TestTaskRunner>();
@@ -84,6 +80,12 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   std::unique_ptr<MockBeginFrameObserver> obs_;
   FakeDelayBasedTimeSource* delay_based_time_source_;  // Owned by |source_|.
 };
+
+const int64_t BackToBackBeginFrameSourceTest::kDeadline =
+    BeginFrameArgs::DefaultInterval().InMicroseconds();
+
+const int64_t BackToBackBeginFrameSourceTest::kInterval =
+    BeginFrameArgs::DefaultInterval().InMicroseconds();
 
 TEST_F(BackToBackBeginFrameSourceTest, AddObserverSendsBeginFrame) {
   EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
@@ -351,8 +353,6 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversAtOnce) {
 // ------------------------------------------
 class DelayBasedBeginFrameSourceTest : public ::testing::Test {
  public:
-  static constexpr int64_t kInterval = 10000;
-
   void SetUp() override {
     task_runner_ = base::MakeRefCounted<TestTaskRunner>();
     std::unique_ptr<FakeDelayBasedTimeSource> time_source =
@@ -360,12 +360,10 @@ class DelayBasedBeginFrameSourceTest : public ::testing::Test {
             task_runner_->GetMockTickClock(), task_runner_.get());
 
     time_source->SetTimebaseAndInterval(
-        base::TimeTicks(), base::TimeDelta::FromMicroseconds(kInterval));
+        base::TimeTicks(), base::TimeDelta::FromMicroseconds(10000));
     source_ = std::make_unique<DelayBasedBeginFrameSource>(
         std::move(time_source), BeginFrameSource::kNotRestartableId);
-    // TODO(sunnyps): Apply deadline adjustment by default after fixing tests.
-    source_->set_apply_display_deadline_adjustment_for_testing(false);
-    obs_ = std::make_unique<MockBeginFrameObserver>();
+    obs_.reset(new MockBeginFrameObserver);
   }
 
   void TearDown() override { obs_.reset(); }
@@ -665,32 +663,6 @@ TEST_F(DelayBasedBeginFrameSourceTest, ConsecutiveArgsDelayedByMultipleVsyncs) {
                                  10000);
   task_runner_->AdvanceMockTickClock(base::TimeDelta::FromMicroseconds(80000));
   source_->AddObserver(&obs);
-}
-
-TEST_F(DelayBasedBeginFrameSourceTest, DisplayDeadlineAdjustment) {
-  source_->set_apply_display_deadline_adjustment_for_testing(true);
-
-  constexpr int64_t kDeadline =
-      kInterval - BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
-                      base::TimeDelta::FromMicroseconds(kInterval))
-                      .InMicroseconds();
-
-  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
-  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, source_->source_id(), 1, 0,
-                                 0 + kDeadline, kInterval);
-
-  source_->AddObserver(obs_.get());
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 2, 10000,
-                          10000 + kDeadline, kInterval);
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 3, 20000,
-                          20000 + kDeadline, kInterval);
-  EXPECT_BEGIN_FRAME_USED(*obs_, source_->source_id(), 4, 30000,
-                          30000 + kDeadline, kInterval);
-  task_runner_->FastForwardTo(TicksFromMicroseconds(30001));
-
-  source_->RemoveObserver(obs_.get());
-  // No new frames....
-  task_runner_->FastForwardTo(TicksFromMicroseconds(60000));
 }
 
 // ExternalBeginFrameSource testing

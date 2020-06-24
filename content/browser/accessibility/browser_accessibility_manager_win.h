@@ -19,14 +19,6 @@
 namespace content {
 class BrowserAccessibilityWin;
 
-// {3761326A-34B2-465A-835D-7A3D8F4EFB92}
-static const GUID kUiaTestCompleteSentinelGuid = {
-    0x3761326a,
-    0x34b2,
-    0x465a,
-    {0x83, 0x5d, 0x7a, 0x3d, 0x8f, 0x4e, 0xfb, 0x92}};
-static const wchar_t kUiaTestCompleteSentinel[] = L"kUiaTestCompleteSentinel";
-
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {

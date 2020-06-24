@@ -104,12 +104,6 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-#include "chrome/browser/media/kaleidoscope/internal/constants.h"
-#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_ui.h"
-#include "media/base/media_switches.h"
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
-
 #if BUILDFLAG(ENABLE_NACL)
 #include "chrome/browser/ui/webui/nacl_ui.h"
 #endif
@@ -135,6 +129,8 @@
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
 #include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/kaleidoscope/constants.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_ui.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
@@ -154,6 +150,7 @@
 #include "chrome/browser/ui/webui/system_info_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/browser/ui/webui/web_footer_experiment_ui.h"
+#include "media/base/media_switches.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -748,12 +745,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WelcomeUI>;
 #endif
 
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(media::kKaleidoscope)) {
     if (url.host_piece() == kKaleidoscopeUIHost)
       return &NewWebUI<KaleidoscopeUI>;
   }
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+#endif  // !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_NACL)
   if (url.host_piece() == chrome::kChromeUINaClHost)
     return &NewWebUI<NaClUI>;

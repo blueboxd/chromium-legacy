@@ -1521,10 +1521,6 @@ static_library("ui") {
     }
   }
 
-  if (enable_kaleidoscope) {
-    deps += [ "//chrome/browser/media/kaleidoscope/internal" ]
-  }
-
   if (enable_paint_preview) {
     deps += [ "//components/paint_preview/browser" ]
   }

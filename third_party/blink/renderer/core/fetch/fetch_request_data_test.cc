@@ -40,7 +40,7 @@ class FetchRequestDataTestingPlatformSupport : public TestingPlatformSupport {
 TEST(FetchRequestDataTest, For_ServiceWorkerFetchEvent_Headers) {
   {
     FetchRequestData* request_data = FetchRequestData::Create(
-        nullptr /* script_state */, *PrepareFetchAPIRequest(),
+        nullptr /* script_state */, PrepareFetchAPIRequest(),
         FetchRequestData::ForServiceWorkerFetchEvent::kTrue);
     EXPECT_EQ(2U, request_data->HeaderList()->size());
     EXPECT_TRUE(request_data->HeaderList()->Has("x-hi-hi"));
@@ -54,7 +54,7 @@ TEST(FetchRequestDataTest, For_ServiceWorkerFetchEvent_Headers) {
         platform;
 
     FetchRequestData* request_data = FetchRequestData::Create(
-        nullptr /* script_state */, *PrepareFetchAPIRequest(),
+        nullptr /* script_state */, PrepareFetchAPIRequest(),
         FetchRequestData::ForServiceWorkerFetchEvent::kTrue);
     EXPECT_EQ(1U, request_data->HeaderList()->size());
     EXPECT_TRUE(request_data->HeaderList()->Has("x-hi-hi"));
@@ -67,7 +67,7 @@ TEST(FetchRequestDataTest, For_ServiceWorkerFetchEvent_Headers) {
 TEST(FetchRequestDataTest, Not_For_ServiceWorkerFetchEvent_Headers) {
   {
     FetchRequestData* request_data = FetchRequestData::Create(
-        nullptr /* script_state */, *PrepareFetchAPIRequest(),
+        nullptr /* script_state */, PrepareFetchAPIRequest(),
         FetchRequestData::ForServiceWorkerFetchEvent::kFalse);
     EXPECT_EQ(4U, request_data->HeaderList()->size());
     EXPECT_TRUE(request_data->HeaderList()->Has("x-hi-hi"));
@@ -81,7 +81,7 @@ TEST(FetchRequestDataTest, Not_For_ServiceWorkerFetchEvent_Headers) {
         platform;
 
     FetchRequestData* request_data = FetchRequestData::Create(
-        nullptr /* script_state */, *PrepareFetchAPIRequest(),
+        nullptr /* script_state */, PrepareFetchAPIRequest(),
         FetchRequestData::ForServiceWorkerFetchEvent::kFalse);
     EXPECT_EQ(4U, request_data->HeaderList()->size());
     EXPECT_TRUE(request_data->HeaderList()->Has("x-hi-hi"));

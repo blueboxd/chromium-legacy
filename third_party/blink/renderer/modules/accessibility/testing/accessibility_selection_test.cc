@@ -28,8 +28,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-namespace test {
-
 namespace {
 
 constexpr char kSelectionTestsRelativePath[] = "selection/";
@@ -402,10 +400,10 @@ void AccessibilitySelectionTest::RunSelectionTest(
   static const std::string separator_line = '\n' + std::string(80, '=') + '\n';
   const String relative_path = String::FromUTF8(kSelectionTestsRelativePath) +
                                String::FromUTF8(test_name);
-  const String test_path = AccessibilityTestDataPath(relative_path);
+  const String test_path = test::AccessibilityTestDataPath(relative_path);
 
   const String test_file = test_path + String::FromUTF8(kTestFileSuffix);
-  scoped_refptr<SharedBuffer> test_file_buffer = ReadFromFile(test_file);
+  scoped_refptr<SharedBuffer> test_file_buffer = test::ReadFromFile(test_file);
   auto test_file_chars = test_file_buffer->CopyAs<Vector<char>>();
   std::string test_file_contents;
   std::copy(test_file_chars.begin(), test_file_chars.end(),
@@ -418,7 +416,7 @@ void AccessibilitySelectionTest::RunSelectionTest(
   const String ax_file =
       test_path +
       String::FromUTF8(suffix.empty() ? kAXTestExpectationSuffix : suffix);
-  scoped_refptr<SharedBuffer> ax_file_buffer = ReadFromFile(ax_file);
+  scoped_refptr<SharedBuffer> ax_file_buffer = test::ReadFromFile(ax_file);
   auto ax_file_chars = ax_file_buffer->CopyAs<Vector<char>>();
   std::string ax_file_contents;
   std::copy(ax_file_chars.begin(), ax_file_chars.end(),
@@ -459,5 +457,4 @@ void ParameterizedAccessibilitySelectionTest::RunSelectionTest(
   AccessibilitySelectionTest::RunSelectionTest(test_name, suffix);
 }
 
-}  // namespace test
 }  // namespace blink

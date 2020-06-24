@@ -272,16 +272,14 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
     } else if (url.SchemeIsFileSystem() && rfh) {
       std::string storage_domain;
       auto* site_instance = rfh->GetSiteInstance();
-      if (site_instance) {
-        std::string partition_name;
-        bool in_memory;
-        GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-            context, site_instance->GetSiteURL(), &storage_domain,
-            &partition_name, &in_memory);
-      }
+      auto storage_partition_config =
+          GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+              context, site_instance->GetSiteURL());
+
       url_loader_factory = CreateFileSystemURLLoaderFactory(
           rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
-          storage_partition->GetFileSystemContext(), storage_domain);
+          storage_partition->GetFileSystemContext(),
+          storage_partition_config.partition_domain());
       factory = url_loader_factory.get();
     } else if (rfh && url.SchemeIs(content::kChromeUIScheme)) {
       url_loader_factory = CreateWebUIURLLoader(rfh, url.scheme(),

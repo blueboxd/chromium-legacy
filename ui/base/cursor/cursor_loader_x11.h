@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/cursor/cursor_theme_manager_linux.h"
-#include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
+#include "ui/base/cursor/cursor_theme_manager.h"
+#include "ui/base/cursor/cursor_theme_manager_observer.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
@@ -26,7 +26,7 @@ namespace ui {
 
 class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderX11
     : public CursorLoader,
-      public CursorThemeManagerLinuxObserver {
+      public CursorThemeManagerObserver {
  public:
   CursorLoaderX11();
   ~CursorLoaderX11() override;
@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderX11
   const XcursorImage* GetXcursorImageForTest(mojom::CursorType id);
 
  protected:
-  // CursorThemeManagerLinux:
+  // CursorThemeManager:
   void OnCursorThemeNameChanged(const std::string& cursor_theme_name) override;
   void OnCursorThemeSizeChanged(int cursor_theme_size) override;
 
@@ -86,7 +86,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderX11
 
   const XScopedCursor invisible_cursor_;
 
-  ScopedObserver<CursorThemeManagerLinux, CursorThemeManagerLinuxObserver>
+  ScopedObserver<CursorThemeManager, CursorThemeManagerObserver>
       cursor_theme_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderX11);

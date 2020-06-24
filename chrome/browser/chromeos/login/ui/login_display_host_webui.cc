@@ -368,6 +368,7 @@ class CloseAfterCommit : public ui::CompositorObserver,
   ~CloseAfterCommit() override {
     widget_->RemoveObserver(this);
     widget_->GetCompositor()->RemoveObserver(this);
+    CHECK(!IsInObserverList());
   }
 
   // ui::CompositorObserver:
@@ -487,6 +488,7 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
     (new DriveFirstRunController(ProfileManager::GetActiveUserProfile()))
         ->EnableOfflineMode();
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

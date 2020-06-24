@@ -131,6 +131,7 @@ TouchHudRenderer::TouchHudRenderer(views::Widget* parent_widget)
 TouchHudRenderer::~TouchHudRenderer() {
   if (parent_widget_)
     parent_widget_->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void TouchHudRenderer::Clear() {

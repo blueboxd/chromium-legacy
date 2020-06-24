@@ -146,6 +146,14 @@ void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
         overlay_info->supports_overlays,
         gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
             DXGI_FORMAT_YUY2));
+    overlay_info->bgra8_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_B8G8R8A8_UNORM));
+    overlay_info->rgb10a2_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
+        gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
+            DXGI_FORMAT_R10G10B10A2_UNORM));
   }
 }
 

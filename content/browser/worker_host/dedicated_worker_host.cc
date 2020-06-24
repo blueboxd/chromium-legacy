@@ -121,16 +121,10 @@ void DedicatedWorkerHost::StartScriptLoad(
   // Get a storage domain.
   SiteInstance* site_instance =
       nearest_ancestor_render_frame_host->GetSiteInstance();
-  if (!site_instance) {
-    client_->OnScriptLoadStartFailed();
-    return;
-  }
-  std::string storage_domain;
-  std::string partition_name;
-  bool in_memory;
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      storage_partition_impl->browser_context(), site_instance->GetSiteURL(),
-      &storage_domain, &partition_name, &in_memory);
+  auto storage_partition_config =
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          storage_partition_impl->browser_context(),
+          site_instance->GetSiteURL());
 
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   if (script_url.SchemeIsBlob()) {
@@ -190,7 +184,7 @@ void DedicatedWorkerHost::StartScriptLoad(
       service_worker_handle_.get(),
       appcache_host ? appcache_host->GetWeakPtr() : nullptr,
       std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
-      storage_domain,
+      storage_partition_config.partition_domain(),
       base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                      weak_factory_.GetWeakPtr()));
 }
@@ -490,16 +484,12 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
     return;
 
   SiteInstance* site_instance = ancestor_render_frame_host->GetSiteInstance();
-  if (!site_instance)
-    return;
 
   // Get a storage domain.
-  std::string storage_domain;
-  std::string partition_name;
-  bool in_memory;
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      storage_partition_impl->browser_context(), site_instance->GetSiteURL(),
-      &storage_domain, &partition_name, &in_memory);
+  auto storage_partition_config =
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          storage_partition_impl->browser_context(),
+          site_instance->GetSiteURL());
 
   // Start observing Network Service crash again.
   ObserveNetworkServiceCrash(storage_partition_impl);
@@ -511,7 +501,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
           WorkerScriptFetchInitiator::CreateFactoryBundle(
               WorkerScriptFetchInitiator::LoaderType::kSubResource,
               worker_process_host_->GetID(), storage_partition_impl,
-              storage_domain, file_url_support_,
+              storage_partition_config.partition_domain(), file_url_support_,
               /*filesystem_url_support=*/true);
 
   bool bypass_redirect_checks = false;

@@ -12,7 +12,10 @@
 namespace ui_devtools {
 
 DOMAgentMac::DOMAgentMac() {}
-DOMAgentMac::~DOMAgentMac() {}
+
+DOMAgentMac::~DOMAgentMac() {
+  CHECK(!IsInObserverList());
+}
 
 protocol::Response DOMAgentMac::enable() {
   views::NativeWidgetMac::SetInitNativeWidgetCallback(base::BindRepeating(

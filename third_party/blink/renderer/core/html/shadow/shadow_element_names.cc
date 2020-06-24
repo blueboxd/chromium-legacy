@@ -104,6 +104,11 @@ const AtomicString& TextFieldContainer() {
   return name;
 }
 
+const AtomicString& WebKitDetailsMarker() {
+  DEFINE_STATIC_LOCAL(AtomicString, name, ("-webkit-details-marker"));
+  return name;
+}
+
 const AtomicString& FileUploadButton() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("file-upload-button"));
   return name;

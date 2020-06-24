@@ -147,13 +147,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
   // Set sync_data to sync proto.
-  sync_data->set_name(web_app.sync_data().name);
-  if (web_app.sync_data().theme_color.has_value())
-    sync_data->set_theme_color(web_app.sync_data().theme_color.value());
-  if (web_app.sync_data().scope.is_valid())
-    sync_data->set_scope(web_app.sync_data().scope.spec());
+  sync_data->set_name(web_app.sync_fallback_data().name);
+  if (web_app.sync_fallback_data().theme_color.has_value())
+    sync_data->set_theme_color(
+        web_app.sync_fallback_data().theme_color.value());
+  if (web_app.sync_fallback_data().scope.is_valid())
+    sync_data->set_scope(web_app.sync_fallback_data().scope.spec());
   for (const WebApplicationIconInfo& icon_info :
-       web_app.sync_data().icon_infos) {
+       web_app.sync_fallback_data().icon_infos) {
     sync_pb::WebAppIconInfo* icon_info_proto = sync_data->add_icon_infos();
     if (icon_info.square_size_px)
       icon_info_proto->set_size_in_px(*icon_info.square_size_px);
@@ -312,13 +313,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
-  base::Optional<WebApp::SyncData> parsed_sync_data =
-      ParseWebAppSyncData(sync_data);
-  if (!parsed_sync_data.has_value()) {
-    // ParseWebAppSyncData() reports any errors.
+  base::Optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
+      ParseSyncFallbackDataStruct(sync_data);
+  if (!parsed_sync_fallback_data.has_value()) {
+    // ParseSyncFallbackDataStruct() reports any errors.
     return nullptr;
   }
-  web_app->SetSyncData(std::move(parsed_sync_data.value()));
+  web_app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 
   base::Optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
       ParseWebAppIconInfos("WebApp", local_data.icon_infos());

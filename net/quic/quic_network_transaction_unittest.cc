@@ -38,6 +38,7 @@
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/test_upload_data_stream_not_allow_http1.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
@@ -9907,6 +9908,261 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
   EXPECT_TRUE(mock_quic_data[1]->AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data[1]->AllWriteDataConsumed());
 }
+
+TEST_P(QuicNetworkTransactionTest, AllowHTTP1FalseProhibitsH1) {
+  MockRead http_reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING),
+                           MockRead(ASYNC, OK)};
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  AddCertificate(&ssl_data_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+
+  request_.method = "POST";
+  UploadDataStreamNotAllowHTTP1 upload_data("");
+  request_.upload_data_stream = &upload_data;
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_H2_OR_QUIC_REQUIRED));
+}
+
+// Confirm mock class UploadDataStreamNotAllowHTTP1 can upload content over
+// QUIC.
+TEST_P(QuicNetworkTransactionTest, AllowHTTP1MockTest) {
+  context_.params()->origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data(version_);
+  int write_packet_index = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
+  }
+  const std::string upload_content = "foo";
+  if (!version_.HasIetfQuicFrames()) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {upload_content}));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {ConstructDataHeader(upload_content.length()), upload_content}));
+  }
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("200 OK")));
+
+  std::string header2 = ConstructDataHeader(6);
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 header2 + "hello!"));
+
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 2, 1, 1));
+
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+  request_.method = "POST";
+  UploadDataStreamNotAllowHTTP1 upload_data(upload_content);
+  request_.upload_data_stream = &upload_data;
+
+  SendRequestAndExpectQuicResponse("hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, AllowHTTP1UploadPauseAndResume) {
+  context_.params()->origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data(version_);
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Hanging read
+  int write_packet_index = 1;
+  mock_quic_data.AddWrite(
+      ASYNC, client_maker_->MakeDummyCHLOPacket(write_packet_index++));
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
+  }
+  const std::string upload_content = "foo";
+  if (!version_.HasIetfQuicFrames()) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {upload_content}));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {ConstructDataHeader(upload_content.length()), upload_content}));
+  }
+  mock_quic_data.AddRead(
+      SYNCHRONOUS, ConstructServerResponseHeadersPacket(
+                       1, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                       false, GetResponseHeaders("200 OK")));
+  std::string header2 = ConstructDataHeader(6);
+  mock_quic_data.AddRead(
+      SYNCHRONOUS, ConstructServerDataPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                       true, header2 + "hello!"));
+
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  SequencedSocketData* socket_data = mock_quic_data.GetSequencedSocketData();
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  // Set up request.
+  request_.method = "POST";
+  UploadDataStreamNotAllowHTTP1 upload_data(upload_content);
+  request_.upload_data_stream = &upload_data;
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  base::RunLoop().RunUntilIdle();
+  // Resume QUIC job
+  crypto_client_stream_factory_.last_stream()
+      ->NotifySessionOneRttKeyAvailable();
+  socket_data->Resume();
+
+  base::RunLoop().RunUntilIdle();
+  CheckResponseData(&trans, "hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest, AllowHTTP1UploadFailH1AndResumeQuic) {
+  // This test confirms failed main job should not bother quic job.
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternativeServiceHeader),
+      MockRead("1.1 Body"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  AddCertificate(&ssl_data_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data(version_);
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Hanging read
+  int write_packet_index = 1;
+  mock_quic_data.AddWrite(
+      ASYNC, client_maker_->MakeDummyCHLOPacket(write_packet_index++));
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(write_packet_index++));
+  }
+  const std::string upload_content = "foo";
+  if (!version_.HasIetfQuicFrames()) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {upload_content}));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRequestHeadersAndDataFramesPacket(
+            write_packet_index++, GetNthClientInitiatedBidirectionalStreamId(0),
+            true, true, DEFAULT_PRIORITY,
+            GetRequestHeaders("POST", "https", "/"), 0, nullptr,
+            {ConstructDataHeader(upload_content.length()), upload_content}));
+  }
+  mock_quic_data.AddRead(
+      SYNCHRONOUS, ConstructServerResponseHeadersPacket(
+                       1, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                       false, GetResponseHeaders("200 OK")));
+  std::string header = ConstructDataHeader(6);
+  mock_quic_data.AddRead(
+      SYNCHRONOUS, ConstructServerDataPacket(
+                       2, GetNthClientInitiatedBidirectionalStreamId(0), false,
+                       true, header + "hello!"));
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS, ConstructClientAckPacket(write_packet_index++, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  SequencedSocketData* socket_data = mock_quic_data.GetSequencedSocketData();
+
+  // This packet won't be read because AllowHTTP1:false doesn't allow H/1
+  // connection.
+  MockRead http_reads2[] = {MockRead("HTTP/1.1 200 OK\r\n")};
+  StaticSocketDataProvider http_data2(http_reads2, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data2);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+
+  // Send the first request via TCP and set up alternative service (QUIC) for
+  // the origin.
+  SendRequestAndExpectHttpResponse("1.1 Body");
+
+  // Settings to resume main H/1 job quickly while pausing quic job.
+  AddQuicAlternateProtocolMapping(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(10);
+  http_server_properties_->SetServerNetworkStats(
+      url::SchemeHostPort(request_.url), NetworkIsolationKey(), stats1);
+
+  // Set up request.
+  request_.method = "POST";
+  UploadDataStreamNotAllowHTTP1 upload_data(upload_content);
+  request_.upload_data_stream = &upload_data;
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  // Confirm TCP job was resumed.
+  // We can not check its failure because HttpStreamFactory::JobController.
+  // main_job_net_error is not exposed.
+  while (socket_factory_.mock_data().next_index() < 3u)
+    base::RunLoop().RunUntilIdle();
+  // Resume QUIC job.
+  crypto_client_stream_factory_.last_stream()
+      ->NotifySessionOneRttKeyAvailable();
+  socket_data->Resume();
+  base::RunLoop().RunUntilIdle();
+  CheckResponseData(&trans, "hello!");
+}
+
+// TODO(yoichio):  Add the TCP job reuse case. See crrev.com/c/2174099.
 
 }  // namespace test
 }  // namespace net

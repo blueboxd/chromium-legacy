@@ -292,6 +292,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::prefs::kEmojiSuggestionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kLanguageInputMethodSpecificSettings] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
 #endif
 
   // Nearby Share.
@@ -369,6 +371,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
 #if !defined(OS_ANDROID)
   (*s_whitelist)[::prefs::kLiveCaptionEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+#endif
+#if !defined(OS_CHROMEOS)
+  (*s_whitelist)[::prefs::kAccessibilityFocusHighlightEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 

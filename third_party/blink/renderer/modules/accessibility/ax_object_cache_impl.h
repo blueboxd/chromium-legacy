@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
@@ -455,6 +456,12 @@ class MODULES_EXPORT AXObjectCacheImpl
                               ax::mojom::blink::EventFrom event_from,
                               const BlinkAXEventIntentsSet& event_intents);
 
+  void SetMaxPendingUpdatesForTesting(wtf_size_t max_pending_updates) {
+    max_pending_updates_ = max_pending_updates;
+  }
+
+  void UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
+
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.
   mojom::PermissionStatus accessibility_event_permission_;
@@ -469,6 +476,12 @@ class MODULES_EXPORT AXObjectCacheImpl
   typedef HeapVector<Member<TreeUpdateParams>> TreeUpdateCallbackQueue;
   TreeUpdateCallbackQueue tree_update_callback_queue_;
 
+  // If tree_update_callback_queue_ gets improbably large, stop
+  // enqueueing updates and fire a single ChildrenChanged event on the
+  // document once layout occurs.
+  wtf_size_t max_pending_updates_ = 1UL << 16;
+  bool tree_updates_paused_ = false;
+
   // Maps ids to their object's autofill state.
   HashMap<AXID, WebAXAutofillState> autofill_state_map_;
 
@@ -480,6 +493,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   BlinkAXEventIntentsSet active_event_intents_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
+
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, PauseUpdatesAfterMaxNumberQueued);
 };
 
 // This is the only subclass of AXObjectCache.

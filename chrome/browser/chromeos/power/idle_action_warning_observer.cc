@@ -52,6 +52,7 @@ IdleActionWarningObserver::~IdleActionWarningObserver() {
     warning_dialog_->GetWidget()->RemoveObserver(this);
     warning_dialog_->CloseDialog();
   }
+  CHECK(!IsInObserverList());
 }
 
 void IdleActionWarningObserver::IdleActionImminent(

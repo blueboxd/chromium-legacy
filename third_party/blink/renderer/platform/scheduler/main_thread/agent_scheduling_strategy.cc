@@ -23,6 +23,9 @@ namespace {
 
 using ::base::sequence_manager::TaskQueue;
 
+using PrioritisationType =
+    ::blink::scheduler::MainThreadTaskQueue::QueueTraits::PrioritisationType;
+
 // Scheduling strategy that does nothing. This emulates the "current" shipped
 // behavior, and is the default unless overridden. Corresponds to the
 // |kNoOpStrategy| feature.
@@ -71,8 +74,9 @@ class NoOpStrategy final : public AgentSchedulingStrategy {
   bool ShouldNotifyOnInputEvent() const override { return false; }
 };
 
-// Strategy that keeps track of main frames reaching a certain signal for
-// scheduling decisions. Exact behavior will be determined by parameter values.
+// Strategy that keeps track of main frames reaching a certain signal to make
+// scheduling decisions. The exact behavior will be determined by parameter
+// values.
 class TrackMainFrameSignal final : public AgentSchedulingStrategy {
  public:
   TrackMainFrameSignal(PerAgentAffectedQueues affected_queue_types,
@@ -129,6 +133,10 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
     if (main_frames_waiting_for_signal_.IsEmpty())
       return ShouldUpdatePolicy::kNo;
 
+    // Ideally we would like to only remove the frame the input event is related
+    // to, but we don't currently have that information. One suggestion (by
+    // altimin@) is to attribute it to a widget, and apply it to all frames on
+    // the page the widget is on.
     main_frames_waiting_for_signal_.clear();
     SetWaitingForInput(false);
     return ShouldUpdatePolicy::kYes;
@@ -153,26 +161,24 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
       const MainThreadTaskQueue& task_queue) const override {
     VerifyValidSequence();
 
-    if (method_ != PerAgentSlowDownMethod::kDisable)
-      return base::nullopt;
+    if (method_ == PerAgentSlowDownMethod::kDisable &&
+        ShouldAffectQueue(task_queue)) {
+      return false;
+    }
 
-    if (!ShouldAffectQueue(task_queue))
-      return base::nullopt;
-
-    return false;
+    return base::nullopt;
   }
 
   base::Optional<TaskQueue::QueuePriority> QueuePriority(
       const MainThreadTaskQueue& task_queue) const override {
     VerifyValidSequence();
 
-    if (method_ != PerAgentSlowDownMethod::kBestEffort)
-      return base::nullopt;
+    if (method_ == PerAgentSlowDownMethod::kBestEffort &&
+        ShouldAffectQueue(task_queue)) {
+      return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
 
-    if (!ShouldAffectQueue(task_queue))
-      return base::nullopt;
-
-    return TaskQueue::QueuePriority::kBestEffortPriority;
+    return base::nullopt;
   }
 
   bool ShouldNotifyOnInputEvent() const override {
@@ -208,11 +214,12 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
 
   bool ShouldAffectQueue(const MainThreadTaskQueue& task_queue) const {
     if (affected_queue_types_ == PerAgentAffectedQueues::kTimerQueues &&
-        task_queue.queue_class() != MainThreadTaskQueue::QueueClass::kTimer) {
+        task_queue.GetPrioritisationType() !=
+            PrioritisationType::kJavaScriptTimer) {
       return false;
     }
 
-    // Don't do anything if all main frames reached signal.
+    // Don't do anything if all main frames have reached the signal.
     if (main_frames_waiting_for_signal_.IsEmpty())
       return false;
 
@@ -235,7 +242,7 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
       SetWaitingForInput(false);
 
     // TODO(talp): If the frame wasn't in the set to begin with (e.g.: because
-    //  an input even cleared it), or if there are still other frames in the
+    //  an input event cleared it), or if there are still other frames in the
     //  set, then we may not have to trigger a policy update.
     return ShouldUpdatePolicy::kYes;
   }

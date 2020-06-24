@@ -8,21 +8,42 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/chromeos/login/screens/active_directory_password_change_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-
-namespace authpolicy {
-class ActiveDirectoryAccountInfo;
-}
 
 namespace chromeos {
 
+class ActiveDirectoryPasswordChangeScreen;
 class CoreOobeView;
-class Key;
 
-// A class that handles WebUI hooks in Active Directory password change  screen.
-class ActiveDirectoryPasswordChangeScreenHandler : public BaseScreenHandler {
+// Interface for dependency injection between
+// ActiveDirectoryPasswordChangeScreen and its WebUI representation.
+class ActiveDirectoryPasswordChangeView {
  public:
+  constexpr static StaticOobeScreenId kScreenId{"ad-password-change"};
+
+  virtual ~ActiveDirectoryPasswordChangeView() {}
+
+  // Shows the contents of the screen.
+  virtual void Show(const std::string& username, int error) = 0;
+
+  // Binds |screen| to the view.
+  virtual void Bind(ActiveDirectoryPasswordChangeScreen* screen) = 0;
+
+  // Unbinds the screen from the view.
+  virtual void Unbind() = 0;
+
+  // Shows sign-in error bubble.
+  virtual void ShowSignInError(const std::string& error_text) = 0;
+};
+
+// A class that handles WebUI hooks in Active Directory password change screen.
+class ActiveDirectoryPasswordChangeScreenHandler
+    : public ActiveDirectoryPasswordChangeView,
+      public BaseScreenHandler {
+ public:
+  using TView = ActiveDirectoryPasswordChangeView;
+
   ActiveDirectoryPasswordChangeScreenHandler(
       JSCallsContainer* js_calls_container,
       CoreOobeView* core_oobe_view);
@@ -36,36 +57,21 @@ class ActiveDirectoryPasswordChangeScreenHandler : public BaseScreenHandler {
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
 
-  // WebUI message handlers.
-  void HandleComplete(const std::string& username,
-                      const std::string& old_password,
-                      const std::string& new_password);
-  void HandleCancel();
-
-  // Shows the password change screen for |username|.
-  void ShowScreen(const std::string& username);
+  // ActiveDirectoryPasswordChangeView:
+  void Show(const std::string& username, int error) override;
+  void Bind(ActiveDirectoryPasswordChangeScreen* screen) override;
+  void Unbind() override;
+  void ShowSignInError(const std::string& error_text) override;
 
  private:
-  // Shows the screen with the error message corresponding to |error|.
-  void ShowScreenWithError(int error);
+  // WebUI message handlers.
+  void HandleComplete(const std::string& old_password,
+                      const std::string& new_password);
 
-  // Callback called by AuthPolicyHelper::AuthenticateUser with results and
-  // error code. (see AuthPolicyHelper::AuthenticateUser)
-  void OnAuthFinished(
-      const std::string& username,
-      const Key& key,
-      authpolicy::ErrorType error,
-      const authpolicy::ActiveDirectoryAccountInfo& account_info);
-
-  // Helper to call AuthPolicyClient and cancel calls if needed. Used to change
-  // password on the Active Directory server.
-  std::unique_ptr<AuthPolicyHelper> authpolicy_login_helper_;
+  ActiveDirectoryPasswordChangeScreen* screen_ = nullptr;
 
   // Non-owned. Used to display signin error.
   CoreOobeView* core_oobe_view_ = nullptr;
-
-  base::WeakPtrFactory<ActiveDirectoryPasswordChangeScreenHandler>
-      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryPasswordChangeScreenHandler);
 };

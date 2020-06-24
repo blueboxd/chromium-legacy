@@ -186,12 +186,9 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
-  std::string storage_domain;
-  std::string partition_name;
-  bool in_memory;
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      storage_partition_->browser_context(), site_instance->GetSiteURL(),
-      &storage_domain, &partition_name, &in_memory);
+  auto storage_partition_config =
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          storage_partition_->browser_context(), site_instance->GetSiteURL());
 
   SharedWorkerInstance instance(
       info->url, info->options->type, info->options->credentials,
@@ -200,7 +197,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       creation_context_type);
   host = CreateWorker(shared_worker_id_generator_.GenerateNextId(), instance,
                       std::move(info->outside_fetch_client_settings_object),
-                      client_render_frame_host_id, storage_domain, message_port,
+                      client_render_frame_host_id,
+                      storage_partition_config.partition_domain(), message_port,
                       std::move(blob_url_loader_factory));
   host->AddClient(std::move(client), client_render_frame_host_id, message_port);
 }

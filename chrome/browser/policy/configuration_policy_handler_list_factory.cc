@@ -1316,6 +1316,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kIntensiveWakeUpThrottlingEnabled,
     policy::policy_prefs::kIntensiveWakeUpThrottlingEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kUserAgentClientHintsEnabled,
+    policy::policy_prefs::kUserAgentClientHintsEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

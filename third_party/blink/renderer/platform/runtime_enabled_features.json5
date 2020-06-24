@@ -755,7 +755,8 @@
     },
     {
       name: "FetchUploadStreaming",
-      status: "test",
+      origin_trial_feature_name: "FetchUploadStreaming",
+      status: "experimental",
     },
     {
       // Also enabled when blink::features::kFileHandlingAPI is overridden

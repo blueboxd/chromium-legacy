@@ -1600,9 +1600,13 @@ public class ContextualSearchManager
                     String targetLanguage =
                             mTranslateController.getTranslateServiceTargetLanguage();
                     targetLanguage = targetLanguage != null ? targetLanguage : "";
+                    String fluentLanguages =
+                            mTranslateController.getTranslateServiceFluentLanguages();
+                    fluentLanguages = fluentLanguages != null ? fluentLanguages : "";
                     mContext.setResolveProperties(mPolicy.getHomeCountry(mActivity),
                             mPolicy.maySendBasePageUrl(), interaction.getEventId(),
-                            interaction.getEncodedUserInteractions(), targetLanguage);
+                            interaction.getEncodedUserInteractions(), targetLanguage,
+                            fluentLanguages);
                 }
                 WebContents webContents = getBaseWebContents();
                 if (webContents != null) {

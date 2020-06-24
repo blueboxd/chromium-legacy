@@ -421,6 +421,7 @@ TabDragController::~TabDragController() {
         attached_context_ ? attached_context_ : source_context_;
     capture_context->AsView()->GetWidget()->ReleaseCapture();
   }
+  CHECK(!IsInObserverList());
 }
 
 void TabDragController::Init(TabDragContext* source_context,

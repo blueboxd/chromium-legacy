@@ -337,6 +337,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     root_surface()->RemoveSurfaceObserver(this);
   if (has_grab_)
     WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void ShellSurfaceBase::Activate() {

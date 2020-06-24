@@ -25,6 +25,7 @@ class Profile;
 
 namespace web_app {
 
+class AppIconManager;
 struct ShortcutInfo;
 
 // This class manages creation/update/deletion of OS shortcuts for web
@@ -39,7 +40,7 @@ class AppShortcutManager : public AppRegistrarObserver {
   explicit AppShortcutManager(Profile* profile);
   ~AppShortcutManager() override;
 
-  void SetSubsystems(AppRegistrar* registrar);
+  void SetSubsystems(AppIconManager* icon_manager, AppRegistrar* registrar);
 
   void Start();
   void Shutdown();
@@ -64,7 +65,22 @@ class AppShortcutManager : public AppRegistrarObserver {
   virtual void RegisterRunOnOsLogin(const AppId& app_id,
                                     RegisterRunOnOsLoginCallback callback);
 
+  // TODO(crbug.com/1098471): Move this into web_app_shortcuts_menu_win.cc when
+  // a callback is integrated into the Shortcuts Menu registration flow.
+  using RegisterShortcutsMenuCallback = base::OnceCallback<void(bool success)>;
+  // Registers a shortcuts menu for a web app after reading its shortcuts menu
+  // icons from disk.
+  //
+  // TODO(crbug.com/1098471): Consider unifying this method and
+  // RegisterShortcutsMenuWithOs() below.
+  void ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
+      const AppId& app_id,
+      RegisterShortcutsMenuCallback callback);
+
   // Registers a shortcuts menu for the web app's icon with the OS.
+  //
+  // TODO(crbug.com/1098471): Add a callback as part of the Shortcuts Menu
+  // registration flow.
   void RegisterShortcutsMenuWithOs(
       const AppId& app_id,
       const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
@@ -114,12 +130,18 @@ class AppShortcutManager : public AppRegistrarObserver {
       base::string16 old_name,
       std::unique_ptr<ShortcutInfo> info);
 
+  void OnShortcutsMenuIconsReadRegisterShortcutsMenu(
+      const AppId& app_id,
+      RegisterShortcutsMenuCallback callback,
+      ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps);
+
   ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{
       this};
 
   bool suppress_shortcuts_for_testing_ = false;
 
   AppRegistrar* registrar_ = nullptr;
+  AppIconManager* icon_manager_ = nullptr;
   Profile* const profile_;
 
   base::WeakPtrFactory<AppShortcutManager> weak_ptr_factory_{this};

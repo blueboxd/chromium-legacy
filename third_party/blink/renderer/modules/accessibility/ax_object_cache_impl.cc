@@ -32,6 +32,7 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
@@ -815,13 +816,19 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
   return AXObject::InOrderTraversalIterator();
 }
 
+void AXObjectCacheImpl::UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram() {
+  UMA_HISTOGRAM_COUNTS_100000(
+      "Blink.Accessibility.NumTreeUpdatesQueuedBeforeLayout",
+      tree_update_callback_queue_.size());
+}
+
 void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
                                                 AXObject* obj) {
   // Called for updates that do not have a DOM node, e.g. a children or text
   // changed event that occurs on an anonymous layout block flow.
   DCHECK(obj);
 
-  if (!IsActive(GetDocument()))
+  if (!IsActive(GetDocument()) || tree_updates_paused_)
     return;
 
   Document& tree_update_document = *obj->GetDocument();
@@ -829,6 +836,15 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
   // Ensure the tree update document is in a good state.
   if (!IsActive(tree_update_document))
     return;
+
+  if (tree_update_callback_queue_.size() >= max_pending_updates_) {
+    UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
+
+    tree_updates_paused_ = true;
+    tree_update_callback_queue_.clear();
+    return;
+  }
+
   DCHECK(!tree_update_document.GetPage()->Animator().IsServicingAnimations() ||
          (tree_update_document.Lifecycle().GetState() <
               DocumentLifecycle::kInAccessibility ||
@@ -848,7 +864,7 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
                                                 Node* node) {
   DCHECK(node);
 
-  if (!IsActive(GetDocument()))
+  if (!IsActive(GetDocument()) || tree_updates_paused_)
     return;
 
   Document& tree_update_document = node->GetDocument();
@@ -856,6 +872,14 @@ void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
   // Ensure the tree update document is in a good state.
   if (!IsActive(tree_update_document))
     return;
+
+  if (tree_update_callback_queue_.size() >= max_pending_updates_) {
+    UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
+
+    tree_updates_paused_ = true;
+    tree_update_callback_queue_.clear();
+    return;
+  }
 
   DCHECK(!tree_update_document.GetPage()->Animator().IsServicingAnimations() ||
          (tree_update_document.Lifecycle().GetState() <
@@ -1130,6 +1154,14 @@ void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
 void AXObjectCacheImpl::ProcessUpdates(Document& document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(document);
 
+  if (tree_updates_paused_) {
+    ChildrenChangedWithCleanLayout(nullptr, GetOrCreate(&document));
+    tree_updates_paused_ = false;
+    return;
+  }
+
+  UpdateNumTreeUpdatesQueuedBeforeLayoutHistogram();
+
   TreeUpdateCallbackQueue old_tree_update_callback_queue;
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
   for (auto& tree_update : old_tree_update_callback_queue) {
@@ -1137,7 +1169,7 @@ void AXObjectCacheImpl::ProcessUpdates(Document& document) {
     AXID axid = tree_update->axid;
 
     // Need either an DOM node or an AXObject to be a valid update.
-    // These nay have been destroyed since the original update occurred.
+    // These may have been destroyed since the original update occurred.
     if (!node) {
       if (!axid || !ObjectFromAXID(axid))
         return;

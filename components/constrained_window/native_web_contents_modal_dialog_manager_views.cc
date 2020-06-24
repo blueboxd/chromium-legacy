@@ -50,6 +50,7 @@ NativeWebContentsModalDialogManagerViews::
 
   for (auto* widget : observed_widgets_)
     widget->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void NativeWebContentsModalDialogManagerViews::ManageDialog() {

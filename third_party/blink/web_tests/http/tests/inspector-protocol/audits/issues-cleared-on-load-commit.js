@@ -9,7 +9,9 @@
   await session.evaluateAsync(`fetch('${setCookieUrl}', {method: 'POST', credentials: 'include'})`);
 
   // Reloading the page should clear the issue.
-  await dp.Page.reload();
+  await dp.Page.enable();
+  dp.Page.reload();
+  await dp.Page.onceFrameNavigated();
 
   // This should never be printed.
   dp.Audits.onIssueAdded(() => testRunner.log(`Issue should have been cleared by the reload`));

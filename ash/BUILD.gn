@@ -1814,6 +1814,8 @@ test("ash_unittests") {
     "accessibility/accessibility_highlight_controller_unittest.cc",
     "accessibility/accessibility_panel_layout_manager_unittest.cc",
     "accessibility/key_accessibility_enabler_unittest.cc",
+    "accessibility/mock_touch_exploration_controller_delegate.cc",
+    "accessibility/mock_touch_exploration_controller_delegate.h",
     "accessibility/touch_accessibility_enabler_unittest.cc",
     "accessibility/touch_exploration_controller_unittest.cc",
     "accessibility/touch_exploration_manager_unittest.cc",

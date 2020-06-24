@@ -1015,6 +1015,8 @@ TabStrip::~TabStrip() {
   // The child tabs may call back to us from their destructors. Delete them so
   // that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
+
+  CHECK(!IsInObserverList());
 }
 
 void TabStrip::SetAvailableWidthCallback(

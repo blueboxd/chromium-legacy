@@ -1329,6 +1329,80 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(CookiesUsedAndCopied)) {
+  GURL starting_page = GetOriginServerURL("/simple.html");
+  SetDataSaverEnabled(true);
+  ui_test_utils::NavigateToURL(browser(), starting_page);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  std::vector<net::test_server::HttpRequest> origin_requests_after_prefetch =
+      origin_server_requests();
+
+  base::HistogramTester histogram_tester;
+
+  // Navigate to the predicted site.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  std::vector<net::test_server::HttpRequest> origin_requests_after_click =
+      origin_server_requests();
+
+  // We expect that the image and possibly other resources (NSP not tested here)
+  // were loaded.
+  EXPECT_GT(origin_requests_after_click.size(),
+            origin_requests_after_prefetch.size());
+
+  bool inspected_image_request = false;
+  for (size_t i = origin_requests_after_prefetch.size();
+       i < origin_requests_after_click.size(); ++i) {
+    net::test_server::HttpRequest request = origin_requests_after_click[i];
+    if (request.GetURL().path() != "/prerender/isolated/image.png") {
+      // Other requests are nice and all, but we're just going to check the
+      // image since it won't have been prefetched.
+      continue;
+    }
+    inspected_image_request = true;
+
+    // The prefetched cookie should be present.
+    auto cookie_iter = request.headers.find("Cookie");
+    ASSERT_FALSE(cookie_iter == request.headers.end());
+    EXPECT_EQ(cookie_iter->second, "type=ChocolateChip");
+  }
+
+  EXPECT_TRUE(inspected_image_request);
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime", 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy", 1, 1);
+
+  // The cookie from prefetch should also be present in the CookieManager API.
+  EXPECT_EQ("type=ChocolateChip",
+            content::GetCookies(
+                browser()->profile(), eligible_link,
+                net::CookieOptions::SameSiteCookieContext::MakeInclusive()));
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ClientCertDenied)) {
   // Make the browser use the ClientCertStoreStub instead of the regular one.
   ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
@@ -1877,7 +1951,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   for (size_t i = origin_requests_before_prerender.size();
        i < origin_requests_after_prerender.size(); ++i) {
     net::test_server::HttpRequest request = origin_requests_after_prerender[i];
-    EXPECT_TRUE(request.headers.find("Cookie") == request.headers.end());
+
+    // prefetch_page.html sets a cookie on its response and we should see it
+    // here.
+    auto cookie_iter = request.headers.find("Cookie");
+    ASSERT_FALSE(cookie_iter == request.headers.end());
+    EXPECT_EQ(cookie_iter->second, "type=ChocolateChip");
 
     GURL nsp_url = request.GetURL();
     found_nsp_javascript |= nsp_url.path() == "/prerender/isolated/prefetch.js";
@@ -1925,13 +2004,26 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   std::vector<net::test_server::HttpRequest> origin_requests_after_click =
       origin_server_requests();
 
-  // Only one request for the image is expected.
+  // Only one request for the image is expected, and it should have cookies.
   ASSERT_EQ(origin_requests_after_prerender.size() + 1,
             origin_requests_after_click.size());
-  EXPECT_EQ(origin_requests_after_click[origin_requests_after_click.size() - 1]
-                .GetURL()
-                .path(),
-            "/prerender/isolated/image.png");
+  net::test_server::HttpRequest request =
+      origin_requests_after_click[origin_requests_after_click.size() - 1];
+  EXPECT_EQ(request.GetURL().path(), "/prerender/isolated/image.png");
+  auto cookie_iter = request.headers.find("Cookie");
+  ASSERT_FALSE(cookie_iter == request.headers.end());
+  EXPECT_EQ(cookie_iter->second, "type=ChocolateChip");
+
+  // The cookie from prefetch should also be present in the CookieManager API.
+  EXPECT_EQ("type=ChocolateChip",
+            content::GetCookies(
+                browser()->profile(), eligible_link,
+                net::CookieOptions::SameSiteCookieContext::MakeInclusive()));
+
+  histogram_tester.ExpectTotalCount(
+      "IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime", 1);
+  histogram_tester.ExpectUniqueSample(
+      "IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy", 1, 1);
 
   // Check that the JavaScript ran.
   EXPECT_EQ(base::ASCIIToUTF16("JavaScript Executed"),

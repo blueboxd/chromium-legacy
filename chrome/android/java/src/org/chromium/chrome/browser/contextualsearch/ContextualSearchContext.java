@@ -81,6 +81,8 @@ public abstract class ContextualSearchContext {
     // Translation members.
     @NonNull
     private String mTargetLanguage = "";
+    @NonNull
+    private String mFluentLanguages = "";
 
     /**
      * Support for Related Searches.  When {@code true} this allows the context to resolve even
@@ -112,9 +114,12 @@ public abstract class ContextualSearchContext {
      * @param previousUserInteractions Persisted interaction outcomes to send along with the resolve
      *        request.
      * @param targetLanguage The language to translate into, in case translation might be needed.
+     * @param fluentLanguages An ordered comma-separated list of ISO 639 language codes that
+     *        the user can read fluently, or an empty string.
      */
     void setResolveProperties(@NonNull String homeCountry, boolean maySendBasePageUrl,
-            long previousEventId, int previousUserInteractions, @NonNull String targetLanguage) {
+            long previousEventId, int previousUserInteractions, @NonNull String targetLanguage,
+            @NonNull String fluentLanguages) {
         mHasSetResolveProperties = true;
         mHomeCountry = homeCountry;
         mPreviousEventId = previousEventId;
@@ -122,6 +127,7 @@ public abstract class ContextualSearchContext {
         ContextualSearchContextJni.get().setResolveProperties(getNativePointer(), this, homeCountry,
                 maySendBasePageUrl, previousEventId, previousUserInteractions);
         mTargetLanguage = targetLanguage;
+        mFluentLanguages = fluentLanguages;
     }
 
     /**
@@ -129,7 +135,7 @@ public abstract class ContextualSearchContext {
      * no longer in use.  The ContextualSearchContextJni.get().destroy will call the destructor on
      * the native instance.
      */
-    public void destroy() {
+    void destroy() {
         assert mNativePointer != 0;
         ContextualSearchContextJni.get().destroy(mNativePointer, this);
         mNativePointer = 0;
@@ -198,7 +204,7 @@ public abstract class ContextualSearchContext {
                     mSelectionStartOffset, mSelectionEndOffset);
         }
         // Detect the language of the surroundings or the selection.
-        setTranslationLanguages(getDetectedLanguage(), mTargetLanguage);
+        setTranslationLanguages(getDetectedLanguage(), mTargetLanguage, mFluentLanguages);
     }
 
     /**
@@ -344,10 +350,20 @@ public abstract class ContextualSearchContext {
      * Pushes the given language down to the native ContextualSearchContext.
      * @param detectedLanguage An ISO 639 language code string for the language to translate from.
      * @param targetLanguage An ISO 639 language code string to translation into.
+     * @param fluentLanguages An ordered comma-separated list of ISO 639 language codes that
+     *        the user can read fluently, or an empty string.
      */
-    void setTranslationLanguages(String detectedLanguage, String targetLanguage) {
+    @VisibleForTesting
+    void setTranslationLanguages(@NonNull String detectedLanguage, @NonNull String targetLanguage,
+            @NonNull String fluentLanguages) {
+        // Set redundant languages to empty strings.
+        fluentLanguages = targetLanguage.equals(fluentLanguages) ? "" : fluentLanguages;
+        if (targetLanguage.equals(detectedLanguage)) {
+            detectedLanguage = "";
+            targetLanguage = "";
+        }
         ContextualSearchContextJni.get().setTranslationLanguages(
-                mNativePointer, this, detectedLanguage, targetLanguage);
+                mNativePointer, this, detectedLanguage, targetLanguage, fluentLanguages);
     }
 
     // ============================================================================================
@@ -470,7 +486,7 @@ public abstract class ContextualSearchContext {
     /**
      * Finds the word previous to the word tapped.
      */
-    void findPreviousWord() {
+    private void findPreviousWord() {
         // Scan past word-break characters preceding the tapped word.
         int previousWordEndOffset = mWordTappedStartOffset;
         while (previousWordEndOffset >= 1 && isWordBreakAtIndex(previousWordEndOffset - 1)) {
@@ -488,7 +504,7 @@ public abstract class ContextualSearchContext {
     /**
      * Finds the word following the word tapped.
      */
-    void findFollowingWord() {
+    private void findFollowingWord() {
         int tappedWordOffset = getWordTappedOffset();
         int followingWordStartOffset = tappedWordOffset + mWordTapped.length() + 1;
         while (followingWordStartOffset < mSurroundingText.length()
@@ -587,7 +603,8 @@ public abstract class ContextualSearchContext {
                 String content, int selectionStart, int selectionEnd);
         String detectLanguage(long nativeContextualSearchContext, ContextualSearchContext caller);
         void setTranslationLanguages(long nativeContextualSearchContext,
-                ContextualSearchContext caller, String detectedLanguage, String targetLanguage);
+                ContextualSearchContext caller, String detectedLanguage, String targetLanguage,
+                String fluentLanguages);
         void setExactResolve(long nativeContextualSearchContext, ContextualSearchContext caller);
     }
 }

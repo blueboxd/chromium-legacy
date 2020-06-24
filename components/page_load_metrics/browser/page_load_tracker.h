@@ -213,10 +213,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const override;
   const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
       const override;
-  const base::Optional<base::TimeDelta>&
-  GetFirstBackgroundTimeAfterBackForwardCacheRestore() const override;
+  const BackForwardCacheRestore& GetBackForwardCacheRestore(
+      size_t index) const override;
   bool StartedInForeground() const override;
-  bool LastBackForwardCacheRestoreWasInForeground() const override;
   const UserInitiatedInfo& GetUserInitiatedInfo() const override;
   const GURL& GetUrl() const override;
   const GURL& GetStartUrl() const override;
@@ -442,10 +441,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // when they occur in the background.
   base::Optional<base::TimeDelta> first_background_time_;
   base::Optional<base::TimeDelta> first_foreground_time_;
-  base::Optional<base::TimeDelta>
-      first_background_time_after_back_forward_cache_restore_;
+  std::vector<BackForwardCacheRestore> back_forward_cache_restores_;
   const bool started_in_foreground_;
-  bool last_back_forward_cache_restore_was_in_foreground_ = false;
 
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
 

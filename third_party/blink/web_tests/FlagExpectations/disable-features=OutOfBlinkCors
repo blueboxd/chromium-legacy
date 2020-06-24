@@ -96,3 +96,5 @@ crbug.com/688906 external/wpt/fetch/api/basic/request-upload.any.html [ Failure 
 crbug.com/688906 external/wpt/fetch/api/basic/request-upload.any.worker.html [ Failure ]
 crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-upload.any.html [ Failure ]
 crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-upload.any.worker.html [ Failure ]
+crbug.com/688906 external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure ]
+

@@ -443,6 +443,21 @@ class FileManagerUI {
         rootElement.classList.toggle('pointer-active', /down$/.test(e.type));
       }, true);
     });
+
+    // Add global drag-drop-active handler.
+    let activeDropTarget = null;
+    ['dragenter', 'dragleave', 'drop'].forEach((eventType) => {
+      document.addEventListener(eventType, (event) => {
+        const dragDropActive = 'drag-drop-active';
+        if (event.type === 'dragenter') {
+          rootElement.classList.add(dragDropActive);
+          activeDropTarget = event.target;
+        } else if (activeDropTarget === event.target) {
+          rootElement.classList.remove(dragDropActive);
+          activeDropTarget = null;
+        }
+      });
+    });
   }
 
   /**

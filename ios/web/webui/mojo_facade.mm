@@ -81,7 +81,8 @@ MojoFacade::MessageNameAndArguments MojoFacade::GetMessageNameAndArguments(
                                                     base::JSON_PARSE_RFC);
   CHECK(value_with_error.value);
   CHECK(value_with_error.value->is_dict());
-  CHECK_EQ(value_with_error.error_code, base::JSONReader::JSON_NO_ERROR);
+  CHECK_EQ(base::ValueDeserializer::kErrorCodeNoError,
+           value_with_error.error_code);
 
   const std::string* name = value_with_error.value->FindStringKey("name");
   CHECK(name);

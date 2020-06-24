@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/client_hints/browser/client_hints.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace {
@@ -40,10 +42,11 @@ ClientHintsFactory::~ClientHintsFactory() = default;
 
 KeyedService* ClientHintsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  PrefService* local_state = g_browser_process->local_state();
   return new client_hints::ClientHints(
       context, g_browser_process->network_quality_tracker(),
       HostContentSettingsMapFactory::GetForProfile(context),
-      GetUserAgentMetadata());
+      GetUserAgentMetadata(), local_state);
 }
 
 content::BrowserContext* ClientHintsFactory::GetBrowserContextToUse(

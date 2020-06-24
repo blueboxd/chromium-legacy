@@ -943,12 +943,42 @@ class BASE_EXPORT ValueDeserializer {
 
   // This method deserializes the subclass-specific format into a Value object.
   // If the return value is non-NULL, the caller takes ownership of returned
-  // Value. If the return value is NULL, and if error_code is non-NULL,
-  // error_code will be set with the underlying error.
-  // If |error_message| is non-null, it will be filled in with a formatted
+  // Value.
+  //
+  // If the return value is nullptr, and if |error_code| is non-nullptr,
+  // |*error_code| will be set to an integer value representing the underlying
+  // error. See "enum ErrorCode" below for more detail about the integer value.
+  //
+  // If |error_message| is non-nullptr, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   virtual std::unique_ptr<Value> Deserialize(int* error_code,
-                                             std::string* error_str) = 0;
+                                             std::string* error_message) = 0;
+
+  // The integer-valued error codes form four groups:
+  //  - The value 0 means no error.
+  //  - Values between 1 and 999 inclusive mean an error in the data (i.e.
+  //    content). The bytes being deserialized are not in the right format.
+  //  - Values 1000 and above mean an error in the metadata (i.e. context). The
+  //    file could not be read, the network is down, etc.
+  //  - Negative values are reserved.
+  enum ErrorCode {
+    kErrorCodeNoError = 0,
+    // kErrorCodeInvalidFormat is a generic error code for "the data is not in
+    // the right format". Subclasses of ValueDeserializer may return other
+    // values for more specific errors.
+    kErrorCodeInvalidFormat = 1,
+    // kErrorCodeFirstMetadataError is the minimum value (inclusive) of the
+    // range of metadata errors.
+    kErrorCodeFirstMetadataError = 1000,
+  };
+
+  // The |error_code| argument can be one of the ErrorCode values, but it is
+  // not restricted to only being 0, 1 or 1000. Subclasses of ValueDeserializer
+  // can define their own error code values.
+  static inline bool ErrorCodeIsDataError(int error_code) {
+    return (kErrorCodeInvalidFormat <= error_code) &&
+           (error_code < kErrorCodeFirstMetadataError);
+  }
 };
 
 // Stream operator so Values can be used in assertion statements.  In order that

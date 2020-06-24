@@ -180,8 +180,9 @@ enum class ReauthAccessPoint {
   kPasswordSettings = 3,
   kGeneratePasswordDropdown = 4,
   kGeneratePasswordContextMenu = 5,
+  kPasswordMoveBubble = 6,
 
-  kMaxValue = kGeneratePasswordContextMenu
+  kMaxValue = kPasswordMoveBubble
 };
 
 // Enum values which enumerates all user actions on the sign-in promo.

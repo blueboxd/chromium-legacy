@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -107,16 +108,16 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
       const Extension* owner_extension =
           registry->enabled_extensions().GetByID(owner_extension_id);
 
-      std::string partition_domain;
-      std::string partition_id;
-      bool in_memory = false;
+      content::StoragePartitionConfig storage_partition_config =
+          content::StoragePartitionConfig::CreateDefault();
       bool is_guest = WebViewGuest::GetGuestPartitionConfigForSite(
           navigation_handle()->GetStartingSiteInstance()->GetSiteURL(),
-          &partition_domain, &partition_id, &in_memory);
+          &storage_partition_config);
 
       bool allowed = true;
       url_request_util::AllowCrossRendererResourceLoadHelper(
-          is_guest, target_extension, owner_extension, partition_id, url.path(),
+          is_guest, target_extension, owner_extension,
+          storage_partition_config.partition_name(), url.path(),
           navigation_handle()->GetPageTransition(), &allowed);
       if (!allowed)
         return content::NavigationThrottle::BLOCK_REQUEST;

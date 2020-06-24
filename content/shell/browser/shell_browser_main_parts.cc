@@ -41,6 +41,9 @@
 #include "net/base/network_change_notifier.h"
 #endif
 
+#if defined(USE_OZONE) || defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
@@ -114,7 +117,8 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  if (!features::IsUsingOzonePlatform())
+    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 #endif
@@ -130,7 +134,8 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 
 int ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(USE_X11)
-  ui::SetDefaultX11ErrorHandlers();
+  if (!features::IsUsingOzonePlatform())
+    ui::SetDefaultX11ErrorHandlers();
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();
@@ -158,6 +163,10 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 #if BUILDFLAG(USE_GTK) && defined(USE_X11)
   if (switches::IsRunWebTestsSwitchPresent())
     return;
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform())
+    return;
+#endif
   gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
   ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
   views::LinuxUI* linux_ui = BuildGtkUi(gtk_ui_delegate_.get());

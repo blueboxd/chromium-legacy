@@ -474,7 +474,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // specifying accomponying client hints, in which case we disable sending
   // them.
   base::Optional<UserAgentMetadata> ua = GetUserAgentMetadata();
-  if (RuntimeEnabledFeatures::UserAgentClientHintEnabled() && ua.has_value()) {
+  if (ClientHintsPreferences::UserAgentClientHintEnabled() && ua.has_value()) {
     // ShouldSendClientHint is called to make sure UA is controlled by
     // FeaturePolicy.
     if (ShouldSendClientHint(ClientHintsMode::kStandard, policy,

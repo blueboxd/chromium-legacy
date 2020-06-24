@@ -16,7 +16,7 @@
     outline-width: 0;
   }
 
-  ntp-untrusted-iframe {
+  ntp-iframe {
     pointer-events: none;
   }
 
@@ -196,9 +196,9 @@
     <template>
       <div class="tile" tabindex="0" title="[[item.label]]" role="button"
           on-click="onCollectionClick_">
-        <ntp-untrusted-iframe class="image"
-            path="background_image?[[item.previewImageUrl.url]]">
-        </ntp-untrusted-iframe>
+        <ntp-iframe class="image"
+            src="chrome-untrusted://new-tab-page/background_image?[[item.previewImageUrl.url]]">
+        </ntp-iframe>
         <div class="label">[[item.label]]</div>
       </div>
     </template>
@@ -212,9 +212,9 @@
               [[getImageSelectedClass_(index, theme, backgroundSelection)]]"
           tabindex="0" title="[[item.attribution1]]" role="button"
           on-click="onImageClick_">
-        <ntp-untrusted-iframe class="image"
-            path="background_image?[[item.previewImageUrl.url]]">
-        </ntp-untrusted-iframe>
+        <ntp-iframe class="image"
+            src="chrome-untrusted://new-tab-page/background_image?[[item.previewImageUrl.url]]">
+        </ntp-iframe>
         <div class="selected-circle"></div>
         <div class="selected-check"></div>
       </div>

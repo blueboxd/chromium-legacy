@@ -59,6 +59,11 @@
   <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE" desc="Subtitle of the setting to enable Live Caption.">
     Live caption detects speech in media and automatically generates captions for all media playing in Chrome.
   </message>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
+      Show a quick highlight on the focused object
+    </message>
+  </if>
 
   <!-- Appearance Page -->
   <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">

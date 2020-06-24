@@ -4,7 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import './untrusted_iframe.js';
+import './iframe.js';
 import './doodle_share_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -383,14 +383,7 @@ class LogoElement extends PolymerElement {
         this.dark === undefined || !iframe) {
       return;
     }
-    BrowserProxy.getInstance().postMessage(
-        iframe,
-        {
-          cmd: 'changeMode',
-          dark: this.dark,
-        },
-        new URL(iframe.src).origin,
-    );
+    iframe.postMessage({cmd: 'changeMode', dark: this.dark});
   }
 
   /** @private */
@@ -412,7 +405,8 @@ class LogoElement extends PolymerElement {
    */
   computeAnimationUrl_() {
     return this.imageDoodle_ && this.imageDoodle_.animationUrl ?
-        `image?${this.imageDoodle_.animationUrl.url}` :
+        `chrome-untrusted://new-tab-page/image?${
+            this.imageDoodle_.animationUrl.url}` :
         '';
   }
 

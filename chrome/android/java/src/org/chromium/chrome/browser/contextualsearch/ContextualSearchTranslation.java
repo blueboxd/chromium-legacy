@@ -38,4 +38,9 @@ public interface ContextualSearchTranslation {
      * @return The best target language based on what the Translate Service knows about the user.
      */
     String getTranslateServiceTargetLanguage();
+
+    /**
+     * @return The ordered list of languages that the user can read fluently.
+     */
+    String getTranslateServiceFluentLanguages();
 }

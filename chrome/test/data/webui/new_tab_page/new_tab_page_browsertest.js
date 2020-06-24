@@ -169,8 +169,7 @@ var NewTabPageLogoTest = class extends NewTabPageBrowserTest {
   }
 };
 
-// Very flaky (crbug.com/1097035)
-TEST_F('NewTabPageLogoTest', 'DISABLED_All', function() {
+TEST_F('NewTabPageLogoTest', 'All', function() {
   mocha.run();
 });
 

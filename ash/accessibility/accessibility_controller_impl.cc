@@ -1244,9 +1244,10 @@ base::TimeDelta AccessibilityControllerImpl::PlayShutdownSound() {
 }
 
 void AccessibilityControllerImpl::HandleAccessibilityGesture(
-    ax::mojom::Gesture gesture) {
+    ax::mojom::Gesture gesture,
+    gfx::PointF location) {
   if (client_)
-    client_->HandleAccessibilityGesture(gesture);
+    client_->HandleAccessibilityGesture(gesture, location);
 }
 
 void AccessibilityControllerImpl::ToggleDictation() {

@@ -47,6 +47,8 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
 #endif
 
  private:
+  friend class PowerMonitorDeviceSourceTest;
+
 #if defined(OS_WIN)
   // Represents a message-only window for power message handling on Windows.
   // Only allow PowerMonitor to create it.
@@ -86,6 +88,9 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   bool IsOnBatteryPowerImpl() override;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  // PowerMonitorSource:
+  PowerObserver::DeviceThermalState GetCurrentThermalState() override;
+
   // Reference to the system IOPMrootDomain port.
   io_connect_t power_manager_port_ = IO_OBJECT_NULL;
 

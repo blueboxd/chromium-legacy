@@ -21,14 +21,34 @@
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "content/public/browser/tts_controller_delegate.h"
+#endif
 
 namespace content {
-
+namespace {
 // A value to be used to indicate that there is no char index available.
 const int kInvalidCharIndex = -1;
 
 // A value to be used to indicate that there is no length available.
 const int kInvalidLength = -1;
+
+#if defined(OS_CHROMEOS)
+bool VoiceIdMatches(
+    const base::Optional<TtsControllerDelegate::PreferredVoiceId>& id,
+    const content::VoiceData& voice) {
+  if (!id.has_value() || voice.name.empty() ||
+      (voice.engine_id.empty() && !voice.native))
+    return false;
+  if (voice.native)
+    return id->name == voice.name && id->id.empty();
+  return id->name == voice.name && id->id == voice.engine_id;
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
 
 //
 // VoiceData
@@ -77,11 +97,7 @@ TtsControllerImpl* TtsControllerImpl::GetInstance() {
   return base::Singleton<TtsControllerImpl>::get();
 }
 
-TtsControllerImpl::TtsControllerImpl()
-    : delegate_(nullptr),
-      current_utterance_(nullptr),
-      paused_(false),
-      tts_platform_(nullptr) {}
+TtsControllerImpl::TtsControllerImpl() = default;
 
 TtsControllerImpl::~TtsControllerImpl() {
   if (current_utterance_) {
@@ -349,15 +365,6 @@ TtsPlatform* TtsControllerImpl::GetTtsPlatform() {
 }
 
 void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
-  // Note: this would only happen if a content embedder failed to provide
-  // their own TtsControllerDelegate. Chrome provides one, and Content Shell
-  // provides a mock one for web tests.
-  if (!GetTtsControllerDelegate()) {
-    utterance->OnTtsEvent(TTS_EVENT_CANCELLED, kInvalidCharIndex,
-                          kInvalidLength, std::string());
-    return;
-  }
-
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
   GetVoices(utterance->GetBrowserContext(), &voices);
@@ -366,8 +373,7 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
   // to true because that might trigger deferred loading of native voices.
   // TODO(katie): Move most of the GetMatchingVoice logic into content/ and
   // use the TTS controller delegate to get chrome-specific info as needed.
-  int index =
-      GetTtsControllerDelegate()->GetMatchingVoice(utterance.get(), voices);
+  int index = GetMatchingVoice(utterance.get(), voices);
   VoiceData voice;
   if (index >= 0)
     voice = voices[index];
@@ -409,7 +415,7 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
       current_utterance_.reset();
       SpeakNextUtterance();
     }
-#endif
+#endif  // !defined(OS_ANDROID)
   } else {
     // It's possible for certain platforms to send start events immediately
     // during |speak|.
@@ -488,8 +494,9 @@ void TtsControllerImpl::UpdateUtteranceDefaults(TtsUtterance* utterance) {
   double pitch = utterance->GetContinuousParameters().pitch;
   double volume = utterance->GetContinuousParameters().volume;
 #if defined(OS_CHROMEOS)
-  GetTtsControllerDelegate()->UpdateUtteranceDefaultsFromPrefs(utterance, &rate,
-                                                               &pitch, &volume);
+  if (GetTtsControllerDelegate())
+    GetTtsControllerDelegate()->UpdateUtteranceDefaultsFromPrefs(
+        utterance, &rate, &pitch, &volume);
 #else
   // Update pitch, rate and volume to defaults if not explicity set on
   // this utterance.
@@ -501,16 +508,6 @@ void TtsControllerImpl::UpdateUtteranceDefaults(TtsUtterance* utterance) {
     volume = blink::mojom::kSpeechSynthesisDefaultVolume;
 #endif  // defined(OS_CHROMEOS)
   utterance->SetContinuousParameters(rate, pitch, volume);
-}
-
-TtsControllerDelegate* TtsControllerImpl::GetTtsControllerDelegate() {
-  if (delegate_)
-    return delegate_;
-  if (GetContentClient() && GetContentClient()->browser()) {
-    delegate_ = GetContentClient()->browser()->GetTtsControllerDelegate();
-    return delegate_;
-  }
-  return nullptr;
 }
 
 void TtsControllerImpl::StripSSML(
@@ -580,5 +577,110 @@ void TtsControllerImpl::PopulateParsedText(std::string* parsed_text,
     PopulateParsedText(parsed_text, &children->GetList()[i]);
   }
 }
+
+int TtsControllerImpl::GetMatchingVoice(TtsUtterance* utterance,
+                                        const std::vector<VoiceData>& voices) {
+  const std::string app_lang =
+      GetContentClient()->browser()->GetApplicationLocale();
+  // Start with a best score of -1, that way even if none of the criteria
+  // match, something will be returned if there are any voices.
+  int best_score = -1;
+  int best_score_index = -1;
+#if defined(OS_CHROMEOS)
+  TtsControllerDelegate* delegate = GetTtsControllerDelegate();
+  std::unique_ptr<TtsControllerDelegate::PreferredVoiceIds> preferred_ids =
+      delegate ? delegate->GetPreferredVoiceIdsForUtterance(utterance)
+               : nullptr;
+#endif  // defined(OS_CHROMEOS)
+  for (size_t i = 0; i < voices.size(); ++i) {
+    const content::VoiceData& voice = voices[i];
+    int score = 0;
+
+    // If the extension ID is specified, check for an exact match.
+    if (!utterance->GetEngineId().empty() &&
+        utterance->GetEngineId() != voice.engine_id)
+      continue;
+
+    // If the voice name is specified, check for an exact match.
+    if (!utterance->GetVoiceName().empty() &&
+        voice.name != utterance->GetVoiceName())
+      continue;
+
+    // Prefer the utterance language.
+    if (!voice.lang.empty() && !utterance->GetLang().empty()) {
+      // An exact language match is worth more than a partial match.
+      if (voice.lang == utterance->GetLang()) {
+        score += 128;
+      } else if (l10n_util::GetLanguage(voice.lang) ==
+                 l10n_util::GetLanguage(utterance->GetLang())) {
+        score += 64;
+      }
+    }
+
+    // Next, prefer required event types.
+    if (!utterance->GetRequiredEventTypes().empty()) {
+      bool has_all_required_event_types = true;
+      for (TtsEventType event_type : utterance->GetRequiredEventTypes()) {
+        if (voice.events.find(event_type) == voice.events.end()) {
+          has_all_required_event_types = false;
+          break;
+        }
+      }
+      if (has_all_required_event_types)
+        score += 32;
+    }
+
+#if defined(OS_CHROMEOS)
+    if (preferred_ids) {
+      // First prefer the user's preference voice for the utterance language,
+      // if the utterance language is specified.
+      if (!utterance->GetLang().empty() &&
+          VoiceIdMatches(preferred_ids->lang_voice_id, voice)) {
+        score += 16;
+      }
+
+      // Then prefer the user's preference voice for the system language.
+      // This is a lower priority match than the utterance voice.
+      if (VoiceIdMatches(preferred_ids->locale_voice_id, voice))
+        score += 8;
+
+      // Finally, prefer the user's preference voice for any language. This will
+      // pick the default voice if there is no better match for the current
+      // system language and utterance language.
+      if (VoiceIdMatches(preferred_ids->any_locale_voice_id, voice))
+        score += 4;
+    }
+#endif  // defined(OS_CHROMEOS)
+
+    // Finally, prefer system language.
+    if (!voice.lang.empty()) {
+      if (voice.lang == app_lang) {
+        score += 2;
+      } else if (l10n_util::GetLanguage(voice.lang) ==
+                 l10n_util::GetLanguage(app_lang)) {
+        score += 1;
+      }
+    }
+
+    if (score > best_score) {
+      best_score = score;
+      best_score_index = i;
+    }
+  }
+
+  return best_score_index;
+}
+
+#if defined(OS_CHROMEOS)
+TtsControllerDelegate* TtsControllerImpl::GetTtsControllerDelegate() {
+  if (delegate_)
+    return delegate_;
+  if (GetContentClient() && GetContentClient()->browser()) {
+    delegate_ = GetContentClient()->browser()->GetTtsControllerDelegate();
+    return delegate_;
+  }
+  return nullptr;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace content

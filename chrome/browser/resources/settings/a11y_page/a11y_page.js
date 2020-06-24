@@ -62,6 +62,18 @@ Polymer({
         return loadTimeData.getBoolean('enableLiveCaption');
       },
     },
+
+    /**
+     * Whether to show the focus highlight setting.
+     * Depends on feature flag for focus highlight.
+     * @private {boolean}
+     */
+    showFocusHighlightOption_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showFocusHighlightOption');
+      }
+    },
     // </if>
 
     /**

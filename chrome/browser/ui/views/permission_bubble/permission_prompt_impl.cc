@@ -83,6 +83,7 @@ PermissionPromptImpl::~PermissionPromptImpl() {
   if (prompt_style_ == PromptStyle::kChip && permission_chip_) {
     permission_chip_->Hide();
   }
+  CHECK(!IsInObserverList());
 }
 
 void PermissionPromptImpl::UpdateAnchorPosition() {

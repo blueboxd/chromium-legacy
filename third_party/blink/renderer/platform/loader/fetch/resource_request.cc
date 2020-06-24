@@ -96,6 +96,11 @@ ResourceRequestBody::ResourceRequestBody(
     scoped_refptr<EncodedFormData> form_body)
     : form_body_(form_body) {}
 
+ResourceRequestBody::ResourceRequestBody(
+    mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+        stream_body)
+    : stream_body_(std::move(stream_body)) {}
+
 ResourceRequestBody::ResourceRequestBody(ResourceRequestBody&& src)
     : form_body_(std::move(src.form_body_)),
       stream_body_(std::move(src.stream_body_)) {}

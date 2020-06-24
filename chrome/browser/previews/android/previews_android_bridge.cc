@@ -22,7 +22,7 @@ static jlong JNI_PreviewsAndroidBridge_Init(
 }
 
 // static
-void PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(
+bool PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(
     content::WebContents* web_contents) {
   TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
   DCHECK(tab_android);
@@ -31,7 +31,7 @@ void PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(
       tab_android->GetJavaObject();
   DCHECK(!j_tab_android.is_null());
 
-  Java_PreviewsAndroidBridge_createHttpsImageCompressionInfoBar(
+  return Java_PreviewsAndroidBridge_createHttpsImageCompressionInfoBar(
       base::android::AttachCurrentThread(), j_tab_android);
 }
 

@@ -360,13 +360,15 @@ export class Camera extends View {
    * @return {!Promise} Promise for the operation.
    * @protected
    */
-  async doSavePhoto_(result, name) {
-    metrics.log(
-        metrics.Type.CAPTURE, this.facingMode_, /* length= */ 0,
-        result.resolution, metrics.IntentResultType.NOT_INTENT,
-        this.shutterType_);
+  async doSavePhoto_({resolution, blob, isVideoSnapshot = false}, name) {
+    metrics.log(metrics.Type.CAPTURE, {
+      facing: this.facingMode_,
+      resolution,
+      shutterType: this.shutterType_,
+      isVideoSnapshot,
+    });
     try {
-      await this.resultSaver_.savePhoto(result.blob, name);
+      await this.resultSaver_.savePhoto(blob, name);
     } catch (e) {
       toast.show('error_msg_save_file_failed');
       throw e;
@@ -379,13 +381,16 @@ export class Camera extends View {
    * @return {!Promise} Promise for the operation.
    * @protected
    */
-  async doSaveVideo_(result) {
-    metrics.log(
-        metrics.Type.CAPTURE, this.facingMode_, result.duration,
-        result.resolution, metrics.IntentResultType.NOT_INTENT,
-        this.shutterType_);
+  async doSaveVideo_({resolution, duration, videoSaver, everPaused}) {
+    metrics.log(metrics.Type.CAPTURE, {
+      facing: this.facingMode_,
+      duration,
+      resolution,
+      shutterType: this.shutterType_,
+      everPaused,
+    });
     try {
-      await this.resultSaver_.finishSaveVideo(result.videoSaver);
+      await this.resultSaver_.finishSaveVideo(videoSaver);
     } catch (e) {
       toast.show('error_msg_save_file_failed');
       throw e;

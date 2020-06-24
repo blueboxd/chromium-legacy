@@ -307,9 +307,11 @@ void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message) {
   GpuDataManagerImpl::GetInstance()->AddLogMessage(logging::LOG_ERROR,
                                                    "GpuProcessHost", message);
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()
-      ->GetGpuPlatformSupportHost()
-      ->OnChannelDestroyed(host_id);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::GetInstance()
+        ->GetGpuPlatformSupportHost()
+        ->OnChannelDestroyed(host_id);
+  }
 #endif
 }
 

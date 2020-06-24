@@ -108,6 +108,7 @@ PermissionChip::PermissionChip(Browser* browser)
 PermissionChip::~PermissionChip() {
   if (prompt_bubble_)
     prompt_bubble_->GetWidget()->Close();
+  CHECK(!IsInObserverList());
 }
 
 void PermissionChip::Show(permissions::PermissionPrompt::Delegate* delegate) {

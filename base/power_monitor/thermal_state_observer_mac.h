@@ -14,9 +14,9 @@
 
 namespace base {
 
-// This class is used to listen for the thermal state change notification from
-// NSProcessInfoThermalStateDidChangeNotification via a fully owned
-// ThermalStateObserverDelegate, routing the notification to PowerMonitorSource.
+// This class is used to listen for the thermal state change notification
+// NSProcessInfoThermalStateDidChangeNotification, routing it to
+// PowerMonitorSource.
 class BASE_EXPORT ThermalStateObserverMac {
  public:
   using StateUpdateCallback =
@@ -24,6 +24,8 @@ class BASE_EXPORT ThermalStateObserverMac {
 
   explicit ThermalStateObserverMac(StateUpdateCallback state_update_callback);
   ~ThermalStateObserverMac();
+
+  PowerObserver::DeviceThermalState GetCurrentThermalState();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ThermalStateObserverMacTest, StateChange);

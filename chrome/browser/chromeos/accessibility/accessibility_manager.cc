@@ -164,7 +164,7 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
     widget_->AddObserver(this);
   }
 
-  ~AccessibilityPanelWidgetObserver() override = default;
+  ~AccessibilityPanelWidgetObserver() override { CHECK(!IsInObserverList()); }
 
   void OnWidgetClosing(views::Widget* widget) override {
     CHECK_EQ(widget_, widget);
@@ -662,13 +662,16 @@ bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(
-    ax::mojom::Gesture gesture) {
+    ax::mojom::Gesture gesture,
+    gfx::PointF location) {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
 
   std::unique_ptr<base::ListValue> event_args =
       std::make_unique<base::ListValue>();
   event_args->AppendString(ui::ToString(gesture));
+  event_args->AppendInteger(location.x());
+  event_args->AppendInteger(location.y());
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
       extensions::api::accessibility_private::OnAccessibilityGesture::

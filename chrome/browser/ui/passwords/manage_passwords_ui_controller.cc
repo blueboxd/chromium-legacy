@@ -634,9 +634,22 @@ void ManagePasswordsUIController::
   client->TriggerReauthForPrimaryAccount(
       signin_metrics::ReauthAccessPoint::kPasswordSaveBubble,
       base::BindOnce(&ManagePasswordsUIController::
-                         AuthenticateUserForAccountStoreOptInCallback,
+                         FinishSavingPasswordAfterAccountStoreOptInAuth,
                      weak_ptr_factory_.GetWeakPtr(), passwords_data_.origin(),
                      passwords_data_.form_manager(), username, password));
+}
+
+void ManagePasswordsUIController::
+    AuthenticateUserForAccountStoreOptInAndMovePassword() {
+  DCHECK_EQ(GetState(),
+            password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE)
+      << GetState();
+  passwords_data_.client()->TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint::kPasswordMoveBubble,
+      base::BindOnce(&ManagePasswordsUIController::
+                         FinishMovingPasswordAfterAccountStoreOptInAuth,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     passwords_data_.form_manager()));
 }
 
 bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
@@ -786,12 +799,14 @@ bool ManagePasswordsUIController::ShowAuthenticationDialog() {
 #endif
 }
 
-void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
-    const url::Origin& origin,
-    password_manager::PasswordFormManagerForUI* form_manager,
-    const base::string16& username,
-    const base::string16& password,
-    password_manager::PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
+void ManagePasswordsUIController::
+    FinishSavingPasswordAfterAccountStoreOptInAuth(
+        const url::Origin& origin,
+        password_manager::PasswordFormManagerForUI* form_manager,
+        const base::string16& username,
+        const base::string16& password,
+        password_manager::PasswordManagerClient::ReauthSucceeded
+            reauth_succeeded) {
   if (reauth_succeeded) {
     passwords_data_.set_auth_for_account_storage_opt_in_failed(false);
     // Save the password only if it is the same origin and same form manager.
@@ -837,6 +852,20 @@ void ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble(
   }
   passwords_data_.TransitionToState(state);
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::
+    FinishMovingPasswordAfterAccountStoreOptInAuth(
+        password_manager::PasswordFormManagerForUI* form_manager,
+        password_manager::PasswordManagerClient::ReauthSucceeded
+            reauth_succeeded) {
+  if (!reauth_succeeded || passwords_data_.form_manager() != form_manager) {
+    return;
+  }
+  MovePasswordToAccountStore();
+  ClearPopUpFlagForBubble();
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }
 

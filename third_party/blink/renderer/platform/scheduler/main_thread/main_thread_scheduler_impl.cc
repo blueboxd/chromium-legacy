@@ -1252,7 +1252,7 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       break;
   }
 
-  // Make sure the per-agent scheduling strategy is notified there was an
+  // Make sure the per-agent scheduling strategy is notified that there was an
   // input event.
   if (type != WebInputEvent::Type::kMouseMove &&
       !notify_agent_strategy_task_posted_.IsSet() &&

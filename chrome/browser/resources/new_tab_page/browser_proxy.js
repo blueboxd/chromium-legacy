@@ -59,11 +59,11 @@ export class BrowserProxy {
   }
 
   /**
-   * @param {string} path
+   * @param {string} src
    * @return {string}
    */
-  createUntrustedIframeSrc(path) {
-    return `chrome-untrusted://new-tab-page/${path}`;
+  createIframeSrc(src) {
+    return src;
   }
 
   /**

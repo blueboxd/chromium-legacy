@@ -77,6 +77,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"                          // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
 #include "ui/gfx/x/x11.h"                                // nogncheck
@@ -364,7 +365,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 #if defined(USE_X11)
   // ui::GbmDevice() takes >50ms with amdgpu, so kick off
   // GpuMemoryBufferSupportX11 creation on another thread now.
-  if (gpu_preferences.enable_native_gpu_memory_buffers) {
+  if (!features::IsUsingOzonePlatform() &&
+      gpu_preferences.enable_native_gpu_memory_buffers) {
     base::ThreadPool::PostTask(
         FROM_HERE, base::BindOnce([]() {
           SCOPED_UMA_HISTOGRAM_TIMER("Linux.X11.GbmSupportX11CreationTime");

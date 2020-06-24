@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/chromeos/login/screens/active_directory_password_change_screen.h"
 #include "chrome/browser/chromeos/login/screens/app_downloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
@@ -101,6 +102,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
@@ -595,6 +597,12 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<GaiaPasswordChangedScreen>(
       oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()));
 
+  append(std::make_unique<ActiveDirectoryPasswordChangeScreen>(
+      oobe_ui->GetView<ActiveDirectoryPasswordChangeScreenHandler>(),
+      base::BindRepeating(
+          &WizardController::OnActiveDirectoryPasswordChangeScreenExit,
+          weak_factory_.GetWeakPtr())));
+
   return result;
 }
 
@@ -770,6 +778,19 @@ void WizardController::ShowDiscoverScreen() {
 
 void WizardController::ShowPackagedLicenseScreen() {
   SetCurrentScreen(GetScreen(PackagedLicenseView::kScreenId));
+}
+
+void WizardController::ShowActiveDirectoryPasswordChangeScreen(
+    const std::string& username) {
+  ActiveDirectoryPasswordChangeScreen::Get(screen_manager())
+      ->SetUsername(username);
+  AdvanceToScreen(ActiveDirectoryPasswordChangeView::kScreenId);
+}
+
+void WizardController::OnActiveDirectoryPasswordChangeScreenExit() {
+  OnScreenExit(ActiveDirectoryPasswordChangeView::kScreenId,
+               kDefaultExitReason);
+  ShowLoginScreen();
 }
 
 void WizardController::SkipToLoginForTesting() {
@@ -1567,7 +1588,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
   } else if (screen_id == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
-             screen_id == GaiaPasswordChangedView::kScreenId) {
+             screen_id == GaiaPasswordChangedView::kScreenId ||
+             screen_id == ActiveDirectoryPasswordChangeView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     if (is_out_of_box_) {

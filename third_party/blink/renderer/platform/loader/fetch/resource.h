@@ -62,6 +62,7 @@ class Clock;
 
 namespace blink {
 
+class BlobDataHandle;
 class CachedMetadataHandler;
 class CachedMetadataSender;
 class FetchParameters;

@@ -102,6 +102,7 @@ ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
   // The widgets should close synchronously (resulting in OnWidgetClosing()),
   // so |anchored_widgets_| should now be empty.
   DCHECK(anchored_widgets_.empty());
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void ExtensionsToolbarContainer::UpdateAllIcons() {

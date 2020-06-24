@@ -12,7 +12,6 @@ header("Content-Security-Policy: sandbox allow-scripts allow-popups");
     <script>
         if (window.testRunner) {
             testRunner.setCanOpenWindows();
-            testRunner.setCloseRemainingWindowsWhenComplete(true);
         }
 
         var test = async_test("Testing sandbox inherited via target='_blank'");

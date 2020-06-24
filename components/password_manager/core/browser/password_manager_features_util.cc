@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 
+#include <algorithm>
+
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
@@ -71,6 +73,20 @@ PasswordForm::Store PasswordStoreFromInt(int value) {
 
 const char kAccountStorageOptedInKey[] = "opted_in";
 const char kAccountStorageDefaultStoreKey[] = "default_store";
+
+// Returns the total number of accounts for which an opt-in to the account
+// storage exists. Used for metrics.
+int GetNumberOfOptedInAccounts(const PrefService* pref_service) {
+  const base::DictionaryValue* global_pref =
+      pref_service->GetDictionary(prefs::kAccountStoragePerAccountSettings);
+  int count = 0;
+  for (const std::pair<std::string, std::unique_ptr<base::Value>>& entry :
+       *global_pref) {
+    if (entry.second->FindBoolKey(kAccountStorageOptedInKey).value_or(false))
+      ++count;
+  }
+  return count;
+}
 
 // Helper class for reading account storage settings for a given account.
 class AccountStorageSettingsReader {
@@ -222,6 +238,11 @@ void OptInToAccountStorage(PrefService* pref_service,
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .SetOptedIn();
+
+  // Record the total number of (now) opted-in accounts.
+  base::UmaHistogramExactLinear(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn",
+      GetNumberOfOptedInAccounts(pref_service), 10);
 }
 
 void OptOutOfAccountStorageAndClearSettings(
@@ -242,9 +263,15 @@ void OptOutOfAccountStorageAndClearSettings(
     // opt-out UI was triggered.
     return;
   }
+
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .ClearAllSettings();
+
+  // Record the total number of (still) opted-in accounts.
+  base::UmaHistogramExactLinear(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut",
+      GetNumberOfOptedInAccounts(pref_service), 10);
 }
 
 bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
@@ -328,6 +355,12 @@ void KeepAccountStorageSettingsOnlyForUsers(
 
 void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {
   DCHECK(pref_service);
+
+  // Record the total number of opted-in accounts before clearing them.
+  base::UmaHistogramExactLinear(
+      "PasswordManager.AccountStorage.ClearedOptInForAllAccounts",
+      GetNumberOfOptedInAccounts(pref_service), 10);
+
   pref_service->ClearPref(prefs::kAccountStoragePerAccountSettings);
 }
 

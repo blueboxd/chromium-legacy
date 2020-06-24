@@ -25,7 +25,6 @@ def CollectSONAME(args):
   readelf = subprocess.Popen(wrapper_utils.CommandToRun(
       [args.readelf, '-d', args.sofile]), stdout=subprocess.PIPE, bufsize=-1)
   for line in readelf.stdout:
-    line = line.decode('utf-8')
     if 'SONAME' in line:
       toc += line
   return readelf.wait(), toc
@@ -40,7 +39,6 @@ def CollectDynSym(args):
       stdout=subprocess.PIPE,
       bufsize=-1)
   for line in nm.stdout:
-    line = line.decode('utf-8')
     toc += ' '.join(line.split(' ', 2)[:2]) + '\n'
   return nm.wait(), toc
 

@@ -16,6 +16,7 @@
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 
+#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
 #endif
 
@@ -56,10 +57,12 @@ MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,
     if (accelerator.IsCmdDown())
       parts.push_back(DbusString("Super"));
 #if defined(USE_X11)
-    parts.push_back(DbusString(XKeysymToString(
-        XKeysymForWindowsKeyCode(accelerator.key_code(), false))));
-    properties["shortcut"] =
-        MakeDbusVariant(MakeDbusArray(DbusArray<DbusString>(std::move(parts))));
+    if (!features::IsUsingOzonePlatform()) {
+      parts.push_back(DbusString(XKeysymToString(
+          XKeysymForWindowsKeyCode(accelerator.key_code(), false))));
+      properties["shortcut"] = MakeDbusVariant(
+          MakeDbusArray(DbusArray<DbusString>(std::move(parts))));
+    }
 #else
     NOTIMPLEMENTED();
 #endif

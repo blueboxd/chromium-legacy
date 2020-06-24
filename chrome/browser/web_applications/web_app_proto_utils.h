@@ -17,10 +17,10 @@ using RepeatedIconInfosProto =
     const ::google::protobuf::RepeatedPtrField<::sync_pb::WebAppIconInfo>;
 
 base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
-    const char* outer_container_name,
+    const char* container_name_for_logging,
     RepeatedIconInfosProto icon_infos_proto);
 
-base::Optional<WebApp::SyncData> ParseWebAppSyncData(
+base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
     const sync_pb::WebAppSpecifics& sync_proto);
 
 }  // namespace web_app

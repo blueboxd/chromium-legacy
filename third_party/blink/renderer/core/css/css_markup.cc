@@ -29,33 +29,11 @@
 #include "third_party/blink/renderer/core/css/css_markup.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-
-template <typename CharacterType>
-static inline bool IsCSSTokenizerIdentifier(const CharacterType* characters,
-                                            unsigned length) {
-  const CharacterType* end = characters + length;
-
-  // -?
-  if (characters != end && characters[0] == '-')
-    ++characters;
-
-  // {nmstart}
-  if (characters == end || !IsNameStartCodePoint(characters[0]))
-    return false;
-  ++characters;
-
-  // {nmchar}*
-  for (; characters != end; ++characters) {
-    if (!IsNameCodePoint(characters[0]))
-      return false;
-  }
-
-  return true;
-}
 
 // "ident" from the CSS tokenizer, minus backslash-escape sequences
 static bool IsCSSTokenizerIdentifier(const String& string) {
@@ -64,9 +42,26 @@ static bool IsCSSTokenizerIdentifier(const String& string) {
   if (!length)
     return false;
 
-  if (string.Is8Bit())
-    return IsCSSTokenizerIdentifier(string.Characters8(), length);
-  return IsCSSTokenizerIdentifier(string.Characters16(), length);
+  return WTF::VisitCharacters(string, [](const auto* chars, unsigned length) {
+    const auto* end = chars + length;
+
+    // -?
+    if (chars != end && chars[0] == '-')
+      ++chars;
+
+    // {nmstart}
+    if (chars == end || !IsNameStartCodePoint(chars[0]))
+      return false;
+    ++chars;
+
+    // {nmchar}*
+    for (; chars != end; ++chars) {
+      if (!IsNameCodePoint(chars[0]))
+        return false;
+    }
+
+    return true;
+  });
 }
 
 static void SerializeCharacter(UChar32 c, StringBuilder& append_to) {

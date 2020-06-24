@@ -11,13 +11,17 @@
 
 namespace base {
 
-PowerMonitorTestSource::PowerMonitorTestSource()
-    : test_on_battery_power_(false) {
+PowerMonitorTestSource::PowerMonitorTestSource() {
   DCHECK(MessageLoopCurrent::Get())
       << "PowerMonitorTestSource requires a MessageLoop.";
 }
 
 PowerMonitorTestSource::~PowerMonitorTestSource() = default;
+
+PowerObserver::DeviceThermalState
+PowerMonitorTestSource::GetCurrentThermalState() {
+  return current_thermal_state_;
+}
 
 void PowerMonitorTestSource::GeneratePowerStateEvent(bool on_battery_power) {
   test_on_battery_power_ = on_battery_power;
@@ -42,6 +46,7 @@ bool PowerMonitorTestSource::IsOnBatteryPowerImpl() {
 void PowerMonitorTestSource::GenerateThermalThrottlingEvent(
     PowerObserver::DeviceThermalState new_thermal_state) {
   ProcessThermalEvent(new_thermal_state);
+  current_thermal_state_ = new_thermal_state;
   RunLoop().RunUntilIdle();
 }
 

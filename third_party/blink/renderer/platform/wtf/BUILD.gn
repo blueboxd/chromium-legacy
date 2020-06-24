@@ -109,6 +109,7 @@ jumbo_component("wtf") {
     "text/case_map.cc",
     "text/case_map.h",
     "text/character_names.h",
+    "text/character_visitor.h",
     "text/integer_to_string_conversion.h",
     "text/line_ending.cc",
     "text/line_ending.h",

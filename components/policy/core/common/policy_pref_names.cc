@@ -49,5 +49,9 @@ const char kNativeWindowOcclusionEnabled[] =
 const char kIntensiveWakeUpThrottlingEnabled[] =
     "policy.intensive_wake_up_throttling_enabled";
 
+// Boolean policy preference to disable the User-Agent Client Hints feature.
+const char kUserAgentClientHintsEnabled[] =
+    "policy.user_agent_client_hints_enabled";
+
 }  // namespace policy_prefs
 }  // namespace policy

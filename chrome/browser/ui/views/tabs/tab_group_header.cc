@@ -396,6 +396,7 @@ TabGroupHeader::EditorBubbleTracker::~EditorBubbleTracker() {
     widget_->RemoveObserver(this);
     widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
   }
+  CHECK(!IsInObserverList());
 }
 
 void TabGroupHeader::EditorBubbleTracker::Opened(views::Widget* bubble_widget) {

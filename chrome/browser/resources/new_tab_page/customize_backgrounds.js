@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import './grid.js';
 import './mini_page.js';
-import './untrusted_iframe.js';
+import './iframe.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

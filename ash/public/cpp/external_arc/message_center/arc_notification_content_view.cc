@@ -291,6 +291,7 @@ ArcNotificationContentView::~ArcNotificationContentView() {
     item_->RemoveObserver(this);
     item_->DecrementWindowRefCount();
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 const char* ArcNotificationContentView::GetClassName() const {

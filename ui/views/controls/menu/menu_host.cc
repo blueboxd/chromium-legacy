@@ -103,6 +103,7 @@ MenuHost::MenuHost(SubmenuView* submenu)
 MenuHost::~MenuHost() {
   if (owner_)
     owner_->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void MenuHost::InitMenuHost(Widget* parent,

@@ -419,10 +419,6 @@ bool AXLayoutObject::IsLinked() const {
   return false;
 }
 
-bool AXLayoutObject::IsLoaded() const {
-  return !layout_object_->GetDocument().Parser();
-}
-
 bool AXLayoutObject::IsOffScreen() const {
   DCHECK(layout_object_);
   IntRect content_rect =
@@ -1816,22 +1812,6 @@ bool AXLayoutObject::CanHaveChildren() const {
   if (layout_object_->IsListMarkerForNormalContent())
     return false;
   return AXNodeObject::CanHaveChildren();
-}
-
-//
-// Properties of the object's owning document or page.
-//
-
-double AXLayoutObject::EstimatedLoadingProgress() const {
-  if (!layout_object_)
-    return 0;
-
-  if (IsLoaded())
-    return 1.0;
-
-  if (LocalFrame* frame = layout_object_->GetDocument().GetFrame())
-    return frame->Loader().Progress().EstimatedProgress();
-  return 0;
 }
 
 //

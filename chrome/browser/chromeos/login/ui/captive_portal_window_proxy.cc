@@ -70,11 +70,12 @@ CaptivePortalWindowProxy::CaptivePortalWindowProxy(
 }
 
 CaptivePortalWindowProxy::~CaptivePortalWindowProxy() {
-  if (!widget_)
-    return;
-  DCHECK_EQ(STATE_DISPLAYED, GetState());
-  widget_->RemoveObserver(this);
-  widget_->Close();
+  if (widget_) {
+    DCHECK_EQ(STATE_DISPLAYED, GetState());
+    widget_->RemoveObserver(this);
+    widget_->Close();
+  }
+  CHECK(!IsInObserverList());
 }
 
 void CaptivePortalWindowProxy::ShowIfRedirected() {

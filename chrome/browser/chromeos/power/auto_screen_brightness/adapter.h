@@ -392,6 +392,10 @@ class Adapter : public AlsReader::Observer,
   // has no lid, it is considered as open.
   base::Optional<bool> is_lid_closed_;
 
+  // Ignored ALS due to closed lid is only recorded once: the 1st time when
+  // ALS changes.
+  bool lid_closed_message_reported_ = false;
+
   // Recent lid reopen time following a lid-closed event. Unset after the first
   // brightness change after a recent lid-open event.
   base::TimeTicks lid_reopen_time_;

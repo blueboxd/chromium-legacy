@@ -63,6 +63,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"       // nogncheck
 #include "ui/gfx/x/x11_atom_cache.h"  // nogncheck
 #endif
@@ -194,6 +195,14 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   basic_info->Append(NewDescriptionValuePair(
       "NV12 overlay support",
       gpu::OverlaySupportToString(gpu_info.overlay_info.nv12_overlay_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "BGRA8 overlay support",
+      gpu::OverlaySupportToString(
+          gpu_info.overlay_info.bgra8_overlay_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "RGB10A2 overlay support",
+      gpu::OverlaySupportToString(
+          gpu_info.overlay_info.rgb10a2_overlay_support)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();
@@ -254,25 +263,29 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   basic_info->Append(NewDescriptionValuePair("Window system binding extensions",
                                              gpu_info.gl_ws_extensions));
 #if defined(USE_X11)
-  basic_info->Append(
-      NewDescriptionValuePair("Window manager", ui::GuessWindowManagerName()));
-  {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
-    std::string value;
-    const char kXDGCurrentDesktop[] = "XDG_CURRENT_DESKTOP";
-    if (env->GetVar(kXDGCurrentDesktop, &value))
-      basic_info->Append(NewDescriptionValuePair(kXDGCurrentDesktop, value));
-    const char kGDMSession[] = "GDMSESSION";
-    if (env->GetVar(kGDMSession, &value))
-      basic_info->Append(NewDescriptionValuePair(kGDMSession, value));
+  // TODO(https://crbug.com/1097007): capture window manager name on Ozone.
+  if (!features::IsUsingOzonePlatform()) {
+    basic_info->Append(NewDescriptionValuePair("Window manager",
+                                               ui::GuessWindowManagerName()));
+    {
+      std::unique_ptr<base::Environment> env(base::Environment::Create());
+      std::string value;
+      const char kXDGCurrentDesktop[] = "XDG_CURRENT_DESKTOP";
+      if (env->GetVar(kXDGCurrentDesktop, &value))
+        basic_info->Append(NewDescriptionValuePair(kXDGCurrentDesktop, value));
+      const char kGDMSession[] = "GDMSESSION";
+      if (env->GetVar(kGDMSession, &value))
+        basic_info->Append(NewDescriptionValuePair(kGDMSession, value));
+      basic_info->Append(NewDescriptionValuePair(
+          "Compositing manager",
+          ui::IsCompositingManagerPresent() ? "Yes" : "No"));
+    }
     basic_info->Append(NewDescriptionValuePair(
-        "Compositing manager",
-        ui::IsCompositingManagerPresent() ? "Yes" : "No"));
+        "System visual ID",
+        base::NumberToString(gpu_extra_info.system_visual)));
+    basic_info->Append(NewDescriptionValuePair(
+        "RGBA visual ID", base::NumberToString(gpu_extra_info.rgba_visual)));
   }
-  basic_info->Append(NewDescriptionValuePair(
-      "System visual ID", base::NumberToString(gpu_extra_info.system_visual)));
-  basic_info->Append(NewDescriptionValuePair(
-      "RGBA visual ID", base::NumberToString(gpu_extra_info.rgba_visual)));
 #endif
   std::string direct_rendering_version;
   if (gpu_info.direct_rendering_version == "1") {
@@ -364,13 +377,18 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo(
 
   gpu::GpuMemoryBufferSupport gpu_memory_buffer_support;
 
+  gpu::GpuMemoryBufferConfigurationSet native_config;
 #if defined(USE_X11)
-  const auto& native_configurations =
-      gpu_extra_info.gpu_memory_buffer_support_x11;
-#else
-  const auto native_configurations =
-      gpu::GetNativeGpuMemoryBufferConfigurations(&gpu_memory_buffer_support);
+  if (features::IsUsingOzonePlatform()) {
+    for (const auto& config : gpu_extra_info.gpu_memory_buffer_support_x11) {
+      native_config.emplace(config);
+    }
+  }
 #endif
+  if (native_config.empty()) {
+    native_config =
+        gpu::GetNativeGpuMemoryBufferConfigurations(&gpu_memory_buffer_support);
+  }
   for (size_t format = 0;
        format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
     std::string native_usage_support;
@@ -378,7 +396,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo(
          usage < static_cast<size_t>(gfx::BufferUsage::LAST) + 1; usage++) {
       gfx::BufferUsageAndFormat element{static_cast<gfx::BufferUsage>(usage),
                                         static_cast<gfx::BufferFormat>(format)};
-      if (base::Contains(native_configurations, element)) {
+      if (base::Contains(native_config, element)) {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),
             native_usage_support.empty() ? "" : ",",

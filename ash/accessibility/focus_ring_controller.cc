@@ -19,6 +19,7 @@ FocusRingController::FocusRingController() : visible_(false), widget_(NULL) {}
 
 FocusRingController::~FocusRingController() {
   SetVisible(false);
+  CHECK(!IsInObserverList());
 }
 
 void FocusRingController::SetVisible(bool visible) {

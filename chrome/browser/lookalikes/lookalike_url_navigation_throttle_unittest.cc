@@ -4,6 +4,11 @@
 
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/lookalikes/core/features.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace lookalikes {
@@ -74,6 +79,48 @@ TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
   EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com/path"),
                                               GURL("http://intermediate.com/p"),
                                               GURL("http://éxample.com/dir")}));
+}
+
+class LookalikeThrottleTest : public ChromeRenderViewHostTestHarness {};
+
+// Tests that spoofy hostnames are properly handled in the throttle.
+TEST_F(LookalikeThrottleTest, SpoofsBlocked) {
+  base::HistogramTester test;
+
+  const struct TestCase {
+    const char* hostname;
+    bool expected_blocked;
+  } kTestCases[] = {
+      {"private.hostname", false},
+      {"example·com.com", true},
+      {"🍕.com", true},
+  };
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      lookalikes::features::kLookalikeInterstitialForPunycode);
+
+  for (const TestCase& test_case : kTestCases) {
+    GURL url(std::string("http://") + test_case.hostname);
+    content::MockNavigationHandle handle(url, main_rfh());
+    handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+
+    auto throttle =
+        LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(&handle);
+    ASSERT_TRUE(throttle);
+    throttle->SetUseTestProfileForTesting();
+
+    EXPECT_EQ(content::NavigationThrottle::PROCEED,
+              throttle->WillStartRequest().action());
+
+    if (test_case.expected_blocked) {
+      EXPECT_EQ(content::NavigationThrottle::CANCEL,
+                throttle->WillProcessResponse().action());
+    } else {
+      EXPECT_EQ(content::NavigationThrottle::PROCEED,
+                throttle->WillProcessResponse().action());
+    }
+  }
 }
 
 }  // namespace lookalikes

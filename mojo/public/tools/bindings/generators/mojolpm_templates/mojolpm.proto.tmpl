@@ -323,6 +323,29 @@ message {{interface.name}} {
 {%-       endif %}
 {%-     endfor %}
   }
+
+  message {{interface.name}}_{{method.name}}Response {
+{%-     if method.response_parameters %}
+{%-       for parameter in method.response_parameters %}
+{%-         set name = parameter.name|camel_to_under %}
+{%-         set kind = parameter.kind %}
+{%-         if (kind|is_array_kind or kind|is_map_kind) -%}
+{{forward_declare_field_types(kind, name)|indent(width=2)}}
+{%-         endif %}
+{%-       endfor %}
+{%-       for parameter in method.response_parameters %}
+{%-         set name = parameter.name|camel_to_under %}
+{%-         set kind = parameter.kind %}
+{%-         if kind|is_array_kind %}
+    {{optional_or_required(kind)}} {{name|under_to_camel}}_Array m_{{name}} = {{name|proto_id(kind)}};
+{%-         elif kind|is_map_kind %}
+    {{optional_or_required(kind)}} {{name|under_to_camel}}_Map m_{{name}} = {{name|proto_id(kind)}};
+{%-         else %}
+    {{kind|proto_field_type}} m_{{name}} = {{name|proto_id(kind)}};
+{%-         endif %}
+{%-       endfor %}
+{%-     endif %}
+  }
 {%-   endfor%}
 
 {%-   if interface.methods|length %}
@@ -366,6 +389,14 @@ message {{interface.name}} {
       Reset reset = 2;
 {%-     for method in interface.methods %}
       {{interface.name}}_{{method.name}} m_{{method.name|camel_to_under}} = {{loop.index + 2}};
+{%-     endfor %}
+    }
+  }
+
+  message ReceiverResponse {
+    oneof response {
+{%-     for method in interface.methods %}
+      {{interface.name}}_{{method.name}}Response m_{{method.name|camel_to_under}}_response = {{loop.index + 2}};
 {%-     endfor %}
     }
   }

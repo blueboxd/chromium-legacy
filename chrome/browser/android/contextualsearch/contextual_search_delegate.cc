@@ -75,7 +75,7 @@ const int kContextualSearchRequestVersion = 2;
 // Deprecated: kContextualSearchSingleRequest = 3;
 const int kRelatedSearchesVersion = 4;
 
-const int kContextualSearchMaxSelection = 100;
+const int kContextualSearchMaxSelection = 1000;
 const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
@@ -308,7 +308,8 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
       context->GetPreviousEventId(), context->GetPreviousEventResults(),
       context->GetExactResolve(),
       context->GetTranslationLanguages().detected_language,
-      context->GetTranslationLanguages().target_language, std::string());
+      context->GetTranslationLanguages().target_language,
+      context->GetTranslationLanguages().fluent_languages);
 
   search_terms_args.contextual_search_params = params;
 

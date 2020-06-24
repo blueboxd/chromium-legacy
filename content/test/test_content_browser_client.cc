@@ -14,10 +14,21 @@
 
 namespace content {
 
+// static
+TestContentBrowserClient* TestContentBrowserClient::instance_ = nullptr;
+
 TestContentBrowserClient::TestContentBrowserClient() {
+  instance_ = this;
 }
 
 TestContentBrowserClient::~TestContentBrowserClient() {
+  if (instance_ == this)
+    instance_ = nullptr;
+}
+
+// static
+TestContentBrowserClient* TestContentBrowserClient::GetInstance() {
+  return instance_;
 }
 
 base::FilePath TestContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -39,6 +50,12 @@ TestContentBrowserClient::GetGeneratedCodeCacheSettings(
 
 std::string TestContentBrowserClient::GetUserAgent() {
   return std::string("TestContentClient");
+}
+
+std::string TestContentBrowserClient::GetApplicationLocale() {
+  return application_locale_.empty()
+             ? ContentBrowserClient::GetApplicationLocale()
+             : application_locale_;
 }
 
 #if defined(OS_ANDROID)

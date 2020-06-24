@@ -5,10 +5,22 @@ if (self.importScripts) {
 var {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
 
 function fetch_echo(stream) {
-  return fetch(
-      '/serviceworker/resources/fetch-echo-body.php',
-      {method: 'POST', body: stream, mode: 'same-origin'});
+  return fetch('/serviceworker/resources/fetch-echo-body.php', {
+    method: 'POST',
+    body: stream,
+    mode: 'same-origin',
+    allowHTTP1ForStreamingUpload: true
+  });
 }
+
+promise_test(async (t) => {
+  await promise_rejects_js(
+      t, TypeError, fetch('/serviceworker/resources/fetch-echo-body.php', {
+        method: 'POST',
+        body: create_stream([new Uint8Array(0)]),
+        allowHTTP1ForStreamingUpload: false
+      }));
+}, 'AllowHTTP1:false makes fetch failed over HTTP/1.');
 
 function fetch_echo_body(stream) {
   return fetch_echo(stream).then(response => response.text());
@@ -103,9 +115,11 @@ function fetch_redirect(status) {
       BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
   const redirect_original_url = BASE_ORIGIN +
       '/serviceworker/resources/redirect.php?Redirect=' + redirect_target_url;
-  return fetch(
-      redirect_original_url + `&Status=${status}`,
-      {method: 'POST', body: create_foo_stream()});
+  return fetch(redirect_original_url + `&Status=${status}`, {
+    method: 'POST',
+    body: create_foo_stream(),
+    allowHTTP1ForStreamingUpload: true
+  });
 }
 
 promise_test(async (t) => {
@@ -126,9 +140,12 @@ promise_test(async () => {
 promise_test(async (t) => {
   await promise_rejects_js(
       t, TypeError,
-      fetch(
-          '/serviceworker/resources/fetch-access-control.php?AuthFail',
-          {method: 'POST', body: create_foo_stream(), mode: 'same-origin'}));
+      fetch('/serviceworker/resources/fetch-access-control.php?AuthFail', {
+        method: 'POST',
+        body: create_foo_stream(),
+        mode: 'same-origin',
+        allowHTTP1ForStreamingUpload: true
+      }));
 }, 'Upload streaming with 401 Unauthorized response should fail.');
 
 function report(content) {
@@ -144,7 +161,8 @@ promise_test(async () => {
   const response_text = await fetch(request_url, {
                           method: 'POST',
                           body: 'content a',
-                          mode: 'cors'
+                          mode: 'cors',
+                          allowHTTP1ForStreamingUpload: true
                         }).then(r => r.text());
   const report_json = eval(response_text);
   assert_false(report_json['did_preflight'], 'Should not trigger preflight');
@@ -160,6 +178,7 @@ promise_test(async () => {
                           method: 'POST',
                           body: create_foo_stream(),
                           mode: 'cors',
+                          allowHTTP1ForStreamingUpload: true
                         }).then(r => r.text());
   const report_json = eval(response_text);
   assert_true(report_json['did_preflight'], 'Should preflight');

@@ -21,6 +21,10 @@
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
 
+#if !defined(OS_CHROMEOS)
+#include "ui/accessibility/accessibility_features.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -137,4 +141,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox, true);
   registry->RegisterBooleanPref(prefs::kScreenCaptureAllowed, true);
+
+#if !defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kAccessibilityFocusHighlightEnabled,
+                                false);
+#endif
 }

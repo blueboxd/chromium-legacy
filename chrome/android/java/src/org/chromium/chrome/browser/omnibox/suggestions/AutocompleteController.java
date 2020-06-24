@@ -263,6 +263,7 @@ public class AutocompleteController {
      * interaction with the omnibox.
      *
      * @param selectedIndex The index of the suggestion that was selected.
+     * @param disposition The window open disposition.
      * @param type The type of the selected suggestion.
      * @param currentPageUrl The URL of the current page.
      * @param pageClassification The page classification of the current tab.
@@ -271,14 +272,14 @@ public class AutocompleteController {
      * @param completedLength The length of the default match's inline autocompletion if any.
      * @param webContents The web contents for the tab where the selected suggestion will be shown.
      */
-    void onSuggestionSelected(int selectedIndex, int hashCode, int type, String currentPageUrl,
-            int pageClassification, long elapsedTimeSinceModified, int completedLength,
-            WebContents webContents) {
+    void onSuggestionSelected(int selectedIndex, int disposition, int hashCode, int type,
+            String currentPageUrl, int pageClassification, long elapsedTimeSinceModified,
+            int completedLength, WebContents webContents) {
         assert mNativeAutocompleteControllerAndroid != 0;
         // Don't natively log voice suggestion results as we add them in Java.
         if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
         AutocompleteControllerJni.get().onSuggestionSelected(mNativeAutocompleteControllerAndroid,
-                AutocompleteController.this, selectedIndex, hashCode, currentPageUrl,
+                AutocompleteController.this, selectedIndex, disposition, hashCode, currentPageUrl,
                 pageClassification, elapsedTimeSinceModified, completedLength, webContents);
     }
 
@@ -407,7 +408,7 @@ public class AutocompleteController {
                 boolean clearResults);
         void resetSession(long nativeAutocompleteControllerAndroid, AutocompleteController caller);
         void onSuggestionSelected(long nativeAutocompleteControllerAndroid,
-                AutocompleteController caller, int selectedIndex, int hashCode,
+                AutocompleteController caller, int selectedIndex, int disposition, int hashCode,
                 String currentPageUrl, int pageClassification, long elapsedTimeSinceModified,
                 int completedLength, WebContents webContents);
         void onOmniboxFocused(long nativeAutocompleteControllerAndroid,

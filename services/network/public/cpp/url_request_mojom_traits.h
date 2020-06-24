@@ -288,6 +288,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return r->contains_sensitive_info_;
   }
 
+  static bool allow_http1_for_streaming_upload(
+      const scoped_refptr<network::ResourceRequestBody>& r) {
+    return r->allow_http1_for_streaming_upload_;
+  }
+
   static bool Read(network::mojom::URLRequestBodyDataView data,
                    scoped_refptr<network::ResourceRequestBody>* out);
 };

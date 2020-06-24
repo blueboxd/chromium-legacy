@@ -109,6 +109,7 @@ void TestAutofillManager::AddSeenForm(
   std::unique_ptr<TestFormStructure> form_structure =
       std::make_unique<TestFormStructure>(empty_form);
   form_structure->SetFieldTypes(heuristic_types, server_types);
+  form_structure->identify_sections_for_testing();
   AddSeenFormStructure(std::move(form_structure));
 
   form_interactions_ukm_logger()->OnFormsParsed(client()->GetUkmSourceId());

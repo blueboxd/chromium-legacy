@@ -17,6 +17,10 @@ bool PowerMonitorSource::IsOnBatteryPower() {
   return on_battery_power_;
 }
 
+PowerObserver::DeviceThermalState PowerMonitorSource::GetCurrentThermalState() {
+  return PowerObserver::DeviceThermalState::kUnknown;
+}
+
 // static
 void PowerMonitorSource::ProcessPowerEvent(PowerEvent event_id) {
   if (!PowerMonitor::IsInitialized())

@@ -156,11 +156,11 @@ class JSONTest : public DiagnosticsTest {
     }
 
     JSONStringValueDeserializer json(json_data);
-    int error_code = base::JSONReader::JSON_NO_ERROR;
+    int error_code = base::ValueDeserializer::kErrorCodeNoError;
     std::string error_message;
     std::unique_ptr<base::Value> json_root(
         json.Deserialize(&error_code, &error_message));
-    if (base::JSONReader::JSON_NO_ERROR != error_code) {
+    if (base::ValueDeserializer::kErrorCodeNoError != error_code) {
       if (error_message.empty()) {
         error_message = "Parse error " + base::NumberToString(error_code);
       }

@@ -364,7 +364,9 @@ bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
   out->direct_composition = data.direct_composition();
   out->supports_overlays = data.supports_overlays();
   return data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
-         data.ReadNv12OverlaySupport(&out->nv12_overlay_support);
+         data.ReadNv12OverlaySupport(&out->nv12_overlay_support) &&
+         data.ReadBgra8OverlaySupport(&out->bgra8_overlay_support) &&
+         data.ReadRgb10a2OverlaySupport(&out->rgb10a2_overlay_support);
 }
 #endif
 

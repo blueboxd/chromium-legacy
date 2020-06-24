@@ -36,8 +36,11 @@ public final class HttpsImageCompressionUtils {
     /**
      * Creates InfoBar that shows https images are optimized in the tab.
      */
-    public static void createInfoBar(final Tab tab) {
+    public static boolean createInfoBar(final Tab tab) {
         final Activity activity = TabUtils.getActivity(tab);
+        if (activity == null) {
+            return false;
+        }
         SimpleConfirmInfoBarBuilder.create(tab.getWebContents(),
                 new SimpleConfirmInfoBarBuilder.Listener() {
                     @Override
@@ -71,6 +74,7 @@ public final class HttpsImageCompressionUtils {
                         R.string.lite_mode_https_image_compression_settings_link) /* linkText */,
                 false /*autoExpire */);
         recordInfoBarAction(HTTPS_IMAGE_COMPRESSION_INFO_BAR_SHOWN);
+        return true;
     }
 
     private static void recordInfoBarAction(int action) {

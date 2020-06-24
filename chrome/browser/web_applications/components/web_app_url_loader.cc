@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/navigation_controller.h"
@@ -179,7 +180,13 @@ void WebAppUrlLoader::LoadUrl(const GURL& url,
 void WebAppUrlLoader::PrepareForLoad(content::WebContents* web_contents,
                                      ResultCallback callback) {
   LoadUrl(GURL(url::kAboutBlankURL), web_contents, UrlComparison::kExact,
-          std::move(callback));
+          base::BindOnce(
+              [](ResultCallback callback, Result result) {
+                base::UmaHistogramEnumeration(
+                    "Webapp.WebAppUrlLoaderPrepareForLoadResult", result);
+                std::move(callback).Run(result);
+              },
+              std::move(callback)));
 }
 
 }  // namespace web_app

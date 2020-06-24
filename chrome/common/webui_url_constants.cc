@@ -325,6 +325,11 @@ const char kChromeUIHatsURL[] = "chrome://hats/";
 const char kChromeUIProfilePickerHost[] = "profile-picker";
 #endif
 
+#if !defined(OS_ANDROID)
+const char kChromeUINearbyShareHost[] = "nearby";
+const char kChromeUINearbyShareURL[] = "chrome://nearby/";
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";
 #endif

@@ -197,7 +197,9 @@ struct GPU_EXPORT OverlayInfo {
     return direct_composition == other.direct_composition &&
            supports_overlays == other.supports_overlays &&
            yuy2_overlay_support == other.yuy2_overlay_support &&
-           nv12_overlay_support == other.nv12_overlay_support;
+           nv12_overlay_support == other.nv12_overlay_support &&
+           bgra8_overlay_support == other.bgra8_overlay_support &&
+           rgb10a2_overlay_support == other.rgb10a2_overlay_support;
   }
   bool operator!=(const OverlayInfo& other) const { return !(*this == other); }
 
@@ -208,6 +210,8 @@ struct GPU_EXPORT OverlayInfo {
   bool supports_overlays = false;
   OverlaySupport yuy2_overlay_support = OverlaySupport::kNone;
   OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
+  OverlaySupport bgra8_overlay_support = OverlaySupport::kNone;
+  OverlaySupport rgb10a2_overlay_support = OverlaySupport::kNone;
 };
 
 #endif

@@ -372,8 +372,11 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
   assertEquals(currentFiles.length, 3);
 
   // The error stays on the third, now unopenable. But, since we've advanced,
-  // it has now rotated into the second slot.
-  assertEquals(await getFileErrors(), ',NotAllowedError,');
+  // it has now rotated into the second slot. But! Also we don't validate it
+  // until it rotates into the first slot, so the error won't be present yet.
+  // If we implement pre-loading, this expectation can change to
+  // ',NotAllowedError,'.
+  assertEquals(await getFileErrors(), ',,');
 
   // Navigate to the unopenable file and expect a graceful error.
   await advance(1);
@@ -382,7 +385,8 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateWithUnopenableSibling', async () => {
   assertEquals(currentFiles.length, 3);
   assertEquals(await getFileErrors(), 'NotAllowedError,,');
 
-  // Navigating back to an openable file should still work.
+  // Navigating back to an openable file should still work, and the error should
+  // "stick".
   await advance(1);
   result = await waitForImageAndGetWidth('1.png');
   assertEquals(result, '111');

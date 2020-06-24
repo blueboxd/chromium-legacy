@@ -50,6 +50,7 @@ void NativeAppWindowViews::Init(
 
 NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(nullptr);
+  CHECK(!IsInObserverList());
 }
 
 void NativeAppWindowViews::OnCanHaveAlphaEnabledChanged() {

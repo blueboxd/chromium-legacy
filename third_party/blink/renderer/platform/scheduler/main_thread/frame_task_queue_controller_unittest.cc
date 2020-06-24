@@ -329,7 +329,8 @@ INSTANTIATE_TEST_SUITE_P(
                       QueueTraits::PrioritisationType::kLoading,
                       QueueTraits::PrioritisationType::kLoadingControl,
                       QueueTraits::PrioritisationType::kFindInPage,
-                      QueueTraits::PrioritisationType::kExperimentalDatabase));
+                      QueueTraits::PrioritisationType::kExperimentalDatabase,
+                      QueueTraits::PrioritisationType::kJavaScriptTimer));
 
 TEST_P(TaskQueueCreationFromQueueTraitsTest,
         AddAndRetrieveAllTaskQueues) {

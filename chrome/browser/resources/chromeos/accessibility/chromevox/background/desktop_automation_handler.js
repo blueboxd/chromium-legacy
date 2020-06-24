@@ -167,6 +167,17 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     this.lastHoverTarget_ = evt.target;
 
     let target = evt.target;
+
+    // If the target is in an ExoSurface, which hosts remote content, trigger a
+    // mouse move. This only occurs when we programmatically hit test content
+    // within ARC++ for now. Mouse moves automatically trigger Android to send
+    // hover events back.
+    if (target.role == RoleType.WINDOW &&
+        target.className.indexOf('ExoSurface') == 0) {
+      BackgroundMouseHandler.instance.synthesizeMouseMove();
+      return;
+    }
+
     let targetLeaf = null;
     let targetObject = null;
     while (target && target != target.root) {

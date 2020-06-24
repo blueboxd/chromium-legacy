@@ -719,6 +719,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
   registry->RegisterStringPref(kLastStartupVersion, std::string());
   registry->RegisterIntegerPref(kSameVersionStartupCount, 0);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUserAgentClientHintsEnabled, true);
 
   // Below this point is for platform-specific and compile-time conditional
   // calls. Please follow the helper-function-first-then-direct-calls pattern

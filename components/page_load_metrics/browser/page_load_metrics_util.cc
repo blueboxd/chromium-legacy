@@ -111,12 +111,15 @@ bool WasStartedInForegroundOptionalEventInForeground(
 
 bool WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadMetricsObserverDelegate& delegate) {
-  return delegate.LastBackForwardCacheRestoreWasInForeground() && event &&
-         (!delegate.GetFirstBackgroundTimeAfterBackForwardCacheRestore() ||
-          event.value() <=
-              delegate.GetFirstBackgroundTimeAfterBackForwardCacheRestore()
-                  .value());
+    const PageLoadMetricsObserverDelegate& delegate,
+    size_t index) {
+  const auto& back_forward_cache_restore =
+      delegate.GetBackForwardCacheRestore(index);
+  base::Optional<base::TimeDelta> first_background_time =
+      back_forward_cache_restore.first_background_time;
+  return back_forward_cache_restore.was_in_foreground && event &&
+         (!first_background_time ||
+          event.value() <= first_background_time.value());
 }
 
 bool WasStartedInBackgroundOptionalEventInForeground(

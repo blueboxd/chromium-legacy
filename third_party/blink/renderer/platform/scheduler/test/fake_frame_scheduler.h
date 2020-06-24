@@ -18,7 +18,17 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
  public:
   using MainThreadTaskQueue::SetFrameSchedulerForTest;
 
-  MainThreadTaskQueueForTest(QueueType queue_type)
+  explicit MainThreadTaskQueueForTest(
+      QueueTraits::PrioritisationType prioritisation_type)
+      : MainThreadTaskQueue(
+            nullptr,
+            Spec(MainThreadTaskQueue::NameForQueueType(
+                MainThreadTaskQueue::QueueType::kTest)),
+            QueueCreationParams(MainThreadTaskQueue::QueueType::kTest)
+                .SetQueueTraits(
+                    QueueTraits().SetPrioritisationType(prioritisation_type)),
+            nullptr) {}
+  explicit MainThreadTaskQueueForTest(QueueType queue_type)
       : MainThreadTaskQueue(nullptr,
                             Spec(MainThreadTaskQueue::NameForQueueType(
                                 MainThreadTaskQueue::QueueType::kTest)),

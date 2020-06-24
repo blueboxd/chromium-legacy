@@ -925,6 +925,12 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return frame_task_queue_controller->GetTaskQueue(queue_traits);
   }
 
+  static scoped_refptr<TaskQueue> QueueForTaskType(
+      FrameSchedulerImpl* scheduler,
+      TaskType task_type) {
+    return scheduler->GetTaskQueue(task_type);
+  }
+
   QueueingTimeEstimator* queueing_time_estimator() {
     return &scheduler_->queueing_time_estimator_;
   }
@@ -4028,7 +4034,7 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
                            FrameScheduler::FrameType::kSubframe);
 
   scoped_refptr<TaskQueue> timer_tq =
-      ThrottleableTaskQueue(frame_scheduler.get());
+      QueueForTaskType(frame_scheduler.get(), TaskType::kJavascriptTimer);
   ForceUpdatePolicyAndGetCurrentUseCase();
 
   EXPECT_FALSE(timer_tq->IsQueueEnabled());
@@ -4051,7 +4057,7 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
                            FrameScheduler::FrameType::kSubframe);
 
   scoped_refptr<TaskQueue> timer_tq =
-      ThrottleableTaskQueue(frame_scheduler.get());
+      QueueForTaskType(frame_scheduler.get(), TaskType::kJavascriptTimer);
 
   FakeInputEvent mouse_move_event{WebInputEvent::Type::kMouseMove,
                                   blink::WebInputEvent::kLeftButtonDown};
@@ -4092,7 +4098,7 @@ TEST_F(BestEffortNonMainQueuesUntilOnLoadTest, DeprioritizesAllNonMainQueues) {
                            FrameScheduler::FrameType::kSubframe);
 
   scoped_refptr<TaskQueue> non_timer_tq =
-      ForegroundOnlyTaskQueue(frame_scheduler.get());
+      QueueForTaskType(frame_scheduler.get(), TaskType::kNetworking);
   ForceUpdatePolicyAndGetCurrentUseCase();
   EXPECT_EQ(non_timer_tq->kBestEffortPriority,
             TaskQueue::QueuePriority::kBestEffortPriority);

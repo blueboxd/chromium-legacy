@@ -92,6 +92,7 @@ class SharedCorsOriginAccessList;
 class SiteInstance;
 class StorageNotificationService;
 class StoragePartition;
+class StoragePartitionConfig;
 class SSLHostStateDelegate;
 
 // A mapping from the scheme name to the protocol handler that services its
@@ -130,10 +131,25 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static StoragePartition* GetStoragePartition(BrowserContext* browser_context,
                                                SiteInstance* site_instance,
                                                bool can_create = true);
+
+  // Returns a StoragePartition for the given StoragePartitionConfig. By
+  // default this will create a new StoragePartition if it doesn't exist,
+  // unless |can_create| is false.
+  static StoragePartition* GetStoragePartition(
+      BrowserContext* browser_context,
+      const StoragePartitionConfig& storage_partition_config,
+      bool can_create = true);
+
+  // Deprecated. Do not add new callers. Use the SiteInstance or
+  // StoragePartitionConfig methods above instead.
+  // Returns a StoragePartition for the given site URL. By default this will
+  // create a new StoragePartition if it doesn't exist, unless |can_create| is
+  // false.
   static StoragePartition* GetStoragePartitionForSite(
       BrowserContext* browser_context,
       const GURL& site,
       bool can_create = true);
+
   using StoragePartitionCallback =
       base::RepeatingCallback<void(StoragePartition*)>;
   static void ForEachStoragePartition(BrowserContext* browser_context,

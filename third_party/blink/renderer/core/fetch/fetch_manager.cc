@@ -749,6 +749,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
         if (exception_state.HadException())
           return;
         request.MutableBody().SetStreamBody(std::move(pending_remote));
+        request.SetAllowHTTP1ForStreamingUpload(
+            fetch_request_data_->AllowHTTP1ForStreamingUpload());
       }
     }
   }

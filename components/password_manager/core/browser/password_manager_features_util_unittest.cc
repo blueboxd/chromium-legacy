@@ -403,5 +403,70 @@ TEST(PasswordFeatureManagerUtil, OptOutClearsStorePreference) {
       autofill::PasswordForm::Store::kProfileStore, 1);
 }
 
+TEST(PasswordFeatureManagerUtil, OptInOutHistograms) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+  base::HistogramTester histogram_tester;
+
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      prefs::kAccountStoragePerAccountSettings);
+
+  syncer::TestSyncService sync_service;
+  sync_service.SetDisableReasons({});
+  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+
+  CoreAccountInfo first_account;
+  first_account.email = "first@account.com";
+  first_account.gaia = "first";
+  first_account.account_id = CoreAccountId::FromGaiaId(first_account.gaia);
+
+  CoreAccountInfo second_account;
+  second_account.email = "second@account.com";
+  second_account.gaia = "second";
+  second_account.account_id = CoreAccountId::FromGaiaId(second_account.gaia);
+
+  // Opt in with the first account.
+  sync_service.SetAuthenticatedAccountInfo(first_account);
+  OptInToAccountStorage(&pref_service, &sync_service);
+  // There is now 1 opt-in.
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 1, 1);
+
+  // Opt in with the second account.
+  sync_service.SetAuthenticatedAccountInfo(second_account);
+  OptInToAccountStorage(&pref_service, &sync_service);
+  // There are now 2 opt-ins.
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 2);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 2, 1);
+
+  // Out out of the second account again.
+  OptOutOfAccountStorageAndClearSettings(&pref_service, &sync_service);
+  // The OptedIn histogram is unchanged.
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 2);
+  // There is now an OptedOut sample; there is 1 opt-in left.
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut", 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut", 1, 1);
+
+  // Clear all remaining opt-ins (which is just one).
+  ClearAccountStorageSettingsForAllUsers(&pref_service);
+  // The OptedIn/OptedOut histograms are unchanged.
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 2);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut", 1);
+  // There was 1 remaining opt-in that was cleared.
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.ClearedOptInForAllAccounts", 1, 1);
+}
+
 }  // namespace features_util
 }  // namespace password_manager

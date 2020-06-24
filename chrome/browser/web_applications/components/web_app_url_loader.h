@@ -27,16 +27,21 @@ class WebAppUrlLoader {
     kSameOrigin,
   };
 
+  // Result enum values are persisted to logs. Entries should not be renumbered
+  // and numeric values should never be reused. Update corresponding enums.xml
+  // entry when making changes here.
   enum class Result {
     // The provided URL (matched using |UrlComparison|) was loaded.
-    kUrlLoaded,
+    kUrlLoaded = 0,
     // The provided URL redirected to another URL (that did not match using
     // |UrlComparison|) and the final URL was loaded.
-    kRedirectedUrlLoaded,
-    kFailedUnknownReason,
-    kFailedPageTookTooLong,
-    kFailedWebContentsDestroyed,
-    kFailedErrorPageLoaded,
+    kRedirectedUrlLoaded = 1,
+    kFailedUnknownReason = 2,
+    kFailedPageTookTooLong = 3,
+    kFailedWebContentsDestroyed = 4,
+    kFailedErrorPageLoaded = 5,
+
+    kMaxValue = kFailedErrorPageLoaded,
   };
 
   using ResultCallback = base::OnceCallback<void(Result)>;

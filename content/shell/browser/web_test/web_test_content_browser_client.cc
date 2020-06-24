@@ -40,7 +40,6 @@
 #include "content/shell/browser/web_test/web_test_client_impl.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
-#include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -432,11 +431,6 @@ BluetoothDelegate* WebTestContentBrowserClient::GetBluetoothDelegate() {
 
 void WebTestContentBrowserClient::ResetFakeBluetoothDelegate() {
   fake_bluetooth_delegate_.reset();
-}
-
-content::TtsControllerDelegate*
-WebTestContentBrowserClient::GetTtsControllerDelegate() {
-  return WebTestTtsControllerDelegate::GetInstance();
 }
 
 content::TtsPlatform* WebTestContentBrowserClient::GetTtsPlatform() {

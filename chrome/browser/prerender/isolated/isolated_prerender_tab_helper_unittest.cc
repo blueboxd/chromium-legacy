@@ -215,12 +215,9 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void VerifyIsolationInfo(const net::IsolationInfo& isolation_info) {
     EXPECT_FALSE(isolation_info.IsEmpty());
-    EXPECT_TRUE(isolation_info.opaque_and_non_transient());
-    net::NetworkIsolationKey key = isolation_info.network_isolation_key();
-    EXPECT_TRUE(key.IsFullyPopulated());
-    EXPECT_FALSE(key.IsTransient());
-    EXPECT_TRUE(base::StartsWith(key.ToString(), "opaque non-transient ",
-                                 base::CompareCase::SENSITIVE));
+    EXPECT_TRUE(isolation_info.network_isolation_key().IsFullyPopulated());
+    EXPECT_FALSE(isolation_info.network_isolation_key().IsTransient());
+    EXPECT_FALSE(isolation_info.site_for_cookies().IsNull());
   }
 
   network::ResourceRequest VerifyCommonRequestState(const GURL& url) {
@@ -235,7 +232,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(request->request.load_flags,
               net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH);
     EXPECT_EQ(request->request.credentials_mode,
-              network::mojom::CredentialsMode::kOmit);
+              network::mojom::CredentialsMode::kInclude);
 
     EXPECT_TRUE(request->request.trusted_params.has_value());
     VerifyIsolationInfo(request->request.trusted_params->isolation_info);

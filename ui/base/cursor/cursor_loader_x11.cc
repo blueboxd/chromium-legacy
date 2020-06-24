@@ -34,7 +34,7 @@ CursorLoaderX11::ImageCursor::~ImageCursor() {
 CursorLoaderX11::CursorLoaderX11()
     : display_(gfx::GetXDisplay()),
       invisible_cursor_(CreateInvisibleCursor(), gfx::GetXDisplay()) {
-  auto* cursor_theme_manager = CursorThemeManagerLinux::GetInstance();
+  auto* cursor_theme_manager = CursorThemeManager::GetInstance();
   if (cursor_theme_manager)
     cursor_theme_observer_.Add(cursor_theme_manager);
 }

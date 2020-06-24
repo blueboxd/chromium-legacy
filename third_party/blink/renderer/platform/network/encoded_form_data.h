@@ -46,6 +46,7 @@ class FetchAPIRequestBodyDataView;
 }  // namespace mojom
 
 class BlobDataHandle;
+class ResourceRequestBody;
 class WrappedDataPipeGetter;
 
 class PLATFORM_EXPORT FormDataElement final {
@@ -155,8 +156,8 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   bool IsSafeToSendToAnotherThread() const;
 
  private:
-  friend struct mojo::StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
-                                   scoped_refptr<blink::EncodedFormData>>;
+  friend struct mojo::StructTraits<mojom::FetchAPIRequestBodyDataView,
+                                   ResourceRequestBody>;
   EncodedFormData();
   EncodedFormData(const EncodedFormData&);
 

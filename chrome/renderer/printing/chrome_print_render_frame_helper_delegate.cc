@@ -43,8 +43,11 @@ blink::WebElement ChromePrintRenderFrameHelperDelegate::GetPdfElement(
       url.host_piece() == extension_misc::kPdfExtensionId;
   if (inside_print_preview || inside_pdf_extension) {
     // <object> with id="plugin" is created in
-    // chrome/browser/resources/pdf/pdf_viewer.js.
-    auto plugin_element = frame->GetDocument().GetElementById("plugin");
+    // chrome/browser/resources/pdf/pdf_viewer_base.js.
+    auto plugin_element = frame->GetDocument()
+                              .GetElementById("viewer")
+                              .ShadowRoot()
+                              .QuerySelector("#plugin");
     if (!plugin_element.IsNull()) {
       return plugin_element;
     }

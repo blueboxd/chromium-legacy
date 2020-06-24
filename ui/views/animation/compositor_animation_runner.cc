@@ -23,6 +23,7 @@ CompositorAnimationRunner::~CompositorAnimationRunner() {
   if (widget_)
     OnWidgetDestroying(widget_);
   DCHECK(!compositor_ || !compositor_->HasAnimationObserver(this));
+  CHECK(!IsInObserverList());
 }
 
 void CompositorAnimationRunner::SetAnimationMetricsReporter(

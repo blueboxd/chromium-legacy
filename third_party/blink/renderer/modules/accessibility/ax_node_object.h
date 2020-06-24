@@ -104,6 +104,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool IsImageButton() const;
   bool IsInputImage() const final;
   bool IsInPageLinkTarget() const override;
+  bool IsLoaded() const override;
   bool IsMultiSelectable() const override;
   bool IsNativeImage() const final;
   bool IsNativeTextControl() const final;
@@ -223,6 +224,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
   void UpdateChildrenIfNecessary() override;
   void SelectedOptions(AXObjectVector&) const override;
+
+  // Properties of the object's owning document or page.
+  double EstimatedLoadingProgress() const override;
 
   // DOM and Render tree access.
   Element* ActionElement() const override;

@@ -5,6 +5,7 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 
 #include "ash/public/cpp/accessibility_controller.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ash {
 
@@ -36,7 +37,8 @@ base::TimeDelta TestAccessibilityControllerClient::PlayShutdownSound() {
 }
 
 void TestAccessibilityControllerClient::HandleAccessibilityGesture(
-    ax::mojom::Gesture gesture) {
+    ax::mojom::Gesture gesture,
+    gfx::PointF location) {
   last_a11y_gesture_ = gesture;
 }
 

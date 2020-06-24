@@ -54,9 +54,9 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   sync_data->set_launch_url(app.launch_url().spec());
   sync_data->set_user_display_mode(
       ToWebAppSpecificsUserDisplayMode(app.user_display_mode()));
-  sync_data->set_name(app.sync_data().name);
-  if (app.sync_data().theme_color.has_value())
-    sync_data->set_theme_color(app.sync_data().theme_color.value());
+  sync_data->set_name(app.sync_fallback_data().name);
+  if (app.sync_fallback_data().theme_color.has_value())
+    sync_data->set_theme_color(app.sync_fallback_data().theme_color.value());
   if (app.scope().is_valid())
     sync_data->set_scope(app.scope().spec());
   for (const WebApplicationIconInfo& icon : app.icon_infos()) {
@@ -95,13 +95,13 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   // Always override user_display mode with a synced value.
   app->SetUserDisplayMode(ToMojomDisplayMode(sync_data.user_display_mode()));
 
-  base::Optional<WebApp::SyncData> parsed_sync_data =
-      ParseWebAppSyncData(sync_data);
-  if (!parsed_sync_data.has_value()) {
-    // ParseWebAppSyncData() reports any errors.
+  base::Optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
+      ParseSyncFallbackDataStruct(sync_data);
+  if (!parsed_sync_fallback_data.has_value()) {
+    // ParseSyncFallbackDataStruct() reports any errors.
     return;
   }
-  app->SetSyncData(std::move(parsed_sync_data.value()));
+  app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 }
 
 WebAppSyncBridge::WebAppSyncBridge(

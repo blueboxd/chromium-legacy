@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
@@ -120,17 +121,15 @@ static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
       !IsSimpleLengthPropertyID(property_id, accepts_negative_numbers))
     return nullptr;
 
-  unsigned length = string.length();
   double number;
   CSSPrimitiveValue::UnitType unit = CSSPrimitiveValue::UnitType::kNumber;
 
-  if (string.Is8Bit()) {
-    if (!ParseSimpleLength(string.Characters8(), length, unit, number))
-      return nullptr;
-  } else {
-    if (!ParseSimpleLength(string.Characters16(), length, unit, number))
-      return nullptr;
-  }
+  const bool parsed_simple_length =
+      WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+        return ParseSimpleLength(chars, length, unit, number);
+      });
+  if (!parsed_simple_length)
+    return nullptr;
 
   if (unit == CSSPrimitiveValue::UnitType::kNumber) {
     if (css_parser_mode == kSVGAttributeMode)
@@ -522,13 +521,10 @@ CSSValue* CSSParserFastPaths::ParseColor(const String& string,
   bool quirks_mode = IsQuirksModeBehavior(parser_mode);
 
   // Fast path for hex colors and rgb()/rgba() colors
-  bool parse_result;
-  if (string.Is8Bit())
-    parse_result = FastParseColorInternal(color, string.Characters8(),
-                                          string.length(), quirks_mode);
-  else
-    parse_result = FastParseColorInternal(color, string.Characters16(),
-                                          string.length(), quirks_mode);
+  bool parse_result =
+      WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+        return FastParseColorInternal(color, chars, length, quirks_mode);
+      });
   if (!parse_result)
     return nullptr;
   return cssvalue::CSSColorValue::Create(color);
@@ -1334,38 +1330,33 @@ static bool TransformCanLikelyUseFastPath(const CharType* chars,
   return i == length;
 }
 
-template <typename CharType>
-static CSSValueList* ParseSimpleTransformList(const CharType* chars,
-                                              unsigned length) {
-  if (!TransformCanLikelyUseFastPath(chars, length))
-    return nullptr;
-  const CharType*& pos = chars;
-  const CharType* end = chars + length;
-  CSSValueList* transform_list = nullptr;
-  while (pos < end) {
-    while (pos < end && IsCSSSpace(*pos))
-      ++pos;
-    if (pos >= end)
-      break;
-    auto* transform_value = ParseSimpleTransformValue(pos, end);
-    if (!transform_value)
-      return nullptr;
-    if (!transform_list)
-      transform_list = CSSValueList::CreateSpaceSeparated();
-    transform_list->Append(*transform_value);
-  }
-  return transform_list;
-}
-
 static CSSValue* ParseSimpleTransform(CSSPropertyID property_id,
                                       const String& string) {
   DCHECK(!string.IsEmpty());
 
   if (property_id != CSSPropertyID::kTransform)
     return nullptr;
-  if (string.Is8Bit())
-    return ParseSimpleTransformList(string.Characters8(), string.length());
-  return ParseSimpleTransformList(string.Characters16(), string.length());
+
+  return WTF::VisitCharacters(
+      string, [&](const auto* pos, unsigned length) -> CSSValueList* {
+        if (!TransformCanLikelyUseFastPath(pos, length))
+          return nullptr;
+        const auto* end = pos + length;
+        CSSValueList* transform_list = nullptr;
+        while (pos < end) {
+          while (pos < end && IsCSSSpace(*pos))
+            ++pos;
+          if (pos >= end)
+            break;
+          auto* transform_value = ParseSimpleTransformValue(pos, end);
+          if (!transform_value)
+            return nullptr;
+          if (!transform_list)
+            transform_list = CSSValueList::CreateSpaceSeparated();
+          transform_list->Append(*transform_value);
+        }
+        return transform_list;
+      });
 }
 
 CSSValue* CSSParserFastPaths::MaybeParseValue(CSSPropertyID property_id,

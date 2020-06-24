@@ -4,7 +4,6 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 
-#include <map>
 #include <utility>
 
 #include "base/one_shot_event.h"
@@ -24,7 +23,6 @@
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/web_app_linked_shortcut_items.h"
-#include "extensions/common/manifest_handlers/web_app_shortcut_icons_handler.h"
 #include "url/gurl.h"
 
 using web_app::DisplayMode;
@@ -251,23 +249,9 @@ BookmarkAppRegistrar::GetAppShortcutInfos(const web_app::AppId& app_id) const {
 std::vector<std::vector<SquareSizePx>>
 BookmarkAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
     const web_app::AppId& app_id) const {
-  std::vector<std::vector<SquareSizePx>> result;
   const Extension* extension = GetBookmarkAppDchecked(app_id);
-  if (!extension)
-    return result;
-
-  const std::map<int, ExtensionIconSet>& shortcuts_menu_icons =
-      WebAppShortcutIconsInfo::GetShortcutIcons(extension);
-  result.reserve(shortcuts_menu_icons.size());
-  for (const auto& shortcuts_menu_icon : shortcuts_menu_icons) {
-    std::vector<SquareSizePx> shortcuts_menu_icon_sizes;
-    shortcuts_menu_icon_sizes.reserve(shortcuts_menu_icon.second.map().size());
-    for (const auto& icon_info : shortcuts_menu_icon.second.map()) {
-      shortcuts_menu_icon_sizes.emplace_back(icon_info.first);
-    }
-    result.push_back(std::move(shortcuts_menu_icon_sizes));
-  }
-  return result;
+  return extension ? GetBookmarkAppDownloadedShortcutsMenuIconsSizes(extension)
+                   : std::vector<std::vector<SquareSizePx>>();
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {

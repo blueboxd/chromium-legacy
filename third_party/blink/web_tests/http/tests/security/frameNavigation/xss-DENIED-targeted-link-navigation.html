@@ -10,7 +10,6 @@
                 testRunner.setDumpConsoleMessages(false);
                 testRunner.waitUntilDone();
                 testRunner.setCanOpenWindows();
-                testRunner.setCloseRemainingWindowsWhenComplete(true);
             }
             window.frames[0].postMessage('run test', '*');
         }

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 

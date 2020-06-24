@@ -711,14 +711,11 @@ void PeerConnectionTracker::OnSuspend() {
 void PeerConnectionTracker::OnThermalStateChange(
     mojom::blink::DeviceThermalState thermal_state) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  base::PowerObserver::DeviceThermalState state =
-      base::PowerObserver::DeviceThermalState::kUnknown;
-  mojo::EnumTraits<
-      mojom::blink::DeviceThermalState,
-      base::PowerObserver::DeviceThermalState>::FromMojom(thermal_state,
-                                                          &state);
+  mojo::EnumTraits<mojom::blink::DeviceThermalState,
+                   base::PowerObserver::DeviceThermalState>::
+      FromMojom(thermal_state, &current_thermal_state_);
   for (auto& entry : peer_connection_local_id_map_) {
-    entry.key->OnThermalStateChange(state);
+    entry.key->OnThermalStateChange(current_thermal_state_);
   }
 }
 
@@ -795,6 +792,11 @@ void PeerConnectionTracker::RegisterPeerConnection(
   peer_connection_tracker_host_->AddPeerConnection(std::move(info));
 
   peer_connection_local_id_map_.insert(pc_handler, lid);
+
+  if (current_thermal_state_ !=
+      base::PowerObserver::DeviceThermalState::kUnknown) {
+    pc_handler->OnThermalStateChange(current_thermal_state_);
+  }
 }
 
 void PeerConnectionTracker::UnregisterPeerConnection(

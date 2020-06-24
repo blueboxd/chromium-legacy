@@ -92,10 +92,9 @@ public class ContextualSearchTranslationImplTest {
 
     @Test
     @Feature("TranslateUtilities")
-    public void testNeedsTranslationOtherBlocked() {
+    public void testGetFluentLanguages() {
         doReturn(ENGLISH_AND_SPANISH).when(mTranslateBridgeWrapperMock).getModelLanguages();
-        doReturn(true).when(mTranslateBridgeWrapperMock).isBlockedLanguage(GERMAN);
-        assertThat(mImpl.needsTranslation(GERMAN), is(false));
+        assertThat(mImpl.getTranslateServiceFluentLanguages(), is(ENGLISH + "," + SPANISH));
     }
 
     @Test

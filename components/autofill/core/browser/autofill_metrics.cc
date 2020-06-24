@@ -2409,4 +2409,10 @@ void AutofillMetrics::
       "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
 }
 
+// static
+void AutofillMetrics::LogAddressFormImportStatustMetric(
+    AutofillMetrics::AddressProfileImportStatusMetric metric) {
+  base::UmaHistogramEnumeration("Autofill.AddressProfileImportStatus", metric);
+}
+
 }  // namespace autofill

@@ -408,12 +408,12 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
         SkColorSetA(*web_app_info.theme_color, SK_AlphaOPAQUE));
   }
 
-  WebApp::SyncData sync_data;
-  sync_data.name = base::UTF16ToUTF8(web_app_info.title);
-  sync_data.theme_color = web_app_info.theme_color;
-  sync_data.scope = web_app_info.scope;
-  sync_data.icon_infos = web_app_info.icon_infos;
-  web_app->SetSyncData(std::move(sync_data));
+  WebApp::SyncFallbackData sync_fallback_data;
+  sync_fallback_data.name = base::UTF16ToUTF8(web_app_info.title);
+  sync_fallback_data.theme_color = web_app_info.theme_color;
+  sync_fallback_data.scope = web_app_info.scope;
+  sync_fallback_data.icon_infos = web_app_info.icon_infos;
+  web_app->SetSyncFallbackData(std::move(sync_fallback_data));
 
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));

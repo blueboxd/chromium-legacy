@@ -19,8 +19,8 @@ class WebContents;
 class PreviewsAndroidBridge {
  public:
   // Creates InfoBar that shows https images are optimized in the
-  // |web_contents|.
-  static void CreateHttpsImageCompressionInfoBar(
+  // |web_contents|, and returns whether InfoBar was displayed successfully.
+  static bool CreateHttpsImageCompressionInfoBar(
       content::WebContents* web_contents);
 
   PreviewsAndroidBridge(JNIEnv* env,

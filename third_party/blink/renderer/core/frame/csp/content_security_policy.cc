@@ -552,7 +552,7 @@ bool ContentSecurityPolicy::AllowInline(
   // Step 3. For each policy in element’s Document's global object’s CSP list:
   // [spec text]
   for (const auto& policy : policies_) {
-    // May be whitelisted by hash, if 'unsafe-hashes' is present in a policy.
+    // May be allowed by hash, if 'unsafe-hashes' is present in a policy.
     // Check against the digest of the |content| and also check whether inline
     // script is allowed.
     is_allowed &=

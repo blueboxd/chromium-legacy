@@ -1201,6 +1201,12 @@ const char kAccessibilityImageLabelsEnabled[] =
 const char kAccessibilityImageLabelsOptInAccepted[] =
     "settings.a11y.enable_accessibility_image_labels_opt_in_accepted";
 
+#if !defined(OS_CHROMEOS)
+// A boolean pref which determines whether focus highlighting is enabled.
+const char kAccessibilityFocusHighlightEnabled[] =
+    "settings.a11y.focus_highlight";
+#endif
+
 #if !defined(OS_ANDROID)
 // Whether the Live Caption feature is enabled.
 const char kLiveCaptionEnabled[] =

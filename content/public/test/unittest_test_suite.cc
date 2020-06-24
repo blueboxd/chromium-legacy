@@ -23,6 +23,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/x11.h"  // nogncheck
 #endif
 
@@ -103,7 +104,8 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 #endif
 
 #if defined(USE_X11)
-  XInitThreads();
+  if (!features::IsUsingOzonePlatform())
+    XInitThreads();
 #endif
   DCHECK(test_suite);
   blink_test_support_.reset(new TestBlinkWebUnitTestSupport);

@@ -130,8 +130,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kLoadingControl = 4,
       kFindInPage = 5,
       kExperimentalDatabase = 6,
+      kJavaScriptTimer = 7,
 
-      kCount = 7
+      kCount = 8
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required

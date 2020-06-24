@@ -16,7 +16,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 
 import java.util.ArrayList;
@@ -87,8 +89,21 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
         void onInfoBarContainerShownRatioChanged(InfoBarContainer container, float shownRatio);
     }
 
-    // TODO(crbug.com/1025620): Observe WebContents to reset the state of the InfoBarContainer when
-    // the user navigates, a la //chrome's observing of Tab here.
+    /**
+     * Resets the visibility of the InfoBarContainer when the user navigates, following Chrome's
+     * behavior. In particular in Chrome some features hide the infobar container. This hiding is
+     * always on a per-URL basis that should be undone on navigation. While no feature in WebLayer
+     * yet does this, we put this * defensive behavior in place so that any such added features
+     * don't end up inadvertently hiding the infobar container "forever" in a given tab.
+     */
+    private final WebContentsObserver mWebContentsObserver = new WebContentsObserver() {
+        @Override
+        public void didFinishNavigation(NavigationHandle navigation) {
+            if (navigation.hasCommitted() && navigation.isInMainFrame()) {
+                setHidden(false);
+            }
+        }
+    };
 
     public void onTabDidGainActive() {
         initializeContainerView(mTab.getBrowser().getContext());
@@ -152,6 +167,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
 
     InfoBarContainer(TabImpl tab) {
         mTab = tab;
+        mTab.getWebContents().addObserver(mWebContentsObserver);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -287,6 +303,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     }
 
     public void destroy() {
+        mTab.getWebContents().removeObserver(mWebContentsObserver);
         if (mInfoBarContainerView != null) destroyContainerView();
         if (mNativeInfoBarContainer != 0) {
             InfoBarContainerJni.get().destroy(mNativeInfoBarContainer, InfoBarContainer.this);

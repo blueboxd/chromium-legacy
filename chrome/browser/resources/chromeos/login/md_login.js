@@ -28,7 +28,6 @@
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
 // <include src="screen_fatal_error.js">
-// <include src="screen_active_directory_password_change.js">
 // <include src="screen_encryption_migration.js">
 // <include src="screen_update_required.js">
 // <include src="screen_sync_consent.js">
@@ -65,7 +64,6 @@ cr.define('cr.ui.Oobe', function() {
       login.AppDownloadingScreen.register();
       login.AppLaunchSplashScreen.register();
       login.FatalErrorScreen.register();
-      login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
       login.EncryptionMigrationScreen.register();
       login.SupervisionTransitionScreen.register();
       login.UpdateRequiredScreen.register();

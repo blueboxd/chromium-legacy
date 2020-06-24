@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace test {
 
 AccessibilityTest::AccessibilityTest(LocalFrameClient* local_frame_client)
     : RenderingTest(local_frame_client) {}
@@ -79,5 +78,4 @@ std::ostringstream& AccessibilityTest::PrintAXTreeHelper(
   return stream;
 }
 
-}  // namespace test
 }  // namespace blink

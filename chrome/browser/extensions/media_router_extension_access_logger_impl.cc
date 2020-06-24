@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/media_router_extension_access_logger_impl.h"
 
-#include "string"
+#include <string>
 
 #include "base/bind.h"
 #include "base/check.h"

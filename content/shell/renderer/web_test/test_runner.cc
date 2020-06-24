@@ -226,6 +226,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void SetHighlightAds();
   void CapturePrintingPixelsThen(v8::Local<v8::Function> callback);
+  void CheckForLeakedWindows();
   void ClearAllDatabases();
   void ClearTrustTokenState(v8::Local<v8::Function> callback);
   void CopyImageThen(int x, int y, v8::Local<v8::Function> callback);
@@ -294,7 +295,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                v8::Local<v8::Function> callback);
   void SetBluetoothManualChooser(bool enable);
   void SetCanOpenWindows();
-  void SetCloseRemainingWindowsWhenComplete(gin::Arguments* args);
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);
   void SetCustomPolicyDelegate(gin::Arguments* args);
@@ -509,6 +509,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
       .SetMethod("capturePrintingPixelsThen",
                  &TestRunnerBindings::CapturePrintingPixelsThen)
+      .SetMethod("checkForLeakedWindows",
+                 &TestRunnerBindings::CheckForLeakedWindows)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
       // Clears persistent Trust Tokens state in the browser. See
@@ -657,8 +659,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetBluetoothManualChooser)
       .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
       .SetMethod("setCanOpenWindows", &TestRunnerBindings::SetCanOpenWindows)
-      .SetMethod("setCloseRemainingWindowsWhenComplete",
-                 &TestRunnerBindings::SetCloseRemainingWindowsWhenComplete)
       .SetMethod("setColorProfile", &TestRunnerBindings::SetColorProfile)
       .SetMethod("setCustomPolicyDelegate",
                  &TestRunnerBindings::SetCustomPolicyDelegate)
@@ -886,18 +886,6 @@ int TestRunnerBindings::WindowCount() {
   if (invalid_)
     return 0;
   return runner_->WindowCount();
-}
-
-void TestRunnerBindings::SetCloseRemainingWindowsWhenComplete(
-    gin::Arguments* args) {
-  if (invalid_)
-    return;
-
-  // In the original implementation, nothing happens if the argument is
-  // ommitted.
-  bool close_remaining_windows = false;
-  if (args->GetNext(&close_remaining_windows))
-    runner_->SetCloseRemainingWindowsWhenComplete(close_remaining_windows);
 }
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
@@ -1878,6 +1866,12 @@ void TestRunnerBindings::CapturePrintingPixelsThen(
                                  WrapV8Callback(std::move(v8_callback))));
 }
 
+void TestRunnerBindings::CheckForLeakedWindows() {
+  if (invalid_)
+    return;
+  runner_->blink_test_runner_->CheckForLeakedWindows();
+}
+
 void TestRunnerBindings::CopyImageThen(int x,
                                        int y,
                                        v8::Local<v8::Function> v8_callback) {
@@ -2237,11 +2231,6 @@ void TestRunner::Reset() {
 
   weak_factory_.InvalidateWeakPtrs();
   work_queue_.Reset();
-
-  if (close_remaining_windows_ && blink_test_runner_)
-    blink_test_runner_->CloseRemainingWindows();
-  else
-    close_remaining_windows_ = true;
 }
 
 void TestRunner::ResetWebView(WebViewTestProxy* web_view_test_proxy) {
@@ -2771,11 +2760,6 @@ void TestRunner::WaitForPolicyDelegate() {
 
 int TestRunner::WindowCount() {
   return test_interfaces_->GetWindowList().size();
-}
-
-void TestRunner::SetCloseRemainingWindowsWhenComplete(
-    bool close_remaining_windows) {
-  close_remaining_windows_ = close_remaining_windows;
 }
 
 void TestRunner::AddOriginAccessAllowListEntry(

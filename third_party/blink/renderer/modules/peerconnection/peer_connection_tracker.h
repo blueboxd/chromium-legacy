@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -226,6 +227,8 @@ class MODULES_EXPORT PeerConnectionTracker
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, CreatingObject);
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnThermalStateChange);
+  FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest,
+                           ReportInitialThermalState);
 
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
@@ -279,6 +282,8 @@ class MODULES_EXPORT PeerConnectionTracker
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
   typedef WTF::HashMap<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
   PeerConnectionLocalIdMap peer_connection_local_id_map_;
+  base::PowerObserver::DeviceThermalState current_thermal_state_ =
+      base::PowerObserver::DeviceThermalState::kUnknown;
 
   // This keeps track of the next available local ID.
   int next_local_id_;

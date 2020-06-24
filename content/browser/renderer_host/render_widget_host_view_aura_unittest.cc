@@ -125,6 +125,10 @@
 #include "ui/display/win/test/scoped_screen_win.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 using testing::_;
 
 using blink::WebGestureEvent;
@@ -6156,6 +6160,8 @@ TEST_F(InputMethodStateAuraTest, GetTextFromRange) {
 // This test will verify that after selection, the selected text is written to
 // the clipboard from the focused widget.
 TEST_F(InputMethodStateAuraTest, SelectedTextCopiedToClipboard) {
+  if (features::IsUsingOzonePlatform())
+    return;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   EXPECT_TRUE(!!clipboard);
   std::vector<std::string> texts = {"text0", "text1", "text2", "text3"};

@@ -21,7 +21,8 @@ class AccessibilityControllerClient
       const std::string& message) override;
   void PlayEarcon(int sound_key) override;
   base::TimeDelta PlayShutdownSound() override;
-  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture,
+                                  gfx::PointF location) override;
   bool ToggleDictation() override;
   void SilenceSpokenFeedback() override;
   void OnTwoFingerTouchStart() override;

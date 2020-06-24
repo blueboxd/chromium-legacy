@@ -146,59 +146,62 @@
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
     "includes": [1620],
   },
-   "chrome/browser/resources/nearby_internals/nearby_internals_resources.grd": {
+  "chrome/browser/resources/nearby_internals/nearby_internals_resources.grd": {
     "includes": [1630],
   },
-  "chrome/browser/resources/new_tab_page/new_tab_page_resources_vulcanized.grd": {
-    "includes": [1640],
+  "chrome/browser/resources/nearby_share/nearby_share_dialog_resources.grd": {
+    "includes": [1650],
   },
-  "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
+  "chrome/browser/resources/new_tab_page/new_tab_page_resources_vulcanized.grd": {
     "includes": [1660],
   },
-  "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
+  "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
     "includes": [1680],
   },
-  "chrome/browser/resources/print_preview/print_preview_resources.grd": {
+  "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
     "includes": [1700],
-    "structures": [1720],
+  },
+  "chrome/browser/resources/print_preview/print_preview_resources.grd": {
+    "includes": [1720],
+    "structures": [1740],
   },
   "chrome/browser/resources/print_preview/print_preview_pdf_resources.grd": {
-    "includes": [1730],
+    "includes": [1750],
   },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
-    "includes": [1740],
+    "includes": [1760],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "includes": [1760],
-    "structures": [1780],
+    "includes": [1780],
+    "structures": [1800],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [1800],
+    "includes": [1820],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "includes": [1810],
-    "structures": [1820],
+    "includes": [1830],
+    "structures": [1840],
   },
   "chrome/browser/resources/signin/profile_picker/profile_picker_resources.grd": {
-    "includes": [1840],
-    "structures": [1850],
+    "includes": [1860],
+    "structures": [1870],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [1860],
-    "includes": [1880],
+    "structures": [1880],
+    "includes": [1900],
   },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [1900],
-    "structures": [1920],
+    "includes": [1920],
+    "structures": [1940],
   },
   "chrome/browser/supervised_user/supervised_user_unscaled_resources.grd": {
-    "includes": [1930],
+    "includes": [1950],
   },
   "chrome/browser/test_dummy/internal/android/resources/resources.grd": {
-    "includes": [1940],
+    "includes": [1960],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [1950],
+    "includes": [1970],
   },
   # END chrome/browser section.
 

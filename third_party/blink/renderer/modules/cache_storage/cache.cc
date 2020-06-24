@@ -1093,7 +1093,7 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               requests.ReserveInitialCapacity(result->get_keys().size());
               for (auto& request : result->get_keys()) {
                 requests.push_back(Request::Create(
-                    resolver->GetScriptState(), *request,
+                    resolver->GetScriptState(), std::move(request),
                     Request::ForServiceWorkerFetchEvent::kFalse));
               }
               resolver->Resolve(requests);

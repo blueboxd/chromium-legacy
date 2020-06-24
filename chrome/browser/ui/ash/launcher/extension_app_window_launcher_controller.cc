@@ -62,6 +62,7 @@ ExtensionAppWindowLauncherController::~ExtensionAppWindowLauncherController() {
     DCHECK(widget);  // Extension windows are always backed by Widgets.
     widget->RemoveObserver(this);
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 AppWindowLauncherItemController*

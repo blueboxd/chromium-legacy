@@ -39,7 +39,6 @@ class NSSTempCertsCacheChromeOS;
 
 namespace chromeos {
 
-class ActiveDirectoryPasswordChangeScreenHandler;
 class Key;
 class SamlPasswordAttributes;
 class SigninScreenHandler;
@@ -110,9 +109,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   GaiaScreenHandler(
       JSCallsContainer* js_calls_container,
       CoreOobeView* core_oobe_view,
-      const scoped_refptr<NetworkStateInformer>& network_state_informer,
-      ActiveDirectoryPasswordChangeScreenHandler*
-          active_directory_password_change_screen_handler);
+      const scoped_refptr<NetworkStateInformer>& network_state_informer);
   ~GaiaScreenHandler() override;
 
   // GaiaView:
@@ -355,9 +352,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
   CoreOobeView* core_oobe_view_ = nullptr;
-
-  ActiveDirectoryPasswordChangeScreenHandler*
-      active_directory_password_change_screen_handler_ = nullptr;
 
   // Account to pre-populate with.
   AccountId populated_account_id_;

@@ -223,6 +223,7 @@
 
 #if defined(USE_X11)
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #include "ui/gfx/x/x11_types.h"           // nogncheck
 #endif
@@ -568,10 +569,9 @@ int BrowserMainLoop::EarlyInitialization() {
 #endif
 
 #if defined(USE_X11)
-  if (UsingInProcessGpu()) {
-    if (!gfx::GetXDisplay()) {
-      LOG(ERROR) << "Failed to open an X11 connection.";
-    }
+  if (!features::IsUsingOzonePlatform() && UsingInProcessGpu() &&
+      !gfx::GetXDisplay()) {
+    LOG(ERROR) << "Failed to open an X11 connection.";
   }
 #endif
 
@@ -817,8 +817,11 @@ int BrowserMainLoop::PreCreateThreads() {
   DCHECK(GpuDataManagerImpl::Initialized());
 
 #if defined(USE_X11)
-  gpu_data_manager_visual_proxy_.reset(new internal::GpuDataManagerVisualProxy(
-      GpuDataManagerImpl::GetInstance()));
+  if (!features::IsUsingOzonePlatform()) {
+    gpu_data_manager_visual_proxy_.reset(
+        new internal::GpuDataManagerVisualProxy(
+            GpuDataManagerImpl::GetInstance()));
+  }
 #endif
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID)
@@ -1408,7 +1411,8 @@ bool BrowserMainLoop::InitializeToolkit() {
 #if defined(USE_AURA)
 
 #if defined(USE_X11)
-  if (!parsed_command_line_.HasSwitch(switches::kHeadless) &&
+  if (!features::IsUsingOzonePlatform() &&
+      !parsed_command_line_.HasSwitch(switches::kHeadless) &&
       !gfx::GetXDisplay()) {
     LOG(ERROR) << "Unable to open X display.";
     return false;

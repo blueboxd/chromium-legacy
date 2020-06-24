@@ -13,8 +13,11 @@
 #include "components/client_hints/common/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 
 namespace client_hints {
@@ -23,11 +26,13 @@ ClientHints::ClientHints(
     content::BrowserContext* context,
     network::NetworkQualityTracker* network_quality_tracker,
     HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata)
+    const blink::UserAgentMetadata& user_agent_metadata,
+    PrefService* pref_service)
     : context_(context),
       network_quality_tracker_(network_quality_tracker),
       settings_map_(settings_map),
-      user_agent_metadata_(user_agent_metadata) {
+      user_agent_metadata_(user_agent_metadata),
+      pref_service_(pref_service) {
   DCHECK(context_);
   DCHECK(network_quality_tracker_);
   DCHECK(settings_map_);
@@ -38,13 +43,14 @@ void ClientHints::CreateForWebContents(
     content::WebContents* web_contents,
     network::NetworkQualityTracker* network_quality_tracker,
     HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata) {
+    const blink::UserAgentMetadata& user_agent_metadata,
+    PrefService* pref_service) {
   DCHECK(web_contents);
   if (!FromWebContents(web_contents)) {
     web_contents->SetUserData(
-        UserDataKey(),
-        base::WrapUnique(new ClientHints(web_contents, network_quality_tracker,
-                                         settings_map, user_agent_metadata)));
+        UserDataKey(), base::WrapUnique(new ClientHints(
+                           web_contents, network_quality_tracker, settings_map,
+                           user_agent_metadata, pref_service)));
   }
 }
 
@@ -70,6 +76,19 @@ bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
          CONTENT_SETTING_BLOCK;
 }
 
+bool ClientHints::UserAgentClientHintEnabled() {
+  // TODO(crbug.com/1097591): This extra path check is only herfe because the
+  // pref is not being registered in //weblayer.
+  bool pref_enabled = true;
+  if (pref_service_->HasPrefPath(
+          policy::policy_prefs::kUserAgentClientHintsEnabled)) {
+    pref_enabled = pref_service_->GetBoolean(
+        policy::policy_prefs::kUserAgentClientHintsEnabled);
+  }
+  return pref_enabled &&
+         base::FeatureList::IsEnabled(features::kUserAgentClientHint);
+}
+
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
   return user_agent_metadata_;
 }
@@ -78,11 +97,13 @@ ClientHints::ClientHints(
     content::WebContents* web_contents,
     network::NetworkQualityTracker* network_quality_tracker,
     HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata)
+    const blink::UserAgentMetadata& user_agent_metadata,
+    PrefService* pref_service)
     : ClientHints(web_contents->GetBrowserContext(),
                   network_quality_tracker,
                   settings_map,
-                  user_agent_metadata) {
+                  user_agent_metadata,
+                  pref_service) {
   receiver_ = std::make_unique<
       content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
       web_contents, this);

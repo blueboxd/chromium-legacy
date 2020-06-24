@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,7 +37,9 @@ AppShortcutManager::AppShortcutManager(Profile* profile) : profile_(profile) {}
 
 AppShortcutManager::~AppShortcutManager() = default;
 
-void AppShortcutManager::SetSubsystems(AppRegistrar* registrar) {
+void AppShortcutManager::SetSubsystems(AppIconManager* icon_manager,
+                                       AppRegistrar* registrar) {
+  icon_manager_ = icon_manager;
   registrar_ = registrar;
 }
 
@@ -149,6 +152,21 @@ void AppShortcutManager::CreateShortcuts(const AppId& app_id,
                                  std::move(callback))));
 }
 
+void AppShortcutManager::ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
+    const AppId& app_id,
+    RegisterShortcutsMenuCallback callback) {
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    icon_manager_->ReadAllShortcutsMenuIcons(
+        app_id,
+        base::BindOnce(
+            &AppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu,
+            weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback)));
+  } else {
+    std::move(callback).Run(/*shortcuts_menu_registered=*/true);
+  }
+}
+
 void AppShortcutManager::RegisterShortcutsMenuWithOs(
     const AppId& app_id,
     const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
@@ -178,14 +196,7 @@ void AppShortcutManager::UnregisterShortcutsMenuWithOs(const AppId& app_id) {
   if (!web_app::ShouldRegisterShortcutsMenuWithOs())
     return;
 
-  // TODO(https://crbug.com/1069298): Get profile_path without using
-  // shortcut_info.
-  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
-  if (!shortcut_info)
-    return;
-
-  web_app::UnregisterShortcutsMenuWithOs(shortcut_info->extension_id,
-                                         shortcut_info->profile_path);
+  web_app::UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
 }
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
@@ -226,6 +237,20 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
   internals::ScheduleCreatePlatformShortcuts(
       std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,
       std::move(info), std::move(callback));
+}
+
+void AppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu(
+    const AppId& app_id,
+    RegisterShortcutsMenuCallback callback,
+    ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos =
+      registrar_->GetAppShortcutInfos(app_id);
+  if (!shortcut_infos.empty()) {
+    RegisterShortcutsMenuWithOs(app_id, shortcut_infos,
+                                shortcuts_menu_icons_bitmaps);
+  }
+
+  std::move(callback).Run(/*shortcuts_menu_registered=*/true);
 }
 
 void AppShortcutManager::RegisterRunOnOsLogin(

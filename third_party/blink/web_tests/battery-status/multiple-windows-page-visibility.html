@@ -17,7 +17,6 @@ gc();
 jsTestIsAsync = true;
 testRunner.waitUntilDone();
 testRunner.setCanOpenWindows();
-testRunner.setCloseRemainingWindowsWhenComplete(true);
 
 document.addEventListener("visibilitychange", function() {
     debug("first window: page is " + document.visibilityState);

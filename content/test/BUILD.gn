@@ -2005,6 +2005,7 @@ test("content_unittests") {
     "../common/user_agent_unittest.cc",
     "../common/webplugininfo_unittest.cc",
     "../public/browser/site_isolation_policy_unittest.cc",
+    "../public/browser/storage_partition_config_unittest.cc",
 
     # TODO(jam): move these network/ tests to services/network.
     "../public/common/drop_data_unittest.cc",

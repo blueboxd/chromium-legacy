@@ -36,6 +36,10 @@
 #include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace viz {
 namespace {
 
@@ -125,7 +129,8 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
                               GetFontRenderParams().Get()->subpixel_rendering);
 
 #if defined(USE_OZONE)
-  InitOzone();
+  if (features::IsUsingOzonePlatform())
+    InitOzone();
 #endif  // defined(USE_OZONE)
 }
 
@@ -294,6 +299,7 @@ mojom::InfoCollectionGpuService* GpuHostImpl::info_collection_gpu_service() {
 #if defined(USE_OZONE)
 
 void GpuHostImpl::InitOzone() {
+  DCHECK(features::IsUsingOzonePlatform());
   // Ozone needs to send the primary DRM device to GPU service as early as
   // possible to ensure the latter always has a valid device.
   // https://crbug.com/608839

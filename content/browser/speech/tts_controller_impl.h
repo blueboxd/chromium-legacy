@@ -22,13 +22,16 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tts_controller.h"
-#include "content/public/browser/tts_controller_delegate.h"
 #include "content/public/browser/tts_platform.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
+
+#if defined(OS_CHROMEOS)
+class TtsControllerDelegate;
+#endif
 
 // Singleton class that manages text-to-speech for all TTS engines and
 // APIs, maintaining a queue of pending utterances and keeping
@@ -120,9 +123,14 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   static void PopulateParsedText(std::string* parsed_text,
                                  const base::Value* element);
 
+  int GetMatchingVoice(TtsUtterance* utterance,
+                       const std::vector<VoiceData>& voices);
+
+#if defined(OS_CHROMEOS)
   TtsControllerDelegate* GetTtsControllerDelegate();
 
-  TtsControllerDelegate* delegate_;
+  TtsControllerDelegate* delegate_ = nullptr;
+#endif
 
   TtsEngineDelegate* engine_delegate_ = nullptr;
 
@@ -133,11 +141,11 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   std::unique_ptr<TtsUtterance> current_utterance_;
 
   // Whether the queue is paused or not.
-  bool paused_;
+  bool paused_ = false;
 
   // A pointer to the platform implementation of text-to-speech, for
   // dependency injection.
-  TtsPlatform* tts_platform_;
+  TtsPlatform* tts_platform_ = nullptr;
 
   // A queue of utterances to speak after the current one finishes.
   std::deque<std::unique_ptr<TtsUtterance>> utterance_deque_;

@@ -49,6 +49,10 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
       this.mouseX_ = 0;
       this.mouseY_ = 0;
     });
+
+    if (localStorage['speakTextUnderMouse'] == String(true)) {
+      chrome.accessibilityPrivate.enableChromeVoxMouseEvents(true);
+    }
   }
 
   /**
@@ -88,11 +92,38 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
    * @param {AutomationEvent} evt The mouse move event to process.
    */
   onMouseMove(evt) {
-    this.mouseX_ = evt.mouseX;
-    this.mouseY_ = evt.mouseY;
+    this.onMove(evt.mouseX, evt.mouseY);
+  }
+
+  /**
+   * Inform this handler of a move to (x, y).
+   * @param {number} x
+   * @param {number} y
+   */
+  onMove(x, y) {
+    this.mouseX_ = x;
+    this.mouseY_ = y;
     this.hasPendingEvents_ = true;
     if (!this.isWaitingBeforeHitTest_) {
       this.runHitTest();
     }
   }
+
+  /**
+   * Synthesizes a mouse move on the current mouse location.
+   */
+  synthesizeMouseMove() {
+    if (this.mouseX_ === undefined || this.mouseY_ === undefined) {
+      return;
+    }
+
+    chrome.accessibilityPrivate.sendSyntheticMouseEvent({
+      type: chrome.accessibilityPrivate.SyntheticMouseEventType.MOVE,
+      x: this.mouseX_,
+      y: this.mouseY_
+    });
+  }
 };
+
+/** @type {!BackgroundMouseHandler} */
+BackgroundMouseHandler.instance = new BackgroundMouseHandler();

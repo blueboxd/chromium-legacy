@@ -6,7 +6,7 @@ import './strings.m.js';
 import './most_visited.js';
 import './customize_dialog.js';
 import './voice_search_overlay.js';
-import './untrusted_iframe.js';
+import './iframe.js';
 import './fakebox.js';
 import './realbox.js';
 import './logo.js';
@@ -64,7 +64,7 @@ class AppElement extends PolymerElement {
           params.set(
               'paramsencoded',
               btoa(window.location.search.replace(/^[?]/, '&')));
-          return `one-google-bar?${params}`;
+          return `chrome-untrusted://new-tab-page/one-google-bar?${params}`;
         },
       },
 

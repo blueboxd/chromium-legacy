@@ -45,7 +45,7 @@ public class ContextualSearchTranslationImpl implements ContextualSearchTranslat
 
     @Override
     public boolean needsTranslation(@Nullable String sourceLanguage) {
-        if (TextUtils.isEmpty(sourceLanguage) || isBlockedLanguage(sourceLanguage)) return false;
+        if (TextUtils.isEmpty(sourceLanguage)) return false;
 
         LinkedHashSet<String> languages = mTranslateBridgeWrapper.getModelLanguages();
         for (String language : languages) {
@@ -59,9 +59,9 @@ public class ContextualSearchTranslationImpl implements ContextualSearchTranslat
         return mTranslateBridgeWrapper.getTargetLanguage();
     }
 
-    /** @return whether the given {@code language} is blocked for translation. */
-    private boolean isBlockedLanguage(String language) {
-        return mTranslateBridgeWrapper.isBlockedLanguage(language);
+    @Override
+    public String getTranslateServiceFluentLanguages() {
+        return TextUtils.join(",", mTranslateBridgeWrapper.getModelLanguages());
     }
 
     /**
@@ -69,11 +69,6 @@ public class ContextualSearchTranslationImpl implements ContextualSearchTranslat
      * mocked for testing.
      */
     static class TranslateBridgeWrapper {
-        /** @return whether the given string is blocked for translation. */
-        public boolean isBlockedLanguage(String language) {
-            return TranslateBridge.isBlockedLanguage(language);
-        }
-
         /**
          * @return The best target language based on what the Translate Service knows about the
          *         user.

@@ -21,6 +21,8 @@ namespace scheduler {
 using FeatureAndParams = ::base::test::ScopedFeatureList::FeatureAndParams;
 using ShouldUpdatePolicy =
     ::blink::scheduler::AgentSchedulingStrategy::ShouldUpdatePolicy;
+using PrioritisationType =
+    ::blink::scheduler::MainThreadTaskQueue::QueueTraits::PrioritisationType;
 
 using ::base::FieldTrialParams;
 using ::base::sequence_manager::TaskQueue;
@@ -73,21 +75,16 @@ class PerAgentSchedulingBaseTest : public Test {
     non_timer_queue_->SetFrameSchedulerForTest(&subframe_);
   }
 
-  void SetUp() override {
-    ASSERT_EQ(timer_queue_->queue_class(),
-              MainThreadTaskQueue::QueueClass::kTimer);
-  }
-
  protected:
   ScopedFeatureList feature_list_;
   std::unique_ptr<AgentSchedulingStrategy> strategy_;
-  MockFrameScheduler main_frame_{FrameScheduler::FrameType::kMainFrame};
-  MockFrameScheduler subframe_{FrameScheduler::FrameType::kSubframe};
+  NiceMock<MockFrameScheduler> main_frame_{
+      FrameScheduler::FrameType::kMainFrame};
+  NiceMock<MockFrameScheduler> subframe_{FrameScheduler::FrameType::kSubframe};
   scoped_refptr<MainThreadTaskQueueForTest> timer_queue_{
-      new MainThreadTaskQueueForTest(
-          MainThreadTaskQueue::QueueType::kWebScheduling)};
+      new MainThreadTaskQueueForTest(PrioritisationType::kJavaScriptTimer)};
   scoped_refptr<MainThreadTaskQueueForTest> non_timer_queue_{
-      new MainThreadTaskQueueForTest(MainThreadTaskQueue::QueueType::kDefault)};
+      new MainThreadTaskQueueForTest(PrioritisationType::kRegular)};
 };
 
 class PerAgentDisableTimersUntilFMPStrategyTest
@@ -410,24 +407,23 @@ class PerAgentDefaultIsNoOpStrategyTest : public Test {
  public:
   PerAgentDefaultIsNoOpStrategyTest() {
     strategy_ = AgentSchedulingStrategy::Create();
-    timer_queue_->SetFrameSchedulerForTest(&frame_);
+    timer_queue_->SetFrameSchedulerForTest(&subframe_);
   }
 
  protected:
   std::unique_ptr<AgentSchedulingStrategy> strategy_;
-  MockFrameScheduler frame_{FrameScheduler::FrameType::kMainFrame};
-  // Use |kWebScheduling| so that it ends up with |QueueClass::kTimer|
+  MockFrameScheduler main_frame_{FrameScheduler::FrameType::kMainFrame};
+  NiceMock<MockFrameScheduler> subframe_{FrameScheduler::FrameType::kSubframe};
   scoped_refptr<MainThreadTaskQueueForTest> timer_queue_{
-      new MainThreadTaskQueueForTest(
-          MainThreadTaskQueue::QueueType::kWebScheduling)};
+      new MainThreadTaskQueueForTest(PrioritisationType::kJavaScriptTimer)};
 };
 
 TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntRequestPolicyUpdate) {
-  EXPECT_EQ(strategy_->OnFrameAdded(frame_), ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(frame_),
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
             ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnFrameRemoved(frame_), ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(frame_),
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
             ShouldUpdatePolicy::kNo);
   EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
 }

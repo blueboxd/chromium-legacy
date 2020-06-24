@@ -85,8 +85,8 @@ public final class PreviewsAndroidBridge {
     }
 
     @CalledByNative
-    private static void createHttpsImageCompressionInfoBar(final Tab tab) {
-        HttpsImageCompressionUtils.createInfoBar(tab);
+    private static boolean createHttpsImageCompressionInfoBar(final Tab tab) {
+        return HttpsImageCompressionUtils.createInfoBar(tab);
     }
 
     @NativeMethods

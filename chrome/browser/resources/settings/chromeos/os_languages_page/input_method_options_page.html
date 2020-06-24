@@ -1,29 +1,55 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="input_method_util.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 
 <dom-module id="settings-input-method-options-page">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared md-select">
       h2 {
         padding-inline-start: var(--cr-section-padding);
       }
     </style>
 
     <div route-path="default">
-      <h2>Physical keyboard (TODO: i18n)</h2>
-      <div class="list-frame vertical-list">
-        <settings-toggle-button class="list-item"
-            label="Auto-capitalization (TODO: i18n)">
-        </settings-toggle-button>
-      </div>
-      <h2>On-screen keyboard (TODO: i18n)</h2>
-      <div class="list-frame vertical-list">
-        <settings-toggle-button class="list-item"
-            label="Auto-capitalization (TODO: i18n)">
-        </settings-toggle-button>
-      </div>
+      <template is="dom-repeat" items="[[optionSections_]]" as="section">
+        <h2>[[section.title]]</h2>
+        <div class="list-frame">
+          <template is="dom-repeat" items="[[section.options]]" as="option">
+            <div class="list-item" actionable>
+              <div class="start" id="option-label" aria-hidden="true">
+                [[option.label]]
+              </div>
+              <template is="dom-if" if="[[isToggleButton_(option.uiType)]]">
+                <cr-toggle checked="{{option.value}}"
+                    on-click="onToggleButtonOrDropdownChange_"
+                    aria-labelledby="option-label">
+                </cr-toggle>
+              </template>
+              <template is="dom-if" if="[[isDropdown_(option.uiType)]]">
+                <select class="md-select" value="{{option.value::change}}"
+                    on-change="onToggleButtonOrDropdownChange_"
+                    aria-labelledby="option-label">
+                  <template is="dom-repeat" items="[[option.menuItems]]">
+                    <option selected="[[item.selected]]" value="[[item.value]]">
+                      [[item.label]]
+                    </option>
+                  </template>
+                </select>
+              </template>
+              <template is="dom-if" if="[[isLink_(option.uiType)]]">
+                <cr-icon-button class="icon-external"
+                    on-click="onExternalLinkClick_"
+                    aria-labelledby="option-label">
+                </cr-icon-button>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
     </div>
   </template>
   <script src="input_method_options_page.js"></script>

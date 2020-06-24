@@ -71,6 +71,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/web_input_event.h"
@@ -238,10 +239,14 @@ void PrepareDragData(const DropData& drop_data,
     PrepareDragForDownload(drop_data, provider, web_contents);
 #endif
 #if defined(USE_X11) || defined(OS_WIN)
+  bool should_check_file_contents = true;
+#if defined(USE_X11)
+  should_check_file_contents = !features::IsUsingOzonePlatform();
+#endif
   // We set the file contents before the URL because the URL also sets file
   // contents (to a .URL shortcut).  We want to prefer file content data over
   // a shortcut so we add it first.
-  if (!drop_data.file_contents.empty())
+  if (should_check_file_contents && !drop_data.file_contents.empty())
     PrepareDragForFileContents(drop_data, provider);
 #endif
   // Call SetString() before SetURL() when we actually have a custom string.

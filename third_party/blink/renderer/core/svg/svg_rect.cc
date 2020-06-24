@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -68,14 +69,9 @@ SVGParsingError SVGRect::SetValueAsString(const String& string) {
   if (string.IsEmpty())
     return SVGParsingError(SVGParseStatus::kExpectedNumber, 0);
 
-  if (string.Is8Bit()) {
-    const LChar* ptr = string.Characters8();
-    const LChar* end = ptr + string.length();
-    return Parse(ptr, end);
-  }
-  const UChar* ptr = string.Characters16();
-  const UChar* end = ptr + string.length();
-  return Parse(ptr, end);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return Parse(chars, chars + length);
+  });
 }
 
 String SVGRect::ValueAsString() const {

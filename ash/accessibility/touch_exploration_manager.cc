@@ -126,8 +126,9 @@ void TouchExplorationManager::PlayEnterScreenEarcon() {
 }
 
 void TouchExplorationManager::HandleAccessibilityGesture(
-    ax::mojom::Gesture gesture) {
-  GetA11yController()->HandleAccessibilityGesture(gesture);
+    ax::mojom::Gesture gesture,
+    gfx::PointF location) {
+  GetA11yController()->HandleAccessibilityGesture(gesture, location);
 }
 
 void TouchExplorationManager::OnDisplayMetricsChanged(

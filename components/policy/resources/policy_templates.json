@@ -21605,6 +21605,26 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       If this policy is set to true, the feature will be force enabled, and users will not be able to override this.
       This policy is defaulted to false, no emoji will be suggested and users cannot override it.''',
     },
+    {
+      'name': 'UserAgentClientHintsEnabled',
+      'owners': ['file://components/client_hints/OWNERS', 'yoavweiss@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-', 'chrome.*:85-', 'android:85-'],
+      'features': {
+        'per_profile': False,
+        'dynamic_refresh': False,
+      },
+      'example_value': True,
+      'id': 725,
+      'caption': '''Control the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature.''',
+      'tags': [],
+      'desc': '''When enabled the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature sends granular request headers providing information about the user browser and environment.
+
+      This is an additive feature, but the new headers may break some websites that restrict the characters that requests may contain.
+
+      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
+    },
   ],
 
   'messages': {
@@ -22489,6 +22509,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 724,
+  'highest_id_currently_used': 725,
   'highest_atomic_group_id_currently_used': 38
 }

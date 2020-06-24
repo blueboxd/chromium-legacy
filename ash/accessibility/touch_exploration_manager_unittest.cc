@@ -43,11 +43,11 @@ TEST_F(TouchExplorationManagerTest, HandleAccessibilityGesture) {
   TestAccessibilityControllerClient client;
 
   touch_exploration_manager.HandleAccessibilityGesture(
-      ax::mojom::Gesture::kClick);
+      ax::mojom::Gesture::kClick, gfx::PointF());
   EXPECT_EQ(ax::mojom::Gesture::kClick, client.last_a11y_gesture());
 
   touch_exploration_manager.HandleAccessibilityGesture(
-      ax::mojom::Gesture::kSwipeLeft1);
+      ax::mojom::Gesture::kSwipeLeft1, gfx::PointF());
   EXPECT_EQ(ax::mojom::Gesture::kSwipeLeft1, client.last_a11y_gesture());
 }
 

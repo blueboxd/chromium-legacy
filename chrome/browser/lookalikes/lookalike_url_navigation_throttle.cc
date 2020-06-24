@@ -101,7 +101,11 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   // which navigates and waits for throttles to complete using a RunLoop.
   // However, TestMockTimeTaskRunner::ScopedContext disallows RunLoop so those
   // tests crash. We should only do this with a real profile anyways.
-  if (profile_->AsTestingProfile()) {
+  // use_test_profile is set by unit tests to true so that the rest of the
+  // throttle is exercised.
+  // In other words, this condition is false in production code, browser tests
+  // and only lookalike unit tests. It's true in all non-lookalike unit tests.
+  if (!use_test_profile_ && profile_->AsTestingProfile()) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -171,7 +175,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   }
 
   LookalikeUrlService* service = LookalikeUrlService::Get(profile_);
-  if (service->EngagedSitesNeedUpdating()) {
+  if (!use_test_profile_ && service->EngagedSitesNeedUpdating()) {
     service->ForceUpdateEngagedSites(
         base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
                        weak_factory_.GetWeakPtr(), url, navigated_domain,

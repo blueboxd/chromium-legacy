@@ -31,6 +31,10 @@ class BASE_EXPORT PowerMonitorSource {
   // Is the computer currently on battery power. Can be called on any thread.
   bool IsOnBatteryPower();
 
+  // Reads the current DeviceThermalState, if available on the platform.
+  // Otherwise, returns kUnknown.
+  virtual PowerObserver::DeviceThermalState GetCurrentThermalState();
+
   static const char* DeviceThermalStateToString(
       PowerObserver::DeviceThermalState state);
 

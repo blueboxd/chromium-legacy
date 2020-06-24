@@ -82,6 +82,8 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
 
     RemoveWidgetObservers();
   }
+
+  CHECK(!IsInObserverList());
 }
 
 void AutofillPopupBaseView::DoShow() {

@@ -70,6 +70,7 @@
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_first_device_bluetooth_chooser.h"
+#include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/test/storage_partition_test_helpers.h"
@@ -630,6 +631,11 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 
 bool WebTestControlHost::ResetBrowserAfterWebTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Close any windows opened by the test to avoid them polluting the next
+  // test.
+  CloseTestOpenedWindows();
+
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
   printer_->CloseStderr();
@@ -648,6 +654,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   blink_test_client_receivers_.Clear();
   actual_pixel_hash_ = "";
   main_frame_dump_ = nullptr;
+  check_for_leaked_windows_ = false;
   waiting_for_pixel_results_ = false;
   waiting_for_main_frame_dump_ = false;
   composite_all_frames_node_queue_ = std::queue<Node*>();
@@ -670,6 +677,11 @@ void WebTestControlHost::DidOpenNewWindowOrTab(WebContents* web_contents) {
       web_contents,
       std::make_unique<WebTestWindowObserver>(web_contents, this));
   CHECK(result.second);  // The WebContents should not already be in the map!
+}
+
+std::unique_ptr<JavaScriptDialogManager>
+WebTestControlHost::CreateJavaScriptDialogManager() {
+  return std::make_unique<WebTestJavaScriptDialogManager>();
 }
 
 void WebTestControlHost::SetTempPath(const base::FilePath& temp_path) {
@@ -1170,6 +1182,11 @@ void WebTestControlHost::OnCleanupFinished() {
         ->ResetRendererAfterWebTest();
     ++waiting_for_reset_done_;
   }
+
+  // If the windows are gone, due to crashes or whatever, we need to make
+  // progress.
+  ++waiting_for_reset_done_;
+  ResetRendererAfterWebTestDone();
 }
 
 void WebTestControlHost::OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump) {
@@ -1458,7 +1475,11 @@ void WebTestControlHost::SetMainWindowHidden(bool hidden) {
     main_window_->web_contents()->WasShown();
 }
 
-void WebTestControlHost::CloseRemainingWindows() {
+void WebTestControlHost::CheckForLeakedWindows() {
+  check_for_leaked_windows_ = true;
+}
+
+void WebTestControlHost::CloseTestOpenedWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(Shell::windows());
   for (auto* shell : open_windows) {
@@ -1472,16 +1493,20 @@ void WebTestControlHost::ResetRendererAfterWebTestDone() {
   if (--waiting_for_reset_done_ > 0)
     return;
 
-  if (leak_detector_) {
-    if (main_window_ && main_window_->web_contents()) {
-      RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-      RenderProcessHost* rph = rvh->GetProcess();
-      CHECK(rph->GetProcess().IsValid());
-      leak_detector_->TryLeakDetection(
-          rph,
-          base::BindOnce(&WebTestControlHost::OnLeakDetectionDone,
-                         weak_factory_.GetWeakPtr(), rph->GetProcess().Pid()));
-    }
+  if (leak_detector_ && main_window_) {
+    // When doing leak detection, we don't want to count opened windows as
+    // leaks, unless the test specifies that it expects to have closed them
+    // all and wants to look for them as leaks.
+    if (!check_for_leaked_windows_)
+      CloseTestOpenedWindows();
+
+    RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
+    RenderProcessHost* rph = rvh->GetProcess();
+    CHECK(rph->GetProcess().IsValid());
+    leak_detector_->TryLeakDetection(
+        rph,
+        base::BindOnce(&WebTestControlHost::OnLeakDetectionDone,
+                       weak_factory_.GetWeakPtr(), rph->GetProcess().Pid()));
     return;
   }
 
@@ -1491,22 +1516,22 @@ void WebTestControlHost::ResetRendererAfterWebTestDone() {
 void WebTestControlHost::OnLeakDetectionDone(
     int pid,
     const LeakDetector::LeakDetectionReport& report) {
-  if (!report.leaked) {
-    Shell::QuitMainMessageLoopForTesting();
-    return;
+  if (report.leaked) {
+    printer_->AddErrorMessage(base::StringPrintf("#LEAK - renderer pid %d (%s)",
+                                                 pid, report.detail.c_str()));
+    CHECK(!crash_when_leak_found_);
+    DiscardMainWindow();
   }
 
-  printer_->AddErrorMessage(base::StringPrintf("#LEAK - renderer pid %d (%s)",
-                                               pid, report.detail.c_str()));
-  CHECK(!crash_when_leak_found_);
-
-  DiscardMainWindow();
+  Shell::QuitMainMessageLoopForTesting();
 }
 
 void WebTestControlHost::SetBluetoothManualChooser(bool enable) {
-  bluetooth_chooser_factory_.reset();
   if (enable) {
-    bluetooth_chooser_factory_.reset(new WebTestBluetoothChooserFactory());
+    bluetooth_chooser_factory_ =
+        std::make_unique<WebTestBluetoothChooserFactory>();
+  } else {
+    bluetooth_chooser_factory_.reset();
   }
 }
 

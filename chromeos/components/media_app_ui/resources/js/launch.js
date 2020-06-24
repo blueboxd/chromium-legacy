@@ -306,17 +306,25 @@ async function sendFilesToGuest() {
  */
 async function sendSnapshotToGuest(
     snapshot, localLaunchNumber, extraFiles = false) {
+  const focusIndex = entryIndex;
+
   // On first launch, files are opened to determine navigation candidates. Don't
-  // reopen in that case. Otherwise, attempt to reopen here. Some files may be
-  // assigned null, e.g., if they have been moved to a different folder.
-  await Promise.all(snapshot.map(refreshFile));
+  // reopen in that case. Otherwise, attempt to reopen the focus file only. In
+  // future we might also open "nearby" files for preloading. However, reopening
+  // *all* files on every navigation attempt to verify they can still be
+  // navigated to adds noticeable lag in large directories.
+  if (focusIndex >= 0 && focusIndex < snapshot.length) {
+    await refreshFile(snapshot[focusIndex]);
+  } else if (snapshot.length !== 0) {
+    await refreshFile(snapshot[0]);
+  }
   if (localLaunchNumber !== globalLaunchNumber) {
     return;
   }
 
   /** @type {!LoadFilesMessage} */
   const loadFilesMessage = {
-    writableFileIndex: entryIndex,
+    writableFileIndex: focusIndex,
     // Handle can't be passed through a message pipe.
     files: snapshot.map(fd => ({
                           token: fd.token,

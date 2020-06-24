@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_from_string_url_loader.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
@@ -47,6 +48,12 @@ void ReportProbeLatency(int frame_tree_node_id, base::TimeDelta probe_latency) {
     return;
 
   tab_helper->NotifyPrefetchProbeLatency(probe_latency);
+}
+
+void RecordCookieWaitTime(base::TimeDelta wait_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "IsolatedPrerender.AfterClick.Mainframe.CookieWaitTime", wait_time,
+      base::TimeDelta(), base::TimeDelta::FromSeconds(5), 50);
 }
 
 }  // namespace
@@ -116,15 +123,42 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
 
   if (base::FeatureList::IsEnabled(
           features::kIsolatePrerendersMustProbeOrigin)) {
-    StartProbe(url_.GetOrigin(),
-               base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::
-                                  InterceptPrefetchedNavigation,
-                              base::Unretained(this),
-                              tentative_resource_request, std::move(prefetch)));
+    StartProbe(
+        url_.GetOrigin(),
+        base::BindOnce(&IsolatedPrerenderURLLoaderInterceptor::
+                           EnsureCookiesCopiedAndInterceptPrefetchedNavigation,
+                       base::Unretained(this), tentative_resource_request,
+                       std::move(prefetch)));
     return;
   }
-  NotifyPrefetchStatusUpdate(
-      IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedNoProbe);
+
+  EnsureCookiesCopiedAndInterceptPrefetchedNavigation(
+      tentative_resource_request, std::move(prefetch));
+}
+
+void IsolatedPrerenderURLLoaderInterceptor::
+    EnsureCookiesCopiedAndInterceptPrefetchedNavigation(
+        const network::ResourceRequest& tentative_resource_request,
+        std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch) {
+  // The TabHelper needs to copy cookies over to the main profile's cookie jar
+  // before we can commit the mainframe so that subresources have the cookies
+  // they need before being put on the wire.
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(
+          content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_));
+  if (tab_helper && tab_helper->IsWaitingForAfterSRPCookiesCopy()) {
+    cookie_copy_start_time_ = base::TimeTicks::Now();
+    tab_helper->SetOnAfterSRPCookieCopyCompleteCallback(base::BindOnce(
+        &IsolatedPrerenderURLLoaderInterceptor::InterceptPrefetchedNavigation,
+        weak_factory_.GetWeakPtr(), tentative_resource_request,
+        std::move(prefetch)));
+    return;
+  }
+
+  // Record that there was no wait time.
+  RecordCookieWaitTime(base::TimeDelta());
+
+  // If the cookies were already copied, commit now.
   InterceptPrefetchedNavigation(tentative_resource_request,
                                 std::move(prefetch));
 }
@@ -132,6 +166,19 @@ void IsolatedPrerenderURLLoaderInterceptor::MaybeCreateLoader(
 void IsolatedPrerenderURLLoaderInterceptor::InterceptPrefetchedNavigation(
     const network::ResourceRequest& tentative_resource_request,
     std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch) {
+  if (cookie_copy_start_time_) {
+    base::TimeDelta wait_time =
+        base::TimeTicks::Now() - *cookie_copy_start_time_;
+    DCHECK_GT(wait_time, base::TimeDelta());
+    RecordCookieWaitTime(wait_time);
+  }
+
+  NotifyPrefetchStatusUpdate(
+      base::FeatureList::IsEnabled(features::kIsolatePrerendersMustProbeOrigin)
+          ? IsolatedPrerenderTabHelper::PrefetchStatus::
+                kPrefetchUsedProbeSuccess
+          : IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedNoProbe);
+
   std::unique_ptr<IsolatedPrerenderFromStringURLLoader> url_loader =
       std::make_unique<IsolatedPrerenderFromStringURLLoader>(
           std::move(prefetch), tentative_resource_request);
@@ -152,11 +199,10 @@ void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
                      base::TimeTicks::Now() - probe_start_time_.value());
 
   if (success) {
-    NotifyPrefetchStatusUpdate(
-        IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedProbeSuccess);
     std::move(on_success_callback).Run();
     return;
   }
+
   NotifyPrefetchStatusUpdate(
       IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchNotUsedProbeFailed);
   DoNotInterceptNavigation();

@@ -254,6 +254,7 @@ MessageBoxDialog::MessageBoxDialog(const base::string16& title,
 
 MessageBoxDialog::~MessageBoxDialog() {
   GetWidget()->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void MessageBoxDialog::Run(MessageBoxResultCallback result_callback) {

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram.h"
@@ -114,6 +115,11 @@ void OnGotCookieList(
   std::move(result_callback).Run(url, true, base::nullopt);
 }
 
+void CookieSetHelper(base::RepeatingClosure run_me,
+                     net::CookieInclusionStatus status) {
+  run_me.Run();
+}
+
 }  // namespace
 
 IsolatedPrerenderTabHelper::PrefetchMetrics::PrefetchMetrics() = default;
@@ -218,6 +224,15 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
   if (prerender_manager &&
       prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr)) {
     return;
+  }
+
+  const GURL& url = navigation_handle->GetURL();
+
+  if (page_->prefetched_responses_.find(url) !=
+      page_->prefetched_responses_.end()) {
+    // Start copying any needed cookies over to the main profile if this page
+    // was prefetched.
+    CopyIsolatedCookiesOnAfterSRPClick(url);
   }
 
   // User is navigating, don't bother prefetching further.
@@ -416,6 +431,8 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
         service->TakeSubresourceManagerForURL(url);
     if (manager) {
       new_page->subresource_manager_ = std::move(manager);
+      new_page->isolated_cookie_manager_ =
+          std::move(page_->isolated_cookie_manager_);
       new_page->isolated_url_loader_factory_ =
           std::move(page_->isolated_url_loader_factory_);
       new_page->isolated_network_context_ =
@@ -511,8 +528,10 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   // The status is updated to be successful or failed when it finishes.
   OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchNotFinishedInTime);
 
-  net::IsolationInfo isolation_info =
-      net::IsolationInfo::CreateOpaqueAndNonTransient();
+  url::Origin origin = url::Origin::Create(url);
+  net::IsolationInfo isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame, origin, origin,
+      net::SiteForCookies::FromOrigin(origin));
   network::ResourceRequest::TrustedParams trusted_params;
   trusted_params.isolation_info = isolation_info;
 
@@ -521,9 +540,10 @@ void IsolatedPrerenderTabHelper::Prefetch() {
   request->url = url;
   request->method = "GET";
   request->load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH;
-  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   request->headers.SetHeader(content::kCorsExemptPurposeHeaderName, "prefetch");
   request->trusted_params = trusted_params;
+  request->site_for_cookies = trusted_params.isolation_info.site_for_cookies();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("navigation_predictor_srp_prefetch",
@@ -974,6 +994,88 @@ void IsolatedPrerenderTabHelper::OnGotEligibilityResult(
   }
 }
 
+bool IsolatedPrerenderTabHelper::IsWaitingForAfterSRPCookiesCopy() const {
+  switch (page_->cookie_copy_status_) {
+    case CookieCopyStatus::kNoNavigation:
+    case CookieCopyStatus::kCopyComplete:
+      return false;
+    case CookieCopyStatus::kWaitingForCopy:
+      return true;
+  }
+}
+
+void IsolatedPrerenderTabHelper::SetOnAfterSRPCookieCopyCompleteCallback(
+    base::OnceClosure callback) {
+  // We don't expect a callback unless there's something to wait on.
+  DCHECK(IsWaitingForAfterSRPCookiesCopy());
+
+  page_->on_after_srp_cookie_copy_complete_ = std::move(callback);
+}
+
+void IsolatedPrerenderTabHelper::CopyIsolatedCookiesOnAfterSRPClick(
+    const GURL& url) {
+  if (!page_->isolated_network_context_) {
+    // Not set in unit tests.
+    return;
+  }
+
+  page_->cookie_copy_status_ = CookieCopyStatus::kWaitingForCopy;
+
+  if (!page_->isolated_cookie_manager_) {
+    page_->isolated_network_context_->GetCookieManager(
+        page_->isolated_cookie_manager_.BindNewPipeAndPassReceiver());
+  }
+
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+  page_->isolated_cookie_manager_->GetCookieList(
+      url, options,
+      base::BindOnce(
+          &IsolatedPrerenderTabHelper::OnGotIsolatedCookiesToCopyAfterSRPClick,
+          weak_factory_.GetWeakPtr(), url));
+}
+
+void IsolatedPrerenderTabHelper::OnGotIsolatedCookiesToCopyAfterSRPClick(
+    const GURL& url,
+    const net::CookieAccessResultList& cookie_list,
+    const net::CookieAccessResultList& excluded_cookies) {
+  DCHECK(IsWaitingForAfterSRPCookiesCopy());
+
+  UMA_HISTOGRAM_COUNTS_100("IsolatedPrerender.Prefetch.Mainframe.CookiesToCopy",
+                           cookie_list.size());
+
+  if (cookie_list.empty()) {
+    OnCopiedIsolatedCookiesAfterSRPClick();
+    return;
+  }
+
+  // When |barrier| is run |cookie_list.size()| times, it will run
+  // |OnCopiedIsolatedCookiesAfterSRPClick|.
+  base::RepeatingClosure barrier = base::BarrierClosure(
+      cookie_list.size(),
+      base::BindOnce(
+          &IsolatedPrerenderTabHelper::OnCopiedIsolatedCookiesAfterSRPClick,
+          weak_factory_.GetWeakPtr()));
+
+  content::StoragePartition* default_storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile_);
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+
+  for (const net::CookieWithAccessResult& cookie : cookie_list) {
+    default_storage_partition->GetCookieManagerForBrowserProcess()
+        ->SetCanonicalCookie(cookie.cookie, url, options,
+                             base::BindOnce(&CookieSetHelper, barrier));
+  }
+}
+
+void IsolatedPrerenderTabHelper::OnCopiedIsolatedCookiesAfterSRPClick() {
+  DCHECK(IsWaitingForAfterSRPCookiesCopy());
+
+  page_->cookie_copy_status_ = CookieCopyStatus::kCopyComplete;
+  if (page_->on_after_srp_cookie_copy_complete_) {
+    std::move(page_->on_after_srp_cookie_copy_complete_).Run();
+  }
+}
+
 network::mojom::URLLoaderFactory*
 IsolatedPrerenderTabHelper::GetURLLoaderFactory() {
   if (!page_->isolated_url_loader_factory_) {
@@ -1019,6 +1121,8 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
       network::mojom::CertVerifierCreationParams::New());
   context_params->cors_exempt_header_list = {
       content::kCorsExemptPurposeHeaderName};
+  context_params->cookie_manager_params =
+      network::mojom::CookieManagerParams::New();
 
   context_params->http_cache_enabled = true;
   DCHECK(!context_params->http_cache_path);

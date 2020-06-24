@@ -102,6 +102,7 @@ ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
   // itself.
   popup_->Close();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, popup_);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void ExclusiveAccessBubbleViews::UpdateContent(

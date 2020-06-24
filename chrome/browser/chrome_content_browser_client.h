@@ -132,12 +132,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsShuttingDown() override;
   bool IsValidStoragePartitionId(content::BrowserContext* browser_context,
                                  const std::string& partition_id) override;
-  void GetStoragePartitionConfigForSite(
+  content::StoragePartitionConfig GetStoragePartitionConfigForSite(
       content::BrowserContext* browser_context,
-      const GURL& site,
-      std::string* partition_domain,
-      std::string* partition_name,
-      bool* in_memory) override;
+      const GURL& site) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
@@ -328,7 +325,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                        bool* no_javascript_access) override;
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
+#if defined(OS_CHROMEOS)
   content::TtsControllerDelegate* GetTtsControllerDelegate() override;
+#endif
   content::TtsPlatform* GetTtsPlatform() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* prefs) override;

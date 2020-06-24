@@ -286,16 +286,16 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
   std::unique_ptr<WebApp> synced_app1 =
       CreateWebAppWithSyncOnlyFields("https://example.com/app1/");
   {
-    WebApp::SyncData sync_data;
-    sync_data.name = "Sync Name";
-    sync_data.theme_color = SK_ColorCYAN;
-    synced_app1->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Sync Name";
+    sync_fallback_data.theme_color = SK_ColorCYAN;
+    synced_app1->SetSyncFallbackData(std::move(sync_fallback_data));
   }
   InsertAppIntoRegistry(&registry, std::move(synced_app1));
 
   std::unique_ptr<WebApp> synced_app2 =
       CreateWebAppWithSyncOnlyFields("https://example.com/app2/");
-  // sync_data is empty for this app.
+  // sync_fallback_data is empty for this app.
   InsertAppIntoRegistry(&registry, std::move(synced_app2));
 
   std::unique_ptr<WebApp> policy_app = CreateWebApp("https://example.org/");
@@ -610,10 +610,10 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_UpdateOnly) {
     auto app_to_update = std::make_unique<WebApp>(*merged_apps[i]);
     app_to_update->SetUserDisplayMode(DisplayMode::kStandalone);
 
-    WebApp::SyncData sync_data;
-    sync_data.name = "Sync Name";
-    sync_data.theme_color = SK_ColorYELLOW;
-    app_to_update->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Sync Name";
+    sync_fallback_data.theme_color = SK_ColorYELLOW;
+    app_to_update->SetSyncFallbackData(std::move(sync_fallback_data));
 
     ConvertAppToEntityChange(
         *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
@@ -702,10 +702,10 @@ TEST_F(WebAppSyncBridgeTest,
     auto app_to_update = std::make_unique<WebApp>(*policy_and_sync_apps[i]);
     app_to_update->SetUserDisplayMode(DisplayMode::kBrowser);
 
-    WebApp::SyncData sync_data;
-    sync_data.name = "Updated Sync Name";
-    sync_data.theme_color = SK_ColorWHITE;
-    app_to_update->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Updated Sync Name";
+    sync_fallback_data.theme_color = SK_ColorWHITE;
+    app_to_update->SetSyncFallbackData(std::move(sync_fallback_data));
 
     ConvertAppToEntityChange(
         *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
@@ -880,10 +880,10 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_UpdateSyncApp) {
     // Obtain a writeable handle.
     WebApp* sync_app = update->UpdateApp(app->app_id());
 
-    WebApp::SyncData sync_data;
-    sync_data.name = "Updated Sync Name";
-    sync_data.theme_color = SK_ColorBLACK;
-    sync_app->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Updated Sync Name";
+    sync_fallback_data.theme_color = SK_ColorBLACK;
+    sync_app->SetSyncFallbackData(std::move(sync_fallback_data));
     sync_app->SetUserDisplayMode(DisplayMode::kBrowser);
 
     // Override the app in the expected registry.

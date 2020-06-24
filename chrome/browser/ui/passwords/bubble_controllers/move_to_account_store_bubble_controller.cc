@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -38,7 +39,12 @@ base::string16 MoveToAccountStoreBubbleController::GetTitle() const {
 }
 
 void MoveToAccountStoreBubbleController::AcceptMove() {
-  return delegate_->MovePasswordToAccountStore();
+  if (delegate_->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
+    // User has already opted in to the account store. Move without reauth.
+    return delegate_->MovePasswordToAccountStore();
+  }
+  // Otherwise, we should invoke the reauth flow before saving.
+  return delegate_->AuthenticateUserForAccountStoreOptInAndMovePassword();
 }
 
 gfx::Image MoveToAccountStoreBubbleController::GetProfileIcon() {

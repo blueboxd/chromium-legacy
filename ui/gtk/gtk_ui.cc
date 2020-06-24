@@ -29,7 +29,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
+#include "ui/base/cursor/cursor_theme_manager_observer.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"

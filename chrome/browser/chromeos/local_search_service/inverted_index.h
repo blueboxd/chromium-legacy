@@ -71,9 +71,10 @@ class InvertedIndex {
                    const std::vector<Token>& tokens);
 
   // Removes a document from the inverted index. Do nothing if document_id is
-  // not in the index. This function doesn't modify any cache. It only removes
+  // not in the index. Returns number of documents deleted.
+  // This function doesn't modify any cache. It only removes
   // documents and tokens from the index.
-  void RemoveDocument(const std::string& document_id);
+  uint32_t RemoveDocument(const std::string& document_id);
 
   // Gets TF-IDF scores for a term. This function returns the TF-IDF score from
   // the cache.
@@ -88,6 +89,9 @@ class InvertedIndex {
   // index is up to date, returns |false| if there are some modified document
   // since the last time the index has been built.
   bool IsInvertedIndexBuilt() const { return terms_to_be_updated_.empty(); }
+
+  // Returns number of documents in the index.
+  uint64_t NumberDocuments() const { return doc_length_.size(); }
 
  private:
   friend class InvertedIndexTest;

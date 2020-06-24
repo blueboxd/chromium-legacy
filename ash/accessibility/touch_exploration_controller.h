@@ -71,7 +71,9 @@ class TouchExplorationControllerDelegate {
 
   // Called when the user performed an accessibility gesture while in touch
   // accessibility mode, that should be forwarded to ChromeVox.
-  virtual void HandleAccessibilityGesture(ax::mojom::Gesture gesture) = 0;
+  virtual void HandleAccessibilityGesture(
+      ax::mojom::Gesture gesture,
+      gfx::PointF location = gfx::PointF()) = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
@@ -82,15 +84,15 @@ class TouchExplorationControllerDelegate {
 // ** Short version **
 //
 // At a high-level, single-finger events are used for accessibility -
-// exploring the screen gets turned into mouse moves (which can then be
-// spoken by an accessibility service running), a single tap while the user
-// is in touch exploration or a double-tap simulates a click, and gestures
-// can be used to send high-level accessibility commands. For example, a swipe
-// right would correspond to the keyboard short cut shift+search+right.
-// Swipes with up to four fingers are also mapped to commands. Slide
-// gestures performed on the edge of the screen can change settings
-// continuously. For example, sliding a finger along the right side of the
-// screen will change the volume. When a user double taps and holds with one
+// exploring the screen gets turned into touch explore gestures (which can then
+// be hit tested by an accessibility service running, result then to be spoken),
+// a single tap while the user is in touch exploration or a double-tap simulates
+// a click, and gestures can be used to send high-level accessibility commands.
+// For example, a swipe right would correspond to the keyboard short cut
+// shift+search+right. Swipes with up to four fingers are also mapped to
+// commands. Slide gestures performed on the edge of the screen can change
+// settings continuously. For example, sliding a finger along the right side of
+// the screen will change the volume. When a user double taps and holds with one
 // finger, the finger is passed through as if accessibility was turned off. If
 // the user taps the screen with two fingers, the user can silence spoken
 // feedback if it is playing.
@@ -103,15 +105,15 @@ class TouchExplorationControllerDelegate {
 //
 // If the user keeps their finger down for more than 300 ms and doesn't
 // perform a supported accessibility gesture in that time (e.g. swipe right),
-// they enter touch exploration mode, and all movements are translated into
-// synthesized mouse move events.
+// they enter touch exploration mode, and all movements are routed
+// to ChromeVox with the touch location.
 //
 // Also, if the user moves their single finger outside a certain slop region
 // (without performing a gesture), they enter touch exploration mode earlier
 // than 300 ms.
 //
 // If the user taps and releases their finger, after 300 ms from the initial
-// touch, a single mouse move is fired.
+// touch, a single touch explore gesture is fired.
 //
 // While in touch exploration mode, the user can perform a single tap
 // if the user releases their finger and taps before 300 ms passes.
@@ -257,7 +259,7 @@ class ASH_EXPORT TouchExplorationController
   // This timer is started every time we get the first press event, and
   // it fires after the double-click timeout elapses (300 ms by default).
   // If the user taps and releases within 300 ms and doesn't press again,
-  // we treat that as a single mouse move (touch exploration) event.
+  // we treat that as a single touch explore gesture event.
   void StartTapTimer();
   void OnTapTimerFired();
 
@@ -346,14 +348,14 @@ class ASH_EXPORT TouchExplorationController
     // The user pressed and released a single finger - a tap - but we have
     // to wait until the end of the grace period to allow the user to tap the
     // second time. If the second tap doesn't occurs within the grace period,
-    // we dispatch a mouse move at the location of the first tap.
+    // we dispatch a touch explore gesture at the location of the first tap.
     SINGLE_TAP_RELEASED,
 
     // The user was in touch explore mode and released the finger.
     // If another touch press occurs within the grace period, a single
     // tap click occurs. This state differs from SINGLE_TAP_RELEASED
     // in that if a second tap doesn't occur within the grace period,
-    // there is no mouse move dispatched.
+    // there is no touch explore gesture dispatched.
     TOUCH_EXPLORE_RELEASED,
 
     // The user tapped once, and before the grace period expired, pressed
@@ -367,8 +369,8 @@ class ASH_EXPORT TouchExplorationController
     TOUCH_RELEASE_PENDING,
 
     // We're in touch exploration mode. Anything other than the first finger
-    // is ignored, and movements of the first finger are rewritten as mouse
-    // move events. This mode is entered if a single finger is pressed and
+    // is ignored, and movements of the first finger are sent as touch explore
+    // gesture events. This mode is entered if a single finger is pressed and
     // after the grace period the user hasn't added a second finger or
     // moved the finger outside of the slop region. We'll stay in this
     // mode until all fingers are lifted.

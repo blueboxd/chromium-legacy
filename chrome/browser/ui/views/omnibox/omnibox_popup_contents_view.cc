@@ -168,6 +168,7 @@ OmniboxPopupContentsView::~OmniboxPopupContentsView() {
   // closed the window, in which case it's been deleted, or it will soon.
   if (popup_)
     popup_->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void OmniboxPopupContentsView::OpenMatch(

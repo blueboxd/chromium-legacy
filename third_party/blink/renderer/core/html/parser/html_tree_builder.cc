@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 
 namespace blink {
 
@@ -165,10 +166,9 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
   }
 
   void GiveRemainingTo(StringBuilder& recipient) {
-    if (characters_->Is8Bit())
-      recipient.Append(characters_->Characters8() + current_, end_ - current_);
-    else
-      recipient.Append(characters_->Characters16() + current_, end_ - current_);
+    WTF::VisitCharacters(*characters_, [&](const auto* chars, unsigned length) {
+      recipient.Append(chars + current_, end_ - current_);
+    });
     current_ = end_;
   }
 

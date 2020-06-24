@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -26,6 +28,10 @@ MockClientHintsControllerDelegate::GetNetworkQualityTracker() {
 
 bool MockClientHintsControllerDelegate::IsJavaScriptAllowed(const GURL& url) {
   return true;
+}
+
+bool MockClientHintsControllerDelegate::UserAgentClientHintEnabled() {
+  return base::FeatureList::IsEnabled(features::kUserAgentClientHint);
 }
 
 blink::UserAgentMetadata

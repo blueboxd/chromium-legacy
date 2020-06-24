@@ -20,8 +20,6 @@ class AXObjectCacheImpl;
 class LocalFrameClient;
 class Node;
 
-namespace test {
-
 class AccessibilityTest : public RenderingTest {
   USING_FAST_MALLOC(AccessibilityTest);
 
@@ -71,7 +69,6 @@ class ParameterizedAccessibilityTest : public testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_SUITE_P(All, ParameterizedAccessibilityTest, testing::Bool());
 
-}  // namespace test
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_

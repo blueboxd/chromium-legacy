@@ -14,12 +14,14 @@
 #include "third_party/blink/renderer/core/css/hash_tools.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/shorthand.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 
 namespace blink {
 
@@ -215,24 +217,18 @@ static CSSPropertyID UnresolvedCSSPropertyID(
 
 CSSPropertyID unresolvedCSSPropertyID(const ExecutionContext* execution_context,
                                       const String& string) {
-  unsigned length = string.length();
-  CSSParserMode mode = kHTMLStandardMode;
-  return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(execution_context, string.Characters8(),
-                                       length, mode)
-             : UnresolvedCSSPropertyID(execution_context, string.Characters16(),
-                                       length, mode);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return UnresolvedCSSPropertyID(execution_context, chars, length,
+                                   kHTMLStandardMode);
+  });
 }
 
 CSSPropertyID UnresolvedCSSPropertyID(const ExecutionContext* execution_context,
                                       StringView string,
                                       CSSParserMode mode) {
-  unsigned length = string.length();
-  return string.Is8Bit()
-             ? UnresolvedCSSPropertyID(execution_context, string.Characters8(),
-                                       length, mode)
-             : UnresolvedCSSPropertyID(execution_context, string.Characters16(),
-                                       length, mode);
+  return WTF::VisitCharacters(string, [&](const auto* chars, unsigned length) {
+    return UnresolvedCSSPropertyID(execution_context, chars, length, mode);
+  });
 }
 
 template <typename CharacterType>

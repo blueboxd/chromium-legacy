@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 
 #if defined(OS_MACOSX)
 #include "components/viz/service/display/overlay_processor_mac.h"
@@ -18,10 +19,9 @@
 #include "components/viz/service/display/overlay_processor_surface_control.h"
 #elif defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_ozone.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
-#else
-#include "components/viz/service/display/overlay_processor_stub.h"
 #endif
 
 namespace viz {
@@ -98,6 +98,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
       enable_dc_overlay,
       std::make_unique<DCLayerOverlayProcessor>(renderer_settings)));
 #elif defined(USE_OZONE)
+  if (!features::IsUsingOzonePlatform())
+    return std::make_unique<OverlayProcessorStub>();
   bool overlay_enabled = surface_handle != gpu::kNullSurfaceHandle;
   overlay_enabled &= !renderer_settings.overlay_strategies.empty();
   std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates;

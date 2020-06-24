@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -44,13 +45,16 @@ class AccessibilityFocusHighlight : public ui::LayerDelegate,
   // For testing.
   static void SetNoFadeForTesting();
   static void SkipActivationCheckForTesting();
-  static SkColor GetHighlightColorForTesting();
+  static void UseDefaultColorForTesting();
 
-  // Create the layer if needed, and update its bounds to match |bounds_|.
-  void CreateOrUpdateLayer();
+  // Create the layer if needed, and set node_bounds_
+  void CreateOrUpdateLayer(gfx::Rect node_bounds);
 
   // Get rid of the layer and stop animation.
   void RemoveLayer();
+
+  // Handle preference changes by adding or removing the layer as necessary.
+  void AddOrRemoveFocusObserver();
 
   // content::NotificationObserver overrides:
   void Observe(int type,
@@ -66,15 +70,17 @@ class AccessibilityFocusHighlight : public ui::LayerDelegate,
   void OnAnimationStep(base::TimeTicks timestamp) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
+  // Compute the highlight color based on theme colors and defaults.
+  SkColor GetHighlightColor();
+
   // The layer, if visible.
   std::unique_ptr<ui::Layer> layer_;
 
   // The compositor associated with this layer.
   ui::Compositor* compositor_ = nullptr;
 
-  // The bounding rectangle of the focused object, in the coordinate system
-  // of our owner BrowserView's layer.
-  gfx::Rect bounds_;
+  // The bounding rectangle of the focused object, relative to the layer.
+  gfx::Rect node_bounds_;
 
   // Owns this.
   BrowserView* browser_view_;
@@ -88,17 +94,27 @@ class AccessibilityFocusHighlight : public ui::LayerDelegate,
   // The current scale factor between DIPs and pixels.
   float device_scale_factor_;
 
-  // The color used for the highlight.
-  static SkColor color_;
+  // The default color used for the highlight.
+  static SkColor default_color_;
 
   // The amount of time it should take for the highlight to fade in.
   static base::TimeDelta fade_in_time_;
+
+  // The amount of time the highlight should persist between fading in and
+  // fading out.
+  static base::TimeDelta persist_time_;
 
   // The amount of time it should take for the highlight to fade out.
   static base::TimeDelta fade_out_time_;
 
   // If set, draws the highlight even if the widget is not active.
   static bool skip_activation_check_for_testing_;
+
+  // If set, don't check the system theme color.
+  static bool use_default_color_for_testing_;
+
+  // For observing browser preference notifications.
+  PrefChangeRegistrar profile_pref_registrar_;
 
   // For observing focus notifications.
   content::NotificationRegistrar notification_registrar_;

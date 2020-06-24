@@ -47,8 +47,6 @@ constexpr StaticOobeScreenId
     OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_CONFIRM_PASSWORD;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_FATAL_ERROR;
-constexpr StaticOobeScreenId
-    OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE;
 constexpr StaticOobeScreenId OobeScreen::SCREEN_UNKNOWN;
 
 }  // namespace chromeos

@@ -997,6 +997,14 @@ class AutofillMetrics {
     kMaxValue = AUTOFILLED_FIELD_WAS_NOT_EDITED,
   };
 
+  // Represent the overall status of a profile import.
+  enum class AddressProfileImportStatusMetric {
+    NO_IMPORT = 0,
+    REGULAR_IMPORT = 1,
+    SECTION_UNION_IMPORT = 2,
+    kMaxValue = SECTION_UNION_IMPORT,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -1589,6 +1597,9 @@ class AutofillMetrics {
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
       const FormStructure& form,
       const AutofillField& field);
+
+  static void LogAddressFormImportStatustMetric(
+      AddressProfileImportStatusMetric metric);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);

@@ -90,6 +90,7 @@ AssistiveWindowController::~AssistiveWindowController() {
     suggestion_window_view_->GetWidget()->RemoveObserver(this);
   if (undo_window_ && undo_window_->GetWidget())
     undo_window_->GetWidget()->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void AssistiveWindowController::InitSuggestionWindow() {

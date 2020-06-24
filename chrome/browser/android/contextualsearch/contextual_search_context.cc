@@ -168,11 +168,14 @@ void ContextualSearchContext::SetTranslationLanguages(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_detected_language,
-    const base::android::JavaParamRef<jstring>& j_target_language) {
+    const base::android::JavaParamRef<jstring>& j_target_language,
+    const base::android::JavaParamRef<jstring>& j_fluent_languages) {
   translation_languages_.detected_language =
       base::android::ConvertJavaStringToUTF8(env, j_detected_language);
   translation_languages_.target_language =
       base::android::ConvertJavaStringToUTF8(env, j_target_language);
+  translation_languages_.fluent_languages =
+      base::android::ConvertJavaStringToUTF8(env, j_fluent_languages);
 }
 
 const ContextualSearchContext::TranslationLanguages&

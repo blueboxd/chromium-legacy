@@ -54,7 +54,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -340,14 +339,10 @@ GaiaScreenHandler::GaiaContext::GaiaContext() {}
 GaiaScreenHandler::GaiaScreenHandler(
     JSCallsContainer* js_calls_container,
     CoreOobeView* core_oobe_view,
-    const scoped_refptr<NetworkStateInformer>& network_state_informer,
-    ActiveDirectoryPasswordChangeScreenHandler*
-        active_directory_password_change_screen_handler)
+    const scoped_refptr<NetworkStateInformer>& network_state_informer)
     : BaseScreenHandler(kScreenId, js_calls_container),
       network_state_informer_(network_state_informer),
-      core_oobe_view_(core_oobe_view),
-      active_directory_password_change_screen_handler_(
-          active_directory_password_change_screen_handler) {
+      core_oobe_view_(core_oobe_view) {
   DCHECK(network_state_informer_.get());
 }
 
@@ -858,7 +853,9 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     }
     case authpolicy::ERROR_PASSWORD_EXPIRED:
-      active_directory_password_change_screen_handler_->ShowScreen(username);
+      LoginDisplayHost::default_host()
+          ->GetWizardController()
+          ->ShowActiveDirectoryPasswordChangeScreen(username);
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:

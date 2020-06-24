@@ -89,6 +89,10 @@
 #endif
 #endif
 
+#if defined(USE_OZONE) || defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -1473,11 +1477,13 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
                "is_using_vulkan", is_using_vulkan());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(USE_OZONE)
-  gpu::SurfaceHandle surface_handle = dependency_->GetSurfaceHandle();
-  if (surface_handle != gpu::kNullSurfaceHandle) {
-    window_surface_ = ui::OzonePlatform::GetInstance()
-                          ->GetSurfaceFactoryOzone()
-                          ->CreatePlatformWindowSurface(surface_handle);
+  if (features::IsUsingOzonePlatform()) {
+    gpu::SurfaceHandle surface_handle = dependency_->GetSurfaceHandle();
+    if (surface_handle != gpu::kNullSurfaceHandle) {
+      window_surface_ = ui::OzonePlatform::GetInstance()
+                            ->GetSurfaceFactoryOzone()
+                            ->CreatePlatformWindowSurface(surface_handle);
+    }
   }
 #endif
 
@@ -1591,42 +1597,45 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
 #if defined(USE_X11)
-    supports_alpha_ = true;
-    if (!gpu_preferences_.disable_vulkan_surface) {
-      output_device_ = SkiaOutputDeviceVulkan::Create(
-          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-          memory_tracker_.get(), did_swap_buffer_complete_callback_);
-    }
-    if (!output_device_) {
-      output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-          context_state_, dependency_->GetSurfaceHandle(),
-          memory_tracker_.get(), did_swap_buffer_complete_callback_);
-    }
-#else
-    auto output_presenter =
-        OutputPresenterGL::Create(dependency_, memory_tracker_.get());
-    if (output_presenter) {
-      // TODO(https://crbug.com/1012401): don't depend on GL.
-      gl_surface_ = output_presenter->gl_surface();
-      output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
-          std::move(output_presenter), dependency_, memory_tracker_.get(),
-          did_swap_buffer_complete_callback_);
-    } else {
-      auto output_device = SkiaOutputDeviceVulkan::Create(
-          vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-          memory_tracker_.get(), did_swap_buffer_complete_callback_);
-#if defined(OS_WIN)
-      gpu::SurfaceHandle child_surface =
-          output_device ? output_device->GetChildSurfaceHandle()
-                        : gpu::kNullSurfaceHandle;
-      if (child_surface != gpu::kNullSurfaceHandle) {
-        DidCreateAcceleratedSurfaceChildWindow(dependency_->GetSurfaceHandle(),
-                                               child_surface);
+    if (!features::IsUsingOzonePlatform()) {
+      supports_alpha_ = true;
+      if (!gpu_preferences_.disable_vulkan_surface) {
+        output_device_ = SkiaOutputDeviceVulkan::Create(
+            vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+            memory_tracker_.get(), did_swap_buffer_complete_callback_);
       }
-#endif
-      output_device_ = std::move(output_device);
+      if (!output_device_) {
+        output_device_ = std::make_unique<SkiaOutputDeviceX11>(
+            context_state_, dependency_->GetSurfaceHandle(),
+            memory_tracker_.get(), did_swap_buffer_complete_callback_);
+      }
     }
 #endif
+    if (!output_device_) {
+      auto output_presenter =
+          OutputPresenterGL::Create(dependency_, memory_tracker_.get());
+      if (output_presenter) {
+        // TODO(https://crbug.com/1012401): don't depend on GL.
+        gl_surface_ = output_presenter->gl_surface();
+        output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
+            std::move(output_presenter), dependency_, memory_tracker_.get(),
+            did_swap_buffer_complete_callback_);
+      } else {
+        auto output_device = SkiaOutputDeviceVulkan::Create(
+            vulkan_context_provider_, dependency_->GetSurfaceHandle(),
+            memory_tracker_.get(), did_swap_buffer_complete_callback_);
+#if defined(OS_WIN)
+        gpu::SurfaceHandle child_surface =
+            output_device ? output_device->GetChildSurfaceHandle()
+                          : gpu::kNullSurfaceHandle;
+        if (child_surface != gpu::kNullSurfaceHandle) {
+          DidCreateAcceleratedSurfaceChildWindow(
+              dependency_->GetSurfaceHandle(), child_surface);
+        }
+#endif
+        output_device_ = std::move(output_device);
+      }
+    }
   }
 #endif
   return !!output_device_;
@@ -1646,9 +1655,13 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
 #if defined(USE_X11)
     // TODO(sgilhuly): Set up a Vulkan swapchain so that Linux can also use
     // SkiaOutputDeviceDawn.
-    output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-        context_state_, dependency_->GetSurfaceHandle(), memory_tracker_.get(),
-        did_swap_buffer_complete_callback_);
+    if (!features::IsUsingOzonePlatform()) {
+      output_device_ = std::make_unique<SkiaOutputDeviceX11>(
+          context_state_, dependency_->GetSurfaceHandle(),
+          memory_tracker_.get(), did_swap_buffer_complete_callback_);
+    } else {
+      return false;
+    }
 #elif defined(OS_WIN)
     std::unique_ptr<SkiaOutputDeviceDawn> output_device =
         std::make_unique<SkiaOutputDeviceDawn>(

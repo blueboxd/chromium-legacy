@@ -233,7 +233,7 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
 
   for (auto& fetch : settled_fetches) {
     Request* request =
-        Request::Create(script_state, *(fetch->request),
+        Request::Create(script_state, std::move(fetch->request),
                         Request::ForServiceWorkerFetchEvent::kFalse);
     auto* record =
         MakeGarbageCollected<BackgroundFetchRecord>(request, script_state);

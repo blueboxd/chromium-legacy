@@ -42,6 +42,7 @@ class FirstAppRunToastManager::AppWidgetObserver
   ~AppWidgetObserver() override {
     // This is a no-op of the observer was previously removed.
     widget_->RemoveObserver(this);
+    CHECK(!IsInObserverList());
   }
 
   // views::WidgetObserver:

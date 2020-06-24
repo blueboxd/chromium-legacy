@@ -521,7 +521,7 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
   if (!directive)
     return true;
 
-  // We ignore URL-based whitelists if we're allowing dynamic script injection.
+  // We ignore URL-based allowlists if we're allowing dynamic script injection.
   if (CheckSource(directive, url, redirect_status) && !CheckDynamic(directive))
     return true;
 
@@ -562,9 +562,10 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
     prefix = prefix + "navigate to '";
 
   String suffix = String();
-  if (CheckDynamic(directive))
+  if (CheckDynamic(directive)) {
     suffix =
-        " 'strict-dynamic' is present, so host-based whitelisting is disabled.";
+        " 'strict-dynamic' is present, so host-based allowlisting is disabled.";
+  }
 
   String directive_name = directive->GetName();
   String effective_directive_name =
@@ -1442,7 +1443,7 @@ SourceListDirectiveVector CSPDirectiveList::GetSourceVector(
 }
 
 bool CSPDirectiveList::Subsumes(const CSPDirectiveListVector& other) {
-  // A white-list of directives that we consider for subsumption.
+  // A list of directives that we consider for subsumption.
   // See more about source lists here:
   // https://w3c.github.io/webappsec-csp/#framework-directive-source-list
   static ContentSecurityPolicy::DirectiveType directives[] = {

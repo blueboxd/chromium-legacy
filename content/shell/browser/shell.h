@@ -26,8 +26,8 @@ class GURL;
 
 namespace content {
 class BrowserContext;
+class JavaScriptDialogManager;
 class ShellDevToolsFrontend;
-class ShellJavaScriptDialogManager;
 class SiteInstance;
 class WebContents;
 
@@ -217,7 +217,7 @@ class Shell : public WebContentsDelegate,
 
   void OnDevToolsWebContentsDestroyed();
 
-  std::unique_ptr<ShellJavaScriptDialogManager> dialog_manager_;
+  std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
 
   std::unique_ptr<WebContents> web_contents_;
 

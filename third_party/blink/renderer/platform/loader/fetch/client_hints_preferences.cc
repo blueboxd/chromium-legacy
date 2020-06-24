@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -32,6 +34,12 @@ void ClientHintsPreferences::UpdateFrom(
   }
 }
 
+bool ClientHintsPreferences::UserAgentClientHintEnabled() {
+  return RuntimeEnabledFeatures::UserAgentClientHintEnabled() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kUserAgentClientHintDisable);
+}
+
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     const String& header_value,
     const KURL& url,
@@ -52,7 +60,7 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
       FilterAcceptCH(network::ParseAcceptCH(header_value.Latin1()),
                      RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
-                     RuntimeEnabledFeatures::UserAgentClientHintEnabled());
+                     UserAgentClientHintEnabled());
   if (!parsed_ch.has_value())
     return;
 

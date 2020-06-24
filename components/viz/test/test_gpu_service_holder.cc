@@ -35,6 +35,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -147,15 +148,17 @@ TestGpuServiceHolder::TestGpuServiceHolder(
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
   base::Thread::Options gpu_thread_options;
 #if defined(USE_OZONE)
-  base::MessagePumpType message_pump_type_for_gpu =
-      ui::OzonePlatform::GetInstance()
-          ->GetPlatformProperties()
-          .message_pump_type_for_gpu;
-  // X11 platform uses UI thread for GPU main, but 2 UI threads is
-  // causing crashes in linux-ozone-rel.
-  // TODO(crbug.com/1078392): Investigate and fix.
-  if (message_pump_type_for_gpu != base::MessagePumpType::UI) {
-    gpu_thread_options.message_pump_type = message_pump_type_for_gpu;
+  if (features::IsUsingOzonePlatform()) {
+    base::MessagePumpType message_pump_type_for_gpu =
+        ui::OzonePlatform::GetInstance()
+            ->GetPlatformProperties()
+            .message_pump_type_for_gpu;
+    // X11 platform uses UI thread for GPU main, but 2 UI threads is
+    // causing crashes in linux-ozone-rel.
+    // TODO(crbug.com/1078392): Investigate and fix.
+    if (message_pump_type_for_gpu != base::MessagePumpType::UI) {
+      gpu_thread_options.message_pump_type = message_pump_type_for_gpu;
+    }
   }
 #endif
 

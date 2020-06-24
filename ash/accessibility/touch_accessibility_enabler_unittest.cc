@@ -4,6 +4,7 @@
 
 #include "ash/accessibility/touch_accessibility_enabler.h"
 
+#include "ash/accessibility/mock_touch_exploration_controller_delegate.h"
 #include "ash/accessibility/touch_exploration_controller.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -99,8 +100,9 @@ TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
   // TouchExplorationController rewrites most touch events, it can screw up
   // TouchAccessibilityEnabler if they don't explicitly coordinate.
 
+  MockTouchExplorationControllerDelegate delegate;
   std::unique_ptr<TouchExplorationController> controller(
-      new TouchExplorationController(root_window(), nullptr,
+      new TouchExplorationController(root_window(), &delegate,
                                      enabler_->GetWeakPtr()));
 
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());

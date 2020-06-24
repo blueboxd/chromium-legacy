@@ -773,19 +773,15 @@ class StoragePartitionContentBrowserClient : public ContentBrowserClient {
   ~StoragePartitionContentBrowserClient() override {}
 
  private:
-  void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
-                                        const GURL& site,
-                                        std::string* partition_domain,
-                                        std::string* partition_name,
-                                        bool* in_memory) override {
-    partition_domain->clear();
-    partition_name->clear();
-    *in_memory = false;
-
+  StoragePartitionConfig GetStoragePartitionConfigForSite(
+      BrowserContext* browser_context,
+      const GURL& site) override {
     if (site == site_) {
-      *partition_domain = partition_domain_;
-      *partition_name = partition_name_;
+      return StoragePartitionConfig::Create(partition_domain_, partition_name_,
+                                            false /* in_memory */);
     }
+
+    return StoragePartitionConfig::CreateDefault();
   }
 
   GURL site_;

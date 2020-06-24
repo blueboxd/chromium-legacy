@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -486,6 +487,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojo::PendingRemote<mojom::blink::ServiceWorkerFetchResponseCallback>
           response_callback,
       DispatchFetchEventInternalCallback callback,
+      base::Optional<base::TimeTicks> created_time,
       int event_id);
   void StartInstallEvent(DispatchInstallEventCallback callback, int event_id);
   void StartActivateEvent(DispatchActivateEventCallback callback, int event_id);
@@ -567,6 +569,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void StartContentDeleteEvent(String id,
                                DispatchContentDeleteEventCallback callback,
                                int event_id);
+
+  // Records the time that a fetch event was queued in the
+  // ServiceWorker.FetchEvent.QueuingTime histogram.
+  void RecordQueuingTime(base::TimeTicks created_time);
 
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;

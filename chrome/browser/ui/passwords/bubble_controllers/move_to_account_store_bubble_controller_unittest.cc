@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +37,8 @@ class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
     EXPECT_CALL(*delegate(), OnBubbleShown());
     ON_CALL(*delegate(), GetWebContents())
         .WillByDefault(Return(web_contents_.get()));
+    ON_CALL(*delegate(), GetPasswordFeatureManager())
+        .WillByDefault(Return(&password_feature_manager_));
     controller_ = std::make_unique<MoveToAccountStoreBubbleController>(
         mock_delegate_->AsWeakPtr());
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(delegate()));
@@ -45,11 +48,16 @@ class MoveToAccountStoreBubbleControllerTest : public ::testing::Test {
   PasswordsModelDelegateMock* delegate() { return mock_delegate_.get(); }
   TestingProfile* profile() { return &profile_; }
   MoveToAccountStoreBubbleController* controller() { return controller_.get(); }
+  password_manager::MockPasswordFeatureManager* password_feature_manager() {
+    return &password_feature_manager_;
+  }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler test_render_host_factories_;
   TestingProfile profile_;
+  testing::NiceMock<password_manager::MockPasswordFeatureManager>
+      password_feature_manager_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<PasswordsModelDelegateMock> mock_delegate_;
   std::unique_ptr<MoveToAccountStoreBubbleController> controller_;
@@ -60,8 +68,17 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, CloseExplicitly) {
   controller()->OnBubbleClosing();
 }
 
-TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMove) {
+TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMoveIfOptedIn) {
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
   EXPECT_CALL(*delegate(), MovePasswordToAccountStore);
+  controller()->AcceptMove();
+}
+
+TEST_F(MoveToAccountStoreBubbleControllerTest, AuthenticateMoveIfOptedOut) {
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndMovePassword);
   controller()->AcceptMove();
 }
 

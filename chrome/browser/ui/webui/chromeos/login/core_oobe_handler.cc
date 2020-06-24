@@ -203,11 +203,6 @@ void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
       EnableAdbSideloadingScreenView::kScreenId);
 }
 
-void CoreOobeHandler::ShowActiveDirectoryPasswordChangeScreen(
-    const std::string& username) {
-  CallJS("cr.ui.Oobe.showActiveDirectoryPasswordChangeScreen", username);
-}
-
 void CoreOobeHandler::ShowSignInUI(const std::string& email) {
   CallJS("cr.ui.Oobe.showSigninUI", email);
 }

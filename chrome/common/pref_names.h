@@ -176,6 +176,9 @@ extern const char kContextualSearchEnabledValue[];
 extern const char kShowInternalAccessibilityTree[];
 extern const char kAccessibilityImageLabelsEnabled[];
 extern const char kAccessibilityImageLabelsOptInAccepted[];
+#if !defined(OS_CHROMEOS)
+extern const char kAccessibilityFocusHighlightEnabled[];
+#endif
 extern const char kAccessibilityCaptionsTextSize[];
 extern const char kAccessibilityCaptionsTextFont[];
 extern const char kAccessibilityCaptionsTextColor[];

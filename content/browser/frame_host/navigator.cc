@@ -834,9 +834,8 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
               ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */,
               std::string() /* extra_headers */,
               controller_->GetBrowserContext(),
-              nullptr /* blob_url_loader_factory */));
-
-  entry->set_should_replace_entry(common_params.should_replace_current_entry);
+              nullptr /* blob_url_loader_factory */,
+              common_params.should_replace_current_entry));
 
   controller_->SetPendingEntry(std::move(entry));
   if (delegate_)

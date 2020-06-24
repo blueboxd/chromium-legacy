@@ -1103,6 +1103,10 @@ int HttpStreamFactory::Job::DoCreateStream() {
               ->CreateBasicStream(std::move(connection_), using_proxy,
                                   session_->websocket_endpoint_lock_manager());
     } else {
+      if (request_info_.upload_data_stream &&
+          !request_info_.upload_data_stream->AllowHTTP1()) {
+        return ERR_H2_OR_QUIC_REQUIRED;
+      }
       stream_ = std::make_unique<HttpBasicStream>(std::move(connection_),
                                                   using_proxy);
     }

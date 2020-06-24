@@ -300,6 +300,12 @@ class FrameSchedulerImplTest : public testing::Test {
         FrameSchedulerImpl::ThrottleableTaskQueueTraits());
   }
 
+  scoped_refptr<TaskQueue> JavaScriptTimerTaskQueue() {
+    return GetTaskQueue(
+        FrameSchedulerImpl::ThrottleableTaskQueueTraits().SetPrioritisationType(
+            PrioritisationType::kJavaScriptTimer));
+  }
+
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
     return GetTaskQueue(
         FrameSchedulerImpl::LoadingTaskQueueTraits());
@@ -2060,7 +2066,8 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   // Make sure the queue lookup and task type to queue traits map works as
   // expected. This test will fail if these task types are moved to different
   // default queues.
-  EXPECT_EQ(GetTaskQueue(TaskType::kJavascriptTimer), ThrottleableTaskQueue());
+  EXPECT_EQ(GetTaskQueue(TaskType::kJavascriptTimer),
+            JavaScriptTimerTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kWebSocket), DeferrableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kDatabaseAccess), PausableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kPostedMessage), PausableTaskQueue());

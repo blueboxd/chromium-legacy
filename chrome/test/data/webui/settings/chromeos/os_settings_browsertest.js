@@ -1336,6 +1336,29 @@ TEST_F('OSSettingsSmartInputsPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// eslint-disable-next-line no-var
+var OSSettingsInputMethodOptionsPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_language_page/input_method_options_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      'input_method_options_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsInputMethodOptionsPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Tests for the Reset section.
 // eslint-disable-next-line no-var
 var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {

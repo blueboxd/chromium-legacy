@@ -60,7 +60,7 @@ class PLATFORM_EXPORT AgentSchedulingStrategy {
   virtual base::Optional<base::sequence_manager::TaskQueue::QueuePriority>
   QueuePriority(const MainThreadTaskQueue& task_queue) const = 0;
 
-  // Returns true if the strategy interested in getting input event
+  // Returns true if the strategy is interested in getting input event
   // notifications. This is *the only* method that may be called from different
   // threads.
   virtual bool ShouldNotifyOnInputEvent() const = 0;

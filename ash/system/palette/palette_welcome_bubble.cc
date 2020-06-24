@@ -81,6 +81,7 @@ PaletteWelcomeBubble::~PaletteWelcomeBubble() {
     Shell::Get()->RemovePreTargetHandler(this);
   }
   Shell::Get()->session_controller()->RemoveObserver(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 // static

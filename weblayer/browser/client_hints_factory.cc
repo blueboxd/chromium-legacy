@@ -6,9 +6,12 @@
 
 #include "components/client_hints/browser/client_hints.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/content_browser_client_impl.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+
+class PrefService;
 
 namespace weblayer {
 
@@ -36,10 +39,11 @@ ClientHintsFactory::~ClientHintsFactory() = default;
 
 KeyedService* ClientHintsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  PrefService* local_state = BrowserProcess::GetInstance()->GetLocalState();
   return new client_hints::ClientHints(
       context, BrowserProcess::GetInstance()->GetNetworkQualityTracker(),
       HostContentSettingsMapFactory::GetForBrowserContext(context),
-      GetUserAgentMetadata());
+      GetUserAgentMetadata(), local_state);
 }
 
 content::BrowserContext* ClientHintsFactory::GetBrowserContextToUse(

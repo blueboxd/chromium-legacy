@@ -57,6 +57,7 @@ chrome.accessibilityPrivate.Gesture = {
   TAP2: 'tap2',
   TAP3: 'tap3',
   TAP4: 'tap4',
+  TOUCH_EXPLORE: 'touchExplore',
 };
 
 /**

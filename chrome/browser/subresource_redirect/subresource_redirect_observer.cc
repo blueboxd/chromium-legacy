@@ -83,6 +83,14 @@ bool ShouldCompressionServerRedirectSubresource() {
              "enable_subresource_server_redirect", false);
 }
 
+bool ShowInfoBarOnAndroid(content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  return PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(
+      web_contents);
+#endif
+  return true;
+}
+
 }  // namespace
 
 // static
@@ -146,10 +154,8 @@ void SubresourceRedirectObserver::DidFinishNavigation(
   if (!https_image_compression_infobar_decider ||
       https_image_compression_infobar_decider->NeedToShowInfoBar()) {
     if (https_image_compression_infobar_decider->CanShowInfoBar(
-            navigation_handle)) {
-#if defined(OS_ANDROID)
-      PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(web_contents());
-#endif
+            navigation_handle) &&
+        ShowInfoBarOnAndroid(web_contents())) {
       https_image_compression_infobar_decider->SetUserHasSeenInfoBar();
     }
     // Do not enable image compression on this page.

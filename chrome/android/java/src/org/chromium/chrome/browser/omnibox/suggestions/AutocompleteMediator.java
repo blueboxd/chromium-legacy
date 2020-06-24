@@ -61,6 +61,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
@@ -595,7 +596,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 ContextUtils.getApplicationContext().startActivity(newIntent);
             }
         }
-        // TODO(crbug.com/1092269): Add metrics for Omnibox.SuggestionUsed.SelectedTabMatch
+
+        recordMetrics(position, WindowOpenDisposition.SWITCH_TO_TAB, suggestion);
     }
 
     /**
@@ -933,22 +935,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         // loadUrl should should be invoked last.
         int transition = suggestion.getTransition();
         int type = suggestion.getType();
-        String currentPageUrl = mDataProvider.getCurrentUrl();
-        WebContents webContents =
-                mDataProvider.hasTab() ? mDataProvider.getTab().getWebContents() : null;
-        long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
-                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
-                : -1;
+
         boolean shouldSkipNativeLog = mShowCachedZeroSuggestResults
                 && (mDeferredOnSelection != null) && !mDeferredOnSelection.shouldLog();
         if (!shouldSkipNativeLog) {
-            int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
-                    - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();
-            int pageClassification =
-                    mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
-            mAutocomplete.onSuggestionSelected(matchPosition, suggestion.hashCode(), type,
-                    currentPageUrl, pageClassification, elapsedTimeSinceModified,
-                    autocompleteLength, webContents);
+            recordMetrics(matchPosition, WindowOpenDisposition.CURRENT_TAB, suggestion);
         }
         if (((transition & PageTransition.CORE_MASK) == PageTransition.TYPED)
                 && TextUtils.equals(url.getSpec(), mDataProvider.getCurrentUrl())) {
@@ -1135,5 +1126,30 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         if (!shouldShowSoftKeyboard()) {
             mDelegate.setKeyboardVisibility(false);
         }
+    }
+
+    /**
+     * Called whenever a navigation happens from the omnibox to record metrics about the user's
+     * interaction with the omnibox.
+     *
+     * @param matchPosition The index of the suggestion that was selected.
+     * @param disposition The window open disposition.
+     * @param suggestion The suggestion selected.
+     */
+    private void recordMetrics(int matchPosition, int disposition, OmniboxSuggestion suggestion) {
+        String currentPageUrl = mDataProvider.getCurrentUrl();
+        int pageClassification =
+                mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
+        long elapsedTimeSinceModified = mNewOmniboxEditSessionTimestamp > 0
+                ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp)
+                : -1;
+        int autocompleteLength = mUrlBarEditingTextProvider.getTextWithAutocomplete().length()
+                - mUrlBarEditingTextProvider.getTextWithoutAutocomplete().length();
+        WebContents webContents =
+                mDataProvider.hasTab() ? mDataProvider.getTab().getWebContents() : null;
+
+        mAutocomplete.onSuggestionSelected(matchPosition, disposition, suggestion.hashCode(),
+                suggestion.getType(), currentPageUrl, pageClassification, elapsedTimeSinceModified,
+                autocompleteLength, webContents);
     }
 }

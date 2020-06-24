@@ -52,6 +52,11 @@ bool PowerMonitor::IsProcessSuspended() {
   return g_is_process_suspended.load(std::memory_order_relaxed);
 }
 
+PowerObserver::DeviceThermalState PowerMonitor::GetCurrentThermalState() {
+  DCHECK(IsInitialized());
+  return GetInstance()->source_->GetCurrentThermalState();
+}
+
 void PowerMonitor::NotifyPowerStateChange(bool battery_in_use) {
   DCHECK(IsInitialized());
   DVLOG(1) << "PowerStateChange: " << (battery_in_use ? "On" : "Off")

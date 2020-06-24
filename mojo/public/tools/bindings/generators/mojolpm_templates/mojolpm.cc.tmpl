@@ -106,6 +106,54 @@ class {{interface.name}}Impl : public {{mojom_type}} {
 {%-     endfor %}
     mojolpmdbg("{{interface.name}}Impl.{{method.name}}\n");
     mojolpm::GetContext()->NextAction();
+{%-     if method.response_parameters != None %}
+    auto mojolpm_response = mojolpm::GetContext()->GetInstance<
+      {{proto_type}}::{{interface.name}}_{{method.name}}Response>(
+        mojolpm::GetContext()->NextResponseIndex(
+          mojolpm::type_id<{{mojom_type}}>()));
+
+    if (!mojolpm_response) {
+      return;
+    }
+
+    bool mojolpm_result = true;
+{%-       for param in method.response_parameters %}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         set param_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
+{%-         set param_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=True) %}
+  {{param_mojom_type}} local_{{name}};
+{%-         if kind|is_nullable_kind %}
+  {{param_maybe_mojom_type}} local_maybe_{{name}};
+{%-         endif %}
+{%-       endfor %}
+
+{%-       for param in method.response_parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if not kind|is_nullable_kind %}
+    mojolpm_result &= FromProto(mojolpm_response->m_{{name}}(), local_{{name}});
+    mojolpmdbg("{{name}} %i\n", mojolpm_result);
+{%-         else %}
+    if (FromProto(mojolpm_response->m_{{name}}(), local_maybe_{{name}})) {
+      local_{{name}} = std::move(local_maybe_{{name}});
+    }
+{%-         endif %}
+{%-       endfor %}
+    if (mojolpm_result) {
+      std::move(callback).Run(
+{%-       for param in method.response_parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_interface_kind or kind|is_associated_kind %}
+      {{kind|cpp_wrapper_param_type(add_same_module_namespaces=true)}}(std::move(local_{{name}})){{ ',' if not loop.last }}
+{%-         else %}
+      std::move(local_{{name}}){{ ',' if not loop.last }}
+{%-         endif %}
+{%-       endfor -%}
+);
+    }
+{%-     endif %}
   }
 {%-   endfor %}
 };
@@ -410,6 +458,19 @@ bool ToProto(::mojo::PendingAssociatedReceiver<{{mojom_type}}>&& input,
 {%-       endif %}
 {%-     endfor %}
 {%-   endfor %}
+{%-   for method in interface.methods %}
+{%-     if method.response_parameters != None %}
+{%-       set method_type = proto_type ~ "::" ~ interface.name ~ "_" ~ method.name ~ "Response" %}
+{%-       for param in method.response_parameters %}
+{%-         set name = param.name %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_array_kind or kind|is_map_kind -%}
+{{- from_proto.define(method_type, kind, name)}}
+{{- to_proto.define(method_type, kind, name)}}
+{%-         endif %}
+{%-       endfor %}
+{%-     endif %}
+{%-   endfor %}
 {%- endfor %}
 
 {%- for interface in interfaces %}
@@ -532,6 +593,28 @@ bool HandleAssociatedRemoteMethodCall(const {{proto_type}}::AssociatedRemoteMeth
       default: {
         result = false;
       }
+    }
+  }
+
+  return result;
+}
+
+bool AddResponse(
+    const {{proto_type}}::ReceiverResponse& input) {
+  bool result = true;
+  switch (input.response_case()) {
+{%-     for method in interface.methods %}
+    case {{proto_type}}::ReceiverResponse::k{{("m_" ~ method.name)|under_to_camel(digits_split=True) ~ "Response"}}: {
+      {{proto_type}}::{{interface.name}}_{{method.name}}Response response_copy;
+      response_copy.CopyFrom(input.m_{{method.name|camel_to_under}}_response());
+      mojolpm::GetContext()->AddInstance<
+        {{proto_type}}::{{interface.name}}_{{method.name}}Response>(
+          std::move(response_copy));
+    } break;
+{%-     endfor %}
+
+    default: {
+      result = false;
     }
   }
 

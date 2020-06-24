@@ -2578,3 +2578,39 @@ TEST_F(
             assertFalse(AutomationPredicate.container(genericContainer));
           });
     });
+
+TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', function() {
+  this.runWithLoadedTree(
+      `
+    <button></button>
+    <input type="text"</input>
+  `,
+      function(root) {
+        const fakeWindow = root.find({role: RoleType.BUTTON});
+        const realTextField = root.find({role: RoleType.TEXT_FIELD});
+
+        // Fake the role and className to imitate a ExoSurface.
+        Object.defineProperty(fakeWindow, 'role', {get: () => RoleType.WINDOW});
+        Object.defineProperty(
+            fakeWindow, 'className', {get: () => 'ExoSurface-40'});
+
+        // Mock and expect a call for the fake window.
+        chrome.accessibilityPrivate.sendSyntheticMouseEvent =
+            this.newCallback(evt => {
+              assertEquals(fakeWindow.location.left, evt.x);
+              assertEquals(fakeWindow.location.top, evt.y);
+            });
+
+        // Fake a touch explore gesture on the real text field. This should not
+        // trigger the above mouse path.
+        GestureCommandHandler.onAccessibilityGesture_(
+            'touchExplore', realTextField.location.left,
+            realTextField.location.top);
+
+        // Fake a touch explore gesture event on the fake window. This does a
+        // real hit test on the fake window resulting in the fake window which
+        // should trigger the mouse path above.
+        GestureCommandHandler.onAccessibilityGesture_(
+            'touchExplore', fakeWindow.location.left, fakeWindow.location.top);
+      });
+});

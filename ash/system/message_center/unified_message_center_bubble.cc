@@ -132,6 +132,7 @@ UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->CloseNow();
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 int UnifiedMessageCenterBubble::CalculateAvailableHeight() {

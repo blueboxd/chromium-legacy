@@ -23,6 +23,7 @@ WidgetElement::~WidgetElement() {
     widget_->RemoveRemovalsObserver(this);
     widget_->RemoveObserver(this);
   }
+  CHECK(!IsInObserverList());
 }
 
 void WidgetElement::OnWillRemoveView(views::Widget* widget, views::View* view) {

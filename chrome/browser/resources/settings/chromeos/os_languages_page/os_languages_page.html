@@ -17,6 +17,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="input_method_util.html">
 <link rel="import" href="os_add_languages_dialog.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../controls/controlled_radio_button.html">
@@ -216,17 +217,18 @@
                 $i18n{inputMethodEnabled}
               </div>
             </div>
-            <template is="dom-if" if="[[imeOptionsInSettings_]]">
+            <template is="dom-if" if="[[hasOptionsPageInSettings_(item.id)]]">
               <div class="internal-wrapper" hidden="[[!item.hasOptionsPage]]">
                 <cr-icon-button class="subpage-arrow"
-                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
+                    on-click="navigateToOptionsPageInSettings_">
+                </cr-icon-button>
               </div>
             </template>
-            <template is="dom-if" if="[[!imeOptionsInSettings_]]">
+            <template is="dom-if" if="[[!hasOptionsPageInSettings_(item.id)]]">
               <div class="external-wrapper" hidden="[[!item.hasOptionsPage]]">
                 <div class="separator"></div>
                 <cr-icon-button class="icon-external"
-                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
+                    on-click="openExtensionOptionsPage_"></cr-icon-button>
               </div>
             </template>
           </div>

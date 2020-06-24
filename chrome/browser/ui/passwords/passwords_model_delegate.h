@@ -157,6 +157,11 @@ class PasswordsModelDelegate {
       const base::string16& username,
       const base::string16& password) = 0;
 
+  // Called from the Move bubble controller when gaia re-auth is needed
+  // to move passwords. This method triggers the reauth flow. Upon successful
+  // reauth, it moves the password.
+  virtual void AuthenticateUserForAccountStoreOptInAndMovePassword() = 0;
+
   // Returns true if the password values should be revealed when the bubble is
   // opened.
   virtual bool ArePasswordsRevealedWhenBubbleIsOpened() const = 0;

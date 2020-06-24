@@ -1618,8 +1618,6 @@ static_library("browser") {
     "speech/speech_recognizer.cc",
     "speech/speech_recognizer.h",
     "speech/speech_recognizer_delegate.h",
-    "speech/tts_controller_delegate_impl.cc",
-    "speech/tts_controller_delegate_impl.h",
     "ssl/certificate_error_reporter.cc",
     "ssl/certificate_error_reporter.h",
     "ssl/chrome_security_blocking_page_factory.cc",
@@ -3866,6 +3864,8 @@ static_library("browser") {
       "signin/signin_status_metrics_provider_chromeos.h",
       "speech/tts_chromeos.cc",
       "speech/tts_chromeos.h",
+      "speech/tts_controller_delegate_impl.cc",
+      "speech/tts_controller_delegate_impl.h",
       "sync/sync_error_notifier_ash.cc",
       "sync/sync_error_notifier_ash.h",
       "sync/sync_error_notifier_factory_ash.cc",
@@ -3950,11 +3950,6 @@ static_library("browser") {
   }
 
   if (chromeos_is_browser_only) {
-    # Set empty assignment filter in this block, and restore back at the end
-    # of this block.
-    # TODO(crbug.com/1018739): Get rid of this workaround,
-    # when we drop the support.
-    set_sources_assignment_filter([])
     sources += [
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
@@ -3963,7 +3958,6 @@ static_library("browser") {
       "//chromeos/lacros/browser",
       "//chromeos/lacros/mojom",
     ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   if (is_win) {

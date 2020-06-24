@@ -160,6 +160,7 @@ class ManagePasswordsUIController
   void AuthenticateUserForAccountStoreOptInAndSavePassword(
       const base::string16& username,
       const base::string16& password) override;
+  void AuthenticateUserForAccountStoreOptInAndMovePassword() override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;
 
 #if defined(UNIT_TEST)
@@ -266,7 +267,7 @@ class ManagePasswordsUIController
   // saved against the current origin. If the reauth was unsuccessful, it
   // changes the default destination to profle store and reopens the save
   // bubble.
-  void AuthenticateUserForAccountStoreOptInCallback(
+  void FinishSavingPasswordAfterAccountStoreOptInAuth(
       const url::Origin& origin,
       password_manager::PasswordFormManagerForUI* form_manager,
       const base::string16& username,
@@ -277,6 +278,13 @@ class ManagePasswordsUIController
   void OnTriggerPostSaveCompromisedBubble(
       password_manager::PostSaveCompromisedHelper::BubbleType type,
       size_t count_compromised_passwords_);
+
+  // Triggered from a reauthentication flow. If |form_manager| is still valid
+  // and the reauth was successful, the password is moved to the account store.
+  void FinishMovingPasswordAfterAccountStoreOptInAuth(
+      password_manager::PasswordFormManagerForUI* form_manager,
+      password_manager::PasswordManagerClient::ReauthSucceeded
+          reauth_succeeded);
 
   // Timeout in seconds for the manual fallback for saving.
   static int save_fallback_timeout_in_seconds_;

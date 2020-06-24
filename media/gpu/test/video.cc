@@ -26,6 +26,7 @@
 #include "media/filters/vpx_video_decoder.h"
 #include "media/gpu/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 namespace media {
 namespace test {
@@ -440,11 +441,7 @@ void Video::OnFrameDecoded(const gfx::Size& resolution,
     data->resize(data->size() + plane_size);
     uint8_t* dst = &data->at(current_pos);
     const uint8_t* src = frame->data(plane);
-    for (int row = 0; row < rows; ++row) {
-      std::memcpy(dst, src, row_bytes);
-      dst += row_bytes;
-      src += stride;
-    }
+    libyuv::CopyPlane(src, stride, dst, row_bytes, row_bytes, rows);
   }
 }
 

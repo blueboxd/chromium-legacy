@@ -83,6 +83,10 @@
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 using gpu::gles2::GLES2Interface;
 
 namespace viz {
@@ -2826,7 +2830,12 @@ void GLRenderer::FinishDrawingFrame() {
   ScheduleOutputSurfaceAsOverlay();
 
 #if defined(OS_ANDROID) || defined(USE_OZONE)
-  ScheduleOverlays();
+  bool schedule_overlays = true;
+#if defined(USE_X11)
+  schedule_overlays = features::IsUsingOzonePlatform();
+#endif
+  if (schedule_overlays)
+    ScheduleOverlays();
 #elif defined(OS_MACOSX)
   ScheduleCALayers();
 #elif defined(OS_WIN)

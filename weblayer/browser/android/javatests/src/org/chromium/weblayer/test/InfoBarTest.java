@@ -137,4 +137,22 @@ public class InfoBarTest {
 
         Assert.assertEquals(infoBarContainerView.getParent(), null);
     }
+
+    @Test
+    @SmallTest
+    /**
+     * Tests that if the infobar container view is hidden, its visibility is restored on navigation.
+     *
+     */
+    public void testVisibilityRestoredOnNavigation() throws Exception {
+        View infoBarContainerView = getInfoBarContainerView();
+        Assert.assertEquals(infoBarContainerView.getVisibility(), View.VISIBLE);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { infoBarContainerView.setVisibility(View.GONE); });
+        Assert.assertEquals(infoBarContainerView.getVisibility(), View.GONE);
+
+        mActivityTestRule.navigateAndWait("about:blank");
+        Assert.assertEquals(infoBarContainerView.getVisibility(), View.VISIBLE);
+    }
 }

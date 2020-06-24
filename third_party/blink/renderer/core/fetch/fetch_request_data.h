@@ -40,7 +40,7 @@ class CORE_EXPORT FetchRequestData final
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };
 
   static FetchRequestData* Create(ScriptState*,
-                                  const mojom::blink::FetchAPIRequest&,
+                                  mojom::blink::FetchAPIRequestPtr,
                                   ForServiceWorkerFetchEvent);
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*, ExceptionState&);
@@ -138,6 +138,13 @@ class CORE_EXPORT FetchRequestData final
     trust_token_params_ = std::move(trust_token_params);
   }
 
+  void SetAllowHTTP1ForStreamingUpload(bool allow) {
+    allow_http1_for_streaming_upload_ = allow;
+  }
+  bool AllowHTTP1ForStreamingUpload() const {
+    return allow_http1_for_streaming_upload_;
+  }
+
   void Trace(Visitor*) const;
 
  private:
@@ -183,6 +190,7 @@ class CORE_EXPORT FetchRequestData final
       url_loader_factory_;
   base::UnguessableToken window_id_;
   Member<ExecutionContext> execution_context_;
+  bool allow_http1_for_streaming_upload_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

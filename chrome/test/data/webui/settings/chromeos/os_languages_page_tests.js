@@ -32,6 +32,7 @@ cr.define('os_languages_page_tests', function() {
       testing.Test.disableAnimationsAndTransitions();
       PolymerTest.clearBody();
       CrSettingsPrefs.deferInitialization = true;
+      loadTimeData.overrideValues({imeOptionsInSettings: true});
     });
 
     setup(async () => {
@@ -285,23 +286,46 @@ cr.define('os_languages_page_tests', function() {
       });
     });
 
-    test(TestNames.InputMethods, function() {
-      const inputMethodsList = languagesPage.$.inputMethodsList;
-      assertTrue(!!inputMethodsList);
+    suite(TestNames.InputMethods, function() {
+      test('displays input method list', function() {
+        const inputMethodsList = languagesPage.$.inputMethodsList;
+        assertTrue(!!inputMethodsList);
 
-      // The test input methods should appear.
-      const items =
-          inputMethodsList.querySelectorAll('.list-item .display-name');
-      assertEquals(2, items.length);
-      assertEquals('US keyboard', items[0].textContent.trim());
-      assertEquals('US Dvorak keyboard', items[1].textContent.trim());
+        // The test input methods should appear.
+        const items = inputMethodsList.querySelectorAll('.list-item');
+        assertEquals(3, items.length);  // Two items for input methods and one
+                                        // item for manage input methods.
+        assertEquals(
+            'US keyboard',
+            items[0].querySelector('.display-name').textContent.trim());
+        assertTrue(!!items[0].querySelector('.internal-wrapper'));
+        assertFalse(!!items[0].querySelector('.external-wrapper'));
+        assertEquals(
+            'US Dvorak keyboard',
+            items[1].querySelector('.display-name').textContent.trim());
+        assertTrue(!!items[1].querySelector('.external-wrapper'));
+        assertFalse(!!items[1].querySelector('.internal-wrapper'));
 
-      const manageInputMethodsButton =
-          inputMethodsList.querySelector('#manageInputMethods');
-      assertTrue(!!manageInputMethodsButton);
+        const manageInputMethodsButton =
+            inputMethodsList.querySelector('#manageInputMethods');
+        assertTrue(!!manageInputMethodsButton);
 
-      // settings-manage-input-methods-page is owned by os-languages-section,
-      // not os-languages-page, and hence isn't tested here.
+        // settings-manage-input-methods-page is owned by os-languages-section,
+        // not os-languages-page, and hence isn't tested here.
+      });
+
+      test('navigates to input method options page', function() {
+        const inputMethodsList = languagesPage.$.inputMethodsList;
+        const items = inputMethodsList.querySelectorAll('.list-item');
+        items[0].querySelector('.subpage-arrow').click();
+        const router = settings.Router.getInstance();
+        assertEquals(
+            router.getCurrentRoute().getAbsolutePath(),
+            'chrome://os-settings/osLanguages/inputMethodOptions');
+        assertEquals(
+            router.getQueryParameters().get('id'),
+            '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng');
+      });
     });
   });
 

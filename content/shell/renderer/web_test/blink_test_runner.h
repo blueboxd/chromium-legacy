@@ -125,9 +125,6 @@ class BlinkTestRunner {
   // Invoked when the test finished.
   void TestFinished();
 
-  // Invoked when the embedder should close all but the main WebView.
-  void CloseRemainingWindows();
-
   void DeleteAllCookies();
 
   // Returns the length of the back/forward history of the main WebView.
@@ -154,6 +151,11 @@ class BlinkTestRunner {
   // Hide or show the main window. Watch for the |document.visibilityState| to
   // change in order to wait for the side effects of calling this.
   void SetMainWindowHidden(bool hidden);
+
+  // If the test will be closing its windows explicitly, and wants to look for
+  // leaks due to those windows closing incorrectly, it can specify this to
+  // avoid having them closed at the end of the test before the leak checker.
+  void CheckForLeakedWindows();
 
   // Causes the beforeinstallprompt event to be sent to the renderer.
   // |event_platforms| are the platforms to be sent with the event. Once the

@@ -424,7 +424,7 @@ TEST_F(ContextualSearchDelegateTest, ExpandSelectionInvalidRange) {
   base::string16 surrounding = base::UTF8ToUTF16("Barack Obama just spoke.");
   std::string selected_text = "Ob";
   CreateSearchContextAndRequestSearchTerm(selected_text, surrounding, 7, 9);
-  SetResponseStringAndSimulateResponse(selected_text, "0", "200");
+  SetResponseStringAndSimulateResponse(selected_text, "0", "1001");
 
   EXPECT_EQ(0, start_adjust());
   EXPECT_EQ(0, end_adjust());

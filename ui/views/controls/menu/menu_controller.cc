@@ -1635,6 +1635,7 @@ MenuController::~MenuController() {
     active_instance_ = nullptr;
   StopShowTimer();
   StopCancelAllTimer();
+  CHECK(!IsInObserverList());
 }
 
 bool MenuController::SendAcceleratorToHotTrackedView() {

@@ -1788,22 +1788,19 @@ template("mojom") {
         js_extension = ".m.js"
       },
     ]
+
     foreach(dependency_type, dependency_types) {
-      ts_filelist = []
       ts_outputs = []
       js_outputs = []
 
       foreach(base_path, output_file_base_paths) {
         ts_outputs +=
             [ "$root_gen_dir/$base_path-lite${dependency_type.ts_extension}" ]
-        ts_filelist += [ rebase_path(
-                "$root_gen_dir/$base_path-lite${dependency_type.ts_extension}",
-                root_build_dir) ]
-
         js_outputs +=
             [ "$root_gen_dir/$base_path-lite${dependency_type.js_extension}" ]
       }
 
+      # Generate Typescript bindings.
       generator_ts_target_name =
           "${target_name}_${dependency_type.name}__ts__generator"
       action(generator_ts_target_name) {
@@ -1832,6 +1829,30 @@ template("mojom") {
         # TODO(crbug.com/1007591): Support generate_fuzzing.
       }
 
+      # Create tsconfig.json for the generated Typescript.
+      tsconfig_filename =
+          "$target_gen_dir/$target_name-${dependency_type.name}-tsconfig.json"
+      tsconfig = {
+      }
+      tsconfig.compilerOptions = {
+        target = "es6"
+        module = "es6"
+        lib = [
+          "es6",
+          "esnext.bigint",
+        ]
+        strict = true
+      }
+      tsconfig.files = []
+      foreach(base_path, output_file_base_paths) {
+        tsconfig.files += [ rebase_path(
+                "$root_gen_dir/$base_path-lite${dependency_type.ts_extension}",
+                target_gen_dir,
+                root_gen_dir) ]
+      }
+      write_file(tsconfig_filename, tsconfig, "json")
+
+      # Compile previously generated Typescript to Javascript.
       generator_js_target_name =
           "${target_name}_${dependency_type.name}__js__generator"
       generator_js_target_names += [ generator_js_target_name ]
@@ -1841,8 +1862,9 @@ template("mojom") {
         sources = ts_outputs
         outputs = js_outputs
         public_deps = [ ":$generator_ts_target_name" ]
-        response_file_contents = ts_filelist
-        args = [ "--filelist={{response_file_name}}" ]
+        absolute_tsconfig_path =
+            rebase_path(tsconfig_filename, "", target_gen_dir)
+        args = [ "--tsconfig_path=$absolute_tsconfig_path" ]
       }
     }
 

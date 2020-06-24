@@ -289,12 +289,14 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
 
     auto web_application_info = std::make_unique<WebApplicationInfo>();
     web_application_info->app_url = web_app->launch_url();
-    web_application_info->title = base::UTF8ToUTF16(web_app->sync_data().name);
-    web_application_info->scope = web_app->sync_data().scope;
-    web_application_info->theme_color = web_app->sync_data().theme_color;
+    web_application_info->title =
+        base::UTF8ToUTF16(web_app->sync_fallback_data().name);
+    web_application_info->scope = web_app->sync_fallback_data().scope;
+    web_application_info->theme_color =
+        web_app->sync_fallback_data().theme_color;
     web_application_info->open_as_window =
         web_app->user_display_mode() != DisplayMode::kBrowser;
-    web_application_info->icon_infos = web_app->sync_data().icon_infos;
+    web_application_info->icon_infos = web_app->sync_fallback_data().icon_infos;
 
     EnqueueInstallAppFromSync(web_app->app_id(),
                               std::move(web_application_info), callback);

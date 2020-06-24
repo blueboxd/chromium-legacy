@@ -133,6 +133,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -162,9 +163,9 @@ ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
 void AppendUnsafe(StringBuilder& builder, const String& off_thread_string) {
   StringImpl* impl = off_thread_string.Impl();
   if (impl) {
-    builder.Append(impl->Is8Bit()
-                       ? StringView(impl->Characters8(), impl->length())
-                       : StringView(impl->Characters16(), impl->length()));
+    WTF::VisitCharacters(*impl, [&](const auto* chars, unsigned length) {
+      builder.Append(chars, length);
+    });
   }
 }
 

@@ -122,7 +122,10 @@ void Adapter::OnAmbientLightUpdated(int lux) {
 
   // We do not record ALS value if lid is closed.
   if (*is_lid_closed_) {
-    VLOG(1) << "ABAdapter ALS ignored while lid-closed";
+    if (!lid_closed_message_reported_) {
+      VLOG(1) << "ABAdapter ALS ignored while lid-closed";
+      lid_closed_message_reported_ = true;
+    }
     return;
   }
 
@@ -308,6 +311,7 @@ void Adapter::LidEventReceived(chromeos::PowerManagerClient::LidState state,
   is_lid_closed_ = state == chromeos::PowerManagerClient::LidState::CLOSED;
   if (!*is_lid_closed_) {
     lid_reopen_time_ = tick_clock_->NowTicks();
+    lid_closed_message_reported_ = false;
     VLOG(1) << "ABAdapter Adapter received lid-reopened event";
     return;
   }

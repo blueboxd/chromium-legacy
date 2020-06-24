@@ -85,6 +85,7 @@
 
 #if defined(USE_X11)
 #include "base/nix/xdg_util.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace content {
@@ -575,14 +576,16 @@ base::FilePath DownloadManagerImpl::GetDefaultDownloadDirectory() {
   // distros with versions of GTK lower than 3.14.7 are no longer
   // supported.  This should happen when support for Ubuntu Trusty and
   // Debian Jessie are removed.
-  default_download_directory = GetTemporaryDownloadDirectory();
-#else
-  if (delegate_) {
+  if (!features::IsUsingOzonePlatform())
+    default_download_directory = GetTemporaryDownloadDirectory();
+#endif
+
+  if (delegate_ && default_download_directory.empty()) {
     base::FilePath website_save_directory;  // Unused
     delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
                           &default_download_directory);
   }
-#endif
+
   if (default_download_directory.empty()) {
     // |default_download_directory| can still be empty if ContentBrowserClient
     // returned an empty path for the downloads directory.
@@ -1312,20 +1315,17 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
         static_cast<StoragePartitionImpl*>(
             BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                        site_url));
-    std::string storage_domain;
-    auto* site_instance = rfh->GetSiteInstance();
-    if (site_instance) {
-      std::string partition_name;
-      bool in_memory;
-      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-          browser_context_, site_url, &storage_domain, &partition_name,
-          &in_memory);
-    }
+
+    auto storage_partition_config =
+        GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+            browser_context_, site_url);
+
     pending_url_loader_factory =
         CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             CreateFileSystemURLLoaderFactory(
                 rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
-                storage_partition->GetFileSystemContext(), storage_domain));
+                storage_partition->GetFileSystemContext(),
+                storage_partition_config.partition_domain()));
   } else if (params->url().SchemeIs(url::kDataScheme)) {
     pending_url_loader_factory =
         CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(

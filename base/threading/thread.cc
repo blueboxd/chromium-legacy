@@ -278,9 +278,11 @@ void Thread::DetachFromSequence() {
 }
 
 PlatformThreadId Thread::GetThreadId() const {
-  // If the thread is created but not started yet, wait for |id_| being ready.
-  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
-  id_event_.Wait();
+  if (!id_event_.IsSignaled()) {
+    // If the thread is created but not started yet, wait for |id_| being ready.
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    id_event_.Wait();
+  }
   return id_;
 }
 

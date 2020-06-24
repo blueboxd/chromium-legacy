@@ -134,7 +134,7 @@ cr.define('settings', function() {
       /** @type {!Array<!chrome.languageSettingsPrivate.InputMethod>} */
       this.componentExtensionImes = [
         {
-          id: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng',
+          id: '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng',
           displayName: 'US keyboard',
           languageCodes: ['en', 'en-US'],
           enabled: true,
@@ -459,7 +459,7 @@ cr.define('settings', function() {
       fakePrefs.push({
         key: 'settings.language.preload_engines',
         type: chrome.settingsPrivate.PrefType.STRING,
-        value: '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng,' +
+        value: '_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:us::eng,' +
             '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng',
       });
       fakePrefs.push({

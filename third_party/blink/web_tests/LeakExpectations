@@ -24,6 +24,22 @@ crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-be
 
 crbug.com/1003224 external/wpt/clipboard-apis/async-write-image-read-image.html [ Failure ]
 
+# These tests crash with the leak detector enabled. Previously, crashes inside
+# leak detection were incorrectly hidden with the test passing.
+# See https://chromium-review.googlesource.com/c/chromium/src/+/2252943
+crbug.com/867532 external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Crash ]
+crbug.com/867532 external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Crash ]
+crbug.com/867532 virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Crash ]
+crbug.com/867532 virtual/omt-worker-fetch/http/tests/workers/worker-usecounter.html [ Crash ]
+crbug.com/867532 http/tests/workers/worker-usecounter.html [ Crash ]
+
+# These tests crash with the leak detector enabled. Previously, crashes inside
+# leak detection were incorrectly hidden with the test passing.
+# See https://chromium-review.googlesource.com/c/chromium/src/+/2252943
+crbug.com/1098106 virtual/off-main-thread-css-paint/http/tests/csspaint/invalidation-border-image.html [ Crash ]
+crbug.com/1098106 virtual/off-main-thread-css-paint/http/tests/csspaint/invalidation-background-image.html [ Crash ]
+crbug.com/1098106 virtual/off-main-thread-css-paint/http/tests/csspaint/invalidation-content-image.html [ Crash ]
+
 # -----------------------------------------------------------------
 # Flakily leaks
 # -----------------------------------------------------------------

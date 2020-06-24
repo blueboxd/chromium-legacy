@@ -43,6 +43,7 @@
 
 #if defined(USE_X11)
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton_x11.h"  // nogncheck
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace content {
@@ -72,10 +73,10 @@ void TimerFired() {
 GpuMemoryBufferManagerSingleton* CreateGpuMemoryBufferManagerSingleton(
     int gpu_client_id) {
 #if defined(USE_X11)
-  return new GpuMemoryBufferManagerSingletonX11(gpu_client_id);
-#else
-  return new GpuMemoryBufferManagerSingleton(gpu_client_id);
+  if (!features::IsUsingOzonePlatform())
+    return new GpuMemoryBufferManagerSingletonX11(gpu_client_id);
 #endif
+  return new GpuMemoryBufferManagerSingleton(gpu_client_id);
 }
 
 }  // namespace

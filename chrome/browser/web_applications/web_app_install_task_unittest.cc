@@ -104,7 +104,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     install_finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),
         &test_registry_controller_->sync_bridge());
-    shortcut_manager_->SetSubsystems(&registrar());
+    shortcut_manager_->SetSubsystems(icon_manager_.get(), &registrar());
     file_handler_manager_->SetSubsystems(&registrar());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();

@@ -8,6 +8,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
 namespace ui {
@@ -71,6 +72,23 @@ void X11CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
   ToX11CursorOzone(cursor)->Release();
 }
 
+void X11CursorFactoryOzone::ObserveThemeChanges() {
+  auto* cursor_theme_manager = CursorThemeManager::GetInstance();
+  if (cursor_theme_manager)
+    cursor_theme_observer_.Add(cursor_theme_manager);
+}
+
+void X11CursorFactoryOzone::OnCursorThemeNameChanged(
+    const std::string& cursor_theme_name) {
+  XcursorSetTheme(gfx::GetXDisplay(), cursor_theme_name.c_str());
+  ClearThemeCursors();
+}
+
+void X11CursorFactoryOzone::OnCursorThemeSizeChanged(int cursor_theme_size) {
+  XcursorSetDefaultSize(gfx::GetXDisplay(), cursor_theme_size);
+  ClearThemeCursors();
+}
+
 scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
     mojom::CursorType type) {
   if (type == mojom::CursorType::kNone)
@@ -87,6 +105,10 @@ scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
 
   // Returns owned default cursor for this type.
   return default_cursors_[type];
+}
+
+void X11CursorFactoryOzone::ClearThemeCursors() {
+  default_cursors_.clear();
 }
 
 }  // namespace ui

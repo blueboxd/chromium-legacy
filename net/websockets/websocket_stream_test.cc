@@ -1749,5 +1749,45 @@ TEST_P(WebSocketStreamCreateTest, ContinueSSLRequestAfterDelete) {
   ssl_error_callbacks_->ContinueSSLRequest();
 }
 
+TEST_P(WebSocketStreamCreateTest, HandleConnectionCloseInFirstSegment) {
+  std::string request =
+      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+
+  // The response headers are immediately followed by a close frame, length 11,
+  // code 1013, reason "Try Again".
+  std::string close_body = "\x03\xf5Try Again";
+  std::string response = WebSocketStandardResponse(std::string()) + "\x88" +
+                         static_cast<char>(close_body.size()) + close_body;
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, response.data(), response.size(), 1),
+      MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 2),
+  };
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, request.c_str())};
+  std::unique_ptr<SequencedSocketData> socket_data(
+      BuildSocketData(reads, writes));
+  socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  CreateAndConnectRawExpectations("ws://www.example.org/", NoSubProtocols(),
+                                  HttpRequestHeaders(), std::move(socket_data));
+  WaitUntilConnectDone();
+  ASSERT_TRUE(stream_);
+
+  std::vector<std::unique_ptr<WebSocketFrame>> frames;
+  TestCompletionCallback callback1;
+  int rv1 = stream_->ReadFrames(&frames, callback1.callback());
+  rv1 = callback1.GetResult(rv1);
+  ASSERT_THAT(rv1, IsOk());
+  ASSERT_EQ(1U, frames.size());
+  EXPECT_EQ(frames[0]->header.opcode, WebSocketFrameHeader::kOpCodeClose);
+  EXPECT_TRUE(frames[0]->header.final);
+  EXPECT_EQ(close_body,
+            std::string(frames[0]->payload, frames[0]->header.payload_length));
+
+  std::vector<std::unique_ptr<WebSocketFrame>> empty_frames;
+  TestCompletionCallback callback2;
+  int rv2 = stream_->ReadFrames(&empty_frames, callback2.callback());
+  rv2 = callback2.GetResult(rv2);
+  ASSERT_THAT(rv2, IsError(ERR_CONNECTION_CLOSED));
+}
+
 }  // namespace
 }  // namespace net

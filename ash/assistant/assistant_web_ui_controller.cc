@@ -71,6 +71,7 @@ AssistantWebUiController::AssistantWebUiController() {
 
 AssistantWebUiController::~AssistantWebUiController() {
   CloseUi();
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void AssistantWebUiController::OnWidgetDestroying(views::Widget* widget) {

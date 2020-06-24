@@ -41,6 +41,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/test_upload_data_stream_not_allow_http1.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
@@ -10486,6 +10487,32 @@ TEST_F(SpdyNetworkTransactionTest, OnDataSentDoesNotCrashWithGreasedFrameType) {
   base::RunLoop().RunUntilIdle();
 
   helper.VerifyDataConsumed();
+}
+
+TEST_F(SpdyNetworkTransactionTest, NotAllowHTTP1NotBlockH2Post) {
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
+  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockWrite writes[] = {
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
+  };
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostReply(nullptr, 0));
+  MockRead reads[] = {
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
+      MockRead(ASYNC, 0, 4)  // EOF
+  };
+  SequencedSocketData data(reads, writes);
+
+  request_.method = "POST";
+  UploadDataStreamNotAllowHTTP1 upload_data(kUploadData);
+  request_.upload_data_stream = &upload_data;
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_THAT(out.rv, IsOk());
+  EXPECT_EQ("HTTP/1.1 200", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
 }
 
 }  // namespace net

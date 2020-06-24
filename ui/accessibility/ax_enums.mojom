@@ -1035,6 +1035,7 @@ enum Gesture {
   kTap2,
   kTap3,
   kTap4,
+  kTouchExplore,
 };
 
 enum TextAffinity {

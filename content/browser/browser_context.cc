@@ -52,6 +52,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
@@ -118,22 +119,6 @@ StoragePartitionImplMap* GetStoragePartitionMap(
                                  std::move(partition_map_owned));
   }
   return partition_map;
-}
-
-StoragePartition* GetStoragePartitionFromConfig(
-    BrowserContext* browser_context,
-    const std::string& partition_domain,
-    const std::string& partition_name,
-    bool in_memory,
-    bool can_create) {
-  StoragePartitionImplMap* partition_map =
-      GetStoragePartitionMap(browser_context);
-
-  if (browser_context->IsOffTheRecord())
-    in_memory = true;
-
-  return partition_map->Get(partition_domain, partition_name, in_memory,
-                            can_create);
 }
 
 void SaveSessionStateOnIOThread(AppCacheServiceImpl* appcache_service) {
@@ -253,33 +238,39 @@ StoragePartition* BrowserContext::GetStoragePartition(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
     bool can_create) {
-  std::string partition_domain;
-  std::string partition_name;
-  bool in_memory = false;
-
-  if (site_instance) {
-    GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-        browser_context, site_instance->GetSiteURL(), &partition_domain,
-        &partition_name, &in_memory);
+  if (!site_instance) {
+    return GetStoragePartition(
+        browser_context, StoragePartitionConfig::CreateDefault(), can_create);
   }
 
-  return GetStoragePartitionFromConfig(browser_context, partition_domain,
-                                       partition_name, in_memory, can_create);
+  return GetStoragePartitionForSite(browser_context,
+                                    site_instance->GetSiteURL(), can_create);
+}
+
+StoragePartition* BrowserContext::GetStoragePartition(
+    BrowserContext* browser_context,
+    const StoragePartitionConfig& storage_partition_config,
+    bool can_create) {
+  StoragePartitionImplMap* partition_map =
+      GetStoragePartitionMap(browser_context);
+
+  auto config_to_use = storage_partition_config;
+  if (browser_context->IsOffTheRecord())
+    config_to_use = storage_partition_config.CopyWithInMemorySet();
+
+  return partition_map->Get(config_to_use, can_create);
 }
 
 StoragePartition* BrowserContext::GetStoragePartitionForSite(
     BrowserContext* browser_context,
     const GURL& site,
     bool can_create) {
-  std::string partition_domain;
-  std::string partition_name;
-  bool in_memory;
+  auto storage_partition_config =
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          browser_context, site);
 
-  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      browser_context, site, &partition_domain, &partition_name, &in_memory);
-
-  return GetStoragePartitionFromConfig(browser_context, partition_domain,
-                                       partition_name, in_memory, can_create);
+  return GetStoragePartition(browser_context, storage_partition_config,
+                             can_create);
 }
 
 void BrowserContext::ForEachStoragePartition(
@@ -304,7 +295,8 @@ size_t BrowserContext::GetStoragePartitionCount(
 
 StoragePartition* BrowserContext::GetDefaultStoragePartition(
     BrowserContext* browser_context) {
-  return GetStoragePartition(browser_context, nullptr);
+  return GetStoragePartition(browser_context,
+                             StoragePartitionConfig::CreateDefault());
 }
 
 // static

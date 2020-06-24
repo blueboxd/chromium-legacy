@@ -56,8 +56,8 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
     assertEquals(3, tiles.length);
     assertEquals('col_0', tiles[2].getAttribute('title'));
     assertEquals(
-        'background_image?https://col_0.jpg',
-        tiles[2].querySelector('.image').path);
+        'chrome-untrusted://new-tab-page/background_image?https://col_0.jpg',
+        tiles[2].querySelector('.image').src);
   });
 
   test('clicking collection selects collection', async function() {
@@ -93,8 +93,8 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
     // Arrange.
     const image = {
       attribution1: 'image_0',
-      imageUrl: {url: 'https://example.com/image.png'},
-      previewImageUrl: {url: 'https://example.com/image.png'},
+      imageUrl: {url: 'https://a.com/i.png'},
+      previewImageUrl: {url: 'https://a.com/p.png'},
     };
     handler.setResultFor('getBackgroundImages', Promise.resolve({
       images: [image],
@@ -114,8 +114,8 @@ suite('NewTabPageCustomizeBackgroundsTest', () => {
         customizeBackgrounds.shadowRoot.querySelectorAll('#images .tile');
     assertEquals(tiles.length, 1);
     assertEquals(
-        tiles[0].querySelector('.image').path,
-        'background_image?https://example.com/image.png');
+        tiles[0].querySelector('.image').src,
+        'chrome-untrusted://new-tab-page/background_image?https://a.com/p.png');
   });
 
   test('Going back shows collections', async function() {

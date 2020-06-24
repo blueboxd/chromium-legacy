@@ -60,10 +60,10 @@ class WebApp {
   bool is_locally_installed() const { return is_locally_installed_; }
   // Sync-initiated installation produces a stub app awaiting for full
   // installation process. The |is_in_sync_install| app has only app_id,
-  // launch_url and sync_data fields defined, no icons. If online install
-  // succeeds, icons get downloaded and all the fields get their values. If
-  // online install fails, we do the fallback installation to generate icons
-  // using |sync_data| fields.
+  // launch_url and sync_fallback_data fields defined, no icons. If online
+  // install succeeds, icons get downloaded and all the fields get their values.
+  // If online install fails, we do the fallback installation to generate icons
+  // using |sync_fallback_data| fields.
   bool is_in_sync_install() const { return is_in_sync_install_; }
 
   // Represents the last time this app is launched.
@@ -91,20 +91,23 @@ class WebApp {
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
   // copies are read by a device to generate a placeholder icon (if needed). Any
-  // device may write new values to |sync_data|, random last update wins.
-  struct SyncData {
-    SyncData();
-    ~SyncData();
+  // device may write new values to |sync_fallback_data|, random last update
+  // wins.
+  struct SyncFallbackData {
+    SyncFallbackData();
+    ~SyncFallbackData();
     // Copyable and move-assignable to support Copy-on-Write with Commit.
-    SyncData(const SyncData& sync_data);
-    SyncData& operator=(SyncData&& sync_data);
+    SyncFallbackData(const SyncFallbackData& sync_fallback_data);
+    SyncFallbackData& operator=(SyncFallbackData&& sync_fallback_data);
 
     std::string name;
     base::Optional<SkColor> theme_color;
     GURL scope;
     std::vector<WebApplicationIconInfo> icon_infos;
   };
-  const SyncData& sync_data() const { return sync_data_; }
+  const SyncFallbackData& sync_fallback_data() const {
+    return sync_fallback_data_;
+  }
 
   // Represents the "shortcuts" field in the manifest.
   const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos()
@@ -158,7 +161,7 @@ class WebApp {
       std::vector<std::string> additional_search_terms);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
-  void SetSyncData(SyncData sync_data);
+  void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
 
  private:
   using Sources = std::bitset<Source::kMaxValue + 1>;
@@ -195,17 +198,18 @@ class WebApp {
   std::vector<std::string> additional_search_terms_;
   base::Time last_launch_time_;
   base::Time install_time_;
-  SyncData sync_data_;
+  SyncFallbackData sync_fallback_data_;
 };
 
 // For logging and debug purposes.
-std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data);
+std::ostream& operator<<(std::ostream& out,
+                         const WebApp::SyncFallbackData& sync_fallback_data);
 std::ostream& operator<<(std::ostream& out, const WebApp& app);
 
-bool operator==(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2);
-bool operator!=(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2);
+bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2);
+bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2);
 
 bool operator==(const WebApp& app1, const WebApp& app2);
 bool operator!=(const WebApp& app1, const WebApp& app2);

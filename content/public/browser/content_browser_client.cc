@@ -491,17 +491,12 @@ bool ContentBrowserClient::IsValidStoragePartitionId(
   return partition_id.empty();
 }
 
-void ContentBrowserClient::GetStoragePartitionConfigForSite(
+StoragePartitionConfig ContentBrowserClient::GetStoragePartitionConfigForSite(
     BrowserContext* browser_context,
-    const GURL& site,
-    std::string* partition_domain,
-    std::string* partition_name,
-    bool* in_memory) {
+    const GURL& site) {
   DCHECK(browser_context);
 
-  partition_domain->clear();
-  partition_name->clear();
-  *in_memory = false;
+  return StoragePartitionConfig::CreateDefault();
 }
 
 MediaObserver* ContentBrowserClient::GetMediaObserver() {
@@ -541,9 +536,11 @@ ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return nullptr;
 }
 
+#if defined(OS_CHROMEOS)
 TtsControllerDelegate* ContentBrowserClient::GetTtsControllerDelegate() {
   return nullptr;
 }
+#endif
 
 TtsPlatform* ContentBrowserClient::GetTtsPlatform() {
   return nullptr;

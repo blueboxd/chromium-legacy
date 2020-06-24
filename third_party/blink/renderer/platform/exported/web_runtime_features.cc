@@ -701,4 +701,8 @@ void WebRuntimeFeatures::EnableVideoWakeLockOptimisationHiddenMuted(
       enable);
 }
 
+void WebRuntimeFeatures::EnableContentIndex(bool enable) {
+  RuntimeEnabledFeatures::SetContentIndexEnabled(enable);
+}
+
 }  // namespace blink

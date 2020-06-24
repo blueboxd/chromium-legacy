@@ -143,12 +143,14 @@ interface WebTestControlHost {
   // Trigger a reload navigation on the main WebView.
   Reload();
 
+  // If the test will be closing its windows explicitly, and wants to look for
+  // leaks due to those windows closing incorrectly, it can specify this to
+  // avoid having them closed at the end of the test before the leak checker.
+  CheckForLeakedWindows();
+
   // Show or hide the window. This mimics the user switching tabs in a
   // multi-tab window, or occluding the window.
   SetMainWindowHidden(bool hidden);
-
-  // Invoked when the embedder should close all but the main WebView.
-  CloseRemainingWindows();
 
   // Trigger a GoToOffset navigation on the main WebView.
   GoToOffset(int32 offset);

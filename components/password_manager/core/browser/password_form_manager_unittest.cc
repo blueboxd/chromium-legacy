@@ -2550,6 +2550,8 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PermanentlyBlacklist) {
 }
 
 TEST_F(PasswordFormManagerTestWithMockedSaver, MoveCredentialsToAccountStore) {
+  ON_CALL(*client_.GetPasswordFeatureManager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
   EXPECT_CALL(*mock_password_save_manager(),
               MoveCredentialsToAccountStore(
                   metrics_util::MoveToAccountStoreTrigger::

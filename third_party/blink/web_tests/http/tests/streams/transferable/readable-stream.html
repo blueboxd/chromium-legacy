@@ -147,13 +147,21 @@ promise_test(async () => {
 }, 'cancel should be propagated to the original');
 
 promise_test(async () => {
-  const rs = await recordingTransferredReadableStream();
+  let resolveCancelCalled;
+  const cancelCalled = new Promise(resolve => {
+    resolveCancelCalled = resolve;
+  });
+  const rs = await recordingTransferredReadableStream({
+    cancel() {
+      resolveCancelCalled();
+    }
+  });
   const reader = rs.getReader();
   const readPromise = reader.read();
   reader.cancel('done');
   const { done } = await readPromise;
   assert_true(done, 'should be done');
-  await delay(0);
+  await cancelCalled;
   assert_array_equals(rs.events, ['pull', 'cancel', 'done'],
                       'events should match');
 }, 'cancel should abort a pending read()');

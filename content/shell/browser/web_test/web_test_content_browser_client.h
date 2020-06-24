@@ -87,7 +87,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
   BluetoothDelegate* GetBluetoothDelegate() override;
-  content::TtsControllerDelegate* GetTtsControllerDelegate() override;
   content::TtsPlatform* GetTtsPlatform() override;
   bool CanEnterFullscreenWithoutUserActivation() override;
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(

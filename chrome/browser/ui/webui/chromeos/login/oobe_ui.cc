@@ -465,8 +465,7 @@ void OobeUI::ConfigureOobeDisplay() {
           js_calls_container_.get(), core_handler_);
 
   AddScreenHandler(std::make_unique<GaiaScreenHandler>(
-      js_calls_container_.get(), core_handler_, network_state_informer_,
-      password_change_handler.get()));
+      js_calls_container_.get(), core_handler_, network_state_informer_));
 
   AddScreenHandler(std::move(password_change_handler));
 

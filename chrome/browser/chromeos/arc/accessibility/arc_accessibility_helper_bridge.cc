@@ -741,7 +741,7 @@ void ArcAccessibilityHelperBridge::UpdateWindowProperties(
     return;
 
   // Do a lookup for the tree source. A tree source may not exist because the
-  // app isn't whitelisted Android side or no data has been received for the
+  // app isn't allowlisted Android side or no data has been received for the
   // app.
   bool use_talkback = talkback_enabled_task_ids_.count(task_id) > 0;
 

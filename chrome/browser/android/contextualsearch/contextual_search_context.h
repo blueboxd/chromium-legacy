@@ -16,10 +16,11 @@
 // text.
 struct ContextualSearchContext {
  public:
-  // Languages needed for translation.
+  // Languages used for translation.
   struct TranslationLanguages {
     std::string detected_language;
     std::string target_language;
+    std::string fluent_languages;
   };
 
   ContextualSearchContext(JNIEnv* env, jobject obj);
@@ -118,7 +119,8 @@ struct ContextualSearchContext {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_detected_language,
-      const base::android::JavaParamRef<jstring>& j_target_language);
+      const base::android::JavaParamRef<jstring>& j_target_language,
+      const base::android::JavaParamRef<jstring>& j_fluent_languages);
 
   // Returns the languages to use for translation, as set by
   // |SetTranslationLanguages|.

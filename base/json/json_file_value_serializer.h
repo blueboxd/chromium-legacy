@@ -67,7 +67,7 @@ class BASE_EXPORT JSONFileValueDeserializer : public base::ValueDeserializer {
   // This enum is designed to safely overlap with JSONReader::JsonParseError.
   enum JsonFileError {
     JSON_NO_ERROR = 0,
-    JSON_ACCESS_DENIED = 1000,
+    JSON_ACCESS_DENIED = kErrorCodeFirstMetadataError,
     JSON_CANNOT_READ_FILE,
     JSON_FILE_LOCKED,
     JSON_NO_SUCH_FILE

@@ -402,6 +402,10 @@ struct URLRequestBody {
   // Indicates whether the post data contains sensitive information like
   // passwords.
   bool contains_sensitive_info;
+
+  // Indicates whether fetch upload streaming is allowed/rejected over H/1.
+  // Even if this is false but there is a QUIC/H2 stream, the upload is allowed.
+  bool allow_http1_for_streaming_upload;
 };
 
 // Represents part of an upload body. This could be either one of bytes, file or

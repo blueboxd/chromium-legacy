@@ -811,6 +811,253 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   }
 }
 
+// Test that the ProfileImportStatus logs a no import.
+TEST_F(AutofillMetricsTest, ProfileImportStatus_NoImport) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "home_line_one",
+                            "3734 Elvis Presley Blvd.", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("City", "city", "New York", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_CITY);
+  server_types.push_back(ADDRESS_HOME_CITY);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  test::CreateTestFormField("State", "state", "InvalidState", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_STATE);
+  server_types.push_back(ADDRESS_HOME_STATE);
+
+  test::CreateTestFormField("ZIP", "zip", "00000000000000000", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_ZIP);
+  server_types.push_back(ADDRESS_HOME_ZIP);
+
+  test::CreateTestFormField("Country", "country", "NoACountry", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_COUNTRY);
+  server_types.push_back(ADDRESS_HOME_COUNTRY);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid(kTestGuid);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendIDForTest(std::string(), guid));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  std::string histogram = "Autofill.AddressProfileImportStatus";
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::REGULAR_IMPORT, 0);
+  histogram_tester.ExpectBucketCount(
+      histogram, AutofillMetrics::AddressProfileImportStatusMetric::NO_IMPORT,
+      1);
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::SECTION_UNION_IMPORT,
+      0);
+}
+
+// Test that the ProfileImportStatus logs a regular import.
+TEST_F(AutofillMetricsTest, ProfileImportStatus_RegularImport) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "home_line_one",
+                            "3734 Elvis Presley Blvd.", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("City", "city", "New York", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_CITY);
+  server_types.push_back(ADDRESS_HOME_CITY);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  test::CreateTestFormField("State", "state", "CA", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_STATE);
+  server_types.push_back(ADDRESS_HOME_STATE);
+
+  test::CreateTestFormField("ZIP", "zip", "37373", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_ZIP);
+  server_types.push_back(ADDRESS_HOME_ZIP);
+
+  test::CreateTestFormField("Country", "country", "USA", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_COUNTRY);
+  server_types.push_back(ADDRESS_HOME_COUNTRY);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid(kTestGuid);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendIDForTest(std::string(), guid));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  std::string histogram = "Autofill.AddressProfileImportStatus";
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::REGULAR_IMPORT, 1);
+  histogram_tester.ExpectBucketCount(
+      histogram, AutofillMetrics::AddressProfileImportStatusMetric::NO_IMPORT,
+      0);
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::SECTION_UNION_IMPORT,
+      0);
+}
+
+// Test that the ProfileImportStatus logs a section union mport.
+TEST_F(AutofillMetricsTest, ProfileImportStatus_UnionImport) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "home_line_one",
+                            "3734 Elvis Presley Blvd.", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("ZIP", "zip", "37373", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_ZIP);
+  server_types.push_back(ADDRESS_HOME_ZIP);
+
+  test::CreateTestFormField("Country", "country", "USA", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_COUNTRY);
+  server_types.push_back(ADDRESS_HOME_COUNTRY);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  test::CreateTestFormField("City", "city", "New York", "text", &field);
+  // Assign a specific section.
+  field.autocomplete_attribute = "section-billing locality";
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_CITY);
+  server_types.push_back(ADDRESS_HOME_CITY);
+
+  test::CreateTestFormField("State", "state", "CA", "text", &field);
+  // Make the state a different section than the city.
+  field.autocomplete_attribute = "section-shipping address-level1";
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_STATE);
+  server_types.push_back(ADDRESS_HOME_STATE);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid(kTestGuid);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendIDForTest(std::string(), guid));
+
+  base::HistogramTester histogram_tester;
+  std::string histogram = "Autofill.AddressProfileImportStatus";
+
+  // Disable the union import feature.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillProfileImportFromUnifiedSection);
+
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::REGULAR_IMPORT, 0);
+  histogram_tester.ExpectBucketCount(
+      histogram, AutofillMetrics::AddressProfileImportStatusMetric::NO_IMPORT,
+      1);
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::SECTION_UNION_IMPORT,
+      0);
+
+  // Enable the union import feature.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillProfileImportFromUnifiedSection);
+  // Simulate form submission.
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::REGULAR_IMPORT, 0);
+  histogram_tester.ExpectBucketCount(
+      histogram, AutofillMetrics::AddressProfileImportStatusMetric::NO_IMPORT,
+      1);
+  histogram_tester.ExpectBucketCount(
+      histogram,
+      AutofillMetrics::AddressProfileImportStatusMetric::SECTION_UNION_IMPORT,
+      1);
+}
+
 // Test that the ProfileImportRequirements are all counted as fulfilled for a
 // 'perfect' profile import.
 TEST_F(AutofillMetricsTest, ProfileImportRequirements_AllFulfilled) {

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -23,7 +24,7 @@ namespace {
 
 constexpr char kGaiaSigninId[] = "gaia-signin";
 constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
-constexpr char kPasswordChangeId[] = "active-directory-password-change";
+constexpr char kPasswordChangeId[] = "ad-password-change";
 constexpr char kAdOldPasswordInput[] = "oldPassword";
 constexpr char kAdNewPassword1Input[] = "newPassword";
 constexpr char kAdNewPassword2Input[] = "newPasswordRepeat";
@@ -77,8 +78,7 @@ void ActiveDirectoryLoginMixin::SetUpOnMainThread() {
 }
 
 void ActiveDirectoryLoginMixin::TriggerPasswordChangeScreen() {
-  OobeScreenWaiter screen_waiter(
-      OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE);
+  OobeScreenWaiter screen_waiter(ActiveDirectoryPasswordChangeView::kScreenId);
 
   FakeAuthPolicyClient::Get()->set_auth_error(
       authpolicy::ERROR_PASSWORD_EXPIRED);

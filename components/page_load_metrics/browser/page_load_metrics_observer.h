@@ -365,9 +365,10 @@ class PageLoadMetricsObserver {
       const mojom::PageLoadTiming& timing) {}
 
   // This is called once every time when the page is restored from the
-  // back-forward cache.
+  // back-forward cache. |index| indicates |index|-th restore.
   virtual void OnFirstPaintAfterBackForwardCacheRestoreInPage(
-      const mojom::BackForwardCacheTiming& timing) {}
+      const mojom::BackForwardCacheTiming& timing,
+      size_t index) {}
 
   // Unlike other paint callbacks, OnFirstMeaningfulPaintInMainFrameDocument is
   // tracked per document, and is reported for the main frame document only.

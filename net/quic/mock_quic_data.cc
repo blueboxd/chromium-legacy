@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/mock_quic_data.h"
+#include "net/base/hex_utils.h"
 
 namespace net {
 namespace test {

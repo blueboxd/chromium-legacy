@@ -122,6 +122,60 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("allowEmojiSuggestion", IsEmojiSuggestionAllowed());
 }
 
+void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"inputMethodOptionsBasicSectionTitle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_BASIC},
+      {"inputMethodOptionsAdvancedSectionTitle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ADVANCED},
+      {"inputMethodOptionsPhysicalKeyboardSectionTitle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PHYSICAL_KEYBOARD},
+      {"inputMethodOptionsVirtualKeyboardSectionTitle",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIRTUAL_KEYBOARD},
+      {"inputMethodOptionsEnableDoubleSpacePeriod",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_DOUBLE_SPACE_PERIOD},
+      {"inputMethodOptionsEnableGestureTyping",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_GESTURE_TYPING},
+      {"inputMethodOptionsEnablePrediction",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_PREDICTION},
+      {"inputMethodOptionsEnableSoundOnKeypress",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_SOUND_ON_KEYPRESS},
+      {"inputMethodOptionsEnableCapitalization",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_CAPITALIZATION},
+      {"inputMethodOptionsAutoCorrection",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION},
+      {"inputMethodOptionsXkbLayout",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_XKB_LAYOUT},
+      {"inputMethodOptionsEditUserDict",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_EDIT_USER_DICT},
+      {"inputMethodOptionsPinyinChinesePunctuation",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_CHINESE_PUNCTUATION},
+      {"inputMethodOptionsPinyinDefaultChinese",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_DEFAULT_CHINESE},
+      {"inputMethodOptionsPinyinEnableFuzzy",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_FUZZY},
+      {"inputMethodOptionsPinyinEnableLowerPaging",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_LOWER_PAGING},
+      {"inputMethodOptionsPinyinEnableUpperPaging",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_UPPER_PAGING},
+      {"inputMethodOptionsPinyinFullWidthCharacter",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_FULL_WIDTH_CHARACTER},
+      {"inputMethodOptionsAutoCorrectionOff",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_OFF},
+      {"inputMethodOptionsAutoCorrectionModest",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_MODEST},
+      {"inputMethodOptionsAutoCorrectionAggressive",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_AGGRESSIVE},
+      {"inputMethodOptionsUsKeyboard",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_US},
+      {"inputMethodOptionsDvorakKeyboard",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_DVORAK},
+      {"inputMethodOptionsColemakKeyboard",
+       IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_COLEMAK},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 }  // namespace
 
 LanguagesSection::LanguagesSection(Profile* profile,
@@ -174,6 +228,7 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
   AddSmartInputsStrings(html_source);
+  AddInputMethodOptionsStrings(html_source);
 
   html_source->AddString(
       "languagesLearnMoreURL",

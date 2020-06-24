@@ -383,7 +383,8 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
       return ThrottleableTaskQueueTraits().SetPrioritisationType(
             QueueTraits::PrioritisationType::kBestEffort);
     case TaskType::kJavascriptTimer:
-      return ThrottleableTaskQueueTraits();
+      return ThrottleableTaskQueueTraits().SetPrioritisationType(
+          QueueTraits::PrioritisationType::kJavaScriptTimer);
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:

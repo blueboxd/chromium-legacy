@@ -221,14 +221,16 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 
-  WebApp::SyncData sync_data;
-  sync_data.name = bookmark_app_registrar_.GetAppShortName(app_id);
-  sync_data.theme_color = bookmark_app_registrar_.GetAppThemeColor(app_id);
+  WebApp::SyncFallbackData sync_fallback_data;
+  sync_fallback_data.name = bookmark_app_registrar_.GetAppShortName(app_id);
+  sync_fallback_data.theme_color =
+      bookmark_app_registrar_.GetAppThemeColor(app_id);
   // Avoid using derived scope as we are transferring raw data.
-  sync_data.scope =
+  sync_fallback_data.scope =
       bookmark_app_registrar_.GetAppScopeInternal(app_id).value_or(GURL());
-  sync_data.icon_infos = bookmark_app_registrar_.GetAppIconInfos(app_id);
-  web_app->SetSyncData(std::move(sync_data));
+  sync_fallback_data.icon_infos =
+      bookmark_app_registrar_.GetAppIconInfos(app_id);
+  web_app->SetSyncFallbackData(std::move(sync_fallback_data));
 
   const apps::FileHandlers* file_handlers =
       bookmark_app_file_handler_manager_.GetAllFileHandlers(app_id);

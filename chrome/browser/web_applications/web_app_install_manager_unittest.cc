@@ -240,12 +240,12 @@ class WebAppInstallManagerTest : public WebAppTest {
     web_app->SetIsInSyncInstall(true);
     web_app->SetIsLocallyInstalled(locally_installed);
 
-    WebApp::SyncData sync_data;
-    sync_data.name = app_name;
-    sync_data.theme_color = theme_color;
-    sync_data.scope = scope;
-    sync_data.icon_infos = icon_infos;
-    web_app->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = app_name;
+    sync_fallback_data.theme_color = theme_color;
+    sync_fallback_data.scope = scope;
+    sync_fallback_data.icon_infos = icon_infos;
+    web_app->SetSyncFallbackData(std::move(sync_fallback_data));
     return web_app;
   }
 
@@ -675,12 +675,12 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   expected_app->SetDownloadedIconSizes(std::move(sizes));
 
   {
-    WebApp::SyncData sync_data;
-    sync_data.name = "Name";
-    sync_data.theme_color = SK_ColorCYAN;
-    sync_data.scope = url;
-    sync_data.icon_infos = expected_app->icon_infos();
-    expected_app->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Name";
+    sync_fallback_data.theme_color = SK_ColorCYAN;
+    sync_fallback_data.scope = url;
+    sync_fallback_data.icon_infos = expected_app->icon_infos();
+    expected_app->SetSyncFallbackData(std::move(sync_fallback_data));
   }
 
   std::unique_ptr<const WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
@@ -711,7 +711,8 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   EXPECT_EQ(app, registrar().GetAppById(expected_app->app_id()));
 
   EXPECT_NE(*app_in_sync_install, *app);
-  EXPECT_NE(app_in_sync_install->sync_data(), app->sync_data());
+  EXPECT_NE(app_in_sync_install->sync_fallback_data(),
+            app->sync_fallback_data());
 
   EXPECT_EQ(*expected_app, *app);
 }
@@ -744,12 +745,12 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   expected_app->SetDownloadedIconSizes(std::move(sizes));
 
   {
-    WebApp::SyncData sync_data;
-    sync_data.name = "Name from sync";
-    sync_data.theme_color = SK_ColorRED;
-    sync_data.scope = expected_app->scope();
-    sync_data.icon_infos = expected_app->icon_infos();
-    expected_app->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "Name from sync";
+    sync_fallback_data.theme_color = SK_ColorRED;
+    sync_fallback_data.scope = expected_app->scope();
+    sync_fallback_data.icon_infos = expected_app->icon_infos();
+    expected_app->SetSyncFallbackData(std::move(sync_fallback_data));
   }
 
   std::unique_ptr<const WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
@@ -783,7 +784,8 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   EXPECT_EQ(app, registrar().GetAppById(expected_app->app_id()));
 
   EXPECT_NE(*app_in_sync_install, *app);
-  EXPECT_EQ(app_in_sync_install->sync_data(), app->sync_data());
+  EXPECT_EQ(app_in_sync_install->sync_fallback_data(),
+            app->sync_fallback_data());
 
   EXPECT_EQ(*expected_app, *app);
 }

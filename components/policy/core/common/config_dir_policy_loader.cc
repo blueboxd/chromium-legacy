@@ -40,20 +40,13 @@ PolicyLoadStatus JsonErrorToPolicyLoadStatus(int status) {
       return POLICY_LOAD_STATUS_READ_ERROR;
     case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
       return POLICY_LOAD_STATUS_MISSING;
-    case base::JSONReader::JSON_INVALID_ESCAPE:
-    case base::JSONReader::JSON_SYNTAX_ERROR:
-    case base::JSONReader::JSON_UNEXPECTED_TOKEN:
-    case base::JSONReader::JSON_TRAILING_COMMA:
-    case base::JSONReader::JSON_TOO_MUCH_NESTING:
-    case base::JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT:
-    case base::JSONReader::JSON_UNSUPPORTED_ENCODING:
-    case base::JSONReader::JSON_UNQUOTED_DICTIONARY_KEY:
-      return POLICY_LOAD_STATUS_PARSE_ERROR;
-    case base::JSONReader::JSON_NO_ERROR:
+    case base::ValueDeserializer::kErrorCodeNoError:
       NOTREACHED();
       return POLICY_LOAD_STATUS_STARTED;
   }
-  NOTREACHED() << "Invalid status " << status;
+  if (!base::ValueDeserializer::ErrorCodeIsDataError(status)) {
+    NOTREACHED() << "Invalid status " << status;
+  }
   return POLICY_LOAD_STATUS_PARSE_ERROR;
 }
 

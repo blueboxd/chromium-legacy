@@ -52,6 +52,10 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
 
   // Decrement platform image cursor refcount.
   virtual void UnrefImageCursor(PlatformCursor cursor);
+
+  // Called after CursorThemeManager is initialized, to be able to track
+  // cursor theme and size changes.
+  virtual void ObserveThemeChanges();
 };
 
 }  // namespace ui

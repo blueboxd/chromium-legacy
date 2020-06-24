@@ -59,7 +59,7 @@ class CORE_EXPORT Request final : public ScriptWrappable,
                          ExceptionState&);
   static Request* Create(ScriptState*, FetchRequestData*);
   static Request* Create(ScriptState*,
-                         const mojom::blink::FetchAPIRequest&,
+                         mojom::blink::FetchAPIRequestPtr,
                          ForServiceWorkerFetchEvent);
 
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);

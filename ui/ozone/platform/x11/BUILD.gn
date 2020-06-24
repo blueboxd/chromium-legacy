@@ -35,6 +35,7 @@ source_set("x11") {
   ]
 
   public_deps = [
+    "//ui/base/cursor",
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/x",

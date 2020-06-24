@@ -3,10 +3,13 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../os_settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
     ":input_method_options_page",
+    ":input_method_util",
     ":manage_input_methods_page",
     ":os_add_languages_dialog",
     ":os_languages_page",
@@ -19,9 +22,16 @@ js_type_check("closure_compile") {
 
 js_library("input_method_options_page") {
   deps = [
+    ":input_method_util",
     "../..:router",
     "../../languages_page:languages_types",
+    "../../prefs",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
+}
+
+js_library("input_method_util") {
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("manage_input_methods_page") {
@@ -52,6 +62,7 @@ js_library("os_languages_section") {
 
 js_library("os_languages_page") {
   deps = [
+    ":input_method_util",
     "..:metrics_recorder",
     "..:os_route",
     "../..:lifetime_browser_proxy",
@@ -83,12 +94,21 @@ js_library("os_add_languages_dialog") {
 #  is_polymer3 = true
 #  deps = [
 #    ":input_method_options_page.m",
+#    ":input_method_util.m",
 #    ":manage_input_methods_page.m",
 #    ":os_add_languages_dialog.m",
 #    ":os_languages_page.m",
 #    ":os_languages_section.m"
 #  ]
 #}
+
+js_library("input_method_util.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/input_method_util.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
+}
 
 js_library("input_method_options_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/input_method_options_page.m.js" ]
@@ -136,6 +156,7 @@ group("polymer3_elements") {
   public_deps = [
     ":input_method_options_page_module",
     ":manage_input_methods_page_module",
+    ":modulize",
     ":os_add_languages_dialog_module",
     ":os_languages_page_module",
     ":os_languages_section_module",
@@ -170,4 +191,9 @@ polymer_modulizer("input_method_options_page") {
   js_file = "input_method_options_page.js"
   html_file = "input_method_options_page.html"
   html_type = "dom-module"
+}
+
+js_modulizer("modulize") {
+  input_files = [ "input_method_util.js" ]
+  namespace_rewrites = os_settings_namespace_rewrites
 }

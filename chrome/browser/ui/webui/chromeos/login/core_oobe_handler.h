@@ -72,8 +72,6 @@ class CoreOobeView {
   virtual void InitDemoModeDetection() = 0;
   virtual void StopDemoModeDetection() = 0;
   virtual void UpdateKeyboardState() = 0;
-  virtual void ShowActiveDirectoryPasswordChangeScreen(
-      const std::string& username) = 0;
 };
 
 // The core handler for Javascript messages related to the "oobe" view.
@@ -147,8 +145,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ShowDeviceResetScreen() override;
   void ShowEnableAdbSideloadingScreen() override;
   void ShowEnableDebuggingScreen() override;
-  void ShowActiveDirectoryPasswordChangeScreen(
-      const std::string& username) override;
 
   void InitDemoModeDetection() override;
   void StopDemoModeDetection() override;

@@ -46,8 +46,11 @@ void InvertedIndex::AddDocument(const std::string& document_id,
   }
 }
 
-void InvertedIndex::RemoveDocument(const std::string& document_id) {
-  doc_length_.erase(document_id);
+uint32_t InvertedIndex::RemoveDocument(const std::string& document_id) {
+  const int num_erased = doc_length_.erase(document_id);
+
+  if (num_erased == 0)
+    return num_erased;
 
   for (auto it = dictionary_.begin(); it != dictionary_.end();) {
     if (it->second.find(document_id) != it->second.end()) {
@@ -62,6 +65,7 @@ void InvertedIndex::RemoveDocument(const std::string& document_id) {
       it++;
     }
   }
+  return num_erased;
 }
 
 std::vector<TfidfResult> InvertedIndex::GetTfidf(

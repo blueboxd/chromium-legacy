@@ -49,6 +49,7 @@ AshMessagePopupCollection::~AshMessagePopupCollection() {
   shelf_->RemoveObserver(this);
   for (views::Widget* widget : tracked_widgets_)
     widget->RemoveObserver(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void AshMessagePopupCollection::StartObserving(

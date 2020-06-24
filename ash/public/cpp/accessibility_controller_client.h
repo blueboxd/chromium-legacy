@@ -16,6 +16,7 @@ enum class Gesture;
 
 namespace gfx {
 class Point;
+class PointF;
 }  // namespace gfx
 
 namespace ash {
@@ -44,7 +45,8 @@ class ASH_PUBLIC_EXPORT AccessibilityControllerClient {
 
   // Forwards an accessibility gesture from the touch exploration controller to
   // ChromeVox.
-  virtual void HandleAccessibilityGesture(ax::mojom::Gesture gesture) = 0;
+  virtual void HandleAccessibilityGesture(ax::mojom::Gesture gesture,
+                                          gfx::PointF location) = 0;
 
   // Starts or stops dictation (type what you speak).
   // Returns the new dictation state after the toggle.

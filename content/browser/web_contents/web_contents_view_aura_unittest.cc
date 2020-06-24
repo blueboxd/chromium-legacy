@@ -35,6 +35,10 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -185,10 +189,13 @@ TEST_F(WebContentsViewAuraTest, WebContentsDestroyedDuringClick) {
 #if defined(USE_X11)
   // The web-content is not activated during mouse-press on X11.
   // See comment in WebContentsViewAura::OnMouseEvent() for more details.
-  EXPECT_NE(web_contents(), nullptr);
-#else
-  EXPECT_EQ(web_contents(), nullptr);
+  if (!features::IsUsingOzonePlatform()) {
+    EXPECT_NE(web_contents(), nullptr);
+  } else
 #endif
+  {
+    EXPECT_EQ(web_contents(), nullptr);
+  }
 }
 
 TEST_F(WebContentsViewAuraTest, OccludeView) {
@@ -254,11 +261,14 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
 #if defined(USE_X11)
   // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
-  EXPECT_TRUE(!view->current_drop_data_->text ||
-              view->current_drop_data_->text->empty());
-#else
-  EXPECT_EQ(string_data, view->current_drop_data_->text);
+  if (!features::IsUsingOzonePlatform()) {
+    EXPECT_TRUE(!view->current_drop_data_->text ||
+                view->current_drop_data_->text->empty());
+  } else
 #endif
+  {
+    EXPECT_EQ(string_data, view->current_drop_data_->text);
+  }
 
   std::vector<ui::FileInfo> retrieved_file_infos =
       view->current_drop_data_->filenames;
@@ -285,11 +295,14 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
 #if defined(USE_X11)
   // By design, OSExchangeDataProviderX11::GetString returns an empty string
   // if file data is also present.
-  EXPECT_TRUE(!drop_complete_data_->drop_data.text ||
-              drop_complete_data_->drop_data.text->empty());
-#else
-  EXPECT_EQ(string_data, drop_complete_data_->drop_data.text);
+  if (!features::IsUsingOzonePlatform()) {
+    EXPECT_TRUE(!drop_complete_data_->drop_data.text ||
+                drop_complete_data_->drop_data.text->empty());
+  } else
 #endif
+  {
+    EXPECT_EQ(string_data, drop_complete_data_->drop_data.text);
+  }
 
   retrieved_file_infos = drop_complete_data_->drop_data.filenames;
   ASSERT_EQ(test_file_infos.size(), retrieved_file_infos.size());

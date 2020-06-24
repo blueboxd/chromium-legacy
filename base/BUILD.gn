@@ -2742,6 +2742,7 @@ test("base_unittests") {
     "parameter_pack_unittest.cc",
     "path_service_unittest.cc",
     "pickle_unittest.cc",
+    "power_monitor/power_monitor_device_source_unittest.cc",
     "power_monitor/power_monitor_unittest.cc",
     "process/environment_internal_unittest.cc",
     "process/memory_unittest.cc",

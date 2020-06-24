@@ -64,6 +64,10 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -2207,10 +2211,19 @@ void SkiaRenderer::ScheduleOverlays() {
   skia_output_surface_->ScheduleOverlays(
       std::move(current_frame()->overlay_list), std::move(sync_tokens));
 #elif defined(USE_OZONE)
+  // For platforms that don't support overlays, the
+  // current_frame()->overlay_list should be empty, and this code should not be
+  // reached.
+  if (!features::IsUsingOzonePlatform()) {
+    NOTREACHED();
+    return;
+  }
+
   NOTIMPLEMENTED_LOG_ONCE();
 #else
-  // For platforms doesn't support overlays, the current_frame()->overlay_list
-  // should be empty, and here should not be reached.
+  // For platforms that don't support overlays, the
+  // current_frame()->overlay_list should be empty, and this code should not be
+  // reached.
   NOTREACHED();
 #endif
 }

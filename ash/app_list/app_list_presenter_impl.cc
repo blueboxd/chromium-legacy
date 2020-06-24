@@ -107,6 +107,7 @@ AppListPresenterImpl::~AppListPresenterImpl() {
     if (view_->GetWidget())
       view_->GetWidget()->CloseNow();
   }
+  CHECK(!IsInObserverList());
 }
 
 aura::Window* AppListPresenterImpl::GetWindow() const {

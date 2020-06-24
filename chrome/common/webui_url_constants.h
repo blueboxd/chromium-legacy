@@ -284,6 +284,11 @@ extern const char kChromeUIHatsURL[];
 extern const char kChromeUIProfilePickerHost[];
 #endif
 
+#if !defined(OS_ANDROID)
+extern const char kChromeUINearbyShareHost[];
+extern const char kChromeUINearbyShareURL[];
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern const char kChromeUILinuxProxyConfigHost[];
 #endif

@@ -38,19 +38,14 @@ class TestBrowserClient : public ContentBrowserClient {
   TestBrowserClient() = default;
   ~TestBrowserClient() override = default;
 
-  void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
-                                        const GURL& site,
-                                        std::string* partition_domain,
-                                        std::string* partition_name,
-                                        bool* in_memory) override {
+  StoragePartitionConfig GetStoragePartitionConfigForSite(
+      BrowserContext* browser_context,
+      const GURL& site) override {
     DCHECK(browser_context);
-    DCHECK(partition_domain);
-    DCHECK(partition_name);
-
     auto partition_num = std::to_string(++partition_count_);
-    *partition_domain = std::string("PartitionDomain") + partition_num;
-    *partition_name = std::string("Partition") + partition_num;
-    *in_memory = false;
+    return StoragePartitionConfig::Create(
+        std::string("PartitionDomain") + partition_num,
+        std::string("Partition") + partition_num, false /* in_memory */);
   }
 
  private:

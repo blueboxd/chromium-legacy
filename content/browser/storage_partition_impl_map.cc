@@ -328,14 +328,9 @@ StoragePartitionImplMap::~StoragePartitionImplMap() {
 }
 
 StoragePartitionImpl* StoragePartitionImplMap::Get(
-    const std::string& partition_domain,
-    const std::string& partition_name,
-    bool in_memory,
+    const StoragePartitionConfig& partition_config,
     bool can_create) {
   // Find the previously created partition if it's available.
-  StoragePartitionConfig partition_config(
-      partition_domain, partition_name, in_memory);
-
   PartitionMap::const_iterator it = partitions_.find(partition_config);
   if (it != partitions_.end())
     return it->second.get();
@@ -343,12 +338,13 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   if (!can_create)
     return nullptr;
 
-  base::FilePath relative_partition_path =
-      GetStoragePartitionPath(partition_domain, partition_name);
+  base::FilePath relative_partition_path = GetStoragePartitionPath(
+      partition_config.partition_domain(), partition_config.partition_name());
 
   std::unique_ptr<StoragePartitionImpl> partition_ptr(
-      StoragePartitionImpl::Create(browser_context_, in_memory,
-                                   relative_partition_path, partition_domain));
+      StoragePartitionImpl::Create(
+          browser_context_, partition_config.in_memory(),
+          relative_partition_path, partition_config.partition_domain()));
   StoragePartitionImpl* partition = partition_ptr.get();
   partitions_[partition_config] = std::move(partition_ptr);
   partition->Initialize();
@@ -357,7 +353,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   partition->GetCookieStoreContext()->ListenToCookieChanges(
       partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
 
-  PostCreateInitialization(partition, in_memory);
+  PostCreateInitialization(partition, partition_config.in_memory());
 
   return partition;
 }
@@ -377,13 +373,13 @@ void StoragePartitionImplMap::AsyncObliterate(
        it != partitions_.end();
        ++it) {
     const StoragePartitionConfig& config = it->first;
-    if (config.partition_domain == partition_domain) {
+    if (config.partition_domain() == partition_domain) {
       it->second->ClearData(
           // All except shader cache.
           ~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
           StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
           base::Time(), base::Time::Max(), base::DoNothing());
-      if (!config.in_memory) {
+      if (!config.in_memory()) {
         paths_to_keep.push_back(it->second->GetPath());
       }
     }
@@ -413,7 +409,7 @@ void StoragePartitionImplMap::GarbageCollect(
        it != partitions_.end();
        ++it) {
     const StoragePartitionConfig& config = it->first;
-    if (!config.in_memory)
+    if (!config.in_memory())
       active_paths->insert(it->second->GetPath());
   }
 

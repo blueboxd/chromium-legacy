@@ -225,7 +225,9 @@ ImmersiveModeControllerMac::RevealedLock::~RevealedLock() {
 ImmersiveModeControllerMac::ImmersiveModeControllerMac()
     : weak_ptr_factory_(this) {}
 
-ImmersiveModeControllerMac::~ImmersiveModeControllerMac() = default;
+ImmersiveModeControllerMac::~ImmersiveModeControllerMac() {
+  CHECK(!views::WidgetObserver::IsInObserverList());
+}
 
 void ImmersiveModeControllerMac::Init(BrowserView* browser_view) {
   browser_view_ = browser_view;

@@ -374,10 +374,6 @@ void BlinkTestRunner::CaptureDumpComplete() {
   std::move(dump_callback_).Run(std::move(dump_result_));
 }
 
-void BlinkTestRunner::CloseRemainingWindows() {
-  GetWebTestControlHostRemote()->CloseRemainingWindows();
-}
-
 void BlinkTestRunner::DeleteAllCookies() {
   GetWebTestClientRemote()->DeleteAllCookies();
 }
@@ -417,6 +413,10 @@ void BlinkTestRunner::ResetPermissions() {
 
 void BlinkTestRunner::SetMainWindowHidden(bool hidden) {
   GetWebTestControlHostRemote()->SetMainWindowHidden(hidden);
+}
+
+void BlinkTestRunner::CheckForLeakedWindows() {
+  GetWebTestControlHostRemote()->CheckForLeakedWindows();
 }
 
 void BlinkTestRunner::SetScreenOrientationChanged() {

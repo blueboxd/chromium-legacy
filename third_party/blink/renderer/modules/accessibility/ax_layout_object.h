@@ -87,7 +87,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsRichlyEditable() const override;
   bool IsLineBreakingObject() const override;
   bool IsLinked() const override;
-  bool IsLoaded() const override;
   bool IsOffScreen() const override;
   bool IsVisited() const override;
 
@@ -146,9 +145,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   bool CanHaveChildren() const override;
-
-  // Properties of the object's owning document or page.
-  double EstimatedLoadingProgress() const override;
 
   // Notifications that this object may have changed.
   void HandleActiveDescendantChanged() override;

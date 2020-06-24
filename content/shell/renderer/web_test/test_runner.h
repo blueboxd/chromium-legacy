@@ -304,9 +304,10 @@ class TestRunner {
   // Delays completion of the test until the policy delegate runs.
   void WaitForPolicyDelegate();
 
-  // Functions for dealing with windows. By default we block all new windows.
+  // TODO(danakj): This is the count of in-process RenderViewHosts, not the
+  // count of windows. It's only a window count if the page is entire in one
+  // site and any page opened in a window has only a single site each.
   int WindowCount();
-  void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
 
   // Allows web tests to manage origins' allow list.
   void AddOriginAccessAllowListEntry(const std::string& source_origin,
@@ -543,11 +544,6 @@ class TestRunner {
   void CheckResponseMimeType();
 
   bool test_is_running_ = false;
-
-  // When reset is called, go through and close all but the main test shell
-  // window. By default, set to true but toggled to false using
-  // SetCloseRemainingWindowsWhenComplete().
-  bool close_remaining_windows_ = false;
 
   WorkQueue work_queue_;
 

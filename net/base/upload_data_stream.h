@@ -95,6 +95,10 @@ class NET_EXPORT UploadDataStream {
   // empty UploadProgress.
   virtual UploadProgress GetUploadProgress() const;
 
+  // Indicates whether fetch upload streaming is allowed/rejected over H/1.
+  // Even if this is false but there is a QUIC/H2 stream, the upload is allowed.
+  virtual bool AllowHTTP1() const;
+
  protected:
   // Must be called by subclasses when InitInternal and ReadInternal complete
   // asynchronously.

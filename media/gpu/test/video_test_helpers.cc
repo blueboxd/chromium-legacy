@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
@@ -15,6 +16,7 @@
 #include "media/gpu/test/video.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 namespace media {
 namespace test {
@@ -266,7 +268,7 @@ base::Optional<IvfFrameHeader> EncodedDataHelper::GetNextIvfFrameHeader()
     return base::nullopt;
   }
   return GetIvfFrameHeader(base::span<const uint8_t>(
-      reinterpret_cast<const uint8_t*>(data_[pos]), kIvfFrameHeaderSize));
+      reinterpret_cast<const uint8_t*>(&data_[pos]), kIvfFrameHeaderSize));
 }
 
 base::Optional<IvfFrame> EncodedDataHelper::ReadNextIvfFrame() {
@@ -426,21 +428,20 @@ void AlignedDataHelper::CreateAlignedInputStream(
   off_t src_offset = 0;
   off_t dest_offset = 0;
   for (size_t frame = 0; frame < num_frames_; frame++) {
-    const char* src_ptr = reinterpret_cast<const char*>(&stream[src_offset]);
-
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_EQ(0u, dest_offset & (kPlatformBufferAlignment - 1))
+      ASSERT_TRUE(base::IsAligned(dest_offset, kPlatformBufferAlignment))
           << "Planes of frame should be mapped per platform requirements";
-      char* dst_ptr = &aligned_data_[dest_offset];
-      for (size_t j = 0; j < visible_plane_rows[i]; j++) {
-        memcpy(dst_ptr, src_ptr, visible_bpl[i]);
-        src_ptr += visible_bpl[i];
-        dst_ptr += static_cast<off_t>(coded_bpl[i]);
-      }
+      const uint8_t* src_ptr = &stream[src_offset];
+      uint8_t* dst_ptr =
+          reinterpret_cast<uint8_t*>(&aligned_data_[dest_offset]);
+      libyuv::CopyPlane(src_ptr, visible_bpl[i], dst_ptr, coded_bpl[i],
+                        visible_bpl[i], visible_plane_rows[i]);
       dest_offset += aligned_plane_size_[i];
+      src_offset +=
+          VideoFrame::PlaneSize(pixel_format_, i, visible_area_.size())
+              .GetArea();
     }
-    src_offset += static_cast<off_t>(frame_buffer_size);
   }
 }
 

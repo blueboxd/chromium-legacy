@@ -63,6 +63,8 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   // hints are allowed only on HTTP URLs that belong to secure contexts.
   static bool IsClientHintsAllowed(const KURL&);
 
+  static bool UserAgentClientHintEnabled();
+
   WebEnabledClientHints GetWebEnabledClientHints() const;
 
   base::TimeDelta GetPersistDuration() const;

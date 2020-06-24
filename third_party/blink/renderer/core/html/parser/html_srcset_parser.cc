@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
@@ -275,12 +276,10 @@ static bool ParseDescriptors(const String& attribute,
                              DescriptorParsingResult& result,
                              Document* document) {
   // FIXME: See if StringView can't be extended to replace DescriptorToken here.
-  if (attribute.Is8Bit()) {
-    return ParseDescriptors(attribute.Characters8(), descriptors, result,
-                            document);
-  }
-  return ParseDescriptors(attribute.Characters16(), descriptors, result,
-                          document);
+  return WTF::VisitCharacters(
+      attribute, [&](const auto* chars, unsigned length) {
+        return ParseDescriptors(chars, descriptors, result, document);
+      });
 }
 
 // http://picture.responsiveimages.org/#parse-srcset-attr

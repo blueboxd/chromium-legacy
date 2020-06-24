@@ -68,10 +68,10 @@ void TestWebAppRegistryController::ApplySyncChanges_AddApps(
     web_app_server_data->SetLaunchUrl(app_url);
     web_app_server_data->SetUserDisplayMode(DisplayMode::kStandalone);
 
-    WebApp::SyncData sync_data;
-    sync_data.name = "WebApp sync data name";
-    sync_data.theme_color = SK_ColorWHITE;
-    web_app_server_data->SetSyncData(std::move(sync_data));
+    WebApp::SyncFallbackData sync_fallback_data;
+    sync_fallback_data.name = "WebApp sync data name";
+    sync_fallback_data.theme_color = SK_ColorWHITE;
+    web_app_server_data->SetSyncFallbackData(std::move(sync_fallback_data));
 
     std::unique_ptr<syncer::EntityData> entity_data =
         CreateSyncEntityData(*web_app_server_data);

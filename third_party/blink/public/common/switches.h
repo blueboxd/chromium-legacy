@@ -21,6 +21,7 @@ BLINK_COMMON_EXPORT extern const char
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottlingPolicy_ForceEnable[];
 
+BLINK_COMMON_EXPORT extern const char kUserAgentClientHintDisable[];
 }  // namespace switches
 }  // namespace blink
 

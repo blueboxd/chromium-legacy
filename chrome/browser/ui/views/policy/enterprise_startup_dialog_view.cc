@@ -252,6 +252,7 @@ EnterpriseStartupDialogImpl::~EnterpriseStartupDialogImpl() {
     dialog_view_->RemoveWidgetObserver(this);
     dialog_view_->CloseDialog();
   }
+  CHECK(!IsInObserverList());
 }
 
 void EnterpriseStartupDialogImpl::DisplayLaunchingInformationWithThrobber(

@@ -35,10 +35,12 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
         : bytes_consumer_(bytes_consumer) {}
 
     // One of these methods must be called to signal the end of the data
-    // stream.  We cannot assume that the end of the pipe completes the
-    // stream successfully since errors can occur after the last byte is
-    // written into the pipe.
+    // stream. (SignalSize notifies the total size. That information can
+    // be used to detect the end-of-stream). We cannot assume that the end
+    // of the pipe completes the stream successfully since errors can
+    // occur after the last byte is written into the pipe.
     void SignalComplete();
+    void SignalSize(uint64_t size);
     void SignalError(const BytesConsumer::Error& error);
     void Trace(Visitor*) const;
 
@@ -74,6 +76,7 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   void Notify(MojoResult);
   void ClearDataPipe();
   void SignalComplete();
+  void SignalSize(uint64_t);
   void SignalError(const Error& error);
   void Dispose();
 
@@ -83,6 +86,8 @@ class PLATFORM_EXPORT DataPipeBytesConsumer final : public BytesConsumer {
   Member<BytesConsumer::Client> client_;
   InternalState state_ = InternalState::kWaiting;
   Error error_;
+  uint64_t num_read_bytes_ = 0;
+  base::Optional<uint64_t> total_size_;
   bool is_in_two_phase_read_ = false;
   bool has_pending_notification_ = false;
   bool has_pending_complete_ = false;

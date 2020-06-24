@@ -16,6 +16,12 @@
         </cr-link-row>
         <settings-toggle-button
             class="hr"
+            hidden$="[[!showFocusHighlightOption_]]"
+            pref="{{prefs.settings.a11y.focus_highlight}}"
+            label="$i18n{focusHighlightLabel}">
+        </settings-toggle-button>
+        <settings-toggle-button
+            class="hr"
             hidden$="[[!showAccessibilityLabelsSetting_]]"
             pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
             on-change="onA11yImageLabelsChange_"

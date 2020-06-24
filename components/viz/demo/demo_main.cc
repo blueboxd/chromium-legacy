@@ -34,6 +34,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"           // nogncheck
 #include "ui/platform_window/x11/x11_window.h"  // nogncheck
 #endif
 
@@ -84,7 +85,8 @@ class InitUI {
  public:
   InitUI() {
 #if defined(USE_X11)
-    XInitThreads();
+    if (!features::IsUsingOzonePlatform())
+      XInitThreads();
 #endif
     event_source_ = ui::PlatformEventSource::CreateDefault();
   }

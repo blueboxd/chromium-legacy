@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_parser.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

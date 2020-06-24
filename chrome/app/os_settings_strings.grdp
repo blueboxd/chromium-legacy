@@ -297,6 +297,80 @@
     Show emoji suggestions
   </message>
 
+  <!-- Input Method Options Section -->
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_BASIC" desc="The label for the section in input method options page containing basic options.">
+    Basics
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ADVANCED" desc="The label for the section in input method options page containing advanced options.">
+    Advanced
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PHYSICAL_KEYBOARD" desc="The label for the section in input method options page containing physical keyboard options.">
+    Physical keyboard
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_VIRTUAL_KEYBOARD" desc="The label for the section in input method options page containing the virtual keyboard options.">
+    On-screen keyboard
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_DOUBLE_SPACE_PERIOD" desc="The label for the input method option to enable double-space to type period (when an user types two consecutive space, it outputs a period).">
+    Double-space to type period
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_GESTURE_TYPING" desc="The label for the input method option to enable gesture typing.">
+    Enable glide typing
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_PREDICTION" desc="The label for the input method option to enable next-word prediction.">
+    Enable next-word prediction
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_SOUND_ON_KEYPRESS" desc="The label for the input method option to enable sound on keypress.">
+    Sound on keypress
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_ENABLE_CAPITALIZATION" desc="The label for the input method option to enable auto-capitalization.">
+    Auto-capitalization
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION" desc="The label for the input method option to enable auto correction.">
+    Auto-correction
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_XKB_LAYOUT" desc="The label for the input method option to let the users choose their keyboard layout.">
+    Keyboard layout
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_EDIT_USER_DICT" desc="The label for the input method option to let the users edit their personal dictionary.">
+    Edit dictionary entries
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_CHINESE_PUNCTUATION" desc="The label for the pinyin input method option for whether to output full-width or half-with punctuation.">
+    Initial punctuation width is Full
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_DEFAULT_CHINESE" desc="The label for the pinyin input method option for whether to use Chinese or English as the default input language.">
+    Initial input language is Chinese
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_FUZZY" desc="The label for the pinyin input method option to enable fuzzy-pinyin.">
+    Enable Fuzzy-Pinyin mode
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_LOWER_PAGING" desc="The label for the pinyin input method option for whether to use , and . for paging candidates.">
+    Use <ph name="COMMA">,</ph> and <ph name="PERIOD">.</ph> keys to page a candidate list
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_ENABLE_UPPER_PAGING" desc="The label for the pinyin input method option for whether to use - and = for paging candidates.">
+    Use <ph name="MINUS">-</ph> and <ph name="EQUAL">=</ph> keys to page a candidate list
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_PINYIN_FULL_WIDTH_CHARACTER" desc="The label for the pinyin input method option for whether to output latin letters and numbers as full-width or half-width character.">
+    Initial character width is Full
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_OFF" desc="The label for the choice to disable auto correction.">
+    Off
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_MODEST" desc="The label for the choice to use modest auto correction.">
+    Modest
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_AUTO_CORRECTION_AGGRESSIVE" desc="The label for the choice to use aggressive auto correction.">
+    Aggressive
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_US" desc="The label for the choice to use US keyboard.">
+    US
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_DVORAK" desc="The label for the choice to use Dvorak keyboard.">
+    Dvorak
+  </message>
+  <message name="IDS_SETTINGS_INPUT_METHOD_OPTIONS_KEYBOARD_COLEMAK" desc="The label for the choice to use Colemak keyboard.">
+    Colemak
+  </message>
+
   <!-- Device Page (OS Settings) -->
   <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">
     Reverse scrolling <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>

@@ -39,7 +39,9 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 }
 
-ExtensionsToolbarButton::~ExtensionsToolbarButton() = default;
+ExtensionsToolbarButton::~ExtensionsToolbarButton() {
+  CHECK(!IsInObserverList());
+}
 
 void ExtensionsToolbarButton::UpdateIcon() {
   SetImage(views::Button::STATE_NORMAL,

@@ -37,9 +37,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
-#include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
@@ -535,8 +533,9 @@ void Shell::NavigationStateChanged(WebContents* source,
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
-    if (switches::IsRunWebTestsSwitchPresent())
-      dialog_manager_ = std::make_unique<WebTestJavaScriptDialogManager>();
+    WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
+    if (web_test_control_host)
+      dialog_manager_ = web_test_control_host->CreateJavaScriptDialogManager();
     else
       dialog_manager_ = std::make_unique<ShellJavaScriptDialogManager>();
   }

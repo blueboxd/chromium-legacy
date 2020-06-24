@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/xmlns_names.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 
 namespace blink {
 
@@ -110,15 +111,11 @@ void MarkupFormatter::AppendCharactersReplacingEntities(
     return;
 
   DCHECK_LE(offset + length, source.length());
-  if (source.Is8Bit()) {
+  WTF::VisitCharacters(source, [&](const auto* chars, unsigned) {
     AppendCharactersReplacingEntitiesInternal(
-        result, source.Characters8() + offset, length, kEntityMaps,
-        base::size(kEntityMaps), entity_mask);
-  } else {
-    AppendCharactersReplacingEntitiesInternal(
-        result, source.Characters16() + offset, length, kEntityMaps,
-        base::size(kEntityMaps), entity_mask);
-  }
+        result, chars + offset, length, kEntityMaps, base::size(kEntityMaps),
+        entity_mask);
+  });
 }
 
 MarkupFormatter::MarkupFormatter(AbsoluteURLs resolve_urls_method,

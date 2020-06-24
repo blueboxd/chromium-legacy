@@ -242,6 +242,8 @@ bool StructTraits<network::mojom::URLRequestBodyDataView,
     return false;
   body->set_identifier(data.identifier());
   body->set_contains_sensitive_info(data.contains_sensitive_info());
+  body->SetAllowHTTP1ForStreamingUpload(
+      data.allow_http1_for_streaming_upload());
   *out = std::move(body);
   return true;
 }

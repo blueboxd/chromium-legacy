@@ -245,7 +245,7 @@ function createSuite(themeModeDoodlesEnabled) {
       assertEquals(1, testProxy.getCallCount('postMessage'));
       const [iframe, {cmd, dark}, origin] =
           await testProxy.whenCalled('postMessage');
-      assertEquals($$(logo, '#iframe'), iframe);
+      assertEquals($$($$(logo, '#iframe'), '#iframe'), iframe);
       assertEquals('changeMode', cmd);
       assertEquals(false, dark);
       assertEquals('https://foo.com', origin);
@@ -277,7 +277,7 @@ function createSuite(themeModeDoodlesEnabled) {
       assertEquals(1, testProxy.getCallCount('postMessage'));
       const [iframe, {cmd, dark}, origin] =
           await testProxy.whenCalled('postMessage');
-      assertEquals($$(logo, '#iframe'), iframe);
+      assertEquals($$($$(logo, '#iframe'), '#iframe'), iframe);
       assertEquals('changeMode', cmd);
       assertEquals(true, dark);
       assertEquals('https://foo.com', origin);
@@ -464,7 +464,9 @@ function createSuite(themeModeDoodlesEnabled) {
     assertEquals(testProxy.getCallCount('open'), 0);
     assertNotStyle($$(logo, '#image'), 'display', 'none');
     assertNotStyle($$(logo, '#animation'), 'display', 'none');
-    assertEquals($$(logo, '#animation').path, 'image?https://foo.com');
+    assertEquals(
+        $$(logo, '#animation').src,
+        'chrome-untrusted://new-tab-page/image?https://foo.com');
     assertDeepEquals(
         $$(logo, '#image').getBoundingClientRect(),
         $$(logo, '#animation').getBoundingClientRect());

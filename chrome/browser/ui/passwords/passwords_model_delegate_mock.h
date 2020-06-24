@@ -64,6 +64,7 @@ class PasswordsModelDelegateMock
   MOCK_METHOD0(AuthenticateUser, bool());
   MOCK_METHOD2(AuthenticateUserForAccountStoreOptInAndSavePassword,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD0(AuthenticateUserForAccountStoreOptInAndMovePassword, void());
   MOCK_CONST_METHOD0(ArePasswordsRevealedWhenBubbleIsOpened, bool());
 
  private:

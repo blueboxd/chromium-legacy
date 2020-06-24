@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -1407,9 +1408,18 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       }
       return false;
     case CSSSelector::kPseudoWebKitCustomElement: {
-      if (ShadowRoot* root = element.ContainingShadowRoot())
-        return root->IsUserAgent() &&
-               element.ShadowPseudoId() == selector.Value();
+      if (ShadowRoot* root = element.ContainingShadowRoot()) {
+        if (!root->IsUserAgent())
+          return false;
+        if (element.ShadowPseudoId() != selector.Value())
+          return false;
+        if (!is_ua_rule_ &&
+            selector.Value() == shadow_element_names::WebKitDetailsMarker()) {
+          UseCounter::Count(element.GetDocument(),
+                            WebFeature::kCSSSelectorPseudoWebKitDetailsMarker);
+        }
+        return true;
+      }
       return false;
     }
     case CSSSelector::kPseudoBlinkInternalElement:

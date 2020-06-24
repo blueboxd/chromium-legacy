@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -44,6 +45,12 @@ class IsolatedPrerenderURLLoaderInterceptor
   GetPrefetchedResponse(const GURL& url);
 
  private:
+  // Ensures the cookies from the mainframe have been copied to the normal
+  // profile before calling |InterceptPrefetchedNavigation|.
+  void EnsureCookiesCopiedAndInterceptPrefetchedNavigation(
+      const network::ResourceRequest& tentative_resource_request,
+      std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch);
+
   void InterceptPrefetchedNavigation(
       const network::ResourceRequest& tentative_resource_request,
       std::unique_ptr<PrefetchedMainframeResponseContainer>);
@@ -83,10 +90,17 @@ class IsolatedPrerenderURLLoaderInterceptor
   // null. Used to calculate probe latency which is reported to the tab helper.
   base::Optional<base::TimeTicks> probe_start_time_;
 
+  // The time when we started waiting for cookies to be copied, delaying the
+  // navigation. Used to calculate total cookie wait time.
+  base::Optional<base::TimeTicks> cookie_copy_start_time_;
+
   // Set in |MaybeCreateLoader| and used in |On[DoNot]InterceptRequest|.
   content::URLLoaderRequestInterceptor::LoaderCallback loader_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<IsolatedPrerenderURLLoaderInterceptor> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedPrerenderURLLoaderInterceptor);
 };

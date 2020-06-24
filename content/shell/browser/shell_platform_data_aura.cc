@@ -27,6 +27,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/aura/screen_ozone.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace content {
@@ -81,7 +82,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
 
 #if defined(USE_OZONE)
   // Setup global display::Screen singleton.
-  if (!display::Screen::GetScreen())
+  if (features::IsUsingOzonePlatform() && !display::Screen::GetScreen())
     screen_ = std::make_unique<aura::ScreenOzone>();
 #endif  // defined(USE_OZONE)
 

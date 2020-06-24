@@ -37,6 +37,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -264,9 +265,7 @@ GuestViewBase* WebViewGuest::Create(WebContents* owner_web_contents) {
 // static
 bool WebViewGuest::GetGuestPartitionConfigForSite(
     const GURL& site,
-    std::string* partition_domain,
-    std::string* partition_name,
-    bool* in_memory) {
+    content::StoragePartitionConfig* storage_partition_config) {
   if (!site.SchemeIs(content::kGuestScheme))
     return false;
 
@@ -274,19 +273,22 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
   // URL was created, so it needs to be decoded. Since it was created via
   // EscapeQueryParamValue(), it should have no path separators or control codes
   // when unescaped, but safest to check for that and fail if it does.
+  std::string partition_name;
   if (!net::UnescapeBinaryURLComponentSafe(site.query_piece(),
                                            true /* fail_on_path_separators */,
-                                           partition_name)) {
+                                           &partition_name)) {
     return false;
   }
 
   // Since guest URLs are only used for packaged apps, there must be an app
   // id in the URL.
   CHECK(site.has_host());
-  *partition_domain = site.host();
   // Since persistence is optional, the path must either be empty or the
   // literal string.
-  *in_memory = (site.path() != "/persist");
+  bool in_memory = (site.path() != "/persist");
+
+  *storage_partition_config = content::StoragePartitionConfig::Create(
+      site.host(), partition_name, in_memory);
   return true;
 }
 
@@ -1001,11 +1003,9 @@ void WebViewGuest::ReportFrameNameChange(const std::string& name) {
 
 void WebViewGuest::PushWebViewStateToIOThread() {
   const GURL& site_url = web_contents()->GetSiteInstance()->GetSiteURL();
-  std::string partition_domain;
-  std::string partition_id;
-  bool in_memory;
-  if (!GetGuestPartitionConfigForSite(
-          site_url, &partition_domain, &partition_id, &in_memory)) {
+  content::StoragePartitionConfig storage_partition_config =
+      content::StoragePartitionConfig::CreateDefault();
+  if (!GetGuestPartitionConfigForSite(site_url, &storage_partition_config)) {
     NOTREACHED();
     return;
   }
@@ -1014,7 +1014,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   web_view_info.embedder_process_id =
       owner_web_contents()->GetMainFrame()->GetProcess()->GetID();
   web_view_info.instance_id = view_instance_id();
-  web_view_info.partition_id = partition_id;
+  web_view_info.partition_id = storage_partition_config.partition_name();
   web_view_info.owner_host = owner_host();
   web_view_info.rules_registry_id = rules_registry_id_;
 

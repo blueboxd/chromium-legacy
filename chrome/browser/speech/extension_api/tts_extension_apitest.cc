@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/tts_controller.h"

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/json/json_parser.h"
+#include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"

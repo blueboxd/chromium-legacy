@@ -28,7 +28,6 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
   SkiaFontDelegate::SetInstance(instance);
   ShellDialogLinux::SetInstance(instance);
   ui::SetTextEditKeyBindingsDelegate(instance);
-  ui::CursorThemeManagerLinux::SetInstance(instance);
 }
 
 LinuxUI* LinuxUI::instance() {

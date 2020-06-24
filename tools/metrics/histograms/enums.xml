@@ -4216,6 +4216,12 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="ZIP or state requirement: Violated"/>
 </enum>
 
+<enum name="AutofillAddressProfileImportStatus">
+  <int value="0" label="No import"/>
+  <int value="1" label="Regular import"/>
+  <int value="2" label="Import with section union"/>
+</enum>
+
 <enum name="AutofillAssistantDropOutReason">
   <int value="0" label="Autofill Assistant started"/>
   <int value="1" label="Autostart timed out"/>
@@ -20850,6 +20856,7 @@ Called by update_document_policy_enum.py.-->
   <int value="722" label="AutoLaunchProtocolsFromOrigins"/>
   <int value="723" label="ManagedGuestSessionPrivacyWarningsEnabled"/>
   <int value="724" label="PluginVmRequiredFreeDiskSpace"/>
+  <int value="725" label="UserAgentClientHintsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28063,6 +28070,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3334" label="ContentVisibilityHiddenMatchable"/>
   <int value="3335" label="InlineOverflowAutoWithInlineEndPadding"/>
   <int value="3336" label="InlineOverflowScrollWithInlineEndPadding"/>
+  <int value="3337" label="CSSSelectorPseudoWebKitDetailsMarker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -71767,6 +71775,15 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Uninstall only"/>
   <int value="1" label="Uninstall and remove data"/>
   <int value="2" label="Dialog canceled"/>
+</enum>
+
+<enum name="WebAppUrlLoaderResult">
+  <int value="0" label="UrlLoaded"/>
+  <int value="1" label="RedirectedUrlLoaded"/>
+  <int value="2" label="FailedUnknownReason"/>
+  <int value="3" label="FailedPageTookTooLong"/>
+  <int value="4" label="FailedWebContentsDestroyed"/>
+  <int value="5" label="FailedErrorPageLoaded"/>
 </enum>
 
 <enum name="WebAudioAutoplayStatus">

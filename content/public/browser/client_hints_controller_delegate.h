@@ -43,6 +43,8 @@ class CONTENT_EXPORT ClientHintsControllerDelegate
 
   virtual bool IsJavaScriptAllowed(const GURL& url) = 0;
 
+  virtual bool UserAgentClientHintEnabled() = 0;
+
   virtual blink::UserAgentMetadata GetUserAgentMetadata() = 0;
 
   virtual void Bind(

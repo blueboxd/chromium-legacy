@@ -190,4 +190,8 @@ UploadProgress UploadDataStream::GetUploadProgress() const {
   return UploadProgress(current_position_, total_size_);
 }
 
+bool UploadDataStream::AllowHTTP1() const {
+  return true;
+}
+
 }  // namespace net

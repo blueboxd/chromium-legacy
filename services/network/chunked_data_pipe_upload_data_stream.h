@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ChunkedDataPipeUploadDataStream
 
   ~ChunkedDataPipeUploadDataStream() override;
 
+  bool AllowHTTP1() const override;
+
  private:
   // net::UploadDataStream implementation.
   int InitInternal(const net::NetLogWithSource& net_log) override;

@@ -99,8 +99,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
-#else
+#else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/system_handler.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if defined(OS_WIN)
@@ -206,6 +207,9 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
     {"androidAppsManageAppLinks", IDS_SETTINGS_ANDROID_APPS_MANAGE_APP_LINKS},
+#else  // !defined(OS_CHROMEOS)
+    {"focusHighlightLabel",
+     IDS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION},
 #endif
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
@@ -217,6 +221,12 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalA11yLabels",
       base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
+
+#if !defined(OS_CHROMEOS)
+  html_source->AddBoolean(
+      "showFocusHighlightOption",
+      base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
+#endif
 
   html_source->AddBoolean("enableLiveCaption",
                           base::FeatureList::IsEnabled(media::kLiveCaption));

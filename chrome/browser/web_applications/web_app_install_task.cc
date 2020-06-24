@@ -822,11 +822,9 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (registrar_->IsLocallyInstalled(app_id))
     file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
 
-  // TODO(https://crbug.com/1069298) - Also create App Icon Shortcuts Menu when
-  // synced apps are locally installed from the chrome://apps page.
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app_info->shortcut_infos.empty()) {
+      !web_app_info->shortcut_infos.empty() && add_to_quick_launch_bar) {
     shortcut_manager_->RegisterShortcutsMenuWithOs(
         app_id, web_app_info->shortcut_infos,
         web_app_info->shortcuts_menu_icons_bitmaps);

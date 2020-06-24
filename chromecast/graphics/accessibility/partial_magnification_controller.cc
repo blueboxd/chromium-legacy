@@ -202,6 +202,7 @@ PartialMagnificationController::PartialMagnificationController(
 PartialMagnificationController::~PartialMagnificationController() {
   CloseMagnifierWindow();
   root_window_->RemovePreTargetHandler(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void PartialMagnificationController::SetEnabled(bool enabled) {

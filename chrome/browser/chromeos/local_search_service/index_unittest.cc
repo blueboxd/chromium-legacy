@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -22,25 +23,6 @@ namespace {
 // This is (data-id, content-ids).
 using ResultWithIds = std::pair<std::string, std::vector<std::string>>;
 using ContentWithId = std::pair<std::string, std::string>;
-
-// Creates test data to be registered to the index. |input| is a map from
-// id to contents (id and content).
-std::vector<Data> CreateTestData(
-    const std::map<std::string, std::vector<ContentWithId>>& input) {
-  std::vector<Data> output;
-  for (const auto& item : input) {
-    Data data;
-    data.id = item.first;
-    std::vector<Content>& contents = data.contents;
-    for (const auto& content_with_id : item.second) {
-      const Content content(content_with_id.first,
-                            base::UTF8ToUTF16(content_with_id.second));
-      contents.push_back(content);
-    }
-    output.push_back(data);
-  }
-  return output;
-}
 
 void CheckSearchParams(const SearchParams& actual,
                        const SearchParams& expected) {

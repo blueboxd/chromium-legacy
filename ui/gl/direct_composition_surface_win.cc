@@ -63,6 +63,22 @@ void SetOverlayCapsValid(bool valid) {
   base::AutoLock auto_lock(GetOverlayLock());
   g_overlay_caps_valid = valid;
 }
+// A warpper of IDXGIOutput4::CheckOverlayColorSpaceSupport()
+bool CheckOverlayColorSpaceSupport(
+    DXGI_FORMAT dxgi_format,
+    DXGI_COLOR_SPACE_TYPE dxgi_color_space,
+    Microsoft::WRL::ComPtr<IDXGIOutput> output,
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device) {
+  UINT color_space_support_flags = 0;
+  Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
+  if (FAILED(output.As(&output4)) ||
+      FAILED(output4->CheckOverlayColorSpaceSupport(
+          dxgi_format, dxgi_color_space, d3d11_device.Get(),
+          &color_space_support_flags)))
+    return false;
+  return (color_space_support_flags &
+          DXGI_OVERLAY_COLOR_SPACE_SUPPORT_FLAG_PRESENT);
+}
 
 // Used for workaround limiting overlay size to monitor size.
 gfx::Size g_overlay_monitor_size;
@@ -74,11 +90,14 @@ DirectCompositionSurfaceWin::OverlayHDRInfoUpdateCallback
 // initialization.  Set to NV12 by default so that it's used when enabling
 // overlays using command line flags.
 DXGI_FORMAT g_overlay_format_used = DXGI_FORMAT_NV12;
+DXGI_FORMAT g_overlay_format_used_hdr = DXGI_FORMAT_UNKNOWN;
 
 // These are the raw support info, which shouldn't depend on field trial state,
 // or command line flags.
 UINT g_nv12_overlay_support_flags = 0;
 UINT g_yuy2_overlay_support_flags = 0;
+UINT g_bgra8_overlay_support_flags = 0;
+UINT g_rgb10a2_overlay_support_flags = 0;
 
 bool FlagsSupportsOverlays(UINT flags) {
   return (flags & (DXGI_OVERLAY_SUPPORT_FLAG_DIRECT |
@@ -87,14 +106,20 @@ bool FlagsSupportsOverlays(UINT flags) {
 
 void GetGpuDriverOverlayInfo(bool* supports_overlays,
                              DXGI_FORMAT* overlay_format_used,
+                             DXGI_FORMAT* overlay_format_used_hdr,
                              UINT* nv12_overlay_support_flags,
                              UINT* yuy2_overlay_support_flags,
+                             UINT* bgra8_overlay_support_flags,
+                             UINT* rgb10a2_overlay_support_flags,
                              gfx::Size* overlay_monitor_size) {
   // Initialization
   *supports_overlays = false;
   *overlay_format_used = DXGI_FORMAT_NV12;
+  *overlay_format_used_hdr = DXGI_FORMAT_R10G10B10A2_UNORM;
   *nv12_overlay_support_flags = 0;
   *yuy2_overlay_support_flags = 0;
+  *bgra8_overlay_support_flags = 0;
+  *rgb10a2_overlay_support_flags = 0;
   *overlay_monitor_size = gfx::Size();
 
   // Check for DirectComposition support first to prevent likely crashes.
@@ -146,6 +171,13 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
                                  nv12_overlay_support_flags);
     output3->CheckOverlaySupport(DXGI_FORMAT_YUY2, d3d11_device.Get(),
                                  yuy2_overlay_support_flags);
+    output3->CheckOverlaySupport(DXGI_FORMAT_B8G8R8A8_UNORM, d3d11_device.Get(),
+                                 bgra8_overlay_support_flags);
+    // Today it still returns false, which blocks Chrome from using HDR
+    // overlays.
+    output3->CheckOverlaySupport(DXGI_FORMAT_R10G10B10A2_UNORM,
+                                 d3d11_device.Get(),
+                                 rgb10a2_overlay_support_flags);
     if (FlagsSupportsOverlays(*nv12_overlay_support_flags) &&
         base::FeatureList::IsEnabled(
             features::kDirectCompositionPreferNV12Overlays)) {
@@ -155,14 +187,9 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
       // COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709 is also supported. Rec 709 is
       // commonly used for H.264 and HEVC. At least one Intel Gen9 SKU will not
       // support NV12 overlays.
-      UINT color_space_support_flags = 0;
-      Microsoft::WRL::ComPtr<IDXGIOutput4> output4;
-      if (SUCCEEDED(output.As(&output4)) &&
-          SUCCEEDED(output4->CheckOverlayColorSpaceSupport(
+      if (CheckOverlayColorSpaceSupport(
               DXGI_FORMAT_NV12, DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709,
-              d3d11_device.Get(), &color_space_support_flags)) &&
-          (color_space_support_flags &
-           DXGI_OVERLAY_COLOR_SPACE_SUPPORT_FLAG_PRESENT)) {
+              output, d3d11_device)) {
         // Some new Intel drivers only claim to support unscaled overlays, but
         // scaled overlays still work. It's possible DWM works around it by
         // performing an extra scaling Blt before calling the driver. Even when
@@ -185,6 +212,15 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
             gfx::Rect(monitor_desc.DesktopCoordinates).size();
       }
     }
+    // RGB10A2 overlay is used for displaying HDR content. In Intel's
+    // platform, RGB10A2 overlay is enabled only when
+    // DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 is supported.
+    if (FlagsSupportsOverlays(*rgb10a2_overlay_support_flags)) {
+      if (!CheckOverlayColorSpaceSupport(
+              DXGI_FORMAT_R10G10B10A2_UNORM,
+              DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, output, d3d11_device))
+        *rgb10a2_overlay_support_flags = 0;
+    }
 
     // Early out after the first output that reports overlay support. All
     // outputs are expected to report the same overlay support according to
@@ -205,6 +241,8 @@ void GetGpuDriverOverlayInfo(bool* supports_overlays,
   *supports_overlays = true;
   *nv12_overlay_support_flags = 0;
   *yuy2_overlay_support_flags = 0;
+  *bgra8_overlay_support_flags = 0;
+  *rgb10a2_overlay_support_flags = 0;
 
   // Software overlays always use NV12 because it's slightly more efficient and
   // YUY2 was only used because Skylake doesn't support NV12 hardware overlays.
@@ -222,13 +260,18 @@ void UpdateOverlaySupport() {
 
   bool supports_overlays = false;
   DXGI_FORMAT overlay_format_used = DXGI_FORMAT_NV12;
+  DXGI_FORMAT overlay_format_used_hdr = DXGI_FORMAT_R10G10B10A2_UNORM;
   UINT nv12_overlay_support_flags = 0;
   UINT yuy2_overlay_support_flags = 0;
+  UINT bgra8_overlay_support_flags = 0;
+  UINT rgb10a2_overlay_support_flags = 0;
   gfx::Size overlay_monitor_size = gfx::Size();
 
-  GetGpuDriverOverlayInfo(&supports_overlays, &overlay_format_used,
-                          &nv12_overlay_support_flags,
-                          &yuy2_overlay_support_flags, &overlay_monitor_size);
+  GetGpuDriverOverlayInfo(
+      &supports_overlays, &overlay_format_used, &overlay_format_used_hdr,
+      &nv12_overlay_support_flags, &yuy2_overlay_support_flags,
+      &bgra8_overlay_support_flags, &rgb10a2_overlay_support_flags,
+      &overlay_monitor_size);
 
   if (supports_overlays != SupportsOverlays() ||
       overlay_format_used != g_overlay_format_used) {
@@ -244,8 +287,11 @@ void UpdateOverlaySupport() {
   // Update global caps
   SetSupportsOverlays(supports_overlays);
   g_overlay_format_used = overlay_format_used;
+  g_overlay_format_used_hdr = overlay_format_used_hdr;
   g_nv12_overlay_support_flags = nv12_overlay_support_flags;
   g_yuy2_overlay_support_flags = yuy2_overlay_support_flags;
+  g_bgra8_overlay_support_flags = bgra8_overlay_support_flags;
+  g_rgb10a2_overlay_support_flags = rgb10a2_overlay_support_flags;
   g_overlay_monitor_size = overlay_monitor_size;
 }
 
@@ -417,10 +463,25 @@ bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
 // static
 UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
   UpdateOverlaySupport();
-  if (format == DXGI_FORMAT_NV12)
-    return g_nv12_overlay_support_flags;
-  DCHECK_EQ(DXGI_FORMAT_YUY2, format);
-  return g_yuy2_overlay_support_flags;
+  UINT support_flag = 0;
+  switch (format) {
+    case DXGI_FORMAT_NV12:
+      support_flag = g_nv12_overlay_support_flags;
+      break;
+    case DXGI_FORMAT_YUY2:
+      support_flag = g_yuy2_overlay_support_flags;
+      break;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+      support_flag = g_bgra8_overlay_support_flags;
+      break;
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+      support_flag = g_rgb10a2_overlay_support_flags;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return support_flag;
 }
 
 // static
@@ -440,9 +501,11 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
   if (supported) {
     g_nv12_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+    g_rgb10a2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
   } else {
     g_nv12_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
+    g_rgb10a2_overlay_support_flags &= ~DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
   }
   DCHECK_EQ(supported, AreScaledOverlaysSupported());
 }

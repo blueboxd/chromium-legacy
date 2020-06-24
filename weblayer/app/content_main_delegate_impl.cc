@@ -21,6 +21,7 @@
 #include "content/public/common/url_constants.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "weblayer/browser/content_browser_client_impl.h"
@@ -129,6 +130,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // implemented features.
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   // TODO(crbug.com/1025610): make notifications work with WebLayer.
+  // This also turns off Push messaging.
   cl->AppendSwitch(::switches::kDisableNotifications);
   // TODO(crbug.com/1025626): and crbug.com/1051752, make speech work with
   // WebLayer.
@@ -162,6 +164,12 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
         ::features::kDynamicColorGamut,
 #endif
   });
+
+  // TODO(crbug.com/1097105): Support Web GPU on WebLayer.
+  blink::WebRuntimeFeatures::EnableWebGPU(false);
+
+  // TODO(crbug.com/1097107): Add support for Content Indexing on WebLayer.
+  blink::WebRuntimeFeatures::EnableContentIndex(false);
 
 #if defined(OS_ANDROID)
   content::Compositor::Initialize();

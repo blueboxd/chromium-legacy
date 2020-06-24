@@ -73,6 +73,10 @@
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+#if defined(USE_OZONE) || defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
 #endif
@@ -1191,12 +1195,16 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
           GpuMemoryBufferManagerSingleton::GetInstance()) {
     // On X11, we do not know GpuMemoryBuffer configuration support until
     // receiving the initial GPUInfo.
-#if !defined(USE_X11)
-    gpu_preferences->disable_biplanar_gpu_memory_buffers_for_video_frames =
-        !gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
-            gfx::BufferFormat::YUV_420_BIPLANAR,
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+    bool should_update = true;
+#if defined(USE_X11)
+    should_update = features::IsUsingOzonePlatform();
 #endif
+    if (should_update) {
+      gpu_preferences->disable_biplanar_gpu_memory_buffers_for_video_frames =
+          !gpu_memory_buffer_manager->IsNativeGpuMemoryBufferConfiguration(
+              gfx::BufferFormat::YUV_420_BIPLANAR,
+              gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+    }
   }
 
   gpu_preferences->gpu_program_cache_size =
@@ -1225,9 +1233,11 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 #endif
 
 #if defined(USE_OZONE)
-  gpu_preferences->message_pump_type = ui::OzonePlatform::GetInstance()
-                                           ->GetPlatformProperties()
-                                           .message_pump_type_for_gpu;
+  if (features::IsUsingOzonePlatform()) {
+    gpu_preferences->message_pump_type = ui::OzonePlatform::GetInstance()
+                                             ->GetPlatformProperties()
+                                             .message_pump_type_for_gpu;
+  }
 #endif
 
 #if defined(OS_MACOSX)

@@ -36,6 +36,7 @@ if (enable_js_type_check) {
         "management:closure_compile",
         "media_router:closure_compile",
         "nearby_internals:closure_compile",
+        "nearby_share:closure_compile",
         "new_tab_page:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
@@ -211,6 +212,26 @@ if (!is_android) {
       "grit/nearby_internals_resources_map.cc",
       "grit/nearby_internals_resources_map.h",
       "nearby_internals_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
+  grit("nearby_share_dialog_resources") {
+    source = "nearby_share/nearby_share_dialog_resources.grd"
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    deps = [ "//chrome/browser/resources/nearby_share:web_components" ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/nearby_share_dialog_resources.h",
+      "grit/nearby_share_dialog_resources_map.cc",
+      "grit/nearby_share_dialog_resources_map.h",
+      "nearby_share_dialog_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
   }

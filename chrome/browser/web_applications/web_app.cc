@@ -201,24 +201,27 @@ void WebApp::SetInstallTime(const base::Time& time) {
   install_time_ = time;
 }
 
-void WebApp::SetSyncData(SyncData sync_data) {
-  sync_data_ = std::move(sync_data);
+void WebApp::SetSyncFallbackData(SyncFallbackData sync_fallback_data) {
+  sync_fallback_data_ = std::move(sync_fallback_data);
 }
 
-WebApp::SyncData::SyncData() = default;
+WebApp::SyncFallbackData::SyncFallbackData() = default;
 
-WebApp::SyncData::~SyncData() = default;
+WebApp::SyncFallbackData::~SyncFallbackData() = default;
 
-WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
+WebApp::SyncFallbackData::SyncFallbackData(
+    const SyncFallbackData& sync_fallback_data) = default;
 
-WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
+WebApp::SyncFallbackData& WebApp::SyncFallbackData::operator=(
+    SyncFallbackData&& sync_fallback_data) = default;
 
-std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data) {
-  out << "    theme_color: " << ColorToString(sync_data.theme_color)
+std::ostream& operator<<(std::ostream& out,
+                         const WebApp::SyncFallbackData& sync_fallback_data) {
+  out << "    theme_color: " << ColorToString(sync_fallback_data.theme_color)
       << std::endl
-      << "    name: " << sync_data.name << std::endl
-      << "    scope: " << sync_data.scope << std::endl;
-  for (const WebApplicationIconInfo& icon : sync_data.icon_infos)
+      << "    name: " << sync_fallback_data.name << std::endl
+      << "    scope: " << sync_fallback_data.scope << std::endl;
+  for (const WebApplicationIconInfo& icon : sync_fallback_data.icon_infos)
     out << "    icon_info: " << icon << std::endl;
   return out;
 }
@@ -241,8 +244,9 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  sources: " << app.sources_.to_string() << std::endl
       << "  is_locally_installed: " << is_locally_installed << std::endl
       << "  is_in_sync_install: " << is_in_sync_install << std::endl
-      << "  sync_data: " << std::endl
-      << app.sync_data_ << "  description: " << app.description_ << std::endl
+      << "  sync_fallback_data: " << std::endl
+      << app.sync_fallback_data_ << "  description: " << app.description_
+      << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
       << "  install_time: " << app.install_time_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
@@ -261,17 +265,17 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   return out;
 }
 
-bool operator==(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2) {
-  return std::tie(sync_data1.name, sync_data1.theme_color, sync_data1.scope,
-                  sync_data1.icon_infos) ==
-         std::tie(sync_data2.name, sync_data2.theme_color, sync_data2.scope,
-                  sync_data2.icon_infos);
+bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2) {
+  return std::tie(sync_fallback_data1.name, sync_fallback_data1.theme_color,
+                  sync_fallback_data1.scope, sync_fallback_data1.icon_infos) ==
+         std::tie(sync_fallback_data2.name, sync_fallback_data2.theme_color,
+                  sync_fallback_data2.scope, sync_fallback_data2.icon_infos);
 }
 
-bool operator!=(const WebApp::SyncData& sync_data1,
-                const WebApp::SyncData& sync_data2) {
-  return !(sync_data1 == sync_data2);
+bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
+                const WebApp::SyncFallbackData& sync_fallback_data2) {
+  return !(sync_fallback_data1 == sync_fallback_data2);
 }
 
 bool operator==(const WebApp& app1, const WebApp& app2) {
@@ -281,7 +285,7 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.display_mode_, app1.user_display_mode_,
                   app1.chromeos_data_, app1.is_locally_installed_,
                   app1.is_in_sync_install_, app1.file_handlers_,
-                  app1.additional_search_terms_, app1.sync_data_,
+                  app1.additional_search_terms_, app1.sync_fallback_data_,
                   app1.last_launch_time_, app1.install_time_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
@@ -289,7 +293,7 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app2.display_mode_, app2.user_display_mode_,
                   app2.chromeos_data_, app2.is_locally_installed_,
                   app2.is_in_sync_install_, app2.file_handlers_,
-                  app2.additional_search_terms_, app2.sync_data_,
+                  app2.additional_search_terms_, app2.sync_fallback_data_,
                   app2.last_launch_time_, app2.install_time_);
 }
 

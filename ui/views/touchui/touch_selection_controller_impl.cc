@@ -402,6 +402,7 @@ TouchSelectionControllerImpl::~TouchSelectionControllerImpl() {
   selection_handle_1_->CloseHandleWidget();
   selection_handle_2_->CloseHandleWidget();
   cursor_handle_->CloseHandleWidget();
+  CHECK(!IsInObserverList());
 }
 
 void TouchSelectionControllerImpl::SelectionChanged() {

@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1212,6 +1213,12 @@ bool AXNodeObject::IsInPageLinkTarget() const {
     return true;
   }
   return false;
+}
+
+bool AXNodeObject::IsLoaded() const {
+  if (!GetDocument())
+    return false;
+  return !GetDocument()->Parser();
 }
 
 bool AXNodeObject::IsMultiSelectable() const {
@@ -3356,6 +3363,26 @@ bool AXNodeObject::CanHaveChildren() const {
   }
   return true;
 }
+
+//
+// Properties of the object's owning document or page.
+//
+
+double AXNodeObject::EstimatedLoadingProgress() const {
+  if (!GetDocument())
+    return 0;
+
+  if (IsLoaded())
+    return 1.0;
+
+  if (LocalFrame* frame = GetDocument()->GetFrame())
+    return frame->Loader().Progress().EstimatedProgress();
+  return 0;
+}
+
+//
+// DOM and Render tree access.
+//
 
 Element* AXNodeObject::ActionElement() const {
   Node* node = this->GetNode();

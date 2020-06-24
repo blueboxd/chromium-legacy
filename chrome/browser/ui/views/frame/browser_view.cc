@@ -799,11 +799,13 @@ void BrowserView::Show() {
     SetFocusToLocationBar(false);
   }
 
+#if !defined(OS_CHROMEOS)
   if (features::IsAccessibilityFocusHighlightEnabled() &&
       !accessibility_focus_highlight_) {
     accessibility_focus_highlight_ =
         std::make_unique<AccessibilityFocusHighlight>(this);
   }
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void BrowserView::ShowInactive() {

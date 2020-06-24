@@ -38,6 +38,7 @@ import {RecordTime} from './recordtime.js';
  *     resolution: {width: number, height: number},
  *     duration: number,
  *     videoSaver: !VideoSaver,
+ *     everPaused: boolean,
  * }}
  */
 export let VideoResult;
@@ -47,6 +48,7 @@ export let VideoResult;
  * @typedef {{
  *     resolution: {width: number, height: number},
  *     blob: !Blob,
+ *     isVideoSnapshot: (boolean|undefined),
  * }}
  */
 export let PhotoResult;
@@ -687,6 +689,11 @@ export class Video extends ModeBase {
      * @private
      */
     this.togglePaused_ = null;
+
+    /**
+     * Whether current recording ever paused/resumed before it ended.
+     */
+    this.everPaused_ = false;
   }
 
   /**
@@ -700,7 +707,8 @@ export class Video extends ModeBase {
       const {width, height} = await util.blobToImage(blob);
       const imageName = (new Filenamer()).newImageName();
       await this.doSaveSnapshot_(
-          {resolution: {width, height}, blob}, imageName);
+          {resolution: {width, height}, blob, isVideoSnapshot: true},
+          imageName);
     };
     this.snapshots_.push(doSnapshot);
     return this.snapshots_.flush();
@@ -714,6 +722,7 @@ export class Video extends ModeBase {
     if (this.togglePaused_ !== null) {
       return this.togglePaused_;
     }
+    this.everPaused_ = true;
     const waitable = new WaitableEvent();
     this.togglePaused_ = waitable.wait();
 
@@ -746,6 +755,7 @@ export class Video extends ModeBase {
     this.snapshots_ = new AsyncJobQueue();
     this.togglePaused_ = null;
     this.startSound_ = sound.play('#sound-rec-start');
+    this.everPaused_ = false;
     try {
       await this.startSound_;
     } finally {
@@ -782,7 +792,8 @@ export class Video extends ModeBase {
     const resolution = new Resolution(settings.width, settings.height);
     state.set(PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, true);
     try {
-      await this.doSaveVideo_({resolution, duration, videoSaver});
+      await this.doSaveVideo_(
+          {resolution, duration, videoSaver, everPaused: this.everPaused_});
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
           {resolution, facing: this.facing_});

@@ -19,6 +19,7 @@ PASS Service Worker responds to fetch event with the correct cache types
 PASS Service Worker should intercept EventSource
 FAIL Service Worker responds to fetch event with the correct integrity_metadata assert_equals: integrity expected "gs0nqru8KbsrIt5YToQqS9fYao4GQJXtcId610g7cCU=" but got ""
 PASS FetchEvent#body is a string
+PASS FetchEvent#body is a ReadableStream
 PASS FetchEvent#body is a string and is passed to network fallback
 PASS FetchEvent#body is a blob
 PASS FetchEvent#body is a blob and is passed to network fallback

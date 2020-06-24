@@ -17,6 +17,7 @@ TestWidgetObserver::TestWidgetObserver(Widget* widget) : widget_(widget) {
 TestWidgetObserver::~TestWidgetObserver() {
   if (widget_)
     widget_->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void TestWidgetObserver::OnWidgetDestroying(Widget* widget) {

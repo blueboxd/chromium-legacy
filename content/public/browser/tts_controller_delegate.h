@@ -5,20 +5,55 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_DELEGATE_H_
 
-#include <vector>
+#include <memory>
+#include <string>
+
+#include "base/optional.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 class TtsUtterance;
-struct VoiceData;
 
-// Allows embedders to access the current state of text-to-speech.
-class TtsControllerDelegate {
+// Allows embedders to control certain aspects of tts. This is only used on
+// ChromeOS.
+class CONTENT_EXPORT TtsControllerDelegate {
  public:
-  // Given an utterance and a vector of voices, return the
-  // index of the voice that best matches the utterance.
-  virtual int GetMatchingVoice(TtsUtterance* utterance,
-                               std::vector<VoiceData>& voices) = 0;
+  // Used in picking the best Voice for an Utterance.
+  struct CONTENT_EXPORT PreferredVoiceId {
+    PreferredVoiceId(const std::string& name, const std::string& id);
+    PreferredVoiceId();
+    ~PreferredVoiceId();
+
+    // Matches against Voice::name.
+    std::string name;
+    // Matches against Voice::engine_id.
+    std::string id;
+  };
+
+  struct CONTENT_EXPORT PreferredVoiceIds {
+    PreferredVoiceIds();
+    PreferredVoiceIds(const PreferredVoiceIds&);
+    PreferredVoiceIds& operator=(const PreferredVoiceIds&);
+    ~PreferredVoiceIds();
+
+    // The voice ID that matches the language of the utterance, if the user
+    // has picked a preferred voice for that language.
+    base::Optional<PreferredVoiceId> lang_voice_id;
+
+    // The voice ID that matches the language of the system locale, if the user
+    // has picked a preferred voice for that locale.
+    base::Optional<PreferredVoiceId> locale_voice_id;
+
+    // The voice ID that the user has chosen to use when no language code is
+    // specified, which can be used to match against any locale.
+    base::Optional<PreferredVoiceId> any_locale_voice_id;
+  };
+
+  // Returns the PreferredVoiceIds for an utterance. PreferredVoiceIds are used
+  // in determining which Voice is used for an Utterance.
+  virtual std::unique_ptr<PreferredVoiceIds> GetPreferredVoiceIdsForUtterance(
+      TtsUtterance* utterance) = 0;
 
   // Uses the user preferences to update the |rate|, |pitch| and |volume| for
   // a given |utterance|.

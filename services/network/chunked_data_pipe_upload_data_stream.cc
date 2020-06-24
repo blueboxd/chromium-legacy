@@ -33,6 +33,10 @@ ChunkedDataPipeUploadDataStream::ChunkedDataPipeUploadDataStream(
 
 ChunkedDataPipeUploadDataStream::~ChunkedDataPipeUploadDataStream() {}
 
+bool ChunkedDataPipeUploadDataStream::AllowHTTP1() const {
+  return resource_request_body_->AllowHTTP1ForStreamingUpload();
+}
+
 int ChunkedDataPipeUploadDataStream::InitInternal(
     const net::NetLogWithSource& net_log) {
   // If there was an error either passed to the ReadCallback or as a result of

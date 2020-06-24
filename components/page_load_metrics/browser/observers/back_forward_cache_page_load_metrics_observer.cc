@@ -27,12 +27,13 @@ BackForwardCachePageLoadMetricsObserver::OnEnterBackForwardCache(
 
 void BackForwardCachePageLoadMetricsObserver::
     OnFirstPaintAfterBackForwardCacheRestoreInPage(
-        const page_load_metrics::mojom::BackForwardCacheTiming& timing) {
+        const page_load_metrics::mojom::BackForwardCacheTiming& timing,
+        size_t index) {
   auto first_paint = timing.first_paint_after_back_forward_cache_restore;
   DCHECK(!first_paint.is_zero());
   if (page_load_metrics::
           WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
-              first_paint, GetDelegate())) {
+              first_paint, GetDelegate(), index)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore,
         first_paint);

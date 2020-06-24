@@ -76,6 +76,7 @@ source_set("test_helpers") {
   deps = [
     "//media/gpu",
     "//testing/gtest",
+    "//third_party/libyuv",
   ]
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

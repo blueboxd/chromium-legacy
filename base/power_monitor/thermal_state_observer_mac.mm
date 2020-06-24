@@ -63,4 +63,13 @@ ThermalStateObserverMac::~ThermalStateObserverMac() {
   [[NSNotificationCenter defaultCenter]
       removeObserver:thermal_state_update_observer_];
 }
+
+PowerObserver::DeviceThermalState
+ThermalStateObserverMac::GetCurrentThermalState() NS_AVAILABLE_MAC(10_10_3) {
+  if (state_for_testing_ != PowerObserver::DeviceThermalState::kUnknown)
+    return state_for_testing_;
+  NSProcessInfoThermalState nsinfo_state =
+      [[NSProcessInfo processInfo] thermalState];
+  return NSProcessInfoThermalStateToDeviceThermalState(nsinfo_state);
+}
 }

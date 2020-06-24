@@ -232,6 +232,16 @@ struct StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo> {
       const gpu::OverlayInfo& input) {
     return input.nv12_overlay_support;
   }
+
+  static gpu::OverlaySupport bgra8_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.bgra8_overlay_support;
+  }
+
+  static gpu::OverlaySupport rgb10a2_overlay_support(
+      const gpu::OverlayInfo& input) {
+    return input.rgb10a2_overlay_support;
+  }
 };
 
 #endif

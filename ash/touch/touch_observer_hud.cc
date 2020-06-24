@@ -59,6 +59,7 @@ TouchObserverHud::~TouchObserverHud() {
   display::Screen::GetScreen()->RemoveObserver(this);
 
   widget_->RemoveObserver(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void TouchObserverHud::Remove() {

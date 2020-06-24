@@ -16,6 +16,7 @@
 #include "base/supports_user_data.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition_config.h"
 
 namespace base {
 class FilePath;
@@ -35,9 +36,7 @@ class CONTENT_EXPORT StoragePartitionImplMap
   ~StoragePartitionImplMap() override;
 
   // This map retains ownership of the returned StoragePartition objects.
-  StoragePartitionImpl* Get(const std::string& partition_domain,
-                            const std::string& partition_name,
-                            bool in_memory,
+  StoragePartitionImpl* Get(const StoragePartitionConfig& partition_config,
                             bool can_create);
 
   // Starts an asynchronous best-effort attempt to delete all on-disk storage
@@ -68,48 +67,8 @@ class CONTENT_EXPORT StoragePartitionImplMap
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplMapTest, GarbageCollect);
 
-  // Each StoragePartition is uniquely identified by which partition domain
-  // it belongs to (such as an app or the browser itself), the user supplied
-  // partition name and the bit indicating whether it should be persisted on
-  // disk or not. This structure contains those elements and is used as
-  // uniqueness key to lookup StoragePartition objects in the global map.
-  //
-  // TODO(nasko): It is equivalent, though not identical to the same structure
-  // that lives in chrome profiles. The difference is that this one has
-  // partition_domain and partition_name separate, while the latter one has
-  // the path produced by combining the two pieces together.
-  // The fix for http://crbug.com/159193 will remove the chrome version.
-  struct StoragePartitionConfig {
-    const std::string partition_domain;
-    const std::string partition_name;
-    const bool in_memory;
-
-    StoragePartitionConfig(const std::string& domain,
-                               const std::string& partition,
-                               const bool& in_memory_only)
-      : partition_domain(domain),
-        partition_name(partition),
-        in_memory(in_memory_only) {}
-  };
-
-  // Functor for operator <.
-  struct StoragePartitionConfigLess {
-    bool operator()(const StoragePartitionConfig& lhs,
-                    const StoragePartitionConfig& rhs) const {
-      if (lhs.partition_domain != rhs.partition_domain)
-        return lhs.partition_domain < rhs.partition_domain;
-      else if (lhs.partition_name != rhs.partition_name)
-        return lhs.partition_name < rhs.partition_name;
-      else if (lhs.in_memory != rhs.in_memory)
-        return lhs.in_memory < rhs.in_memory;
-      else
-        return false;
-    }
-  };
-
   typedef std::map<StoragePartitionConfig,
-                   std::unique_ptr<StoragePartitionImpl>,
-                   StoragePartitionConfigLess>
+                   std::unique_ptr<StoragePartitionImpl>>
       PartitionMap;
 
   // Returns the relative path from the profile's base directory, to the

@@ -167,6 +167,8 @@ class WizardController {
   // Configure and show GAIA password changed screen.
   void ShowGaiaPasswordChangedScreen(const AccountId& account_id,
                                      bool has_error);
+  // Configure and show active directory password change screen.
+  void ShowActiveDirectoryPasswordChangeScreen(const std::string& username);
 
  private:
   // Create BaseScreen instances. These are owned by |screen_manager_|.
@@ -255,6 +257,7 @@ class WizardController {
   void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
   void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
+  void OnActiveDirectoryPasswordChangeScreenExit();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

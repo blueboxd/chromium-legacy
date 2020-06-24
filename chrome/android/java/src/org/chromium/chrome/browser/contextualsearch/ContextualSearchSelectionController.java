@@ -55,7 +55,7 @@ public class ContextualSearchSelectionController {
             + "([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?");
 
     // Max selection length must be limited or the entire request URL can go past the 2K limit.
-    private static final int MAX_SELECTION_LENGTH = 100;
+    private static final int MAX_SELECTION_LENGTH = 1000;
 
     private static final int INVALID_DURATION = -1;
     // A default tap duration value when we can't compute it.

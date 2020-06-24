@@ -144,6 +144,7 @@
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_internals_ui.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/page_not_available_for_guest/page_not_available_for_guest_ui.h"
@@ -523,9 +524,13 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Identity API is not available on Android.
   if (url.host_piece() == chrome::kChromeUIIdentityInternalsHost)
     return &NewWebUI<IdentityInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUINearbyInternalsHost &&
-      base::FeatureList::IsEnabled(features::kNearbySharing)) {
-    return &NewWebUI<NearbyInternalsUI>;
+  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+    if (url.host_piece() == chrome::kChromeUINearbyInternalsHost)
+      return &NewWebUI<NearbyInternalsUI>;
+    if (url.host_piece() == chrome::kChromeUINearbyShareHost &&
+        profile->IsRegularProfile()) {
+      return &NewWebUI<nearby_share::NearbyShareDialogUI>;
+    }
   }
   if (url.host_piece() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;

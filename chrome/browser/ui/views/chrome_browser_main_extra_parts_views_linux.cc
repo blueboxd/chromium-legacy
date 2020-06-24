@@ -15,6 +15,10 @@
 #include "ui/gtk/gtk_ui_delegate.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/base/cursor/cursor_factory.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/x11_types.h"            // nogncheck
@@ -81,6 +85,10 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 
   views::LinuxUI::SetInstance(linux_ui);
   linux_ui->Initialize();
+
+#if defined(USE_OZONE)
+  ui::CursorFactory::GetInstance()->ObserveThemeChanges();
+#endif
 
   DCHECK(ui::LinuxInputMethodContextFactory::instance())
       << "LinuxUI must set LinuxInputMethodContextFactory instance.";

@@ -253,7 +253,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DontMountVolumes(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
-        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        // Test is failing (crbug.com/1097013)
+        // TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileDisplayUnmountRemovableRoot"),

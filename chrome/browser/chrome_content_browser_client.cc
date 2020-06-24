@@ -131,7 +131,6 @@
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -445,6 +444,10 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
+#if !defined(OS_CHROMEOS)
+#include "ui/accessibility/accessibility_features.h"
+#endif  // !defined(OS_CHROMEOS)
+
 #if !defined(OS_ANDROID)
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -573,6 +576,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -1438,22 +1442,19 @@ bool ChromeContentBrowserClient::IsValidStoragePartitionId(
   return GURL(partition_id).is_valid();
 }
 
-void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
+content::StoragePartitionConfig
+ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     content::BrowserContext* browser_context,
-    const GURL& site,
-    std::string* partition_domain,
-    std::string* partition_name,
-    bool* in_memory) {
+    const GURL& site) {
   // Default to the browser-wide storage partition and override based on |site|
   // below.
-  partition_domain->clear();
-  partition_name->clear();
-  *in_memory = false;
+  content::StoragePartitionConfig storage_partition_config =
+      content::StoragePartitionConfig::CreateDefault();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extensions::WebViewGuest::GetGuestPartitionConfigForSite(
-          site, partition_domain, partition_name, in_memory)) {
-    return;
+          site, &storage_partition_config)) {
+    return storage_partition_config;
   }
 
   if (site.SchemeIs(extensions::kExtensionScheme) &&
@@ -1462,12 +1463,12 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     // For extensions with isolated storage, the the host of the |site| is
     // the |partition_domain|. The |in_memory| and |partition_name| are only
     // used in guest schemes so they are cleared here.
-    *partition_domain = site.host();
-    *in_memory = false;
-    partition_name->clear();
-    return;
+    return content::StoragePartitionConfig::Create(
+        site.host(), "" /* partition_name */, false /*in_memory */);
   }
 #endif
+
+  return storage_partition_config;
 }
 
 content::WebContentsViewDelegate*
@@ -2290,6 +2291,13 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                 ? blink::switches::kIntensiveWakeUpThrottlingPolicy_ForceEnable
                 : blink::switches::
                       kIntensiveWakeUpThrottlingPolicy_ForceDisable);
+      }
+
+      // Same as above, but for the blink side of UserAgentClientHints
+      if (!local_state->GetBoolean(
+              policy::policy_prefs::kUserAgentClientHintsEnabled)) {
+        command_line->AppendSwitch(
+            blink::switches::kUserAgentClientHintDisable);
       }
     }
 
@@ -3122,18 +3130,18 @@ ChromeContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new speech::ChromeSpeechRecognitionManagerDelegate();
 }
 
+#if defined(OS_CHROMEOS)
 content::TtsControllerDelegate*
 ChromeContentBrowserClient::GetTtsControllerDelegate() {
-  TtsControllerDelegateImpl* delegate =
-      TtsControllerDelegateImpl::GetInstance();
+  return TtsControllerDelegateImpl::GetInstance();
+}
+#endif
+
+content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #if !defined(OS_ANDROID)
   content::TtsController::GetInstance()->SetTtsEngineDelegate(
       TtsExtensionEngine::GetInstance());
 #endif
-  return delegate;
-}
-
-content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #ifdef OS_CHROMEOS
   return TtsPlatformImplChromeOs::GetInstance();
 #else
@@ -3219,6 +3227,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #if defined(OS_CHROMEOS)
   web_prefs->always_show_focus =
       prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled);
+#else
+  if (features::IsAccessibilityFocusHighlightEnabled()) {
+    web_prefs->always_show_focus =
+        prefs->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled);
+  }
 #endif
 
 #if defined(OS_ANDROID)

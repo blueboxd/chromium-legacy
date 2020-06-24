@@ -32,6 +32,7 @@ CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
     candidate_window_view_->RemoveObserver(this);
     candidate_window_view_->GetWidget()->RemoveObserver(this);
   }
+  CHECK(!IsInObserverList());
 }
 
 void CandidateWindowControllerImpl::InitCandidateWindowView() {

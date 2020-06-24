@@ -158,6 +158,7 @@ namespace corewm {
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();
+  CHECK(!IsInObserverList());
 }
 
 class TooltipAura::TooltipWidget : public Widget {

@@ -56,6 +56,7 @@ Button::WidgetObserverButtonBridge::WidgetObserverButtonBridge(Button* button)
 Button::WidgetObserverButtonBridge::~WidgetObserverButtonBridge() {
   if (owner_)
     owner_->GetWidget()->RemoveObserver(this);
+  CHECK(!IsInObserverList());
 }
 
 void Button::WidgetObserverButtonBridge::OnWidgetPaintAsActiveChanged(

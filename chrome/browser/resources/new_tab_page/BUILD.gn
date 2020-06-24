@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
     ":doodle_share_dialog",
     ":fakebox",
     ":grid",
+    ":iframe",
     ":logo",
     ":realbox",
     ":realbox_button",
@@ -24,7 +25,6 @@ js_type_check("closure_compile") {
     ":realbox_icon",
     ":realbox_match",
     ":theme_icon",
-    ":untrusted_iframe",
     ":utils",
     ":voice_search_overlay",
   ]
@@ -131,7 +131,7 @@ js_library("voice_search_overlay") {
 js_library("utils") {
 }
 
-js_library("untrusted_iframe") {
+js_library("iframe") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -229,7 +229,7 @@ html_to_js("web_components") {
     "realbox_match.js",
     "realbox.js",
     "theme_icon.js",
-    "untrusted_iframe.js",
+    "iframe.js",
     "voice_search_overlay.js",
   ]
 }

@@ -224,9 +224,9 @@ TEST_F(JSONParserTest, ErrorMessages) {
     Optional<Value> value = parser.Parse("{},{}");
     EXPECT_FALSE(value);
     EXPECT_EQ(JSONParser::FormatErrorMessage(
-                  1, 3, JSONReader::kUnexpectedDataAfterRoot),
+                  1, 3, JSONParser::kUnexpectedDataAfterRoot),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_UNEXPECTED_DATA_AFTER_ROOT, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_UNEXPECTED_DATA_AFTER_ROOT, parser.error_code());
   }
 
   {
@@ -239,18 +239,18 @@ TEST_F(JSONParserTest, ErrorMessages) {
     Optional<Value> value = parser.Parse(nested_json);
     EXPECT_FALSE(value);
     EXPECT_EQ(
-        JSONParser::FormatErrorMessage(1, 200, JSONReader::kTooMuchNesting),
+        JSONParser::FormatErrorMessage(1, 200, JSONParser::kTooMuchNesting),
         parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_TOO_MUCH_NESTING, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_TOO_MUCH_NESTING, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("[1,]");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 4, JSONReader::kTrailingComma),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 4, JSONParser::kTrailingComma),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_TRAILING_COMMA, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_TRAILING_COMMA, parser.error_code());
   }
 
   {
@@ -258,54 +258,54 @@ TEST_F(JSONParserTest, ErrorMessages) {
     Optional<Value> value = parser.Parse("{foo:\"bar\"}");
     EXPECT_FALSE(value);
     EXPECT_EQ(JSONParser::FormatErrorMessage(
-                  1, 2, JSONReader::kUnquotedDictionaryKey),
+                  1, 2, JSONParser::kUnquotedDictionaryKey),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_UNQUOTED_DICTIONARY_KEY, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_UNQUOTED_DICTIONARY_KEY, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("{\"foo\":\"bar\",}");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 14, JSONReader::kTrailingComma),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 14, JSONParser::kTrailingComma),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_TRAILING_COMMA, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_TRAILING_COMMA, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("[nu]");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 2, JSONReader::kSyntaxError),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 2, JSONParser::kSyntaxError),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_SYNTAX_ERROR, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_SYNTAX_ERROR, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("[\"xxx\\xq\"]");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONParser::kInvalidEscape),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_INVALID_ESCAPE, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("[\"xxx\\uq\"]");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONParser::kInvalidEscape),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_INVALID_ESCAPE, parser.error_code());
   }
 
   {
     JSONParser parser(JSON_PARSE_RFC);
     Optional<Value> value = parser.Parse("[\"xxx\\q\"]");
     EXPECT_FALSE(value);
-    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
+    EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONParser::kInvalidEscape),
               parser.GetErrorMessage());
-    EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, parser.error_code());
+    EXPECT_EQ(JSONParser::JSON_INVALID_ESCAPE, parser.error_code());
   }
 }
 

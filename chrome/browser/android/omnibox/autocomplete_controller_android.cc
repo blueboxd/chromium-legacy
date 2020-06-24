@@ -271,6 +271,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint selected_index,
+    const jint j_window_open_disposition,
     jint hash_code,
     const JavaParamRef<jstring>& j_current_url,
     jint j_page_classification,
@@ -315,7 +316,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       false,                /* don't know */
       input_.type(), false, /* not keyword mode */
       OmniboxEventProto::INVALID, true, selected_index,
-      WindowOpenDisposition::CURRENT_TAB, false,
+      static_cast<WindowOpenDisposition>(j_window_open_disposition), false,
       sessions::SessionTabHelper::IdForTab(web_contents),
       OmniboxEventProto::PageClassification(j_page_classification),
       base::TimeDelta::FromMilliseconds(elapsed_time_since_first_modified),

@@ -58,6 +58,7 @@ int GetReauthTitleStringId(signin_metrics::ReauthAccessPoint access_point) {
     case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
     case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
     case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
+    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
       return IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_TITLE;
   }
 }
@@ -72,6 +73,7 @@ int GetReauthConfirmButtonLabelStringId(
     case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
     case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
     case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
+    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
       return IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_BUTTON_LABEL;
   }
 }

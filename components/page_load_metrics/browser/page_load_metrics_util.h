@@ -105,7 +105,8 @@ bool WasStartedInForegroundOptionalEventInForeground(
 
 bool WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
     const base::Optional<base::TimeDelta>& event,
-    const PageLoadMetricsObserverDelegate& delegate);
+    const PageLoadMetricsObserverDelegate& delegate,
+    size_t index);
 
 // Returns true if:
 // - We have timing information for the event.

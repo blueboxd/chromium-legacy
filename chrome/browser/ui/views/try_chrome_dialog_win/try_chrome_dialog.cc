@@ -309,6 +309,8 @@ class TryChromeDialog::Context {
 
     static std::unique_ptr<TaskbarCalculator> Create(Location location);
 
+    ~TaskbarCalculator() override { CHECK(!IsInObserverList()); }
+
     // DialogCalculator:
     void AddBorderToContents(views::Widget* popup,
                              views::View* contents_view) override;
@@ -1001,6 +1003,7 @@ TryChromeDialog::TryChromeDialog(size_t group, Delegate* delegate)
 
 TryChromeDialog::~TryChromeDialog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  CHECK(!IsInObserverList());
 }
 
 void TryChromeDialog::ShowDialogAsync() {

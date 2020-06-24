@@ -56,6 +56,10 @@ class BASE_EXPORT PowerMonitor {
   // what is the real power state.
   static bool IsProcessSuspended();
 
+  // Read the current DeviceThermalState if known. Can be called on any thread.
+  // May only be called if the PowerMonitor has been initialized.
+  static PowerObserver::DeviceThermalState GetCurrentThermalState();
+
   // Uninitializes the PowerMonitor. Should be called at the end of any unit
   // test that mocks out the PowerMonitor, to avoid affecting subsequent tests.
   // There must be no live PowerObservers when invoked. Safe to call even if the

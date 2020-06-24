@@ -235,13 +235,11 @@
         --ntp-theme-shortcut-background-color:
               [[rgbaOrInherit_(theme_.shortcutBackgroundColor)]];
         --ntp-logo-color: [[rgbaOrInherit_(logoColor_)]];">
-  <dom-if if="[[showIframedOneGoogleBar_]]">
-    <template>
-      <ntp-untrusted-iframe id="oneGoogleBar" path="[[oneGoogleBarIframePath_]]"
-          hidden$="[[!oneGoogleBarLoaded_]]">
-      </ntp-untrusted-iframe>
-    </template>
-  </dom-if>
+  <template is="dom-if" if="[[showIframedOneGoogleBar_]]">
+    <ntp-iframe id="oneGoogleBar" src="[[oneGoogleBarIframePath_]]"
+        hidden$="[[!oneGoogleBarLoaded_]]">
+    </ntp-iframe>
+  </template>
   <ntp-logo id="logo" doodle-allowed$="[[doodleAllowed_]]"
       single-colored$="[[singleColoredLogo_]]" dark="[[theme_.isDark]]"
       background-color="[[backgroundColor_]]">
@@ -259,8 +257,9 @@
   </ntp-most-visited>
   <dom-if if="[[lazyRender_]]">
     <template>
-      <ntp-untrusted-iframe id="promo" path="promo" hidden$="[[!promoLoaded_]]">
-      </ntp-untrusted-iframe>
+      <ntp-iframe id="promo" hidden$="[[!promoLoaded_]]"
+          src="chrome-untrusted://new-tab-page/promo">
+      </ntp-iframe>
       <a id="backgroundImageAttribution"
           href="[[backgroundImageAttributionUrl_]]"
           hidden="[[!backgroundImageAttribution1_]]">

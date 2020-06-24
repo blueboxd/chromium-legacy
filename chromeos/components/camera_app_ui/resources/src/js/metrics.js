@@ -141,15 +141,63 @@ export const ShutterType = {
 };
 
 /**
- * Sends capture type event.
- * @param {!Facing} facingMode Camera facing-mode of the capture.
- * @param {number} length Length of 1 minute buckets for captured video.
- * @param {!Resolution} resolution Capture resolution.
- * @param {!IntentResultType} intentResult
- * @param {!ShutterType} shutterType
+ * Parameters of capture metrics event.
+ * @record
  */
-function sendCaptureEvent(
-    facingMode, length, resolution, intentResult, shutterType) {
+export class CaptureEventParam {
+  constructor() {
+    /**
+     * @type {!Facing} Camera facing of the capture.
+     */
+    this.facing;
+
+    /**
+     * @type {(number|undefined)} Length of 1 minute buckets for captured video.
+     */
+    this.duration;
+
+    /**
+     * @type {!Resolution} Capture resolution.
+     */
+    this.resolution;
+
+    /**
+     * @type {(IntentResultType|undefined)}
+     */
+    this.intentResult;
+
+    /**
+     * @type {!ShutterType}
+     */
+    this.shutterType;
+
+    /**
+     * Whether the event is for video snapshot.
+     * @type {(boolean|undefined)}
+     */
+    this.isVideoSnapshot;
+
+    /**
+     * Whether the video have ever paused and resumed in the recording.
+     * @type {(boolean|undefined)}
+     */
+    this.everPaused;
+  }
+}
+
+/**
+ * Sends capture type event.
+ * @param {!CaptureEventParam} param
+ */
+function sendCaptureEvent({
+  facing,
+  duration = 0,
+  resolution,
+  intentResult = IntentResultType.NOT_INTENT,
+  shutterType,
+  isVideoSnapshot = false,
+  everPaused = false,
+}) {
   /**
    * @param {!Array<state.StateUnion>} states
    * @param {state.StateUnion=} cond
@@ -171,8 +219,8 @@ function sendCaptureEvent(
       {
         eventCategory: 'capture',
         eventAction: condState(Object.values(Mode)),
-        eventLabel: facingMode,
-        eventValue: length || 0,
+        eventLabel: facing,
+        eventValue: duration,
       },
       new Map([
         // Skips 3rd dimension for obsolete 'sound' state.
@@ -190,6 +238,8 @@ function sendCaptureEvent(
         [11, condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true)],
         [12, intentResult],
         [21, shutterType],
+        [22, isVideoSnapshot],
+        [23, everPaused],
       ]));
 }
 

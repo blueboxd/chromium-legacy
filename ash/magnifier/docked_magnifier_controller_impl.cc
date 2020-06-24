@@ -115,6 +115,7 @@ DockedMagnifierControllerImpl::~DockedMagnifierControllerImpl() {
     shell->window_tree_host_manager()->RemoveObserver(this);
     shell->RemovePreTargetHandler(this);
   }
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 // static

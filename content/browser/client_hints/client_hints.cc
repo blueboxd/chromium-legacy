@@ -367,10 +367,6 @@ bool IsValidURLForClientHints(const GURL& url) {
   return true;
 }
 
-bool UserAgentClientHintEnabled() {
-  return base::FeatureList::IsEnabled(features::kUserAgentClientHint);
-}
-
 void AddUAHeader(net::HttpRequestHeaders* headers,
                  network::mojom::WebClientHintsType type,
                  const std::string& value) {
@@ -580,7 +576,7 @@ void UpdateNavigationRequestClientUaHeaders(
     bool override_ua,
     FrameTreeNode* frame_tree_node,
     net::HttpRequestHeaders* headers) {
-  if (!UserAgentClientHintEnabled() ||
+  if (!delegate->UserAgentClientHintEnabled() ||
       !ShouldAddClientHints(url, IsJavascriptEnabled(frame_tree_node),
                             delegate)) {
     return;
@@ -640,7 +636,7 @@ void AddNavigationRequestClientHintsHeaders(
     AddLangHeader(headers, context);
   }
 
-  if (UserAgentClientHintEnabled()) {
+  if (delegate->UserAgentClientHintEnabled()) {
     UpdateNavigationRequestClientUaHeadersImpl(
         url, delegate, is_ua_override_on, frame_tree_node,
         ClientUaHeaderCallType::kDuringCreation, headers);
@@ -696,7 +692,7 @@ void PersistAcceptCHAfterNagivationRequestRedirect(
   base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed =
       blink::FilterAcceptCH(headers->accept_ch.value(),
                             false /* permit_lang_hints */,
-                            UserAgentClientHintEnabled());
+                            delegate->UserAgentClientHintEnabled());
   if (!parsed.has_value())
     return;
 

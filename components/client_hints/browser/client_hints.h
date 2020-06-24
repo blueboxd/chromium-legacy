@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -27,14 +28,16 @@ class ClientHints : public KeyedService,
   ClientHints(content::BrowserContext* context,
               network::NetworkQualityTracker* network_quality_tracker,
               HostContentSettingsMap* settings_map,
-              const blink::UserAgentMetadata& user_agent_metadata);
+              const blink::UserAgentMetadata& user_agent_metadata,
+              PrefService* pref_service);
   ~ClientHints() override;
 
   static void CreateForWebContents(
       content::WebContents* web_contents,
       network::NetworkQualityTracker* network_quality_tracker,
       HostContentSettingsMap* settings_map,
-      const blink::UserAgentMetadata& user_agent_metadata);
+      const blink::UserAgentMetadata& user_agent_metadata,
+      PrefService* pref_service);
 
   // content::ClientHintsControllerDelegate:
   network::NetworkQualityTracker* GetNetworkQualityTracker() override;
@@ -45,6 +48,8 @@ class ClientHints : public KeyedService,
 
   bool IsJavaScriptAllowed(const GURL& url) override;
 
+  bool UserAgentClientHintEnabled() override;
+
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 
   void PersistClientHints(
@@ -52,13 +57,16 @@ class ClientHints : public KeyedService,
       const std::vector<network::mojom::WebClientHintsType>& client_hints,
       base::TimeDelta expiration_duration) override;
 
+  void set_ua_ch_pref_enabled(bool);
+
  private:
   friend class content::WebContentsUserData<ClientHints>;
 
   ClientHints(content::WebContents* web_contents,
               network::NetworkQualityTracker* network_quality_tracker,
               HostContentSettingsMap* settings_map,
-              const blink::UserAgentMetadata& user_agent_metadata);
+              const blink::UserAgentMetadata& user_agent_metadata,
+              PrefService* pref_service);
 
   content::BrowserContext* context_ = nullptr;
   network::NetworkQualityTracker* network_quality_tracker_ = nullptr;
@@ -67,6 +75,7 @@ class ClientHints : public KeyedService,
   std::unique_ptr<
       content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>
       receiver_;
+  PrefService* pref_service_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

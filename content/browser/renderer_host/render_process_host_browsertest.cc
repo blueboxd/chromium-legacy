@@ -499,23 +499,17 @@ class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
   explicit CustomStoragePartitionForSomeSites(const GURL& site_to_isolate)
       : site_to_isolate_(site_to_isolate) {}
 
-  void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
-                                        const GURL& site,
-                                        std::string* partition_domain,
-                                        std::string* partition_name,
-                                        bool* in_memory) override {
-    // Default to the browser-wide storage partition and override based on
-    // |site| below.
-    partition_domain->clear();
-    partition_name->clear();
-    *in_memory = false;
-
+  StoragePartitionConfig GetStoragePartitionConfigForSite(
+      BrowserContext* browser_context,
+      const GURL& site) override {
     // Override for |site_to_isolate_|.
     if (site == site_to_isolate_) {
-      *partition_domain = "blah_isolated_storage";
-      *partition_name = "blah_isolated_storage";
-      *in_memory = false;
+      return StoragePartitionConfig::Create("blah_isolated_storage",
+                                            "blah_isolated_storage",
+                                            false /* in_memory */);
     }
+
+    return StoragePartitionConfig::CreateDefault();
   }
 
   std::string GetStoragePartitionIdForSite(BrowserContext* browser_context,

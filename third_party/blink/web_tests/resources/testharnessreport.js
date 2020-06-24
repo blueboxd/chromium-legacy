@@ -24,7 +24,6 @@
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
         testRunner.setCanOpenWindows();
-        testRunner.setCloseRemainingWindowsWhenComplete(true);
         testRunner.setDumpJavaScriptDialogs(false);
 
         // Some tests intentionally load mixed content in order to test the

@@ -58,6 +58,7 @@ ChromeKeyboardBoundsObserver::~ChromeKeyboardBoundsObserver() {
   RemoveAllObservedWindows();
 
   ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void ChromeKeyboardBoundsObserver::OnKeyboardOccludedBoundsChanged(

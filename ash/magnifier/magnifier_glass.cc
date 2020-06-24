@@ -184,6 +184,7 @@ MagnifierGlass::MagnifierGlass(Params params) : params_(std::move(params)) {}
 
 MagnifierGlass::~MagnifierGlass() {
   CloseMagnifierWindow();
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 void MagnifierGlass::ShowFor(aura::Window* root_window,

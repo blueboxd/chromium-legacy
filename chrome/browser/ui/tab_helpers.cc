@@ -241,10 +241,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     ChromeSubresourceFilterClient::CreateForWebContents(web_contents);
   }
   ChromeTranslateClient::CreateForWebContents(web_contents);
+  PrefService* local_state = g_browser_process->local_state();
   client_hints::ClientHints::CreateForWebContents(
       web_contents, g_browser_process->network_quality_tracker(),
       HostContentSettingsMapFactory::GetForProfile(profile),
-      GetUserAgentMetadata());
+      GetUserAgentMetadata(), local_state);
   ConnectionHelpTabHelper::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
   DataReductionProxyTabHelper::CreateForWebContents(web_contents);

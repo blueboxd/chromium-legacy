@@ -1302,10 +1302,19 @@ public class ContextualSearchManagerTest {
         Assert.assertFalse(mSelectionController.isValidSelection("editable", c));
         c.setIsFocusedNodeEditableForTest(false);
         String numberString = "0123456789";
-        StringBuilder longStringBuilder = new StringBuilder();
-        for (int i = 0; i < 11; i++) longStringBuilder.append(numberString);
         Assert.assertTrue(mSelectionController.isValidSelection(numberString, c));
-        Assert.assertFalse(mSelectionController.isValidSelection(longStringBuilder.toString(), c));
+        StringBuilder longStringBuilder = new StringBuilder().append(numberString);
+        for (int i = 0; i < 10; i++) {
+            longStringBuilder.append(longStringBuilder.toString());
+            if (longStringBuilder.toString().length() < 1000) {
+                Assert.assertTrue(
+                        mSelectionController.isValidSelection(longStringBuilder.toString(), c));
+            } else {
+                Assert.assertFalse(
+                        mSelectionController.isValidSelection(longStringBuilder.toString(), c));
+                break;
+            }
+        }
     }
 
     /**

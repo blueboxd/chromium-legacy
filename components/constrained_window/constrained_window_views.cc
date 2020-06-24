@@ -66,6 +66,7 @@ class WidgetModalDialogHostObserverViews
       host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
     target_widget_->SetNativeWindowProperty(native_window_property_, nullptr);
+    CHECK(!IsInObserverList());
   }
 
   // WidgetObserver overrides

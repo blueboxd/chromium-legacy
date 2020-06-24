@@ -97,8 +97,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
     return authentication_results_;
   }
 
-  // Saves gaia information in the OS account that was just created.
-  static HRESULT SaveAccountInfo(const base::Value& properties);
+  // Saves account association and user profile information. Makes various HTTP
+  // calls regarding device provisioning and password management.
+  static HRESULT PerformActions(const base::Value& properties);
 
   // Returns true if the current credentials stored in |username_| and
   // |password_| are valid and should succeed a local Windows logon. This

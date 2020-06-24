@@ -118,6 +118,7 @@ LoginShelfGestureController::~LoginShelfGestureController() {
   nudge_ = nullptr;
 
   std::move(exit_handler_).Run();
+  CHECK(!IsInObserverList());
 }
 
 bool LoginShelfGestureController::HandleGestureEvent(

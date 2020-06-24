@@ -57,6 +57,7 @@
 
 #if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
@@ -177,6 +178,10 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_OZONE)
+      if (!features::IsUsingOzonePlatform())
+        NOTREACHED();
+#endif
       output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           std::make_unique<BufferQueue>(
@@ -228,24 +233,31 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
   NOTREACHED();
   return nullptr;
 #elif defined(USE_OZONE)
-  ui::SurfaceFactoryOzone* factory =
-      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-  std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
-      factory->CreatePlatformWindowSurface(surface_handle);
-  bool in_host_process =
-      !gpu_service_impl_ || gpu_service_impl_->in_host_process();
-  std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-      factory->CreateCanvasForWidget(
-          surface_handle,
-          in_host_process ? nullptr : gpu_service_impl_->main_runner());
-  CHECK(surface_ozone);
-  return std::make_unique<SoftwareOutputDeviceOzone>(
-      std::move(platform_window_surface), std::move(surface_ozone));
-#elif defined(USE_X11)
+  if (features::IsUsingOzonePlatform()) {
+    ui::SurfaceFactoryOzone* factory =
+        ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+    std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
+        factory->CreatePlatformWindowSurface(surface_handle);
+    bool in_host_process =
+        !gpu_service_impl_ || gpu_service_impl_->in_host_process();
+    std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
+        factory->CreateCanvasForWidget(
+            surface_handle,
+            in_host_process ? nullptr : gpu_service_impl_->main_runner());
+    CHECK(surface_ozone);
+    return std::make_unique<SoftwareOutputDeviceOzone>(
+        std::move(platform_window_surface), std::move(surface_ozone));
+  }
+#endif
+
+#if defined(USE_X11)
   return std::make_unique<SoftwareOutputDeviceX11>(
       surface_handle, gpu_service_impl_->in_host_process()
                           ? nullptr
                           : gpu_service_impl_->main_runner());
+#else
+  NOTREACHED();
+  return nullptr;
 #endif
 }
 

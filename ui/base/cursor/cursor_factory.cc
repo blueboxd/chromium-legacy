@@ -58,4 +58,8 @@ void CursorFactory::UnrefImageCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED();
 }
 
+void CursorFactory::ObserveThemeChanges() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace ui

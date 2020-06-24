@@ -15,6 +15,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_usage_util.h"
 
@@ -46,11 +47,15 @@ HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
       client_id_(client_id),
       gpu_memory_buffer_support_(std::move(gpu_memory_buffer_support)),
       task_runner_(std::move(task_runner)) {
-#if !defined(USE_X11)
-  native_configurations_ = gpu::GetNativeGpuMemoryBufferConfigurations(
-      gpu_memory_buffer_support_.get());
-  native_configurations_initialized_.Signal();
+  bool should_get_native_configs = true;
+#if defined(USE_X11)
+  should_get_native_configs = features::IsUsingOzonePlatform();
 #endif
+  if (should_get_native_configs) {
+    native_configurations_ = gpu::GetNativeGpuMemoryBufferConfigurations(
+        gpu_memory_buffer_support_.get());
+    native_configurations_initialized_.Signal();
+  }
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "HostGpuMemoryBufferManager", task_runner_);
 }

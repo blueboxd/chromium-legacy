@@ -131,14 +131,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows Active Directory password change screen.
-   * @param {string} username Name of the user that should change the password.
-   */
-  Oobe.showActiveDirectoryPasswordChangeScreen = function(username) {
-    DisplayManager.showActiveDirectoryPasswordChangeScreen(username);
-  };
-
-  /**
    * Show user-pods.
    */
   Oobe.showUserPods = function() {

@@ -116,13 +116,6 @@ Background = class extends ChromeVoxState {
     /** @type {!BackgroundKeyboardHandler} @private */
     this.keyboardHandler_ = new BackgroundKeyboardHandler();
 
-    /** @type {!BackgroundMouseHandler} @private */
-    this.mouseHandler_ = new BackgroundMouseHandler();
-
-    if (localStorage['speakTextUnderMouse'] == String(true)) {
-      chrome.accessibilityPrivate.enableChromeVoxMouseEvents(true);
-    }
-
     /** @type {!LiveRegions} @private */
     this.liveRegions_ = new LiveRegions(this);
 

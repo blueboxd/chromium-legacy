@@ -156,11 +156,11 @@ class Generator(CppGenerator):
 
     for interface in self.module.interfaces:
       for method in interface.methods:
-        # NB: intentionally skip the response_parameters here, since they are
-        # not currently referenced in the generated .proto files, so are not
-        # needed as imports.
         for parameter in method.parameters:
           AddKind(parameter.kind)
+        if method.response_parameters:
+          for parameter in method.response_parameters:
+            AddKind(parameter.kind)
 
     import_files = list(
         map(lambda x: '{}.mojolpm.proto'.format(x.path), seen_imports))

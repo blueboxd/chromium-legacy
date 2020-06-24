@@ -57,6 +57,8 @@ const char* const kWebPrefsToObserve[] = {
     prefs::kWebKitWebSecurityEnabled,
 #if defined(OS_CHROMEOS)
     ash::prefs::kAccessibilityFocusHighlightEnabled,
+#else
+    prefs::kAccessibilityFocusHighlightEnabled,
 #endif
 };
 

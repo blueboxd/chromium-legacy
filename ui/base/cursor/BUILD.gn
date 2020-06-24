@@ -45,6 +45,9 @@ if (use_aura) {
       "cursor_loader.h",
       "cursor_lookup.cc",
       "cursor_lookup.h",
+      "cursor_theme_manager.cc",
+      "cursor_theme_manager.h",
+      "cursor_theme_manager_observer.h",
       "cursor_util.cc",
       "cursor_util.h",
       "cursors_aura.cc",
@@ -68,14 +71,6 @@ if (use_aura) {
       "//ui/gfx/geometry",
       "//ui/resources:ui_resources_grd",
     ]
-
-    if (is_desktop_linux) {
-      sources += [
-        "cursor_theme_manager_linux.cc",
-        "cursor_theme_manager_linux.h",
-        "cursor_theme_manager_linux_observer.h",
-      ]
-    }
 
     if (is_win) {
       sources += [

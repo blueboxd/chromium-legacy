@@ -42,6 +42,8 @@ class SimpleURLLoader;
 
 // This class listens to predictions of the next navigation and prefetches the
 // mainpage content of Google Search Result Page links when they are available.
+// When a prefetched page is navigated to, this class also copies over any
+// cookies from the prefetch into the profile's cookie jar.
 class IsolatedPrerenderTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<IsolatedPrerenderTabHelper>,
@@ -260,6 +262,15 @@ class IsolatedPrerenderTabHelper
   // Called by the URLLoaderInterceptor to update |page_.probe_latency_|.
   void NotifyPrefetchProbeLatency(base::TimeDelta probe_latency);
 
+  // When a previously prefetched page is navigated to, any cookies set on that
+  // page load should be copied over to the normal profile. While this copy is
+  // in progress, this method returns true to indicate to the navigation loader
+  // interceptor that it should wait to commit the mainframe.
+  // |SetOnAfterSRPCookieCopyCompleteCallback| can be used to set a callback
+  // when the cookie copy process is complete.
+  bool IsWaitingForAfterSRPCookiesCopy() const;
+  void SetOnAfterSRPCookieCopyCompleteCallback(base::OnceClosure callback);
+
   void AddObserverForTesting(Observer* observer);
   void RemoveObserverForTesting(Observer* observer);
 
@@ -273,6 +284,18 @@ class IsolatedPrerenderTabHelper
  private:
   friend class IsolatedPrerenderPageLoadMetricsObserver;
   friend class content::WebContentsUserData<IsolatedPrerenderTabHelper>;
+
+  // Identifies the state of the cookie copying process we're in, if any.
+  enum class CookieCopyStatus {
+    // No cookies need to be copied.
+    kNoNavigation,
+
+    // The cookie copy process is in progress.
+    kWaitingForCopy,
+
+    // The cookie copy process is complete.
+    kCopyComplete,
+  };
 
   // Owns all per-pageload state in the tab helper so that new navigations only
   // need to reset an instance of this class to clean up previous state.
@@ -339,11 +362,19 @@ class IsolatedPrerenderTabHelper
     // previous page load remaining alive.
     std::unique_ptr<IsolatedPrerenderSubresourceManager> subresource_manager_;
 
-    // The network context and url loader factory that will be used for
-    // prefetches. A separate network context is used so that the prefetch proxy
-    // can be used via a custom proxy configuration.
-    scoped_refptr<network::SharedURLLoaderFactory> isolated_url_loader_factory_;
+    // The current status of copying cookies for the next page load when the
+    // user navigates to a prefetched link.
+    CookieCopyStatus cookie_copy_status_ = CookieCopyStatus::kNoNavigation;
+
+    // A callback that runs once |cookie_copy_status_| is set to copy complete.
+    base::OnceClosure on_after_srp_cookie_copy_complete_;
+
+    // The cookie manager, network contextm and url loader factory that will be
+    // used for prefetches. A separate network context is used so that the
+    // prefetch proxy can be used via a custom proxy configuration.
     mojo::Remote<network::mojom::NetworkContext> isolated_network_context_;
+    mojo::Remote<network::mojom::CookieManager> isolated_cookie_manager_;
+    scoped_refptr<network::SharedURLLoaderFactory> isolated_url_loader_factory_;
   };
 
   // A helper method to make it easier to tell when prefetching is already
@@ -409,6 +440,23 @@ class IsolatedPrerenderTabHelper
   void CreateNewURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
       base::Optional<net::IsolationInfo> isolation_info);
+
+  // Starts a query for all cookies on |url| in the isolated cookie jar so that
+  // they can be copied to the normal profile. After this method is called,
+  // |IsWaitingForAfterSRPCookiesCopy| returns true until
+  // |OnCopiedIsolatedCookiesAfterSRPClick| runs.
+  void CopyIsolatedCookiesOnAfterSRPClick(const GURL& url);
+
+  // Starts copying all cookies in |cookie_list| to the normal profile.
+  void OnGotIsolatedCookiesToCopyAfterSRPClick(
+      const GURL& url,
+      const net::CookieAccessResultList& cookie_list,
+      const net::CookieAccessResultList& excluded_cookies);
+
+  // When this is called, |IsWaitingForAfterSRPCookiesCopy| will return false
+  // again and the callback passed to |SetOnAfterSRPCookieCopyCompleteCallback|,
+  // if any, is run.
+  void OnCopiedIsolatedCookiesAfterSRPClick();
 
   // Creates the isolated network context and url loader factory for this page.
   void CreateIsolatedURLLoaderFactory();

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class AXLayoutObjectTest : public test::AccessibilityTest {
+class AXLayoutObjectTest : public AccessibilityTest {
  protected:
   static LayoutObject* GetListMarker(const LayoutObject& list_item) {
     if (list_item.IsListItem())

@@ -330,4 +330,51 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest,
   LoadUrlAndWait(UrlComparison::kExact, "/title2.html");
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, PrepareForLoad_RecordResultMetric) {
+  base::HistogramTester histograms;
+  static constexpr char kPrepareForLoadResultHistogramName[] =
+      "Webapp.WebAppUrlLoaderPrepareForLoadResult";
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  // Load a URL, and wait for its completion.
+  LoadUrlAndWait(UrlComparison::kExact, "/title1.html");
+  histograms.ExpectTotalCount(kPrepareForLoadResultHistogramName, 0);
+
+  // Prepare for next load.
+  {
+    base::RunLoop run_loop;
+    loader.PrepareForLoad(web_contents(),
+                          base::BindLambdaForTesting([&](Result result) {
+                            EXPECT_EQ(Result::kUrlLoaded, result);
+                            run_loop.Quit();
+                          }));
+    run_loop.Run();
+  }
+
+  histograms.ExpectTotalCount(kPrepareForLoadResultHistogramName, 1);
+  histograms.ExpectBucketCount(kPrepareForLoadResultHistogramName,
+                               Result::kUrlLoaded, 1);
+
+  // Load the next URL.
+  LoadUrlAndWait(UrlComparison::kExact, "/title2.html");
+  histograms.ExpectTotalCount(kPrepareForLoadResultHistogramName, 1);
+
+  // Prepare the next load again.
+  {
+    base::RunLoop run_loop;
+    loader.PrepareForLoad(web_contents(),
+                          base::BindLambdaForTesting([&](Result result) {
+                            EXPECT_EQ(Result::kUrlLoaded, result);
+                            run_loop.Quit();
+                          }));
+    run_loop.Run();
+  }
+
+  histograms.ExpectTotalCount(kPrepareForLoadResultHistogramName, 2);
+  histograms.ExpectBucketCount(kPrepareForLoadResultHistogramName,
+                               Result::kUrlLoaded, 2);
+}
+
 }  // namespace web_app

@@ -172,8 +172,9 @@ export class PDFViewerBaseElement extends PolymerElement {
         /** @type {!HTMLEmbedElement} */ (document.createElement('embed'));
 
     // NOTE: The plugin's 'id' field must be set to 'plugin' since
-    // chrome/renderer/printing/print_render_frame_helper.cc actually
-    // references it.
+    // ChromePrintRenderFrameHelperDeleage::GetPdfElement() in
+    // chrome/renderer/printing/chrome_print_render_frame_helper_delegate.cc
+    // actually references it.
     plugin.id = 'plugin';
     plugin.type = 'application/x-google-chrome-pdf';
 

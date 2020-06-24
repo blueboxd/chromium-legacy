@@ -192,8 +192,21 @@ bool ToProto(
 {{- from_proto.declare(method_type, kind, name)}}
 {{- to_proto.declare(method_type, kind, name)}}
 {%-       endif %}
-{%-    endfor %}
-{%-  endfor %}
+{%-     endfor %}
+{%-   endfor %}
+{%-   for method in interface.methods %}
+{%-     if method.response_parameters != None %}
+{%-       set method_type = proto_type ~ "::" ~ interface.name ~ "_" ~ method.name ~ "Response" %}
+{%-       for param in method.response_parameters %}
+{%-         set name = param.name %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_array_kind or kind|is_map_kind -%}
+{{- from_proto.declare(method_type, kind, name)}}
+{{- to_proto.declare(method_type, kind, name)}}
+{%-         endif %}
+{%-       endfor %}
+{%-     endif %}
+{%-   endfor %}
 {%- endfor %}
 
 {%- for interface in interfaces %}
@@ -210,7 +223,10 @@ bool HandleRemoteMethodCall(
   const {{proto_type}}::RemoteMethodCall& input);
 
 bool HandleAssociatedRemoteMethodCall(
-  const {{proto_type}}::AssociatedRemoteMethodCall& input);{{"\n"-}}
+  const {{proto_type}}::AssociatedRemoteMethodCall& input);
+
+bool AddResponse(
+  const {{proto_type}}::ReceiverResponse& response);{{"\n"-}}
 {%-     for method in interface.methods %}
 bool HandleMethodCall(
   {{mojom_type}}Ptr& instance,

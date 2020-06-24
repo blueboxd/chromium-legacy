@@ -17,7 +17,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/json/json_parser.h"
+#include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"

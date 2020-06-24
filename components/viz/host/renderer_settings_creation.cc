@@ -20,6 +20,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -86,16 +87,18 @@ RendererSettings CreateRendererSettings() {
   }
 
 #if defined(USE_OZONE)
-  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
-    renderer_settings.overlay_strategies = ParseOverlayStrategies(
-        command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
-  } else {
-    auto& host_properties =
-        ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
-    if (host_properties.supports_overlays) {
-      renderer_settings.overlay_strategies = {OverlayStrategy::kFullscreen,
-                                              OverlayStrategy::kSingleOnTop,
-                                              OverlayStrategy::kUnderlay};
+  if (features::IsUsingOzonePlatform()) {
+    if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+      renderer_settings.overlay_strategies = ParseOverlayStrategies(
+          command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
+    } else {
+      auto& host_properties =
+          ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
+      if (host_properties.supports_overlays) {
+        renderer_settings.overlay_strategies = {OverlayStrategy::kFullscreen,
+                                                OverlayStrategy::kSingleOnTop,
+                                                OverlayStrategy::kUnderlay};
+      }
     }
   }
 #endif

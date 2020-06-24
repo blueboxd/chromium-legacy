@@ -41,8 +41,7 @@ platform.
 (in content/) processes utterances and sends them to the correct output engine.
 
 - The [TtsControllerDelegateImpl](https://cs.chromium.org/chromium/src/chrome/browser/speech/tts_controller_delegate_impl.h)
-(in chrome/) provides chrome-specific functionality, including making use of
-user prefs in Chrome OS.
+(in chrome/) provides chrome OS specific functionality.
 
 ### Output
 

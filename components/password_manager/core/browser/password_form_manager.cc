@@ -438,6 +438,7 @@ void PasswordFormManager::OnPasswordsRevealed() {
 }
 
 void PasswordFormManager::MoveCredentialsToAccountStore() {
+  DCHECK(client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage());
   password_save_manager_->MoveCredentialsToAccountStore(
       metrics_util::MoveToAccountStoreTrigger::
           kSuccessfulLoginWithProfileStorePassword);

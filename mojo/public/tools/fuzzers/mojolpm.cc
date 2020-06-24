@@ -56,6 +56,13 @@ void Context::PostNextAction() {
   }
 }
 
+int Context::NextResponseIndex(TypeId type_id) {
+  if (testcase_) {
+    return testcase_->NextResponseIndex(type_id);
+  }
+  return 0;
+}
+
 Context* g_context = nullptr;
 
 Context* GetContext() {

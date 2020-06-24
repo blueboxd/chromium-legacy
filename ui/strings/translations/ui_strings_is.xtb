@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kvörðun er lokið</translation>
 <translation id="252373100621549798">Óþekktur skjár</translation>
 <translation id="2545651323591713692">Þagga tímabundið</translation>
+<translation id="2570734079541893434">Stjórna stillingum</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{eftir 1 klst.}one{eftir # klst.}other{eftir # klst.}}</translation>
 <translation id="2583543531130364912">Kvarðaðu snertiskjáinn</translation>
 <translation id="2666092431469916601">Efst</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Fært á síðu <ph name="PAGE_NUMBER" />, línu <ph name="ROW_NUMBER" />, dálk <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Ekki útiloka</translation>
 <translation id="7907591526440419938">Opna skrá</translation>
+<translation id="7952747673138230804">Chrome OS birtir tillögur að nýju efni sem hægt er að skoða. Sendir aðeins tölfræðiupplýsingar sem eru notaðar til að auka gæði ef þú hefur valið að deila notkunarupplýsingum. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Skipun</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Fleiri en 1 ólesin tilkynning}one{Fleiri en # ólesin tilkynning}other{Fleiri en # ólesnar tilkynningar}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{eftir 1 mín.}one{eftir # mín.}other{eftir # mín.}}</translation>

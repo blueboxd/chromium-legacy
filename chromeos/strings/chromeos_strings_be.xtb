@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Збой: дзверцы прынтара адкрыты</translation>
 <translation id="3369013195428705271">Сапраўды выдаліць гісторыю друку? Бягучыя заданні друку выдалены не будуць.</translation>
 <translation id="3456078764689556234">Надрукавана старонка <ph name="PRINTED_PAGES" /> з <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Заданні друку</translation>
 <translation id="3527036260304016759">Збой: невядомая памылка</translation>
 <translation id="3749289110408117711">Назва файла</translation>
 <translation id="38114475217616659">Ачысціць усю гісторыю</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Збой: выхадны латок запоўнены</translation>
 <translation id="4034824040120875894">Прынтар</translation>
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Няма дзеючых заданняў друку</translation>
 <translation id="428217921675623177">Заданні друку, старэйшыя за 90 дзён, будуць выдалены</translation>
 <translation id="4429881212383817840">Дзеянне білета Kerberos хутка скончыцца</translation>
 <translation id="445059817448385655">Стары пароль</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="7162487448488904999">Галерэя</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Гэтым дзеяннем кіруе адміністратар</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7690294790491645610">Пацвердзіце новы пароль</translation>
 <translation id="7805768142964895445">Стан</translation>
 <translation id="808894953321890993">Змяніць пароль</translation>
 <translation id="8208861521865154048">Бонусы</translation>
+<translation id="8347227221149377169">Заданні друку</translation>
 <translation id="8701136875688985581">Гэты карыстальнік знаходзіцца пад кіраваннем дамена <ph name="ENROLLMENT_DOMAIN" />. Дамен можа кіраваць наладамі карыстальніка і адсочваць яго дзеянні.</translation>
 <translation id="871560550817059752">Збой: скончылася чарніла</translation>
 <translation id="8747900814994928677">Пацвярджэнне змен</translation>

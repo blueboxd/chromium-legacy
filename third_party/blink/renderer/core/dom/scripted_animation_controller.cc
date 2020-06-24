@@ -107,18 +107,6 @@ bool ScriptedAnimationController::HasFrameCallback() const {
          !vfc_execution_queue_.IsEmpty();
 }
 
-ScriptedAnimationController::CallbackId
-ScriptedAnimationController::RegisterPostFrameCallback(
-    FrameRequestCallbackCollection::FrameCallback* callback) {
-  CallbackId id = callback_collection_.RegisterPostFrameCallback(callback);
-  ScheduleAnimationIfNeeded();
-  return id;
-}
-
-void ScriptedAnimationController::CancelPostFrameCallback(CallbackId id) {
-  callback_collection_.CancelPostFrameCallback(id);
-}
-
 void ScriptedAnimationController::RunTasks() {
   Vector<base::OnceClosure> tasks;
   tasks.swap(task_queue_);
@@ -259,15 +247,6 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   ScheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::RunPostFrameCallbacks() {
-  if (!callback_collection_.HasPostFrameCallback())
-    return;
-  DCHECK(current_frame_time_ms_ > 0.);
-  DCHECK(current_frame_legacy_time_ms_ > 0.);
-  callback_collection_.ExecutePostFrameCallbacks(current_frame_time_ms_,
-                                                 current_frame_legacy_time_ms_);
-}
-
 void ScriptedAnimationController::EnqueueTask(base::OnceClosure task) {
   task_queue_.push_back(std::move(task));
   ScheduleAnimationIfNeeded();
@@ -302,20 +281,9 @@ void ScriptedAnimationController::ScheduleAnimationIfNeeded() {
   if (!frame)
     return;
 
-  // If there is any pre-frame work to do, schedule an animation
-  // unconditionally.
   if (HasScheduledFrameTasks()) {
     frame->View()->ScheduleAnimation();
     return;
-  }
-
-  // If there is post-frame work to do, only schedule an animation if we're not
-  // currently running one -- if we're currently running an animation, then any
-  // scheduled post-frame tasks will get run at the end of the current frame, so
-  // no need to schedule another one.
-  if (callback_collection_.HasPostFrameCallback() &&
-      !frame->GetPage()->Animator().IsServicingAnimations()) {
-    frame->View()->ScheduleAnimation();
   }
 }
 

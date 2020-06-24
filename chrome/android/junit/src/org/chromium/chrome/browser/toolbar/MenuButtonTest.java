@@ -14,8 +14,10 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.LayoutInflater;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -111,5 +113,27 @@ public class MenuButtonTest {
         Bitmap menuButtonBitmap =
                 ((BitmapDrawable) mMenuButton.getImageButton().getDrawable()).getBitmap();
         assertTrue(drawnBitmap == menuButtonBitmap);
+    }
+
+    @Test
+    public void testDrawTabSwitcherAnimationOverlay_correctBoundsAfterThemeChange() {
+        mMenuUiState.buttonState = null;
+        mMenuButton.showAppMenuUpdateBadgeIfAvailable(false);
+        mMenuButton.onTintChanged(mColorStateList, true);
+
+        // Run a manual layout pass so that mMenuButton's children get assigned sizes.
+        mMenuButton.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+        mMenuButton.layout(0, 0, 100, 80);
+
+        assertTrue(mMenuButton.getImageButton().getWidth() > 0);
+        assertTrue(mMenuButton.getImageButton().getHeight() > 0);
+
+        // Check that the drawable has sane bounds.
+        Rect drawableBounds =
+                ((BitmapDrawable) mMenuButton.getTabSwitcherAnimationDrawable()).getBounds();
+        assertTrue(drawableBounds.left >= 0);
+        assertTrue(drawableBounds.top >= 0);
+        assertTrue(drawableBounds.right > 0);
+        assertTrue(drawableBounds.bottom > 0);
     }
 }

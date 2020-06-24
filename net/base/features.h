@@ -21,6 +21,10 @@ namespace features {
 // https://github.com/WICG/lang-client-hint proposes that we deprecate.
 NET_EXPORT extern const base::Feature kAcceptLanguageHeader;
 
+// When kCapReferrerToOriginOnCrossOrigin is enabled, HTTP referrers on cross-
+// origin requests are restricted to contain at most the source origin.
+NET_EXPORT extern const base::Feature kCapReferrerToOriginOnCrossOrigin;
+
 // Enables TLS 1.3 early data.
 NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 
@@ -124,6 +128,26 @@ NET_EXPORT extern const base::Feature
 NET_EXPORT extern const base::Feature
     kPartitionExpectCTStateByNetworkIsolationKey;
 
+// Enables limiting the size of Expect-CT table.
+NET_EXPORT extern const base::Feature kExpectCTPruning;
+
+// FeatureParams associated with kExpectCTPruning.
+
+// Expect-CT pruning runs when this many entries are hit.
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTPruneMax;
+// The Expect-CT pruning logic attempts to reduce entries to at most this many.
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTPruneMin;
+// Non-transient entries with |enforce| set are safe from being pruned if
+// they're less than this many days old, unless the number of entries exceeds
+// |kExpectCTMaxEntriesPerNik|.
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTSafeFromPruneDays;
+// If, after pruning transient, non-enforced, old Expect-CT entries,
+// kExpectCTPruneMin is still exceeded, then all NetworkIsolationKeys will be
+// capped to this many entries, based on last observation date.
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTMaxEntriesPerNik;
+// Minimum delay between successive prunings of Expect-CT entries, in seconds.
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTPruneDelaySecs;
+
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
 // disabled by default because we discovered incompatibilities with some
@@ -190,12 +214,6 @@ NET_EXPORT extern const base::Feature
     kRecentCreationTimeGrantsLegacyCookieSemantics;
 NET_EXPORT extern const base::FeatureParam<int>
     kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds;
-
-// When enabled, blocks external requests coming from non-secure contexts. An
-// external request is a request that crosses a network boundary from a more
-// public address space into a less public address space.
-NET_EXPORT extern const base::Feature
-    kBlockExternalRequestsFromNonSecureInitiators;
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.

@@ -53,7 +53,7 @@ TEST(MetafileSkiaTest, TestFrameContent) {
   EXPECT_TRUE(picture);
 
   // Get the complete picture by replacing the placeholder.
-  DeserializationContext subframes;
+  PictureDeserializationContext subframes;
   subframes[content_id] = picture;
   SkDeserialProcs procs = DeserializationProcs(&subframes);
   sk_sp<SkPicture> pic = SkPicture::MakeFromStream(metafile_stream, &procs);

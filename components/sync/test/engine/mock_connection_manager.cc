@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
@@ -608,11 +609,20 @@ bool MockConnectionManager::ProcessCommit(
   map<string, sync_pb::CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size(); i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
-    if (!entry.has_id_string()) {
-      ADD_FAILURE();
-      return false;
-    }
     string id_string = entry.id_string();
+    if (!entry.has_id_string()) {
+      const ModelType model_type = GetModelTypeFromSpecifics(entry.specifics());
+      // For commit-only types, fake having received a random ID, simply to
+      // reuse the validation logic later below.
+      if (CommitOnlyTypes().Has(model_type)) {
+        id_string = base::GenerateGUID();
+      } else {
+        ADD_FAILURE() << " for specifics type "
+                      << ModelTypeToString(model_type);
+        return false;
+      }
+    }
+
     if (entry.name().length() >= 256ul) {
       ADD_FAILURE() << "Name probably too long. True server name dchecking not "
                        "implemented. Found length "

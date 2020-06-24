@@ -43,6 +43,8 @@ class AssistantOnboardingCoordinator {
     private static final String FLIGHTS_INTENT = "FLIGHTS_CHECKIN";
     private static final String FOOD_ORDERING_INTENT = "FOOD_ORDERING";
     private static final String VOICE_SEARCH_INTENT = "TELEPORT";
+    private static final String SHOPPING_INTENT = "SHOPPING";
+    private static final String SHOPPING_ASSISTED_CHECKOUT_INTENT = "SHOPPING_ASSISTED_CHECKOUT";
     private static final String BUY_MOVIE_TICKETS_EXPERIMENT_ID = "4363482";
 
     private final String mExperimentIds;
@@ -234,6 +236,11 @@ class AssistantOnboardingCoordinator {
             case RENT_CAR_INTENT:
                 termsTextView.setText(R.string.autofill_assistant_init_message_short);
                 titleTextView.setText(R.string.autofill_assistant_init_message_rent_car);
+                break;
+            case SHOPPING_INTENT:
+            case SHOPPING_ASSISTED_CHECKOUT_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
+                titleTextView.setText(R.string.autofill_assistant_init_message_shopping);
                 break;
             case BUY_MOVIE_TICKETS_INTENT:
                 if (Arrays.asList(mExperimentIds.split(","))

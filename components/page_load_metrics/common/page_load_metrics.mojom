@@ -362,4 +362,9 @@ struct BackForwardCacheTiming {
   // Time when the first paint is performed after the time when the page
   // is restored from the back-forward cache.
   mojo_base.mojom.TimeDelta first_paint_after_back_forward_cache_restore;
+
+  // Queueing Time of the first click, tap, key press, cancellable touchstart,
+  // or pointer down followed by a pointer up after the time when the page is
+  // restored from the back-forward cache.
+  mojo_base.mojom.TimeDelta? first_input_delay_after_back_forward_cache_restore;
 };

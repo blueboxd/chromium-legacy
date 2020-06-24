@@ -134,6 +134,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Reporting enablement is set if |enabled| has value.
   void SetReportingEnabled(base::Optional<bool> enabled);
 
+  void GenerateHiddenApps(
+      enterprise_management::ChildStatusReportRequest* report);
+
   // Populates |report| with collected app activity. Returns whether any data
   // were reported.
   AppActivityReportInterface::ReportParams GenerateAppActivityReport(

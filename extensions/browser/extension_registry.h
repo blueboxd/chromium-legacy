@@ -33,7 +33,7 @@ class ExtensionRegistryObserver;
 enum class UnloadedExtensionReason;
 
 // ExtensionRegistry holds sets of the installed extensions for a given
-// BrowserContext. An incognito browser context and its master browser context
+// BrowserContext. An incognito browser context and its original browser context
 // share a single registry.
 class ExtensionRegistry : public KeyedService {
  public:

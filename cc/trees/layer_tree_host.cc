@@ -1161,9 +1161,13 @@ Layer* LayerTreeHost::InnerViewportScrollLayerForTesting() const {
 }
 
 Layer* LayerTreeHost::OuterViewportScrollLayerForTesting() const {
+  return LayerByElementId(OuterViewportScrollElementId());
+}
+
+ElementId LayerTreeHost::OuterViewportScrollElementId() const {
   auto* scroll_node =
       property_trees()->scroll_tree.Node(viewport_property_ids_.outer_scroll);
-  return scroll_node ? LayerByElementId(scroll_node->element_id) : nullptr;
+  return scroll_node ? scroll_node->element_id : ElementId();
 }
 
 void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {

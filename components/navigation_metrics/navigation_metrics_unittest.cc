@@ -13,16 +13,6 @@ namespace {
 const char* const kTestUrl = "http://www.example.com";
 // http://ab.גדהוזח.ij/kl/mn/op.html in A-label form.
 constexpr char kRtlUrl[] = "http://ab.xn--6dbcdefg.ij/kl/mn/op.html";
-const char* const kMainFrameScheme = "Navigation.MainFrameScheme";
-const char* const kMainFrameSchemeDifferentPage =
-    "Navigation.MainFrameSchemeDifferentPage";
-const char* const kMainFrameSchemeOTR = "Navigation.MainFrameSchemeOTR";
-const char* const kMainFrameSchemeDifferentPageOTR =
-    "Navigation.MainFrameSchemeDifferentPageOTR";
-constexpr char kMainFrameHasRTLDomain[] = "Navigation.MainFrameHasRTLDomain";
-constexpr char kMainFrameHasRTLDomainDifferentPage[] =
-    "Navigation.MainFrameHasRTLDomainDifferentPage";
-constexpr char kMainFrameProfileType[] = "Navigation.MainFrameProfileType";
 }  // namespace
 
 namespace navigation_metrics {

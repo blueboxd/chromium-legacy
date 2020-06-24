@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,8 +73,8 @@ public class BrowserControlsTest {
         });
     }
 
-    private boolean canBrowserControlsScroll() throws Exception {
-        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+    private boolean canBrowserControlsScroll() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             try {
                 return getTestWebLayer().canBrowserControlsScroll(getActiveTab());
             } catch (RemoteException e) {
@@ -123,8 +124,9 @@ public class BrowserControlsTest {
                 mTopViewHeight, bottomViewHeight);
 
         // Adding a bottom view should change the page height.
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.not(mPageHeightWithTopView));
+        });
         int pageHeightWithTopAndBottomViews = getVisiblePageHeight();
         Assert.assertTrue(pageHeightWithTopAndBottomViews < mPageHeightWithTopView);
 
@@ -133,18 +135,23 @@ public class BrowserControlsTest {
                 activity.getWindow().getDecorView(), 0, -maxViewsHeight);
 
         // Moving should hide the bottom View.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(View.INVISIBLE, () -> bottomView.getVisibility()));
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(true, () -> getVisiblePageHeight() > mPageHeightWithTopView));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(bottomView.getVisibility(), Matchers.is(View.INVISIBLE));
+        });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    getVisiblePageHeight(), Matchers.greaterThan(mPageHeightWithTopView));
+        });
 
         // Move so top and bottom-controls are shown again.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, maxViewsHeight);
 
         mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertEquals(getVisiblePageHeight(), pageHeightWithTopAndBottomViews));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    getVisiblePageHeight(), Matchers.is(pageHeightWithTopAndBottomViews));
+        });
     }
 
     // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
@@ -185,18 +192,21 @@ public class BrowserControlsTest {
                 activity.getWindow().getDecorView(), 0, -bottomViewHeight);
 
         // Moving should hide the bottom-controls View.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(View.INVISIBLE, () -> bottomView.getVisibility()));
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(pageHeightWithNoTopView, () -> getVisiblePageHeight()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(bottomView.getVisibility(), Matchers.is(View.INVISIBLE));
+        });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(pageHeightWithNoTopView));
+        });
 
         // Move so bottom-controls are shown again.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, bottomViewHeight);
 
         mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertEquals(getVisiblePageHeight(), pageHeightWithBottomView));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(pageHeightWithBottomView));
+        });
     }
 
     // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
@@ -212,9 +222,11 @@ public class BrowserControlsTest {
                 activity.getWindow().getDecorView(), 0, -mTopViewHeight);
 
         // Moving should hide the top-controls and change the page height.
-        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, () -> topView.getVisibility()));
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(topView.getVisibility(), Matchers.is(View.INVISIBLE)));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.not(mPageHeightWithTopView));
+        });
 
         // Move so top-controls are shown again.
         EventUtils.simulateDragFromCenterOfView(
@@ -222,8 +234,9 @@ public class BrowserControlsTest {
 
         // Wait for the page height to match initial height.
         mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(topView);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(mPageHeightWithTopView));
+        });
     }
 
     /**
@@ -244,16 +257,20 @@ public class BrowserControlsTest {
                 activity.getWindow().getDecorView(), 0, -mTopViewHeight);
 
         // Wait till top controls are invisible.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                View.INVISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(activity.getTopContentsContainer().getVisibility(),
+                    Matchers.is(View.INVISIBLE));
+        });
 
         // Trigger an alert dialog.
         mActivityTestRule.executeScriptSync(
                 "window.setTimeout(function() { alert('alert'); }, 1);", false);
 
         // Top controls are shown.
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    activity.getTopContentsContainer().getVisibility(), Matchers.is(View.VISIBLE));
+        });
     }
 
     // Tests various assertions when accessibility is enabled.
@@ -268,16 +285,19 @@ public class BrowserControlsTest {
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, -mTopViewHeight);
         View topView = activity.getTopContentsContainer();
-        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, () -> topView.getVisibility()));
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(topView.getVisibility(), Matchers.is(View.INVISIBLE)));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.not(mPageHeightWithTopView));
+        });
 
         // Turn on accessibility, which should force the controls to show.
         setAccessibilityEnabled(true);
         mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(
                 activity.getTopContentsContainer());
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(mPageHeightWithTopView));
+        });
 
         // When accessibility is enabled, the controls are not allowed to scroll.
         Assert.assertFalse(canBrowserControlsScroll());
@@ -286,7 +306,7 @@ public class BrowserControlsTest {
         // setAccessibilityEnabled() is async.
         setAccessibilityEnabled(false);
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(true, () -> canBrowserControlsScroll()));
+                () -> Criteria.checkThat(canBrowserControlsScroll(), Matchers.is(true)));
     }
 
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
@@ -310,7 +330,7 @@ public class BrowserControlsTest {
 
         // Wait till new view is visible.
         CriteriaHelper.pollUiThread(
-                Criteria.equals(View.VISIBLE, () -> newTopView.getVisibility()));
+                () -> Criteria.checkThat(newTopView.getVisibility(), Matchers.is(View.VISIBLE)));
         int newTopViewHeight =
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return newTopView.getHeight(); });
         Assert.assertNotEquals(newTopViewHeight, mTopViewHeight);
@@ -320,7 +340,8 @@ public class BrowserControlsTest {
         // Remove all, and ensure metadata and page-height change.
         TestThreadUtils.runOnUiThreadBlocking(() -> { newTopView.removeAllViews(); });
         mBrowserControlsHelper.waitForBrowserControlsMetadataState(0, 0);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.not(mPageHeightWithTopView));
+        });
     }
 }

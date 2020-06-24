@@ -60,9 +60,7 @@ Portal::~Portal() {
 
 // static
 bool Portal::IsEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kPortals) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
+  return base::FeatureList::IsEnabled(blink::features::kPortals);
 }
 
 // static

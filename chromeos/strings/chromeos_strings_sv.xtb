@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Misslyckades – luckan är öppen</translation>
 <translation id="3369013195428705271">Vill du rensa all utskriftshistorik? De pågående utskriftsjobben rensas inte.</translation>
 <translation id="3456078764689556234">Sida <ph name="PRINTED_PAGES" /> av <ph name="TOTAL_PAGES" /> har skrivits ut.</translation>
-<translation id="3515615323037921860">Utskriftsjobb</translation>
 <translation id="3527036260304016759">Misslyckades – okänt fel</translation>
 <translation id="3749289110408117711">Filnamn</translation>
 <translation id="38114475217616659">Rensa all historik</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Misslyckades – utmatningsfacket är fullt</translation>
 <translation id="4034824040120875894">Skrivare</translation>
 <translation id="4227825898293920515">Lösenordet upphör att gälla om <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Inga utskriftsjobb pågår</translation>
 <translation id="428217921675623177">Utskriftsjobb som är äldre än 90 dagar tas bort</translation>
 <translation id="4429881212383817840">Kerberos-biljetten upphör snart att gälla</translation>
 <translation id="445059817448385655">Gammalt lösenord</translation>
@@ -61,11 +61,13 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Den här åtgärden hanteras av administratören</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7690294790491645610">Bekräfta det nya lösenordet</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Ändra lösenord</translation>
 <translation id="8208861521865154048">Förmåner</translation>
+<translation id="8347227221149377169">Utskriftsjobb</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> hanterar denna användare och kan fjärrhantera inställningar och övervaka användaraktivitet.</translation>
 <translation id="871560550817059752">Misslyckades – slut på bläck</translation>
 <translation id="8747900814994928677">Bekräfta ändring</translation>

@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Pregunta abans de permetre que els llocs web creïn un mapa en 3D del teu entorn o facin un seguiment de la posició de la càmera (opció recomanada)</translation>
 <translation id="2212565012507486665">Permet les galetes</translation>
 <translation id="2289270750774289114">Pregunta quan un lloc web vulgui descobrir dispositius Bluetooth propers (opció recomanada)</translation>
+<translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">S'ha completat la baixada <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Un lloc web està utilitzant la càmera</translation>
 <translation id="7817023149356982970">Se't tancarà la sessió d'aquest lloc web.</translation>
 <translation id="7828557259026017104">Les galetes són fitxers que creen els llocs web que visites. Els llocs web les fan servir per recordar les teves preferències. Les galetes de tercers són les que creen altres llocs web. Part del contingut d'aquests llocs, com ara els anuncis o les imatges, es mostra a la pàgina web que visites.</translation>
+<translation id="7835852323729233924">Reproduint contingut multimèdia</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
 <translation id="7846621471902887024">Se't tancarà la sessió de tots els llocs web.</translation>
 <translation id="7882806643839505685">Permet el so d'un lloc web concret.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Confirmes que vols esborrar d'aquest lloc web totes les dades locals, incloses les galetes, i restablir-ne tots els permisos?</translation>
 <translation id="8007176423574883786">Aquesta ubicació està desactivada per a aquest dispositiu</translation>
 <translation id="802154636333426148">Error de baixada</translation>
+<translation id="8068648041423924542">No es pot seleccionar el certificat.</translation>
 <translation id="8087000398470557479">Aquest contingut és del domini <ph name="DOMAIN_NAME" />, oferit per Google.</translation>
 <translation id="8116925261070264013">Silenciats</translation>
 <translation id="8131740175452115882">Confirma</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Bloqueja les galetes d'un lloc web concret.</translation>
 <translation id="8959122750345127698">No es pot accedir a la navegació: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="965817943346481315">Bloqueja els anuncis si el lloc web mostra publicitat intrusiva o enganyosa (opció recomanada)</translation>
 </translationbundle>

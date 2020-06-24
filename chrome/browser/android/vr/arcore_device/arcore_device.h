@@ -129,6 +129,9 @@ class ArCoreDevice : public VRDeviceBase {
     // the callback for replying once that initialization completes. Only one
     // concurrent session is supported, other requests are rejected.
     mojom::XRRuntime::RequestSessionCallback pending_request_session_callback_;
+
+    // List of features that are enabled on the session.
+    std::vector<device::mojom::XRSessionFeature> enabled_features_;
   };
 
   // This object is reset to initial values when ending a session. This helps

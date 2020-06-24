@@ -53,6 +53,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/metadata/metadata_types.h"
 #include "ui/views/paint_info.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_features.h"
@@ -283,6 +284,15 @@ class TestView : public View {
   // Accessibility events
   ax::mojom::Event last_a11y_event_;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Metadata
+////////////////////////////////////////////////////////////////////////////////
+
+TEST_F(ViewTest, MetadataTest) {
+  auto test_view = std::make_unique<TestView>();
+  test::TestViewMetadata(test_view.get());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Layout

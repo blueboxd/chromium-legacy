@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Chiedi conferma prima di consentire ai siti di creare una mappa 3D dell'ambiente circostante o di monitorare la posizione della fotocamera (opzione consigliata)</translation>
 <translation id="2212565012507486665">Consenti cookie</translation>
 <translation id="2289270750774289114">Chiedi conferma quando un sito vuole rilevare i dispositivi Bluetooth nelle vicinanze (opzione consigliata)</translation>
+<translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Un sito sta utilizzando la fotocamera</translation>
 <translation id="7817023149356982970">Uscirai da questo sito.</translation>
 <translation id="7828557259026017104">I cookie sono file creati dai siti web visitati, che li usano per memorizzare le tue preferenze. I cookie di terze parti vengono creati da altri siti, che sono proprietari di alcuni dei contenuti, ad esempio annunci o immagini, che vengono visualizzati nella pagina web visitata.</translation>
+<translation id="7835852323729233924">Riproduzione media</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="7846621471902887024">Il tuo account verrà disconnesso da tutti i siti.</translation>
 <translation id="7882806643839505685">Consenti l'audio per un sito specifico.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Vuoi cancellare tutti i dati locali, inclusi i cookie, e reimpostare tutte le autorizzazioni relative al sito web?</translation>
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
+<translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
 <translation id="8116925261070264013">Con audio disattivato</translation>
 <translation id="8131740175452115882">Conferma</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blocca i cookie per un sito specifico.</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gestito dai genitori</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
 <translation id="965817943346481315">Blocca se il sito mostra annunci invasivi o fuorvianti (consigliato)</translation>
 </translationbundle>

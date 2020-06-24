@@ -16,6 +16,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
+#include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
@@ -55,10 +56,10 @@ std::string NumberToString(uint32_t number) {
 
 class WaylandBufferManagerHost::Surface {
  public:
-  Surface(WaylandWindow* window,
+  Surface(WaylandSurface* wayland_surface,
           WaylandConnection* connection,
           WaylandBufferManagerHost* buffer_manager)
-      : window_(window),
+      : wayland_surface_(wayland_surface),
         connection_(connection),
         buffer_manager_(buffer_manager) {}
   ~Surface() = default;
@@ -67,7 +68,7 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(!pending_buffer_);
 
     // The window has already been destroyed.
-    if (!window_)
+    if (!wayland_surface_)
       return true;
 
     WaylandBuffer* buffer = GetBuffer(buffer_id);
@@ -126,7 +127,7 @@ class WaylandBufferManagerHost::Surface {
     // the client about successful swap.
     // If the window has already been destroyed, no need to complete the
     // submission.
-    if (buffer && !buffer->released && submitted_buffer_ && window_)
+    if (buffer && !buffer->released && submitted_buffer_ && wayland_surface_)
       CompleteSubmission();
 
     if (prev_submitted_buffer_ == buffer)
@@ -172,11 +173,11 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void ResetSurfaceContents() {
-    if (!window_)
+    if (!wayland_surface_)
       return;
 
-    wl_surface_attach(window_->surface(), nullptr, 0, 0);
-    wl_surface_commit(window_->surface());
+    wl_surface_attach(wayland_surface_->surface(), nullptr, 0, 0);
+    wl_surface_commit(wayland_surface_->surface());
 
     // We cannot reset |prev_submitted_buffer_| here as long as the surface
     // might have attached a new buffer and is about to receive a release
@@ -199,8 +200,8 @@ class WaylandBufferManagerHost::Surface {
 
   bool HasBuffers() const { return !buffers_.empty(); }
 
-  void OnWindowRemoved() { window_ = nullptr; }
-  bool HasWindow() const { return !!window_; }
+  void OnWindowRemoved() { wayland_surface_ = nullptr; }
+  bool HasWindow() const { return !!wayland_surface_; }
 
   void OnWindowConfigured() {
     if (configured_)
@@ -226,7 +227,7 @@ class WaylandBufferManagerHost::Surface {
   using PresentationFeedbackQueue = std::vector<FeedbackInfo>;
 
   bool CommitBufferInternal(WaylandBuffer* buffer) {
-    DCHECK(buffer && window_);
+    DCHECK(buffer && wayland_surface_);
     DCHECK(!pending_buffer_);
 
     DCHECK(!submitted_buffer_);
@@ -274,7 +275,7 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void DamageBuffer(WaylandBuffer* buffer) {
-    DCHECK(window_);
+    DCHECK(wayland_surface_);
 
     gfx::Rect pending_damage_region = std::move(buffer->damage_region);
     // If the size of the damage region is empty, wl_surface_damage must be
@@ -290,10 +291,10 @@ class WaylandBufferManagerHost::Surface {
       // https://bit.ly/2u00lv6 for details.
       // We don't need to apply any scaling because pending_damage_region is
       // already in buffer coordinates.
-      wl_surface_damage_buffer(window_->surface(), pending_damage_region.x(),
-                               pending_damage_region.y(),
-                               pending_damage_region.width(),
-                               pending_damage_region.height());
+      wl_surface_damage_buffer(
+          wayland_surface_->surface(), pending_damage_region.x(),
+          pending_damage_region.y(), pending_damage_region.width(),
+          pending_damage_region.height());
     } else {
       // The calculation for damage region relies on two assumptions:
       // 1) The buffer is always attached at surface location (0, 0)
@@ -304,8 +305,9 @@ class WaylandBufferManagerHost::Surface {
       // Note: The damage region may not be an integer multiple of scale. To
       // keep the implementation simple, the x() and y() coordinates round down,
       // and the width() and height() calculations always add an extra pixel.
-      int scale = window_->buffer_scale();
-      wl_surface_damage(window_->surface(), pending_damage_region.x() / scale,
+      int scale = wayland_surface_->buffer_scale();
+      wl_surface_damage(wayland_surface_->surface(),
+                        pending_damage_region.x() / scale,
                         pending_damage_region.y() / scale,
                         pending_damage_region.width() / scale + 1,
                         pending_damage_region.height() / scale + 1);
@@ -313,31 +315,32 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void AttachBuffer(WaylandBuffer* buffer) {
-    DCHECK(window_ && configured_);
+    DCHECK(wayland_surface_ && configured_);
 
     // The logic in DamageBuffer currently relies on attachment coordinates of
     // (0, 0). If this changes, then the calculation in DamageBuffer will also
     // need to be updated.
-    wl_surface_attach(window_->surface(), buffer->wl_buffer.get(), 0, 0);
+    wl_surface_attach(wayland_surface_->surface(), buffer->wl_buffer.get(), 0,
+                      0);
   }
 
   void CommitSurface() {
-    DCHECK(window_);
-    wl_surface_commit(window_->surface());
+    DCHECK(wayland_surface_);
+    wl_surface_commit(wayland_surface_->surface());
   }
 
   void SetupFrameCallback() {
-    DCHECK(window_);
+    DCHECK(wayland_surface_);
     static const wl_callback_listener frame_listener = {
         &Surface::FrameCallbackDone};
 
     DCHECK(!wl_frame_callback_);
-    wl_frame_callback_.reset(wl_surface_frame(window_->surface()));
+    wl_frame_callback_.reset(wl_surface_frame(wayland_surface_->surface()));
     wl_callback_add_listener(wl_frame_callback_.get(), &frame_listener, this);
   }
 
   void SetupPresentationFeedback(uint32_t buffer_id) {
-    DCHECK(window_);
+    DCHECK(wayland_surface_);
     // Set up presentation feedback.
     if (!connection_->presentation())
       return;
@@ -348,7 +351,7 @@ class WaylandBufferManagerHost::Surface {
 
     feedback_queue_.push_back(
         {wl::Object<struct wp_presentation_feedback>(wp_presentation_feedback(
-             connection_->presentation(), window_->surface())),
+             connection_->presentation(), wayland_surface_->surface())),
          buffer_id, /*feedback=*/base::nullopt,
          /*submission_completed=*/false});
     wp_presentation_feedback_add_listener(
@@ -438,13 +441,13 @@ class WaylandBufferManagerHost::Surface {
     prev_submitted_buffer_ = submitted_buffer_;
     submitted_buffer_ = nullptr;
 
-    if (!window_)
+    if (!wayland_surface_)
       return;
 
     // We can now complete the latest submission. We had to wait for this
     // release because SwapCompletionCallback indicates to the client that the
     // previous buffer is available for reuse.
-    buffer_manager_->OnSubmission(window_->GetWidget(), id,
+    buffer_manager_->OnSubmission(wayland_surface_->GetRootWidget(), id,
                                   gfx::SwapResult::SWAP_ACK);
 
     // If presentation feedback is not supported, use a fake feedback. This
@@ -452,7 +455,7 @@ class WaylandBufferManagerHost::Surface {
     if (!connection_->presentation()) {
       DCHECK(feedback_queue_.empty());
       buffer_manager_->OnPresentation(
-          window_->GetWidget(), id,
+          wayland_surface_->GetWidget(), id,
           gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
                                     GetPresentationKindFlags(0)));
     } else {
@@ -506,15 +509,15 @@ class WaylandBufferManagerHost::Surface {
   // This function ensures that we send OnPresentation for each buffer that
   // already has had OnSubmission called for it (condition #2).
   void ProcessPresentationFeedbacks() {
-    if (!window_)
+    if (!wayland_surface_)
       return;
 
     while (!feedback_queue_.empty()) {
       const auto& info = feedback_queue_.front();
       if (!info.submission_completed || !info.feedback.has_value())
         break;
-      buffer_manager_->OnPresentation(window_->GetWidget(), info.buffer_id,
-                                      *info.feedback);
+      buffer_manager_->OnPresentation(wayland_surface_->GetWidget(),
+                                      info.buffer_id, *info.feedback);
       feedback_queue_.erase(feedback_queue_.begin());
     }
     // This queue should be small - if not it's likely a bug.
@@ -560,7 +563,7 @@ class WaylandBufferManagerHost::Surface {
   void MaybeProcessPendingBuffer() {
     // There is nothing to process if there is no pending buffer or the window
     // has been destroyed.
-    if (!pending_buffer_ || !window_)
+    if (!pending_buffer_ || !wayland_surface_)
       return;
 
     // This request may come earlier than the Wayland compositor has imported a
@@ -589,7 +592,7 @@ class WaylandBufferManagerHost::Surface {
   // WaylandWindow.
 
   // Non-owned. The window this helper surface stores and submits buffers for.
-  const WaylandWindow* window_;
+  const WaylandSurface* wayland_surface_;
 
   // Non-owned pointer to the connection.
   WaylandConnection* const connection_;
@@ -651,7 +654,7 @@ WaylandBufferManagerHost::~WaylandBufferManagerHost() {
 void WaylandBufferManagerHost::OnWindowAdded(WaylandWindow* window) {
   DCHECK(window);
   surfaces_[window->GetWidget()] =
-      std::make_unique<Surface>(window, connection_, this);
+      std::make_unique<Surface>(window->wayland_surface(), connection_, this);
 }
 
 void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {

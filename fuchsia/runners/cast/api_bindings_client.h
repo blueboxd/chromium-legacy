@@ -34,6 +34,10 @@ class ApiBindingsClient {
                      NamedMessagePortConnector* connector,
                      base::OnceClosure on_error_callback);
 
+  // Indicates that the Frame is no longer live, preventing the API bindings
+  // client from attempting to remove injected bindings from it.
+  void DetachFromFrame(fuchsia::web::Frame* frame);
+
   // Indicates that bindings were successfully received from
   // |bindings_service_|.
   bool HasBindings() const;

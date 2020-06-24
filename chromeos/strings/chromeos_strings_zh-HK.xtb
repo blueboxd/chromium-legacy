@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">失敗 - 機蓋未關</translation>
 <translation id="3369013195428705271">您確定要清除所有列印記錄嗎？系統不會清除進行中的列印工作。</translation>
 <translation id="3456078764689556234">印咗 <ph name="PRINTED_PAGES" /> 頁，總共有 <ph name="TOTAL_PAGES" /> 頁。</translation>
-<translation id="3515615323037921860">列印工作</translation>
 <translation id="3527036260304016759">失敗 - 不明錯誤</translation>
 <translation id="3749289110408117711">檔案名稱</translation>
 <translation id="38114475217616659">清除所有記錄</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">失敗 - 輸出紙匣已滿</translation>
 <translation id="4034824040120875894">打印機</translation>
 <translation id="4227825898293920515">密碼在 <ph name="TIME" />後到期</translation>
+<translation id="4238516577297848345">沒有進行中的列印工作</translation>
 <translation id="428217921675623177">超過 90 天前的列印工作將被移除</translation>
 <translation id="4429881212383817840">Kerberos 票證即將到期</translation>
 <translation id="445059817448385655">舊密碼</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">清除</translation>
 <translation id="7162487448488904999">媒體庫</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">此操作由管理員管理</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7690294790491645610">確認新密碼</translation>
 <translation id="7805768142964895445">狀態</translation>
 <translation id="808894953321890993">變更密碼</translation>
 <translation id="8208861521865154048">獎賞</translation>
+<translation id="8347227221149377169">列印工作</translation>
 <translation id="8701136875688985581">由 <ph name="ENROLLMENT_DOMAIN" /> 管理這位使用者，因此可能會從遠端管理設定並監察用戶活動。</translation>
 <translation id="871560550817059752">失敗 - 墨水已用完</translation>
 <translation id="8747900814994928677">確認變更</translation>

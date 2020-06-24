@@ -72,7 +72,7 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(category_filter)
     options.config.chrome_trace_config.EnableUMAHistograms(
         *RENDERING_BENCHMARK_UMA)
-    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
+    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric', 'memoryAblationMetric'])
     return options
 
 

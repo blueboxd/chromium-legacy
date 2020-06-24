@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Mislukt - Klep geopend</translation>
 <translation id="3369013195428705271">Weet je zeker dat je je hele afdrukgeschiedenis wilt verwijderen? Je actieve afdruktaken worden niet verwijderd.</translation>
 <translation id="3456078764689556234">Pagina <ph name="PRINTED_PAGES" /> van <ph name="TOTAL_PAGES" /> afgedrukt.</translation>
-<translation id="3515615323037921860">Afdruktaken</translation>
 <translation id="3527036260304016759">Mislukt - Onbekende fout</translation>
 <translation id="3749289110408117711">Bestandsnaam</translation>
 <translation id="38114475217616659">Alle geschiedenis wissen</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Mislukt - Uitvoer is vol</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Wachtwoord verloopt over <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Er worden geen afdruktaken uitgevoerd</translation>
 <translation id="428217921675623177">Afdruktaken ouder dan 90 dagen worden verwijderd</translation>
 <translation id="4429881212383817840">Kerberos-ticket verloopt binnenkort</translation>
 <translation id="445059817448385655">Oud wachtwoord</translation>
@@ -61,11 +61,13 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="7162487448488904999">Galerij</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Deze actie wordt beheerd door je beheerder</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7690294790491645610">Nieuw wachtwoord bevestigen</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Wachtwoord wijzigen</translation>
 <translation id="8208861521865154048">Speciale voordelen</translation>
+<translation id="8347227221149377169">Afdruktaken</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> beheert deze gebruiker. Dit domein kan op afstand instellingen beheren en gebruikersactiviteit in de gaten houden.</translation>
 <translation id="871560550817059752">Mislukt - Geen inkt meer</translation>
 <translation id="8747900814994928677">Wijziging bevestigen</translation>

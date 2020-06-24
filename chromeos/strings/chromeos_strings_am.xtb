@@ -23,8 +23,7 @@
 <translation id="3091839911843451378">አልተሳካም - ተቋርጧል</translation>
 <translation id="3268178239013324452">አልተሳካም - በር ክፍት ነው</translation>
 <translation id="3369013195428705271">እርግጠኛ ነዎት ሁሉንም የህትመት ታሪክ ማጥፋት ይፈልጋሉ? በመካሄድ ላይ ያሉ የህትመት ስራዎችዎ አይጠፉም።</translation>
-<translation id="3456078764689556234"><ph name="PRINTED_PAGES" />የታተመ ገጽ ከ<ph name="TOTAL_PAGES" /> ዉስጥ።</translation>
-<translation id="3515615323037921860">የህትመት ስራዎች</translation>
+<translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> የታተመ ገጽ ከ <ph name="TOTAL_PAGES" /> ዉስጥ።</translation>
 <translation id="3527036260304016759">አልተሳካም - ያልታወቀ ስህተት</translation>
 <translation id="3749289110408117711">የፋይል ስም</translation>
 <translation id="38114475217616659">ሁሉንም የዕይታ ታሪክ አፅዳ</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">አልተሳካም - ውፅዓት ሞልቷል</translation>
 <translation id="4034824040120875894">አታሚ</translation>
 <translation id="4227825898293920515">የይለፍ ቃል በ <ph name="TIME" /> ውስጥ አገልግሎት ጊዜው ያበቃል</translation>
+<translation id="4238516577297848345">በሂደት ላይ ያሉ ምንም የህትመት ስራዎች የሉም</translation>
 <translation id="428217921675623177">ከ90 ቀናት በላይ ዕድሜ ያላቸው የህትመት ሥራዎች ይወገዳሉ</translation>
 <translation id="4429881212383817840">የKerberos ቲኬት ጊዜው በቅርቡ ያበቃል</translation>
 <translation id="445059817448385655">የቀድሞው የይለፍ ቃል</translation>
@@ -52,7 +52,7 @@
 <translation id="54609108002486618">የተቀናበረ</translation>
 <translation id="5832805196449965646">ሰው አክል</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
-<translation id="6048107060512778456">አልተሳካም- የወረቀት መታጨቅ</translation>
+<translation id="6048107060512778456">አልተሳካም - የወረቀት መታጨቅ</translation>
 <translation id="6058625436358447366">ለማጠናቀቅ፣ የእርስዎን አሮጌ እና አዲስ የይለፍ ቃላት ያስገቡ</translation>
 <translation id="6106186594183574873">ለማጠናቀቅ፣ የእርስዎን ይለፍ ቃል ያስገቡ</translation>
 <translation id="6146993107019042706">ለማጠናቀቅ፣ የእርስዎን አዲስ የይለፍ ቃል ያስገቡ</translation>
@@ -61,16 +61,18 @@
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="7162487448488904999">ማዕከለ-ስዕላት</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">ይህ ቅንብር በአስተዳዳሪዎ የሚቀናበር ነው።</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7690294790491645610">አዲስ የይለፍ ቃል ያረጋግጡ</translation>
 <translation id="7805768142964895445">ሁኔታ</translation>
 <translation id="808894953321890993">የይለፍ ቃል ለውጥ</translation>
 <translation id="8208861521865154048">ጥቅማጥቅሞች</translation>
+<translation id="8347227221149377169">የኅትመት ሥራዎች</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> እነኚህን ተጠቃሚ ያስተዳድራል። ቅንብሮችን የተጠቃሚ እንቅስቃሴን በርቀት ሊያስተዳድር እና ሊቆጣጠር ይችላል።</translation>
-<translation id="871560550817059752">አልተሳካም - ከአገናኝ ዉጭ</translation>
+<translation id="871560550817059752">አልተሳካም - ቀለም አልቋል</translation>
 <translation id="8747900814994928677">ለውጥን አረጋግጥ</translation>
-<translation id="8919837981463578619">አልተሳካም -መሳቢያ ይጎላል</translation>
-<translation id="8928727111548978589">አልተሳካም - ከወረቀት ውጭ</translation>
+<translation id="8919837981463578619">አልተሳካም - መሳቢያ ይጎድላል</translation>
+<translation id="8928727111548978589">አልተሳካም - ወረቀት አልቋል</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> ቅንብሮች ቀርተዋል</translation>
 <translation id="910415269708673980">የ<ph name="PRINCIPAL_NAME" /> ቲኬትን ያድሱ</translation>
 <translation id="9111102763498581341">ክፈት</translation>

@@ -14,6 +14,7 @@
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -40,10 +41,12 @@ static_assert(KSelectionOwnerTimerPeriodMs <= kIncrementalTransferTimeoutMs,
 
 // Returns a conservative max size of the data we can pass into
 // XChangeProperty(). Copied from GTK.
-size_t GetMaxRequestSize(XDisplay* display) {
-  long extended_max_size = XExtendedMaxRequestSize(display);
+size_t GetMaxRequestSize(x11::Connection* connection) {
+  long extended_max_size = connection->extended_max_request_length();
   long max_size =
-      (extended_max_size ? extended_max_size : XMaxRequestSize(display)) - 100;
+      (extended_max_size ? extended_max_size
+                         : connection->setup().maximum_request_length) -
+      100;
   return std::min(static_cast<long>(0x40000),
                   std::max(static_cast<long>(0), max_size));
 }
@@ -79,13 +82,12 @@ void SetSelectionOwner(x11::Window window,
 
 }  // namespace
 
-SelectionOwner::SelectionOwner(XDisplay* x_display,
+SelectionOwner::SelectionOwner(x11::Connection* connection,
                                x11::Window x_window,
                                x11::Atom selection_name)
-    : x_display_(x_display),
-      x_window_(x_window),
+    : x_window_(x_window),
       selection_name_(selection_name),
-      max_request_size_(GetMaxRequestSize(x_display)) {}
+      max_request_size_(GetMaxRequestSize(connection)) {}
 
 SelectionOwner::~SelectionOwner() {
   // If we are the selection owner, we need to release the selection so we
@@ -117,22 +119,20 @@ void SelectionOwner::ClearSelectionOwner() {
 }
 
 void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
-  const XEvent& event = x11_event.xlib_event();
-  auto requestor = static_cast<x11::Window>(event.xselectionrequest.requestor);
-  x11::Atom requested_target =
-      static_cast<x11::Atom>(event.xselectionrequest.target);
-  x11::Atom requested_property =
-      static_cast<x11::Atom>(event.xselectionrequest.property);
+  auto& request = *x11_event.As<x11::SelectionRequestEvent>();
+  auto requestor = request.requestor;
+  x11::Atom requested_target = request.target;
+  x11::Atom requested_property = request.property;
 
   // Incrementally build our selection. By default this is a refusal, and we'll
   // override the parts indicating success in the different cases.
-  XEvent reply;
-  reply.xselection.type = SelectionNotify;
-  reply.xselection.requestor = static_cast<uint32_t>(requestor);
-  reply.xselection.selection = event.xselectionrequest.selection;
-  reply.xselection.target = static_cast<uint32_t>(requested_target);
-  reply.xselection.property = x11::None;  // Indicates failure
-  reply.xselection.time = event.xselectionrequest.time;
+  x11::SelectionNotifyEvent reply{
+      .time = request.time,
+      .requestor = requestor,
+      .selection = request.selection,
+      .target = requested_target,
+      .property = x11::Atom::None,  // Indicates failure
+  };
 
   if (requested_target == gfx::GetAtom(kMultiple)) {
     // The contents of |requested_property| should be a list of
@@ -153,16 +153,15 @@ void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
       ui::SetArrayProperty(requestor, requested_property,
                            gfx::GetAtom(kAtomPair), conversion_results);
 
-      reply.xselection.property = static_cast<uint32_t>(requested_property);
+      reply.property = requested_property;
     }
   } else {
     if (ProcessTarget(requested_target, requestor, requested_property))
-      reply.xselection.property = static_cast<uint32_t>(requested_property);
+      reply.property = requested_property;
   }
 
   // Send off the reply.
-  XSendEvent(x_display_, static_cast<uint32_t>(requestor), x11::False, 0,
-             &reply);
+  ui::SendEvent(reply, requestor, x11::EventMask::NoEvent);
 }
 
 void SelectionOwner::OnSelectionClear(const x11::Event& event) {
@@ -173,7 +172,7 @@ void SelectionOwner::OnSelectionClear(const x11::Event& event) {
 }
 
 bool SelectionOwner::CanDispatchPropertyEvent(const x11::Event& event) {
-  return event.xlib_event().xproperty.state == PropertyDelete &&
+  return event.As<x11::PropertyNotifyEvent>()->state == x11::Property::Delete &&
          FindIncrementalTransferForEvent(event) != incremental_transfers_.end();
 }
 
@@ -296,14 +295,12 @@ void SelectionOwner::CompleteIncrementalTransfer(
 }
 
 std::vector<SelectionOwner::IncrementalTransfer>::iterator
-SelectionOwner::FindIncrementalTransferForEvent(const x11::Event& x11_event) {
-  const XEvent& event = x11_event.xlib_event();
+SelectionOwner::FindIncrementalTransferForEvent(const x11::Event& event) {
   for (auto it = incremental_transfers_.begin();
        it != incremental_transfers_.end(); ++it) {
-    if (it->window == static_cast<x11::Window>(event.xproperty.window) &&
-        it->property == static_cast<x11::Atom>(event.xproperty.atom)) {
+    const auto* prop = event.As<x11::PropertyNotifyEvent>();
+    if (it->window == prop->window && it->property == prop->atom)
       return it;
-    }
   }
   return incremental_transfers_.end();
 }

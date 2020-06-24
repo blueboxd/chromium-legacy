@@ -27,6 +27,7 @@ component("cpp") {
   ]
 
   deps = [
+    "//chromeos/constants:constants",
     "//chromeos/services/assistant/public/mojom",
     "//components/prefs",
     "//mojo/public/cpp/bindings",

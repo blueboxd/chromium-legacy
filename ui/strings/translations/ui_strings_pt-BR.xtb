@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">A calibração está concluída</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
 <translation id="2545651323591713692">Soneca</translation>
+<translation id="2570734079541893434">Gerenciar configurações</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{em 1 h}one{em # h}other{em # h}}</translation>
 <translation id="2583543531130364912">Calibrar a touchscreen</translation>
 <translation id="2666092431469916601">Parte superior</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Movido para página <ph name="PAGE_NUMBER" />, linha <ph name="ROW_NUMBER" />, coluna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
+<translation id="7952747673138230804">O Chrome OS mostra sugestões de novos conteúdos para conhecer. Ele só enviará estatísticas para melhorar a qualidade se você compartilhar os dados de uso. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mais de uma notificação não lida}one{Mais de # notificação não lida}other{Mais de # notificações não lidas}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{em 1 min}one{em # min}other{em # min}}</translation>

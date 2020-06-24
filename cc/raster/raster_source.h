@@ -56,23 +56,15 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // i.e. contents in the rect will be cropped and translated onto the canvas.
   // canvas_playback_rect can be used to replay only part of the recording in,
   // the content space, so only a sub-rect of the tile gets rastered.
+  //
+  // Note that this should only be called after the image decode controller has
+  // been set, which happens during commit.
   void PlaybackToCanvas(SkCanvas* canvas,
                         const gfx::Size& content_size,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
                         const gfx::AxisTransform2d& raster_transform,
                         const PlaybackSettings& settings) const;
-
-  // Raster this RasterSource into the given canvas. Canvas states such as
-  // CTM and clip region will be respected. This function will replace pixels
-  // in the clip region without blending.
-  //
-  // Virtual for testing.
-  //
-  // Note that this should only be called after the image decode controller has
-  // been set, which happens during commit.
-  virtual void PlaybackToCanvas(SkCanvas* canvas,
-                                ImageProvider* image_provider) const;
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.
@@ -138,6 +130,14 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
                             const gfx::Size& content_size,
                             const gfx::Rect& canvas_bitmap_rect,
                             const gfx::Rect& canvas_playback_rect) const;
+
+  // Raster the display list of this raster source into the given canvas.
+  // Canvas states such as CTM and clip region will be respected.
+  // This function will replace pixels in the clip region without blending.
+  //
+  // Virtual for testing.
+  virtual void PlaybackDisplayListToCanvas(SkCanvas* canvas,
+                                           ImageProvider* image_provider) const;
 
   // The serialized size for the largest op in this RasterSource. This is
   // accessed only on the raster threads with the context lock acquired.

@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Неуспешно – вратичката е отворена</translation>
 <translation id="3369013195428705271">Наистина ли искате да изчистите цялата история на отпечатването? Текущите задания за печат няма да бъдат изтрити.</translation>
 <translation id="3456078764689556234">Отпечатана е страница <ph name="PRINTED_PAGES" /> от <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Задания за отпечатване</translation>
 <translation id="3527036260304016759">Неуспешно – неизвестна грешка</translation>
 <translation id="3749289110408117711">Име на файла</translation>
 <translation id="38114475217616659">Изчистване на цялата история</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Неуспешно – изходният контейнер е пълен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Няма активни задания за отпечатване</translation>
 <translation id="428217921675623177">Заданията за отпечатване, по-стари от 90 дни, ще бъдат премахнати</translation>
 <translation id="4429881212383817840">Пропускът за Kerberos изтича скоро</translation>
 <translation id="445059817448385655">Стара парола</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="7162487448488904999">Галерия</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Това действие се управлява от администратора ви</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7690294790491645610">Потвърдете новата парола</translation>
 <translation id="7805768142964895445">Състояние</translation>
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8208861521865154048">Предимства</translation>
+<translation id="8347227221149377169">Задания за отпечатване</translation>
 <translation id="8701136875688985581">Този потребител се управлява от <ph name="ENROLLMENT_DOMAIN" />. Възможно е отдалечено управление на настройките и наблюдение на потребителската активност.</translation>
 <translation id="871560550817059752">Неуспешно – няма мастило</translation>
 <translation id="8747900814994928677">Потвърждаване на промяната</translation>

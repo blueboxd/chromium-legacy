@@ -118,7 +118,7 @@ ChromeFeedbackPrivateDelegate::GetStrings(
 system_logs::SystemLogsFetcher*
 ChromeFeedbackPrivateDelegate::CreateSystemLogsFetcher(
     content::BrowserContext* context) const {
-  return system_logs::BuildChromeSystemLogsFetcher();
+  return system_logs::BuildChromeSystemLogsFetcher(/*scrub_data=*/true);
 }
 
 #if defined(OS_CHROMEOS)

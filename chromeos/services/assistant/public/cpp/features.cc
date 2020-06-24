@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/constants/chromeos_features.h"
 
 #include "base/feature_list.h"
 
@@ -37,6 +38,9 @@ const base::Feature kAssistantTimersV2{"AssistantTimersV2",
 const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableAmbientAssistant{"EnableAmbientAssistant",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -58,6 +62,12 @@ const base::Feature kEnableMediaSessionIntegration{
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAmbientAssistantEnabled() {
+  return chromeos::features::IsAmbientModeEnabled() &&
+         base::FeatureList::IsEnabled(
+             assistant::features::kEnableAmbientAssistant);
+}
 
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(

@@ -203,7 +203,7 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
       uploading_supported_for_connection_type_(false),
       scheduled_upload_tasks_(0),
       uploader_factory_(
-          std::make_unique<WebRtcEventLogUploaderImpl::Factory>()),
+          std::make_unique<WebRtcEventLogUploaderImpl::Factory>(task_runner)),
       task_runner_(task_runner),
       weak_ptr_factory_(
           std::make_unique<base::WeakPtrFactory<WebRtcRemoteEventLogManager>>(
@@ -543,7 +543,8 @@ void WebRtcRemoteEventLogManager::GetHistory(
   std::vector<UploadList::UploadInfo> history;
 
   if (!BrowserContextEnabled(browser_context_id)) {
-    LOG(ERROR) << "Unknown |browser_context_id|.";
+    // Either the browser context is unknown, or more likely, it's not
+    // enabled for remote logging.
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(std::move(reply), history));
     return;
@@ -1187,18 +1188,9 @@ void WebRtcRemoteEventLogManager::MaybeCancelUpload(
     return;
   }
 
-  // Cancel the upload.
-  // * If the upload has asynchronously completed by now, the uploader would
-  //   have posted a task back to our queue to delete it and move on to the
-  //   next file; cancellation is reported as unsuccessful in that case. In that
-  //   case, we avoid resetting |uploader_| until that callback task executes.
-  // * If the upload was still underway when we cancelled it, then we can
-  //   safely reset |uploader_| and move on to the next file the next time
-  //   ManageUploadSchedule() is called.
-  const bool cancelled = uploader_->Cancel();
-  if (cancelled) {
-    uploader_.reset();
-  }
+  // Cancel the upload. `uploader_` will be released when the callback,
+  // `OnWebRtcEventLogUploadComplete`, is posted back.
+  uploader_->Cancel();
 }
 
 bool WebRtcRemoteEventLogManager::MatchesFilter(
@@ -1318,6 +1310,7 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
     // TODO(crbug.com/775415): Rename the file before uploading, so that we
     // would not retry the upload after restarting Chrome, if the upload is
     // interrupted.
+    currently_uploaded_file_ = pending_logs_.begin()->path;
     uploader_ =
         uploader_factory_->Create(*pending_logs_.begin(), std::move(callback));
     pending_logs_.erase(pending_logs_.begin());
@@ -1331,7 +1324,20 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
     bool upload_successful) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(uploader_);
+
+  // Make sure this callback refers to the currently uploaded file. This might
+  // not be the case if the upload was cancelled right after succeeding, in
+  // which case we'll get two callbacks, one reporting success and one failure.
+  // It can also be that the uploader was cancelled more than once, e.g. if
+  // the user cleared cache while PrefService were changing.
+  if (!uploader_ ||
+      uploader_->GetWebRtcLogFileInfo().path != currently_uploaded_file_) {
+    return;
+  }
+
   uploader_.reset();
+  currently_uploaded_file_.clear();
+
   ManageUploadSchedule();
 }
 

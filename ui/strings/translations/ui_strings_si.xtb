@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">ක්‍රමාංකනය සම්පූර්ණයි</translation>
 <translation id="252373100621549798">නොදන්නා තිරය</translation>
 <translation id="2545651323591713692">මඳක් නිද්‍රා කරන්න</translation>
+<translation id="2570734079541893434">සැකසීම් කළමනාකරණය කරන්න</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 පැයකින්}one{පැය #කින්}other{පැය #කින්}}</translation>
 <translation id="2583543531130364912">ඔබේ ස්පර්ශ තිරය ක්‍රමාංකනය කරන්න</translation>
 <translation id="2666092431469916601">ඉහල</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537"><ph name="PAGE_NUMBER" /> වෙනි පිටුව, <ph name="ROW_NUMBER" /> වෙනි පේළිය, <ph name="COLUMN_NUMBER" /> වෙනි තීරුව වෙත ගෙන ගියා.</translation>
 <translation id="7879499977785298635">අවහිර නොකරන්න</translation>
 <translation id="7907591526440419938">ගොනුව විවෘත කරන්න</translation>
+<translation id="7952747673138230804">Chrome OS ගවේෂණය කිරීමට නව අන්තර්ගත සඳහා යෝජනා පෙන්වයි. ඔබ භාවිත දත්ත බෙදා ගැනීමට තෝරා ගෙන ඇති නම් පමණක් ගුණත්වය වැඩි දියුණු කිරීමට සංඛ්‍යාලේඛන යවයි. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">විධානය</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 ට වැඩි නොකියවූ දැනුම්දීමක්}one{# ට වැඩි නොකියවූ දැනුම්දීම්}other{# ට වැඩි නොකියවූ දැනුම්දීම්}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 විනාඩියකින්}one{විනාඩි #කින්}other{විනාඩි #කින්}}</translation>

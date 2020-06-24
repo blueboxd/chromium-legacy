@@ -205,7 +205,7 @@ class ASH_EXPORT AshColorProvider {
   // Gets the background themed color that's calculated based on the color
   // extracted from wallpaper. For dark mode, it will be dark muted wallpaper
   // prominent color + SK_ColorBLACK 50%. For light mode, it will be light
-  // muted wallpaper prominent color + SK_ColorWHITE 50%.
+  // muted wallpaper prominent color + SK_ColorWHITE 75%.
   SkColor GetBackgroundThemedColor(AshColorMode color_mode) const;
 
   // Current color mode of system UI.

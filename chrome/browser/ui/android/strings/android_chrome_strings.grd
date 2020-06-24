@@ -251,9 +251,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_ANNOUNCEMENT" desc="Label for announcements notifications, within a list of notification categories. [CHAR-LIMIT=32]">
         Announcements
       </message>
-      <message name="IDS_NOTIFICATION_CATEGORY_MEDIA_PLAYBACK" desc="Label for media playback notifications, within a list of notification categories. [CHAR-LIMIT=32]">
-        Playing media
-      </message>
 
       <message name="IDS_NOTIFICATION_CATEGORY_PERMISSION_REQUESTS" desc="Label for permission requests, within a list of notification categories. [CHAR-LIMIT=32]">
        Permission requests
@@ -728,6 +725,45 @@ For example, some websites may respond to this request by showing you ads that a
       </message>
       <message name="IDS_CAN_MAKE_PAYMENT_TITLE" desc="Title for preference to allow websites to know whether you have payment methods available through PaymentRequest.CanMakePayment interface">
         Access payment methods
+      </message>
+      <message name="IDS_SETTINGS_CUSTOM" desc="Label for a custom option in a dropdown menu.">
+        Custom
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_TITLE" desc="Title of the Secure DNS settings option">
+        Use secure DNS
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_DESCRIPTION" desc="Secondary, continued explanation of secure DNS in Privacy options">
+        Determines how to connect to websites over a secure connection
+      </message>
+      <message name="IDS_SETTINGS_AUTOMATIC_MODE_LABEL" desc="Text of the radio button that puts secure DNS in auto-upgrade mode">
+        Use your current service provider
+      </message>
+      <message name="IDS_SETTINGS_AUTOMATIC_MODE_DESCRIPTION" desc="Descriptive text that appears below IDS_SETTINGS_AUTOMATIC_MODE_LABEL.">
+        Secure DNS may not be available all the time
+      </message>
+      <message name="IDS_SETTINGS_AUTOMATIC_MODE_SUMMARY" desc="Short description of automatic mode">
+        Automatic
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DROPDOWN_MODE_DESCRIPTION" desc="Text of the radio button that allows a secure resolver to be selected from a dropdown menu">
+        Choose another provider:
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DROPDOWN_MODE_PRIVACY_POLICY" desc="Text that displays a link to the privacy policy of the resolver selected from a dropdown menu">
+        See this provider's <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>privacy policy<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_MANAGED_ENVIRONMENT" desc="Substring of the secure DNS setting when secure DNS is disabled due to detection of a managed environment">
+        This setting is disabled on managed browsers
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_DISABLED_FOR_PARENTAL_CONTROL" desc="Substring of the secure DNS setting when secure DNS is disabled due to detection of OS-level parental controls">
+        This setting is disabled because parental controls are on
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_CUSTOM_PLACEHOLDER" desc="Placeholder text for a textbox where users can enter a custom secure DNS provider">
+        Provider URL
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_CUSTOM_FORMAT_ERROR" desc="Error text for an incorrectly formatted entry for the custom secure DNS provider">
+        Enter a correctly formatted URL
+      </message>
+      <message name="IDS_SETTINGS_SECURE_DNS_CUSTOM_CONNECTION_ERROR" desc="Error text for a custom secure DNS provider entry to which a probe connection fails">
+        Please verify that this is a valid provider or try again later
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Title of the Clear Browsing Data screen. [CHAR-LIMIT=32]">
         Clear browsing data

@@ -98,6 +98,8 @@ class InstallFinalizer {
                            bool shortcut_created,
                            content::WebContents* web_contents);
 
+  virtual void RemoveLegacyInstallFinalizerForTesting() {}
+
   virtual void Start() {}
   virtual void Shutdown() {}
 

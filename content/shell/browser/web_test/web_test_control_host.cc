@@ -794,6 +794,15 @@ void WebTestControlHost::TestFinishedInSecondaryRenderer() {
 
 // Enqueue an image copy output request.
 void WebTestControlHost::EnqueueSurfaceCopyRequest() {
+  // Under fuzzing, the renderer may close the |main_window_| while we're
+  // capturing test results, as demonstrated by https://crbug.com/1098835.
+  // We must handle this bad behaviour, and we just end the test without
+  // recording any results.
+  if (!main_window_) {
+    OnTestFinished();
+    return;
+  }
+
   auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
   rwhv->CopyFromSurface(gfx::Rect(), gfx::Size(),
                         base::BindOnce(&WebTestControlHost::OnPixelDumpCaptured,

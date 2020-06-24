@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Calibrarea este finalizată</translation>
 <translation id="252373100621549798">Afișaj necunoscut</translation>
 <translation id="2545651323591713692">Amână</translation>
+<translation id="2570734079541893434">Gestionează setările</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{în 1 h}few{în # h}other{în # h}}</translation>
 <translation id="2583543531130364912">Calibrează ecranul tactil</translation>
 <translation id="2666092431469916601">Sus</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">S-a mutat în pagina <ph name="PAGE_NUMBER" />, rândul <ph name="ROW_NUMBER" />, coloana <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Nu bloca</translation>
 <translation id="7907591526440419938">Deschide fișierul</translation>
+<translation id="7952747673138230804">Sistemul de operare Chrome afișează sugestii pentru conținut nou de explorat. Trimite statistici pentru a îmbunătăți calitatea numai dacă ai ales să permiți accesul la datele de utilizare. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Tasta Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mai mult de o notificare necitită}few{Mai mult de # notificări necitite}other{Mai mult de # de notificări necitite}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{în 1 m}few{în # m}other{în # m}}</translation>

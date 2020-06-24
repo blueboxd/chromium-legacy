@@ -67,7 +67,8 @@
     </template>
 
     <template is="dom-if" if="[[!isCompletedPrintJob_(jobEntry)]]" restamp>
-      <div id="activeStatusContainer" class="padded-left flex-center">
+      <div id="activeStatusContainer"
+          class="medium-text padded-left flex-center">
         <div id="numericalProgress" aria-hidden="true">
           [[readableProgress_]]
         </div>

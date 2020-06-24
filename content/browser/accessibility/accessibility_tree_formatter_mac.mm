@@ -380,16 +380,14 @@ NSValue* AccessibilityTreeFormatterMac::PropertyNodeToRange(
   base::Optional<int> loc = dictnode.FindIntKey("loc");
   if (!loc) {
     LOG(ERROR) << "Failed to parse " << propnode.original_property
-               << " to NSRange: no loc key or loc key value "
-               << dictnode.name_or_value << " is not a number";
+               << " to NSRange: no loc or loc is not a number";
     return nil;
   }
 
   base::Optional<int> len = dictnode.FindIntKey("len");
   if (!len) {
     LOG(ERROR) << "Failed to parse " << propnode.original_property
-               << " to NSRange: no len key or len key value "
-               << dictnode.name_or_value << " is not a number";
+               << " to NSRange: no len or len is not a number";
     return nil;
   }
 

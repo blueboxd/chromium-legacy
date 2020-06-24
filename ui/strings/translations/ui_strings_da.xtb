@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibreringen er fuldført</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="2545651323591713692">Udsæt</translation>
+<translation id="2570734079541893434">Administrer indstillinger</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{om 1 t.}one{om # t.}other{om # t.}}</translation>
 <translation id="2583543531130364912">Kalibrer din touchskærm</translation>
 <translation id="2666092431469916601">Top</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Flyttet til side <ph name="PAGE_NUMBER" />, række <ph name="ROW_NUMBER" />, kolonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Bloker ikke</translation>
 <translation id="7907591526440419938">Åbn fil</translation>
+<translation id="7952747673138230804">Chrome OS viser forslag til nyt indhold, du kan tjekke ud. Der sendes kun statistik til forbedring af forslag, hvis du har valgt at dele dine brugsdata. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Kommando</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Der er mere end 1 ulæst notifikation}one{Der er mere end # ulæst notifikation}other{Der er mere end # ulæste notifikationer}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{om 1 min}one{om # min}other{om # min}}</translation>

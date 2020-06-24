@@ -126,6 +126,7 @@ void ArCoreDevice::RequestSession(
 
   DCHECK(!session_state_->pending_request_session_callback_);
   session_state_->pending_request_session_callback_ = std::move(callback);
+  session_state_->enabled_features_ = options->enabled_features;
 
   bool use_dom_overlay = base::Contains(
       options->enabled_features, device::mojom::XRSessionFeature::DOM_OVERLAY);
@@ -335,7 +336,7 @@ void ArCoreDevice::RequestArCoreGlInitialization(
         &ArCoreGl::Initialize,
         session_state_->arcore_gl_thread_->GetArCoreGl()->GetWeakPtr(),
         arcore_session_utils_.get(), arcore_factory_.get(), drawing_widget,
-        frame_size, rotation,
+        frame_size, rotation, session_state_->enabled_features_,
         CreateMainThreadCallback(base::BindOnce(
             &ArCoreDevice::OnArCoreGlInitializationComplete, GetWeakPtr()))));
     return;

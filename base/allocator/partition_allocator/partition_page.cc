@@ -19,22 +19,6 @@ namespace internal {
 
 namespace {
 
-void DecommitPages(void* address, size_t size) {
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-#if defined(OS_MACOSX)
-  SetSystemPagesAccess(address, size, PageReadWrite);
-  memset(address, 0, size);
-#endif
-  SetSystemPagesAccess(address, size, PageInaccessible);
-  DecommitSystemPages(address, size);
-
-  internal::AddressPoolManager::GetInstance()->Free(
-      internal::GetDirectMapPool(), address, size);
-#else
-  NOTREACHED();
-#endif
-}
-
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap
 PartitionDirectUnmap(PartitionPage<thread_safe>* page) {
@@ -201,7 +185,12 @@ void PartitionPage<thread_safe>::DecommitIfPossible(
 void DeferredUnmap::Unmap() {
   PA_DCHECK(ptr && size > 0);
   if (IsManagedByPartitionAlloc(ptr)) {
-    DecommitPages(ptr, size);
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+    internal::AddressPoolManager::GetInstance()->Free(
+        internal::GetDirectMapPool(), ptr, size);
+#else
+    NOTREACHED();
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
   } else {
     FreePages(ptr, size);
   }

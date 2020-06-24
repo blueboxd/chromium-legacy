@@ -4,6 +4,13 @@
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 
+#if defined(OS_MACOSX)
+#include <sys/mman.h>
+#endif
+
+#include <algorithm>
+#include <limits>
+
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
@@ -11,12 +18,39 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 
-#include <limits>
-
 namespace base {
 namespace internal {
 
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+
+namespace {
+
+void DecommitPages(void* address, size_t size) {
+#if defined(OS_MACOSX)
+  // MAP_FIXED replaces an existing mapping with a new one, when the address is
+  // already part of a mapping. Since newly-created mappings are guaranteed to
+  // be zero-filled, this has the desired effect. It is only required on macOS,
+  // as on other operating systems, |DecommitSystemPages()| provides the same
+  // behavior.
+  void* ptr = mmap(address, size, PROT_NONE,
+                   MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  PA_CHECK(ptr == address);
+#else
+  SetSystemPagesAccess(address, size, PageInaccessible);
+  DecommitSystemPages(address, size);
+#endif
+}
+
+void CommitPages(void* address, size_t size) {
+#if defined(OS_MACOSX)
+  SetSystemPagesAccess(address, size, PageReadWrite);
+#else
+  PA_CHECK(RecommitSystemPages(address, size, PageReadWrite));
+  SetSystemPagesAccess(address, size, PageReadWrite);
+#endif
+}
+
+}  // namespace
 
 constexpr size_t AddressPoolManager::Pool::kMaxBits;
 
@@ -53,13 +87,17 @@ void AddressPoolManager::Remove(pool_handle handle) {
 
 char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
   Pool* pool = GetPool(handle);
-  PA_DCHECK(pool->IsInitialized());
-  return reinterpret_cast<char*>(pool->FindChunk(length));
+  char* ptr = reinterpret_cast<char*>(pool->FindChunk(length));
+  if (LIKELY(ptr))
+    CommitPages(ptr, length);
+  return ptr;
 }
 
 void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
+  PA_DCHECK(0 < handle && handle <= kNumPools);
   Pool* pool = GetPool(handle);
   PA_DCHECK(pool->IsInitialized());
+  DecommitPages(ptr, length);
   pool->FreeChunk(reinterpret_cast<uintptr_t>(ptr), length);
 }
 

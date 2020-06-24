@@ -139,6 +139,11 @@ base::Optional<base::TimeDelta> InteractiveDetector::GetFirstInputDelay()
   return page_event_times_.first_input_delay;
 }
 
+WTF::Vector<base::Optional<base::TimeDelta>>
+InteractiveDetector::GetFirstInputDelaysAfterBackForwardCacheRestore() const {
+  return page_event_times_.first_input_delays_after_back_forward_cache_restore;
+}
+
 base::Optional<base::TimeTicks> InteractiveDetector::GetFirstInputTimestamp()
     const {
   return page_event_times_.first_input_timestamp;
@@ -189,7 +194,7 @@ bool InteractiveDetector::PageWasBackgroundedSinceEvent(
   }
 
   return false;
-}  // namespace blink
+}
 
 void InteractiveDetector::HandleForInputDelay(
     const Event& event,
@@ -272,6 +277,19 @@ void InteractiveDetector::HandleForInputDelay(
         "PageLoad.InteractiveTiming.LongInputDelay", g_num_long_input_events,
         1);
     g_num_long_input_events++;
+  }
+
+  // ELements in |first_input_delays_after_back_forward_cache_restore| is
+  // allocated when the page is restored from the back-forward cache. If the
+  // last element exists and this is nullopt value, the first input has not come
+  // yet after the last time when the page is restored from the cache.
+  if (!page_event_times_.first_input_delays_after_back_forward_cache_restore
+           .IsEmpty() &&
+      !page_event_times_.first_input_delays_after_back_forward_cache_restore
+           .back()
+           .has_value()) {
+    page_event_times_.first_input_delays_after_back_forward_cache_restore
+        .back() = delay;
   }
 
   if (GetSupplementable()->Loader()) {
@@ -680,6 +698,13 @@ void InteractiveDetector::DidObserveFirstScrollDelay(
       GetSupplementable()->Loader()->DidChangePerformanceTiming();
     }
   }
+}
+
+void InteractiveDetector::OnRestoredFromBackForwardCache() {
+  // Allocate the last element with 0, which indicates that the first input
+  // after this navigation doesn't happen yet.
+  page_event_times_.first_input_delays_after_back_forward_cache_restore
+      .push_back(base::nullopt);
 }
 
 }  // namespace blink

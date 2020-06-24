@@ -245,7 +245,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.cookieControlsShown = false;
         }
         viewParams.onUiClosingCallback = () -> {
-            mCookieBridge.onUiClosing();
+            // |this| may have already been destroyed by the time this is called.
+            if (mCookieBridge != null) mCookieBridge.onUiClosing();
         };
 
         mDelegate.initPreviewUiParams(viewParams, mRunAfterDismissConsumer);

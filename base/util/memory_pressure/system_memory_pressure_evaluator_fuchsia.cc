@@ -34,9 +34,7 @@ SystemMemoryPressureEvaluatorFuchsia::SystemMemoryPressureEvaluatorFuchsia(
     std::unique_ptr<util::MemoryPressureVoter> voter)
     : util::SystemMemoryPressureEvaluator(std::move(voter)), binding_(this) {
   binding_.set_error_handler([](zx_status_t status) {
-    // TODO(https://crbug.com/1020698): Update fuchsia.web docs to make this a
-    // required service, and make this a FATAL log.
-    ZX_LOG(WARNING, status) << "fuchsia.memorypressure.Provider disconnected.";
+    ZX_LOG(FATAL, status) << "fuchsia.memorypressure.Provider disconnected";
   });
 
   DVLOG(1) << "Registering for memory pressure updates.";

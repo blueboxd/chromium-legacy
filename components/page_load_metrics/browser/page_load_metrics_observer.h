@@ -364,9 +364,12 @@ class PageLoadMetricsObserver {
   virtual void OnFirstContentfulPaintInPage(
       const mojom::PageLoadTiming& timing) {}
 
-  // This is called once every time when the page is restored from the
+  // These are called once every time when the page is restored from the
   // back-forward cache. |index| indicates |index|-th restore.
   virtual void OnFirstPaintAfterBackForwardCacheRestoreInPage(
+      const mojom::BackForwardCacheTiming& timing,
+      size_t index) {}
+  virtual void OnFirstInputAfterBackForwardCacheRestoreInPage(
       const mojom::BackForwardCacheTiming& timing,
       size_t index) {}
 

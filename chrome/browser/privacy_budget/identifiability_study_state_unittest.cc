@@ -12,7 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/privacy_budget/privacy_budget_prefs.h"
-#include "chrome/browser/privacy_budget/scoped_privacy_budget_config.h"
+#include "chrome/common/privacy_budget/privacy_budget_features.h"
+#include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -227,19 +228,18 @@ TEST_F(IdentifiabilityStudySettingsTest, UpdatesActive) {
 // Verify that the study parameters don't overflow.
 TEST(IdentifiabilityStudySettingsStandaloneTest, HighClamps) {
   auto params = test::ScopedPrivacyBudgetConfig::Parameters{};
-  params.max_surfaces =
-      IdentifiabilityStudyState::kMaxSampledIdentifiableSurfaces + 1;
+  params.max_surfaces = features::kMaxIdentifiabilityStudyMaxSurfaces + 1;
   params.surface_selection_rate =
-      IdentifiabilityStudyState::kMaxSamplingRateDenominator + 1;
+      features::kMaxIdentifiabilityStudySurfaceSelectionRate + 1;
   test::ScopedPrivacyBudgetConfig config(params);
 
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   test_utils::InspectableIdentifiabilityStudySettings settings(&pref_service);
 
-  EXPECT_EQ(IdentifiabilityStudyState::kMaxSampledIdentifiableSurfaces,
+  EXPECT_EQ(features::kMaxIdentifiabilityStudyMaxSurfaces,
             settings.max_active_surfaces());
-  EXPECT_EQ(IdentifiabilityStudyState::kMaxSamplingRateDenominator,
+  EXPECT_EQ(features::kMaxIdentifiabilityStudySurfaceSelectionRate,
             settings.surface_selection_rate());
 }
 
@@ -268,7 +268,7 @@ TEST(IdentifiabilityStudySettingsStandaloneTest, Disabled) {
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   test_utils::InspectableIdentifiabilityStudySettings settings(&pref_service);
 
-  EXPECT_FALSE(settings.enabled());
+  EXPECT_FALSE(settings.IsActive());
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface1));
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface2));
   EXPECT_FALSE(settings.ShouldSampleSurface(kRegularSurface3));

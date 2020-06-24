@@ -726,6 +726,14 @@ public class Tab {
                 callback.bringTabToFront();
             }
         }
+
+        @Override
+        public void onBackgroundColorChanged(int color) {
+            StrictModeWorkaround.apply();
+            for (TabCallback callback : mCallbacks) {
+                callback.onBackgroundColorChanged(color);
+            }
+        }
     }
 
     private static final class ErrorPageCallbackClientImpl extends IErrorPageCallbackClient.Stub {

@@ -233,7 +233,7 @@ sk_sp<SkPicture> DeserializeOopPicture(const void* data,
   }
   memcpy(&pic_id, data, sizeof(pic_id));
 
-  auto* context = reinterpret_cast<DeserializationContext*>(ctx);
+  auto* context = reinterpret_cast<PictureDeserializationContext*>(ctx);
   auto iter = context->find(pic_id);
   if (iter == context->end() || !iter->second) {
     // When we don't have the out-of-process picture available, we return
@@ -244,17 +244,18 @@ sk_sp<SkPicture> DeserializeOopPicture(const void* data,
   return iter->second;
 }
 
-SkSerialProcs SerializationProcs(SerializationContext* ctx) {
+SkSerialProcs SerializationProcs(PictureSerializationContext* picture_ctx) {
   SkSerialProcs procs;
   procs.fPictureProc = SerializeOopPicture;
-  procs.fPictureCtx = ctx;
+  procs.fPictureCtx = picture_ctx;
   return procs;
 }
 
-SkDeserialProcs DeserializationProcs(DeserializationContext* ctx) {
+SkDeserialProcs DeserializationProcs(
+    PictureDeserializationContext* picture_ctx) {
   SkDeserialProcs procs;
   procs.fPictureProc = DeserializeOopPicture;
-  procs.fPictureCtx = ctx;
+  procs.fPictureCtx = picture_ctx;
   return procs;
 }
 

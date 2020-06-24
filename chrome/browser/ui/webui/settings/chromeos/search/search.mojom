@@ -97,6 +97,18 @@ struct SearchResult {
   SearchResultIdentifier id;
 };
 
+// Used to observe changes to search results.
+interface SearchResultsObserver {
+  // Called when the availability of one or more search results has changed. In
+  // this context, "availability" refers to whether a search result can be
+  // returned based on the user's current state. E.g., "Cellular" results are
+  // only shown if the device has an attached modem, so this function would be
+  // called whenever the user plugs in or unplugs a USB modem. Clients can use
+  // this function to ensure that they do not show "stale" results which are no
+  // longer actionable by the user.
+  OnSearchResultAvailabilityChanged();
+};
+
 // Provides settings search results. Implemented in the browser process;
 // intended to be called from settings JS and Launcher C++.
 interface SearchHandler {
@@ -112,4 +124,8 @@ interface SearchHandler {
          uint32 max_num_results,
          ParentResultBehavior parent_result_behavior) =>
              (array<SearchResult> results);
+
+  // Adds an observer of search results. Disconnected observers are discarded;
+  // to stop observing, close the connection.
+  Observe(pending_remote<SearchResultsObserver> observer);
 };

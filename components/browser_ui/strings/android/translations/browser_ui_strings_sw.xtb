@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Uliza kabla ya kuruhusu tovuti zibuni ramani ya 3D ya mazingira yako au kufuatilia mkao wa kamera (inapendekezwa)</translation>
 <translation id="2212565012507486665">Ruhusu vidakuzi</translation>
 <translation id="2289270750774289114">Niulize wakati tovuti inataka kugundua vifaa vya Bluetooth vilivyo karibu (inapendekezwa)</translation>
+<translation id="2315043854645842844">Uchaguzi wa cheti cha sehemu ya seva teja hautumiwi na mfumo wa uendeshaji.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2402980924095424747">MB <ph name="MEGABYTES" /></translation>
 <translation id="2434158240863470628">Upakuaji umekamilika <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Tovuti inatumia kamera yako</translation>
 <translation id="7817023149356982970">Utaondolewa kwenye akaunti ya tovuti hii.</translation>
 <translation id="7828557259026017104">Vidakuzi ni faili zinazoundwa na tovuti unazotembelea. Tovuti huvitumia kukumbuka mapendeleo yako. Vidakuzi vya washirika wengine hutengenezwa na tovuti nyingine. Tovuti hizo humiliki baadhi ya maudhui kama vile matangazo au picha ambazo unaona kwenye kurasa za wavuti unazotembelea.</translation>
+<translation id="7835852323729233924">Kucheza maudhui</translation>
 <translation id="7846076177841592234">Ghairi uchaguzi</translation>
 <translation id="7846621471902887024">Utaondolewa kwenye akaunti za tovuti zote.</translation>
 <translation id="7882806643839505685">Ruhusu sauti katika tovuti mahususi.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Una uhakika unataka kufuta data zote za ndani, ikiwemo vidakuzi, na kuweka upya ruhusa za tovuti hii?</translation>
 <translation id="8007176423574883786">Imezimwa kwa kifaa hiki</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
+<translation id="8068648041423924542">Imeshindwa kuchagua cheti.</translation>
 <translation id="8087000398470557479">Maudhui haya yanatoka <ph name="DOMAIN_NAME" />, yamewasilishwa na Google.</translation>
 <translation id="8116925261070264013">Imezimwa</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Zuia vidakuzi katika tovuti maalum.</translation>
 <translation id="8959122750345127698">Kudurusu hakufikiki: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Kufikia maikrofoni yako</translation>
 <translation id="965817943346481315">Zuia ikiwa tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma (inapendekezwa)</translation>
 </translationbundle>

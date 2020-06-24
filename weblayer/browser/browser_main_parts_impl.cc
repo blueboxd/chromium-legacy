@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "services/service_manager/embedder/result_codes.h"
@@ -36,16 +35,19 @@
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
+#include "base/command_line.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/javascript_dialogs/android/app_modal_dialog_view_android.h"  // nogncheck
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"  // nogncheck
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "weblayer/browser/android/metrics/uma_utils.h"
 #include "weblayer/browser/java/jni/MojoInterfaceRegistrar_jni.h"
+#include "weblayer/browser/weblayer_factory_impl_android.h"
 #endif
 
 #if defined(USE_X11)
@@ -112,6 +114,15 @@ int BrowserMainPartsImpl::PreCreateThreads() {
       std::make_unique<crash_reporter::ChildProcessCrashObserver>());
 
   crash_reporter::InitializeCrashKeys();
+
+  // MediaSession was implemented in M85, and requires both implementation and
+  // client libraries to be at least that new. The version check has to be in
+  // the browser process, but the command line flag is automatically propagated
+  // to renderers.
+  if (WebLayerFactoryImplAndroid::GetClientMajorVersion() < 85) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kDisableMediaSessionAPI);
+  }
 #endif
 
   return service_manager::RESULT_CODE_NORMAL_EXIT;

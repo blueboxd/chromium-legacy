@@ -44,6 +44,7 @@
 <translation id="1346748346194534595">Баруун</translation>
 <translation id="1351937230027495976">Цэсийг буулгах</translation>
 <translation id="1383876407941801731">Хайлт</translation>
+<translation id="1391102559483454063">Асаалттай</translation>
 <translation id="1419738280318246476">Мэдэгдлийн үйлдлийг гүйцэтгэхийн тулд төхөөрөмжийн түгжээг тайлна уу</translation>
 <translation id="1420408895951708260">Шөнийн гэрлийг унтраах/асаах. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Тийм</translation>
@@ -171,6 +172,7 @@
 <translation id="2996462380875591307">Суурилуулсан томруулагчийг идэвхжүүлсэн. Үүнийг унтраах/асаахын тулд Ctrl+Search+D-г дахин дарна уу.</translation>
 <translation id="3000461861112256445">Моно аудио</translation>
 <translation id="3009178788565917040">Гаралт</translation>
+<translation id="3033545621352269033">Асаалттай</translation>
 <translation id="3051128274746680507">Таны хяналттай хэрэглэгчийн профайлыг удахгүй устгана. Нэмэлт мэдээлэл авахын тулд нэвтэрнэ үү.</translation>
 <translation id="3055162170959710888">Та энэ төхөөрөмжийг өнөөдөр <ph name="USED_TIME" /> ашигласан</translation>
 <translation id="3076778413190775903">Төлөвийн мэдээллийн хэсэг, цаг <ph name="TIME" />,
@@ -275,6 +277,7 @@
 <translation id="4146833061457621061">Хөгжим тоглуулах</translation>
 <translation id="4181841719683918333">Хэл</translation>
 <translation id="4195877955194704651">Автомат даралтын товчлуур</translation>
+<translation id="4197790712631116042">Унтраалттай</translation>
 <translation id="4215497585250573029">VPN тохиргоо</translation>
 <translation id="4217571870635786043">Заавар</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -305,6 +308,7 @@
 <translation id="4513946894732546136">Санал дүгнэлт</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth төхөөрөмж хослох зөвшөөрөл хүсч байна.</translation>
 <translation id="453661520163887813">Дүүртэл <ph name="TIME" /> үлдсэн</translation>
+<translation id="4560576029703263363">Асаалттай</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Нууц үгийг нуух</translation>
 <translation id="4570957409596482333">Ярихаар сонгох товчлуур</translation>
@@ -355,6 +359,7 @@
 <translation id="5283198616748585639">1 минут нэмэх</translation>
 <translation id="528468243742722775">Төгсгөл</translation>
 <translation id="5286194356314741248">Скан хийж байна</translation>
+<translation id="5297704307811127955">Унтраалттай</translation>
 <translation id="5302048478445481009">Хэл</translation>
 <translation id="5313326810920013265">Bluetooth тохиргоо</translation>
 <translation id="5331975486040154427">USB-C төхөөрөмж (ард талын портны зүүн тал)</translation>
@@ -600,6 +605,7 @@
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />, утасны батарей <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" />-д зориулж түгжээг тайлахын тулд Enter дээр дарна уу</translation>
 <translation id="8261506727792406068">Устгах</translation>
+<translation id="828708037801473432">Унтраалттай</translation>
 <translation id="8297006494302853456">Сул</translation>
 <translation id="8308637677604853869">Өмнөх цэс</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

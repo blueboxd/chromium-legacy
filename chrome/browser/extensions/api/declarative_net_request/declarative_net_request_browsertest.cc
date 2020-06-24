@@ -709,8 +709,9 @@ using DeclarativeNetRequestBrowserTest_Packed =
 using DeclarativeNetRequestBrowserTest_Unpacked =
     DeclarativeNetRequestBrowserTest;
 
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if (defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG)
 // TODO: test times out on win7-debug. http://crbug.com/900447.
+// Also times out on mac-debug: https://crbug.com/900447
 #define MAYBE_BlockRequests_UrlFilter DISABLED_BlockRequests_UrlFilter
 #else
 #define MAYBE_BlockRequests_UrlFilter BlockRequests_UrlFilter

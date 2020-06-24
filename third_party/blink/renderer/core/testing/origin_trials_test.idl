@@ -58,4 +58,7 @@ interface OriginTrialsTest {
 
     // These are available if the associated navigation trial is available.
     [RuntimeEnabled=OriginTrialsSampleAPINavigation] boolean navigationMethod();
+
+    // These are available if the associated third-party trial is available.
+    [RuntimeEnabled=OriginTrialsSampleAPIThirdParty] readonly attribute boolean thirdPartyAttribute;
 };

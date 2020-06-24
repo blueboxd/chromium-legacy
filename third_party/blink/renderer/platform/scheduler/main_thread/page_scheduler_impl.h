@@ -286,9 +286,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   //
   // This pool allows aligned wake ups and unaligned wake ups if there hasn't
   // been a recent wake up.
-  //
-  // TODO(https://crbug.com/1075553): Implement unaligned wake ups if there
-  // hasn't been a recent wake up.
   WakeUpBudgetPool* same_origin_wake_up_budget_pool_;
   // Throttles wake ups in throttleable TaskQueues of frames that are
   // cross-origin with the main frame.

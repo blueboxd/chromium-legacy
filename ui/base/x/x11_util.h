@@ -184,6 +184,18 @@ void SetProperty(x11::Window window,
   SetArrayProperty(window, name, type, std::vector<T>{value});
 }
 
+template <typename T>
+void SendEvent(const T& event, x11::Window target, x11::EventMask mask) {
+  static_assert(T::type_id > 0, "T must be an x11::*Event type");
+  auto event_bytes = x11::Write(event);
+  DCHECK_LE(event_bytes.size(), 32ul);
+  event_bytes.resize(32);
+
+  x11::SendEventRequest send_event{false, target, mask};
+  std::copy(event_bytes.begin(), event_bytes.end(), send_event.event.begin());
+  x11::Connection::Get()->SendEvent(send_event);
+}
+
 COMPONENT_EXPORT(UI_BASE_X)
 void DeleteProperty(x11::Window window, x11::Atom name);
 
@@ -210,6 +222,12 @@ void LowerWindow(x11::Window window);
 
 COMPONENT_EXPORT(UI_BASE_X)
 void DefineCursor(x11::Window window, x11::Cursor cursor);
+
+COMPONENT_EXPORT(UI_BASE_X)
+x11::Window CreateDummyWindow(const std::string& name = "");
+
+COMPONENT_EXPORT(UI_BASE_X)
+x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym);
 
 // These functions cache their results ---------------------------------
 

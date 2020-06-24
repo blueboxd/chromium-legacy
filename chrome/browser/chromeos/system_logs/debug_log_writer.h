@@ -8,39 +8,22 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace chromeos {
+namespace debug_log_writer {
 
-// Class for writing logs collected from debugd to a specified location. Also
-// supports writing the Chrome user log. Currently used by
-// chrome://net-internals#chromeos.
-class DebugLogWriter {
- public:
-  // Called once StoreDebugLogs is complete. Takes two parameters:
-  // - log_path: where the log file was saved in the case of success;
-  // - succeeded: was the log file saved successfully.
-  typedef base::OnceCallback<void(const base::FilePath& log_path,
-                                  bool succeeded)>
-      StoreLogsCallback;
+// Stores debug logs collected from debugd as a .tgz archive to |out_dir|.
+// If |include_chrome_logs| is true, the Chrome user logs are included.
+// |callback| is invoked on success with the full file path of the archive,
+// or with nullopt on failure.
+void StoreLogs(
+    const base::FilePath& out_dir,
+    bool include_chrome_logs,
+    base::OnceCallback<void(base::Optional<base::FilePath> logs_path)>
+        callback);
 
-  // Stores debug logs in either .tgz or .tar archive (depending on value of
-  // |should_compress|) on the |fileshelf|. The file is created on the
-  // worker pool, then writing to it is triggered from the UI thread, and
-  // finally it is closed (on success) or deleted (on failure) on the worker
-  // pool, prior to calling |callback|.
-  static void StoreLogs(const base::FilePath& fileshelf,
-                        bool should_compress,
-                        StoreLogsCallback callback);
-
-  // Stores both system and user logs in .tgz archive on the |fileshelf|.
-  static void StoreCombinedLogs(const base::FilePath& fileshelf,
-                                StoreLogsCallback callback);
-
- private:
-  DebugLogWriter();
-  DISALLOW_COPY_AND_ASSIGN(DebugLogWriter);
-};
-
+}  // namespace debug_log_writer
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_DEBUG_LOG_WRITER_H_

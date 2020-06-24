@@ -177,8 +177,9 @@ void BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread() {
 #if defined(OS_WIN)
   UMA_HISTOGRAM_ENUMERATION(
       "Accessibility.WinHighContrastTheme",
-      ui::NativeTheme::GetInstanceForNativeUi()->GetHighContrastColorScheme(),
-      ui::NativeTheme::HighContrastColorScheme::kMaxValue);
+      ui::NativeTheme::GetInstanceForNativeUi()
+          ->GetPlatformHighContrastColorScheme(),
+      ui::NativeTheme::PlatformHighContrastColorScheme::kMaxValue);
 #endif
 }
 

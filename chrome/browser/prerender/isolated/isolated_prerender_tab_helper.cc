@@ -112,6 +112,33 @@ void OnGotCookieList(
                  kPrefetchNotEligibleUserHasCookies);
     return;
   }
+
+  // Cookies are tricky because cookies for different paths or a higher level
+  // domain (e.g.: m.foo.com and foo.com) may not show up in |cookie_list|, but
+  // they will show up in |excluded_cookies|. To check for any cookies for a
+  // domain, compare the domains of the prefetched |url| and the domains of all
+  // the returned cookies.
+  bool excluded_cookie_has_tld = false;
+  for (const auto& cookie_result : excluded_cookies) {
+    if (cookie_result.cookie.IsExpired(base::Time::Now())) {
+      // Expired cookies don't count.
+      continue;
+    }
+
+    if (url.DomainIs(cookie_result.cookie.DomainWithoutDot())) {
+      excluded_cookie_has_tld = true;
+      break;
+    }
+  }
+
+  if (excluded_cookie_has_tld) {
+    std::move(result_callback)
+        .Run(url, false,
+             IsolatedPrerenderTabHelper::PrefetchStatus::
+                 kPrefetchNotEligibleUserHasCookies);
+    return;
+  }
+
   std::move(result_callback).Run(url, true, base::nullopt);
 }
 
@@ -954,6 +981,7 @@ void IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
   }
 
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
+  options.set_return_excluded_cookies();
   default_storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, options,
       base::BindOnce(&OnGotCookieList, url, std::move(result_callback)));

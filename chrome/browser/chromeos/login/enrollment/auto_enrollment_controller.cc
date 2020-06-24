@@ -325,6 +325,9 @@ const char AutoEnrollmentController::kInitialEnrollmentNever[] = "never";
 const char AutoEnrollmentController::kInitialEnrollmentOfficialBuild[] =
     "official";
 
+const char AutoEnrollmentController::kEnablePsmAlways[] = "always";
+const char AutoEnrollmentController::kEnablePsmNever[] = "never";
+
 // static
 bool AutoEnrollmentController::IsFREEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -368,6 +371,26 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
     return false;
 
   LOG(FATAL) << "Unknown Initial Enrollment mode: " << command_line_mode << ".";
+  return false;
+}
+
+// static
+bool AutoEnrollmentController::IsPrivateSetMembershipEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kEnterpriseEnablePrivateSetMembership))
+    return false;  // Disabled by default.
+
+  std::string command_line_mode = command_line->GetSwitchValueASCII(
+      switches::kEnterpriseEnablePrivateSetMembership);
+  if (command_line_mode.empty() || command_line_mode == kEnablePsmAlways)
+    return true;
+
+  if (command_line_mode == kEnablePsmNever) {
+    return false;
+  }
+
+  LOG(FATAL) << "Unknown PSM enablement mode: " << command_line_mode << ".";
   return false;
 }
 

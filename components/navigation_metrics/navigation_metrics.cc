@@ -15,6 +15,17 @@
 
 namespace navigation_metrics {
 
+const char kMainFrameScheme[] = "Navigation.MainFrameScheme2";
+const char kMainFrameSchemeDifferentPage[] =
+    "Navigation.MainFrameSchemeDifferentPage2";
+const char kMainFrameSchemeOTR[] = "Navigation.MainFrameSchemeOTR2";
+const char kMainFrameSchemeDifferentPageOTR[] =
+    "Navigation.MainFrameSchemeDifferentPageOTR2";
+const char kMainFrameHasRTLDomain[] = "Navigation.MainFrameHasRTLDomain2";
+const char kMainFrameHasRTLDomainDifferentPage[] =
+    "Navigation.MainFrameHasRTLDomainDifferentPage2";
+const char kMainFrameProfileType[] = "Navigation.MainFrameProfileType2";
+
 namespace {
 
 const char* const kSchemeNames[] = {
@@ -58,29 +69,29 @@ void RecordMainFrameNavigation(
     bool is_off_the_record,
     profile_metrics::BrowserProfileType profile_type) {
   Scheme scheme = GetScheme(url);
-  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme", scheme,
+  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameScheme2", scheme,
                             Scheme::COUNT);
   if (!is_same_document) {
-    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage", scheme,
-                              Scheme::COUNT);
-    UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomainDifferentPage",
+    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPage2",
+                              scheme, Scheme::COUNT);
+    UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomainDifferentPage2",
                           base::i18n::StringContainsStrongRTLChars(
                               url_formatter::IDNToUnicode(url.host())));
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomain",
+  UMA_HISTOGRAM_BOOLEAN("Navigation.MainFrameHasRTLDomain2",
                         base::i18n::StringContainsStrongRTLChars(
                             url_formatter::IDNToUnicode(url.host())));
 
   if (is_off_the_record) {
-    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeOTR", scheme,
+    UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeOTR2", scheme,
                               Scheme::COUNT);
     if (!is_same_document) {
-      UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR",
+      UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR2",
                                 scheme, Scheme::COUNT);
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameProfileType", profile_type);
+  UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameProfileType2", profile_type);
 }
 
 void RecordOmniboxURLNavigation(const GURL& url) {

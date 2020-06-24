@@ -1358,6 +1358,39 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
   ExpectEquals(actual, expected);
 }
 
+TEST_F(OopPixelTest, DrawRectTransformOptionsFullRaster) {
+  PaintFlags flags;
+  // Use powers of two here to make floating point blending consistent.
+  flags.setColor(SkColorSetRGB(64, 128, 32));
+  flags.setAntiAlias(true);
+  gfx::Rect draw_rect(0, 0, 19, 19);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawRectOp>(gfx::RectToSkRect(draw_rect), flags);
+  display_item_list->EndPaintOfUnpaired(draw_rect);
+  display_item_list->Finalize();
+
+  // The opaque rect above is 1px smaller than the canvas. With the subpixel
+  // translation, the rect fills the whole canvas, but the pixels at the edges
+  // are translucent. We should clear the canvas before drawing the rect, so
+  // the translucent pixels at the edges should not expose the preclear color,
+  // even if requires_clear is not true.
+  RasterOptions options;
+  options.resource_size = {20, 20};
+  options.content_size = {25, 25};
+  options.full_raster_rect = {5, 5, 20, 20};
+  options.playback_rect = {5, 5, 20, 20};
+  options.preclear = true;
+  options.preclear_color = SK_ColorRED;
+  options.post_translate = {0.5f, 0.25f};
+  options.post_scale = 2.f;
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
 TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   std::vector<SkColor> colors = {

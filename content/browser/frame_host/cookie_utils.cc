@@ -10,9 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "net/cookies/cookie_inclusion_status.h"
-#include "net/cookies/cookie_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace content {
@@ -77,38 +75,25 @@ void EmitSameSiteCookiesDeprecationWarning(
 
   bool samesite_treated_as_lax_cookies = false;
   bool samesite_none_insecure_cookies = false;
-
-  bool messages_disabled_by_cmdline =
-      base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kCookieDeprecationMessages.name,
-          base::FeatureList::OVERRIDE_DISABLE_FEATURE);
-
   bool breaking_context_downgrade = false;
 
   for (const net::CookieWithStatus& excluded_cookie :
        cookie_details->cookie_list) {
-    std::string cookie_url =
-        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
-                                            excluded_cookie.cookie.IsSecure())
-            .possibly_invalid_spec();
-
     if (excluded_cookie.status.ShouldWarn()) {
-      if (excluded_cookie.status.HasWarningReason(
+      samesite_treated_as_lax_cookies =
+          samesite_treated_as_lax_cookies ||
+          excluded_cookie.status.HasWarningReason(
               net::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
-        samesite_treated_as_lax_cookies = true;
-      }
-
-      if (excluded_cookie.status.HasWarningReason(
+                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT) ||
+          excluded_cookie.status.HasWarningReason(
               net::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
-        samesite_treated_as_lax_cookies = true;
-      }
+                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
 
-      if (excluded_cookie.status.HasWarningReason(
-              net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE)) {
-        samesite_none_insecure_cookies = true;
-      }
+      samesite_none_insecure_cookies =
+          samesite_none_insecure_cookies ||
+          excluded_cookie.status.HasWarningReason(
+              net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
+
       devtools_instrumentation::ReportSameSiteCookieIssue(
           root_frame_host, excluded_cookie, cookie_details->url,
           cookie_details->site_for_cookies,
@@ -116,12 +101,6 @@ void EmitSameSiteCookiesDeprecationWarning(
               ? blink::mojom::SameSiteCookieOperation::kReadCookie
               : blink::mojom::SameSiteCookieOperation::kSetCookie,
           cookie_details->devtools_request_id);
-    }
-    if (!messages_disabled_by_cmdline) {
-      root_frame_host->AddSameSiteCookieDeprecationMessage(
-          cookie_url, excluded_cookie.status,
-          net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),
-          net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
     }
 
     breaking_context_downgrade = breaking_context_downgrade ||
@@ -134,8 +113,6 @@ void EmitSameSiteCookiesDeprecationWarning(
     }
   }
 
-  // TODO(crbug.com/990439): Do we need separate UseCounter metrics for
-  // Lax-allow-unsafe? We already have histograms in CanonicalCookie.
   if (samesite_treated_as_lax_cookies) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kCookieNoSameSite);

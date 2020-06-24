@@ -233,6 +233,7 @@ READ_SPECIAL = set([
 WRITE_SPECIAL = set([
     ('xcb', 'ClientMessage'),
     ('xcb', 'UnmapNotify'),
+    ('xcb', 'SelectionNotify'),
 ])
 
 
@@ -1306,14 +1307,20 @@ class GenXproto(FileWriter):
         self.write('}  // namespace x11')
         self.write()
         self.namespace = []
-        for enum, name in self.bitenums:
-            name = self.qualtype(enum, name)
-            self.write('inline %s operator|(' % name)
+
+        def binop(op, name):
+            self.write('inline constexpr %s operator%s(' % (name, op))
             with Indent(self, '    {0} l, {0} r)'.format(name) + ' {', '}'):
                 self.write('using T = std::underlying_type_t<%s>;' % name)
                 self.write('return static_cast<%s>(' % name)
-                self.write('    static_cast<T>(l) | static_cast<T>(r));')
+                self.write('    static_cast<T>(l) %s static_cast<T>(r));' % op)
             self.write()
+
+        for enum, name in self.bitenums:
+            name = self.qualtype(enum, name)
+            binop('|', name)
+            binop('&', name)
+
         self.write()
         self.write('#endif  // ' + include_guard)
 

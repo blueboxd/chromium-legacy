@@ -5,6 +5,7 @@
 #include "cc/test/fake_raster_source.h"
 
 #include <limits>
+#include <utility>
 
 #include "base/synchronization/waitable_event.h"
 #include "cc/paint/paint_flags.h"
@@ -169,11 +170,12 @@ FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
 
 FakeRasterSource::~FakeRasterSource() = default;
 
-void FakeRasterSource::PlaybackToCanvas(SkCanvas* canvas,
-                                        ImageProvider* image_provider) const {
+void FakeRasterSource::PlaybackDisplayListToCanvas(
+    SkCanvas* canvas,
+    ImageProvider* image_provider) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  RasterSource::PlaybackToCanvas(canvas, image_provider);
+  RasterSource::PlaybackDisplayListToCanvas(canvas, image_provider);
 }
 
 }  // namespace cc

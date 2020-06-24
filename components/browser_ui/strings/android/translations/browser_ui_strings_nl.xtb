@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Vragen voordat sites een 3D-kaart van je omgeving mogen maken of de camerapositie mogen volgen (aanbevolen)</translation>
 <translation id="2212565012507486665">Cookies toestaan</translation>
 <translation id="2289270750774289114">Vragen wanneer een site Bluetooth-apparaten in de buurt wilt detecteren (aanbevolen)</translation>
+<translation id="2315043854645842844">Certificaatselectie aan clientzijde wordt niet ondersteund door het besturingssysteem.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Download voltooid <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Een site gebruikt de camera</translation>
 <translation id="7817023149356982970">Je wordt uitgelogd van deze site.</translation>
 <translation id="7828557259026017104">Cookies zijn bestanden die worden gemaakt door websites die je bezoekt. Sites gebruiken ze om je voorkeuren te onthouden. Cookies van derden worden gemaakt door andere sites. Deze sites zijn eigenaar van een deel van de content (zoals advertenties of afbeeldingen) die je ziet op de webpagina die je bezoekt.</translation>
+<translation id="7835852323729233924">Media afspelen</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
 <translation id="7846621471902887024">Je wordt uitgelogd van alle sites.</translation>
 <translation id="7882806643839505685">Geluid toestaan voor een specifieke site.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Weet je zeker dat je alle gegevens, inclusief cookies, voor deze website wilt wissen en alle rechten opnieuw wilt instellen?</translation>
 <translation id="8007176423574883786">Uitgeschakeld voor dit apparaat</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
+<translation id="8068648041423924542">Kan certificaat niet selecteren.</translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
 <translation id="8116925261070264013">Gedempt</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Cookies voor een specifieke site blokkeren.</translation>
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Beheerd door je ouders</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Toegang tot je microfoon</translation>
 <translation id="965817943346481315">Blokkeren als site opdringerige of misleidende advertenties weergeeft (aanbevolen)</translation>
 </translationbundle>

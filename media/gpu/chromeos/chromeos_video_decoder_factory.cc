@@ -26,10 +26,9 @@ namespace media {
 
 namespace {
 
-// Get a list of the available functions for creating VideoDecoder.
-base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
-    VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
-  static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {
+// Gets a list of the available functions for creating VideoDecoders.
+VideoDecoderPipeline::CreateDecoderFunctions GetCreateDecoderFunctions() {
+  constexpr VideoDecoderPipeline::CreateDecoderFunction kCreateVDFuncs[] = {
 #if BUILDFLAG(USE_VAAPI)
     &VaapiVideoDecoder::Create,
 #endif  // BUILDFLAG(USE_VAAPI)
@@ -39,12 +38,8 @@ base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
   };
 
-  base::queue<VideoDecoderPipeline::CreateVDFunc> ret;
-  for (const auto& func : kCreateVDFuncs) {
-    if (func != cur_create_vd_func)
-      ret.push(func);
-  }
-  return ret;
+  return VideoDecoderPipeline::CreateDecoderFunctions(
+      kCreateVDFuncs, kCreateVDFuncs + base::size(kCreateVDFuncs));
 }
 
 }  // namespace
@@ -79,7 +74,7 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
   return VideoDecoderPipeline::Create(
       std::move(client_task_runner), std::move(frame_pool),
       std::move(frame_converter), std::move(media_log),
-      base::BindRepeating(&GetCreateVDFunctions));
+      base::BindRepeating(&GetCreateDecoderFunctions));
 }
 
 }  // namespace media

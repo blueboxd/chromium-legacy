@@ -25,7 +25,9 @@ class FocusRingManager {
   }
 
   static initialize() {
-    FocusRingManager.instance = new FocusRingManager();
+    if (!FocusRingManager.instance) {
+      FocusRingManager.instance = new FocusRingManager();
+    }
   }
 
   /**
@@ -33,10 +35,10 @@ class FocusRingManager {
    * @param {!string} color
    */
   static setColor(color) {
-    const manager = FocusRingManager.instance;
-    if (!manager) {
-      return;
+    if (!FocusRingManager.instance) {
+      FocusRingManager.initialize();
     }
+    const manager = FocusRingManager.instance;
 
     if (manager.colorPattern_.test(color) !== true) {
       console.error(SwitchAccess.error(
@@ -54,10 +56,10 @@ class FocusRingManager {
    * @param {!SAChildNode} node
    */
   static setFocusedNode(node) {
-    const manager = FocusRingManager.instance;
-    if (!manager) {
-      return;
+    if (!FocusRingManager.instance) {
+      FocusRingManager.initialize();
     }
+    const manager = FocusRingManager.instance;
 
     if (node instanceof BackButtonNode) {
       const backButton = /** @type {!BackButtonNode} */ (node);
@@ -116,11 +118,10 @@ class FocusRingManager {
 
   /** Clears all focus rings. */
   static clearAll() {
-    const manager = FocusRingManager.instance;
-    if (!manager) {
-      return;
+    if (!FocusRingManager.instance) {
+      FocusRingManager.initialize();
     }
-
+    const manager = FocusRingManager.instance;
     manager.rings_.forEach((ring) => ring.rects = []);
     manager.updateFocusRings_();
   }

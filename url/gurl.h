@@ -229,9 +229,6 @@ class COMPONENT_EXPORT(URL) GURL {
   // Returns true if the scheme is "http" or "https".
   bool SchemeIsHTTPOrHTTPS() const;
 
-  // Returns true if the scheme is valid for use as a referrer.
-  bool SchemeIsValidForReferrer() const;
-
   // Returns true is the scheme is "ws" or "wss".
   bool SchemeIsWSOrWSS() const;
 

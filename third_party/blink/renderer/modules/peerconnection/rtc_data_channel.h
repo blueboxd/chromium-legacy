@@ -165,6 +165,7 @@ class MODULES_EXPORT RTCDataChannel final
 
   const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
   bool SendRawData(const char* data, size_t length);
+  bool SendDataBuffer(webrtc::DataBuffer data_buffer);
 
   webrtc::DataChannelInterface::DataState state_;
 
@@ -182,7 +183,9 @@ class MODULES_EXPORT RTCDataChannel final
   unsigned buffered_amount_;
   bool stopped_;
   bool closed_from_owner_;
+  bool is_rtp_data_channel_;
   scoped_refptr<Observer> observer_;
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   THREAD_CHECKER(thread_checker_);
 };
 

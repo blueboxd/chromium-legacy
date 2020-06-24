@@ -254,18 +254,13 @@ bool NativeTheme::UsesHighContrastColors() const {
   return is_high_contrast_;
 }
 
-NativeTheme::HighContrastColorScheme NativeTheme::GetHighContrastColorScheme()
-    const {
-  if (!UsesHighContrastColors())
-    return NativeTheme::HighContrastColorScheme::kNone;
-  switch (GetPreferredColorScheme()) {
-    case NativeTheme::PreferredColorScheme::kDark:
-      return HighContrastColorScheme::kDark;
-    case NativeTheme::PreferredColorScheme::kLight:
-      return HighContrastColorScheme::kLight;
-  }
-  NOTREACHED();
-  return NativeTheme::HighContrastColorScheme::kNone;
+NativeTheme::PlatformHighContrastColorScheme
+NativeTheme::GetPlatformHighContrastColorScheme() const {
+  if (GetDefaultSystemColorScheme() != ColorScheme::kPlatformHighContrast)
+    return PlatformHighContrastColorScheme::kNone;
+  return (GetPreferredColorScheme() == PreferredColorScheme::kDark)
+             ? PlatformHighContrastColorScheme::kDark
+             : PlatformHighContrastColorScheme::kLight;
 }
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {

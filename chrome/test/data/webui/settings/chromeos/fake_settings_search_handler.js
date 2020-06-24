@@ -15,6 +15,9 @@ cr.define('settings', function() {
     constructor() {
       /** @private {!Array<chromeos.settings.mojom.SearchResult>} */
       this.fakeResults_ = [];
+
+      /** @type {!chromeos.settings.mojom.SearchResultsObserverInterface} */
+      this.observer;
     }
 
     /**
@@ -28,6 +31,11 @@ cr.define('settings', function() {
     /** override */
     async search(query, maxNumResults, parentResultBehavior) {
       return {results: this.fakeResults_};
+    }
+
+    /** override */
+    observe(observer) {
+      this.observer = observer;
     }
   }
 

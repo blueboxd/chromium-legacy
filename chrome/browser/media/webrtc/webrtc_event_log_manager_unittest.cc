@@ -189,14 +189,9 @@ class NullWebRtcEventLogUploader : public WebRtcEventLogUploader {
     return log_file_;
   }
 
-  bool Cancel() override {
+  void Cancel() override {
     EXPECT_TRUE(cancellation_expected_);
-    if (was_cancelled_) {  // Should not be called more than once.
-      EXPECT_TRUE(false);
-      return false;
-    }
     was_cancelled_ = true;
-    return true;
   }
 
   class Factory : public WebRtcEventLogUploader::Factory {
@@ -1345,9 +1340,8 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
     return log_file_;
   }
 
-  bool Cancel() override {
+  void Cancel() override {
     NOTREACHED() << "Incompatible with this kind of test.";
-    return true;
   }
 
  private:
@@ -4357,7 +4351,7 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 
   ASSERT_TRUE(base::PathExists(*log_file));  // Test sanity; exists before.
 
-  allow_remote_logging = !allow_remote_logging;
+  allow_remote_logging = false;
   profile->GetPrefs()->SetBoolean(prefs::kWebRtcEventLogCollectionAllowed,
                                   allow_remote_logging);
 

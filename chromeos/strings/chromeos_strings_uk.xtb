@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Не надруковано – відкрито кришку принтера</translation>
 <translation id="3369013195428705271">Видалити всю історію друку? Поточні завдання друку збережуться.</translation>
 <translation id="3456078764689556234">Надруковано сторінку <ph name="PRINTED_PAGES" /> з <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Завдання друку</translation>
 <translation id="3527036260304016759">Не надруковано – невідома помилка</translation>
 <translation id="3749289110408117711">Ім’я файлу</translation>
 <translation id="38114475217616659">Очистити всю історію</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Не надруковано – вихідний лоток заповнений</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Термін дії пароля закінчиться через <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Немає активних завдань друку</translation>
 <translation id="428217921675623177">Завдання друку, старіші за 90 днів, буде видалено</translation>
 <translation id="4429881212383817840">Термін дії квитка Kerberos незабаром минає</translation>
 <translation id="445059817448385655">Старий пароль</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Цією дією керує адміністратор</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="808894953321890993">Змінити пароль</translation>
 <translation id="8208861521865154048">Бонуси</translation>
+<translation id="8347227221149377169">Завдання друку</translation>
 <translation id="8701136875688985581">Домен <ph name="ENROLLMENT_DOMAIN" /> керує цим користувачем. Він може віддалено змінювати налаштування й відстежувати дії користувача.</translation>
 <translation id="871560550817059752">Не надруковано – закінчилося чорнило</translation>
 <translation id="8747900814994928677">Підтвердити зміни</translation>

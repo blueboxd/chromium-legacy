@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/bindings/api_binding.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
@@ -1672,21 +1673,22 @@ TEST_F(APIBindingUnittest,
 
 // Tests promise-based APIs exposed on bindings.
 TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
+  // TODO(tjudkins): Remove this once promise support is fully integrated into
+  // the API calling flow.
+  base::AutoReset<bool> auto_reset(
+      &APIBinding::enable_promise_support_for_testing, true);
+
   constexpr char kFunctions[] =
       R"([{
             'name': 'supportsPromises',
-            'supportsPromises': true,
             'parameters': [{
               'name': 'int',
               'type': 'integer'
-            }, {
-              'name': 'callback',
-              'type': 'function',
-              'parameters': [{
-                'name': 'strResult',
-                'type': 'string'
-              }]
-            }]
+            }],
+            "returns_async": {
+              'name': 'strResult',
+              'type': 'string'
+            }
           }])";
   SetFunctions(kFunctions);
 
@@ -1701,7 +1703,7 @@ TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
         R"((function(api) {
              this.apiResult = api.supportsPromises(3);
              this.apiResult.then((strResult) => {
-               this.strResult = strResult;
+               this.promiseResult = strResult;
              });
            }))";
     v8::Local<v8::Function> promise_api_call =
@@ -1723,8 +1725,29 @@ TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
 
     EXPECT_EQ(v8::Promise::kFulfilled, promise->State());
     EXPECT_EQ(R"("foo")", V8ToString(promise->Result(), context));
-    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(context->Global(),
-                                                      context, "strResult"));
+    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(
+                              context->Global(), context, "promiseResult"));
+  }
+  // Also test that promise-based APIs still support passing a callback.
+  {
+    constexpr char kFunctionCall[] =
+        R"((function(api) {
+             api.supportsPromises(3, (strResult) => {
+               this.callbackResult = strResult
+             });
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionOnGlobal(promise_api_call, context, base::size(args), args);
+
+    ASSERT_TRUE(last_request());
+    request_handler()->CompleteRequest(last_request()->request_id,
+                                       *ListValueFromString(R"(["bar"])"),
+                                       std::string());
+
+    EXPECT_EQ(R"("bar")", GetStringPropertyFromObject(
+                              context->Global(), context, "callbackResult"));
   }
 }
 

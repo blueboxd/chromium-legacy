@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">ਕੈਲੀਬਰੇਸ਼ਨ ਪੂਰਾ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="252373100621549798">ਅਗਿਆਤ ਡਿਸਪਲੇ</translation>
 <translation id="2545651323591713692">ਸਨੂਜ਼ ਕਰੋ</translation>
+<translation id="2570734079541893434">ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 ਘੰ. ਵਿੱਚ}one{# ਘੰ. ਵਿੱਚ}other{# ਘੰ. ਵਿੱਚ}}</translation>
 <translation id="2583543531130364912">ਆਪਣੀ ਟੱਚਸਕ੍ਰੀਨ ਨੂੰ ਕੈਲੀਬਰੇਟ ਕਰੋ</translation>
 <translation id="2666092431469916601">ਟੌਪ</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">ਪੰਨਾ <ph name="PAGE_NUMBER" />, ਕਤਾਰ <ph name="ROW_NUMBER" />, ਕਾਲਮ <ph name="COLUMN_NUMBER" /> 'ਤੇ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="7879499977785298635">ਬਲਾਕ ਨਾ ਕਰੋ</translation>
 <translation id="7907591526440419938">ਫਾਈਲ ਖੋਲ੍ਹੋ</translation>
+<translation id="7952747673138230804">Chrome OS ਪੜਚੋਲ ਕਰਨ ਲਈ ਨਵੀਂ ਸਮੱਗਰੀ ਦੇ ਸੁਝਾਅ ਦਿਖਾਉਂਦਾ ਹੈ। ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤੋਂ ਡਾਟੇ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੀ ਚੋਣ ਕੀਤੇ ਜਾਣ 'ਤੇ ਹੀ ਕੁਆਲਿਟੀ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਅੰਕੜੇ ਭੇਜੇ ਜਾਂਦੇ ਹਨ। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">ਆਦੇਸ਼</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 ਤੋਂ ਵੱਧ ਨਾ-ਪੜ੍ਹੀ ਹੋਈ ਸੂਚਨਾ}one{# ਤੋਂ ਵੱਧ ਨਾ-ਪੜ੍ਹੀ ਹੋਈ ਸੂਚਨਾ}other{# ਤੋਂ ਵੱਧ ਨਾ-ਪੜ੍ਹੀਆਂ ਹੋਈਆਂ ਸੂਚਨਾਵਾਂ}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 ਮਿੰ. ਵਿੱਚ}one{# ਮਿੰ. ਵਿੱਚ}other{# ਮਿੰ. ਵਿੱਚ}}</translation>

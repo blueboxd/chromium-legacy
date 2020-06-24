@@ -100,6 +100,7 @@
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="1810845389119482123">सिंक गर्ने कार्यको प्रारम्भिक सेटअप पूरा भएको छैन</translation>
 <translation id="1821253160463689938">तपाईं ती पृष्ठहरूमा नजानुभए तापनि तपाईंका प्राथमिकताहरू सम्झनका लागि कुकीहरूको प्रयोग गर्छ</translation>
+<translation id="1826516787628120939">जाँच गर्दै</translation>
 <translation id="1829244130665387512">पृष्ठमा फेला पार्नुहोस्</translation>
 <translation id="1853692000353488670">नयाँ इनकगनिटो ट्याब</translation>
 <translation id="1856325424225101786">लाइट मोड रिसेट गर्ने हो?</translation>
@@ -158,7 +159,6 @@
 <translation id="2268044343513325586">परिशुद्ध</translation>
 <translation id="2286841657746966508">बिल पठाउने ठेगाना</translation>
 <translation id="230115972905494466">कुनै पनि मिल्दाजुल्दा यन्त्र भेटिएनन्</translation>
-<translation id="2315043854645842844">अपरेटिङ सिस्टमले क्लाइन्ट साइड प्रमाणपत्रको चयनलाई समर्थन गर्दैन।</translation>
 <translation id="2318045970523081853">कल गर्न ट्याप गर्नुहोस्</translation>
 <translation id="2321086116217818302">पासवर्डहरू निर्यात गर्ने तयारी गरिँदै…</translation>
 <translation id="2321958826496381788">तपाईंले आरामसँग पढ्न सक्दासम्म स्लाइडरलाई तान्नुहोस्। अनुच्छेदमा दोहोरो ट्याप गरेपछि पाठ कम्तीमा पनि यतिको ठुलो देखिनुपर्छ।</translation>
@@ -225,7 +225,7 @@
 <translation id="2810645512293415242">डेटा बचत गर्न र अझ छिटो लोड गर्नका लागि सरलीकृत पृष्ठ।</translation>
 <translation id="281504910091592009">आफ्नो <ph name="BEGIN_LINK" />Google खाता<ph name="END_LINK" /> मा सुरक्षित गरिएका पासवर्डहरू हेर्नुहोस् र व्यवस्थापन गर्नुहोस्</translation>
 <translation id="2818669890320396765">आफ्ना सबै यन्त्रमा पुस्तक चिन्हहरू प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
-<translation id="2827278682606527653">फिड कार्ड मेनु आधा उचाइमा खोलियो</translation>
+<translation id="2827278682606527653">फिड कार्ड मेनु आधा उचाइमा खुला छ</translation>
 <translation id="2842985007712546952">अभिभावक फोल्डर</translation>
 <translation id="2860954141821109167">यस यन्त्रमा कुनै फोन एप सक्षम गरिएको कुरा सुनिश्चित गर्नुहोस्</translation>
 <translation id="2870560284913253234">साइट</translation>
@@ -257,6 +257,7 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">स्थानसम्बन्धी सुविधा निष्क्रिय छ; <ph name="BEGIN_LINK" />Android का सेटिङहरू<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="3058498974290601450">तपाईं सेटिङहरूमा गई जुनसुकै बेला सिंक सक्रिय गर्न सक्नुहुन्छ</translation>
+<translation id="3059710691562604940">सुरक्षित ब्राउजिङ निष्क्रिय छ। Chrome ले यो सेवा सक्रिय गर्न सिफारिस गर्छ।</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> पुस्तक चिन्ह}other{<ph name="BOOKMARKS_COUNT_MANY" /> पुस्तक चिन्हहरू}}</translation>
 <translation id="3089395242580810162">इन्कोग्निटो ट्याबमा खोल्नुहोस्</translation>
 <translation id="3114012059975132928">भिडियो प्लेयर</translation>
@@ -304,16 +305,17 @@
 <translation id="3398320232533725830">पुस्तक चिन्ह प्रबन्धक खोल्नुहोस्</translation>
 <translation id="3414952576877147120">आकार:</translation>
 <translation id="3443221991560634068">हालको पृष्ठलाई पुनःलोड गर्नुहोस्</translation>
-<translation id="3445014427084483498">अहिले भर्खरै</translation>
 <translation id="3478363558367712427">तपाईं आफ्नो खोज इन्जिन रोज्न सक्नुहुन्छ</translation>
 <translation id="3492207499832628349">नयाँ इन्कग्निटो ट्याब</translation>
 <translation id="3493531032208478708">सुझाव दिइएको सामग्रीको बारेमा <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="3507132249039706973">मानक सुरक्षा सक्रिय छ</translation>
 <translation id="3513704683820682405">अग्मेन्टेड रियालिटी</translation>
 <translation id="3518985090088779359">स्वीकार र जारी</translation>
 <translation id="3522247891732774234">अद्यावधिक उपलब्ध छ। थप विकल्पहरू</translation>
 <translation id="3524138585025253783">विकासकर्ताको UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
+<translation id="3533694711092285624">कुनै पनि सुरक्षित गरिएको पासवर्ड छैन। तपाईंले आफ्ना पासवर्डहरू सुरक्षित गर्नुभएको छ भने मात्र Chrome ले तिनको जाँच गर्न सक्छ।</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> के.बि. उपलब्ध छ</translation>
 <translation id="3549657413697417275">आफ्नो ब्राउजिङको इतिहासमा खोज्नुहोस्।</translation>
 <translation id="3557336313807607643">सम्पर्क ठेगानामा थप्नुहोस्</translation>
@@ -415,7 +417,7 @@
 <translation id="4479972344484327217">Chrome को <ph name="MODULE" /> स्थापना गरिँदै…</translation>
 <translation id="4487967297491345095">Chrome का एप सम्बन्धी सबै डेटा सदाका लागि मेटिने छन्। यस अन्तर्गत सबै फाइल, सेटिङ, खाता, डेटाबेसहरू आदि पर्दछन्।</translation>
 <translation id="4493497663118223949">लाइट मोड सक्रिय छ</translation>
-<translation id="4508528996305412043">फिड कार्ड मेनु खोलियो</translation>
+<translation id="4508528996305412043">फिड कार्ड मेनु खुला छ</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# दिन अघि}other{# दिन अघि}}</translation>
 <translation id="451872707440238414">आफ्ना पुस्तक चिन्हहरू खोज्नुहोस्</translation>
 <translation id="4521489764227272523">चयन गरिएको डेटालाई Chrome र सिंक गरिएका तपाईंका यन्त्रहरूबाट हटाइएको छ।
@@ -494,6 +496,7 @@
 <translation id="5039804452771397117">अनुमति दिनुहोस्</translation>
 <translation id="5040262127954254034">गोपनीयता</translation>
 <translation id="5087580092889165836">कार्ड थप्नुहोस्</translation>
+<translation id="509429900233858213">त्रुटि भयो।</translation>
 <translation id="510275257476243843">१ घन्टा बाँकी छ</translation>
 <translation id="5123685120097942451">इन्कोग्निटो ट्याब</translation>
 <translation id="5127805178023152808">सिंक बन्द छ</translation>
@@ -523,6 +526,7 @@
 <translation id="5324858694974489420">अभिभावक सेटिङहरू</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5342314432463739672">अनुमतिसम्बन्धी अनुरोधहरू</translation>
+<translation id="5355191726083956201">परिष्कृत सुरक्षा सक्रिय छ</translation>
 <translation id="5357811892247919462">ट्याब प्राप्त भयो</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ट्याब खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}other{<ph name="OPEN_TABS_MANY" /> ट्याबहरू खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}}</translation>
 <translation id="5384883051496921101">यो साइटले इन्कोग्निटो मोड बाहिरको अनुप्रयोगसँग जानकारी आदान प्रदान गर्न लाग्दैछ।</translation>
@@ -650,6 +654,7 @@
 <translation id="6333140779060797560"><ph name="APPLICATION" /> मार्फत साझा गर्नुहोस्</translation>
 <translation id="6337234675334993532">इन्क्रिप्सन</translation>
 <translation id="6341580099087024258">फाइलहरू कहाँ सुरक्षित गर्ने भनी सोध्नुहोस्</translation>
+<translation id="6342069812937806050">अहिले भर्खर</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> थप}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> थप}}</translation>
 <translation id="6364438453358674297">इतिहासबाट सुझाव हटाउने?</translation>
 <translation id="6366047038980456022">सुरक्षित तरिकाले केही काम गर्न, केही नयाँ कुराहरू सिर्जना गर्न र अनलाइनमा कुनै कुरा अन्वेषण गर्नका लागि <ph name="APP_NAME" /> स्मार्ट हुनुका साथै छरितो पनि छ।</translation>
@@ -711,6 +716,7 @@
 <translation id="6710213216561001401">अघिल्लो</translation>
 <translation id="671481426037969117">तपाईंको <ph name="FQDN" /> टाइमरको समय सकियो। यो भोलि फेरि सुरु हुने छ।</translation>
 <translation id="6738867403308150051">डाउनलोड गर्दैछ…</translation>
+<translation id="6741063444351041466"><ph name="BEGIN_LINK" />तपाईंका प्रशासक<ph name="END_LINK" />ले सुरक्षित ब्राउजिङ निष्क्रिय पारेका छन्</translation>
 <translation id="6767294960381293877">ट्याब आदान प्रदान गरिनु पर्ने यन्त्रहरूको सूची आधा उचाइमा खोलिएको छ।</translation>
 <translation id="6811034713472274749">पृष्ठ हेर्नका लागि तयार छ</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -832,7 +838,6 @@
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7810647596859435254">निम्नमार्फत खोल्नुहोस्…</translation>
 <translation id="7821588508402923572">तपाईंले बचत गर्नुभएको डेटा यहाँ देखिने छ</translation>
-<translation id="7835852323729233924">प्ले भइरहेको मिडिया</translation>
 <translation id="783819812427904514">भिडियो अनम्युट गर्नुहोस्</translation>
 <translation id="7846296061357476882">Google का सेवाहरू</translation>
 <translation id="784934925303690534">समयको दायरा</translation>
@@ -867,7 +872,6 @@
 <translation id="8063895661287329888">पुस्तक चिन्ह थप्न सकिएन।</translation>
 <translation id="806745655614357130">मेरो डेटा अलग राख्नुहोस्</translation>
 <translation id="8067883171444229417">भिडियो प्ले गर्नुहोस्</translation>
-<translation id="8068648041423924542">प्रमाणपत्र चयन गर्न असमर्थ।</translation>
 <translation id="8073388330009372546">छविलाई नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="8076492880354921740">ट्याबहरू</translation>
 <translation id="8084114998886531721">सुरक्षित गरिएको पासवर्ड</translation>

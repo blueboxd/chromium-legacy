@@ -3,7 +3,7 @@
 <translationbundle lang="th">
 <translation id="1018656279737460067">ยกเลิกแล้ว</translation>
 <translation id="1195447618553298278">ข้อผิดพลาดที่ไม่รู้จัก</translation>
-<translation id="1413240736185167732">ไม่สำเร็จ - กรองไม่สำเร็จ</translation>
+<translation id="1413240736185167732">ไม่สำเร็จ - ตัวกรองล้มเหลว</translation>
 <translation id="1468664791493211953">ข้อเสนอ</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และอาจตรวจสอบกิจกรรมของคุณได้</translation>
 <translation id="150962533380566081">PUK ไม่ถูกต้อง</translation>
@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">ไม่สำเร็จ - ฝาเครื่องเปิดอยู่</translation>
 <translation id="3369013195428705271">คุณแน่ใจไหมว่าต้องการล้างประวัติการพิมพ์ทั้งหมด ทั้งนี้ ระบบจะไม่ล้างงานพิมพ์ที่กำลังดำเนินอยู่</translation>
 <translation id="3456078764689556234">พิมพ์แล้ว <ph name="PRINTED_PAGES" /> จาก <ph name="TOTAL_PAGES" /> หน้า</translation>
-<translation id="3515615323037921860">งานพิมพ์</translation>
 <translation id="3527036260304016759">ไม่สำเร็จ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="3749289110408117711">ชื่อไฟล์</translation>
 <translation id="38114475217616659">ล้างประวัติทั้งหมด</translation>
@@ -32,9 +31,10 @@
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
 <translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> จาก <ph name="TOTAL_PAGE_NUMBER" /> หน้า</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
-<translation id="4003384961948020559">ไม่สำเร็จ - Output full</translation>
+<translation id="4003384961948020559">ไม่สำเร็จ - ถาดกระดาษขาออกเต็ม</translation>
 <translation id="4034824040120875894">เครื่องพิมพ์</translation>
 <translation id="4227825898293920515">รหัสผ่านจะหมดอายุในอีก <ph name="TIME" /></translation>
+<translation id="4238516577297848345">ไม่มีงานที่กำลังพิมพ์</translation>
 <translation id="428217921675623177">ระบบจะนำงานพิมพ์ที่เก่ากว่า 90 วันออก</translation>
 <translation id="4429881212383817840">ตั๋ว Kerberos กำลังจะหมดอายุ</translation>
 <translation id="445059817448385655">รหัสผ่านเดิม</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="7162487448488904999">แกลเลอรี</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">การดำเนินการนี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7690294790491645610">ยืนยันรหัสผ่านใหม่</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8208861521865154048">สิทธิประโยชน์</translation>
+<translation id="8347227221149377169">งานพิมพ์</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> จัดการผู้ใช้รายนี้ โดยอาจจัดการการตั้งค่าและตรวจสอบกิจกรรมของผู้ใช้จากระยะไกล</translation>
 <translation id="871560550817059752">ไม่สำเร็จ - หมึกหมด</translation>
 <translation id="8747900814994928677">ยืนยันการเปลี่ยนแปลง</translation>

@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Ask before allowing sites to create a 3D map of your surroundings or track camera position (recommended)</translation>
 <translation id="2212565012507486665">Allow cookies</translation>
 <translation id="2289270750774289114">Ask when a site wants to discover nearby Bluetooth devices (recommended)</translation>
+<translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">A site is using your camera</translation>
 <translation id="7817023149356982970">You'll be signed out of this site.</translation>
 <translation id="7828557259026017104">Cookies are files created by websites that you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the web page that you visit.</translation>
+<translation id="7835852323729233924">Playing media</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="7846621471902887024">You'll be signed out of all sites.</translation>
 <translation id="7882806643839505685">Allow sound for a specific site.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
 <translation id="8007176423574883786">Turned off for this device</translation>
 <translation id="802154636333426148">Download failed</translation>
+<translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8087000398470557479">This content is from <ph name="DOMAIN_NAME" />, delivered by Google.</translation>
 <translation id="8116925261070264013">Muted</translation>
 <translation id="8131740175452115882">Confirm</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Block cookies for a specific site.</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Access your microphone</translation>
 <translation id="965817943346481315">Block if site shows intrusive or misleading ads (recommended)</translation>
 </translationbundle>

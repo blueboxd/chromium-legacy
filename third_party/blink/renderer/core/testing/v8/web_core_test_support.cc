@@ -119,6 +119,12 @@ void InstallOriginTrialFeaturesForTesting(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }
+    if (RuntimeEnabledFeatures::OriginTrialsSampleAPIThirdPartyEnabled(
+            execution_context)) {
+      V8OriginTrialsTest::InstallOriginTrialsSampleAPIThirdParty(
+          script_state->GetIsolate(), script_state->World(),
+          v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
   }
 }
 
@@ -187,6 +193,17 @@ void InstallPendingOriginTrialFeatureForTesting(
                   V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
                   &interface_object)) {
         V8OriginTrialsTest::InstallOriginTrialsSampleAPINavigation(
+            script_state->GetIsolate(), script_state->World(),
+            v8::Local<v8::Object>(), prototype_object, interface_object);
+      }
+      break;
+    }
+    case OriginTrialFeature::kOriginTrialsSampleAPIThirdParty: {
+      if (script_state->PerContextData()
+              ->GetExistingConstructorAndPrototypeForType(
+                  V8OriginTrialsTest::GetWrapperTypeInfo(), &prototype_object,
+                  &interface_object)) {
+        V8OriginTrialsTest::InstallOriginTrialsSampleAPIThirdParty(
             script_state->GetIsolate(), script_state->World(),
             v8::Local<v8::Object>(), prototype_object, interface_object);
       }

@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Mislykket – luken er åpen</translation>
 <translation id="3369013195428705271">Er du sikker på at du vil tømme hele utskriftsloggen? Utskriftsjobber som allerede er i gang, fjernes ikke.</translation>
 <translation id="3456078764689556234">Skrev ut side <ph name="PRINTED_PAGES" /> av <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Utskriftsjobber</translation>
 <translation id="3527036260304016759">Mislykket – ukjent feil</translation>
 <translation id="3749289110408117711">Filnavn</translation>
 <translation id="38114475217616659">Tøm hele loggen</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Mislykket – utskriftsmottaket er fullt</translation>
 <translation id="4034824040120875894">Skriver</translation>
 <translation id="4227825898293920515">Passordet utløper om <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Ingen utskriftsjobber pågår</translation>
 <translation id="428217921675623177">Utskriftsjobber som er eldre enn 90 dager, blir fjernet</translation>
 <translation id="4429881212383817840">Kerberos-saken utløper snart</translation>
 <translation id="445059817448385655">Gammelt passord</translation>
@@ -61,11 +61,13 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Denne handlingen administreres av administratoren</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7690294790491645610">Bekreft det nye passordet</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Endre passord</translation>
 <translation id="8208861521865154048">Fordeler</translation>
+<translation id="8347227221149377169">Utskriftsjobber</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne brukeren. Domenet kan administrere innstillinger og overvåke brukeraktivitet eksternt.</translation>
 <translation id="871560550817059752">Mislykket – tom for blekk</translation>
 <translation id="8747900814994928677">Bekreft endringen</translation>

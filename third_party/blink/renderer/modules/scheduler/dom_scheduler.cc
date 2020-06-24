@@ -32,7 +32,7 @@ static ScriptPromise RejectPromiseImmediately(ExceptionState& exception_state) {
 
 const char DOMScheduler::kSupplementName[] = "DOMScheduler";
 
-DOMScheduler* DOMScheduler::From(LocalDOMWindow& window) {
+DOMScheduler* DOMScheduler::scheduler(LocalDOMWindow& window) {
   DOMScheduler* scheduler =
       Supplement<LocalDOMWindow>::From<DOMScheduler>(window);
   if (!scheduler) {

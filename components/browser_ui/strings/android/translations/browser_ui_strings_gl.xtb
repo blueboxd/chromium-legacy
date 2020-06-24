@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Preguntar antes de permitir que os sitios creen un mapa 3D do que te rodea e fagan un seguimento da posición da cámara (recomendado)</translation>
 <translation id="2212565012507486665">Permitir uso de cookies</translation>
 <translation id="2289270750774289114">Preguntar cando un sitio web queira detectar dispositivos Bluetooth próximos (recomendado)</translation>
+<translation id="2315043854645842844">A selección do certificado do cliente non é compatible co sistema operativo.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Completouse a descarga <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Un sitio está utilizando a cámara</translation>
 <translation id="7817023149356982970">Pecharase a túa sesión neste sitio.</translation>
 <translation id="7828557259026017104">As cookies son ficheiros creados polos sitios web que visitas. Os sitios utilízanas para lembrar as túas preferencias. As de terceiros son as que crean outros sitios. Parte do contido que ves na páxina web que visitas, como anuncios ou imaxes, pertence a esoutros sitios.</translation>
+<translation id="7835852323729233924">Reproducindo contido multimedia</translation>
 <translation id="7846076177841592234">Cancelar selección</translation>
 <translation id="7846621471902887024">Pecharase a túa sesión en todos os sitios.</translation>
 <translation id="7882806643839505685">Permite o son dun sitio específico.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Estás seguro de que queres borrar todos os datos locais, incluídas as cookies, e restablecer todos os permisos para este sitio web?</translation>
 <translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="802154636333426148">Produciuse un erro na descarga</translation>
+<translation id="8068648041423924542">Non se pode seleccionar o certificado.</translation>
 <translation id="8087000398470557479">Este contido procede de <ph name="DOMAIN_NAME" />, ofrecido por Google.</translation>
 <translation id="8116925261070264013">Silenciados</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Bloquea cookies para un sitio específico.</translation>
 <translation id="8959122750345127698">A navegación é inaccesible: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Xestionado por teus pais</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Acceso ao teu micrófono</translation>
 <translation id="965817943346481315">Bloquear se o sitio mostra anuncios enganosos ou intrusivos (recomendado)</translation>
 </translationbundle>

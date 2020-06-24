@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -49,9 +48,13 @@ SearchHandler::SearchHandler(
       sections_(sections),
       hierarchy_(hierarchy),
       index_(local_search_service->GetIndex(
-          local_search_service::IndexId::kCrosSettings)) {}
+          local_search_service::IndexId::kCrosSettings)) {
+  search_tag_registry_->AddObserver(this);
+}
 
-SearchHandler::~SearchHandler() = default;
+SearchHandler::~SearchHandler() {
+  search_tag_registry_->RemoveObserver(this);
+}
 
 void SearchHandler::BindInterface(
     mojo::PendingReceiver<mojom::SearchHandler> pending_receiver) {
@@ -90,6 +93,16 @@ void SearchHandler::Search(const base::string16& query,
                            SearchCallback callback) {
   std::move(callback).Run(
       Search(query, max_num_results, parent_result_behavior));
+}
+
+void SearchHandler::Observe(
+    mojo::PendingRemote<mojom::SearchResultsObserver> observer) {
+  observers_.Add(std::move(observer));
+}
+
+void SearchHandler::OnRegistryUpdated() {
+  for (auto& observer : observers_)
+    observer->OnSearchResultAvailabilityChanged();
 }
 
 std::vector<mojom::SearchResultPtr> SearchHandler::GenerateSearchResultsArray(

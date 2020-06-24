@@ -55,6 +55,14 @@ base::Optional<Fourcc> PickRenderableFourcc(
   return base::nullopt;
 }
 
+// Appends |new_status| to |parent_status| unless |parent_status| is kOk, in
+// that case we cannot append, just forward |new_status| then.
+Status AppendOrForwardStatus(Status parent_status, Status new_status) {
+  if (parent_status.is_ok())
+    return new_status;
+  return std::move(parent_status).AddCause(std::move(new_status));
+}
+
 }  //  namespace
 
 DecoderInterface::DecoderInterface(
@@ -70,34 +78,33 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
     std::unique_ptr<MediaLog> /*media_log*/,
-    GetCreateVDFunctionsCB get_create_vd_functions_cb) {
+    GetCreateDecoderFunctionsCB get_create_decoder_functions_cb) {
   if (!client_task_runner || !frame_pool || !frame_converter) {
     VLOGF(1) << "One of arguments is nullptr.";
     return nullptr;
   }
 
-  if (get_create_vd_functions_cb.Run(nullptr).empty()) {
+  if (get_create_decoder_functions_cb.Run().empty()) {
     VLOGF(1) << "No available function to create video decoder.";
     return nullptr;
   }
 
   return base::WrapUnique<VideoDecoder>(new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), std::move(get_create_vd_functions_cb)));
+      std::move(frame_converter), std::move(get_create_decoder_functions_cb)));
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
-    GetCreateVDFunctionsCB get_create_vd_functions_cb)
+    GetCreateDecoderFunctionsCB get_create_decoder_functions_cb)
     : client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       main_frame_pool_(std::move(frame_pool)),
-      frame_converter_(std::move(frame_converter)),
-      get_create_vd_functions_cb_(std::move(get_create_vd_functions_cb)) {
+      frame_converter_(std::move(frame_converter)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
   DCHECK(main_frame_pool_);
@@ -107,6 +114,8 @@ VideoDecoderPipeline::VideoDecoderPipeline(
 
   client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
   decoder_weak_this_ = decoder_weak_this_factory_.GetWeakPtr();
+
+  remaining_create_decoder_functions_ = get_create_decoder_functions_cb.Run();
 
   main_frame_pool_->set_parent_task_runner(decoder_task_runner_);
   frame_converter_->Initialize(
@@ -144,7 +153,7 @@ void VideoDecoderPipeline::DestroyTask() {
   frame_converter_.reset();
 
   decoder_.reset();
-  used_create_vd_func_ = nullptr;
+  remaining_create_decoder_functions_.clear();
 
   delete this;
 }
@@ -215,79 +224,76 @@ void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
 void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
                                           InitCB init_cb,
                                           const OutputCB& output_cb) {
+  DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(!init_cb_);
 
   client_output_cb_ = std::move(output_cb);
   init_cb_ = std::move(init_cb);
-  base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs =
-      get_create_vd_functions_cb_.Run(used_create_vd_func_);
 
+  // Initialize() and correspondingly InitializeTask(), are called both on first
+  // initialization and on subsequent stream |config| changes, e.g. change of
+  // resolution. Subsequent initializations are marked by |decoder_| already
+  // existing.
   if (!decoder_) {
-    CreateAndInitializeVD(std::move(create_vd_funcs), config,
-                          StatusCode::kChromeOSVideoDecoderNoDecoders);
+    CreateAndInitializeVD(config, Status());
   } else {
     decoder_->Initialize(
         config,
-        // If it fails to re-initialize current |decoder_|, it will create
-        // another decoder instance by trying available VD creation functions
-        // again. See |OnInitializeDone| for detail.
         base::BindOnce(&VideoDecoderPipeline::OnInitializeDone,
-                       decoder_weak_this_, std::move(create_vd_funcs), config,
-                       StatusCode::kChromeOSVideoDecoderNoDecoders),
+                       decoder_weak_this_, config, Status()),
         base::BindRepeating(&VideoDecoderPipeline::OnFrameDecoded,
                             decoder_weak_this_));
   }
 }
 
-void VideoDecoderPipeline::CreateAndInitializeVD(
-    base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
-    VideoDecoderConfig config,
-    Status parent_error) {
+void VideoDecoderPipeline::CreateAndInitializeVD(VideoDecoderConfig config,
+                                                 Status parent_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(init_cb_);
   DCHECK(!decoder_);
-  DCHECK(!used_create_vd_func_);
   DVLOGF(3);
 
-  if (create_vd_funcs.empty()) {
-    DVLOGF(2) << "No available video decoder.";
+  if (remaining_create_decoder_functions_.empty()) {
+    DVLOGF(2) << "No remaining video decoder create functions to try";
     client_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(init_cb_), parent_error));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(init_cb_),
+            AppendOrForwardStatus(
+                parent_error, StatusCode::kChromeOSVideoDecoderNoDecoders)));
     return;
   }
 
-  used_create_vd_func_ = create_vd_funcs.front();
-  create_vd_funcs.pop();
-  decoder_ = used_create_vd_func_(decoder_task_runner_, decoder_weak_this_);
+  decoder_ = remaining_create_decoder_functions_.front()(decoder_task_runner_,
+                                                         decoder_weak_this_);
+  remaining_create_decoder_functions_.pop_front();
+
   if (!decoder_) {
-    DVLOGF(2) << "Failed to create VideoDecoder.";
-    used_create_vd_func_ = nullptr;
+    DVLOGF(2) << "|decoder_| creation failed, trying again with the next "
+                 "available create function.";
     return CreateAndInitializeVD(
-        std::move(create_vd_funcs), config,
-        std::move(parent_error).AddCause(StatusCode::kDecoderFailedCreation));
+        config, AppendOrForwardStatus(parent_error,
+                                      StatusCode::kDecoderFailedCreation));
   }
 
   decoder_->Initialize(
       config,
       base::BindOnce(&VideoDecoderPipeline::OnInitializeDone,
-                     decoder_weak_this_, std::move(create_vd_funcs), config,
-                     std::move(parent_error)),
+                     decoder_weak_this_, config, std::move(parent_error)),
       base::BindRepeating(&VideoDecoderPipeline::OnFrameDecoded,
                           decoder_weak_this_));
 }
 
-void VideoDecoderPipeline::OnInitializeDone(
-    base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
-    VideoDecoderConfig config,
-    Status parent_error,
-    Status status) {
+void VideoDecoderPipeline::OnInitializeDone(VideoDecoderConfig config,
+                                            Status parent_error,
+                                            Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(init_cb_);
   DVLOGF(4) << "Initialization status = " << status.code();
 
   if (status.is_ok()) {
-    DVLOGF(2) << "Initialize VD successfully.";
+    DVLOGF(2) << "|decoder_| successfully initialized.";
     // TODO(tmathmeyer) consider logging the causes of |parent_error| as they
     // might have infor about why other decoders failed.
     client_task_runner_->PostTask(
@@ -295,11 +301,11 @@ void VideoDecoderPipeline::OnInitializeDone(
     return;
   }
 
-  DVLOGF(3) << "Reset VD, try the next create function.";
+  DVLOGF(3) << "|decoder_| initialization failed, trying again with the next "
+               "available create function.";
   decoder_ = nullptr;
-  used_create_vd_func_ = nullptr;
-  CreateAndInitializeVD(std::move(create_vd_funcs), config,
-                        std::move(parent_error).AddCause(std::move(status)));
+  CreateAndInitializeVD(config,
+                        AppendOrForwardStatus(parent_error, std::move(status)));
 }
 
 void VideoDecoderPipeline::Reset(base::OnceClosure closure) {

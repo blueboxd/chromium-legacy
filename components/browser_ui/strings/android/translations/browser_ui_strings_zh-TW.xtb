@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">網站必須先詢問你，才能根據你的周遭環境建立 3D 地圖或追蹤攝影機位置 (建議)</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2289270750774289114">當網站要搜尋附近的藍牙裝置時，必須先詢問你 (建議)</translation>
+<translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">下載完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">有網站正在使用你的攝影機</translation>
 <translation id="7817023149356982970">系統會將你登出這個網站。</translation>
 <translation id="7828557259026017104">Cookie 是你造訪過的網站所建立的檔案，網站會使用這些檔案記住你的偏好設定。第三方 Cookie 由其他網站所建立。這類網站通常是在你造訪的網站上提供部分內容 (例如廣告或圖片) 的其他網站。</translation>
+<translation id="7835852323729233924">正在播放媒體</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
 <translation id="7846621471902887024">系統會將你登出所有網站。</translation>
 <translation id="7882806643839505685">允許特定網站播放音訊。</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="802154636333426148">下載失敗</translation>
+<translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
 <translation id="8116925261070264013">已設為靜音</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">封鎖特定網站的 Cookie。</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
+<translation id="9074739597929991885">藍牙</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="965817943346481315">封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 </translationbundle>

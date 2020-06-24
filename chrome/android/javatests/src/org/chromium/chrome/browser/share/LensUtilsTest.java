@@ -59,6 +59,39 @@ public class LensUtilsTest {
     }
 
     /**
+     * Test {@link LensUtils#getShareWithGoogleLensIntent()} method when user is signed
+     * in and the direct intent experiment is enabled.
+     */
+    @CommandLineFlags.Add({"enable-features="
+                    + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:useDirectIntent/true"})
+    @Test
+    @SmallTest
+    public void
+    getShareWithGoogleLensIntentSignedInTest_directIntentEnabled() {
+        mBrowserTestRule.addAndSignInTestAccount();
+
+        Intent intentNoUri = getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY,
+                /* isIncognito= */ false, 1234L, /* srcUrl */ "", /* titleOrAltText */ "");
+        Assert.assertEquals("Intent without image has incorrect URI", "google://lens",
+                intentNoUri.getData().toString());
+        Assert.assertEquals("Intent without image has incorrect action", Intent.ACTION_VIEW,
+                intentNoUri.getAction());
+
+        final String contentUrl = "content://image-url";
+        Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(Uri.parse(contentUrl),
+                /* isIncognito= */ false, 1234L, /* srcUrl */ "", /* titleOrAltText */ "");
+        Assert.assertEquals("Intent with image has incorrect URI",
+                "google://lens?LensBitmapUriKey=content%3A%2F%2Fimage-url"
+                        + "&AccountNameUriKey=test%40gmail.com&IncognitoUriKey=false"
+                        + "&ActivityLaunchTimestampNanos=1234",
+                intentWithContentUri.getData().toString());
+        Assert.assertEquals("Intent with image has incorrect action", Intent.ACTION_VIEW,
+                intentWithContentUri.getAction());
+    }
+
+    /**
      * Test {@link LensUtils#getShareWithGoogleLensIntent()} method when user is
      * incognito.
      */

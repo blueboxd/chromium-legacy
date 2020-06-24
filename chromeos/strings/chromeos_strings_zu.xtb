@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Yehlulekile - Umnyango uvuliwe</translation>
 <translation id="3369013195428705271">Uqinisekile ukuthi ufuna ukusula wonke umlando wokuphrinta? Imisebenzi yakho yokuphrinta eqhubekayo ngeke isulwe.</translation>
 <translation id="3456078764689556234">Iphrinte ikhasi elingu-<ph name="PRINTED_PAGES" /> kwangu-<ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Imisebenzi yokuphrinta</translation>
 <translation id="3527036260304016759">Yehlukile - Iphutha elingaziwa</translation>
 <translation id="3749289110408117711">Igama lefayela</translation>
 <translation id="38114475217616659">Sula wonke umlando</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Yehlulekile - Okukhiphayo kugcwele</translation>
 <translation id="4034824040120875894">Iphrinta</translation>
 <translation id="4227825898293920515">Iphasiwedi iphelelwa isikhathi ngo-<ph name="TIME" /></translation>
+<translation id="4238516577297848345">Ayikho imisebenzi yokuphrinta eqhubekayo</translation>
 <translation id="428217921675623177">Imisebenzi yokuphrinta engaphezu kwezinsuku ezingu-90 izosuswa</translation>
 <translation id="4429881212383817840">Ithikithi le-Kerberos liphelelwa isikhathi maduze</translation>
 <translation id="445059817448385655">Iphasiwedi endala</translation>
@@ -61,11 +61,13 @@ Zama ukuthepha imakrofoni ukuze ungibuze noma yini.</translation>
 <translation id="6643016212128521049">Sula</translation>
 <translation id="7162487448488904999">Igalari</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Lesi senzo siphethwe umlawuli wakho</translation>
 <translation id="7658239707568436148">Khansela</translation>
 <translation id="7690294790491645610">Qinisekisa iphasiwedi entsha</translation>
 <translation id="7805768142964895445">Isimo</translation>
 <translation id="808894953321890993">Shintsha iphasiwedi</translation>
 <translation id="8208861521865154048">Izinzuzo</translation>
+<translation id="8347227221149377169">Imisebenzi yokuphrinta</translation>
 <translation id="8701136875688985581">I-<ph name="ENROLLMENT_DOMAIN" /> ilawula lo msebenzisi. Ingalawula amasethingi isekudeni futhi iqaphe umsebenzi womsebenzisi.</translation>
 <translation id="871560550817059752">Yehlulekile - Uyinki uphelile</translation>
 <translation id="8747900814994928677">Qinisekisa ushintsho</translation>

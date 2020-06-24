@@ -3007,7 +3007,10 @@ message ChildStatusReportRequest {
   // It might not be sent in every report.
   repeated AppActivity app_activity = 8;
 
-  // Next id: 9.
+  // A list of applications which are hidden from the user.
+  repeated App hidden_app = 9;
+
+  // Next id: 10.
 }
 
 // Response from DMServer to update user devices' status.

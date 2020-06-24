@@ -52,6 +52,7 @@ void PrintWindowHierarchy(const aura::Window* active_window,
                           const aura::Window* focused_window,
                           aura::Window* window,
                           int indent,
+                          bool scrub_data,
                           std::ostringstream* out) {
   std::string indent_str(indent, ' ');
   std::string name(window->GetName());
@@ -80,9 +81,13 @@ void PrintWindowHierarchy(const aura::Window* active_window,
   std::string* tree_id = window->GetProperty(ui::kChildAXTreeID);
   if (tree_id)
     *out << " ax_tree_id=" << *tree_id;
-  base::string16 title(window->GetTitle());
-  if (!title.empty())
-    *out << " title=" << title;
+
+  if (!scrub_data) {
+    base::string16 title(window->GetTitle());
+    if (!title.empty())
+      *out << " title=" << title;
+  }
+
   int app_type = window->GetProperty(aura::client::kAppType);
   *out << " app_type=" << app_type;
   std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
@@ -90,17 +95,20 @@ void PrintWindowHierarchy(const aura::Window* active_window,
     *out << " pkg_name=" << *pkg_name;
   *out << '\n';
 
-  for (aura::Window* child : window->children())
-    PrintWindowHierarchy(active_window, focused_window, child, indent + 3, out);
+  for (aura::Window* child : window->children()) {
+    PrintWindowHierarchy(active_window, focused_window, child, indent + 3,
+                         scrub_data, out);
+  }
 }
 
-void PrintWindowHierarchy(std::ostringstream* out) {
+void PrintWindowHierarchy(std::ostringstream* out, bool scrub_data) {
   aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* focused_window = window_util::GetFocusedWindow();
   aura::Window::Windows roots = Shell::Get()->GetAllRootWindows();
   for (size_t i = 0; i < roots.size(); ++i) {
     *out << "RootWindow " << i << ":\n";
-    PrintWindowHierarchy(active_window, focused_window, roots[i], 0, out);
+    PrintWindowHierarchy(active_window, focused_window, roots[i], 0, scrub_data,
+                         out);
   }
 }
 

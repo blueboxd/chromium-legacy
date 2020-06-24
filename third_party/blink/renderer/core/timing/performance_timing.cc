@@ -331,11 +331,18 @@ PerformanceTiming::BackForwardCacheRestore() const {
   if (!paint_timing)
     return {};
 
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return {};
+
   WTF::Vector<base::TimeTicks> navigation_starts =
       load_timing->BackForwardCacheRestoreNavigationStarts();
   WTF::Vector<base::TimeTicks> first_paints =
       paint_timing->FirstPaintsAfterBackForwardCacheRestore();
-  DCHECK(navigation_starts.size() == first_paints.size());
+  WTF::Vector<base::Optional<base::TimeDelta>> first_input_delays =
+      interactive_detector->GetFirstInputDelaysAfterBackForwardCacheRestore();
+  DCHECK_EQ(navigation_starts.size(), first_paints.size());
+  DCHECK_EQ(navigation_starts.size(), first_input_delays.size());
 
   WTF::Vector<BackForwardCacheRestoreTiming> restore_timings(
       navigation_starts.size());
@@ -344,6 +351,7 @@ PerformanceTiming::BackForwardCacheRestore() const {
         MonotonicTimeToIntegerMilliseconds(navigation_starts[i]);
     restore_timings[i].first_paint =
         MonotonicTimeToIntegerMilliseconds(first_paints[i]);
+    restore_timings[i].first_input_delay = first_input_delays[i];
   }
   return restore_timings;
 }

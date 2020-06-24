@@ -15,7 +15,7 @@ namespace extensions {
 class ProcessMap;
 
 // Factory for ProcessMap objects. ProcessMap objects are shared between an
-// incognito browser context and its master browser context.
+// incognito browser context and its original browser context.
 class ProcessMapFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ProcessMap* GetForBrowserContext(content::BrowserContext* context);

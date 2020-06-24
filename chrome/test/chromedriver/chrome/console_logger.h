@@ -33,7 +33,6 @@ class ConsoleLogger : public DevToolsEventListener {
  private:
   Log* log_;  // The log where to create entries.
 
-  Status OnConsoleMessageAdded(const base::DictionaryValue& params);
   Status OnLogEntryAdded(const base::DictionaryValue& params);
   Status OnRuntimeConsoleApiCalled(const base::DictionaryValue& params);
   Status OnRuntimeExceptionThrown(const base::DictionaryValue& params);

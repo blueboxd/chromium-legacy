@@ -14,6 +14,8 @@
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xfixes.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
@@ -54,9 +56,10 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   // XEventDispatcher:
   bool DispatchXEvent(x11::Event* xev) override;
 
-  bool OnSelectionRequest(const XSelectionRequestEvent& event);
-  bool OnSelectionNotify(const XSelectionEvent& event);
-  bool OnSetSelectionOwnerNotify(x11::Event* xev);
+  bool OnSelectionRequest(const x11::SelectionRequestEvent& event);
+  bool OnSelectionNotify(const x11::SelectionNotifyEvent& event);
+  bool OnSetSelectionOwnerNotify(
+      const x11::XFixes::SelectionNotifyEvent& event);
 
   // Returns an X atom for a clipboard buffer type.
   x11::Atom SelectionAtomForBuffer(ClipboardBuffer buffer) const;
@@ -89,7 +92,7 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   const x11::Atom x_property_;
 
   // Our X11 state.
-  Display* const x_display_;
+  x11::Connection* connection_;
 
   // Input-only window used as a selection owner.
   const x11::Window x_window_;
@@ -98,9 +101,6 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   // receive events and no processing will take place.
   // TODO(joelhockey): Make clipboard work without xfixes.
   bool using_xfixes_ = false;
-
-  // The event base returned by XFixesQueryExtension().
-  int xfixes_event_base_;
 
   // Notifies whenever clipboard sequence number is changed.
   PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;

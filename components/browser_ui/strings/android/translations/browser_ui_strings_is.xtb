@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Spyrja áður en vefsvæðum er leyft að búa til þrívíddarkort af umhverfinu eða rekja staðsetningu myndavélarinnar (ráðlagt)</translation>
 <translation id="2212565012507486665">Leyfa fótspor</translation>
 <translation id="2289270750774289114">Spyrja þegar vefsvæði vill finna nálæg Bluetooth-tæki (ráðlagt)</translation>
+<translation id="2315043854645842844">Stýrikerfið styður ekki vottorðsval hjá biðlara.</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Niðurhali lokið <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Vefsvæði er að nota myndavélina</translation>
 <translation id="7817023149356982970">Þú verður skráð(ur) út af þessu vefsvæði.</translation>
 <translation id="7828557259026017104">Fótspor eru skrár sem myndast á vefsvæðum sem þú heimsækir. Vefsvæði geta notað þau til að muna kjörstillingarnar þínar. Fótspor frá þriðja aðila eru búin til af öðrum vefsvæðum. Þessi vefsvæði eiga eitthvað af efninu, eins og auglýsingar eða myndir, sem þú sérð á vefsíðunni sem þú heimsækir.</translation>
+<translation id="7835852323729233924">Spilar efni</translation>
 <translation id="7846076177841592234">Hætta við val</translation>
 <translation id="7846621471902887024">Þú verður skráð(ur) út af öllum vefsvæðum.</translation>
 <translation id="7882806643839505685">Leyfa hljóð á tilteknu vefsvæði.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Ertu viss um að þú viljir hreinsa öll staðbundin gögn fyrir þetta vefsvæði, þar á meðal fótspor, og endurstilla allar heimildir þess?</translation>
 <translation id="8007176423574883786">Slökkt fyrir þetta tæki</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>
+<translation id="8068648041423924542">Ekki er hægt að velja vottorðið.</translation>
 <translation id="8087000398470557479">Þetta efni er frá <ph name="DOMAIN_NAME" />, birt af Google.</translation>
 <translation id="8116925261070264013">Þögguð</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Lokaðu á fótspor fyrir tiltekið vefsvæði.</translation>
 <translation id="8959122750345127698">Ekki næst samband: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Stjórnað af foreldrum þínum</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Aðgangur að hljóðnemanum</translation>
 <translation id="965817943346481315">Loka fyrir ef vefsvæði sýnir ágengar eða villandi auglýsingar (ráðlagt)</translation>
 </translationbundle>

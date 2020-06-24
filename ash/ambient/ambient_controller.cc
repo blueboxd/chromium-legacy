@@ -196,7 +196,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
 
       // We close the Assistant UI after ambient screen not being shown to sync
       // states to |AssistantUiController|. This will be a no-op if the
-      // Assistant UI has already been closed.
+      // |kAmbientAssistant| feature is disabled, or the Assistant UI has
+      // already been closed.
       CloseAssistantUi();
       break;
   }

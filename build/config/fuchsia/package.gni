@@ -13,9 +13,6 @@ import("//third_party/fuchsia-sdk/sdk/build/package.gni")
 # Parameters are:
 # package_name_override: Specifies the name of the package to generate,
 #     if different than |target_name|.
-# archive_filename_override: Specifies the filename of the generated FAR.
-#     If left unset, defaults to |package_name_override|.
-#     Defaults to the target name.
 # binary: The executable target which should be launched.
 # manifest: A path to the manifest that will be used.
 #     "testonly" targets default to using
@@ -107,27 +104,7 @@ template("cr_fuchsia_package") {
     }
   }
 
-  # Generate a Fuchsia ARchive (FAR) of the requested name.
-  if (defined(invoker.archive_name_override)) {
-    _archive_name = invoker.archive_name_override
-  } else {
-    _archive_name = _package_name
-  }
-
-  if (_archive_name != _package_name) {
-    _archive_target = target_name + "__cr-archive"
-
-    copy(target_name) {
-      deps = [ ":${_archive_target}" ]
-      _pkg_out_dir = "${target_gen_dir}/${_package_name}"
-      sources = [ "${_pkg_out_dir}/${_package_name}.far" ]
-      outputs = [ "${_pkg_out_dir}/${_archive_name}.far" ]
-    }
-  } else {
-    _archive_target = target_name
-  }
-
-  fuchsia_package(_archive_target) {
+  fuchsia_package(target_name) {
     forward_variables_from(invoker, [ "testonly" ])
     package_name = _package_name
     if (defined(invoker.excluded_files)) {

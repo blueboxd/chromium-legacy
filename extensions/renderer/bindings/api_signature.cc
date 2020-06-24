@@ -19,10 +19,9 @@ namespace extensions {
 namespace {
 
 bool HasCallback(const std::vector<std::unique_ptr<ArgumentSpec>>& signature) {
-  // TODO(devlin): This is how extension APIs have always determined if a
-  // function has a callback, but it seems a little silly. In the long run (once
-  // signatures are generated), it probably makes sense to indicate this
-  // differently.
+  // TODO(tjudkins): Once we change the APISignature to represent the whole
+  // signature including any asynchronous return, we should replace this with a
+  // method on the APISignature object itself.
   return !signature.empty() &&
          signature.back()->type() == ArgumentType::FUNCTION;
 }
@@ -407,6 +406,27 @@ APISignature::APISignature(const base::ListValue& specification) {
   }
 
   has_callback_ = HasCallback(signature_);
+}
+
+APISignature::APISignature(const base::Value& specification_list,
+                           bool supports_promises) {
+  auto size = specification_list.GetList().size() + (supports_promises ? 1 : 0);
+  signature_.reserve(size);
+  for (const auto& value : specification_list.GetList()) {
+    CHECK(value.is_dict());
+    signature_.push_back(std::make_unique<ArgumentSpec>(value));
+  }
+  // To allow promise supporting APIs to instead take a callback, we add an
+  // allowed function to the end of the signature.
+  if (supports_promises) {
+    auto callback = std::make_unique<ArgumentSpec>(ArgumentType::FUNCTION);
+    callback->set_name("callback");
+    signature_.push_back(std::move(callback));
+  }
+
+  has_callback_ = HasCallback(signature_);
+  DCHECK(!supports_promises || has_callback_)
+      << "If an API supports promises, it must also support callbacks";
 }
 
 APISignature::APISignature(std::vector<std::unique_ptr<ArgumentSpec>> signature)

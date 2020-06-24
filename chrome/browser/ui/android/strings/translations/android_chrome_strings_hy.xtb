@@ -85,6 +85,7 @@
 <translation id="1670399744444387456">Հիմնական</translation>
 <translation id="1671236975893690980">Պատրաստվում է ներբեռնման…</translation>
 <translation id="1672586136351118594">Այլևս ցույց չտալ</translation>
+<translation id="1680919990519905526">Գնել պատկեր Google Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="1718835860248848330">Վերջին 1 ժամվա</translation>
 <translation id="1736419249208073774">Ուսումնասիրել</translation>
@@ -99,6 +100,7 @@
 <translation id="1807246157184219062">Բաց</translation>
 <translation id="1810845389119482123">Համաժամացման սկզբնական կարգավորումը չի ավարտվել</translation>
 <translation id="1821253160463689938">Օգտագործում է քուքիները՝ ձեր նախընտրանքները հիշելու համար, նույնիսկ եթե չեք այցելում այդ կայքեր</translation>
+<translation id="1826516787628120939">Ստուգում</translation>
 <translation id="1829244130665387512">Գտնել էջում</translation>
 <translation id="1853692000353488670">Նոր ինկոգնիտո ներդիր</translation>
 <translation id="1856325424225101786">Վերակայե՞լ Lite ռեժիմը</translation>
@@ -157,7 +159,6 @@
 <translation id="2268044343513325586">Թարմացնել</translation>
 <translation id="2286841657746966508">Վճարային հասցե</translation>
 <translation id="230115972905494466">Համատեղելի սարքեր չեն գտնվել</translation>
-<translation id="2315043854645842844">Տվյալ օպերացիոն համակարգը չի աջակցում սպասառուի կողմից վկայագրի ընտրությունը:</translation>
 <translation id="2318045970523081853">Հպեք՝ զանգելու համար</translation>
 <translation id="2321086116217818302">Արտահանման նախապատրաստում…</translation>
 <translation id="2321958826496381788">Քաշեք սահիչն այնպես, որ հարմարավետ լինի կարդալը: Պարբերության վրա երկու անգամ սեղմելուց հետո տեքստը պետք է այսպիսի չափ ունենա:</translation>
@@ -256,6 +257,7 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Տեղորոշումն անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="3058498974290601450">Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում:</translation>
+<translation id="3059710691562604940">Անվտանգ դիտարկումն անջատված է։ Chrome-ը խորհուրդ է տալիս միացնել այն։</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> էջանիշ}one{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}other{<ph name="BOOKMARKS_COUNT_MANY" /> էջանիշ}}</translation>
 <translation id="3089395242580810162">Բացել ինկոգնիտո ներդիրում</translation>
 <translation id="3114012059975132928">Տեսանվագարկիչ</translation>
@@ -303,16 +305,17 @@
 <translation id="3398320232533725830">Բացել էջանիշների կառավարիչը</translation>
 <translation id="3414952576877147120">Չափը՝</translation>
 <translation id="3443221991560634068">Վերաբեռնել ընթացիկ էջը</translation>
-<translation id="3445014427084483498">Հենց նոր</translation>
 <translation id="3478363558367712427">Ընտրեք այլ որոնման համակարգ</translation>
 <translation id="3492207499832628349">Նոր ինկոգնիտո ներդիր</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Իմացեք ավելին<ph name="END_LINK" /> առաջարկվող բովանդակության վերաբերյալ</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="3507132249039706973">Սովորական պաշտպանությունը միացված է</translation>
 <translation id="3513704683820682405">Լրացված իրականություն</translation>
 <translation id="3518985090088779359">Ընդունել և շարունակել</translation>
 <translation id="3522247891732774234">Առկա է թարմացում: Լրացուցիչ ընտրանքներ</translation>
 <translation id="3524138585025253783">Մշակողի միջերես</translation>
 <translation id="3527085408025491307">Պանակ</translation>
+<translation id="3533694711092285624">Պահված գաղտնաբառեր չկան։ Chrome-ը կարող է ստուգել ձեր գաղտնաբառերը, երբ պահում եք դրանք։</translation>
 <translation id="3542235761944717775">Հասանելի է <ph name="KILOBYTES" /> ԿԲ</translation>
 <translation id="3549657413697417275">Որոնեք պատմության մեջ</translation>
 <translation id="3557336313807607643">Ավելացնել կոնտակտներում</translation>
@@ -384,6 +387,7 @@
 <translation id="4183868528246477015">Որոնել Տեսապակու միջոցով <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Բացել նոր ներդիրով</translation>
 <translation id="4198423547019359126">Ներբեռնումների պանակներ չկան</translation>
+<translation id="4202553989407425169">Google-ը կարող է ստուգել՝ արդյոք ձեր կարգավորումները պաշտպանում են ձեզ՝</translation>
 <translation id="4209895695669353772">Google-ից անհատականացված բովանդակություն ստանալու համար միացրեք համաժամացումը</translation>
 <translation id="423219824432660969">Գաղտնագրել համաժամացված տվյալները Google-ի գաղտնաբառով՝ սկսած <ph name="TIME" />-ից</translation>
 <translation id="4242533952199664413">Բացել կարգավորումները</translation>
@@ -392,6 +396,7 @@
 <translation id="4256782883801055595">Բաց կոդով ծրագրերի արտոնագրեր</translation>
 <translation id="4269820728363426813">Պատճենել հղման հասցեն</translation>
 <translation id="4298388696830689168">Կապված կայքեր</translation>
+<translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4307992518367153382">Հիմնական</translation>
 <translation id="4314815835985389558">Համաժամացման կառավարում</translation>
 <translation id="4320177379694898372">Համացանցի կապակցում չկա</translation>
@@ -492,11 +497,13 @@
 <translation id="5039804452771397117">Թույլ տալ</translation>
 <translation id="5040262127954254034">Գաղտնիություն</translation>
 <translation id="5087580092889165836">Ավելացնել քարտ</translation>
+<translation id="509429900233858213">Սխալ առաջացավ:</translation>
 <translation id="510275257476243843">Մնացել է 1 ժամ</translation>
 <translation id="5123685120097942451">Ինկոգնիտո ներդիր</translation>
 <translation id="5127805178023152808">Համաժամացումն անջատված է</translation>
 <translation id="5129038482087801250">Տեղադրել վեբ հավելվածը</translation>
 <translation id="5132942445612118989">Համաժամացրեք ձեր գաղտնաբառերը, պատմությունն ու մյուս կարգավորումները ձեր բոլոր սարքերում</translation>
+<translation id="5136035049889637840">Գնել նման ապրանքներ <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="5139940364318403933">Իմացեք, թե ինչպես օգտագործել Google Drive-ը</translation>
 <translation id="5152843274749979095">Աջակցվող հավելվածներ չեն տեղադրվել</translation>
 <translation id="5161254044473106830">Վերնագիրը պարտադիր է</translation>
@@ -520,6 +527,7 @@
 <translation id="5324858694974489420">Ծնողական կայանքներ</translation>
 <translation id="5327248766486351172">Անուն</translation>
 <translation id="5342314432463739672">Թույլտվությունների հարցումներ</translation>
+<translation id="5355191726083956201">Լրացուցիչ պաշտպանությունը միացված է</translation>
 <translation id="5357811892247919462">Դուք ներդիր եք ստացել</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> բացված ներդիր: Հպեք՝ ներդիրների միջև անցնելու համար։}one{<ph name="OPEN_TABS_MANY" /> բացված ներդիր։ հպեք՝ ներդիրների միջև անցնելու համար։}other{<ph name="OPEN_TABS_MANY" /> բացված ներդիրներ։ հպեք՝ ներդիրների միջև անցնելու համար։}}</translation>
 <translation id="5384883051496921101">Այս կայքը պատրաստվում է ուղարկել տվյալները մի հավելվածի, որն ինկոգնիտո ռեժիմից դուրս է գտնվում։</translation>
@@ -585,6 +593,7 @@
 <translation id="583281660410589416">Անհայտ</translation>
 <translation id="5833984609253377421">Կիսվել հղումով</translation>
 <translation id="5836192821815272682">Ներբեռնվում է Chrome-ի նոր տարբերակը…</translation>
+<translation id="584120177693484274">Նշված չէ</translation>
 <translation id="5853623416121554550">դադարեցված է</translation>
 <translation id="5854790677617711513">30 օր և ավելի</translation>
 <translation id="5858741533101922242">Չհաջողվեց միացնել Bluetooth ադապտերը</translation>
@@ -628,6 +637,7 @@
 <translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6206830853671714236">Ընտրեք, թե երբ է պետք ներբեռնել</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
+<translation id="6218096829563201111">Որոնել նման ապրանքներ <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
 <translation id="6221633008163990886">Գաղտնաբառերն արտահանելու համար ապակողպեք էկրանը</translation>
 <translation id="6232535412751077445">Եթե միացնեք «Չհետևել» գործառույթը, ձեր դիտարկման հոսքում կներառվի նաև հարցում: Արդյունքները կախված են նրանից, թե կպատասխանի արդյոք վեբկայքը հարցմանը և թե ինչպես այն կմեկնաբանվի:
 
@@ -645,6 +655,7 @@
 <translation id="6333140779060797560">Կիսվել <ph name="APPLICATION" />-ի միջոցով</translation>
 <translation id="6337234675334993532">Գաղտնագրում</translation>
 <translation id="6341580099087024258">Հարցնել, թե որտեղ պահել ֆայլերը</translation>
+<translation id="6342069812937806050">Հենց նոր</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ու առաքման ևս <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> հասցե}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> more}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 ու առաքման ևս <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> հասցե}}</translation>
 <translation id="6364438453358674297">Հեռացնե՞լ առաջարկը պատմությունից:</translation>
 <translation id="6366047038980456022"><ph name="APP_NAME" /> հավելվածն օժտված է խելացի միջերեսով և արագությամբ, որն անհրաժեշտ է համացանցում ապահով և արագ դիտարկման համար։</translation>
@@ -706,6 +717,7 @@
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" />-ի համար նախատեսված ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
+<translation id="6741063444351041466"><ph name="BEGIN_LINK" />Ձեր ադմինիստրատորը<ph name="END_LINK" /> անջատել է անվտանգ դիտարկումը</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
 <translation id="6811034713472274749">Էջը պատրաստ է</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -827,7 +839,6 @@
 <translation id="780301667611848630">Ոչ</translation>
 <translation id="7810647596859435254">Բացել հավելվածով…</translation>
 <translation id="7821588508402923572">Թրաֆիկի տնտեսման մասին տվյալները կցուցադրվեն այստեղ</translation>
-<translation id="7835852323729233924">Մեդիա բովանդակության նվագարկում</translation>
 <translation id="783819812427904514">Միացնել տեսանյութի ձայնը</translation>
 <translation id="7846296061357476882">Google-ի ծառայություններ</translation>
 <translation id="784934925303690534">Ժամանակի սանդղակ</translation>
@@ -862,7 +873,6 @@
 <translation id="8063895661287329888">Չհաջողվեց ավելացնել էջանիշը:</translation>
 <translation id="806745655614357130">Իմ տվյալները պահել առանձին</translation>
 <translation id="8067883171444229417">Նվագարկել տեսանյութը</translation>
-<translation id="8068648041423924542">Չի հաջողվում ընտրել վկայագիրը:</translation>
 <translation id="8073388330009372546">Բացել պատկերը նոր ներդիրով</translation>
 <translation id="8076492880354921740">Ներդիրներ</translation>
 <translation id="8084114998886531721">Պահված գաղտնաբառ</translation>

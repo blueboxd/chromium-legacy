@@ -251,6 +251,18 @@ expect_failure_invalid_os = (skip_worker) => {
   }
 }
 
+// These tests verify that any gated parts of the API are not available for a
+// third-party trial.
+expect_failure_third_party = (skip_worker) => {
+  test(() => {
+    expect_member_fails('thirdPartyAttribute');
+  }, 'Third-party attribute should not exist, with trial disabled');
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/third-party-disabled-worker.js'));
+  }
+};
+
 // These tests verify that the API functions correctly with an enabled trial.
 expect_success = () => {
 
@@ -322,6 +334,20 @@ expect_success_implied = (opt_description_suffix, skip_worker) => {
   if (!skip_worker) {
     fetch_tests_from_worker(new Worker('resources/implied-enabled-worker.js'));
   }
+};
+
+// These tests verify that the API functions correctly with a third-party trial
+// that is enabled.
+expect_success_third_party = () => {
+  test(() => {
+    expect_member('thirdPartyAttribute', (testObject) => {
+      return testObject.thirdPartyAttribute;
+    });
+  }, 'Third-party attribute should exist on object and return value');
+
+  // TODO(crbug.com/1083407): Implement when dedicated workers are supported for
+  // third-party trials.
+  // fetch_tests_from_worker(new Worker('resources/third-party-enabled-worker.js'));
 };
 
 // These tests should pass, regardless of the state of the trial. These are

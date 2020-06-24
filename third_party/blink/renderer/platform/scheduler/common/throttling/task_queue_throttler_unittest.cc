@@ -1333,6 +1333,292 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(3003)));
 }
 
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_MultiplePoolsWithDifferentIntervals) {
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  WakeUpBudgetPool* one_minute_pool = wake_up_budget_pool_;
+  scoped_refptr<base::SingleThreadTaskRunner> one_minute_task_runner =
+      timer_task_runner_;
+
+  // Create another TaskQueue, throttled by another WakeUpBudgetPool.
+  WakeUpBudgetPool* two_minutes_pool =
+      task_queue_throttler_->CreateWakeUpBudgetPool(
+          "Two Minutes Interval Pool");
+  two_minutes_pool->SetWakeUpDuration(base::TimeDelta());
+  two_minutes_pool->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                      base::TimeDelta::FromMinutes(2));
+  scoped_refptr<TaskQueue> two_minutes_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
+  two_minutes_pool->AddQueue(base::TimeTicks(), two_minutes_queue.get());
+  scoped_refptr<base::SingleThreadTaskRunner> two_minutes_task_runner =
+      two_minutes_queue->task_runner();
+  task_queue_throttler_->IncreaseThrottleRefCount(two_minutes_queue.get());
+
+  // Post tasks with a short delay to both queues.
+  constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+
+  Vector<base::TimeTicks> run_times;
+  one_minute_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      kShortDelay);
+  two_minutes_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      kShortDelay);
+
+  // Pools do not observe wake ups yet.
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+
+  // The first task should run after 1 minute, which is the wake up interval of
+  // |one_minute_pool|. The second task should run after 2 minutes, which is the
+  // wake up interval of |two_minutes_pool|.
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1)));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(2));
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1),
+                          base::TimeTicks() + base::TimeDelta::FromMinutes(2)));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            base::TimeTicks() + base::TimeDelta::FromMinutes(2));
+
+  // Clean up.
+  two_minutes_pool->RemoveQueue(test_task_runner_->NowTicks(),
+                                two_minutes_queue.get());
+  two_minutes_pool->Close();
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_MultiplePoolsWithUnalignedWakeUps) {
+  // Snap the time to the next minute to simplify expectations.
+  ForwardTimeToNextMinute();
+  const base::TimeTicks start_time = test_task_runner_->NowTicks();
+
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  wake_up_budget_pool_->AllowUnalignedWakeUpIfNoRecentWakeUp();
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  WakeUpBudgetPool* one_minute_pool = wake_up_budget_pool_;
+  scoped_refptr<base::SingleThreadTaskRunner> one_minute_task_runner =
+      timer_task_runner_;
+
+  // Create another TaskQueue, throttled by another WakeUpBudgetPool.
+  WakeUpBudgetPool* two_minutes_pool =
+      task_queue_throttler_->CreateWakeUpBudgetPool(
+          "Two Minutes Interval Pool");
+  two_minutes_pool->SetWakeUpDuration(base::TimeDelta());
+  two_minutes_pool->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                      base::TimeDelta::FromMinutes(1));
+  two_minutes_pool->AllowUnalignedWakeUpIfNoRecentWakeUp();
+  scoped_refptr<TaskQueue> two_minutes_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
+  two_minutes_pool->AddQueue(base::TimeTicks(), two_minutes_queue.get());
+  scoped_refptr<base::SingleThreadTaskRunner> two_minutes_task_runner =
+      two_minutes_queue->task_runner();
+  task_queue_throttler_->IncreaseThrottleRefCount(two_minutes_queue.get());
+
+  // Post tasks with short delays to both queues. They should run unaligned. The
+  // wake up in |one_minute_pool| should not be taken into account when
+  // evaluating whether there was a recent wake up in
+  // |two_minutes_pool_|.
+  Vector<base::TimeTicks> run_times;
+  one_minute_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(2));
+  two_minutes_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(3));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(2)));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(2),
+                          start_time + base::TimeDelta::FromSeconds(3)));
+
+  // Post extra tasks with long unaligned wake ups. They should run unaligned,
+  // since their desired run time is more than 1 minute after the last wake up
+  // in their respective pools.
+  run_times.clear();
+  one_minute_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(602));
+  two_minutes_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(603));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(601));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times, ElementsAre());
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(605));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(605)));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(605));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(606));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(605),
+                          start_time + base::TimeDelta::FromSeconds(606)));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(one_minute_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(605));
+  EXPECT_EQ(two_minutes_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(606));
+
+  // Clean up.
+  two_minutes_pool->RemoveQueue(test_task_runner_->NowTicks(),
+                                two_minutes_queue.get());
+  two_minutes_pool->Close();
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_MultiplePoolsWithAllignedAndUnalignedWakeUps) {
+  // Snap the time to the next minute to simplify expectations.
+  ForwardTimeToNextMinute();
+  const base::TimeTicks start_time = test_task_runner_->NowTicks();
+
+  // The 1st WakeUpBudgetPool doesn't allow unaligned wake ups.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  WakeUpBudgetPool* aligned_pool = wake_up_budget_pool_;
+  scoped_refptr<base::SingleThreadTaskRunner> aligned_task_runner =
+      timer_task_runner_;
+
+  // Create another TaskQueue, throttled by another WakeUpBudgetPool. This 2nd
+  // WakeUpBudgetPool allows unaligned wake ups.
+  WakeUpBudgetPool* unaligned_pool =
+      task_queue_throttler_->CreateWakeUpBudgetPool(
+          "Other Wake Up Budget Pool");
+  unaligned_pool->SetWakeUpDuration(base::TimeDelta());
+  unaligned_pool->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                    base::TimeDelta::FromMinutes(1));
+  unaligned_pool->AllowUnalignedWakeUpIfNoRecentWakeUp();
+  scoped_refptr<TaskQueue> unaligned_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
+  unaligned_pool->AddQueue(base::TimeTicks(), unaligned_queue.get());
+  scoped_refptr<base::SingleThreadTaskRunner> unaligned_task_runner =
+      unaligned_queue->task_runner();
+  task_queue_throttler_->IncreaseThrottleRefCount(unaligned_queue.get());
+
+  // Post tasks with short delays to both queues. The 1st task should run
+  // aligned, while the 2nd task should run unaligned.
+  Vector<base::TimeTicks> run_times;
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(2));
+  unaligned_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(3));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_THAT(run_times, ElementsAre());
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(), base::nullopt);
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(3)));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(57));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(3),
+                          start_time + base::TimeDelta::FromMinutes(1)));
+
+  // Post extra tasks with long unaligned wake ups. The 1st task should run
+  // aligned, while the 2nd task should run unaligned.
+  run_times.clear();
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(602));
+  unaligned_task_runner->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(603));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(601));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(run_times, ElementsAre());
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromMinutes(1));
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(663));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(663)));
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(117));
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromMinutes(12));
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(663));
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(663),
+                          start_time + base::TimeDelta::FromMinutes(12)));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(aligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromMinutes(12));
+  EXPECT_EQ(unaligned_pool->last_wake_up_for_testing(),
+            start_time + base::TimeDelta::FromSeconds(663));
+
+  // Clean up.
+  unaligned_pool->RemoveQueue(test_task_runner_->NowTicks(),
+                              unaligned_queue.get());
+  unaligned_pool->Close();
+}
+
 TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kTimeBetweenWakeUps =
@@ -1473,12 +1759,10 @@ TEST_F(TaskQueueThrottlerTest,
   wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
                                           base::TimeDelta::FromHours(1));
 
-  // The 1st delayed task should run after 1 minute, because increasing the wake
-  // up interval does not affect already scheduled wake ups. The 2nd task is
-  // scheduled according to the 1-hour wake up interval.
+  // Tasks run after 1 hour, which is the most up to date wake up interval.
   test_task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_THAT(run_times,
-              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1),
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromHours(1),
                           base::TimeTicks() + base::TimeDelta::FromHours(1)));
 }
 
@@ -1530,8 +1814,8 @@ TEST_F(TaskQueueThrottlerTest,
                   base::TimeDelta::FromSeconds(1));
             }),
             base::TimeDelta::FromSeconds(1));
-        // Increase the wake up interval. Since the wake up for the 2nd task is
-        // already scheduled, it isn't affected by this.
+        // Increase the wake up interval. This should affect the 2nd and 3rd
+        // tasks, which haven't run yet.
         wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
                                                 base::TimeDelta::FromHours(1));
       }),
@@ -1540,8 +1824,8 @@ TEST_F(TaskQueueThrottlerTest,
   test_task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_THAT(run_times,
               ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1),
-                          base::TimeTicks() + base::TimeDelta::FromMinutes(2),
-                          base::TimeTicks() + base::TimeDelta::FromHours(1)));
+                          base::TimeTicks() + base::TimeDelta::FromHours(1),
+                          base::TimeTicks() + base::TimeDelta::FromHours(2)));
 }
 
 TEST_F(TaskQueueThrottlerTest,

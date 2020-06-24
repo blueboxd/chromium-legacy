@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
   void GrabEscKey();
 
   // Creates an input-only window to be used during the drag.
-  void CreateDragInputWindow(XDisplay* display);
+  void CreateDragInputWindow(x11::Connection* connection);
 
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();

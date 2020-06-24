@@ -24,21 +24,6 @@ namespace internal {
 
 namespace {
 
-char* CommitPages(internal::pool_handle pool, size_t map_size) {
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
-  char* ptr =
-      internal::AddressPoolManager::GetInstance()->Alloc(pool, map_size);
-  if (UNLIKELY(!ptr))
-    return nullptr;
-  PA_DCHECK(!(map_size & kSystemPageOffsetMask));
-  SetSystemPagesAccess(ptr, map_size, PageReadWrite);
-  return ptr;
-#else
-  NOTREACHED();
-  return nullptr;
-#endif
-}
-
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
     PartitionRoot<thread_safe>* root,
@@ -63,7 +48,12 @@ ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
 
   char* ptr = nullptr;
   if (IsPartitionAllocGigaCageEnabled()) {
-    ptr = CommitPages(GetDirectMapPool(), map_size);
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+    ptr = internal::AddressPoolManager::GetInstance()->Alloc(GetDirectMapPool(),
+                                                             map_size);
+#else
+    NOTREACHED();
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
   } else {
     ptr = reinterpret_cast<char*>(AllocPages(nullptr, map_size, kSuperPageSize,
                                              PageReadWrite,
@@ -256,7 +246,12 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   char* requested_address = root->next_super_page;
   char* super_page = nullptr;
   if (IsPartitionAllocGigaCageEnabled()) {
-    super_page = CommitPages(GetNormalBucketPool(), kSuperPageSize);
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+    super_page = AddressPoolManager::GetInstance()->Alloc(GetNormalBucketPool(),
+                                                          kSuperPageSize);
+#else
+    NOTREACHED();
+#endif
   } else {
     super_page = reinterpret_cast<char*>(
         AllocPages(requested_address, kSuperPageSize, kSuperPageSize,

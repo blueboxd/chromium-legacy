@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">在允許網站建立您身處環境的 3D 地圖或追蹤攝錄機位置前先詢問您 (建議)</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2289270750774289114">在網站要探索附近的藍牙裝置時詢問您 (建議)</translation>
+<translation id="2315043854645842844">作業系統不支援由客戶端選取憑證。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">下載完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">有網站正在使用您的相機</translation>
 <translation id="7817023149356982970">您將會從這個網站登出。</translation>
 <translation id="7828557259026017104">Cookie 是您瀏覽的網站所建立的檔案，網站會使用這些檔案記住您的偏好設定，第三方 Cookie 則由其他網站建立。這些網站擁有您所瀏覽網頁的部分內容，例如廣告和圖片。</translation>
+<translation id="7835852323729233924">正在播放媒體</translation>
 <translation id="7846076177841592234">取消選取</translation>
 <translation id="7846621471902887024">您將會從所有網站登出。</translation>
 <translation id="7882806643839505685">允許特定網站播放音效。</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">您確定要清除這個網站的所有本機資料 (包括 Cookie)，然後重設其所有權限嗎？</translation>
 <translation id="8007176423574883786">已為這部裝置關閉</translation>
 <translation id="802154636333426148">下載失敗</translation>
+<translation id="8068648041423924542">無法選擇憑證。</translation>
 <translation id="8087000398470557479">此內容來自 <ph name="DOMAIN_NAME" />，由 Google 提供。</translation>
 <translation id="8116925261070264013">已設為靜音的網站</translation>
 <translation id="8131740175452115882">確定</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">禁止特定網站存取 Cookie。</translation>
 <translation id="8959122750345127698">無法存取瀏覽網址：<ph name="URL" /></translation>
 <translation id="9019902583201351841">由您的家長管理</translation>
+<translation id="9074739597929991885">藍牙</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="965817943346481315">封鎖顯示滋擾性或誤導廣告網站上的廣告 (建議)</translation>
 </translationbundle>

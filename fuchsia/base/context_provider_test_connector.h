@@ -20,7 +20,6 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartWebEngineForTests(
     const base::CommandLine& command_line =
         base::CommandLine(base::CommandLine::NO_PROGRAM));
 
-// TODO(crbug.com/1046615): Use test manifests for package specification.
 fuchsia::web::ContextProviderPtr ConnectContextProvider(
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         component_controller_request,

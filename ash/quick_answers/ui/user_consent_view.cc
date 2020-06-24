@@ -4,6 +4,7 @@
 
 #include "ash/quick_answers/ui/user_consent_view.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
 #include "ash/quick_answers/ui/quick_answers_pre_target_handler.h"
@@ -18,14 +19,16 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace quick_answers {
@@ -53,18 +56,14 @@ constexpr int kDescFontSizeDelta = 1;
 
 // Buttons common.
 constexpr int kButtonSpacingDip = 8;
-constexpr int kButtonBorderRadiusDip = 4;
-constexpr int kButtonBorderThicknessDip = 1;
 constexpr gfx::Insets kButtonBarInsets = {8, 0, 0, 0};
 constexpr gfx::Insets kButtonInsets = {6, 16, 6, 16};
 constexpr int kButtonFontSizeDelta = 1;
 
 // Manage-Settings button.
-constexpr SkColor kSettingsButtonBorderColor = gfx::kGoogleGrey300;
 constexpr SkColor kSettingsButtonTextColor = gfx::kGoogleBlue600;
 
 // Grant-Consent button.
-constexpr SkColor kConsentButtonBgColor = gfx::kGoogleBlue600;
 constexpr SkColor kConsentButtonTextColor = gfx::kGoogleGrey200;
 
 // Dogfood button.
@@ -92,12 +91,14 @@ std::unique_ptr<views::Label> CreateLabel(const base::string16& text,
 
 // views::LabelButton with custom line-height, color and font-list for the
 // underlying label.
-class CustomizedLabelButton : public views::LabelButton {
+class CustomizedLabelButton : public views::MdTextButton {
  public:
   CustomizedLabelButton(views::ButtonListener* listener,
                         const base::string16& text,
                         const SkColor color)
-      : LabelButton(listener, text) {
+      : MdTextButton(listener, views::style::CONTEXT_BUTTON_MD) {
+    SetText(text);
+    SetCustomPadding(kButtonInsets);
     SetEnabledTextColors(color);
     label()->SetLineHeight(kLineHeightDip);
     label()->SetFontList(views::Label::GetDefaultFontList()
@@ -123,9 +124,17 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
                                  QuickAnswersUiController* ui_controller)
     : anchor_view_bounds_(anchor_view_bounds),
       event_handler_(std::make_unique<QuickAnswersPreTargetHandler>(this)),
-      ui_controller_(ui_controller) {
+      ui_controller_(ui_controller),
+      focus_search_(std::make_unique<QuickAnswersFocusSearch>(
+          this,
+          base::BindRepeating(&UserConsentView::GetFocusableViews,
+                              base::Unretained(this)))) {
   InitLayout();
   InitWidget();
+
+  // Focus should cycle to each of the buttons the view contains and back to it.
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  views::FocusRing::Install(this);
 
   // Allow tooltips to be shown despite menu-controller owning capture.
   GetWidget()->SetNativeWindowProperty(
@@ -154,6 +163,32 @@ gfx::Size UserConsentView::CalculatePreferredSize() const {
   // View should match width of the anchor.
   auto width = anchor_view_bounds_.width();
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void UserConsentView::OnFocus() {
+  // Unless screen-reader mode is enabled, transfer the focus to an actionable
+  // button, otherwise retain to read out its contents.
+  if (!ash::Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
+    settings_button_->RequestFocus();
+}
+
+views::FocusTraversable* UserConsentView::GetPaneFocusTraversable() {
+  return focus_search_.get();
+}
+
+std::vector<views::View*> UserConsentView::GetFocusableViews() {
+  std::vector<views::View*> focusable_views;
+  // The view itself is not included in focus loop, unless screen-reader is on.
+  if (ash::Shell::Get()
+          ->accessibility_controller()
+          ->spoken_feedback_enabled()) {
+    focusable_views.push_back(this);
+  }
+  focusable_views.push_back(settings_button_);
+  focusable_views.push_back(consent_button_);
+  if (dogfood_button_)
+    focusable_views.push_back(dogfood_button_);
+  return focusable_views;
 }
 
 void UserConsentView::ButtonPressed(views::Button* sender,
@@ -256,11 +291,6 @@ void UserConsentView::InitButtonBar() {
       l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_MANAGE_SETTINGS_BUTTON),
       kSettingsButtonTextColor);
-  settings_button->SetBorder(views::CreatePaddedBorder(
-      views::CreateRoundedRectBorder(kButtonBorderThicknessDip,
-                                     kButtonBorderRadiusDip,
-                                     kSettingsButtonBorderColor),
-      kButtonInsets));
   settings_button_ = button_bar->AddChildView(std::move(settings_button));
 
   // Grant-Consent button.
@@ -269,20 +299,26 @@ void UserConsentView::InitButtonBar() {
       l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_GRANT_CONSENT_BUTTON),
       kConsentButtonTextColor);
-  consent_button->SetBackground(views::CreateRoundedRectBackground(
-      kConsentButtonBgColor, kButtonBorderRadiusDip));
-  consent_button->SetBorder(views::CreateEmptyBorder(kButtonInsets));
+  consent_button->SetProminent(true);
   consent_button_ = button_bar->AddChildView(std::move(consent_button));
 }
 
 void UserConsentView::InitWidget() {
   views::Widget::InitParams params;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
-  params.context = Shell::Get()->GetRootWindowForNewWindows();
   params.shadow_elevation = 2;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
+
+  // Parent the widget depending on the context.
+  auto* active_menu_controller = views::MenuController::GetActiveInstance();
+  if (active_menu_controller && active_menu_controller->owner()) {
+    params.parent = active_menu_controller->owner()->GetNativeView();
+    params.child = true;
+  } else {
+    params.context = Shell::Get()->GetRootWindowForNewWindows();
+  }
 
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
@@ -304,6 +340,7 @@ void UserConsentView::AddDogfoodButton() {
                             kDogfoodButtonColor));
   dogfood_button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT));
+  dogfood_button->SetFocusForPlatform();
   dogfood_button_ = dogfood_view->AddChildView(std::move(dogfood_button));
 }
 
@@ -317,7 +354,9 @@ void UserConsentView::UpdateWidgetBounds() {
               .y()) {
     y = anchor_view_bounds_.bottom() + kMarginDip;
   }
-  GetWidget()->SetBounds({{x, y}, size});
+  gfx::Rect bounds({x, y}, size);
+  wm::ConvertRectFromScreen(GetWidget()->GetNativeWindow()->parent(), &bounds);
+  GetWidget()->SetBounds(bounds);
 }
 
 }  // namespace quick_answers

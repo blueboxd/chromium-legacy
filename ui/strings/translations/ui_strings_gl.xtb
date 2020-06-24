@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Completouse a calibración</translation>
 <translation id="252373100621549798">Pantalla descoñecida</translation>
 <translation id="2545651323591713692">Adiar</translation>
+<translation id="2570734079541893434">Xestionar configuración</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{en 1 h}other{en # h}}</translation>
 <translation id="2583543531130364912">Calibra a pantalla táctil</translation>
 <translation id="2666092431469916601">Parte superior</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Moveuse á páxina <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Non bloquear</translation>
 <translation id="7907591526440419938">Abrir ficheiro</translation>
+<translation id="7952747673138230804">Chrome OS mostra suxestións de contido novo que podes explorar. Envía estatísticas para mellorar a calidade só se escolliches compartir os datos de uso. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Comando</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Máis de 1 notificación sen ler}other{Máis de # notificacións sen ler}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{en 1 m}other{en # m}}</translation>

@@ -15,6 +15,7 @@
       "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.Log",
       "fuchsia.logger.LogSink",
+      "fuchsia.memorypressure.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.sys.Environment",
       "fuchsia.sys.Loader",

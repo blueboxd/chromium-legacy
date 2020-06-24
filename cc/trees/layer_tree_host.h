@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -359,6 +360,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
   Layer* InnerViewportScrollLayerForTesting() const;
   Layer* OuterViewportScrollLayerForTesting() const;
+
+  ElementId OuterViewportScrollElementId() const;
 
   // Sets or gets the position of touch handles for a text selection. These are
   // submitted to the display compositor along with the Layer tree's contents

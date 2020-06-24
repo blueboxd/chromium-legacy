@@ -4,6 +4,10 @@
 
 #include "cc/metrics/frame_sequence_metrics.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -398,6 +402,22 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   return percent;
 }
 
+std::unique_ptr<base::trace_event::TracedValue>
+FrameSequenceMetrics::ThroughputData::ToTracedValue(
+    const ThroughputData& impl,
+    const ThroughputData& main,
+    ThreadType effective_thread) {
+  auto dict = std::make_unique<base::trace_event::TracedValue>();
+  if (effective_thread == ThreadType::kMain) {
+    dict->SetInteger("main-frames-produced", main.frames_produced);
+    dict->SetInteger("main-frames-expected", main.frames_expected);
+  } else {
+    dict->SetInteger("impl-frames-produced", impl.frames_produced);
+    dict->SetInteger("impl-frames-expected", impl.frames_expected);
+  }
+  return dict;
+}
+
 FrameSequenceMetrics::TraceData::TraceData(FrameSequenceMetrics* m)
     : metrics(m) {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("cc,benchmark", &enabled);
@@ -411,7 +431,8 @@ void FrameSequenceMetrics::TraceData::Terminate() {
   TRACE_EVENT_NESTABLE_ASYNC_END2(
       "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(trace_id), "args",
       ThroughputData::ToTracedValue(metrics->impl_throughput(),
-                                    metrics->main_throughput()),
+                                    metrics->main_throughput(),
+                                    metrics->GetEffectiveThread()),
       "checkerboard", metrics->frames_checkerboarded());
   trace_id = nullptr;
 }

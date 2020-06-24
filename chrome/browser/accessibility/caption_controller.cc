@@ -98,7 +98,8 @@ void CaptionController::UpdateSpeechRecognitionServiceEnabled() {
         base::BindOnce(&component_updater::SODAComponentInstallerPolicy::
                            UpdateSODAComponentOnDemand));
   } else {
-    // TODO(evliu): Unregister SODA component.
+    // Do nothing. The SODA component will be uninstalled and removed from the
+    // device on the next start up.
   }
 }
 

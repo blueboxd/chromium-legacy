@@ -96,4 +96,8 @@ interface IWebLayer {
   ISiteSettingsFragment createSiteSettingsFragmentImpl(
       in IRemoteFragmentClient remoteFragmentClient,
       in IObjectWrapper fragmentArgs) = 16;
+
+  // Added in Version 85.
+  void onMediaSessionServiceStarted(in IObjectWrapper sessionService, in Intent intent) = 17;
+  void onMediaSessionServiceDestroyed() = 18;
 }

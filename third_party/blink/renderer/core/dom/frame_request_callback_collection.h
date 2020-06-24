@@ -79,16 +79,8 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
   void ExecuteFrameCallbacks(double high_res_now_ms,
                              double high_res_now_ms_legacy);
 
-  CallbackId RegisterPostFrameCallback(FrameCallback*);
-  void CancelPostFrameCallback(CallbackId);
-  void ExecutePostFrameCallbacks(double high_res_now_ms,
-                                 double high_rest_now_ms_legacy);
-
   bool HasFrameCallback() const { return frame_callbacks_.size(); }
-  bool HasPostFrameCallback() const { return post_frame_callbacks_.size(); }
-  bool IsEmpty() const {
-    return !HasFrameCallback() && !HasPostFrameCallback();
-  }
+  bool IsEmpty() const { return !HasFrameCallback(); }
 
   void Trace(Visitor*) const;
   const char* NameInHeapSnapshot() const override {
@@ -97,18 +89,9 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
 
  private:
   using CallbackList = HeapVector<Member<FrameCallback>>;
-  void ExecuteCallbacksInternal(CallbackList& callbacks,
-                                const char* trace_event_name,
-                                const char* probe_name,
-                                double high_res_now_ms,
-                                double high_res_now_ms_legacy);
-  void CancelCallbackInternal(CallbackId id,
-                              const char* trace_event_name,
-                              const char* probe_name);
 
   CallbackList frame_callbacks_;
-  CallbackList post_frame_callbacks_;
-  // only non-empty while inside ExecuteCallbacks or ExecutePostFrameCallbacks.
+  // only non-empty while inside ExecuteCallbacks.
   CallbackList callbacks_to_invoke_;
 
   CallbackId next_callback_id_ = 0;

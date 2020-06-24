@@ -44,8 +44,8 @@ void NFCHost::GetNFC(RenderFrameHost* render_frame_host,
   }
 
   GURL origin_url = render_frame_host->GetLastCommittedOrigin().GetURL();
-  if (permission_controller_->GetPermissionStatus(PermissionType::NFC,
-                                                  origin_url, origin_url) !=
+  if (permission_controller_->GetPermissionStatusForFrame(
+          PermissionType::NFC, render_frame_host, origin_url) !=
       blink::mojom::PermissionStatus::GRANTED) {
     return;
   }

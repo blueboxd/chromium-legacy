@@ -17,7 +17,7 @@
 class PrivacyBudgetUkmEntryFilter : public ukm::UkmEntryFilter {
  public:
   // |settings| must outlive PrivacyBudgetUkmEntryFilter.
-  explicit PrivacyBudgetUkmEntryFilter(IdentifiabilityStudyState* settings);
+  explicit PrivacyBudgetUkmEntryFilter(IdentifiabilityStudyState* state);
 
   PrivacyBudgetUkmEntryFilter(const PrivacyBudgetUkmEntryFilter&) = delete;
   PrivacyBudgetUkmEntryFilter& operator=(const PrivacyBudgetUkmEntryFilter&) =
@@ -29,7 +29,7 @@ class PrivacyBudgetUkmEntryFilter : public ukm::UkmEntryFilter {
       base::flat_set<uint64_t>* removed_metric_hashes) const override;
 
  private:
-  IdentifiabilityStudyState* const identifiability_study_settings_;
+  IdentifiabilityStudyState* const identifiability_study_state_;
 };
 
 #endif  // CHROME_BROWSER_PRIVACY_BUDGET_PRIVACY_BUDGET_UKM_ENTRY_FILTER_H_

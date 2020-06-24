@@ -5,9 +5,12 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
+import android.os.RemoteException;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,7 +18,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.weblayer.Browser;
@@ -163,7 +168,7 @@ public final class GeolocationTest {
 
     private void waitForCountEqual(String variableName, int count) {
         CriteriaHelper.pollInstrumentationThread(
-                () -> { return getCountFromJS(variableName) == count; });
+                () -> Criteria.checkThat(getCountFromJS(variableName), Matchers.is(count)));
     }
 
     private void waitForDialog() throws Exception {
@@ -173,9 +178,13 @@ public final class GeolocationTest {
                         + "function(result) { queryResult = result.state; })",
                 false);
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return !mActivityTestRule.executeScriptSync("queryResult || ''", false)
-                            .getString(Tab.SCRIPT_RESULT_KEY)
-                            .equals("");
+            try {
+                String result = mActivityTestRule.executeScriptSync("queryResult || ''", false)
+                                        .getString(Tab.SCRIPT_RESULT_KEY);
+                Criteria.checkThat(result, Matchers.not(""));
+            } catch (JSONException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
         });
         Assert.assertEquals("prompt",
                 mActivityTestRule.executeScriptSync("queryResult", false)
@@ -185,13 +194,20 @@ public final class GeolocationTest {
     }
 
     private void waitForCountGreaterThan(String variableName, int count) {
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return getCountFromJS(variableName) > count; });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getCountFromJS(variableName), Matchers.greaterThan(count));
+        });
     }
 
     private void ensureGeolocationIsRunning(boolean running) {
-        CriteriaHelper.pollInstrumentationThread(
-                () -> { return mTestWebLayer.isMockLocationProviderRunning() == running; });
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(
+                        mTestWebLayer.isMockLocationProviderRunning(), Matchers.is(running));
+            } catch (RemoteException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        });
     }
 
     private int getCountFromJS(String variableName) {

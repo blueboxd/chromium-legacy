@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Запитувати, перш ніж дозволяти сайтам створювати 3D-карту вашого оточення або відстежувати положення камери (рекомендовано)</translation>
 <translation id="2212565012507486665">Дозволити файли cookie</translation>
 <translation id="2289270750774289114">Запитувати, коли сайт хоче шукати пристрої Bluetooth поблизу (рекомендовано)</translation>
+<translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
 <translation id="2359808026110333948">Продовжити</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2434158240863470628">Завантажено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Сайт використовує камеру</translation>
 <translation id="7817023149356982970">Ви вийдете з облікового запису на цьому сайті.</translation>
 <translation id="7828557259026017104">Файли cookie – це файли, створені веб-сайтами, які ви відвідали. Сайти використовують їх, щоб запам'ятовувати ваші налаштування. Сторонні файли cookie створюються іншими сайтами. Ці сайти показують власний контент, як-от оголошення чи зображення, на веб-сторінці, яку ви відвідуєте.</translation>
+<translation id="7835852323729233924">Відтворення медіафайлу</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
 <translation id="7846621471902887024">Ви вийдете з облікового запису на всіх сайтах.</translation>
 <translation id="7882806643839505685">Увімкнути звук для певного сайту.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>
+<translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Блокувати файли cookie з конкретного сайту.</translation>
 <translation id="8959122750345127698">Веб-сторінка <ph name="URL" /> недоступна</translation>
 <translation id="9019902583201351841">Керується батьками</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="965817943346481315">Блокувати, якщо сайт показує нав’язливі чи оманливі оголошення (рекомендовано)</translation>
 </translationbundle>

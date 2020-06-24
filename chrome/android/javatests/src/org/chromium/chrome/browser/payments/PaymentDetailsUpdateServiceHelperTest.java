@@ -72,7 +72,7 @@ public class PaymentDetailsUpdateServiceHelperTest {
 
     private Bundle defaultAddressBundle() {
         Bundle bundle = new Bundle();
-        bundle.putString(Address.EXTRA_ADDRESS_COUNTRY, "Canada");
+        bundle.putString(Address.EXTRA_ADDRESS_COUNTRY, "CA");
         String[] addressLine = {"111 Richmond Street West"};
         bundle.putStringArray(Address.EXTRA_ADDRESS_LINES, addressLine);
         bundle.putString(Address.EXTRA_ADDRESS_REGION, "Ontario");
@@ -407,6 +407,21 @@ public class PaymentDetailsUpdateServiceHelperTest {
         startPaymentDetailsUpdateService();
         mIPaymentDetailsUpdateService.changeShippingAddress(
                 null, new PaymentDetailsUpdateServiceCallback());
+        verifyIsWaitingForPaymentDetailsUpdate(false);
+        Assert.assertFalse(mShippingAddressChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.SHIPPING_ADDRESS_INVALID, receivedErrorString());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testChangeShippingAddressWithInvalidCountryCode() throws Throwable {
+        installAndInvokePaymentApp();
+        startPaymentDetailsUpdateService();
+        Bundle invalidAddress = defaultAddressBundle();
+        invalidAddress.putString(Address.EXTRA_ADDRESS_COUNTRY, "");
+        mIPaymentDetailsUpdateService.changeShippingAddress(
+                invalidAddress, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mShippingAddressChangeListenerNotified);
         Assert.assertEquals(ErrorStrings.SHIPPING_ADDRESS_INVALID, receivedErrorString());

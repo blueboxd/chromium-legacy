@@ -316,9 +316,9 @@ TEST_P(WaylandWindowTest, Minimize) {
   Sync();
 
   // Wayland compositor doesn't notify clients about minimized state, but rather
-  // if a window is not activated. Thus, a WaylandSurface marks itself as being
-  // minimized and and sets state to minimized. Thus, the state mustn't change
-  // after the configuration event is sent.
+  // if a window is not activated. Thus, a WaylandToplevelWindow marks itself as
+  // being minimized and and sets state to minimized. Thus, the state mustn't
+  // change after the configuration event is sent.
   EXPECT_EQ(window_->GetPlatformWindowState(), PlatformWindowState::kMinimized);
 
   // Send one additional empty configuration event (which means the surface is
@@ -1931,8 +1931,8 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
 
   // We can't mock all those methods above as long as the xdg_toplevel is
   // created and destroyed on each show and hide call. However, it is the same
-  // WaylandSurface object that cached the values we set and must restore them
-  // on Show().
+  // WaylandToplevelWindow object that cached the values we set and must restore
+  // them on Show().
   EXPECT_EQ(mock_xdg_toplevel->min_size(), min_size.value());
   EXPECT_EQ(mock_xdg_toplevel->max_size(), max_size.value());
   EXPECT_EQ(std::string(kAppId), mock_xdg_toplevel->app_id());

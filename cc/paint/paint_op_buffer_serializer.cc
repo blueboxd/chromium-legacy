@@ -4,12 +4,15 @@
 
 #include "cc/paint/paint_op_buffer_serializer.h"
 
+#include <limits>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "ui/gfx/skia_util.h"
-
-#include <utility>
 
 namespace cc {
 namespace {
@@ -212,8 +215,10 @@ void PaintOpBufferSerializer::SerializePreamble(
       << "full: " << preamble.full_raster_rect.ToString()
       << ", playback: " << preamble.playback_rect.ToString();
 
+  // NOTE: The following code should be kept consistent with
+  // RasterSource::PlaybackToCanvas().
   bool is_partial_raster = preamble.full_raster_rect != preamble.playback_rect;
-  if (!preamble.requires_clear) {
+  if (!preamble.requires_clear && preamble.post_translation.IsZero()) {
     ClearForOpaqueRaster(preamble, options, params);
   } else if (!is_partial_raster) {
     // If rastering the entire tile, clear to transparent pre-clip.  This is so

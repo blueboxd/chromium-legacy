@@ -334,21 +334,45 @@ public class GestureListenerManagerImpl
                 || scrollOffsetY != rc.getScrollY();
 
         if (scrollChanged) {
-            mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),
-                    (int) rc.fromLocalCssToPix(scrollOffsetY), (int) rc.getScrollXPix(),
-                    (int) rc.getScrollYPix());
+            onRootScrollOffsetChangedImpl(pageScaleFactor, scrollOffsetX, scrollOffsetY);
         }
 
         // TODO(jinsukkim): Consider updating the info directly through RenderCoordinates.
-        rc.updateFrameInfo(scrollOffsetX, scrollOffsetY, contentWidth, contentHeight, viewportWidth,
-                viewportHeight, pageScaleFactor, minPageScaleFactor, maxPageScaleFactor,
-                topBarShownPix);
+        rc.updateFrameInfo(contentWidth, contentHeight, viewportWidth, viewportHeight,
+                minPageScaleFactor, maxPageScaleFactor, topBarShownPix);
 
-        if (scrollChanged || topBarChanged) {
+        if (!scrollChanged && topBarChanged) {
             updateOnScrollChanged(verticalScrollOffset(), verticalScrollExtent());
         }
         if (scaleLimitsChanged) updateOnScaleLimitsChanged(minPageScaleFactor, maxPageScaleFactor);
         TraceEvent.end("GestureListenerManagerImpl:updateScrollInfo");
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onRootScrollOffsetChanged(float scrollOffsetX, float scrollOffsetY) {
+        onRootScrollOffsetChangedImpl(mWebContents.getRenderCoordinates().getPageScaleFactor(),
+                scrollOffsetX, scrollOffsetY);
+    }
+
+    private void onRootScrollOffsetChangedImpl(
+            float pageScaleFactor, float scrollOffsetX, float scrollOffsetY) {
+        TraceEvent.begin("GestureListenerManagerImpl:onRootScrollOffsetChanged");
+
+        notifyDelegateOfScrollChange(scrollOffsetX, scrollOffsetY);
+
+        mWebContents.getRenderCoordinates().updateScrollInfo(
+                pageScaleFactor, scrollOffsetX, scrollOffsetY);
+
+        updateOnScrollChanged(verticalScrollOffset(), verticalScrollExtent());
+        TraceEvent.end("GestureListenerManagerImpl:onRootScrollOffsetChanged");
+    }
+
+    private void notifyDelegateOfScrollChange(float scrollOffsetX, float scrollOffsetY) {
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
+        mScrollDelegate.onScrollChanged((int) rc.fromLocalCssToPix(scrollOffsetX),
+                (int) rc.fromLocalCssToPix(scrollOffsetY), (int) rc.getScrollXPix(),
+                (int) rc.getScrollYPix());
     }
 
     @Override

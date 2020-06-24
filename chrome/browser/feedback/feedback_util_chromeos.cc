@@ -61,7 +61,7 @@ void SendSysLogFeedback(Profile* profile,
                         bool send_tab_titles) {
   // |fetcher| deletes itself after calling its callback.
   system_logs::SystemLogsFetcher* fetcher =
-      system_logs::BuildChromeSystemLogsFetcher();
+      system_logs::BuildChromeSystemLogsFetcher(/*scrub_data=*/true);
   fetcher->Fetch(base::BindOnce(&OnGetSystemInformation, profile, description,
                                 callback, send_tab_titles));
 }

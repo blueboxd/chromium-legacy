@@ -4,6 +4,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
@@ -12,6 +14,7 @@
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/extension_action.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -114,13 +117,24 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
   constexpr char kWorker[] =
       R"(chrome.action.onClicked.addListener((tab) => {
            chrome.test.assertTrue(!!tab);
-           chrome.test.notifyPass();
+           chrome.action.setIcon({path: 'blue_icon.png'}, () => {
+             chrome.test.notifyPass();
+           });
          });
          chrome.test.sendMessage('ready');)";
+
+  std::string blue_icon;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("api_test/icon_rgb_0_0_255.png"),
+        &blue_icon));
+  }
 
   TestExtensionDir test_dir;
   test_dir.WriteManifest(kManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
+  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
 
   ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
   const Extension* extension = LoadMv3Extension(test_dir.UnpackedPath());
@@ -132,9 +146,16 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
   ASSERT_EQ(1, action_test_util->NumberOfBrowserActions());
   EXPECT_EQ(extension->id(), action_test_util->GetExtensionId(0));
 
+  ExtensionAction* const action =
+      ExtensionActionManager::Get(profile())->GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+  EXPECT_FALSE(action->HasIcon(ExtensionAction::kDefaultTabId));
+
   ResultCatcher catcher;
   action_test_util->Press(0);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  EXPECT_TRUE(action->HasIcon(ExtensionAction::kDefaultTabId));
 }
 
 }  // namespace extensions

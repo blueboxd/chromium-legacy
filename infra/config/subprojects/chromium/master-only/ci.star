@@ -1719,6 +1719,19 @@ ci.fyi_coverage_builder(
 
 
 ci.fyi_ios_builder(
+    name = 'ios-asan',
+    console_view_entry = ci.console_view_entry(
+        category = 'iOS',
+        short_name = 'asan',
+    ),
+    executable = 'recipe:chromium',
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11e146',
+    },
+)
+
+ci.fyi_ios_builder(
     name = 'ios-simulator-cr-recipe',
     console_view_entry = ci.console_view_entry(
         category = 'iOS',

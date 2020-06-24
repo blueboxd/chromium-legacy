@@ -24,12 +24,13 @@ const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 // List of policies that are considered only if the user is part of a AD domain
 // on Windows or managed on the Mac. Please document any new additions in
 // policy_templates.json!
+// Please keep the list in alphabetical order!
 const char* kSensitivePolicies[] = {
+    key::kAutoOpenFileTypes,
     key::kChromeCleanupEnabled,
     key::kChromeCleanupReportingEnabled,
     key::kCommandLineFlagSecurityWarningsEnabled,
     key::kDefaultSearchProviderEnabled,
-    key::kAutoOpenFileTypes,
     key::kHomepageIsNewTabPage,
     key::kHomepageLocation,
     key::kMetricsReportingEnabled,
@@ -41,7 +42,6 @@ const char* kSensitivePolicies[] = {
     key::kSafeBrowsingForTrustedSourcesEnabled,
     key::kSafeBrowsingEnabled,
     key::kSafeBrowsingWhitelistDomains,
-    key::kDefaultSearchProviderContextMenuAccessAllowed,
 };
 
 }  // namespace

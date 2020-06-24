@@ -5,8 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_AHARDWAREBUFFER_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_AHARDWAREBUFFER_UTILS_H_
 
-#include <memory>
-
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
@@ -15,12 +13,6 @@ extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
 
 typedef unsigned int GLenum;
 
-namespace base {
-namespace android {
-class ScopedHardwareBufferHandle;
-}  // namespace android
-}  // namespace base
-
 namespace gfx {
 class ColorSpace;
 class Rect;
@@ -28,9 +20,6 @@ class Size;
 }  // namespace gfx
 
 namespace gpu {
-class SharedContextState;
-class VulkanImage;
-
 namespace gles2 {
 class Texture;
 class TexturePassthrough;
@@ -70,13 +59,6 @@ scoped_refptr<gles2::TexturePassthrough> GenGLTexturePassthrough(
     const gfx::Size& size,
     const size_t estimated_size,
     const gfx::Rect& cleared_rect);
-
-// Create a vulkan image from the AHB handle.
-std::unique_ptr<VulkanImage> CreateVkImageFromAhbHandle(
-    base::android::ScopedHardwareBufferHandle ahb_handle,
-    SharedContextState* context_state,
-    const gfx::Size& size,
-    const viz::ResourceFormat& format);
 
 }  // namespace gpu
 

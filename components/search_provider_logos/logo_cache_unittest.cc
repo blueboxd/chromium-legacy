@@ -38,7 +38,9 @@ LogoMetadata GetExampleMetadata() {
   metadata.dark_mime_type = "image/jpeg";
   metadata.dark_background_color = "#ABC123";
   metadata.log_url = GURL("https://www.google.com/ddllog?a=b");
+  metadata.dark_log_url = GURL("https://www.google.com/ddllog?a=dark");
   metadata.cta_log_url = GURL("https://www.google.com/ddllog?c=d");
+  metadata.dark_cta_log_url = GURL("https://www.google.com/ddllog?c=dark");
   metadata.share_button_x = 200;
   metadata.share_button_y = 100;
   metadata.share_button_opacity = 0.5;
@@ -119,7 +121,10 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
   EXPECT_EQ(expected_metadata.alt_text, actual_metadata.alt_text);
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
   EXPECT_EQ(expected_metadata.log_url, actual_metadata.log_url);
+  EXPECT_EQ(expected_metadata.dark_log_url, actual_metadata.dark_log_url);
   EXPECT_EQ(expected_metadata.cta_log_url, actual_metadata.cta_log_url);
+  EXPECT_EQ(expected_metadata.dark_cta_log_url,
+            actual_metadata.dark_cta_log_url);
   EXPECT_EQ(expected_metadata.short_link, actual_metadata.short_link);
   EXPECT_EQ(expected_metadata.share_button_x, actual_metadata.share_button_x);
   EXPECT_EQ(expected_metadata.share_button_y, actual_metadata.share_button_y);

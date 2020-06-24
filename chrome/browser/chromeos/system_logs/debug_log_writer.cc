@@ -25,8 +25,12 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
+namespace debug_log_writer {
 
 namespace {
+
+using StoreLogsCallback =
+    base::OnceCallback<void(base::Optional<base::FilePath> log_path)>;
 
 // Callback for returning status of executed external command.
 typedef base::OnceCallback<void(bool succeeded)> CommandCompletionCallback;
@@ -44,31 +48,30 @@ base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
 // descriptor, deletes log file in the case of failure and calls
 // |callback|.
 void WriteDebugLogToFileCompleted(const base::FilePath& file_path,
-                                  DebugLogWriter::StoreLogsCallback callback,
+                                  StoreLogsCallback callback,
                                   bool succeeded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!succeeded) {
     bool posted = g_sequenced_task_runner.Get()->PostTaskAndReply(
         FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), file_path),
-        base::BindOnce(std::move(callback), file_path, false));
+        base::BindOnce(std::move(callback), base::nullopt));
     DCHECK(posted);
     return;
   }
   if (!callback.is_null())
-    std::move(callback).Run(file_path, true);
+    std::move(callback).Run(file_path);
 }
 
-// Stores into |file_path| debug logs in the .tgz format. Calls
-// |callback| upon completion.
+// Stores debug logs into |file_path| as a tar file. Invokes |callback| upon
+// completion.
 void WriteDebugLogToFile(std::unique_ptr<base::File> file,
                          const base::FilePath& file_path,
                          bool should_compress,
-                         DebugLogWriter::StoreLogsCallback callback) {
+                         StoreLogsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!file->IsValid()) {
     LOG(ERROR) << "Can't create debug log file: " << file_path.AsUTF8Unsafe()
-               << ", "
-               << "error: " << file->error_details();
+               << ", error: " << file->error_details();
     return;
   }
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->DumpDebugLogs(
@@ -110,33 +113,30 @@ void RunCommand(const std::vector<std::string>& argv,
 // the final outcome of log retreival process at via |callback|.
 void OnCompressArchiveCompleted(const base::FilePath& tar_file_path,
                                 const base::FilePath& compressed_output_path,
-                                DebugLogWriter::StoreLogsCallback callback,
+                                StoreLogsCallback callback,
                                 bool compression_command_success) {
   if (!compression_command_success) {
     LOG(ERROR) << "Failed compressing " << compressed_output_path.value();
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), base::FilePath(), false));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     base::DeleteFile(tar_file_path, false);
     base::DeleteFile(compressed_output_path, false);
     return;
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), compressed_output_path, true));
+      FROM_HERE, base::BindOnce(std::move(callback), compressed_output_path));
 }
 
 // Gzips |tar_file_path| and stores results in |compressed_output_path|.
 void CompressArchive(const base::FilePath& tar_file_path,
                      const base::FilePath& compressed_output_path,
-                     DebugLogWriter::StoreLogsCallback callback,
+                     StoreLogsCallback callback,
                      bool add_user_logs_command_success) {
   if (!add_user_logs_command_success) {
     LOG(ERROR) << "Failed adding user logs to " << tar_file_path.value();
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), base::FilePath(), false));
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     base::DeleteFile(tar_file_path, false);
     return;
   }
@@ -153,37 +153,34 @@ void CompressArchive(const base::FilePath& tar_file_path,
 // produce |compressed_output_path|.
 void AddUserLogsToArchive(const base::FilePath& user_log_dir,
                           const base::FilePath& tar_file_path,
-                          const base::FilePath& compressed_output_path,
-                          DebugLogWriter::StoreLogsCallback callback) {
+                          StoreLogsCallback callback) {
   std::vector<std::string> argv;
   argv.push_back(kTarCommand);
   argv.push_back("-rvf");
   argv.push_back(tar_file_path.value());
   argv.push_back(user_log_dir.value());
+  base::FilePath compressed_output_path =
+      tar_file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
   RunCommand(argv, base::BindOnce(&CompressArchive, tar_file_path,
                                   compressed_output_path, std::move(callback)));
 }
 
 // Appends user logs after system logs are archived into |tar_file_path|.
-void OnSystemLogsAdded(DebugLogWriter::StoreLogsCallback callback,
-                       const base::FilePath& tar_file_path,
-                       bool succeeded) {
-  if (!succeeded) {
+void OnSystemLogsAdded(StoreLogsCallback callback,
+                       base::Optional<base::FilePath> tar_file_path) {
+  if (!tar_file_path) {
     if (!callback.is_null())
-      std::move(callback).Run(base::FilePath(), false);
-
+      std::move(callback).Run(base::nullopt);
     return;
   }
 
-  base::FilePath compressed_output_path =
-      tar_file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
   base::FilePath user_log_dir =
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&AddUserLogsToArchive, user_log_dir, tar_file_path,
-                     compressed_output_path, std::move(callback)));
+      base::BindOnce(&AddUserLogsToArchive, user_log_dir, *tar_file_path,
+                     std::move(callback)));
 }
 
 void InitializeLogFile(base::File* file,
@@ -204,7 +201,7 @@ void InitializeLogFile(base::File* file,
 // derived from |file_name_template|.
 void StartLogRetrieval(const base::FilePath& file_name_template,
                        bool should_compress,
-                       DebugLogWriter::StoreLogsCallback callback) {
+                       StoreLogsCallback callback) {
   base::FilePath file_path =
       logging::GenerateTimestampedName(file_name_template, base::Time::Now());
 
@@ -222,31 +219,26 @@ void StartLogRetrieval(const base::FilePath& file_name_template,
 }  // namespace
 
 // static.
-void DebugLogWriter::StoreLogs(const base::FilePath& fileshelf,
-                               bool should_compress,
-                               StoreLogsCallback callback) {
+void StoreLogs(
+    const base::FilePath& out_dir,
+    bool include_chrome_logs,
+    base::OnceCallback<void(base::Optional<base::FilePath> logs_path)>
+        callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::FilePath file_path =
-      fileshelf.Append(should_compress ? FILE_PATH_LITERAL("debug-logs.tgz")
-                                       : FILE_PATH_LITERAL("debug-logs.tar"));
-
-  StartLogRetrieval(file_path, should_compress, std::move(callback));
+  if (include_chrome_logs) {
+    base::FilePath file_path =
+        out_dir.Append(FILE_PATH_LITERAL("combined-logs.tar"));
+    // Get system logs from /var/log first, then add user-specific stuff.
+    StartLogRetrieval(file_path, /*should_compress=*/false,
+                      base::BindOnce(&OnSystemLogsAdded, std::move(callback)));
+  } else {
+    base::FilePath file_path =
+        out_dir.Append(FILE_PATH_LITERAL("debug-logs.tgz"));
+    StartLogRetrieval(file_path, /*should_compress=*/true, std::move(callback));
+  }
 }
 
-// static.
-void DebugLogWriter::StoreCombinedLogs(const base::FilePath& fileshelf,
-                                       StoreLogsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!callback.is_null());
-
-  base::FilePath file_path =
-      fileshelf.Append(FILE_PATH_LITERAL("combined-logs.tar"));
-
-  // Get system logs from /var/log first, then add user-specific stuff.
-  StartLogRetrieval(file_path, false,
-                    base::BindOnce(&OnSystemLogsAdded, std::move(callback)));
-}
-
+}  // namespace debug_log_writer
 }  // namespace chromeos

@@ -17,6 +17,8 @@ import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
+import android.os.Build.VERSION_CODES;
+
 import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -26,6 +28,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -122,6 +125,8 @@ public class TabSuggestionMessageCardTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_close_tab_suggestions/true"})
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.N, message = "https://crbug.com/1095535")
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1095535")
     public void closeTabSuggestionReviewedAndDismissed() {
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 

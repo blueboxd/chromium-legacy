@@ -2,22 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 source_set("privacy_budget") {
   sources = [
-    "container_ops.h",
-    "field_trial_param_conversions.cc",
-    "field_trial_param_conversions.h",
     "identifiability_study_state.cc",
     "identifiability_study_state.h",
-    "privacy_budget_features.cc",
-    "privacy_budget_features.h",
     "privacy_budget_prefs.cc",
     "privacy_budget_prefs.h",
     "privacy_budget_ukm_entry_filter.cc",
     "privacy_budget_ukm_entry_filter.h",
   ]
+
   deps = [
     "//base",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -29,24 +23,15 @@ source_set("privacy_budget") {
 
 source_set("unit_tests") {
   testonly = true
+
   sources = [
-    "container_ops_unittest.cc",
-    "field_trial_param_conversions_unittest.cc",
     "identifiability_study_state_unittest.cc",
     "privacy_budget_ukm_entry_filter_unittest.cc",
   ]
+
   deps = [
-    ":test_support",
+    "//chrome/common/privacy_budget:test_support",
     "//chrome/test:test_support",
     "//testing/gtest",
   ]
-}
-
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "scoped_privacy_budget_config.cc",
-    "scoped_privacy_budget_config.h",
-  ]
-  deps = [ "//base/test:test_support" ]
 }

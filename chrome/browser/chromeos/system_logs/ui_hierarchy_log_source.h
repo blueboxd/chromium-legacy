@@ -12,7 +12,8 @@ namespace system_logs {
 
 class UiHierarchyLogSource : public SystemLogsSource {
  public:
-  UiHierarchyLogSource() : SystemLogsSource("UiHierarchy") {}
+  explicit UiHierarchyLogSource(bool scrub_data)
+      : SystemLogsSource("UiHierarchy"), scrub_data_(scrub_data) {}
   UiHierarchyLogSource(const UiHierarchyLogSource&) = delete;
   UiHierarchyLogSource& operator=(const UiHierarchyLogSource&) = delete;
   ~UiHierarchyLogSource() override = default;
@@ -20,6 +21,8 @@ class UiHierarchyLogSource : public SystemLogsSource {
  private:
   // Overridden from SystemLogsSource:
   void Fetch(SysLogsSourceCallback callback) override;
+
+  const bool scrub_data_;
 };
 
 }  // namespace system_logs

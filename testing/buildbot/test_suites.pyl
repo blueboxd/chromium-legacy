@@ -91,6 +91,70 @@
       },
     },
 
+    # List gtests that are removed in marshmallow emulator builder due to:
+    #  - GCE capacity limitation
+    #  - or timeout issue (crbug.com/1093602)
+    # They will be run in a marshmallow emulator FYI builder to keep test
+    # coverage or debug the timeout issue.
+    'android_marshmallow_emulator_backlog_gtests': {
+      'chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
+      'content_browsertests': {
+        'android_swarming': {
+          'shards': 9,
+        },
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'network_service_out_of_process_chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'args': [
+          '--disable-features=NetworkServiceInProcess',
+        ],
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+        'test': 'chrome_public_test_apk',
+      },
+      'network_service_out_of_process_content_browsertests': {
+        'args': [
+          '--disable-features=NetworkServiceInProcess',
+        ],
+        'swarming': {
+          'shards': 5,
+        },
+        'test': 'content_browsertests',
+      },
+      'network_service_webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'args': [
+          # TODO(crbug.com/882650): WebView currently does not support running network
+          # service OOP.
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter',
+        ],
+        'test': 'webview_instrumentation_test_apk',
+      },
+      'webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
     'android_modern_smoke_tests': {
       'chrome_modern_public_bundle_fake_modules_smoke_test': {},
       'chrome_modern_public_bundle_smoke_test': {},
@@ -1485,8 +1549,7 @@
       'viz_unittests': {
         'mixins': ['fuchsia_runner_logs'],
         'args': [
-          # http://crbug.com/865172
-          '--child-arg=--ozone-platform=headless',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter',
         ],
       },
       'web_engine_browsertests': {
@@ -5486,6 +5549,21 @@
           'SIM_IPAD_AIR_2_12_4',
         ],
       },
+    },
+
+    'ios_asan_tests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
+        ]
+      }
     },
 
     'ios_clang_tot_device_tests': {

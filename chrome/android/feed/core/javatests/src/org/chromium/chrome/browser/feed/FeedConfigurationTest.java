@@ -100,13 +100,6 @@ public class FeedConfigurationTest {
 
     @Test
     @Feature({"Feed"})
-    public void testSendFeedbackEnabledDefault() {
-        Assert.assertEquals(
-                SEND_FEEDBACK_ENABLED_DEFAULT, FeedConfiguration.getSendFeedbackEnabled());
-    }
-
-    @Test
-    @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:abandon_restore_below_fold/false"})

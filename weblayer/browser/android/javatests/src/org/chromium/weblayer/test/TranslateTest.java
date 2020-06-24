@@ -9,12 +9,14 @@ import android.view.View;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.TestWebLayer;
@@ -72,13 +74,15 @@ public class TranslateTest {
 
     private void waitForInfoBarToShow() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return findViewByStringId("id/weblayer_translate_infobar_content") != null;
+            Criteria.checkThat(findViewByStringId("id/weblayer_translate_infobar_content"),
+                    Matchers.notNullValue());
         });
     }
 
     private void waitForInfoBarToHide() {
         CriteriaHelper.pollInstrumentationThread(() -> {
-            return findViewByStringId("id/weblayer_translate_infobar_content") == null;
+            Criteria.checkThat(findViewByStringId("id/weblayer_translate_infobar_content"),
+                    Matchers.nullValue());
         });
     }
 }

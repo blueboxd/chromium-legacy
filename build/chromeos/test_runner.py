@@ -120,6 +120,8 @@ class RemoteTest(object):
           '--results-dest-dir',
           os.path.join(args.logs_dir, 'system_logs')
       ]
+    if args.flash:
+      self._test_cmd += ['--flash']
 
     # This environment variable is set for tests that have been instrumented
     # for code coverage. Its incoming value is expected to be a location
@@ -806,6 +808,11 @@ def add_common_args(*parsers):
         dest='logs_dir',
         help='Will copy everything under /var/log/ from the device after the '
         'test into the specified dir.')
+    parser.add_argument(
+        '--flash',
+        action='store_true',
+        help='Will flash the device to the current SDK version before running '
+        'the test.')
 
     vm_or_device_group = parser.add_mutually_exclusive_group()
     vm_or_device_group.add_argument(

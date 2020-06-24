@@ -5,8 +5,6 @@
 #ifndef UI_BASE_CLIPBOARD_TEST_CLIPBOARD_TEST_UTIL_H_
 #define UI_BASE_CLIPBOARD_TEST_CLIPBOARD_TEST_UTIL_H_
 
-#include "base/macros.h"
-
 class SkBitmap;
 
 namespace ui {

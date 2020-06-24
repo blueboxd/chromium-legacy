@@ -167,11 +167,11 @@ class LogoElement extends PolymerElement {
       }
     });
     /** @private {?string} */
-    this.imageClickParams_;
+    this.imageClickParams_ = null;
     /** @private {url.mojom.Url} */
-    this.interactionLogUrl_;
+    this.interactionLogUrl_ = null;
     /** @private {?string} */
-    this.shareId_;
+    this.shareId_ = null;
   }
 
   /** @override */
@@ -230,6 +230,12 @@ class LogoElement extends PolymerElement {
         '--ntp-logo-box-color': null,
       });
     }
+    // Stop the animation (if it is running) and reset logging params since
+    // mode change constitutes a new doodle session.
+    this.showAnimation_ = false;
+    this.imageClickParams_ = null;
+    this.interactionLogUrl_ = null;
+    this.shareId_ = null;
   }
 
   /**
@@ -301,7 +307,7 @@ class LogoElement extends PolymerElement {
       this.logImageRendered_(
           newTabPage.mojom.DoodleImageType.ANIMATION,
           /** @type {!url.mojom.Url} */
-          (this.doodle_.content.imageDoodle.animationImpressionLogUrl));
+          (this.imageDoodle_.animationImpressionLogUrl));
 
       return;
     }
@@ -323,7 +329,7 @@ class LogoElement extends PolymerElement {
     this.logImageRendered_(
         this.isCtaImageShown_() ? newTabPage.mojom.DoodleImageType.CTA :
                                   newTabPage.mojom.DoodleImageType.STATIC,
-        this.doodle_.content.imageDoodle.imageImpressionLogUrl);
+        this.imageDoodle_.imageImpressionLogUrl);
   }
 
   /**

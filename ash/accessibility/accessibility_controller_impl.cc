@@ -1119,6 +1119,10 @@ void AccessibilityControllerImpl::SetSwitchAccessEnabled(bool enabled) {
   switch_access().SetEnabled(enabled);
 }
 
+bool AccessibilityControllerImpl::IsSwitchAccessRunning() const {
+  return switch_access().enabled() || switch_access_disable_dialog_showing_;
+}
+
 bool AccessibilityControllerImpl::IsSwitchAccessSettingVisibleInTray() {
   return switch_access().IsVisibleInTray();
   return IsEnterpriseIconVisibleInTrayMenu(
@@ -1135,11 +1139,13 @@ void AccessibilityControllerImpl::
 }
 
 void AccessibilityControllerImpl::HideSwitchAccessBackButton() {
-  switch_access_bubble_controller_->HideBackButton();
+  if (IsSwitchAccessRunning())
+    switch_access_bubble_controller_->HideBackButton();
 }
 
 void AccessibilityControllerImpl::HideSwitchAccessMenu() {
-  switch_access_bubble_controller_->HideMenuBubble();
+  if (IsSwitchAccessRunning())
+    switch_access_bubble_controller_->HideMenuBubble();
 }
 
 void AccessibilityControllerImpl::ShowSwitchAccessBackButton(
@@ -1788,9 +1794,12 @@ void AccessibilityControllerImpl::
 
 void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
     bool disable_dialog_accepted) {
+  switch_access_disable_dialog_showing_ = false;
   if (disable_dialog_accepted) {
     // The pref was already disabled, but we left switch access on until they
     // accepted the dialog.
+    if (client_)
+      client_->OnSwitchAccessDisabled();
     switch_access_bubble_controller_.reset();
     switch_access_event_handler_.reset();
     NotifyAccessibilityStatusChanged();
@@ -1946,13 +1955,12 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       Shell::Get()->sticky_keys_controller()->Enable(enabled);
       break;
     case FeatureType::kSwitchAccess:
-      // Show a dialog before disabling Switch Access.
       if (!enabled) {
         ShowAccessibilityNotification(A11yNotificationType::kNone);
-
         if (no_switch_access_disable_confirmation_dialog_for_testing_) {
           SwitchAccessDisableDialogClosed(true);
         } else {
+          // Show a dialog before disabling Switch Access.
           new AccessibilityFeatureDisableDialog(
               IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_TITLE,
               IDS_ASH_SWITCH_ACCESS_DISABLE_CONFIRMATION_BODY,
@@ -1962,7 +1970,10 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
               base::BindOnce(
                   &AccessibilityControllerImpl::SwitchAccessDisableDialogClosed,
                   weak_ptr_factory_.GetWeakPtr(), false));
+          switch_access_disable_dialog_showing_ = true;
         }
+        // Return early. We will call NotifyAccessibilityStatusChanged() if the
+        // user accepts the dialog.
         return;
       } else {
         switch_access_bubble_controller_ =

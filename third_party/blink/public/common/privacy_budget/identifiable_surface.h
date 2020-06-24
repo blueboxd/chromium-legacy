@@ -24,6 +24,12 @@ namespace blink {
 //   * Immutable.
 //   * Efficient enough to pass by value.
 //
+// Internally, an identifiable surface is represented as a 64-bit unsigned
+// integer that can be used as the metric hash for reporting metrics via UKM.
+//
+// The least-significant |kTypeBits| of the value is used to store
+// a IdentifiableSurface::Type value. The remainder stores the 56
+// least-significant bits of an IdentifiableToken.
 class IdentifiableSurface {
  public:
   // Number of bits used by Type.
@@ -39,8 +45,7 @@ class IdentifiableSurface {
   // Type of identifiable surface.
   //
   // Even though the data type is uint64_t, we can only use 8 bits due to how we
-  // pack the surface type and a digest of the input into a 64 bits. See
-  // README.md in this directory for details on encoding.
+  // pack the surface type and a digest of the input into a 64 bits.
   //
   // These values are used for aggregation across versions. Entries should not
   // be renumbered and numeric values should never be reused.
@@ -100,6 +105,9 @@ class IdentifiableSurface {
   constexpr bool IsValid() const { return metric_hash_ != kInvalidHash; }
 
  private:
+  constexpr explicit IdentifiableSurface(uint64_t metric_hash)
+      : metric_hash_(metric_hash) {}
+
   // Returns a 64-bit metric key given an IdentifiableSurfaceType and a 64 bit
   // input digest.
   //
@@ -122,8 +130,6 @@ class IdentifiableSurface {
                            metric >> kTypeBits);
   }
 
-  constexpr explicit IdentifiableSurface(uint64_t metric_hash)
-      : metric_hash_(metric_hash) {}
   uint64_t metric_hash_;
 };
 

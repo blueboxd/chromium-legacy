@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">કૅલિબ્રેશન પૂર્ણ થયું</translation>
 <translation id="252373100621549798">અજાણ્યું ડિસ્પ્લે</translation>
 <translation id="2545651323591713692">સ્નૂઝ કરો</translation>
+<translation id="2570734079541893434">સેટિંગને મેનેજ કરો</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1ક. માં}one{#ક. માં}other{#ક. માં}}</translation>
 <translation id="2583543531130364912">તમારી ટચસ્ક્રીનને કેલિબ્રેટ કરો</translation>
 <translation id="2666092431469916601">ઉપર</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">પેજ <ph name="PAGE_NUMBER" />, પંક્તિ <ph name="ROW_NUMBER" />, કૉલમ <ph name="COLUMN_NUMBER" /> પર ખસેડી.</translation>
 <translation id="7879499977785298635">બ્લૉક કરશો નહીં</translation>
 <translation id="7907591526440419938">ફાઇલ ખોલો</translation>
+<translation id="7952747673138230804">Chrome OS શોધખોળ કરવાના નવા કન્ટેન્ટ માટે સૂચનો બતાવે છે. જો તમે વપરાશનો ડેટા શેર કરવાનું પસંદ કર્યું હોય, તો જ તે ક્વૉલિટીને બહેતર બનાવવા માટે આંકડા મોકલે છે. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">આદેશ</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}one{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}other{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1મિ માં}one{#મિ માં}other{#મિ માં}}</translation>

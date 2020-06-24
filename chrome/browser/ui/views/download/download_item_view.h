@@ -62,6 +62,8 @@ class DownloadItemView : public views::View,
                          public DownloadUIModel::Observer,
                          public views::AnimationDelegateViews {
  public:
+  enum class Mode;
+
   DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                    DownloadShelfView* parent,
                    views::View* accessible_alert);
@@ -109,16 +111,6 @@ class DownloadItemView : public views::View,
  private:
   enum State { NORMAL = 0, HOT, PUSHED };
 
-  enum Mode {
-    NORMAL_MODE = 0,      // Showing download item.
-    DANGEROUS_MODE,       // Displaying the dangerous download warning.
-    MALICIOUS_MODE,       // Displaying the malicious download warning.
-    DEEP_SCANNING_MODE,   // Displaying information about in progress deep
-                          // scanning.
-    MIX_DL_WARNING_MODE,  // Displaying the mixed-content download warning.
-    MIX_DL_BLOCK_MODE,    // Displaying the mixed-content download block error.
-  };
-
   static constexpr int kTextWidth = 140;
 
   // Padding before the icon and at end of the item.
@@ -165,19 +157,6 @@ class DownloadItemView : public views::View,
   void SetDropdownState(State new_state);
 
   void SetMode(Mode mode);
-
-  // Whether we are in the dangerous mode.
-  bool IsShowingWarningDialog() const {
-    return mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE;
-  }
-
-  // Whether we are in the mixed content mode.
-  bool IsShowingMixedContentDialog() const {
-    return mode_ == MIX_DL_WARNING_MODE || mode_ == MIX_DL_BLOCK_MODE;
-  }
-
-  // Whether we are in the deep scanning mode.
-  bool IsShowingDeepScanning() const { return mode_ == DEEP_SCANNING_MODE; }
 
   // Starts showing the normal mode dialog, clearing the existing dialog.
   void TransitionToNormalMode();

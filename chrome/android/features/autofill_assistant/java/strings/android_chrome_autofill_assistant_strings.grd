@@ -172,22 +172,25 @@
         I agree
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_TITLE" desc="The title of the onboarding screen.">
-        Try Google Assistant \n in Chrome
+        Try Google Assistant\nin Chrome
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_RENT_CAR" desc="Onboarding message describing autofill assistant's capability for car rentals.">
-        Rent a car \n in just a few taps
+        Rent a car\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_BUY_MOVIE_TICKETS" desc="Onboarding message describing autofill assistant's capability for movie tickets.">
-        Buy movie tickets \n in just a few taps
+        Buy movie tickets\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_FOOD_ORDERING" desc="Onboarding message describing autofill assistant's capability for food ordering.">
-        Order food \n in just a few taps
+        Order food\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_FLIGHTS_CHECKIN" desc="Onboarding message describing autofill assistant's capability for flights.">
-        Check in to your flight \n in just a few taps
+        Check in to your flight\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_VOICE_SEARCH" desc="Onboarding message describing autofill assistant's capability for voice search.">
-        Try voice actions \n on websites
+        Try voice actions\non websites
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_SHOPPING" desc="Onboarding message describing autofill assistant's capability for shopping.">
+        Buy things\nin just a few taps
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         Google Assistant saves you time by helping you complete actions on the web, like search and checkout.

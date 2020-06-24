@@ -50,6 +50,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
+  void RemoveLegacyInstallFinalizerForTesting() override;
   void Start() override;
   void Shutdown() override;
 

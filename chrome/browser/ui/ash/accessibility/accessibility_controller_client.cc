@@ -149,3 +149,7 @@ void AccessibilityControllerClient::RequestAutoclickScrollableBoundsForPoint(
   chromeos::AccessibilityManager::Get()
       ->RequestAutoclickScrollableBoundsForPoint(point_in_screen);
 }
+
+void AccessibilityControllerClient::OnSwitchAccessDisabled() {
+  chromeos::AccessibilityManager::Get()->OnSwitchAccessDisabled();
+}

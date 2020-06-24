@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "components/version_info/version_info.h"
@@ -124,11 +123,17 @@ void OnURLLoadUploadProgress(uint64_t current, uint64_t total) {
 const char WebRtcEventLogUploaderImpl::kUploadURL[] =
     "https://clients2.google.com/cr/report";
 
+WebRtcEventLogUploaderImpl::Factory::Factory(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
+
+WebRtcEventLogUploaderImpl::Factory::~Factory() = default;
+
 std::unique_ptr<WebRtcEventLogUploader>
 WebRtcEventLogUploaderImpl::Factory::Create(const WebRtcLogFileInfo& log_file,
                                             UploadResultCallback callback) {
   return std::make_unique<WebRtcEventLogUploaderImpl>(
-      log_file, std::move(callback), kMaxRemoteLogFileSizeBytes);
+      task_runner_, log_file, std::move(callback), kMaxRemoteLogFileSizeBytes);
 }
 
 std::unique_ptr<WebRtcEventLogUploader>
@@ -137,17 +142,18 @@ WebRtcEventLogUploaderImpl::Factory::CreateWithCustomMaxSizeForTesting(
     UploadResultCallback callback,
     size_t max_log_file_size_bytes) {
   return std::make_unique<WebRtcEventLogUploaderImpl>(
-      log_file, std::move(callback), max_log_file_size_bytes);
+      task_runner_, log_file, std::move(callback), max_log_file_size_bytes);
 }
 
 WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const WebRtcLogFileInfo& log_file,
     UploadResultCallback callback,
     size_t max_log_file_size_bytes)
-    : log_file_(log_file),
+    : task_runner_(std::move(task_runner)),
+      log_file_(log_file),
       callback_(std::move(callback)),
-      max_log_file_size_bytes_(max_log_file_size_bytes),
-      io_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+      max_log_file_size_bytes_(max_log_file_size_bytes) {
   history_file_writer_ = WebRtcEventLogHistoryFileWriter::Create(
       GetWebRtcEventLogHistoryFilePath(log_file_.path));
   if (!history_file_writer_) {
@@ -189,12 +195,12 @@ WebRtcEventLogUploaderImpl::~WebRtcEventLogUploaderImpl() {
   // 3. The upload was never started, due to an early failure (e.g. file not
   //    found). In that case, |url_loader_| will not have been set.
   // 4. Chrome shutdown.
-  if (io_task_runner_->RunsTasksInCurrentSequence()) {  // Scenarios 1-3.
+  if (task_runner_->RunsTasksInCurrentSequence()) {  // Scenarios 1-3.
     DCHECK(!url_loader_);
   } else {  // # Scenario #4 - Chrome shutdown.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     bool will_delete =
-        io_task_runner_->DeleteSoon(FROM_HERE, url_loader_.release());
+        task_runner_->DeleteSoon(FROM_HERE, url_loader_.release());
     DCHECK(!will_delete)
         << "Task runners must have been stopped by this stage of shutdown.";
   }
@@ -202,35 +208,33 @@ WebRtcEventLogUploaderImpl::~WebRtcEventLogUploaderImpl() {
 
 const WebRtcLogFileInfo& WebRtcEventLogUploaderImpl::GetWebRtcLogFileInfo()
     const {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return log_file_;
 }
 
-bool WebRtcEventLogUploaderImpl::Cancel() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void WebRtcEventLogUploaderImpl::Cancel() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // The upload could already have been completed, or maybe was never properly
-  // started (due to a file read failure, etc.).
-  const bool upload_was_active = (url_loader_.get() != nullptr);
-
-  // Note that in this case, it might still be that the last bytes hit the
-  // wire right as we attempt to cancel the upload. OnURLFetchComplete, however,
-  // will not be called.
-  url_loader_.reset();
-
-  DeleteLogFile();
-  DeleteHistoryFile();
-
-  if (upload_was_active) {
-    UmaRecordWebRtcEventLoggingUpload(
-        WebRtcEventLoggingUploadUma::kUploadCancelled);
+  if (url_loader_.get() == nullptr) {
+    // Either the upload has already completed, or it never properly started.
+    return;
   }
 
-  return upload_was_active;
+  // Stop the upload.
+  url_loader_.reset();
+
+  // Note edge case - the upload might on very rare occasions already have
+  // finished, with the on-complete callback pending on the queue.
+  // In those very rare occasions, we will record the UMA for cancellation
+  // as well as the success/failure of the upload. Also, we'll post to replies
+  // back to the owner of this WebRtcEventLogUploaderImpl object.
+  UmaRecordWebRtcEventLoggingUpload(
+      WebRtcEventLoggingUploadUma::kUploadCancelled);
+  ReportResult(/*upload_successful=*/false, /*delete_history_file=*/true);
 }
 
 bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   std::string log_file_contents;
   if (!base::ReadFileToStringWithMaxSize(log_file_.path, &log_file_contents,
@@ -270,7 +274,7 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
 }
 
 void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(kUploadURL);
@@ -292,18 +296,16 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   url_loader_->SetOnUploadProgressCallback(
       base::BindRepeating(OnURLLoadUploadProgress));
 
-  // See comment in destructor for an explanation about why using
-  // base::Unretained(this) is safe here.
   url_loader_->DownloadToString(
       url_loader_factory_remote.get(),
       base::BindOnce(&WebRtcEventLogUploaderImpl::OnURLLoadComplete,
-                     base::Unretained(this)),
+                     weak_ptr_factory_.GetWeakPtr()),
       kWebRtcEventLogMaxUploadIdBytes);
 }
 
 void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(url_loader_);
 
   if (response_body.get() != nullptr && response_body->empty()) {
@@ -340,8 +342,9 @@ void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
   ReportResult(upload_successful);
 }
 
-void WebRtcEventLogUploaderImpl::ReportResult(bool result) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void WebRtcEventLogUploaderImpl::ReportResult(bool upload_successful,
+                                              bool delete_history_file) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // * If the upload was successful, the file is no longer needed.
   // * If the upload failed, we don't want to retry, because we run the risk of
@@ -352,15 +355,20 @@ void WebRtcEventLogUploaderImpl::ReportResult(bool result) {
   // TODO(crbug.com/775415): Provide refined retrial behavior.
   DeleteLogFile();
 
+  if (delete_history_file) {
+    DeleteHistoryFile();
+  }
+
   // Release hold of history file, allowing it to be read, moved or deleted.
   history_file_writer_.reset();
 
-  io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_), log_file_.path, result));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), log_file_.path, upload_successful));
 }
 
 void WebRtcEventLogUploaderImpl::DeleteLogFile() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   const bool deletion_successful =
       base::DeleteFile(log_file_.path, /*recursive=*/false);
   if (!deletion_successful) {
@@ -371,7 +379,7 @@ void WebRtcEventLogUploaderImpl::DeleteLogFile() {
 }
 
 void WebRtcEventLogUploaderImpl::DeleteHistoryFile() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!history_file_writer_) {
     LOG(ERROR) << "Deletion of history file attempted after uploader "
                << "has relinquished ownership of it.";

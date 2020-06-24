@@ -6,14 +6,9 @@
 
 #include <android/hardware_buffer.h>
 
-#include "base/android/scoped_hardware_buffer_handle.h"
 #include "base/check.h"
 #include "base/notreached.h"
-#include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
-#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/vulkan/vulkan_image.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -163,21 +158,6 @@ scoped_refptr<gles2::TexturePassthrough> GenGLTexturePassthrough(
                        cleared_rect, &passthrough_texture,
                        nullptr /* texture */);
   return passthrough_texture;
-}
-
-std::unique_ptr<VulkanImage> CreateVkImageFromAhbHandle(
-    base::android::ScopedHardwareBufferHandle ahb_handle,
-    SharedContextState* context_state,
-    const gfx::Size& size,
-    const viz::ResourceFormat& format) {
-  DCHECK(context_state);
-  DCHECK(context_state->GrContextIsVulkan());
-
-  auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
-  gfx::GpuMemoryBufferHandle gmb_handle(std::move(ahb_handle));
-  return VulkanImage::CreateFromGpuMemoryBufferHandle(
-      device_queue, std::move(gmb_handle), size, ToVkFormat(format),
-      0 /* usage */);
 }
 
 }  // namespace gpu

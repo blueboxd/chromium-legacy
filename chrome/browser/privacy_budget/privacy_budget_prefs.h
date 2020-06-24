@@ -9,16 +9,19 @@
 
 namespace prefs {
 
-// Pref used for persisting |IdentifiabilityStudySettings::active_surfaces_|.
+// See documentation for IdentifiabilityStudyState for details on how these
+// values are used.
+
+// Pref used for persisting |IdentifiabilityStudyState::active_surfaces_|.
 extern const char kPrivacyBudgetActiveSurfaces[];
 
-// Pref used for persisting |IdentifiabilityStudySettings::retired_surfaces_|.
+// Pref used for persisting |IdentifiabilityStudyState::retired_surfaces_|.
 extern const char kPrivacyBudgetRetiredSurfaces[];
 
-// Pref used for persisting |IdentifiabilityStudySettings::prng_seed_|.
+// Pref used for persisting |IdentifiabilityStudyState::prng_seed_|.
 extern const char kPrivacyBudgetSeed[];
 
-// Pref used for persisting |IdentifiabilityStudySettings::generation_|.
+// Pref used for persisting |IdentifiabilityStudyState::generation_|.
 extern const char kPrivacyBudgetGeneration[];
 
 void RegisterPrivacyBudgetPrefs(PrefRegistrySimple* registry);

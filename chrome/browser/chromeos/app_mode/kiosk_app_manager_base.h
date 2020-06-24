@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/common/chrome_paths.h"
 #include "components/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -59,9 +61,9 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
   void RemoveObserver(KioskAppManagerObserver* observer);
 
   // KioskAppDataDelegate overrides:
-  void GetKioskAppIconCacheDir(base::FilePath* cache_dir) const override;
-  void OnKioskAppDataChanged(const std::string& app_id) const override;
-  void OnKioskAppDataLoadFailure(const std::string& app_id) const override;
+  void GetKioskAppIconCacheDir(base::FilePath* cache_dir) override;
+  void OnKioskAppDataChanged(const std::string& app_id) override;
+  void OnKioskAppDataLoadFailure(const std::string& app_id) override;
   void OnExternalCacheDamaged(const std::string& app_id) override;
 
   // Gets whether the bailout shortcut is disabled.

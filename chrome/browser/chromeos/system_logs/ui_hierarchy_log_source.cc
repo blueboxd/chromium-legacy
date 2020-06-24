@@ -18,7 +18,7 @@ void UiHierarchyLogSource::Fetch(SysLogsSourceCallback callback) {
 
   {
     std::ostringstream out;
-    ash::debug::PrintWindowHierarchy(&out);
+    ash::debug::PrintWindowHierarchy(&out, scrub_data_);
     response->emplace("UI Hierarchy: Windows", out.str());
   }
 

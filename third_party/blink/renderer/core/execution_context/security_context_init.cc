@@ -354,8 +354,8 @@ void SecurityContextInit::InitializeOriginTrials(
   if (!tokens)
     return;
   origin_trials_->AddTokens(
-      security_origin_.get(),
-      secure_context_mode_ == SecureContextMode::kSecureContext, *tokens);
+      *tokens, security_origin_.get(),
+      secure_context_mode_ == SecureContextMode::kSecureContext);
 }
 
 }  // namespace blink

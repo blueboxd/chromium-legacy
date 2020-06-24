@@ -32,6 +32,8 @@
       }
     </style>
     <script>
+      const editContext = new EditContext();
+      editContext.inputPanelPolicy = "manual";
       function log(text) {
         document.title = text;
       }
@@ -51,7 +53,13 @@
         log('focusin3');
       }
       function FocusIn4() {
+        editContext.focus();
+        navigator.virtualKeyboard.show();
         log('focusin4');
+      }
+      function HideVKIn4() {
+        navigator.virtualKeyboard.hide();
+        log('hidevkin4');
       }
       function FocusIn5() {
         navigator.virtualKeyboard.show();
@@ -74,7 +82,7 @@
     <textarea id="txt1" virtualkeyboardpolicy="manual" onfocusin="FocusIn1()" onkeydown="HideVKCalled()"></textarea>
     <textarea id="txt2" virtualkeyboardpolicy="manual" onfocusin="FocusIn2()"></textarea>
     <textarea id="txt3" onfocusin="FocusIn3()"></textarea>
-    <textarea id="txt4" onfocusin="FocusIn4()"></textarea>
+    <textarea id="txt4" onfocusin="FocusIn4()" onkeydown="HideVKIn4()"></textarea>
     <textarea id="txt5" ontouchstart="FocusIn5()"></textarea>
   </body>
 </html>

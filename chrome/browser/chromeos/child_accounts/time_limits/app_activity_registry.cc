@@ -34,26 +34,6 @@ constexpr base::TimeDelta kFiveMinutes = base::TimeDelta::FromMinutes(5);
 constexpr base::TimeDelta kOneMinute = base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kZeroMinutes = base::TimeDelta::FromMinutes(0);
 
-enterprise_management::App::AppType AppTypeForReporting(
-    apps::mojom::AppType type) {
-  switch (type) {
-    case apps::mojom::AppType::kArc:
-      return enterprise_management::App::ARC;
-    case apps::mojom::AppType::kBuiltIn:
-      return enterprise_management::App::BUILT_IN;
-    case apps::mojom::AppType::kCrostini:
-      return enterprise_management::App::CROSTINI;
-    case apps::mojom::AppType::kExtension:
-      return enterprise_management::App::EXTENSION;
-    case apps::mojom::AppType::kPluginVm:
-      return enterprise_management::App::PLUGIN_VM;
-    case apps::mojom::AppType::kWeb:
-      return enterprise_management::App::WEB;
-    default:
-      return enterprise_management::App::UNKNOWN;
-  }
-}
-
 enterprise_management::AppActivity::AppState AppStateForReporting(
     AppState state) {
   switch (state) {
@@ -393,6 +373,21 @@ base::Optional<base::TimeDelta> AppActivityRegistry::GetTimeLimit(
 void AppActivityRegistry::SetReportingEnabled(base::Optional<bool> value) {
   if (value.has_value())
     activity_reporting_enabled_ = value.value();
+}
+
+void AppActivityRegistry::GenerateHiddenApps(
+    enterprise_management::ChildStatusReportRequest* report) {
+  const std::vector<AppId> hidden_arc_apps =
+      app_service_wrapper_->GetHiddenArcApps();
+  for (const auto& app_id : hidden_arc_apps) {
+    enterprise_management::App* app_info = report->add_hidden_app();
+    app_info->set_app_id(app_id.app_id());
+    app_info->set_app_type(AppTypeForReporting(app_id.app_type()));
+    if (app_id.app_type() == apps::mojom::AppType::kArc) {
+      app_info->add_additional_app_id(
+          app_service_wrapper_->GetAppServiceId(app_id));
+    }
+  }
 }
 
 AppActivityReportInterface::ReportParams

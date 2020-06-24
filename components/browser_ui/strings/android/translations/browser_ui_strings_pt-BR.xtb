@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Perguntar antes de permitir que sites criem um mapa 3D dos seus arredores ou acompanhem a posição da câmera (recomendado)</translation>
 <translation id="2212565012507486665">Permitir cookies</translation>
 <translation id="2289270750774289114">Perguntar quando um site quer descobrir dispositivos Bluetooth nas proximidades (recomendado)</translation>
+<translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Download concluído <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Um site está usando sua câmera</translation>
 <translation id="7817023149356982970">Sua conta será desconectada desse site.</translation>
 <translation id="7828557259026017104">Os cookies são arquivos criados pelos sites que você visita, usados por esses sites para lembrar suas preferências. Os cookies de terceiros são criados por outros sites que possuem uma parte do conteúdo, como anúncios ou imagens, que você vê na página da Web acessada.</translation>
+<translation id="7835852323729233924">Tocando mídia</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7846621471902887024">Sua conta será desconectada de todos os sites.</translation>
 <translation id="7882806643839505685">Permitir o som de um site específico.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Você quer mesmo apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="802154636333426148">Falha no download</translation>
+<translation id="8068648041423924542">Não foi possível selecionar certificado.</translation>
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
 <translation id="8116925261070264013">Com som desativado</translation>
 <translation id="8131740175452115882">Confirmar</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Bloqueie cookies de um site específico.</translation>
 <translation id="8959122750345127698">A Navegação GPS está inacessível: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Acessar seu microfone</translation>
 <translation id="965817943346481315">Bloquear se o site mostrar anúncios invasivos ou enganosos (recomendado)</translation>
 </translationbundle>

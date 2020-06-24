@@ -173,7 +173,7 @@ class VirtualKeyboardPolicyTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "VirtualKeyboard");
+                                    "VirtualKeyboard,EditContext");
     InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -361,6 +361,40 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
       bounds.y() + kTextAreaHeight / 2));
   WaitForTitle("focusin5");
   type_observer_none.Wait();
+}
+
+// Tapping on an editcontext with inputpanelpolicy="manual" that
+// calls show() explicitly should show the VK and if hide() is called, then it
+// should hide VK.
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
+                       ShowAndThenHideVKInEditContext) {
+  // ui_controls::SendTouchEvents which uses InjectTouchInput API only works
+  // on Windows 8 and up.
+  if (base::win::GetVersion() < base::win::Version::WIN8) {
+    return;
+  }
+  NavigateAndWaitForLoad();
+
+  // Tap on the textarea that would trigger show() call and then on the
+  // second textarea that would trigger hide() call.
+  gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
+  TextInputManagerVkVisibilityRequestObserver type_observer_show(
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
+  ASSERT_TRUE(ui_controls::SendTouchEvents(
+      ui_controls::PRESS, 1,
+      bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 4,
+      bounds.y() + kTextAreaHeight / 2));
+  WaitForTitle("focusin4");
+  type_observer_show.Wait();
+  TextInputManagerVkVisibilityRequestObserver type_observer_hide(
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
+  ASSERT_TRUE(ui_controls::SendKeyPress(GetWindow()->GetNativeWindow(),
+                                        ui::VKEY_RETURN, false, false, false,
+                                        false));
+  WaitForTitle("hidevkin4");
+  type_observer_hide.Wait();
 }
 
 }  // namespace

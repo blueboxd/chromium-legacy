@@ -1406,4 +1406,22 @@ TEST_P(CompositingSimTest, PromoteCrossOriginToParentIframeAfterDomainChange) {
   EXPECT_FALSE(CcLayerByOwnerNodeId(owner_node));
 }
 
+// Regression test for https://crbug.com/1095167. Render surfaces require that
+// EffectNode::stable_id is set.
+TEST_P(CompositingTest, EffectNodesShouldHaveStableIds) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <div style="overflow: hidden; border-radius: 2px; height: 10px;">
+      <div style="backdrop-filter: grayscale(3%);">
+        a
+        <span style="backdrop-filter: grayscale(3%);">b</span>
+      </div>
+    </div>
+  )HTML");
+  auto* property_trees = RootCcLayer()->layer_tree_host()->property_trees();
+  for (const auto& effect_node : property_trees->effect_tree.nodes()) {
+    if (effect_node.parent_id != -1)
+      EXPECT_TRUE(!!effect_node.stable_id);
+  }
+}
+
 }  // namespace blink

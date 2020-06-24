@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Eskatu zure baimena webguneei inguruaren 3D-ko mapa bat sortu edo kameraren posizioaren jarraipena egiteko baimena eman aurretik (gomendatua)</translation>
 <translation id="2212565012507486665">Onartu cookieak</translation>
 <translation id="2289270750774289114">Eskatu nire baimena webgune batek inguruko Bluetooth bidezko gailuak bilatu nahi dituenean (gomendatua)</translation>
+<translation id="2315043854645842844">Sistema eragileak ez du onartzen bezeroarentzako ziurtagiria hautatzea.</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Deskargatu da <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Webgune bat kamera erabiltzen ari da</translation>
 <translation id="7817023149356982970">Webgune honetako saioa amaitu egingo da.</translation>
 <translation id="7828557259026017104">Bisitatzen dituzun webguneek sortutako fitxategiak dira cookieak. Zure hobespenak gogoratzeko erabiltzen dituzte webguneek. Hirugarrenen cookieak beste webgune batzuek sortzen dituzte. Bisitatzen duzun web-orrian ikusten dituzun eduki batzuen jabeak dira webgune horiek; adibidez, iragarkienak edo irudienak.</translation>
+<translation id="7835852323729233924">Multimedia-edukia erreproduzitzen</translation>
 <translation id="7846076177841592234">Utzi hautapena bertan behera</translation>
 <translation id="7846621471902887024">Webgune guztietan amaituko da saioa.</translation>
 <translation id="7882806643839505685">Baimendu webgune jakin baten audioa.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Ziur webgune honek gailuan ezarritako datu guztiak (cookieak barne) ezabatu eta baimen guztiak berrezarri nahi dituzula?</translation>
 <translation id="8007176423574883786">Desaktibatu egin da gailu honetan</translation>
 <translation id="802154636333426148">Ezin izan da deskargatu</translation>
+<translation id="8068648041423924542">Ezin da hautatu ziurtagiria.</translation>
 <translation id="8087000398470557479">Eduki hau <ph name="DOMAIN_NAME" /> domeinukoa da eta Google-k eskaintzen du.</translation>
 <translation id="8116925261070264013">Audioa desaktibatuta</translation>
 <translation id="8131740175452115882">Berretsi</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blokeatu webgune jakin bateko cookieak.</translation>
 <translation id="8959122750345127698">Ezin da joan <ph name="URL" /> orrira</translation>
 <translation id="9019902583201351841">Gurasoek kudeatuta</translation>
+<translation id="9074739597929991885">Bluetooth-a</translation>
 <translation id="945632385593298557">Atzitu mikrofonoa</translation>
 <translation id="965817943346481315">Webguneak iragarki oztopatzaileak erakusten baditu, blokea itzazu (gomendatua)</translation>
 </translationbundle>

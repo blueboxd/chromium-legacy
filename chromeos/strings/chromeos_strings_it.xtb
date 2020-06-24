@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Operazione non riuscita - Sportello aperto</translation>
 <translation id="3369013195428705271">Vuoi cancellare l'intera cronologia di stampa? I processi di stampa in corso non verranno cancellati.</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> pagina stampata su <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Processi di stampa</translation>
 <translation id="3527036260304016759">Operazione non riuscita - Errore sconosciuto</translation>
 <translation id="3749289110408117711">Nome file</translation>
 <translation id="38114475217616659">Cancella tutta la cronologia</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Operazione non riuscita - Scomparto di uscita pieno</translation>
 <translation id="4034824040120875894">Stampante</translation>
 <translation id="4227825898293920515">La password scade tra <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nessun processo di stampa in corso</translation>
 <translation id="428217921675623177">I processi di stampa risalenti a oltre 90 giorni fa verranno rimossi</translation>
 <translation id="4429881212383817840">La richiesta di Kerberos scade a breve</translation>
 <translation id="445059817448385655">Vecchia password</translation>
@@ -61,11 +61,13 @@ Prova a toccare il microfono per chiedermi qualcosa.</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="7162487448488904999">Galleria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Questa azione è gestita dall'amministratore</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7690294790491645610">Conferma nuova password</translation>
 <translation id="7805768142964895445">Stato</translation>
 <translation id="808894953321890993">Cambia password</translation>
 <translation id="8208861521865154048">Vantaggi</translation>
+<translation id="8347227221149377169">Processi di stampa</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestisce questo utente. Può gestire in remoto le impostazioni e monitorare l'attività utente.</translation>
 <translation id="871560550817059752">Operazione non riuscita - Inchiostro esaurito</translation>
 <translation id="8747900814994928677">Conferma modifica</translation>

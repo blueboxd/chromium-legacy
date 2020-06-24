@@ -2521,9 +2521,6 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
-  // AccessibilityManager sends an empty warmup utterance first.
-  speech_monitor.ExpectSpeech("");
-
   // Wait for ChromeVox to start reading anything.
   speech_monitor.ExpectSpeechPattern("*");
   speech_monitor.Call([this]() {

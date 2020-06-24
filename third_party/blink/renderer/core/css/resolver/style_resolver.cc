@@ -127,8 +127,7 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state) {
           state.GetAnimatingElement()->HasAnimations());
 }
 
-bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style,
-                                    bool base_is_usable) {
+bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style) {
 #if DCHECK_IS_ON()
   // The invariant in the base computed style optimization is that as long as
   // |IsAnimationStyleChange| is true, the computed style that would be
@@ -138,7 +137,7 @@ bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style,
   // call ValidateBaseComputedStyle() to check that the optimization was sound.
   return true;
 #else
-  return !(base_computed_style && base_is_usable);
+  return !base_computed_style;
 #endif  // !DCHECK_IS_ON()
 }
 
@@ -931,12 +930,11 @@ void StyleResolver::ApplyBaseComputedStyle(
     MatchResult& match_result,
     RuleMatchingBehavior matching_behavior,
     bool can_cache_animation_base_computed_style) {
-  const ComputedStyle* animation_base_computed_style =
-      CachedAnimationBaseComputedStyle(state);
   bool base_is_usable = can_cache_animation_base_computed_style &&
                         CanReuseBaseComputedStyle(state);
-  if (ShouldComputeBaseComputedStyle(animation_base_computed_style,
-                                     base_is_usable)) {
+  const ComputedStyle* animation_base_computed_style =
+      base_is_usable ? CachedAnimationBaseComputedStyle(state) : nullptr;
+  if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
     InitStyleAndApplyInheritance(*element, state);
 
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
@@ -1007,10 +1005,8 @@ void StyleResolver::ApplyBaseComputedStyle(
 
     StyleAdjuster::AdjustComputedStyle(state, element);
 
-    if (can_cache_animation_base_computed_style) {
-      DCHECK(ValidateBaseComputedStyle(animation_base_computed_style,
-                                       *state.Style()));
-    }
+    DCHECK(ValidateBaseComputedStyle(animation_base_computed_style,
+                                     *state.Style()));
   }
 
   if (base_is_usable) {
@@ -1067,8 +1063,9 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
+  bool base_is_usable = CanReuseBaseComputedStyle(state);
   const ComputedStyle* animation_base_computed_style =
-      CachedAnimationBaseComputedStyle(state);
+      base_is_usable ? CachedAnimationBaseComputedStyle(state) : nullptr;
 
   // Since we don't use pseudo-elements in any of our quirk/print
   // user agent rules, don't waste time walking those rules.
@@ -1077,9 +1074,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   StyleCascade* cascade_ptr =
       RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
 
-  bool base_is_usable = CanReuseBaseComputedStyle(state);
-  if (ShouldComputeBaseComputedStyle(animation_base_computed_style,
-                                     base_is_usable)) {
+  if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
     if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
       scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
       style->InheritFrom(*state.ParentStyle());

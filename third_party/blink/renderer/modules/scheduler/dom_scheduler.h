@@ -34,7 +34,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
  public:
   static const char kSupplementName[];
 
-  static DOMScheduler* From(LocalDOMWindow&);
+  static DOMScheduler* scheduler(LocalDOMWindow&);
 
   explicit DOMScheduler(LocalDOMWindow*);
 

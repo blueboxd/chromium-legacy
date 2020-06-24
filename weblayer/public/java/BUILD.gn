@@ -18,12 +18,14 @@ jinja_template("weblayer_client_manifest") {
 }
 
 android_resources("client_resources") {
+  custom_package = "org.chromium.weblayer"
   sources = [
     "res/values-night/colors.xml",
     "res/values-night/values.xml",
     "res/values-v27/styles.xml",
     "res/values-v28/styles.xml",
     "res/values/colors.xml",
+    "res/values/ids.xml",
     "res/values/styles.xml",
     "res/values/values.xml",
     "res/xml/weblayer_file_paths.xml",
@@ -58,6 +60,7 @@ android_library("java") {
     "org/chromium/weblayer/LoadError.java",
     "org/chromium/weblayer/MediaCaptureCallback.java",
     "org/chromium/weblayer/MediaCaptureController.java",
+    "org/chromium/weblayer/MediaSessionService.java",
     "org/chromium/weblayer/NavigateParams.java",
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/NavigationCallback.java",

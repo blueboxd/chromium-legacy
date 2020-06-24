@@ -9,10 +9,8 @@
 
 namespace ui {
 
-using ColorScheme = NativeTheme::ColorScheme;
 using PrefScheme = NativeTheme::PreferredColorScheme;
 using SystemThemeColor = NativeTheme::SystemThemeColor;
-using ColorId = NativeTheme::ColorId;
 
 class TestNativeThemeWin : public NativeThemeWin {
  public:
@@ -20,20 +18,9 @@ class TestNativeThemeWin : public NativeThemeWin {
   ~TestNativeThemeWin() override = default;
 
   // NativeTheme:
-  bool UsesHighContrastColors() const override { return high_contrast_; }
-  bool ShouldUseDarkColors() const override { return dark_mode_; }
-
-  void SetDarkMode(bool dark_mode) { dark_mode_ = dark_mode; }
-  void SetUsesHighContrastColors(bool high_contrast) {
-    high_contrast_ = high_contrast;
-  }
   void SetSystemColor(SystemThemeColor system_color, SkColor color) {
     system_colors_[system_color] = color;
   }
-
- private:
-  bool dark_mode_ = false;
-  bool high_contrast_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeThemeWin);
 };
@@ -41,88 +28,112 @@ class TestNativeThemeWin : public NativeThemeWin {
 TEST(NativeThemeWinTest, CalculatePreferredColorScheme) {
   TestNativeThemeWin theme;
 
-  theme.SetUsesHighContrastColors(false);
-  theme.SetDarkMode(true);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
+  theme.set_high_contrast(false);
+  theme.set_use_dark_colors(true);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
 
-  theme.SetDarkMode(false);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
+  theme.set_use_dark_colors(false);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 
-  theme.SetUsesHighContrastColors(true);
+  theme.set_high_contrast(true);
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLACK);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
 
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorWHITE);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLUE);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
 
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorYELLOW);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 
-  theme.SetUsesHighContrastColors(false);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
+  theme.set_high_contrast(false);
+  EXPECT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 }
 
 TEST(NativeThemeWinTest, GetDefaultSystemColorScheme) {
+  using ColorScheme = NativeTheme::ColorScheme;
+
   TestNativeThemeWin theme;
+  theme.set_high_contrast(false);
+  theme.set_use_dark_colors(true);
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kDark);
 
-  theme.SetUsesHighContrastColors(false);
-  theme.SetDarkMode(true);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kDark);
+  theme.set_use_dark_colors(false);
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kLight);
 
-  theme.SetDarkMode(false);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kLight);
-
-  theme.SetUsesHighContrastColors(true);
+  theme.set_high_contrast(true);
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLACK);
   theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorWHITE);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(),
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(),
             ColorScheme::kPlatformHighContrast);
 
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorWHITE);
   theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLACK);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(),
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(),
             ColorScheme::kPlatformHighContrast);
 
   theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLUE);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(),
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(),
             ColorScheme::kPlatformHighContrast);
 
-  theme.SetUsesHighContrastColors(false);
-  ASSERT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kLight);
+  theme.set_high_contrast(false);
+  EXPECT_EQ(theme.GetDefaultSystemColorScheme(), ColorScheme::kLight);
 }
 
 TEST(NativeThemeWinTest, GetPlatformHighContrastColor) {
-  TestNativeThemeWin theme;
+  using ColorId = NativeTheme::ColorId;
 
   // These specific colors don't matter, but should be unique.
   constexpr SkColor kWindowTextColor = SK_ColorGREEN;
   constexpr SkColor kHighlightColor = SK_ColorYELLOW;
   constexpr SkColor kHighlightTextColor = SK_ColorBLUE;
 
+  TestNativeThemeWin theme;
   theme.SetSystemColor(SystemThemeColor::kWindowText, kWindowTextColor);
   theme.SetSystemColor(SystemThemeColor::kHighlight, kHighlightColor);
   theme.SetSystemColor(SystemThemeColor::kHighlightText, kHighlightTextColor);
 
   // Test that we get regular colors when HC is off.
-  theme.SetUsesHighContrastColors(false);
-  ASSERT_NE(theme.GetSystemColor(ColorId::kColorId_LabelEnabledColor),
+  theme.set_high_contrast(false);
+  EXPECT_NE(theme.GetSystemColor(ColorId::kColorId_LabelEnabledColor),
             kWindowTextColor);
-  ASSERT_NE(theme.GetSystemColor(ColorId::kColorId_ProminentButtonColor),
+  EXPECT_NE(theme.GetSystemColor(ColorId::kColorId_ProminentButtonColor),
             kHighlightColor);
-  ASSERT_NE(theme.GetSystemColor(ColorId::kColorId_TextOnProminentButtonColor),
+  EXPECT_NE(theme.GetSystemColor(ColorId::kColorId_TextOnProminentButtonColor),
             kHighlightTextColor);
 
   // Test that we get HC colors when HC is on.
-  theme.SetUsesHighContrastColors(true);
-  ASSERT_EQ(theme.GetSystemColor(ColorId::kColorId_LabelEnabledColor),
+  theme.set_high_contrast(true);
+  EXPECT_EQ(theme.GetSystemColor(ColorId::kColorId_LabelEnabledColor),
             kWindowTextColor);
-  ASSERT_EQ(theme.GetSystemColor(ColorId::kColorId_ProminentButtonColor),
+  EXPECT_EQ(theme.GetSystemColor(ColorId::kColorId_ProminentButtonColor),
             kHighlightColor);
-  ASSERT_EQ(theme.GetSystemColor(ColorId::kColorId_TextOnProminentButtonColor),
+  EXPECT_EQ(theme.GetSystemColor(ColorId::kColorId_TextOnProminentButtonColor),
             kHighlightTextColor);
+}
+
+TEST(NativeThemeWinTest, GetPlatformHighContrastColorScheme) {
+  using HCColorScheme = NativeTheme::PlatformHighContrastColorScheme;
+
+  TestNativeThemeWin theme;
+  theme.set_high_contrast(false);
+  theme.set_preferred_color_scheme(PrefScheme::kDark);
+  EXPECT_EQ(theme.GetPlatformHighContrastColorScheme(), HCColorScheme::kNone);
+
+  theme.set_preferred_color_scheme(PrefScheme::kLight);
+  EXPECT_EQ(theme.GetPlatformHighContrastColorScheme(), HCColorScheme::kNone);
+
+  theme.set_high_contrast(true);
+  theme.set_preferred_color_scheme(PrefScheme::kDark);
+  EXPECT_EQ(theme.GetPlatformHighContrastColorScheme(), HCColorScheme::kDark);
+
+  theme.set_preferred_color_scheme(PrefScheme::kLight);
+  EXPECT_EQ(theme.GetPlatformHighContrastColorScheme(), HCColorScheme::kLight);
+
+  theme.set_high_contrast(false);
+  EXPECT_EQ(theme.GetPlatformHighContrastColorScheme(), HCColorScheme::kNone);
 }
 
 }  // namespace ui

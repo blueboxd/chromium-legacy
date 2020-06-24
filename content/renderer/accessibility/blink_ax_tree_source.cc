@@ -253,12 +253,12 @@ bool SearchForExactlyOneInnerImage(WebAXObject obj,
   return !inner_image->IsDetached();
 }
 
-// Return true if the subtree of |obj|, to a max depth of 2, contains
+// Return true if the subtree of |obj|, to a max depth of 3, contains
 // exactly one image. Return that image in |inner_image|.
-bool FindExactlyOneInnerImageInMaxDepthTwo(WebAXObject obj,
-                                           WebAXObject* inner_image) {
+bool FindExactlyOneInnerImageInMaxDepthThree(WebAXObject obj,
+                                             WebAXObject* inner_image) {
   DCHECK(inner_image);
-  return SearchForExactlyOneInnerImage(obj, inner_image, /* max_depth = */ 2);
+  return SearchForExactlyOneInnerImage(obj, inner_image, /* max_depth = */ 3);
 }
 
 std::string GetEquivalentAriaRoleString(const ax::mojom::Role role) {
@@ -1195,7 +1195,7 @@ void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
   if ((ui::IsLink(dst->role) || ui::IsDocument(dst->role)) &&
       dst->GetNameFrom() != ax::mojom::NameFrom::kAttribute) {
     WebAXObject inner_image;
-    if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
+    if (FindExactlyOneInnerImageInMaxDepthThree(src, &inner_image))
       AddImageAnnotations(inner_image, dst);
   }
 

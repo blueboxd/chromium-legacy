@@ -290,6 +290,9 @@ if (is_chromeos_device) {
 
       # crbug.com/1073084
       "crostini.CopyPaste.wayland_to_x11_artifact",
+
+      # crbug.com/1098810
+      "security.SELinuxFilesSystem",
     ]
   }
 

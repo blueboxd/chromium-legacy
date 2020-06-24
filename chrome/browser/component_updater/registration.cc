@@ -178,9 +178,8 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled))
-    component_updater::RegisterSODAComponent(cus, profile_prefs,
-                                             base::OnceClosure());
+  component_updater::RegisterSODAComponent(cus, profile_prefs,
+                                           base::OnceClosure());
 #endif
 
 #if defined(OS_CHROMEOS)

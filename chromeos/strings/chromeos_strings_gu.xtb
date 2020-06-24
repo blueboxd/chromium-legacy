@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">નિષ્ફળ રહ્યું - પ્રિન્ટરનું ઢાંકણ ખૂલ્લું છે</translation>
 <translation id="3369013195428705271">શું તમે ખરેખર પ્રિન્ટનો બધો ઇતિહાસ સાફ કરવા માગો છો? તમારી હાલની પ્રિન્ટ જોબ સાફ કરવામાં આવશે નહીં.</translation>
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" />માંથી <ph name="PRINTED_PAGES" /> પેજ પ્રિન્ટ કર્યા.</translation>
-<translation id="3515615323037921860">પ્રિન્ટ જોબ</translation>
 <translation id="3527036260304016759">નિષ્ફળ થયું - અજાણી ભૂલ</translation>
 <translation id="3749289110408117711">ફાઇલનું નામ</translation>
 <translation id="38114475217616659">બધો ઇતિહાસ સાફ કરો</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">નિષ્ફળ થયું - પ્રિન્ટરનું આઉટપુટ ભરાઈ ગયું છે</translation>
 <translation id="4034824040120875894">પ્રિન્ટર</translation>
 <translation id="4227825898293920515"><ph name="TIME" />માં પાસવર્ડની સમયસીમા સમાપ્ત થાય છે</translation>
+<translation id="4238516577297848345">કોઈ પ્રિન્ટ કામ ચાલુ નથી</translation>
 <translation id="428217921675623177">90 દિવસ કરતાં જૂનાં પ્રિન્ટ કાર્યો કાઢી નાખવામાં આવશે</translation>
 <translation id="4429881212383817840">ટૂંક સમયમાં Kerberos ટિકિટની સમયસીમા સમાપ્ત થશે</translation>
 <translation id="445059817448385655">જૂનો પાસવર્ડ</translation>
@@ -60,11 +60,13 @@
 <translation id="6643016212128521049">સાફ કરો</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">આ ક્રિયાને તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7690294790491645610">નવા પાસવર્ડની પુષ્ટિ કરો</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="808894953321890993">પાસવર્ડ બદલો</translation>
 <translation id="8208861521865154048">લાભ</translation>
+<translation id="8347227221149377169">પ્રિન્ટ કરવાના કામો</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> આ વપરાશકર્તાને મેનેજ કરે છે. આ કદાચ સેટિંગ અને વપરાશકર્તાની પ્રવૃત્તિને દૂરથી મેનેજ અને તેનું નિરીક્ષણ કરી શકે.</translation>
 <translation id="871560550817059752">નિષ્ફળ થયું - પ્રિન્ટરમાં શાહી પૂરી થઈ ગઈ છે</translation>
 <translation id="8747900814994928677">ફેરફાર કન્ફર્મ કરો</translation>

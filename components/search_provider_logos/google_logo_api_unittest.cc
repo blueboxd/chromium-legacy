@@ -430,7 +430,9 @@ TEST(GoogleNewLogoApiTest, ParsesLoggingUrls) {
       "url": "https://www.doodle.com/image.gif"
     },
     "log_url": "/log?a=b",
-    "cta_log_url": "/ctalog?c=d"
+    "dark_log_url": "/log?a=dark",
+    "cta_log_url": "/ctalog?c=d",
+    "dark_cta_log_url": "/ctalog?c=dark"
   }
 })json";
 
@@ -441,7 +443,10 @@ TEST(GoogleNewLogoApiTest, ParsesLoggingUrls) {
   ASSERT_FALSE(failed);
   ASSERT_TRUE(logo);
   EXPECT_EQ(GURL("https://base.doo/log?a=b"), logo->metadata.log_url);
+  EXPECT_EQ(GURL("https://base.doo/log?a=dark"), logo->metadata.dark_log_url);
   EXPECT_EQ(GURL("https://base.doo/ctalog?c=d"), logo->metadata.cta_log_url);
+  EXPECT_EQ(GURL("https://base.doo/ctalog?c=dark"),
+            logo->metadata.dark_cta_log_url);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesImageSize) {

@@ -51,6 +51,7 @@
 <translation id="1509486075633541495">Inicia la sessió al lloc web</translation>
 <translation id="1509960214886564027">Pot ser que les funcions de molts llocs web no funcionin</translation>
 <translation id="152234381334907219">No es desen mai</translation>
+<translation id="1523341279170789507">Permet totes les galetes</translation>
 <translation id="1535268707340844072">És possible que la configuració actual impedeixi el funcionament d'alguns llocs web. Per gestionar les galetes de tots els llocs web, consulta <ph name="BEGIN_LINK" />Configuració de les galetes<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Adreça 1</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
@@ -106,7 +107,6 @@
 <translation id="2218443599109088993">Redueix</translation>
 <translation id="2230173723195178503">La pàgina web s'ha carregat</translation>
 <translation id="2239626343334228536">S'estan esborrant les dades de navegació...</translation>
-<translation id="2245545499420671379">Bloqueja les galetes de tercers en mode d'incògnit</translation>
 <translation id="2257567812274161158">La sincronització no funciona.</translation>
 <translation id="225943865679747347">Codi d'error: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Afegeix un compte</translation>
@@ -177,9 +177,6 @@
 <translation id="298306318844797842">Afegeix una forma de pagament...</translation>
 <translation id="2989805286512600854">Obre en una pestanya nova</translation>
 <translation id="3037605927509011580">Vaja!</translation>
-<translation id="3089107351814154346">Els llocs web poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la sessió iniciada o per recordar els articles que tens al carretó de la compra.
-
-En mode d'incògnit, els llocs web no poden fer servir galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis.</translation>
 <translation id="3112556859945124369">Marca com a…</translation>
 <translation id="3131206671572504478">Bloqueja-ho tot</translation>
 <translation id="3153862085237805241">Desa la targeta</translation>
@@ -194,9 +191,6 @@ En mode d'incògnit, els llocs web no poden fer servir galetes per veure la teva
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Pestanyes obertes</translation>
-<translation id="3273647133355801546">Els llocs web poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la sessió iniciada o per recordar els articles que tens al carretó de la compra.
-
-Els llocs web poden fer servir galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis.</translation>
 <translation id="3277021493514034324">S'ha copiat l'adreça del lloc web</translation>
 <translation id="3290875554372353449">Tria un compte</translation>
 <translation id="3311748811247479259">Desactivat</translation>
@@ -414,9 +408,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6042308850641462728">Més</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toca per cancel·lar.</translation>
-<translation id="6096382830554887001">Els llocs web poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la sessió iniciada o per recordar els articles que tens al carretó de la compra.
-
-Els llocs web no poden fer servir galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis.</translation>
 <translation id="6108923351542677676">Configuració en curs...</translation>
 <translation id="6119050551270742952">La pàgina web actual està en mode d'incògnit</translation>
 <translation id="6122191549521593678">En línia</translation>
@@ -454,7 +445,6 @@ Els llocs web no poden fer servir galetes per veure la teva activitat de navegac
 
 Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="6418346271604475326">Preparant el PDF</translation>
-<translation id="6426067060178468363">Permet les galetes</translation>
 <translation id="6434591244308415567">S'ha produït un error. Torna-ho a provar més tard.</translation>
 <translation id="6439338047467462846">Permet-ho tot</translation>
 <translation id="6445051938772793705">País</translation>
@@ -596,15 +586,11 @@ Com que <ph name="HOSTED_DOMAIN" /> gestiona el teu compte, les dades de Chrome 
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">La baixada de fitxers està disponible. Opcions disponibles a la part inferior de la pantalla.</translation>
 <translation id="8131740175452115882">Confirma</translation>
-<translation id="8174524257672181687">Bloqueja totes les galetes (opció no recomanada)</translation>
 <translation id="8197543752516192074">Tradueix la pàgina</translation>
 <translation id="8205564605687841303">Cancel·la</translation>
 <translation id="8206354486702514201">L'administrador aplica aquesta opció de configuració.</translation>
 <translation id="8225985093977202398">Fitxers i imatges a memòria cau</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
-<translation id="8262263934052349464">Els llocs web no poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la sessió iniciada o per recordar els articles que tens al carretó de la compra.
-
-Els llocs web no poden fer servir galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis.</translation>
 <translation id="8281781826761538115">Idioma predeterminat: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Cerca nova</translation>
 <translation id="8323906514956095947">Mantén premut el botó per veure més opcions de pestanyes</translation>

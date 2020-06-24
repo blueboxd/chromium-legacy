@@ -435,7 +435,6 @@ cursors.Cursor = class {
         }
         break;
       case cursors.Unit.LINE:
-        newIndex = 0;
         switch (movement) {
           case cursors.Movement.BOUND:
             newNode = AutomationUtil.findNodeUntil(
@@ -447,6 +446,9 @@ cursors.Cursor = class {
           case cursors.Movement.DIRECTIONAL:
             newNode = AutomationUtil.findNodeUntil(
                 newNode, dir, AutomationPredicate.linebreak);
+            if (newNode) {
+              newIndex = 0;
+            }
             break;
         }
         break;

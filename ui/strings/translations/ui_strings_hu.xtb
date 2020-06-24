@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">A kalibrálás befejeződött</translation>
 <translation id="252373100621549798">Ismeretlen kijelző</translation>
 <translation id="2545651323591713692">Halasztás</translation>
+<translation id="2570734079541893434">Beállítások kezelése</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 óra múlva}other{# óra múlva}}</translation>
 <translation id="2583543531130364912">Az érintőképernyő kalibrálása</translation>
 <translation id="2666092431469916601">Felülre</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Áthelyezve ide: <ph name="PAGE_NUMBER" />. oldal, <ph name="ROW_NUMBER" />. sor, <ph name="COLUMN_NUMBER" />. oszlop.</translation>
 <translation id="7879499977785298635">Nincs tiltás</translation>
 <translation id="7907591526440419938">Fájl megnyitása</translation>
+<translation id="7952747673138230804">A Chrome OS új, felfedezhető tartalmakat javasol. Csak akkor küld statisztikákat a javaslatok javítása érdekében, ha Ön a használati adatok megosztása mellett döntött. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Több mint 1 olvasatlan értesítés}other{Több mint # olvasatlan értesítés}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 perc múlva}other{# perc múlva}}</translation>

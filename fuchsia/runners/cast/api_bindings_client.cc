@@ -33,11 +33,14 @@ ApiBindingsClient::ApiBindingsClient(
   });
 }
 
-void ApiBindingsClient::OnBindingsReceived(
-    std::vector<chromium::cast::ApiBinding> bindings) {
-  bindings_ = std::move(bindings);
-  bindings_service_.set_error_handler(nullptr);
-  std::move(on_initialization_complete_).Run();
+ApiBindingsClient::~ApiBindingsClient() {
+  if (connector_ && frame_) {
+    connector_->Register({});
+
+    // Remove all injected scripts using their automatically enumerated IDs.
+    for (uint64_t i = 0; i < bindings_->size(); ++i)
+      frame_->RemoveBeforeLoadJavaScript(kBindingsIdStart + i);
+  }
 }
 
 void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
@@ -74,14 +77,14 @@ void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
   }
 }
 
-ApiBindingsClient::~ApiBindingsClient() {
-  if (connector_ && frame_) {
-    connector_->Register({});
+void ApiBindingsClient::DetachFromFrame(fuchsia::web::Frame* frame) {
+  DCHECK_EQ(frame, frame_);
+  frame_ = nullptr;
+  bindings_service_.set_error_handler(nullptr);
+}
 
-    // Remove all injected scripts using their automatically enumerated IDs.
-    for (uint64_t i = 0; i < bindings_->size(); ++i)
-      frame_->RemoveBeforeLoadJavaScript(kBindingsIdStart + i);
-  }
+bool ApiBindingsClient::HasBindings() const {
+  return bindings_.has_value();
 }
 
 void ApiBindingsClient::OnPortConnected(
@@ -91,6 +94,9 @@ void ApiBindingsClient::OnPortConnected(
     bindings_service_->Connect(port_name.as_string(), std::move(port));
 }
 
-bool ApiBindingsClient::HasBindings() const {
-  return bindings_.has_value();
+void ApiBindingsClient::OnBindingsReceived(
+    std::vector<chromium::cast::ApiBinding> bindings) {
+  bindings_ = std::move(bindings);
+  bindings_service_.set_error_handler(nullptr);
+  std::move(on_initialization_complete_).Run();
 }

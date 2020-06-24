@@ -16,7 +16,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/hash/hash.h"
 #include "base/i18n/character_encoding.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -641,9 +640,6 @@ void OnDataURLRetrieved(
   parameters->set_url(std::move(data_url));
   StartDownload(std::move(parameters), mojo::NullRemote());
 }
-
-// TODO(crbug.com/977040): Remove when no longer needed.
-const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
 void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
   ContentBrowserClient* client = GetContentClient()->browser();
@@ -8201,8 +8197,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   if (!is_same_document_navigation) {
-    cookie_no_samesite_deprecation_url_hashes_.clear();
-    cookie_samesite_none_insecure_deprecation_url_hashes_.clear();
     renderer_reported_scheduler_tracked_features_ = 0;
     browser_reported_scheduler_tracked_features_ = 0;
     last_committed_client_security_state_ = std::move(client_security_state);
@@ -8670,100 +8664,9 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
                                                  discard_duplicates);
 }
 
-void RenderFrameHostImpl::AddSameSiteCookieDeprecationMessage(
-    const std::string& cookie_url,
-    net::CookieInclusionStatus status,
-    bool is_lax_by_default_enabled,
-    bool is_none_requires_secure_enabled) {
-  std::string deprecation_message;
-  // The status will have, at most, one of these warning messages at any given
-  // time.
-  if (status.HasWarningReason(
-          net::CookieInclusionStatus::WarningReason::
-              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
-    if (!ShouldAddCookieSameSiteDeprecationMessage(
-            cookie_url, &cookie_no_samesite_deprecation_url_hashes_)) {
-      return;
-    }
-    std::string warning_or_blocked_message =
-        (is_lax_by_default_enabled
-             ? "It has been blocked, as Chrome now only delivers "
-             : "A future release of Chrome will only deliver ");
-    deprecation_message =
-        "A cookie associated with a cross-site resource at " + cookie_url +
-        " was set without the `SameSite` attribute. " +
-        warning_or_blocked_message +
-        "cookies with "
-        "cross-site requests if they are set with `SameSite=None` and "
-        "`Secure`. You can review cookies in developer tools under "
-        "Application>Storage>Cookies and see more details at "
-        "https://www.chromestatus.com/feature/5088147346030592 and "
-        "https://www.chromestatus.com/feature/5633521622188032.";
-  } else if (status.HasWarningReason(net::CookieInclusionStatus::WarningReason::
-                                         WARN_SAMESITE_NONE_INSECURE)) {
-    if (!ShouldAddCookieSameSiteDeprecationMessage(
-            cookie_url,
-            &cookie_samesite_none_insecure_deprecation_url_hashes_)) {
-      return;
-    }
-    std::string warning_or_blocked_message =
-        (is_none_requires_secure_enabled
-             ? "It has been blocked, as Chrome now only delivers "
-             : "A future release of Chrome will only deliver ");
-    deprecation_message =
-        "A cookie associated with a resource at " + cookie_url +
-        " was set with `SameSite=None` but without `Secure`. " +
-        warning_or_blocked_message +
-        "cookies marked "
-        "`SameSite=None` if they are also marked `Secure`. You "
-        "can review cookies in developer tools under "
-        "Application>Storage>Cookies and see more details at "
-        "https://www.chromestatus.com/feature/5633521622188032.";
-  } else if (status.HasWarningReason(
-                 net::CookieInclusionStatus::WarningReason::
-                     WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
-    if (!ShouldAddCookieSameSiteDeprecationMessage(
-            cookie_url, &cookie_lax_allow_unsafe_deprecation_url_hashes_)) {
-      return;
-    }
-    deprecation_message =
-        "A cookie associated with a resource at " + cookie_url +
-        " set without a `SameSite` attribute was sent with a non-idempotent "
-        "top-level cross-site request because it was less than " +
-        base::NumberToString(net::kLaxAllowUnsafeMaxAge.InMinutes()) +
-        " minutes old. A future release of Chrome will treat such cookies as "
-        "if they were set with `SameSite=Lax` and will only allow them to be "
-        "sent with top-level cross-site requests if the HTTP method is safe. "
-        "See more details at "
-        "https://www.chromestatus.com/feature/5088147346030592.";
-  }
-
-  if (deprecation_message.empty())
-    return;
-
-  AddUniqueMessageToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
-                            deprecation_message);
-}
-
 void RenderFrameHostImpl::AddInspectorIssue(
     blink::mojom::InspectorIssueInfoPtr info) {
   GetAssociatedLocalFrame()->AddInspectorIssue(std::move(info));
-}
-
-bool RenderFrameHostImpl::ShouldAddCookieSameSiteDeprecationMessage(
-    const std::string& cookie_url,
-    base::circular_deque<size_t>* already_seen_url_hashes) {
-  DCHECK_LE(already_seen_url_hashes->size(), kMaxCookieSameSiteDeprecationUrls);
-  size_t cookie_url_hash = base::FastHash(cookie_url);
-  if (base::Contains(*already_seen_url_hashes, cookie_url_hash))
-    return false;
-
-  // Put most recent ones at the front because we are likely to have multiple
-  // consecutive cookies with the same URL.
-  if (already_seen_url_hashes->size() == kMaxCookieSameSiteDeprecationUrls)
-    already_seen_url_hashes->pop_back();
-  already_seen_url_hashes->push_front(cookie_url_hash);
-  return true;
 }
 
 void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(

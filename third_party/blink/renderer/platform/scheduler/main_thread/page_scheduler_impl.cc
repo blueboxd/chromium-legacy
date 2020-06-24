@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -637,9 +638,14 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
       main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
           "Page Wake Up Throttling - Cross-Origin to Main Frame");
 
-  // The Wake Up Interval is set in UpdateWakeUpBudgetPools(), based on current
-  // state. The Wake Up Duration is constant and is set here.
+  // The Wake Up Duration and Unaligned Wake Ups Allowance are constant and set
+  // here. The Wake Up Interval is set in UpdateWakeUpBudgetPools(), based on
+  // current state.
   same_origin_wake_up_budget_pool_->SetWakeUpDuration(kThrottledWakeUpDuration);
+  if (IsIntensiveWakeUpThrottlingEnabled()) {
+    same_origin_wake_up_budget_pool_->AllowUnalignedWakeUpIfNoRecentWakeUp();
+  }
+
   cross_origin_wake_up_budget_pool_->SetWakeUpDuration(
       kThrottledWakeUpDuration);
 

@@ -34,6 +34,8 @@ class HttpEquiv {
  private:
   static void ProcessHttpEquivDefaultStyle(Document&,
                                            const AtomicString& content);
+  static void ProcessHttpEquivOriginTrial(Document&,
+                                          const AtomicString& content);
   static void ProcessHttpEquivRefresh(Document&,
                                       const AtomicString& content,
                                       Element*);

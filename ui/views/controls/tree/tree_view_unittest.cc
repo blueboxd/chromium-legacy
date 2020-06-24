@@ -25,7 +25,9 @@
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
 using ui::TreeModel;
@@ -143,7 +145,7 @@ class TreeViewTest : public ViewsTestBase {
 
   ui::TreeNodeModel<TestNode> model_;
   TreeView* tree_;
-  Widget* widget_;
+  UniqueWidgetPtr widget_;
 
  private:
   std::string InternalNodeAsString(TreeView::InternalNode* node);
@@ -159,12 +161,12 @@ class TreeViewTest : public ViewsTestBase {
 
 void TreeViewTest::SetUp() {
   ViewsTestBase::SetUp();
-  widget_ = new Widget;
+  widget_ = std::make_unique<Widget>();
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   widget_->Init(std::move(params));
-  tree_ = new TreeView();
-  widget_->GetContentsView()->AddChildView(tree_);
+  tree_ =
+      widget_->GetContentsView()->AddChildView(std::make_unique<TreeView>());
   tree_->RequestFocus();
 
   ViewAccessibility::AccessibilityEventsCallback accessibility_events_callback =
@@ -183,8 +185,7 @@ void TreeViewTest::SetUp() {
 }
 
 void TreeViewTest::TearDown() {
-  if (!widget_->IsClosed())
-    widget_->Close();
+  widget_.reset();
   ViewsTestBase::TearDown();
 }
 
@@ -367,6 +368,12 @@ std::string TreeViewTest::InternalNodeAsString(TreeView::InternalNode* node) {
               "]";
   }
   return result;
+}
+
+// Verify properties are accessible via metadata.
+TEST_F(TreeViewTest, MetadataTest) {
+  tree_->SetModel(&model_);
+  test::TestViewMetadata(tree_);
 }
 
 // Verifies setting model correctly updates internal state.

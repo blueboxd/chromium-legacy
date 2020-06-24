@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Nereușită – Ușă deschisă</translation>
 <translation id="3369013195428705271">Sigur vrei să ștergi tot istoricul printărilor? Sarcinile de printare în curs nu vor fi șterse.</translation>
 <translation id="3456078764689556234">S-a printat pagina <ph name="PRINTED_PAGES" /> din <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Sarcini de printare</translation>
 <translation id="3527036260304016759">Nereușită – Eroare necunoscută</translation>
 <translation id="3749289110408117711">Nume de fișier</translation>
 <translation id="38114475217616659">Șterge tot istoricul</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Nereușită – Tavă de ieșire plină</translation>
 <translation id="4034824040120875894">Imprimantă</translation>
 <translation id="4227825898293920515">Parola expiră în <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nicio sarcină de printare în desfășurare</translation>
 <translation id="428217921675623177">Sarcinile de printare mai vechi de 90 de zile vor fi eliminate</translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>
@@ -61,11 +61,13 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Această setare este gestionată de administrator</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7690294790491645610">Confirmă noua parolă</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="808894953321890993">Schimbă parola</translation>
 <translation id="8208861521865154048">Avantaje</translation>
+<translation id="8347227221149377169">Sarcini de printare</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest utilizator. Poate să gestioneze de la distanță setările și să monitorizeze activitatea utilizatorului.</translation>
 <translation id="871560550817059752">Nereușită – Cerneală epuizată</translation>
 <translation id="8747900814994928677">Confirmă schimbarea</translation>

@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">క్రమాంకనం పూర్తయింది</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
 <translation id="2545651323591713692">తాత్కాలికంగా ఆపివేయి</translation>
+<translation id="2570734079541893434">సెట్టింగ్‌లను మేనేజ్ చేయండి</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 గంటలో}other{#గంటలలో}}</translation>
 <translation id="2583543531130364912">మీ టచ్‌స్క్రీన్‌ను క్రమాంకనం చేయండి</translation>
 <translation id="2666092431469916601">పైన</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537"><ph name="PAGE_NUMBER" />వ పేజీలో <ph name="ROW_NUMBER" />వ అడ్డు వరుస, '<ph name="COLUMN_NUMBER" />' నిలువు వరుసకు తరలించబడింది.</translation>
 <translation id="7879499977785298635">బ్లాక్ చేయవద్దు</translation>
 <translation id="7907591526440419938">ఫైల్‌ను తెరువు</translation>
+<translation id="7952747673138230804">కొత్త కెంటెంట్‌ను అన్వేషించడానికి Chrome OS సూచనలను చూపుతుంది. మీరు డేటా వినియోగాన్ని షేర్ చేయడాన్ని ఎంచుకుంటే మాత్రమే సూచనలు మెరుగుపరచడానికి గణాంకాలను పంపుతుంది. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">ఆదేశం</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 కంటే ఎక్కువ చదవని నోటిఫికేషన్‌లు ఉన్నాయి}other{# కంటే ఎక్కువ చదవని నోటిఫికేషన్‌లు ఉన్నాయి}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 నిమిషంలో}other{# నిమిషంలో}}</translation>

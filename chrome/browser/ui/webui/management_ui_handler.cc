@@ -589,8 +589,10 @@ void ManagementUIHandler::AddDeviceReportingInfo(
 
   chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
   base::Value proxy_settings(base::Value::Type::DICTIONARY);
-  // |ui_proxy_config_service| may be missing in tests.
-  if (network_handler->has_ui_proxy_config_service()) {
+  // |ui_proxy_config_service| may be missing in tests. If the device is offline
+  // (no network connected) the |DefaultNetwork| is null.
+  if (network_handler->has_ui_proxy_config_service() &&
+      network_handler->network_state_handler()->DefaultNetwork()) {
     // Check if proxy is enforced by user policy, a forced install extension or
     // ONC policies. This will only read managed settings.
     network_handler->ui_proxy_config_service()->MergeEnforcedProxyConfig(

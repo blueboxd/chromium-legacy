@@ -6181,7 +6181,12 @@ TEST_F(URLRequestTestHTTP, CapRefererHeaderLength) {
     req->Start();
     d.RunUntilComplete();
 
-    EXPECT_EQ("http://example.com/", d.data_received());
+    // The request's referrer will be stripped since (1) there will be a
+    // mismatch between the request's referrer and the output of
+    // URLRequestJob::ComputeReferrerForPolicy and (2) the delegate, when
+    // offered the opportunity to cancel the request for this reason, will
+    // decline.
+    EXPECT_EQ("None", d.data_received());
   }
   {
     std::string original_header = "http://example.com/";

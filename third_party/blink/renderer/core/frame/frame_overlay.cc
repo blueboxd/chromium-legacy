@@ -53,6 +53,9 @@ FrameOverlay::FrameOverlay(LocalFrame* local_frame,
 }
 
 void FrameOverlay::UpdatePrePaint() {
+  // Invalidate DisplayItemClient.
+  Invalidate();
+
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     delegate_->Invalidate();
     return;

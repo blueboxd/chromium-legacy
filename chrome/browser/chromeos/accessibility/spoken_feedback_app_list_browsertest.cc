@@ -377,8 +377,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, AppListFoldering) {
   // launcher.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
   sm_.ExpectSpeech("Launcher, partial view");
-  // Send a key press to enable keyboard traversal
-  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_UP); });
   // Move focus to expand all apps button.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_UP); });
   sm_.ExpectSpeech("Expand to all apps");

@@ -51,6 +51,11 @@ class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
       scoped_refptr<base::TestSimpleTaskRunner> signaling_thread)
       : signaling_thread_(signaling_thread) {}
 
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread()
+      const override {
+    return signaling_thread_;
+  }
+
   void RunSynchronousOnceClosureOnSignalingThread(
       CrossThreadOnceClosure closure,
       const char* trace_event_name) override {
@@ -253,6 +258,9 @@ TEST_F(RTCDataChannelTest, BufferedAmount) {
   String message(std::string(100, 'A').c_str());
   channel->send(message, IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(100U, channel->bufferedAmount());
+  // The actual send operation is posted to the signaling thread; wait for it
+  // to run to avoid a memory leak.
+  signaling_thread()->RunUntilIdle();
 }
 
 TEST_F(RTCDataChannelTest, BufferedAmountLow) {
@@ -272,6 +280,9 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
   ASSERT_EQ(1U, channel->scheduled_events_.size());
   EXPECT_EQ("bufferedamountlow",
             channel->scheduled_events_.back()->type().Utf8());
+  // The actual send operation is posted to the signaling thread; wait for it
+  // to run to avoid a memory leak.
+  signaling_thread()->RunUntilIdle();
 }
 
 TEST_F(RTCDataChannelTest, Open) {

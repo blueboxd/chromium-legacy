@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Failed – Door open</translation>
 <translation id="3369013195428705271">Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.</translation>
 <translation id="3456078764689556234">Printed page <ph name="PRINTED_PAGES" /> out of <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Print jobs</translation>
 <translation id="3527036260304016759">Failed – Unknown error</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">Clear all history</translation>
@@ -68,6 +67,7 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8208861521865154048">Perks</translation>
+<translation id="8347227221149377169">Print jobs</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> manages this user. It may remotely manage settings and monitor user activity.</translation>
 <translation id="871560550817059752">Failed – Out of ink</translation>
 <translation id="8747900814994928677">Confirm change</translation>

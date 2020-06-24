@@ -22,9 +22,8 @@
 <translation id="3008341117444806826">ЖАҢЫРТУУ</translation>
 <translation id="3091839911843451378">Басылып чыгарылган жок - Принтер токтоп калды</translation>
 <translation id="3268178239013324452">Басылып чыгарылган жок - Принтердин эшиги ачык</translation>
-<translation id="3369013195428705271">Басып чыгаруу тарыхын толугу менен тазалайын дегениңиз аныкпы? Учурда басылып жаткан документтериңиз өчүрүлбөйт.</translation>
+<translation id="3369013195428705271">Басып чыгаруу тарыхын өчүрөсүзбү? Учурда басылып жаткан документтериңиз өчүрүлбөйт.</translation>
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" /> ичинен <ph name="PRINTED_PAGES" /> барак басылып чыгарылды.</translation>
-<translation id="3515615323037921860">Басып чыгаруу тапшырмалары</translation>
 <translation id="3527036260304016759">Басылып чыгарылган жок - Белгисиз ката</translation>
 <translation id="3749289110408117711">Файлдын аталышы</translation>
 <translation id="38114475217616659">Таржымалды толук тазалоо</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Басылып чыгарылган жок - Барактар тактасы толук</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Сырсөздүн мөөнөтү <ph name="TIME" /> кийин бүтөт</translation>
+<translation id="4238516577297848345">Аткарылып жаткан иш жок</translation>
 <translation id="428217921675623177">90 күндөн мурунку басып чыгаруу тапшырмалары өчүрүлөт</translation>
 <translation id="4429881212383817840">Kerberos билетинин мөөнөтү өтүп баратат</translation>
 <translation id="445059817448385655">Эски сырсөз</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Тазалоо</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Бул аракетти администраторуңуз башкарат</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="7690294790491645610">Жаңы сырсөздү ырастаңыз</translation>
 <translation id="7805768142964895445">Статусу</translation>
 <translation id="808894953321890993">Сызсөздү өзгөртүү</translation>
 <translation id="8208861521865154048">Бонустар</translation>
+<translation id="8347227221149377169">Басып чыгаруу тапшырмалары</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> бул колдонуучуну башкарат. Ал алыстан жөндөөлөрдү башкарып, колдонуучунун аракеттерин көзөмөлдөй алат.</translation>
 <translation id="871560550817059752">Басылып чыгарылган жок - Сыя түгөнүп калды</translation>
 <translation id="8747900814994928677">Өзгөртүүнү ырастоо</translation>

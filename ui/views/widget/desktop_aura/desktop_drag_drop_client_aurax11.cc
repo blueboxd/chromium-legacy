@@ -31,6 +31,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -114,9 +115,8 @@ DesktopDragDropClientAuraX11*
 DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     aura::Window* root_window,
     views::DesktopNativeCursorManager* cursor_manager,
-    ::Display* display,
     x11::Window window)
-    : XDragDropClient(this, display, window),
+    : XDragDropClient(this, window),
       root_window_(root_window),
       cursor_manager_(cursor_manager) {}
 
@@ -201,14 +201,13 @@ void DesktopDragDropClientAuraX11::RemoveObserver(
   NOTIMPLEMENTED();
 }
 
-bool DesktopDragDropClientAuraX11::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* event = &x11_event->xlib_event();
-  if (!target_current_context() ||
-      event->xany.window !=
-          static_cast<uint32_t>(target_current_context()->source_window())) {
+bool DesktopDragDropClientAuraX11::DispatchXEvent(x11::Event* event) {
+  auto* prop = event->As<x11::PropertyNotifyEvent>();
+  if (!target_current_context() || !prop ||
+      prop->window != target_current_context()->source_window()) {
     return false;
   }
-  return target_current_context()->DispatchXEvent(x11_event);
+  return target_current_context()->DispatchPropertyNotifyEvent(*prop);
 }
 
 void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {

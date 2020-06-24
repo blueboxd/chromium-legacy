@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">കാലിബറേഷൻ പൂർത്തിയായി</translation>
 <translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
 <translation id="2545651323591713692">സ്‌നൂസ് ചെയ്യുക</translation>
+<translation id="2570734079541893434">ക്രമീകരണം മാനേജ് ചെയ്യുക</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{ഒരു മണിക്കൂറിനുള്ളിൽ}other{# മണിക്കൂറിനുള്ളിൽ}}</translation>
 <translation id="2583543531130364912">നിങ്ങളുടെ ടച്ച്സ്‌ക്രീൻ കാലിബറേറ്റ് ചെയ്യുക</translation>
 <translation id="2666092431469916601">മുകളിലേക്ക്</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">പേജ് <ph name="PAGE_NUMBER" />, വരി <ph name="ROW_NUMBER" />, കോളം <ph name="COLUMN_NUMBER" /> എന്നതിലേക്ക് നീക്കി.</translation>
 <translation id="7879499977785298635">ബ്ലോക്ക് ചെയ്യരുത്</translation>
 <translation id="7907591526440419938">ഫയല്‍ തുറക്കുക</translation>
+<translation id="7952747673138230804">പുതിയ ഉള്ളടക്കം അടുത്തറിയുന്നതിനായി Chrome OS നിർദേശങ്ങൾ കാണിക്കുന്നു. ഉപയോഗ ഡാറ്റ പങ്കിടാൻ നിങ്ങൾ തിരഞ്ഞെടുത്തിട്ടുണ്ടെങ്കിൽ മാത്രം, നിലവാരം മെച്ചപ്പെടുത്താനായി സ്ഥിതിവിവരക്കണക്കുകൾ അയയ്ക്കുന്നു. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">കമാൻഡ്</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ഒന്നിലധികം വായിക്കാത്ത അറിയിപ്പ് ഉണ്ട്}other{#-ലധികം വായിക്കാത്ത അറിയിപ്പുകൾ ഉണ്ട്}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{ഒരു മിനിറ്റിൽ}other{# മിനിറ്റിൽ}}</translation>

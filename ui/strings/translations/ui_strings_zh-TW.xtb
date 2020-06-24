@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">校正完成</translation>
 <translation id="252373100621549798">顯示器不明</translation>
 <translation id="2545651323591713692">延後</translation>
+<translation id="2570734079541893434">管理設定</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 小時內}other{# 小時內}}</translation>
 <translation id="2583543531130364912">校正觸控螢幕</translation>
 <translation id="2666092431469916601">置頂</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">已移至第 <ph name="PAGE_NUMBER" /> 頁，第 <ph name="ROW_NUMBER" /> 列，第 <ph name="COLUMN_NUMBER" /> 欄。</translation>
 <translation id="7879499977785298635">不要封鎖</translation>
 <translation id="7907591526440419938">開啟檔案</translation>
+<translation id="7952747673138230804">Chrome 作業系統會顯示建議項目，讓你探索新內容。只有當你選擇提供使用資料時，系統才會傳送統計資料用來改善建議內容的品質。<ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command 鍵</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超過 1 則未讀通知}other{超過 # 則未讀通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 分鐘內}other{# 分鐘內}}</translation>

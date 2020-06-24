@@ -28,6 +28,8 @@ namespace ash {
 
 namespace {
 
+using chromeos::assistant::features::IsAmbientAssistantEnabled;
+
 // Toast -----------------------------------------------------------------------
 
 constexpr int kToastDurationMs = 2500;
@@ -91,7 +93,7 @@ void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
     return;
   }
 
-  if (chromeos::features::IsAmbientModeEnabled() &&
+  if (IsAmbientAssistantEnabled() &&
       Shell::Get()->ambient_controller()->IsShown()) {
     model_.SetUiMode(AssistantUiMode::kAmbientUi);
     model_.SetVisible(entry_point);

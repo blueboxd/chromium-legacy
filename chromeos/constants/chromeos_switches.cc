@@ -302,6 +302,9 @@ const char kEnterpriseEnableForcedReEnrollment[] =
 const char kEnterpriseEnableInitialEnrollment[] =
     "enterprise-enable-initial-enrollment";
 
+// Whether to enable private set membership queries.
+const char kEnterpriseEnablePrivateSetMembership[] = "enterprise-enable-psm";
+
 // Enables the zero-touch enterprise enrollment flow.
 const char kEnterpriseEnableZeroTouchEnrollment[] =
     "enterprise-enable-zero-touch-enrollment";

@@ -36,11 +36,11 @@ SystemLogsFetcher* BuildAboutSystemLogsFetcher() {
   fetcher->AddSource(std::make_unique<DBusLogSource>());
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
   fetcher->AddSource(std::make_unique<TouchLogSource>());
-  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>());
 
   // Data sources that directly scrub itentifiable information.
   fetcher->AddSource(std::make_unique<DebugDaemonLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<NetworkHealthSource>(scrub_data));
+  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>(scrub_data));
 #endif
 
   return fetcher;

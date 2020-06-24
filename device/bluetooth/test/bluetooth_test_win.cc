@@ -853,6 +853,15 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
   return adapter_->GetDevice(data.address);
 }
 
+void BluetoothTestWinrt::SimulateLowEnergyDiscoveryFailure() {
+  static_cast<TestBluetoothAdapterWinrt*>(adapter_.get())
+      ->watcher()
+      ->SimulateDiscoveryError();
+
+  // Spin until the WatcherStopped event fires.
+  base::RunLoop().RunUntilIdle();
+}
+
 void BluetoothTestWinrt::SimulateDevicePaired(BluetoothDevice* device,
                                               bool is_paired) {
   auto* const ble_device =

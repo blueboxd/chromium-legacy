@@ -951,6 +951,7 @@
     {
       name: "LayoutNGFragmentItem",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFragmentTraversal"],
+      status: "test",
     },
     {
       // Traverse the fragment tree when painting and hit-testing, instead of
@@ -1445,10 +1446,6 @@
       name: "Portals",
       status: "test",
       origin_trial_feature_name: "Portals",
-    },
-    {
-      name: "PostAnimationFrame",
-      status: "experimental",
     },
     {
       name: "PreciseMemoryInfo",

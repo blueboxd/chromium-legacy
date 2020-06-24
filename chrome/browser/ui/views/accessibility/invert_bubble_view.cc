@@ -157,14 +157,12 @@ void InvertBubbleView::OpenLink(const std::string& url,
 
 void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   Browser* browser = browser_view->browser();
-  if (browser->profile()->IsIncognitoProfile())
-    return;
   PrefService* pref_service = browser->profile()->GetPrefs();
   views::View* anchor =
       browser_view->toolbar_button_provider()->GetAppMenuButton();
   if (anchor && anchor->GetWidget() &&
-      anchor->GetNativeTheme()->GetHighContrastColorScheme() ==
-          ui::NativeTheme::HighContrastColorScheme::kDark &&
+      anchor->GetNativeTheme()->GetPlatformHighContrastColorScheme() ==
+          ui::NativeTheme::PlatformHighContrastColorScheme::kDark &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     ShowInvertBubbleView(browser, anchor);

@@ -102,17 +102,23 @@ const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
-const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
+// For the current origin trial (https://crbug.com/1040212), this is enabled on
+// Android only.
+const base::Feature kPortals {
+  "Portals",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // When kPortals is enabled, allow portals to load content that is third-party
 // (cross-origin) to the hosting page. Otherwise has no effect.
 //
-// This will be disabled by default by the time Portals is generally available,
-// either in origin trial or shipped.
-//
 // https://crbug.com/1013389
 const base::Feature kPortalsCrossOrigin{"PortalsCrossOrigin",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable limiting previews loading hints to specific resource types.
 const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{

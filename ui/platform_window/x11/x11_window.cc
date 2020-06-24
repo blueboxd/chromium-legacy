@@ -163,8 +163,7 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
 #if defined(USE_OZONE)
   SetWmDragHandler(this, this);
 
-  drag_drop_client_ = std::make_unique<XDragDropClient>(
-      this, connection()->display(), window());
+  drag_drop_client_ = std::make_unique<XDragDropClient>(this, window());
 #endif
 }
 
@@ -759,7 +758,7 @@ void X11Window::OnXWindowSelectionEvent(x11::Event* xev) {
     x_event_delegate_->OnXWindowSelectionEvent(xev);
 #if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
-  drag_drop_client_->OnSelectionNotify(xev->xlib_event().xselection);
+  drag_drop_client_->OnSelectionNotify(*xev->As<x11::SelectionNotifyEvent>());
 #endif
 }
 
@@ -768,7 +767,7 @@ void X11Window::OnXWindowDragDropEvent(x11::Event* xev) {
     x_event_delegate_->OnXWindowDragDropEvent(xev);
 #if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
-  drag_drop_client_->HandleXdndEvent(xev->xlib_event().xclient);
+  drag_drop_client_->HandleXdndEvent(*xev->As<x11::ClientMessageEvent>());
 #endif
 }
 

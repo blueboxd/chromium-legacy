@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">কেলিব্ৰে’শ্বন সম্পূৰ্ণ হ’ল</translation>
 <translation id="252373100621549798">অজ্ঞাত ডিছপ্লে’</translation>
 <translation id="2545651323591713692">স্নুজ কৰক</translation>
+<translation id="2570734079541893434">ছেটিংসমূহ পৰিচালনা কৰক</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{১ ঘণ্টাত}one{# ঘণ্টাত}other{# ঘণ্টাত}}</translation>
 <translation id="2583543531130364912">আপোনাৰ টাচ্চ স্ক্ৰীণ কেলিব্ৰেট কৰক</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
@@ -206,6 +207,7 @@
 <translation id="7848989271541991537">পৃষ্ঠা <ph name="PAGE_NUMBER" />, শাৰী <ph name="ROW_NUMBER" />, স্তম্ভ <ph name="COLUMN_NUMBER" />লৈ স্থানান্তৰ কৰা হৈছে।</translation>
 <translation id="7879499977785298635">অৱৰোধ নকৰিব</translation>
 <translation id="7907591526440419938">ফাইল খোলক</translation>
+<translation id="7952747673138230804">Chrome OSএ অন্বেষণ কৰিবৰ বাবে নতুন সমলৰ পৰামৰ্শ দিয়ে। আপুনি ব্যৱহাৰৰ ডেটা শ্বেয়াৰ কৰিবলৈ বাছনি কৰিলেহে পৰামৰ্শিত সমলৰ গুণাগুণ উন্নত কৰিবলৈ পৰিসংখ্যা পঠিয়ায়। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">নিৰ্দেশনা</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{১টাতকৈ অধিক নপঢ়া জাননী}one{#টাতকৈ অধিক নপঢ়া জাননী}other{#টাতকৈ অধিক নপঢ়া জাননী}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{১ মিনিটত}one{# মিনিটত}other{# মিনিটত}}</translation>

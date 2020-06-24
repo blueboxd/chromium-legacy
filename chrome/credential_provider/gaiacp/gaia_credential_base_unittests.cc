@@ -6,6 +6,8 @@
 
 #include <sddl.h>  // For ConvertSidToStringSid()
 #include <wrl/client.h>
+#include <algorithm>
+#include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
@@ -737,6 +739,96 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Values(L"ed", L"domains_allowed_to_login"),
                        ::testing::Values(L"acme.com,acme2.com,acme3.com",
                                          L"")));
+
+class GcpGaiaCredentialBasePermittedAccountTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<
+          std::tuple<const wchar_t*, const wchar_t*>> {
+ public:
+  // Get a pretty-printed string of the list of email domains that we can
+  // display to the end-user.
+  base::string16 GetEmailDomainsPrintableString() {
+    base::string16 email_domains_reg_old = GetGlobalFlagOrDefault(L"ed", L"");
+    base::string16 email_domains_reg_new =
+        GetGlobalFlagOrDefault(L"domains_allowed_to_login", L"");
+
+    base::string16 email_domains_reg = email_domains_reg_old.empty()
+                                           ? email_domains_reg_new
+                                           : email_domains_reg_old;
+    if (email_domains_reg.empty())
+      return email_domains_reg;
+
+    std::vector<base::string16> domains =
+        base::SplitString(base::ToLowerASCII(email_domains_reg),
+                          base::ASCIIToUTF16(kEmailDomainsSeparator),
+                          base::WhitespaceHandling::TRIM_WHITESPACE,
+                          base::SplitResult::SPLIT_WANT_NONEMPTY);
+    base::string16 email_domains_str;
+    for (size_t i = 0; i < domains.size(); ++i) {
+      email_domains_str += domains[i];
+      if (i < domains.size() - 1)
+        email_domains_str += L", ";
+    }
+    return email_domains_str;
+  }
+};
+
+TEST_P(GcpGaiaCredentialBasePermittedAccountTest, PermittedAccounts) {
+  const base::string16 permitted_acounts = std::get<0>(GetParam());
+  const base::string16 restricted_domains = std::get<1>(GetParam());
+
+  ASSERT_EQ(S_OK,
+            SetGlobalFlagForTesting(L"permitted_accounts", permitted_acounts));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"domains_allowed_to_login",
+                                          restricted_domains));
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+  Microsoft::WRL::ComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.As(&test));
+
+  base::string16 email = L"user@test.com";
+  base::string16 email_domain = email.substr(email.find(L"@") + 1);
+
+  ASSERT_EQ(S_OK, test->SetGlsEmailAddress(base::UTF16ToUTF8(email)));
+
+  bool allowed_email = permitted_acounts.empty() ||
+                       permitted_acounts.find(email) != base::string16::npos;
+  bool found_domain =
+      restricted_domains.find(email_domain) != base::string16::npos;
+
+  if (!found_domain)
+    ASSERT_EQ(S_OK, test->SetDefaultExitCode(kUiecInvalidEmailDomain));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  if (allowed_email && found_domain) {
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+  } else {
+    base::string16 expected_error_msg;
+    if (!found_domain) {
+      expected_error_msg = base::ReplaceStringPlaceholders(
+          GetStringResource(IDS_INVALID_EMAIL_DOMAIN_BASE),
+          {GetEmailDomainsPrintableString()}, nullptr);
+    } else {
+      expected_error_msg = GetStringResource(IDS_EMAIL_MISMATCH_BASE);
+    }
+    // Logon process should fail with the specified error message.
+    ASSERT_EQ(S_OK, FinishLogonProcess(false, false, expected_error_msg));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GcpGaiaCredentialBasePermittedAccountTest,
+    ::testing::Combine(
+        ::testing::Values(L"",
+                          L"user@test.com",
+                          L"other@test.com",
+                          L"other@test.com,user@test.com"),
+        ::testing::Values(L"test.com", L"best.com", L"test.com,best.com")));
 
 TEST_F(GcpGaiaCredentialBaseTest, StripEmailTLD) {
   USES_CONVERSION;

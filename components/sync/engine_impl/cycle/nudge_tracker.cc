@@ -235,7 +235,8 @@ bool NudgeTracker::IsAnyTypeBlocked() const {
 }
 
 bool NudgeTracker::IsTypeBlocked(ModelType type) const {
-  DCHECK(type_trackers_.find(type) != type_trackers_.end());
+  DCHECK(type_trackers_.find(type) != type_trackers_.end())
+      << ModelTypeToString(type);
   return type_trackers_.find(type)->second->IsBlocked();
 }
 

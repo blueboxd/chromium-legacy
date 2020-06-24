@@ -307,13 +307,15 @@ TEST_F(DlcserviceClientTest, InstallFailureTest) {
 
 TEST_F(DlcserviceClientTest, InstallProgressTest) {
   EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
-      .WillOnce(Return());
+      .WillOnce(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
   std::atomic<size_t> counter{0};
   DlcserviceClient::InstallCallback install_callback = base::BindOnce(
       [](const DlcserviceClient::InstallResult& install_result) {});
   DlcserviceClient::ProgressCallback progress_callback = base::BindRepeating(
       [](decltype(counter)* counter, double) { ++*counter; }, &counter);
 
+  responses_.push_back(dbus::Response::CreateEmpty());
   client_->Install({}, std::move(install_callback),
                    std::move(progress_callback));
   base::RunLoop().RunUntilIdle();
@@ -378,7 +380,8 @@ TEST_F(DlcserviceClientTest, PendingTaskTest) {
   const size_t kLoopCount = 3;
   EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
       .Times(kLoopCount)
-      .WillRepeatedly(Return());
+      .WillRepeatedly(
+          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
   std::atomic<size_t> counter{0};
 
   // All |Install()| request after the first should be queued.
@@ -389,6 +392,7 @@ TEST_F(DlcserviceClientTest, PendingTaskTest) {
           ++*counter;
         },
         &counter);
+    responses_.push_back(dbus::Response::CreateEmpty());
     client_->Install({}, std::move(install_callback),
                      DlcserviceClient::IgnoreProgress);
   }

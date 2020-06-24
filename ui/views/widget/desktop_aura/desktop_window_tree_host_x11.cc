@@ -52,6 +52,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
@@ -91,9 +92,8 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-  drag_drop_client_ = new DesktopDragDropClientAuraX11(
-      window(), cursor_manager, GetXWindow()->connection()->display(),
-      GetXWindow()->window());
+  drag_drop_client_ = new DesktopDragDropClientAuraX11(window(), cursor_manager,
+                                                       GetXWindow()->window());
   drag_drop_client_->Init();
   return base::WrapUnique(drag_drop_client_);
 }
@@ -101,18 +101,16 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
 
-void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(x11::Event* x11_event) {
-  DCHECK(x11_event);
+void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(x11::Event* xev) {
+  DCHECK(xev);
   DCHECK(drag_drop_client_);
-  XEvent* xev = &x11_event->xlib_event();
-  drag_drop_client_->OnSelectionNotify(xev->xselection);
+  drag_drop_client_->OnSelectionNotify(*xev->As<x11::SelectionNotifyEvent>());
 }
 
-void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(x11::Event* x11_event) {
-  DCHECK(x11_event);
+void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(x11::Event* xev) {
+  DCHECK(xev);
   DCHECK(drag_drop_client_);
-  XEvent* xev = &x11_event->xlib_event();
-  drag_drop_client_->HandleXdndEvent(xev->xclient);
+  drag_drop_client_->HandleXdndEvent(*xev->As<x11::ClientMessageEvent>());
 }
 
 const ui::XWindow* DesktopWindowTreeHostX11::GetXWindow() const {

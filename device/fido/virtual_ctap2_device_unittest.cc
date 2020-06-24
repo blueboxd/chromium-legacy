@@ -17,6 +17,7 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/test_callback_receiver.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -186,6 +187,16 @@ TEST_F(VirtualCtap2DeviceTest, AttestationCertificateIsValid) {
   base::Time now = base::Time::Now();
   EXPECT_LT(cert->valid_start(), now);
   EXPECT_GT(cert->valid_expiry(), now);
+
+  bool present;
+  bool critical;
+  base::StringPiece contents;
+  ASSERT_TRUE(net::asn1::ExtractExtensionFromDERCert(
+      net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
+      base::StringPiece("\x55\x1d\x13"), &present, &critical, &contents));
+  EXPECT_TRUE(present);
+  EXPECT_TRUE(critical);
+  EXPECT_EQ(base::StringPiece("\x30\x03\x01\x01\x00", 5), contents);
 }
 
 }  // namespace device

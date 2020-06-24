@@ -3411,6 +3411,9 @@
   <message name="IDS_NETWORK_UI_TAB_NETWORK_HEALTH" desc="Network health tab name">
     Network Health
   </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_LOGS" desc="Network logs tab name">
+    Network Logs
+  </message>
   <message name="IDS_NETWORK_UI_TAB_NETWORK_STATE" desc="Network state tab name">
     Network State
   </message>
@@ -3480,9 +3483,36 @@
   <message name="IDS_NETWORK_UI_IMPORT_ONC_BUTTON_TEXT" desc="Text for button which, when pressed, selects and imports an ONC file for network configuration.">
     Import ONC File
   </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DESCRIPTION" desc="Text describing the section for storing network logs in the chrome://network debugging UI.">
+    Store system logs to the Downloads directory.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_SYSTEM_LOGS" desc="Text describing the checkbox option for storing the system logs file sent in feedback reports.">
+    Include the system_logs.txt file sent in feedback reports.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_FILTER_PII" desc="Text describing the checkbox option for striping personally identifiable information from the system logs.">
+    Strip Personally Identifiable Information from system_logs.txt.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_POLICIES" desc="Text describing the checkbox option for storing the policies.json file.">
+    Include a policies.json file with policy configurations.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_DEBUG_LOGS" desc="Text describing the checkbox option for storing the debugd logs files.">
+    Include all log files collected by debugd as a separate archive.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_CHROME_LOGS" desc="Text describing the checkbox option for including the chrome logs in the stored logs file.">
+    Include Chrome log files in the archive.
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_STORE_BUTTON" desc="Text displayed on the button for storing system logs.">
+    Store system logs
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_STATUS" desc="Message displayed while storing logs.">
+    Generating log files...
+  </message>
+  <message name="IDS_NETWORK_UI_NETWORK_LOGS_SUCCESS" desc="Message displayed when system logs are successfully written.">
+    Logs successfully written to Downloads directory.
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
-    For network logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
+    To view network UI logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
   </message>
 
   <!-- Network Health display strings -->
@@ -5228,6 +5258,13 @@
   <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
     Hide password
   </message>
+
+  <!--
+    ==================================================================================
+    If you change any IDS_EDU_LOGIN_INFO_* string, update kConsentScreenTextVersion in
+    chrome/browser/chromeos/child_accounts/secondary_account_consent_logger.cc
+    to the value of "v<GERRIT_CL_NUMBER>"
+  -->
   <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE" desc="Title for the screen explaining co-existence to a parent.">
     School account information for parents
   </message>
@@ -5236,13 +5273,6 @@
     If your child uses a Chromebook in school and you wish to mirror the school experience at home to ensure your child has access to all necessary schoolwork, please sign out of this Family Link account and sign in to the school account from the Chrome OS accounts page (note: Family Link parental controls will not apply).&lt;br&gt;&lt;br&gt;
     If your child does not use a Chromebook in school or if you prefer to manage your child’s experience at home using Family Link, please click the Next button below to add a school account to this profile.
   </message>
-
-  <!--
-    ==================================================================================
-    If you change any IDS_EDU_LOGIN_INFO_* string, update kConsentScreenTextVersion in
-    chrome/browser/chromeos/child_accounts/secondary_account_consent_logger.cc
-    to the value of "v<GERRIT_CL_NUMBER>"
-  -->
   <message name="IDS_EDU_LOGIN_INFO_TITLE" desc="Title for the parent information screen in EDU account addition flow.">
     G Suite for Education accounts
   </message>
@@ -5251,23 +5281,6 @@
   </message>
   <message name="IDS_EDU_LOGIN_INFO_PARENT_SETTINGS" desc="Text informing parent about Google services that users can access, browsing data storage and Family Link parent settings.">
     G Suite for Education administrators determine which Google services their users can access while signed into a G Suite for Education account. This may include some features or services that your child was previously unable to access using this supervised  account. School administrators are required to provide or obtain consent for the use of the services by their minor users.
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_DATA_PROTECTION" desc="Text informing parent about their child's data protection.">
-    Your child's data in Classroom will be protected. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_RESOURCES_AVAILABILITY" desc="Text informing parent some resources for schoolwork might not be available.">
-    Resources for schoolwork might not be available or automatically loaded
-    Your child might not have access to:
-    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Applications and extensions that were installed by the school
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Bookmarks from a school Chromebook
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Autofill passwords to educational sites
-    <ph name="END_LIST">&lt;/ul&gt;</ph>
-    To get the full school experience on this device, your child should:
-    <ph name="BEGIN_OLIST">&lt;ol&gt;</ph>
-      <ph name="OLIST_ITEM">&lt;li&gt;</ph>Sign out of their Family Link managed account
-      <ph name="OLIST_ITEM">&lt;li&gt;</ph>Sign in with their GSuite for Education account on the sign-in screen. Note, however, this will mean school policies including app and website access settings will take effect over your Family Link supervision features (for instance, school administrators may allow YouTube if it’s necessary for homework, screentime would not be enforced, etc.)
-    <ph name="END_OLIST">&lt;/ol&gt;</ph>
   </message>
   <!--
     IDS_EDU_LOGIN_INFO_* strings END

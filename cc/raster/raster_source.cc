@@ -5,6 +5,7 @@
 #include "cc/raster/raster_source.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -102,6 +103,8 @@ void RasterSource::PlaybackToCanvas(
   // Treat all subnormal values as zero for performance.
   ScopedSubnormalFloatDisabler disabler;
 
+  // NOTE: The following code should be kept consistent with
+  // PaintOpBufferSerializer::SerializePreamble().
   bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
   if (!requires_clear_ && raster_transform.translation().IsZero()) {
     // Clear opaque raster sources.  Opaque rasters sources guarantee that all
@@ -134,12 +137,13 @@ void RasterSource::PlaybackToCanvas(
     raster_canvas->clear(SK_ColorTRANSPARENT);
   }
 
-  PlaybackToCanvas(raster_canvas, settings.image_provider);
+  PlaybackDisplayListToCanvas(raster_canvas, settings.image_provider);
   raster_canvas->restore();
 }
 
-void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
-                                    ImageProvider* image_provider) const {
+void RasterSource::PlaybackDisplayListToCanvas(
+    SkCanvas* raster_canvas,
+    ImageProvider* image_provider) const {
   // TODO(enne): Temporary CHECK debugging for http://crbug.com/823835
   CHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);

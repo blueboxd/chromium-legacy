@@ -26,8 +26,7 @@
 
 namespace system_logs {
 
-SystemLogsFetcher* BuildChromeSystemLogsFetcher() {
-  const bool scrub_data = true;
+SystemLogsFetcher* BuildChromeSystemLogsFetcher(bool scrub_data) {
   SystemLogsFetcher* fetcher = new SystemLogsFetcher(
       scrub_data, extension_misc::kBuiltInFirstPartyExtensionIds);
 
@@ -41,12 +40,12 @@ SystemLogsFetcher* BuildChromeSystemLogsFetcher() {
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
   fetcher->AddSource(std::make_unique<IwlwifiDumpChecker>());
   fetcher->AddSource(std::make_unique<TouchLogSource>());
-  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>());
 
   // Data sources that directly scrub itentifiable information, but the others
   // still get scrubbed by SystemLogsFetcher.
   fetcher->AddSource(std::make_unique<DebugDaemonLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<NetworkHealthSource>(scrub_data));
+  fetcher->AddSource(std::make_unique<UiHierarchyLogSource>(scrub_data));
 #endif
 
   return fetcher;

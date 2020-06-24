@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Каліброўка завершана</translation>
 <translation id="252373100621549798">Невядомы дысплэй</translation>
 <translation id="2545651323591713692">Адкласці</translation>
+<translation id="2570734079541893434">Кіраваць наладамі</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{праз 1 гадз}one{праз # гадз}few{праз # гадз}many{праз # гадз}other{праз # гадз}}</translation>
 <translation id="2583543531130364912">Адкалібруйце сэнсарны экран</translation>
 <translation id="2666092431469916601">Зверху</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Перамешчана на старонку <ph name="PAGE_NUMBER" />, радок <ph name="ROW_NUMBER" />, слупок <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Не блакіраваць</translation>
 <translation id="7907591526440419938">Адкрыць файл</translation>
+<translation id="7952747673138230804">Chrome OS паказвае прапановы для азнаямлення з новым змесцівам. Статыстыка для паляпшэнне якасці будзе адпраўляцца, толькі калі вы згадзіліся на абагульванне даных пра выкарыстанне. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Больш чым 1 непрачытанае апавяшчэнне}one{Больш чым # непрачытанае апавяшчэнне}few{Больш чым # непрачытаныя апавяшчэнні}many{Больш чым # непрачытаных апавяшчэнняў}other{Больш чым # непрачытанага апавяшчэння}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{праз 1 хв}one{праз # хв}few{праз # хв}many{праз # хв}other{праз # хв}}</translation>

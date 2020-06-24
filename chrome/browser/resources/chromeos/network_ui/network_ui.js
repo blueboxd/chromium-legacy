@@ -69,7 +69,7 @@ cr.define('network_ui', function() {
   const importONCResponse = function(args) {
     const result = args.shift();
     const isError = args.shift();
-    $('onc-import-result').innerHTML = result;
+    $('onc-import-result').innerText = result;
     if (isError) {
       $('onc-import-result').classList.add('error');
     } else {

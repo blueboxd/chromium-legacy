@@ -41,8 +41,10 @@ constexpr int kAlpha60 = 153;  // 60%
 constexpr int kAlpha80 = 204;  // 80%
 constexpr int kAlpha90 = 230;  // 90%
 
-// Alpha value that is used to calculate themed color.
-constexpr int kAlpha50 = 127;  // 50%
+// Alpha value that is used to calculate themed color. Please see function
+// GetBackgroundThemedColor() about how the themed color is calculated.
+constexpr int kDarkBackgroundBlendAlpha = 127;   // 50%
+constexpr int kLightBackgroundBlendAlpha = 191;  // 75%
 
 // The default background color that can be applied on any layer.
 constexpr SkColor kBackgroundColorDefaultLight = SK_ColorWHITE;
@@ -313,7 +315,8 @@ SkColor AshColorProvider::GetBackgroundThemedColor(
 
   return color_utils::GetResultingPaintColor(
       SkColorSetA(IsLightMode(color_mode) ? SK_ColorWHITE : SK_ColorBLACK,
-                  kAlpha50),
+                  IsLightMode(color_mode) ? kLightBackgroundBlendAlpha
+                                          : kDarkBackgroundBlendAlpha),
       muted_color);
 }
 

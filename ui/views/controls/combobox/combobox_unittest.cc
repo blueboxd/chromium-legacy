@@ -30,7 +30,9 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/combobox_test_api.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -42,36 +44,7 @@ using test::ComboboxTestApi;
 
 namespace {
 
-// A wrapper of Combobox to intercept the result of OnKeyPressed() and
-// OnKeyReleased() methods.
-class TestCombobox : public Combobox {
- public:
-  explicit TestCombobox(ui::ComboboxModel* model)
-      : Combobox(model), key_handled_(false), key_received_(false) {}
-
-  bool OnKeyPressed(const ui::KeyEvent& e) override {
-    key_received_ = true;
-    key_handled_ = Combobox::OnKeyPressed(e);
-    return key_handled_;
-  }
-
-  bool OnKeyReleased(const ui::KeyEvent& e) override {
-    key_received_ = true;
-    key_handled_ = Combobox::OnKeyReleased(e);
-    return key_handled_;
-  }
-
-  bool key_handled() const { return key_handled_; }
-  bool key_received() const { return key_received_; }
-
-  void clear() { key_received_ = key_handled_ = false; }
-
- private:
-  bool key_handled_;
-  bool key_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCombobox);
-};
+using TestCombobox = Combobox;
 
 // A concrete class is needed to test the combobox.
 class TestComboboxModel : public ui::ComboboxModel {
@@ -222,8 +195,7 @@ class ComboboxTest : public ViewsTestBase {
   ComboboxTest() = default;
 
   void TearDown() override {
-    if (widget_)
-      widget_->Close();
+    widget_.reset();
     ViewsTestBase::TearDown();
   }
 
@@ -234,25 +206,25 @@ class ComboboxTest : public ViewsTestBase {
       model_->SetSeparators(*separators);
 
     ASSERT_FALSE(combobox_);
-    combobox_ = new TestCombobox(model_.get());
-    test_api_ = std::make_unique<ComboboxTestApi>(combobox_);
+    auto combobox = std::make_unique<TestCombobox>(model_.get());
+    test_api_ = std::make_unique<ComboboxTestApi>(combobox.get());
     test_api_->InstallTestMenuRunner(&menu_show_count_);
-    combobox_->SetID(1);
+    combobox->SetID(1);
 
-    widget_ = new Widget;
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200, 200, 200);
     widget_->Init(std::move(params));
     View* container = widget_->SetContentsView(std::make_unique<View>());
-    container->AddChildView(combobox_);
+    combobox_ = container->AddChildView(std::move(combobox));
     widget_->Show();
 
     combobox_->RequestFocus();
     combobox_->SizeToPreferredSize();
 
-    event_generator_ =
-        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        GetRootWindow(widget_.get()));
     event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
   }
 
@@ -290,7 +262,7 @@ class ComboboxTest : public ViewsTestBase {
   }
 
   // We need widget to populate wrapper class.
-  Widget* widget_ = nullptr;
+  UniqueWidgetPtr widget_;
 
   // |combobox_| will be allocated InitCombobox() and then owned by |widget_|.
   TestCombobox* combobox_ = nullptr;
@@ -355,22 +327,28 @@ TEST_F(ComboboxTest, KeyTestMac) {
 }
 #endif
 
+// Iterate through all the metadata and test each property.
+TEST_F(ComboboxTest, MetadataTest) {
+  InitCombobox(nullptr);
+  test::TestViewMetadata(combobox_);
+}
+
 // Check that if a combobox is disabled before it has a native wrapper, then the
 // native wrapper inherits the disabled state when it gets created.
 TEST_F(ComboboxTest, DisabilityTest) {
   model_ = std::make_unique<TestComboboxModel>();
 
   ASSERT_FALSE(combobox_);
-  combobox_ = new TestCombobox(model_.get());
-  combobox_->SetEnabled(false);
+  auto combobox = std::make_unique<TestCombobox>(model_.get());
+  combobox->SetEnabled(false);
 
-  widget_ = new Widget;
+  widget_ = std::make_unique<Widget>();
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget_->Init(std::move(params));
   View* container = widget_->SetContentsView(std::make_unique<View>());
-  container->AddChildView(combobox_);
+  combobox_ = container->AddChildView(std::move(combobox));
   EXPECT_FALSE(combobox_->GetEnabled());
 }
 
@@ -557,7 +535,7 @@ TEST_F(ComboboxTest, ListenerHandlesDelete) {
 
   // |combobox| will be deleted on change.
   TestCombobox* combobox = new TestCombobox(&model);
-  std::unique_ptr<EvilListener> evil_listener(new EvilListener());
+  auto evil_listener = std::make_unique<EvilListener>();
   combobox->set_listener(evil_listener.get());
   ASSERT_NO_FATAL_FAILURE(ComboboxTestApi(combobox).PerformActionAt(2));
   EXPECT_TRUE(evil_listener->deleted());

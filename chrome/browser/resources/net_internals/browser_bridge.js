@@ -18,7 +18,6 @@ const BrowserBridge = (function() {
     // List of observers for various bits of browser state.
     this.hstsObservers_ = [];
     this.expectCTObservers_ = [];
-    this.storeDebugLogsObservers_ = [];
     this.setNetworkDebugModeObservers_ = [];
   }
 
@@ -88,18 +87,6 @@ const BrowserBridge = (function() {
       this.send('flushSocketPools');
     },
 
-    storeDebugLogs() {
-      this.send('storeDebugLogs');
-    },
-
-    storeCombinedDebugLogs() {
-      this.send('storeCombinedDebugLogs');
-    },
-
-    storeFeedbackSystemLogs() {
-      this.send('storeFeedbackSystemLogs');
-    },
-
     setNetworkDebugMode(subsystem) {
       this.send('setNetworkDebugMode', [subsystem]);
     },
@@ -130,24 +117,6 @@ const BrowserBridge = (function() {
       }
     },
 
-    receivedStoreDebugLogs(status) {
-      for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
-        this.storeDebugLogsObservers_[i].onStoreDebugLogs(status);
-      }
-    },
-
-    receivedStoreCombinedDebugLogs(status) {
-      for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
-        this.storeDebugLogsObservers_[i].onStoreCombinedDebugLogs(status);
-      }
-    },
-
-    receivedStoreFeedbackSystemLogs(status) {
-      for (let i = 0; i < this.storeDebugLogsObservers_.length; i++) {
-        this.storeDebugLogsObservers_[i].onStoreFeedbackSystemLogs(status);
-      }
-    },
-
     receivedSetNetworkDebugMode(status) {
       for (let i = 0; i < this.setNetworkDebugModeObservers_.length; i++) {
         this.setNetworkDebugModeObservers_[i].onSetNetworkDebugMode(status);
@@ -174,17 +143,6 @@ const BrowserBridge = (function() {
      */
     addExpectCTObserver(observer) {
       this.expectCTObservers_.push(observer);
-    },
-
-    /**
-     * Adds a listener for storing log file status. The observer will be called
-     * back with:
-     *
-     *   observer.onStoreDebugLogs(status);
-     *   observer.onStoreCombinedDebugLogs(status);
-     */
-    addStoreDebugLogsObserver(observer) {
-      this.storeDebugLogsObservers_.push(observer);
     },
 
     /**

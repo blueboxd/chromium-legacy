@@ -80,6 +80,7 @@ WebPerformance::BackForwardCacheRestore() const {
         MillisecondsToSeconds(restore_timings[i].navigation_start);
     timings[i].first_paint =
         MillisecondsToSeconds(restore_timings[i].first_paint);
+    timings[i].first_input_delay = restore_timings[i].first_input_delay;
   }
   return timings;
 }

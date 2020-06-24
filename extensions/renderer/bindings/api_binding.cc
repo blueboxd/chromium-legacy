@@ -65,24 +65,32 @@ struct SignaturePair {
   std::unique_ptr<APISignature> callback_signature;
 };
 
-SignaturePair GetAPISignatureFromDictionary(const base::DictionaryValue* dict) {
-  const base::ListValue* params = nullptr;
-  CHECK(dict->GetList("parameters", &params));
+SignaturePair GetAPISignatureFromDictionary(const base::Value* dict) {
+  const base::Value* params =
+      dict->FindKeyOfType("parameters", base::Value::Type::LIST);
+  CHECK(params);
 
-  bool supports_promises = false;
-  dict->GetBoolean("supportsPromises", &supports_promises);
+  // The inclusion of the "returns_async" property indicates that an API
+  // supports promises.
+  const base::Value* returns_async =
+      dict->FindKeyOfType("returns_async", base::Value::Type::DICTIONARY);
 
   SignaturePair result;
-  result.method_signature = std::make_unique<APISignature>(*params);
+  result.method_signature =
+      std::make_unique<APISignature>(*params, returns_async);
   result.method_signature->set_promise_support(
-      supports_promises ? binding::PromiseSupport::kAllowed
-                        : binding::PromiseSupport::kDisallowed);
+      returns_async && APIBinding::enable_promise_support_for_testing
+          ? binding::PromiseSupport::kAllowed
+          : binding::PromiseSupport::kDisallowed);
   // If response validation is enabled, parse the callback signature. Otherwise,
   // there's no reason to, so don't bother.
   if (result.method_signature->has_callback() &&
       binding::IsResponseValidationEnabled()) {
-    const base::Value* callback_params = params->GetList().back().FindKeyOfType(
-        "parameters", base::Value::Type::LIST);
+    const base::Value* callback_params =
+        returns_async ? returns_async->FindKeyOfType("parameters",
+                                                     base::Value::Type::LIST)
+                      : params->GetList().back().FindKeyOfType(
+                            "parameters", base::Value::Type::LIST);
     if (callback_params) {
       const base::ListValue* params_as_list = nullptr;
       callback_params->GetAsList(&params_as_list);
@@ -530,6 +538,9 @@ void APIBinding::DecorateTemplateWithProperties(
     }
   }
 }
+
+// static
+bool APIBinding::enable_promise_support_for_testing = false;
 
 // static
 void APIBinding::GetEventObject(

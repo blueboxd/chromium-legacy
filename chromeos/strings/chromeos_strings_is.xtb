@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Mistókst – hlíf er opin</translation>
 <translation id="3369013195428705271">Viltu örugglega hreinsa allan prentferil? Prentverk sem eru í gangi verða ekki hreinsuð.</translation>
 <translation id="3456078764689556234">Prentaði síðu <ph name="PRINTED_PAGES" /> af <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Prentverk</translation>
 <translation id="3527036260304016759">Mistókst – óþekkt villa</translation>
 <translation id="3749289110408117711">Skráarheiti</translation>
 <translation id="38114475217616659">Hreinsa allan feril</translation>
@@ -35,7 +34,8 @@
 <translation id="4003384961948020559">Mistókst – úttakið er fullt</translation>
 <translation id="4034824040120875894">Prentari</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
-<translation id="428217921675623177">Prentverk sem eru eldri en 90 daga verða fjarlægð</translation>
+<translation id="4238516577297848345">Engin prentun stendur yfir</translation>
+<translation id="428217921675623177">Prentverk sem eru eldri en 90 dagar verða fjarlægð</translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>
 <translation id="467510802200863975">Aðgangsorð stemma ekki</translation>
@@ -61,11 +61,13 @@ Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</trans
 <translation id="6643016212128521049">Hreinsa</translation>
 <translation id="7162487448488904999">Gallerí</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Kerfisstjórinn þinn stjórnar þessari stillingu</translation>
 <translation id="7658239707568436148">Hætta við</translation>
 <translation id="7690294790491645610">Staðfestu nýtt aðgangsorð</translation>
 <translation id="7805768142964895445">Staða</translation>
 <translation id="808894953321890993">Breyta aðgangsorði</translation>
 <translation id="8208861521865154048">Fríðindi</translation>
+<translation id="8347227221149377169">Prentverk</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessum notanda. Það getur valið stillingar og skoðað notandavirkni með fjartengingu.</translation>
 <translation id="871560550817059752">Mistókst – blekið er búið</translation>
 <translation id="8747900814994928677">Staðfesta breytingu</translation>

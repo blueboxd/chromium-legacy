@@ -163,6 +163,7 @@ const CGFloat kHeaderHeight = 70;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   cell.selectionStyle = UITableViewCellSelectionStyleDefault;
   cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  cell.accessibilityTraits |= UIAccessibilityTraitButton;
 
   return cell;
 }
@@ -225,6 +226,9 @@ const CGFloat kHeaderHeight = 70;
   [button addTarget:self
                 action:@selector(infoIconButtonTapped:event:)
       forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityLabel = NSLocalizedString(
+      @"IDS_IOS_CREDENTIAL_PROVIDER_SHOW_DETAILS_ACCESSIBILITY_LABEL",
+      @"Show Details.");
 
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {

@@ -44,6 +44,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1346748346194534595">Destra</translation>
 <translation id="1351937230027495976">Comprimi il menu</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1391102559483454063">On</translation>
 <translation id="1419738280318246476">Sblocca il dispositivo per eseguire l'azione di notifica</translation>
 <translation id="1420408895951708260">Attiva/disattiva luminosità notturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sì</translation>
@@ -171,6 +172,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
 <translation id="3000461861112256445">Audio in formato mono</translation>
 <translation id="3009178788565917040">Uscita</translation>
+<translation id="3033545621352269033">On</translation>
 <translation id="3051128274746680507">Il profilo dell'utente supervisionato verrà rimosso a breve. Accedi per avere ulteriori informazioni.</translation>
 <translation id="3055162170959710888">Oggi hai utilizzato questo dispositivo per <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Barra di stato, ora <ph name="TIME" />,
@@ -275,6 +277,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4146833061457621061">Fammi ascoltare musica</translation>
 <translation id="4181841719683918333">Lingue</translation>
 <translation id="4195877955194704651">Pulsante Clic automatici</translation>
+<translation id="4197790712631116042">Off</translation>
 <translation id="4215497585250573029">Impostazioni VPN</translation>
 <translation id="4217571870635786043">Dettatura</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -305,6 +308,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
+<translation id="4560576029703263363">On</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Nascondi password</translation>
 <translation id="4570957409596482333">Pulsante Seleziona per ascoltare</translation>
@@ -355,6 +359,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5283198616748585639">Aggiungi 1 min</translation>
 <translation id="528468243742722775">Fine</translation>
 <translation id="5286194356314741248">Ricerca</translation>
+<translation id="5297704307811127955">Off</translation>
 <translation id="5302048478445481009">Lingua</translation>
 <translation id="5313326810920013265">Impostazioni Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta posteriore sinistra)</translation>
@@ -600,6 +605,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, batteria del telefono <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Premi INVIO per sbloccare per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Elimina</translation>
+<translation id="828708037801473432">Off</translation>
 <translation id="8297006494302853456">Debole</translation>
 <translation id="8308637677604853869">Menu precedente</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

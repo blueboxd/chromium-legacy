@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Neizdevās — durtiņas ir atvērtas</translation>
 <translation id="3369013195428705271">Vai tiešām vēlaties notīrīt visu drukāšanas vēsturi? Netiks notīrīti drukas uzdevumi, kas tiek izpildīti.</translation>
 <translation id="3456078764689556234">Izdrukāto lapu skaits: <ph name="PRINTED_PAGES" /> no<ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Drukas uzdevumi</translation>
 <translation id="3527036260304016759">Neizdevās — nezināma kļūda</translation>
 <translation id="3749289110408117711">Faila nosaukums</translation>
 <translation id="38114475217616659">Notīrīt visu vēsturi</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Neizdevās — izvades paliktnis pilns</translation>
 <translation id="4034824040120875894">Printeris</translation>
 <translation id="4227825898293920515">Paroles derīguma termiņš: <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nenotiek neviens drukas darbs</translation>
 <translation id="428217921675623177">Drukas uzdevumi, kas ir vecāki par 90 dienām, tiks noņemti</translation>
 <translation id="4429881212383817840">Kerberos biļetes termiņš drīz beigsies</translation>
 <translation id="445059817448385655">Iepriekšējā parole</translation>
@@ -61,11 +61,13 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Šo darbību pārvalda administrators</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7690294790491645610">Apstipriniet jauno paroli</translation>
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="808894953321890993">Mainīt paroli</translation>
 <translation id="8208861521865154048">Priekšrocības</translation>
+<translation id="8347227221149377169">Drukas uzdevumi</translation>
 <translation id="8701136875688985581">Šis lietotājs tiek pārvaldīts domēnā<ph name="ENROLLMENT_DOMAIN" />. Šajā domēnā var tikt attālināti pārvaldīti iestatījumi un uzraudzītas lietotāja darbības.</translation>
 <translation id="871560550817059752">Neizdevās — beigusies tinte</translation>
 <translation id="8747900814994928677">Apstiprināt izmaiņas</translation>

@@ -1256,14 +1256,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::ConsoleMessageLevel level,
       const std::string& message);
 
-  // Add cookie SameSite deprecation messages to the DevTools console.
-  // TODO(crbug.com/977040): Remove when no longer needed.
-  void AddSameSiteCookieDeprecationMessage(
-      const std::string& cookie_url,
-      net::CookieInclusionStatus status,
-      bool is_lax_by_default_enabled,
-      bool is_none_requires_secure_enabled);
-
   // Notify the scheduler that this frame used a feature which impacts the
   // scheduling policy (e.g. whether the frame can be frozen or put into the
   // back-forward cache).
@@ -2344,13 +2336,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                const std::string& message,
                                bool discard_duplicates);
 
-  // Returns whether a cookie SameSite deprecation message should be sent for
-  // the given cookie url.
-  // TODO(crbug.com/977040): Remove when no longer needed.
-  bool ShouldAddCookieSameSiteDeprecationMessage(
-      const std::string& cookie_url,
-      base::circular_deque<size_t>* already_seen_url_hashes);
-
   // Helper functions for logging crash keys when ValidateDidCommitParams()
   // determines it cannot commit a URL or origin.
   void LogCannotCommitUrlCrashKeys(const GURL& url,
@@ -2961,16 +2946,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // inherits the IsolationInfo from the creator frame, similarly to the last
   // committed origin.
   net::IsolationInfo isolation_info_;
-
-  // Hold onto hashes of the last |kMaxCookieSameSiteDeprecationUrls| cookie
-  // URLs that we have seen since the last committed navigation, in order to
-  // partially deduplicate the corresponding cookie SameSite deprecation
-  // messages.
-  // TODO(crbug.com/977040): Remove when no longer needed.
-  base::circular_deque<size_t> cookie_no_samesite_deprecation_url_hashes_;
-  base::circular_deque<size_t>
-      cookie_samesite_none_insecure_deprecation_url_hashes_;
-  base::circular_deque<size_t> cookie_lax_allow_unsafe_deprecation_url_hashes_;
 
   // The factory to load resources from the WebBundle source bound to
   // this file.

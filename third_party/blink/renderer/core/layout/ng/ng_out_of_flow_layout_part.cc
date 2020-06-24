@@ -735,19 +735,19 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   base::Optional<LogicalSize> replaced_size;
   base::Optional<LogicalSize> replaced_aspect_ratio;
-  bool is_replaced_with_only_aspect_ratio = false;
+  bool has_aspect_ratio_without_intrinsic_size = false;
   if (is_replaced) {
     ComputeReplacedSize(node, candidate_constraint_space, min_max_sizes,
                         &replaced_size, &replaced_aspect_ratio);
-    is_replaced_with_only_aspect_ratio = !replaced_size &&
-                                         replaced_aspect_ratio &&
-                                         !replaced_aspect_ratio->IsEmpty();
+    has_aspect_ratio_without_intrinsic_size = !replaced_size &&
+                                              replaced_aspect_ratio &&
+                                              !replaced_aspect_ratio->IsEmpty();
     // If we only have aspect ratio, and no replaced size, intrinsic size
     // defaults to 300x150. min_max_sizes gets computed from the intrinsic size.
     // We reset the min_max_sizes because spec says that OOF-positioned size
     // should not be constrained by intrinsic size in this case.
     // https://www.w3.org/TR/CSS22/visudet.html#inline-replaced-width
-    if (is_replaced_with_only_aspect_ratio)
+    if (has_aspect_ratio_without_intrinsic_size)
       min_max_sizes = MinMaxSizes{LayoutUnit(), LayoutUnit::NearlyMax()};
   } else if (should_be_considered_as_replaced) {
     replaced_size =
@@ -766,10 +766,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   if (!is_replaced && should_be_considered_as_replaced)
     replaced_size.reset();
 
-  // Replaced elements with only aspect ratio compute their block size from
+  // Elements with only aspect ratio compute their block size from
   // inline size and aspect ratio.
   // https://www.w3.org/TR/css-sizing-3/#intrinsic-sizes
-  if (is_replaced_with_only_aspect_ratio) {
+  if (has_aspect_ratio_without_intrinsic_size) {
     replaced_size = LogicalSize(
         node_dimensions.size.inline_size,
         (replaced_aspect_ratio->block_size *

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/chromeos/network_logs_message_handler.h"
 #include "chrome/browser/ui/webui/chromeos/onc_import_message_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -323,6 +324,9 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "networkHealthTab",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_HEALTH));
   localized_strings->SetString(
+      "networkLogsTab",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_LOGS));
+  localized_strings->SetString(
       "networkStateTab",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_STATE));
   localized_strings->SetString(
@@ -397,12 +401,39 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "importOncButtonText",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_IMPORT_ONC_BUTTON_TEXT));
+
+  // Network logs
+  localized_strings->SetString(
+      "networkLogsDescription",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_DESCRIPTION));
+  localized_strings->SetString(
+      "networkLogsSystemLogs",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_SYSTEM_LOGS));
+  localized_strings->SetString(
+      "networkLogsFilterPii",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_FILTER_PII));
+  localized_strings->SetString(
+      "networkLogsPolicies",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_POLICIES));
+  localized_strings->SetString(
+      "networkLogsDebugLogs",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_DEBUG_LOGS));
+  localized_strings->SetString(
+      "networkLogsChromeLogs",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_CHROME_LOGS));
+  localized_strings->SetString(
+      "networkLogsStoreButton",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_STORE_BUTTON));
+  localized_strings->SetString(
+      "networkLogsStatus",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LOGS_STATUS));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<OncImportMessageHandler>());
+  web_ui->AddMessageHandler(std::make_unique<NetworkLogsMessageHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
@@ -422,6 +453,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
   html->AddResourcePath("network_state_ui.html", IDR_NETWORK_STATE_UI_HTML);
   html->AddResourcePath("network_state_ui.js", IDR_NETWORK_STATE_UI_JS);
+  html->AddResourcePath("network_logs_ui.html", IDR_NETWORK_LOGS_UI_HTML);
+  html->AddResourcePath("network_logs_ui.js", IDR_NETWORK_LOGS_UI_JS);
   html->SetDefaultResource(IDR_NETWORK_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

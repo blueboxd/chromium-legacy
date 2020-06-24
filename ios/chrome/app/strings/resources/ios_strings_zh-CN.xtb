@@ -51,6 +51,7 @@
 <translation id="1509486075633541495">登录网站</translation>
 <translation id="1509960214886564027">很多网站上的功能可能会无法正常运作</translation>
 <translation id="152234381334907219">一律不保存</translation>
+<translation id="1523341279170789507">允许所有 Cookie</translation>
 <translation id="1535268707340844072">您目前的设置可能会导致部分网站无法正常运行。若要管理所有网站的 Cookie，请参阅 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
@@ -106,7 +107,6 @@
 <translation id="2218443599109088993">缩小</translation>
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
-<translation id="2245545499420671379">在无痕模式下屏蔽第三方 Cookie</translation>
 <translation id="2257567812274161158">同步功能无法正常运行。</translation>
 <translation id="225943865679747347">错误代码：<ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">添加帐号</translation>
@@ -177,9 +177,6 @@
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
-<translation id="3089107351814154346">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
-
-不过，在无痕模式下，网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。</translation>
 <translation id="3112556859945124369">标为…</translation>
 <translation id="3131206671572504478">阻止所有 Cookie</translation>
 <translation id="3153862085237805241">保存卡片</translation>
@@ -194,9 +191,6 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
 <translation id="3268451620468152448">打开的标签页</translation>
-<translation id="3273647133355801546">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
-
-网站还可以使用 Cookie 查看您在各个不同网站上的浏览活动，以便实现某些功能或目的（例如为您展示个性化广告）。</translation>
 <translation id="3277021493514034324">已复制网站地址</translation>
 <translation id="3290875554372353449">选择帐号</translation>
 <translation id="3311748811247479259">已关闭</translation>
@@ -341,6 +335,7 @@
 <translation id="5150492518600715772">发送到您的设备</translation>
 <translation id="5181140330217080051">正在下载</translation>
 <translation id="5186185447130319458">不公开</translation>
+<translation id="5188482106078495165">您的 Cookie 设置适用于所有标签页。若要对某个打开的标签页应用新设置，请重新加载该标签页。</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5197255632782567636">互联网</translation>
 <translation id="5228579091201413441">启用同步功能</translation>
@@ -378,6 +373,7 @@
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5706552126692816153">1 天前曾有活动</translation>
 <translation id="5711039611392265845">若要了解更多与隐私、安全和数据收集相关的设置，请参阅<ph name="BEGIN_LINK" />同步功能和 Google 服务<ph name="END_LINK" />。</translation>
+<translation id="5724941645893276623">若要私密地浏览网页，请添加新标签页</translation>
 <translation id="5728700505257787410">很抱歉，登录您的帐号时出现问题。</translation>
 <translation id="5737974891429562743">帐号登录详细信息已过期，请进行更新以开始同步。</translation>
 <translation id="5738887413654608789">这样可让您找到与目前周遭环境相关的网页。</translation>
@@ -412,9 +408,6 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
-<translation id="6096382830554887001">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
-
-不过，网站无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6119050551270742952">当前网页处于无痕模式</translation>
 <translation id="6122191549521593678">在线</translation>
@@ -452,7 +445,6 @@
 
 您的数据已于 <ph name="TIME" />使用您的同步密码加密。输入该密码即可开始同步。</translation>
 <translation id="6418346271604475326">正在准备 PDF 文件</translation>
-<translation id="6426067060178468363">允许使用 Cookie</translation>
 <translation id="6434591244308415567">发生错误，请稍后重试。</translation>
 <translation id="6439338047467462846">全部允许</translation>
 <translation id="6445051938772793705">国家/地区</translation>
@@ -464,7 +456,9 @@
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="651505212789431520">取消同步？您随时可在“设置”中开启同步功能。</translation>
 <translation id="6561262006871132942">放大</translation>
+<translation id="6585618849026997638">通过添加书签，您可以快速返回到对您很重要的网页</translation>
 <translation id="6610002944194042868">翻译选项</translation>
+<translation id="6624219055418309072">在无痕模式下阻止</translation>
 <translation id="6628106477656132239">失效日期无效</translation>
 <translation id="6638511529934826365">缩放文字…</translation>
 <translation id="6642362222295953972">切换到已打开的标签页</translation>
@@ -489,7 +483,7 @@
 <translation id="6856384753476268833">由贵单位管理。</translation>
 <translation id="6858855187367714033">已扫描</translation>
 <translation id="6859944681507688231">要扫描二维码或信用卡，请在设置中允许该应用使用相机。</translation>
-<translation id="6869389390665537774">您既可查看自己访问过的网页的网址，也可将它们从您的历史记录中清除</translation>
+<translation id="6869389390665537774">您可以查看自己访问过的网页，也可将它们从历史记录中清除</translation>
 <translation id="6873263987691478642">拆分视图</translation>
 <translation id="6888009575607455378">确定要舍弃您所做的更改吗？</translation>
 <translation id="6896758677409633944">复制</translation>
@@ -508,6 +502,7 @@
 <translation id="7006788746334555276">内容设置</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
 <translation id="7029809446516969842">密码</translation>
+<translation id="7030675613184250187">您可以将所需网页保存到阅读清单中，以便下次快速找到它们或离线阅读</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7099761977003084116">最近打开的标签页</translation>
@@ -516,7 +511,7 @@
 <translation id="7133798577887235672">全称</translation>
 <translation id="7136892417564438900">无法使用相机</translation>
 <translation id="7159472599653637159">请求移动版网站</translation>
-<translation id="7172852049901402487">保护您的密码免受安全问题的侵害</translation>
+<translation id="7172852049901402487">保护您的密码免受安全威胁</translation>
 <translation id="7173114856073700355">打开“设置”</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7192050974311852563">开始生成日志</translation>
@@ -583,7 +578,7 @@
 <translation id="8019783059653722575">这样，您就可以保存并上传照片。</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8023878949384262191">展开此部分。</translation>
-<translation id="804427445359061970">您最近从其他设备上打开过的标签页都会显示在此处</translation>
+<translation id="804427445359061970">您在其他设备上打开的标签页会显示在此处</translation>
 <translation id="8059533439631660104">合拢此部分。</translation>
 <translation id="806745655614357130">单独保存我的数据</translation>
 <translation id="8073670137947914548">已下载完毕</translation>
@@ -591,15 +586,11 @@
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">已可下载文件。选项位于屏幕底部附近。</translation>
 <translation id="8131740175452115882">确认</translation>
-<translation id="8174524257672181687">屏蔽所有 Cookie（不建议）</translation>
 <translation id="8197543752516192074">翻译网页</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>
 <translation id="8261506727792406068">删除</translation>
-<translation id="8262263934052349464">网站无法使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品。
-
-网站也无法使用 Cookie 查看您在各个不同网站上的浏览活动，因而无法实现某些功能或目的（例如为您展示个性化广告）。</translation>
 <translation id="8281781826761538115">默认语言区域 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">新搜索</translation>
 <translation id="8323906514956095947">轻触并按住可查看更多的标签页选项</translation>

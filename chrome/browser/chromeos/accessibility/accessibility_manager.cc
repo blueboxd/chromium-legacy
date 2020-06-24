@@ -188,78 +188,6 @@ class AccessibilityPanelWidgetObserver : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPanelWidgetObserver);
 };
 
-// Responsible for deferring ChromeVox load until a text-to-speech voice is
-// ready to be used. Plays progress tones while waiting.
-class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
-                                public content::VoicesChangedDelegate {
- public:
-  explicit ChromeVoxDeferredLoader(AccessibilityManager* manager)
-      : manager_(manager) {
-    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(500), this,
-                 &ChromeVoxDeferredLoader::OnTimer);
-
-    if (IsGoogleTtsVoiceAvailable())
-      SendWarmupUtterance();
-    else
-      content::TtsController::GetInstance()->AddVoicesChangedDelegate(this);
-  }
-
-  ~ChromeVoxDeferredLoader() override {
-    content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
-    content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
-    manager_->UnloadChromeVox();
-  }
-
- private:
-  // content::UtteranceEventDelegate:
-  void OnTtsEvent(content::TtsUtterance* utterance,
-                  content::TtsEventType event_type,
-                  int char_index,
-                  int length,
-                  const std::string& error_message) override {
-    utterance->SetEventDelegate(nullptr);
-    timer_.Stop();
-    manager_->LoadChromeVox();
-  }
-
-  // content::VoicesChangedDelegate:
-  void OnVoicesChanged() override {
-    if (IsGoogleTtsVoiceAvailable()) {
-      content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
-      SendWarmupUtterance();
-    }
-  }
-
-  void SendWarmupUtterance() {
-    Profile* profile = manager_->profile();
-    if (profile->HasPrimaryOTRProfile())
-      profile = profile->GetPrimaryOTRProfile();
-    std::unique_ptr<content::TtsUtterance> utterance =
-        content::TtsUtterance::Create(profile);
-    utterance->SetEventDelegate(this);
-    utterance->SetEngineId(extension_misc::kGoogleSpeechSynthesisExtensionId);
-    content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
-  }
-
-  void OnTimer() { manager_->PlaySpokenFeedbackToggleCountdown(tick_count_++); }
-
-  bool IsGoogleTtsVoiceAvailable() const {
-    Profile* profile = manager_->profile();
-    if (profile->HasPrimaryOTRProfile())
-      profile = profile->GetPrimaryOTRProfile();
-    std::vector<content::VoiceData> voices;
-    content::TtsController::GetInstance()->GetVoices(profile, &voices);
-    return std::any_of(voices.begin(), voices.end(), [](const auto& voice) {
-      return voice.engine_id ==
-             extension_misc::kGoogleSpeechSynthesisExtensionId;
-    });
-  }
-
-  AccessibilityManager* manager_;
-  int tick_count_ = 0;
-  base::RepeatingTimer timer_;
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // AccessibilityStatusEventDetails
 
@@ -531,10 +459,11 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    chromevox_deferred_loader_ =
-        std::make_unique<ChromeVoxDeferredLoader>(this);
+    chromevox_loader_->Load(
+        profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
+                                      weak_ptr_factory_.GetWeakPtr()));
   } else {
-    chromevox_deferred_loader_.reset();
+    chromevox_loader_->Unload();
   }
   UpdateBrailleImeState();
 }
@@ -985,10 +914,12 @@ void AccessibilityManager::OnSwitchAccessChanged() {
         profile_,
         base::BindRepeating(&AccessibilityManager::PostLoadSwitchAccess,
                             weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    switch_access_loader_->Unload();
-    switch_access_event_handler_delegate_.reset(nullptr);
   }
+}
+
+void AccessibilityManager::OnSwitchAccessDisabled() {
+  switch_access_loader_->Unload();
+  switch_access_event_handler_delegate_.reset();
 }
 
 bool AccessibilityManager::IsBrailleDisplayConnected() const {
@@ -1374,21 +1305,6 @@ void AccessibilityManager::OnExtensionUnloaded(
 
 void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
   extension_registry_observer_.Remove(registry);
-}
-
-void AccessibilityManager::LoadChromeVox() {
-  chromevox_loader_->Load(
-      profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
-                                    weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AccessibilityManager::UnloadChromeVox() {
-  // In browser_tests unloading the ChromeVox extension can race with shutdown.
-  // http://crbug.com/801700
-  if (app_terminating_)
-    return;
-
-  chromevox_loader_->Unload();
 }
 
 void AccessibilityManager::PostLoadChromeVox() {

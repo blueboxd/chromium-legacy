@@ -74,6 +74,11 @@ ModelTypeWorker::ModelTypeWorker(
   DCHECK(model_type_processor_);
   DCHECK(type_ != PASSWORDS || cryptographer_);
 
+  if (!CommitOnlyTypes().Has(GetModelType())) {
+    DCHECK_EQ(type, GetModelTypeFromSpecificsFieldNumber(
+                        initial_state.progress_marker().data_type_id()));
+  }
+
   // Request an initial sync if it hasn't been completed yet.
   if (trigger_initial_sync) {
     nudge_handler_->NudgeForInitialDownload(type_);
@@ -385,10 +390,11 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   // updates it received.
   DCHECK(entries_pending_decryption_.empty());
 
-  // Request model type for local changes.
+  // Pull local changes from the processor (in the model thread/sequence). Note
+  // that this takes place independently of nudges (i.e. |has_local_changes_|),
+  // in case the processor decided a local change was not worth a nudge.
   scoped_refptr<GetLocalChangesRequest> request =
       base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
-  // TODO(mamir): do we need to make this async?
   model_type_processor_->GetLocalChanges(
       max_entries,
       base::BindOnce(&GetLocalChangesRequest::SetResponse, request));

@@ -11,6 +11,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManager.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/ListContentManagerObserver.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/ProcessScope.java",
+    "android/java/src/org/chromium/chrome/browser/xsurface/ProcessScopeDependencyProvider.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceActionsHandler.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceDependencyProvider.java",
     "android/java/src/org/chromium/chrome/browser/xsurface/SurfaceRenderer.java",

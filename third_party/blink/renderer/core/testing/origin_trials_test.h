@@ -61,6 +61,8 @@ class OriginTrialsTest : public ScriptWrappable {
   bool invalidOSAttribute() { return true; }
 
   bool navigationMethod() { return true; }
+
+  bool thirdPartyAttribute() { return true; }
 };
 
 }  // namespace blink

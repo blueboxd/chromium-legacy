@@ -5,6 +5,8 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 #define CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/trace_event/traced_value.h"
@@ -44,7 +46,8 @@ class CC_EXPORT FrameSequenceMetrics {
   struct ThroughputData {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
-        const ThroughputData& main);
+        const ThroughputData& main,
+        ThreadType effective_thred);
 
     // Returns the throughput in percent, a return value of base::nullopt
     // indicates that no throughput metric is reported.

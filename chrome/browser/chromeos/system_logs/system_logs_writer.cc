@@ -74,9 +74,10 @@ namespace system_logs_writer {
 
 void WriteSystemLogs(
     const base::FilePath& dest_dir,
+    bool scrub_data,
     base::OnceCallback<void(base::Optional<base::FilePath>)> callback) {
-  system_logs::BuildChromeSystemLogsFetcher()->Fetch(
-      base::BindOnce(FetchCompleted, dest_dir, std::move(callback)));
+  system_logs::BuildChromeSystemLogsFetcher(scrub_data)
+      ->Fetch(base::BindOnce(FetchCompleted, dest_dir, std::move(callback)));
 }
 
 }  // namespace system_logs_writer

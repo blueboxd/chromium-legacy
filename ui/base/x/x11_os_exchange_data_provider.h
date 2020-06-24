@@ -125,7 +125,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XOSExchangeDataProvider
   gfx::Vector2d drag_image_offset_;
 
   // Our X11 state.
-  Display* x_display_;
+  x11::Connection* connection_;
   x11::Window x_root_window_;
 
   // In X11, because the IPC parts of drag operations are implemented by

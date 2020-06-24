@@ -30,6 +30,7 @@ import org.chromium.components.variations.VariationsAssociatedData;
  */
 public class LensUtils {
     private static final String LENS_CONTRACT_URI = "googleapp://lens";
+    private static final String LENS_DIRECT_INTENT_CONTRACT_URI = "google://lens";
     private static final String LENS_BITMAP_URI_KEY = "LensBitmapUriKey";
     private static final String ACCOUNT_NAME_URI_KEY = "AccountNameUriKey";
     private static final String INCOGNITO_URI_KEY = "IncognitoUriKey";
@@ -48,6 +49,7 @@ public class LensUtils {
     private static final String LOG_UKM_PARAM_NAME = "logUkm";
     private static final String SEND_SRC_PARAM_NAME = "sendSrc";
     private static final String SEND_ALT_PARAM_NAME = "sendAlt";
+    private static final String USE_DIRECT_INTENT_FEATURE_PARAM_NAME = "useDirectIntent";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT = "11.16";
     private static final String LENS_INTENT_TYPE_LENS_CHROME_SHOPPING = "18";
@@ -232,7 +234,8 @@ public class LensUtils {
         final String signedInAccountName =
                 (coreAccountInfo == null || isIncognito) ? "" : coreAccountInfo.getEmail();
 
-        Uri lensUri = Uri.parse(LENS_CONTRACT_URI);
+        Uri lensUri = useDirectIntent() ? Uri.parse(LENS_DIRECT_INTENT_CONTRACT_URI)
+                                        : Uri.parse(LENS_CONTRACT_URI);
         if (!Uri.EMPTY.equals(imageUri)) {
             final Uri.Builder lensUriBuilder =
                     lensUri.buildUpon()
@@ -296,6 +299,16 @@ public class LensUtils {
     public static boolean enableGoogleLensShoppingFeature() {
         return useLensWithShopSimilarProducts() || useLensWithShopImageWithGoogleLens()
                 || useLensWithSearchSimilarProducts();
+    }
+
+    /**
+     * Enables the starting of LenActivity directly, rather than going through the Lens
+     * session running in AGSA.
+     */
+    public static boolean useDirectIntent() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                USE_DIRECT_INTENT_FEATURE_PARAM_NAME, false);
     }
 
     /**

@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -448,6 +449,10 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
   base::Value* expect_ct_value = value->FindKey(kExpectCTKey);
   if (expect_ct_value)
     DeserializeExpectCTData(*expect_ct_value, state);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ExpectCT.EntriesOnLoad",
+                              state->num_expect_ct_entries(), 1 /* min */,
+                              2000 /* max */, 40 /* buckets */);
   return true;
 }
 

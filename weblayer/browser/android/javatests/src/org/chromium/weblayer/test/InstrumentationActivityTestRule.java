@@ -16,6 +16,7 @@ import android.support.test.rule.ActivityTestRule;
 
 import androidx.fragment.app.Fragment;
 
+import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -24,6 +25,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -146,8 +148,10 @@ public class InstrumentationActivityTestRule
 
         recreate.run();
 
-        CriteriaHelper.pollUiThread(
-                () -> monitor.getLastActivity() != null && monitor.getLastActivity() != activity);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(monitor.getLastActivity(), Matchers.notNullValue());
+            Criteria.checkThat(monitor.getLastActivity(), Matchers.not(activity));
+        });
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
 
         // There is no way to rotate the activity using ActivityTestRule or even notify it.

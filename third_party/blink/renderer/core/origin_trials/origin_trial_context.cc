@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 
+#include <ostream>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/features.h"
@@ -91,6 +93,40 @@ String ExtractTokenOrQuotedString(const String& header_value, unsigned& pos) {
 // navigations.
 bool IsCrossNavigationFeature(OriginTrialFeature feature) {
   return origin_trials::GetNavigationOriginTrialFeatures().Contains(feature);
+}
+
+std::ostream& operator<<(std::ostream& stream, OriginTrialTokenStatus status) {
+// Included for debug builds only for reduced binary size.
+#ifndef NDEBUG
+  switch (status) {
+    case OriginTrialTokenStatus::kSuccess:
+      return stream << "kSuccess";
+    case OriginTrialTokenStatus::kNotSupported:
+      return stream << "kNotSupported";
+    case OriginTrialTokenStatus::kInsecure:
+      return stream << "kInsecure";
+    case OriginTrialTokenStatus::kExpired:
+      return stream << "kExpired";
+    case OriginTrialTokenStatus::kWrongOrigin:
+      return stream << "kWrongOrigin";
+    case OriginTrialTokenStatus::kInvalidSignature:
+      return stream << "kInvalidSignature";
+    case OriginTrialTokenStatus::kMalformed:
+      return stream << "kMalformed";
+    case OriginTrialTokenStatus::kWrongVersion:
+      return stream << "kWrongVersion";
+    case OriginTrialTokenStatus::kFeatureDisabled:
+      return stream << "kFeatureDisabled";
+    case OriginTrialTokenStatus::kTokenDisabled:
+      return stream << "kTokenDisabled";
+    case OriginTrialTokenStatus::kFeatureDisabledForUser:
+      return stream << "kFeatureDisabledForUser";
+  }
+  NOTREACHED();
+  return stream;
+#else
+  return stream << (static_cast<int>(status));
+#endif  // ifndef NDEBUG
 }
 
 }  // namespace
@@ -204,10 +240,7 @@ void OriginTrialContext::AddTokenFromExternalScript(
       RuntimeEnabledFeatures::ThirdPartyOriginTrialsEnabled(context_)) {
     DVLOG(1) << "AddTokenFromExternalScript: "
              << (origin ? origin->ToString() : "null");
-    // Both document origin and script origin needs to be secure for third party
-    // origin trial token.
-    is_script_origin_secure =
-        IsSecureContext() && origin->IsPotentiallyTrustworthy();
+    is_script_origin_secure = origin->IsPotentiallyTrustworthy();
   } else {
     origin = nullptr;
   }
@@ -234,12 +267,12 @@ void OriginTrialContext::AddTokenInternal(const String& token,
 }
 
 void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
-  AddTokens(GetSecurityOrigin(), IsSecureContext(), tokens);
+  AddTokens(tokens, GetSecurityOrigin(), IsSecureContext());
 }
 
-void OriginTrialContext::AddTokens(const SecurityOrigin* origin,
-                                   bool is_secure,
-                                   const Vector<String>& tokens) {
+void OriginTrialContext::AddTokens(const Vector<String>& tokens,
+                                   const SecurityOrigin* origin,
+                                   bool is_secure) {
   if (tokens.IsEmpty())
     return;
   bool found_valid = false;
@@ -414,17 +447,23 @@ bool OriginTrialContext::EnableTrialFromName(const String& trial_name,
 
 OriginTrialTokenStatus OriginTrialContext::ValidateTokenResult(
     const String& trial_name,
-    bool is_secure,
-    bool is_secure_script_origin,
+    bool is_origin_secure,
+    bool is_script_origin_secure,
     bool is_third_party) {
-  if (is_third_party &&
-      !origin_trials::IsTrialEnabledForThirdPartyOrigins(trial_name)) {
-    DVLOG(1) << "ValidateTokenResult: feature disabled for third party trial";
-    return OriginTrialTokenStatus::kFeatureDisabled;
+  bool is_secure = is_origin_secure;
+  if (is_third_party) {
+    if (!origin_trials::IsTrialEnabledForThirdPartyOrigins(trial_name)) {
+      DVLOG(1) << "ValidateTokenResult: feature disabled for third party trial";
+      return OriginTrialTokenStatus::kFeatureDisabled;
+    }
+    // For third-party tokens, both the current origin and the the script origin
+    // must be secure.
+    is_secure &= is_script_origin_secure;
   }
+
   // Origin trials are only enabled for secure origins. The only exception
   // is for deprecation trials.
-  if (!(is_third_party ? is_secure_script_origin : is_secure) &&
+  if (!is_secure &&
       !origin_trials::IsTrialEnabledForInsecureContext(trial_name)) {
     DVLOG(1) << "ValidateTokenResult: not secure";
     return OriginTrialTokenStatus::kInsecure;
@@ -459,8 +498,8 @@ bool OriginTrialContext::EnableTrialFromToken(
   TrialTokenResult token_result = trial_token_validator_->ValidateToken(
       token_string.AsStringPiece(), origin->ToUrlOrigin(),
       script_origin ? &script_url_origin : nullptr, base::Time::Now());
-  DVLOG(1) << "EnableTrialFromToken: token_result = "
-           << static_cast<int>(token_result.status) << ", token = " << token;
+  DVLOG(1) << "EnableTrialFromToken: token_result = " << token_result.status
+           << ", token = " << token;
   OriginTrialTokenStatus status = token_result.status;
   if (status == OriginTrialTokenStatus::kSuccess) {
     String trial_name = String::FromUTF8(token_result.feature_name.data(),

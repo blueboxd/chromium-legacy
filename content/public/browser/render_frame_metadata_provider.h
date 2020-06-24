@@ -40,6 +40,8 @@ class CONTENT_EXPORT RenderFrameMetadataProvider {
     // to pass in Viz.
     virtual void OnLocalSurfaceIdChanged(
         const cc::RenderFrameMetadata& metadata) = 0;
+    virtual void OnRootScrollOffsetChanged(
+        const gfx::Vector2dF& root_scroll_offset) {}
   };
 
   RenderFrameMetadataProvider() = default;

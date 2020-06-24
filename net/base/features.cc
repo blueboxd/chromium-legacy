@@ -16,6 +16,9 @@ namespace features {
 const base::Feature kAcceptLanguageHeader{"AcceptLanguageHeader",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kCapReferrerToOriginOnCrossOrigin{
+    "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDnsHttpssvc{"DnsHttpssvc",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -107,6 +110,24 @@ const base::Feature kPartitionExpectCTStateByNetworkIsolationKey{
     "PartitionExpectCTStateByNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kExpectCTPruning{"ExpectCTPruning",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+NET_EXPORT extern const base::FeatureParam<int>
+    kExpectCTPruneMax(&kExpectCTPruning, "ExpectCTPruneMax", 2000);
+NET_EXPORT extern const base::FeatureParam<int>
+    kExpectCTPruneMin(&kExpectCTPruning, "ExpectCTPruneMin", 1800);
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTSafeFromPruneDays(
+    &kExpectCTPruning,
+    "ExpectCTSafeFromPruneDays",
+    40);
+NET_EXPORT extern const base::FeatureParam<int> kExpectCTMaxEntriesPerNik(
+    &kExpectCTPruning,
+    "ExpectCTMaxEntriesPerNik",
+    20);
+NET_EXPORT extern const base::FeatureParam<int>
+    kExpectCTPruneDelaySecs(&kExpectCTPruning, "ExpectCTPruneDelaySecs", 60);
+
 const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -143,10 +164,6 @@ const base::FeatureParam<int>
     kRecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds{
         &kRecentCreationTimeGrantsLegacyCookieSemantics,
         "RecentCreationTimeGrantsLegacyCookieSemanticsMilliseconds", 0};
-
-const base::Feature kBlockExternalRequestsFromNonSecureInitiators{
-    "BlockExternalRequestsFromNonSecureInitiators",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 const base::Feature kCertVerifierBuiltinFeature{

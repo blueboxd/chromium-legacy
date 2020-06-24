@@ -4,8 +4,6 @@
 
 assert(is_fuchsia)
 
-import("//build/buildflag_header.gni")
-import("//fuchsia/release_channel.gni")
 import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
 
 fidl_library("cast_fidl") {

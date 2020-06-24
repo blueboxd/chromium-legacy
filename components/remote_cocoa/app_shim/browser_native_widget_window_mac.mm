@@ -68,6 +68,8 @@
 // Prevent detached tabs from glitching when the window is partially offscreen.
 // See https://crbug.com/1095717 for details.
 - (NSRect)constrainFrameRect:(NSRect)rect toScreen:(NSScreen*)screen {
+  if (!screen)
+    return rect;
   NSRect screenFrame = [screen frame];
   // Adjust if either the entire frame is offscreen, or the toolbar is
   // cut off at the top.

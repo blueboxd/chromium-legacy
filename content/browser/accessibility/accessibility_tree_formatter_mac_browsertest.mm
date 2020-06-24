@@ -32,6 +32,12 @@ class AccessibilityTreeFormatterMacBrowserTest : public ContentBrowserTest {
                     const std::vector<const char*>& filters,
                     const char* expected) const;
 
+  // Tests wrong parameters for an attribute in a single run
+  void TestWrongParameters(const char* url,
+                           const std::vector<const char*>& parameters,
+                           const char* filter_pattern,
+                           const char* expected_pattern) const;
+
  protected:
   BrowserAccessibilityManager* GetManager() const {
     WebContentsImpl* web_contents =
@@ -77,6 +83,29 @@ void AccessibilityTreeFormatterMacBrowserTest::TestAndCheck(
 
   auto got = base::UTF16ToUTF8(contents);
   EXPECT_EQ(got, expected);
+}
+
+void AccessibilityTreeFormatterMacBrowserTest::TestWrongParameters(
+    const char* url,
+    const std::vector<const char*>& parameters,
+    const char* filter_pattern,
+    const char* expected_pattern) const {
+  std::string placeholder("Argument");
+  size_t expected_pos = std::string(expected_pattern).find(placeholder);
+  ASSERT_FALSE(expected_pos == std::string::npos);
+
+  size_t filter_pos = std::string(filter_pattern).find(placeholder);
+  ASSERT_FALSE(filter_pos == std::string::npos);
+
+  for (const char* parameter : parameters) {
+    std::string expected(expected_pattern);
+    expected.replace(expected_pos, placeholder.length(), parameter);
+
+    std::string filter(filter_pattern);
+    filter.replace(filter_pos, placeholder.length(), parameter);
+
+    TestAndCheck(url, {filter.c_str()}, expected.c_str());
+  }
 }
 
 }  // namespace
@@ -140,11 +169,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       ParameterizedAttributes_Int_WrongArgs) {
-  TestAndCheck(R"~~(data:text/html,
-                    <p contentEditable='true'>Text</p>)~~",
-               {":2;AXLineForIndex(NaN)=*"}, R"~~(AXWebArea
-++AXTextArea AXLineForIndex(NaN)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+                       ParameterizedAttributes_Int_WrongParameters) {
+  TestWrongParameters(R"~~(data:text/html,
+                           <p contentEditable='true'>Text</p>)~~",
+                      {"1, 2", "NaN"}, ":2;AXLineForIndex(Argument)=*",
+                      R"~~(AXWebArea
+++AXTextArea AXLineForIndex(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }
@@ -166,27 +196,28 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       ParameterizedAttributes_IntArray_WrongArgs) {
+                       ParameterizedAttributes_IntArray_NilValue) {
   TestAndCheck(R"~~(data:text/html,
-                    <table role="grid"><tr><td>CELL</td></tr></table>)~~",
-               {"AXCellForColumnAndRow(0, 0)=*"}, R"~~(AXWebArea
-++AXTable AXCellForColumnAndRow(0, 0)=ERROR:FAILED_TO_PARSE_ARGS
+                    <table role="grid"></table>)~~",
+               {"AXCellForColumnAndRow([0, 0])=*"}, R"~~(AXWebArea
+++AXTable AXCellForColumnAndRow([0, 0])=NULL
+++++AXGroup
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_IntArray_WrongParameters) {
+  TestWrongParameters(R"~~(data:text/html,
+                           <table role="grid"><tr><td>CELL</td></tr></table>)~~",
+                      {"0, 0", "{1, 2}", "[1, NaN]", "[NaN, 1]"},
+                      "AXCellForColumnAndRow(Argument)=*", R"~~(AXWebArea
+++AXTable AXCellForColumnAndRow(Argument)=ERROR:FAILED_TO_PARSE_ARGS
 ++++AXRow
 ++++++AXCell
 ++++++++AXStaticText AXValue='CELL'
 ++++AXColumn
 ++++++AXCell
 ++++++++AXStaticText AXValue='CELL'
-++++AXGroup
-)~~");
-}
-
-IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       ParameterizedAttributes_IntArray_NilValue) {
-  TestAndCheck(R"~~(data:text/html,
-                    <table role="grid"></table>)~~",
-               {"AXCellForColumnAndRow([0, 0])=*"}, R"~~(AXWebArea
-++AXTable AXCellForColumnAndRow([0, 0])=NULL
 ++++AXGroup
 )~~");
 }
@@ -202,11 +233,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       ParameterizedAttributes_NSRAnge_WrongArgs) {
-  TestAndCheck(R"~~(data:text/html,
-                    <p contentEditable='true'>Text</p>)~~",
-               {":2;AXStringForRange({loco: 1, leno: 2})=*"}, R"~~(AXWebArea
-++AXTextArea AXStringForRange({loco: 1, leno: 2})=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+                       ParameterizedAttributes_NSRange_WrongParameters) {
+  TestWrongParameters(R"~~(data:text/html,
+                           <p contentEditable='true'>Text</p>)~~",
+                      {"1, 2", "[]", "{loc: 1, leno: 2}", "{loco: 1, len: 2}",
+                       "{loc: NaN, len: 2}", "{loc: 2, len: NaN}"},
+                      ":2;AXStringForRange(Argument)=*", R"~~(AXWebArea
+++AXTextArea AXStringForRange(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }
@@ -222,11 +255,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       ParameterizedAttributes_UIElement_WrongArgs) {
-  TestAndCheck(R"~~(data:text/html,
-                    <p contentEditable='true'>Text</p>)~~",
-               {":2;AXIndexForChildUIElement(:4)=*"}, R"~~(AXWebArea
-++AXTextArea AXIndexForChildUIElement(:4)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
+                       ParameterizedAttributes_UIElement_WrongParameters) {
+  TestWrongParameters(R"~~(data:text/html,
+                           <p contentEditable='true'>Text</p>)~~",
+                      {"1, 2", "2", ":4"},
+                      ":2;AXIndexForChildUIElement(Argument)=*",
+                      R"~~(AXWebArea
+++AXTextArea AXIndexForChildUIElement(Argument)=ERROR:FAILED_TO_PARSE_ARGS AXValue='Text'
 ++++AXStaticText AXValue='Text'
 )~~");
 }

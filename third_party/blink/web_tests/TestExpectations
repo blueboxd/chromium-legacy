@@ -145,6 +145,21 @@ virtual/composite-after-paint/paint/frames/* [ Pass ]
 virtual/composite-after-paint/scrollingcoordinator/* [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
+# These tests require portals, and some require cross-origin portals.
+# Keep this in sync with VirtualTestSuites.
+crbug.com/1093466 external/wpt/fetch/metadata/portal.https.sub.html [ Skip ]
+crbug.com/1093466 external/wpt/portals/* [ Skip ]
+crbug.com/1093466 http/tests/devtools/portals/* [ Skip ]
+crbug.com/1093466 http/tests/inspector-protocol/portals/* [ Skip ]
+crbug.com/1093466 http/tests/portals/* [ Skip ]
+crbug.com/1093466 wpt_internal/portals/* [ Skip ]
+crbug.com/1093466 virtual/portals/external/wpt/fetch/metadata/portal.https.sub.html [ Pass ]
+crbug.com/1093466 virtual/portals/external/wpt/portals/* [ Pass ]
+crbug.com/1093466 virtual/portals/http/tests/devtools/portals/* [ Pass ]
+crbug.com/1093466 virtual/portals/http/tests/inspector-protocol/portals/* [ Pass ]
+crbug.com/1093466 virtual/portals/http/tests/portals/* [ Pass ]
+crbug.com/1093466 virtual/portals/wpt_internal/portals/* [ Pass ]
+
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -183,7 +198,8 @@ crbug.com/774873 [ Mac ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
-crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/1098369 fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/1098369 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
@@ -262,7 +278,7 @@ crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scroll
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 
-crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure Timeout ]
 
 crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
@@ -5764,7 +5780,7 @@ crbug.com/952708 external/wpt/css/css-paint-api/parse-input-arguments-018.https.
 # portals/csp/frame-src.sub.html crashes because of a race between cancelling a
 # speculative navigation in the browser, and committing the navigation in the
 # renderer.
-crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
+crbug.com/838348 virtual/portals/external/wpt/portals/csp/frame-src.sub.html [ Pass Crash ]
 
 # Sheriff 2019-04-17
 crbug.com/953591 [ Win ] css3/masking/mask-repeat-space-padding.html [ Pass Failure ]
@@ -6222,7 +6238,7 @@ crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detache
 # Sheriff 2019-12-13
 crbug.com/1032451 [ Win7 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Pass ]
 crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
-crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout Crash ]
+crbug.com/1033387 [ Mac ] virtual/portals/http/tests/portals/crbug-1031677.html [ Pass Timeout Crash ]
 
 # Sheriff 2019-12-16
 crbug.com/1034374 http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
@@ -6271,7 +6287,7 @@ crbug.com/1041973 external/wpt/html/semantics/forms/constraints/form-validation-
 # Disable for landing devtools changes
 crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]
 
-# Failing origin trial for css proeprties test
+# Failing origin trial for css properties test
 crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
 
 # Sheriff 2020-01-16
@@ -6744,7 +6760,6 @@ crbug.com/1083585 [ Win ] geolocation-api/watchPosition-page-visibility.html [ P
 crbug.com/1046784 http/tests/devtools/elements/styles/stylesheet-tracking.js [ Pass Failure Timeout ]
 
 # Sheriff 2020-05-28
-crbug.com/1087208 http/tests/images/document-policy-oversized-images-resize.php [ Pass Failure ]
 crbug.com/1083585 [ Linux ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit.html [ Failure ]
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-3.html [ Failure ]
@@ -6827,9 +6842,21 @@ crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/feature-policy/experim
 # FIXME(michaelludwig) - Suppress for Skia roll
 crbug.com/1097104 css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
 crbug.com/1097104 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Pass Failure ]
+crbug.com/1098743 css3/filters/backdrop-filter-boundary.html [ Pass Failure ]
+crbug.com/1098743 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
+crbug.com/1098743 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]
+crbug.com/1098743 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+crbug.com/1098743 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure ]
+crbug.com/1098743 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
+crbug.com/1098743 virtual/scalefactor200/css3/filters/backdrop-filter-boundary.html [ Pass Failure ]
+crbug.com/1098743 virtual/scalefactor200/css3/filters/backdrop-filter-edge-pixels.html [ Pass Failure ]
 
 # Sheriff 2020-06-16
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
+
+# Lazyload
+crbug.com/1098062 external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-to-eager.html [ Timeout ]
+crbug.com/1098062 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-loading-lazy-to-eager.tentative.html [ Timeout ]
 
 # Temporarily disable test to allow devtools-frontend changes
 crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Skip ]
@@ -6858,10 +6885,13 @@ crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-
 # Sheriff 2020-06-23
 crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]
 crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
-crbug.com/1098371 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-neutral-keyframe.html [ Pass Crash Failure ]
 
 # Sheriff 2020-06-24
 crbug.com/1098676 [ Win ] http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Pass Timeout ]
 crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/http/tests/workers/worker-usecounter.html [ Pass Timeout ]
+
+# Tests blocking WPT importer
+crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry.html [ Pass Crash ]
+crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry-different-function-realm.html [ Pass Crash ]

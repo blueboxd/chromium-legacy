@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Hutsegitea - Atea irekita dago</translation>
 <translation id="3369013195428705271">Ziur inprimatze-historia guztia garbitu nahi duzula? Ez dira garbituko abian dauden inprimatze-lanak.</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" /> orria inprimatu da.</translation>
-<translation id="3515615323037921860">Inprimatze-lanak</translation>
 <translation id="3527036260304016759">Hutsegitea - Errore ezezaguna</translation>
 <translation id="3749289110408117711">Fitxategiaren izena</translation>
 <translation id="38114475217616659">Garbitu historia guztia</translation>
@@ -35,7 +34,7 @@
 <translation id="4003384961948020559">Hutsegitea - Irteera-erretilua beteta dago</translation>
 <translation id="4034824040120875894">Inprimagailua</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> barru iraungiko da pasahitza</translation>
-<translation id="428217921675623177">90 egun baino gehiagoko inprimaketak kendu egingo dira</translation>
+<translation id="428217921675623177">90 egun baino gehiagoko inprimatze-lanak kendu egingo dira</translation>
 <translation id="4429881212383817840">Laster iraungiko da Kerberos-eko zerbitzu-eskaera</translation>
 <translation id="445059817448385655">Pasahitz zaharra</translation>
 <translation id="467510802200863975">Pasahitzak ez datoz bat</translation>
@@ -46,13 +45,13 @@
 Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5222676887888702881">Amaitu saioa</translation>
 <translation id="5317780077021120954">Gorde</translation>
-<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" /> eta <ph name="COMPLETION_STATUS" /></translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" /> (<ph name="CREATION_TIME" />), <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Aukeratu beste bat</translation>
 <translation id="5457599981699367932">Arakatu gonbidatu gisa</translation>
 <translation id="54609108002486618">Kudeatua</translation>
 <translation id="5832805196449965646">Gehitu pertsona bat</translation>
 <translation id="5895138241574237353">Berrabiarazi</translation>
-<translation id="6048107060512778456">Hutsegitea - Papera trabatuta da</translation>
+<translation id="6048107060512778456">Hutsegitea - Papera trabatuta dago</translation>
 <translation id="6058625436358447366">Amaitzeko, idatzi pasahitz zaharra eta berria</translation>
 <translation id="6106186594183574873">Amaitzeko, idatzi pasahitz zaharra</translation>
 <translation id="6146993107019042706">Amaitzeko, idatzi pasahitz berria</translation>
@@ -66,6 +65,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="7805768142964895445">Egoera</translation>
 <translation id="808894953321890993">Aldatu pasahitza</translation>
 <translation id="8208861521865154048">Abantailak</translation>
+<translation id="8347227221149377169">Inprimatze-lanak</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du erabiltzaile hau. Ezarpenak kudeatu eta erabiltzailearen jarduerak gainbegira ditzake urrunetik.</translation>
 <translation id="871560550817059752">Hutsegitea - Ez dago tintarik</translation>
 <translation id="8747900814994928677">Berretsi aldaketa</translation>

@@ -98,8 +98,6 @@
     // https://html.spec.whatwg.org/C/#animation-frames
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(FrameRequestCallback callback);
     void cancelAnimationFrame(long handle);
-    [RuntimeEnabled=PostAnimationFrame] long requestPostAnimationFrame(FrameRequestCallback callback);
-    [RuntimeEnabled=PostAnimationFrame] void cancelPostAnimationFrame(long handle);
 
     // HTML obsolete features
     // https://html.spec.whatwg.org/C/#Window-partial

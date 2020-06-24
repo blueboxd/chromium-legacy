@@ -122,7 +122,7 @@ void HandlePrintViewHierarchy() {
 
 void HandlePrintWindowHierarchy() {
   std::ostringstream out;
-  PrintWindowHierarchy(&out);
+  PrintWindowHierarchy(&out, /*scrub_data=*/false);
   LOG(ERROR) << out.str();
 }
 

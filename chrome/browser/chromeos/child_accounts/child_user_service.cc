@@ -96,6 +96,7 @@ app_time::AppActivityReportInterface::ReportParams
 ChildUserService::GenerateAppActivityReport(
     enterprise_management::ChildStatusReportRequest* report) {
   DCHECK(app_time_controller_);
+  app_time_controller_->app_registry()->GenerateHiddenApps(report);
   return app_time_controller_->app_registry()->GenerateAppActivityReport(
       report);
 }

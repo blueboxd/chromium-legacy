@@ -10,6 +10,7 @@
 namespace internal {
 
 extern const char kHistogramFirstPaintAfterBackForwardCacheRestore[];
+extern const char kHistogramFirstInputDelayAfterBackForwardCacheRestore[];
 
 }  // namespace internal
 
@@ -24,6 +25,9 @@ class BackForwardCachePageLoadMetricsObserver
   OnEnterBackForwardCache(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstPaintAfterBackForwardCacheRestoreInPage(
+      const page_load_metrics::mojom::BackForwardCacheTiming& timing,
+      size_t index) override;
+  void OnFirstInputAfterBackForwardCacheRestoreInPage(
       const page_load_metrics::mojom::BackForwardCacheTiming& timing,
       size_t index) override;
 

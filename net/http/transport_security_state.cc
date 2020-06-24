@@ -4,7 +4,9 @@
 
 #include "net/http/transport_security_state.h"
 
+#include <algorithm>
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -722,6 +724,7 @@ void TransportSecurityState::AddExpectCTInternal(
       HashHost(canonicalized_host), network_isolation_key);
   if (expect_ct_state.enforce || !expect_ct_state.report_uri.is_empty()) {
     enabled_expect_ct_hosts_[index] = expect_ct_state;
+    MaybePruneExpectCTState();
   } else {
     enabled_expect_ct_hosts_.erase(index);
   }
@@ -1088,6 +1091,10 @@ void TransportSecurityState::ClearReportCachesForTesting() {
   sent_expect_ct_reports_cache_.Clear();
 }
 
+size_t TransportSecurityState::num_expect_ct_entries() const {
+  return enabled_expect_ct_hosts_.size();
+}
+
 // static
 bool TransportSecurityState::IsBuildTimely() {
   const base::Time build_time = base::GetBuildTime();
@@ -1398,6 +1405,134 @@ TransportSecurityState::CreateExpectCTStateIndex(
     const NetworkIsolationKey& network_isolation_key) {
   return ExpectCTStateIndex(hashed_host, network_isolation_key,
                             key_expect_ct_by_nik_);
+}
+
+void TransportSecurityState::MaybePruneExpectCTState() {
+  if (!base::FeatureList::IsEnabled(features::kExpectCTPruning) ||
+      enabled_expect_ct_hosts_.size() <
+          static_cast<size_t>(features::kExpectCTPruneMax.Get())) {
+    return;
+  }
+
+  base::Time now = base::Time::Now();
+  if (now < earliest_next_prune_expect_ct_time_)
+    return;
+
+  earliest_next_prune_expect_ct_time_ =
+      now +
+      base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get());
+
+  base::Time last_prunable_observation_time =
+      now -
+      base::TimeDelta::FromDays(features::kExpectCTSafeFromPruneDays.Get());
+
+  // Cache this locally, so don't have to repeatedly query the value.
+  size_t expect_ct_prune_min = features::kExpectCTPruneMin.Get();
+
+  // Entries that are eligible to be pruned based on the global (not per-NIK)
+  // entry limit.
+  std::vector<ExpectCTStateMap::iterator> prunable_expect_ct_entries;
+
+  // Clear expired entries first. If that's enough, maybe no valid entries have
+  // to be removed. Also populate |prunable_expect_ct_entries|.
+  for (auto expect_ct_iterator = enabled_expect_ct_hosts_.begin();
+       expect_ct_iterator != enabled_expect_ct_hosts_.end();) {
+    if (expect_ct_iterator->second.expiry < now) {
+      enabled_expect_ct_hosts_.erase(expect_ct_iterator++);
+      continue;
+    }
+
+    // If there are fewer than |expect_ct_prune_min| entries remaining, no need
+    // to delete anything else.
+    if (enabled_expect_ct_hosts_.size() <= expect_ct_prune_min)
+      return;
+
+    // Entries that are older than the prunable time window, are report-only, or
+    // have a transient NetworkIsolationKey, are considered prunable.
+    //
+    // If |key_expect_ct_by_nik_| is false, all entries have an empty NIK.
+    // IsTransient() returns true for the empty NIK, despite entries being saved
+    // to disk, so don't want to delete entries with empty NIKs.
+    if (expect_ct_iterator->second.last_observed <
+            last_prunable_observation_time ||
+        !expect_ct_iterator->second.enforce ||
+        (key_expect_ct_by_nik_ &&
+         expect_ct_iterator->first.network_isolation_key.IsTransient())) {
+      prunable_expect_ct_entries.push_back(expect_ct_iterator);
+    }
+    ++expect_ct_iterator;
+  }
+
+  // Number of entries that need to be removed to reach |expect_ct_prune_min|.
+  size_t num_entries_to_prune =
+      enabled_expect_ct_hosts_.size() - expect_ct_prune_min;
+  if (num_entries_to_prune < prunable_expect_ct_entries.size()) {
+    // There are more than enough prunable entries to reach kExpectCTPruneMin.
+    // Find the |num_entries_to_prune| most prunable entries, according to
+    // ExpectCTPruningSorter.
+    auto expect_ct_prune_end =
+        prunable_expect_ct_entries.begin() + num_entries_to_prune;
+    std::partial_sort(prunable_expect_ct_entries.begin(), expect_ct_prune_end,
+                      prunable_expect_ct_entries.end(), ExpectCTPruningSorter);
+  } else {
+    // Otherwise, delete all prunable entries.
+    num_entries_to_prune = prunable_expect_ct_entries.size();
+  }
+  DCHECK_LE(num_entries_to_prune, prunable_expect_ct_entries.size());
+
+  for (size_t i = 0; i < num_entries_to_prune; ++i) {
+    enabled_expect_ct_hosts_.erase(prunable_expect_ct_entries[i]);
+  }
+
+  // If there are fewer than |kExpectCTPruneMin| entries remaining, or entries
+  // are not being keyed by NetworkIsolationKey, nothing left to do.
+  if (enabled_expect_ct_hosts_.size() <= expect_ct_prune_min ||
+      !key_expect_ct_by_nik_) {
+    return;
+  }
+
+  // Otherwise, cap the number of entries per NetworkIsolationKey to
+  // |kMaxEntriesPerNik|.
+
+  // Create a vector of all the ExpectCT entries for each NIK.
+  std::map<net::NetworkIsolationKey, std::vector<ExpectCTStateMap::iterator>>
+      nik_map;
+  for (auto expect_ct_iterator = enabled_expect_ct_hosts_.begin();
+       expect_ct_iterator != enabled_expect_ct_hosts_.end();
+       ++expect_ct_iterator) {
+    nik_map[expect_ct_iterator->first.network_isolation_key].push_back(
+        expect_ct_iterator);
+  }
+
+  // For each NIK with more than the maximum number of entries, remove the most
+  // prunable entries until it has exactly |kExpectCTMaxEntriesPerNik| entries.
+  size_t max_entries_per_nik = features::kExpectCTMaxEntriesPerNik.Get();
+  for (auto& nik_entries : nik_map) {
+    if (nik_entries.second.size() < max_entries_per_nik)
+      continue;
+    auto top_frame_origin_prune_end = nik_entries.second.begin() +
+                                      nik_entries.second.size() -
+                                      max_entries_per_nik;
+    std::partial_sort(nik_entries.second.begin(), top_frame_origin_prune_end,
+                      nik_entries.second.end(), ExpectCTPruningSorter);
+    for (auto entry_to_prune = nik_entries.second.begin();
+         entry_to_prune != top_frame_origin_prune_end; ++entry_to_prune) {
+      enabled_expect_ct_hosts_.erase(*entry_to_prune);
+    }
+  }
+}
+
+bool TransportSecurityState::ExpectCTPruningSorter(
+    const ExpectCTStateMap::iterator& it1,
+    const ExpectCTStateMap::iterator& it2) {
+  // std::tie requires r-values, so have to put these on the stack to use
+  // std::tie.
+  bool is_not_transient1 = !it1->first.network_isolation_key.IsTransient();
+  bool is_not_transient2 = !it2->first.network_isolation_key.IsTransient();
+  return std::tie(is_not_transient1, it1->second.enforce,
+                  it1->second.last_observed) <
+         std::tie(is_not_transient2, it2->second.enforce,
+                  it2->second.last_observed);
 }
 
 }  // namespace net

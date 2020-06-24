@@ -14,8 +14,6 @@
 
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
-#include "base/strings/strcat.h"
-#include "fuchsia/base/release_channel.h"
 
 namespace cr_fuchsia {
 
@@ -24,9 +22,8 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartWebEngineForTests(
         component_controller_request,
     const base::CommandLine& command_line) {
   fuchsia::sys::LaunchInfo launch_info;
-  launch_info.url = base::StrCat({"fuchsia-pkg://fuchsia.com/web_engine",
-                                  BUILDFLAG(FUCHSIA_RELEASE_CHANNEL_SUFFIX),
-                                  "#meta/context_provider.cmx"});
+  launch_info.url =
+      "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cmx";
   launch_info.arguments = command_line.argv();
 
   // Clone stderr from the current process to WebEngine and ask it to

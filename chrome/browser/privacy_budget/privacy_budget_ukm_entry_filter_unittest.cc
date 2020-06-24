@@ -8,7 +8,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/template_util.h"
-#include "chrome/browser/privacy_budget/scoped_privacy_budget_config.h"
+#include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"

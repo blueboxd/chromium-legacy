@@ -58,6 +58,12 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     send_metadata |= force_send;
   }
 
+  const bool send_root_scroll_offset_changed =
+      !send_metadata && last_render_frame_metadata_ &&
+      last_render_frame_metadata_->root_scroll_offset !=
+          render_frame_metadata.root_scroll_offset &&
+      render_frame_metadata.root_scroll_offset.has_value();
+
   // Always cache the full metadata, so that it can correctly be sent upon
   // ReportAllFrameSubmissionsForTesting or on android, which notifies on any
   // root scroll offset change. This must only be done after we've compared the
@@ -97,6 +103,10 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
             ? metadata_copy.local_surface_id_allocation->local_surface_id()
                   .ToString()
             : "null");
+  } else if (render_frame_metadata_observer_client_ &&
+             send_root_scroll_offset_changed) {
+    render_frame_metadata_observer_client_->OnRootScrollOffsetChanged(
+        *render_frame_metadata.root_scroll_offset);
   }
 
   // Always cache the initial frame token, so that if a test connects later on
@@ -159,9 +169,6 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
   }
 
 #if defined(OS_ANDROID)
-  bool need_send_root_scroll =
-      report_all_root_scrolls_enabled_ &&
-      rfm1.root_scroll_offset != rfm2.root_scroll_offset;
   if (rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
       rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
       rfm1.top_controls_min_height_offset !=
@@ -173,8 +180,7 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
       rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
       rfm1.root_layer_size != rfm2.root_layer_size ||
-      rfm1.has_transparent_background != rfm2.has_transparent_background ||
-      need_send_root_scroll) {
+      rfm1.has_transparent_background != rfm2.has_transparent_background) {
     *needs_activation_notification = true;
     return true;
   }

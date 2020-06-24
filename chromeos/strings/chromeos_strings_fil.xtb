@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Hindi na-print - Nakabukas ang takip</translation>
 <translation id="3369013195428705271">Sigurado ka bang gusto mong i-clear ang lahat ng history ng pag-print? Hindi maki-clear ang iyong mga kasalukuyang pag-print.</translation>
 <translation id="3456078764689556234">Na-print ang page <ph name="PRINTED_PAGES" /> sa <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Mga Pag-print</translation>
 <translation id="3527036260304016759">Hindi na-print - Hindi kilalang error</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">I-clear ang lahat ng history</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Hindi na-print - Puno ang output</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Walang kasalukuyang pag-print</translation>
 <translation id="428217921675623177">Aalisin ang mga pag-print na lampas na sa 90 araw</translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
 <translation id="445059817448385655">Lumang password</translation>
@@ -61,11 +61,13 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Pinapamahalaan ng iyong administrator ang pagkilos na ito.</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="7805768142964895445">Katayuan</translation>
 <translation id="808894953321890993">Palitan ang password</translation>
 <translation id="8208861521865154048">Mga Perk</translation>
+<translation id="8347227221149377169">Mga pag-print</translation>
 <translation id="8701136875688985581">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang user na ito. Posible nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
 <translation id="871560550817059752">Hindi na-print - Wala nang ink</translation>
 <translation id="8747900814994928677">Kumpirmahin ang pagbabago</translation>

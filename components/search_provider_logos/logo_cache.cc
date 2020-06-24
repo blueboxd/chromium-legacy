@@ -37,7 +37,9 @@ const char kDarkNumBytesKey[] = "dark_num_bytes";
 const char kAnimatedUrlKey[] = "animated_url";
 const char kDarkAnimatedUrlKey[] = "dark_animated_url";
 const char kLogUrlKey[] = "log_url";
+const char kDarkLogUrlKey[] = "dark_log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
+const char kDarkCtaLogUrlKey[] = "dark_cta_log_url";
 const char kShortLinkKey[] = "short_link";
 const char kWidthPx[] = "width_px";
 const char kHeightPx[] = "height_px";
@@ -225,7 +227,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   std::string animated_url;
   std::string dark_animated_url;
   std::string log_url;
+  std::string dark_log_url;
   std::string cta_log_url;
+  std::string dark_cta_log_url;
   std::string short_link;
   if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
@@ -236,7 +240,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kDarkAnimatedUrlKey, &dark_animated_url) ||
       !dict->GetString(kLogUrlKey, &log_url) ||
+      !dict->GetString(kDarkLogUrlKey, &dark_log_url) ||
       !dict->GetString(kCtaLogUrlKey, &cta_log_url) ||
+      !dict->GetString(kDarkCtaLogUrlKey, &dark_cta_log_url) ||
       !dict->GetString(kShortLinkKey, &short_link) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetString(kDarkMimeTypeKey, &metadata->dark_mime_type) ||
@@ -274,7 +280,9 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   metadata->animated_url = GURL(animated_url);
   metadata->dark_animated_url = GURL(dark_animated_url);
   metadata->log_url = GURL(log_url);
+  metadata->dark_log_url = GURL(dark_log_url);
   metadata->cta_log_url = GURL(cta_log_url);
+  metadata->dark_cta_log_url = GURL(dark_cta_log_url);
   metadata->short_link = GURL(short_link);
 
   return metadata;
@@ -295,7 +303,9 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kDarkAnimatedUrlKey, metadata.dark_animated_url.spec());
   dict.SetString(kLogUrlKey, metadata.log_url.spec());
+  dict.SetString(kDarkLogUrlKey, metadata.dark_log_url.spec());
   dict.SetString(kCtaLogUrlKey, metadata.cta_log_url.spec());
+  dict.SetString(kDarkCtaLogUrlKey, metadata.dark_cta_log_url.spec());
   dict.SetString(kShortLinkKey, metadata.short_link.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetString(kDarkMimeTypeKey, metadata.dark_mime_type);

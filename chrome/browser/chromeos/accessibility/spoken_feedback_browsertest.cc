@@ -147,15 +147,7 @@ void LoggedInSpokenFeedbackTest::EnableChromeVox() {
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
-
-  // AccessibilityManager sends a warmup utterance prior to actually loading
-  // ChromeVox.
-  sm_.ExpectSpeech("");
-
-  // The next utterance comes from ChromeVox signaling it is ready.
   sm_.ExpectSpeechPattern("*");
-
-  // Injects js to disable earcons.
   sm_.Call([this]() { DisableEarcons(); });
 }
 

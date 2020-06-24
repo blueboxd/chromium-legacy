@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Сбой: крышка открыта</translation>
 <translation id="3369013195428705271">Очистить историю печати? Текущие задания печати не будут удалены.</translation>
 <translation id="3456078764689556234">Напечатано страниц: <ph name="PRINTED_PAGES" /> из <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Задания печати</translation>
 <translation id="3527036260304016759">Сбой: неизвестная ошибка</translation>
 <translation id="3749289110408117711">Название файла</translation>
 <translation id="38114475217616659">Очистить всю историю</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Сбой: выходной лоток заполнен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Срок действия пароля истекает через <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Задания печати не выполняются</translation>
 <translation id="428217921675623177">Задания печати удаляются после хранения в течение 90 дней</translation>
 <translation id="4429881212383817840">Срок действия билета Kerberos истекает</translation>
 <translation id="445059817448385655">Старый пароль</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Этим действием управляет администратор.</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7690294790491645610">Введите новый пароль ещё раз</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
 <translation id="8208861521865154048">Преимущества</translation>
+<translation id="8347227221149377169">Задания печати</translation>
 <translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно отслеживать действия пользователя и удаленно изменять настройки.</translation>
 <translation id="871560550817059752">Сбой: закончились чернила</translation>
 <translation id="8747900814994928677">Подтверждение изменений</translation>

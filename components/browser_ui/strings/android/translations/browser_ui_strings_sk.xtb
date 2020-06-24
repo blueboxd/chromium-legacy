@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Opýtať sa, či chcete povoliť webom vytvoriť 3D mapu vášho okolia alebo sledovať umiestnenie kamier (odporúčané)</translation>
 <translation id="2212565012507486665">Povoliť súbory cookie</translation>
 <translation id="2289270750774289114">Opýtať sa, keď chce web objavovať zariadenia Bluetooth v okolí (odporúčané)</translation>
+<translation id="2315043854645842844">Operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Sťahovanie bolo dokončené <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Váš fotoaparát používa nejaký web</translation>
 <translation id="7817023149356982970">Systém vás z tohto webu odhlási.</translation>
 <translation id="7828557259026017104">Súbory cookie sú vytvárané webmi, ktoré navštívite. Pamätajú si pomocou nich vaše predvoľby. Súbory cookie tretích strán sú vytvárané ďalšími webmi. Tieto weby sú vlastníkmi prvkov obsahu, ktorý sa zobrazuje na navštívenej webovej stránke (napríklad reklamy alebo obrázky).</translation>
+<translation id="7835852323729233924">Prehrávanie médií</translation>
 <translation id="7846076177841592234">Zrušiť výber</translation>
 <translation id="7846621471902887024">Systém vás odhlási zo všetkých webov.</translation>
 <translation id="7882806643839505685">Povoliť zvuk pre konkrétny web.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Naozaj chcete vymazať všetky miestne dáta tohto webu, vrátane súborov cookie, a resetovať všetky jeho povolenia?</translation>
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
+<translation id="8068648041423924542">Nedá sa vybrať certifikát</translation>
 <translation id="8087000398470557479">Tento obsah pochádza z domény <ph name="DOMAIN_NAME" /> a bol doručený Googlom.</translation>
 <translation id="8116925261070264013">Zvuk bol vypnutý</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blokovanie súborov cookie konkrétneho webu</translation>
 <translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Spravované vašimi rodičmi</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Prístup k mikrofónu</translation>
 <translation id="965817943346481315">Blokovať, ak web zobrazuje obťažujúce alebo zavádzajúce reklamy (odporúčané)</translation>
 </translationbundle>

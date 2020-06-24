@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibrēšana ir pabeigta.</translation>
 <translation id="252373100621549798">Nezināms displejs</translation>
 <translation id="2545651323591713692">Atlikt</translation>
+<translation id="2570734079541893434">Pārvaldīt iestatījumus</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{pēc 1 h}zero{pēc # h}one{pēc # h}other{pēc # h}}</translation>
 <translation id="2583543531130364912">Skārienekrāna kalibrēšana</translation>
 <translation id="2666092431469916601">Augša</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Pārvietota uz <ph name="PAGE_NUMBER" />. lapu, <ph name="ROW_NUMBER" />. rindu, <ph name="COLUMN_NUMBER" />. sleju.</translation>
 <translation id="7879499977785298635">Nebloķēt</translation>
 <translation id="7907591526440419938">Atvērt failu</translation>
+<translation id="7952747673138230804">Chrome OS rāda ieteikumus jaunam pieejamajam saturam. Statistikas dati kvalitātes uzlabošanai tiek sūtīti tikai tad, ja esat piekritis kopīgot lietojuma datus. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Komandtaustiņš</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Vairāk nekā 1 nelasīts paziņojums}zero{Vairāk nekā # nelasīti paziņojumi}one{Vairāk nekā # nelasīts paziņojums}other{Vairāk nekā # nelasīti paziņojumi}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{pēc 1 min}zero{pēc # min}one{pēc # min}other{pēc # min}}</translation>

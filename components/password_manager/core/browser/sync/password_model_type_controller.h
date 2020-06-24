@@ -54,6 +54,8 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
+  void OnPrimaryAccountCleared(
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   void OnOptInStateMaybeChanged();

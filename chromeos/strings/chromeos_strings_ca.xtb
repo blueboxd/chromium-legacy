@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Error: porta oberta</translation>
 <translation id="3369013195428705271">Confirmes que vols esborrar tot l'historial d'impressions? Les tasques d'impressió en curs no s'esborraran.</translation>
 <translation id="3456078764689556234">S'ha imprès la pàgina <ph name="PRINTED_PAGES" /> de <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Tasques d'impressió</translation>
 <translation id="3527036260304016759">Error: error desconegut</translation>
 <translation id="3749289110408117711">Nom del fitxer</translation>
 <translation id="38114475217616659">Esborra tot l'historial</translation>
@@ -68,6 +67,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="8208861521865154048">Avantatges</translation>
+<translation id="8347227221149377169">Tasques d'impressió</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest usuari. És possible que gestioni la configuració i monitori l'activitat de l'usuari de manera remota.</translation>
 <translation id="871560550817059752">Error: no hi ha tinta</translation>
 <translation id="8747900814994928677">Confirma el canvi</translation>

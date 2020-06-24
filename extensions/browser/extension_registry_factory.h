@@ -15,7 +15,7 @@ namespace extensions {
 class ExtensionRegistry;
 
 // Factory for ExtensionRegistry objects. ExtensionRegistry objects are shared
-// between an incognito browser context and its master browser context.
+// between an incognito browser context and its original browser context.
 class ExtensionRegistryFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ExtensionRegistry* GetForBrowserContext(

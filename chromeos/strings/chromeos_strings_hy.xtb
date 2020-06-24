@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Չհաջողվեց տպել – Կափարիչը բաց է</translation>
 <translation id="3369013195428705271">Մաքրե՞լ ամբողջ տպման պատմությունը: Ընթացիկ տպման աշխատանքները չեն ջնջվի։</translation>
 <translation id="3456078764689556234">Տպված էջ՝ <ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" />։</translation>
-<translation id="3515615323037921860">Տպման աշխատանքներ</translation>
 <translation id="3527036260304016759">Չհաջողվեց տպել – Անհայտ սխալ</translation>
 <translation id="3749289110408117711">Ֆայլի անունը</translation>
 <translation id="38114475217616659">Մաքրել ամբողջ պատմությունը</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Չհաջողվեց տպել – Ելքը լցված է</translation>
 <translation id="4034824040120875894">Տպիչ</translation>
 <translation id="4227825898293920515">Գաղտնաբառի գործողության ժամկետը <ph name="TIME" />ից կսպառվի</translation>
+<translation id="4238516577297848345">Տպելու ընթացիկ առաջադրանքներ չկան</translation>
 <translation id="428217921675623177">90 օրից հին տպելու առաջադրանքները կհեռացվեն</translation>
 <translation id="4429881212383817840">Kerberos տոմսի գործողության ժամկետը շուտով կսպառվի</translation>
 <translation id="445059817448385655">Հին գաղտնաբառը</translation>
@@ -61,11 +61,13 @@
 <translation id="6643016212128521049">Մաքրել</translation>
 <translation id="7162487448488904999">Ցուցասրահ</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Այս գործողությունը կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="7690294790491645610">Հաստատեք նոր գաղտնաբառը</translation>
 <translation id="7805768142964895445">Կարգավիճակ</translation>
 <translation id="808894953321890993">Փոխել գաղտնաբառը</translation>
 <translation id="8208861521865154048">Բոնուսներ</translation>
+<translation id="8347227221149377169">Տպելու առաջադրանքներ</translation>
 <translation id="8701136875688985581">Այս օգտատերը կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> տիրույթի կողմից։ Այն կարող է հեռակա կառավարել կարգավորումները և վերահսկել օգտատիրոջ գործողությունները։</translation>
 <translation id="871560550817059752">Չհաջողվեց տպել – Թանաքը սպառվել է</translation>
 <translation id="8747900814994928677">Հաստատեք փոփոխությունը</translation>

@@ -154,6 +154,7 @@ net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
       return net::URLRequest::
           REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
   }
+  NOTREACHED();
   return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
 }
 

@@ -74,6 +74,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::unique_ptr<CommitRequestData> CommitRequest(
       const ClientTagHash& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
+  std::unique_ptr<CommitRequestData> CommitRequest(
+      const ClientTagHash& tag_hash,
+      const sync_pb::EntitySpecifics& specifics,
+      const std::string& server_id);
   std::unique_ptr<CommitRequestData> DeleteRequest(
       const ClientTagHash& tag_hash);
 
@@ -107,6 +111,14 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   // Sets commit request that will be returned by GetLocalChanges().
   void SetCommitRequest(CommitRequestDataList commit_request);
+
+  // Similar to SetCommitRequest() but, instead of overriding the prior state,
+  // appends new entries.
+  void AppendCommitRequest(const ClientTagHash& tag_hash,
+                           const sync_pb::EntitySpecifics& specifics);
+  void AppendCommitRequest(const ClientTagHash& tag_hash,
+                           const sync_pb::EntitySpecifics& specifics,
+                           const std::string& server_id);
 
   int GetLocalChangesCallCount() const;
 
@@ -143,7 +155,6 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // See SetSynchronousExecution() for details.
   bool is_synchronous_;
   std::vector<base::OnceClosure> pending_tasks_;
-  std::unique_ptr<CommitQueue> commit_queue_;
 
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;

@@ -11,6 +11,7 @@
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
@@ -150,11 +151,26 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
 
     HashSet<BudgetPool*>& budget_pools() { return budget_pools_; }
 
+    base::TimeTicks next_granted_run_time() const {
+      return next_granted_run_time_;
+    }
+    void set_next_granted_run_time(base::TimeTicks next_granted_run_time) {
+      next_granted_run_time_ = next_granted_run_time;
+    }
+
    private:
     base::sequence_manager::TaskQueue* const queue_;
     TaskQueueThrottler* const throttler_;
     size_t throttling_ref_count_ = 0;
     HashSet<BudgetPool*> budget_pools_;
+
+    // The next granted run time for |queue_|. Is TimeTicks::Max() when there is
+    // no next granted run time, for example when:
+    // - The queue didn't request a wake up.
+    // - The queue only has immediate tasks which are currently allowed to run.
+    // - A wake up just happened and the next granted run time is about to be
+    //   re-evaluated.
+    base::TimeTicks next_granted_run_time_ = base::TimeTicks::Max();
 
     DISALLOW_COPY_AND_ASSIGN(Metadata);
   };
@@ -171,9 +187,10 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
                                        base::TimeTicks now,
                                        base::TimeTicks runtime);
 
-  // Return next possible time when queue is allowed to run in accordance
-  // with throttling policy.
-  base::TimeTicks GetNextAllowedRunTime(
+  // Evaluate the next possible time when |queue| is allowed to run in
+  // accordance with throttling policy. Returns it and stores it in |queue|'s
+  // metadata.
+  base::TimeTicks UpdateNextAllowedRunTime(
       base::sequence_manager::TaskQueue* queue,
       base::TimeTicks desired_run_time);
 

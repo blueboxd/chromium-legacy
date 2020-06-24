@@ -11,9 +11,12 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace local_search_service {
 class LocalSearchService;
@@ -25,7 +28,6 @@ namespace settings {
 class Hierarchy;
 class OsSettingsSections;
 struct SearchConcept;
-class SearchTagRegistry;
 
 // Handles search queries for Chrome OS settings. Search() is expected to be
 // invoked by the settings UI as well as the the Launcher search UI. Search
@@ -34,7 +36,8 @@ class SearchTagRegistry;
 // SearchTagRegistry.
 //
 // Searches which do not provide any matches result in an empty results array.
-class SearchHandler : public mojom::SearchHandler {
+class SearchHandler : public mojom::SearchHandler,
+                      public SearchTagRegistry::Observer {
  public:
   SearchHandler(SearchTagRegistry* search_tag_registry,
                 OsSettingsSections* sections,
@@ -59,9 +62,14 @@ class SearchHandler : public mojom::SearchHandler {
               uint32_t max_num_results,
               mojom::ParentResultBehavior parent_result_behavior,
               SearchCallback callback) override;
+  void Observe(
+      mojo::PendingRemote<mojom::SearchResultsObserver> observer) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SearchHandlerTest, CompareSearchResults);
+
+  // SearchTagRegistry::Observer:
+  void OnRegistryUpdated() override;
 
   std::vector<mojom::SearchResultPtr> GenerateSearchResultsArray(
       const std::vector<local_search_service::Result>&
@@ -99,8 +107,9 @@ class SearchHandler : public mojom::SearchHandler {
   Hierarchy* hierarchy_;
   local_search_service::Index* index_;
 
-  // Note: Expected to have multiple clients, so a ReceiverSet is used.
+  // Note: Expected to have multiple clients, so ReceiverSet/RemoteSet are used.
   mojo::ReceiverSet<mojom::SearchHandler> receivers_;
+  mojo::RemoteSet<mojom::SearchResultsObserver> observers_;
 };
 
 }  // namespace settings

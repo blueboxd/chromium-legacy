@@ -1722,22 +1722,6 @@ void LocalDOMWindow::cancelAnimationFrame(int id) {
     document->CancelAnimationFrame(id);
 }
 
-int LocalDOMWindow::requestPostAnimationFrame(
-    V8FrameRequestCallback* callback) {
-  if (Document* doc = document()) {
-    FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
-        MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-            callback);
-    return doc->RequestPostAnimationFrame(frame_callback);
-  }
-  return 0;
-}
-
-void LocalDOMWindow::cancelPostAnimationFrame(int id) {
-  if (Document* doc = this->document())
-    doc->CancelPostAnimationFrame(id);
-}
-
 void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
   Microtask::EnqueueMicrotask(
       WTF::Bind(&V8VoidFunction::InvokeAndReportException,

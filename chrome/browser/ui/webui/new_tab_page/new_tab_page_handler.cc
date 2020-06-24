@@ -254,7 +254,9 @@ new_tab_page::mojom::ImageDoodlePtr MakeImageDoodle(
     int share_button_x,
     int share_button_y,
     const std::string& share_button_icon,
-    const std::string& share_button_bg) {
+    const std::string& share_button_bg,
+    GURL log_url,
+    GURL cta_log_url) {
   auto doodle = new_tab_page::mojom::ImageDoodle::New();
   std::string base64;
   base::Base64Encode(data, &base64);
@@ -272,6 +274,12 @@ new_tab_page::mojom::ImageDoodlePtr MakeImageDoodle(
   doodle->share_button->icon_url = GURL(base::StringPrintf(
       "data:image/png;base64,%s", share_button_icon.c_str()));
   doodle->share_button->background_color = ParseHexColor(share_button_bg);
+  if (type == search_provider_logos::LogoType::ANIMATED) {
+    doodle->image_impression_log_url = cta_log_url;
+    doodle->animation_impression_log_url = log_url;
+  } else {
+    doodle->image_impression_log_url = log_url;
+  }
   return doodle;
 }
 
@@ -1259,7 +1267,8 @@ void NewTabPageHandler::OnLogoAvailable(
         logo->metadata.mime_type, logo->metadata.animated_url,
         logo->metadata.width_px, logo->metadata.height_px, "#ffffff",
         logo->metadata.share_button_x, logo->metadata.share_button_y,
-        logo->metadata.share_button_icon, logo->metadata.share_button_bg);
+        logo->metadata.share_button_icon, logo->metadata.share_button_bg,
+        logo->metadata.log_url, logo->metadata.cta_log_url);
     if (logo->dark_encoded_image) {
       image_doodle_content->dark = MakeImageDoodle(
           logo->metadata.type, logo->dark_encoded_image->data(),
@@ -1269,18 +1278,11 @@ void NewTabPageHandler::OnLogoAvailable(
           logo->metadata.dark_share_button_x,
           logo->metadata.dark_share_button_y,
           logo->metadata.dark_share_button_icon,
-          logo->metadata.dark_share_button_bg);
+          logo->metadata.dark_share_button_bg, logo->metadata.dark_log_url,
+          logo->metadata.dark_cta_log_url);
     }
     image_doodle_content->on_click_url = logo->metadata.on_click_url;
     image_doodle_content->share_url = logo->metadata.short_link;
-    if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
-      image_doodle_content->image_impression_log_url =
-          logo->metadata.cta_log_url;
-      image_doodle_content->animation_impression_log_url =
-          logo->metadata.log_url;
-    } else {
-      image_doodle_content->image_impression_log_url = logo->metadata.log_url;
-    }
     doodle->content = new_tab_page::mojom::DoodleContent::NewImageDoodle(
         std::move(image_doodle_content));
   } else if (logo->metadata.type ==

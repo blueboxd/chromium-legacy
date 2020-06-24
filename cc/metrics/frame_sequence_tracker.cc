@@ -4,6 +4,11 @@
 
 #include "cc/metrics/frame_sequence_tracker.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -663,18 +668,6 @@ bool FrameSequenceTracker::IsExpectingMainFrame() const {
       begin_main_frame_data_.previous_sequence != 0 &&
       begin_main_frame_data_.previous_sequence != last_processed_main_sequence_;
   return !main_frames_.empty() || last_main_not_processed;
-}
-
-std::unique_ptr<base::trace_event::TracedValue>
-FrameSequenceMetrics::ThroughputData::ToTracedValue(
-    const ThroughputData& impl,
-    const ThroughputData& main) {
-  auto dict = std::make_unique<base::trace_event::TracedValue>();
-  dict->SetInteger("impl-frames-produced", impl.frames_produced);
-  dict->SetInteger("impl-frames-expected", impl.frames_expected);
-  dict->SetInteger("main-frames-produced", main.frames_produced);
-  dict->SetInteger("main-frames-expected", main.frames_expected);
-  return dict;
 }
 
 bool FrameSequenceTracker::ShouldReportMetricsNow(

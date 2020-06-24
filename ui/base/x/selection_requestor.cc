@@ -15,6 +15,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -50,11 +51,9 @@ std::vector<uint8_t> CombineData(
 
 }  // namespace
 
-SelectionRequestor::SelectionRequestor(XDisplay* x_display,
-                                       x11::Window x_window,
+SelectionRequestor::SelectionRequestor(x11::Window x_window,
                                        XEventDispatcher* dispatcher)
-    : x_display_(x_display),
-      x_window_(x_window),
+    : x_window_(x_window),
       x_property_(x11::Atom::None),
       dispatcher_(dispatcher),
       current_request_index_(0u) {
@@ -120,14 +119,13 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
   return SelectionData();
 }
 
-void SelectionRequestor::OnSelectionNotify(const x11::Event& x11_event) {
-  const XEvent& event = x11_event.xlib_event();
+void SelectionRequestor::OnSelectionNotify(
+    const x11::SelectionNotifyEvent& selection) {
   Request* request = GetCurrentRequest();
-  x11::Atom event_property = static_cast<x11::Atom>(event.xselection.property);
+  x11::Atom event_property = selection.property;
   if (!request || request->completed ||
-      request->selection !=
-          static_cast<x11::Atom>(event.xselection.selection) ||
-      request->target != static_cast<x11::Atom>(event.xselection.target)) {
+      request->selection != selection.selection ||
+      request->target != selection.target) {
     // ICCCM requires us to delete the property passed into SelectionNotify.
     if (event_property != x11::Atom::None)
       ui::DeleteProperty(x_window_, event_property);
@@ -158,11 +156,10 @@ void SelectionRequestor::OnSelectionNotify(const x11::Event& x11_event) {
   }
 }
 
-bool SelectionRequestor::CanDispatchPropertyEvent(const x11::Event& x11_event) {
-  const XEvent& event = x11_event.xlib_event();
-  return event.xproperty.window == static_cast<uint32_t>(x_window_) &&
-         static_cast<x11::Atom>(event.xproperty.atom) == x_property_ &&
-         event.xproperty.state == PropertyNewValue;
+bool SelectionRequestor::CanDispatchPropertyEvent(const x11::Event& event) {
+  const auto* prop = event.As<x11::PropertyNotifyEvent>();
+  return prop->window == x_window_ && prop->atom == x_property_ &&
+         prop->state == x11::Property::NewValue;
 }
 
 void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {

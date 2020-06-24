@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
@@ -43,6 +44,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/tools/huffman_trie/bit_writer.h"
 #include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -315,12 +317,38 @@ bool operator==(const TransportSecurityState::PKPState& lhs,
          lhs.domain == rhs.domain && lhs.report_uri == rhs.report_uri;
 }
 
+// Creates a unique new host name every time it's called. Tests should not
+// depend on the exact domain names, as they may vary depending on what other
+// tests have been run by the same process. Intended for Expect-CT pruning
+// tests, which add a lot of domains.
+std::string CreateUniqueHostName() {
+  static int count = 0;
+  return base::StringPrintf("%i.test", ++count);
+}
+
+// As with CreateUniqueHostName(), returns a unique NetworkIsolationKey for use
+// with Expect-CT prunung tests.
+NetworkIsolationKey CreateUniqueNetworkIsolationKey(bool is_transient) {
+  if (is_transient)
+    return NetworkIsolationKey::CreateTransient();
+  url::Origin origin = url::Origin::CreateFromNormalizedTuple(
+      "https", CreateUniqueHostName(), 443);
+  return NetworkIsolationKey(origin /* top_frame_origin */,
+                             origin /* frame_origin */);
+}
+
 }  // namespace
 
-class TransportSecurityStateTest : public testing::Test {
+class TransportSecurityStateTest : public ::testing::Test,
+                                   public WithTaskEnvironment {
  public:
-  TransportSecurityStateTest() {
+  TransportSecurityStateTest()
+      : WithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
+    // Need mocked out time for pruning tests. Don't start with a
+    // time of 0, as code doesn't generally expect it.
+    FastForwardBy(base::TimeDelta::FromDays(1));
   }
 
   ~TransportSecurityStateTest() override {
@@ -3449,6 +3477,417 @@ TEST_F(TransportSecurityStateTest,
                                 network_isolation_key1);
     EXPECT_FALSE(state.GetDynamicExpectCTState(kDomain, network_isolation_key1,
                                                &expect_ct_state));
+  }
+}
+
+// Tests the eviction logic and priority of pruning resources, before applying
+// the per-NetworkIsolationKey limit.
+TEST_F(TransportSecurityStateTest, PruneExpectCTPriority) {
+  const GURL report_uri(kReportUri);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  // Each iteration adds two groups of |kGroupSize| entries, with specified
+  // parameters, and then enough entries are added for a third group to trigger
+  // pruning. |kGroupSize| is chosen so that exactly all the entries in the
+  // first group or the second will typically be pruned. Note that group 1 is
+  // always added before group 2.
+  const size_t kGroupSize =
+      features::kExpectCTPruneMax.Get() - features::kExpectCTPruneMin.Get();
+  // This test requires |2 * kGroupSize| to be less than |kExpectCTPruneMax|.
+  ASSERT_LT(2 * kGroupSize,
+            static_cast<size_t>(features::kExpectCTPruneMax.Get()));
+  const size_t kThirdGroupSize =
+      features::kExpectCTPruneMax.Get() - 2 * kGroupSize;
+
+  // Specifies where the entries of no groups or of only the first group are old
+  // enough to be pruned.
+  enum class GroupsOldEnoughToBePruned {
+    kNone,
+    kFirstGroupOnly,
+    kFirstAndSecondGroups,
+  };
+
+  const struct TestCase {
+    bool first_group_has_transient_nik;
+    bool second_group_has_transient_nik;
+    bool first_group_has_enforce;
+    bool second_group_has_enforce;
+    bool first_group_is_expired;
+    bool second_group_is_expired;
+    GroupsOldEnoughToBePruned groups_old_enough_to_be_pruned;
+    bool expect_first_group_retained;
+    bool expect_second_group_retained;
+  } kTestCases[] = {
+      // No entries are prunable, so will exceed features::kExpectCTPruneMax.
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          true /* expect_first_group_retained */,
+          true /* expect_second_group_retained */
+      },
+
+      // Only second group is prunable, so it should end up empty.
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          false /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          true /* expect_first_group_retained */,
+          false /* expect_second_group_retained */
+      },
+      {
+          false /* first_group_has_transient_nik */,
+          true /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          true /* expect_first_group_retained */,
+          false /* expect_second_group_retained */
+      },
+
+      // Only first group is prunable, so only it should be evicted.
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          false /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          false /* expect_first_group_retained */,
+          true /* expect_second_group_retained */
+      },
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */,
+          GroupsOldEnoughToBePruned::kFirstGroupOnly,
+          false /* expect_first_group_retained */,
+          true /* expect_second_group_retained */
+      },
+
+      // Both groups are prunable for the same reason, but group 1 is older
+      // (since group 1 is added first).
+      {
+          true /* first_group_has_transient_nik */,
+          true /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          false /* expect_first_group_retained */,
+          true /* expect_second_group_retained */
+      },
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */,
+          GroupsOldEnoughToBePruned::kFirstAndSecondGroups,
+          false /* expect_first_group_retained */,
+          true /* expect_second_group_retained */
+      },
+
+      // First group has enforce not set, second uses a transient NIK. First
+      // should take priority.
+      {
+          false /* first_group_has_transient_nik */,
+          true /* second_group_has_transient_nik */,
+          false /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */, GroupsOldEnoughToBePruned::kNone,
+          true /* expect_first_group_retained */,
+          false /* expect_second_group_retained */
+      },
+
+      // First group outside the non-prunable window, second has enforce set.
+      // not set. First should take priority.
+      {
+          false /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          true /* bool first_group_has_enforce */,
+          false /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          false /* second_group_is_expired */,
+          GroupsOldEnoughToBePruned::kFirstGroupOnly,
+          true /* expect_first_group_retained */,
+          false /* expect_second_group_retained */
+      },
+
+      // Second group is expired, so it is evicted, even though the first group
+      // would otherwise be prunable and the second would not.
+      {
+          true /* first_group_has_transient_nik */,
+          false /* second_group_has_transient_nik */,
+          false /* bool first_group_has_enforce */,
+          true /* bool second_group_has_enforce */,
+          false /* first_group_is_expired */,
+          true /* second_group_is_expired */,
+          GroupsOldEnoughToBePruned::kFirstGroupOnly,
+          true /* expect_first_group_retained */,
+          false /* expect_second_group_retained */
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    // Each test case simulates up to |features::kExpectCTSafeFromPruneDays
+    // + 1| days passing, so if an entry added for a test case should not expire
+    // over the course of running the test, its expiry date must be farther into
+    // the future than that.
+    base::Time unexpired_expiry_time =
+        base::Time::Now() +
+        base::TimeDelta::FromDays(
+            2 * features::kExpectCTSafeFromPruneDays.Get() + 1);
+
+    // Always add entries unexpired.
+    base::Time first_group_expiry =
+        test_case.first_group_is_expired
+            ? base::Time::Now() + base::TimeDelta::FromMilliseconds(1)
+            : unexpired_expiry_time;
+
+    TransportSecurityState state;
+    base::Time first_group_observation_time = base::Time::Now();
+    for (size_t i = 0; i < kGroupSize; ++i) {
+      // All entries use a unique NetworkIsolationKey, so
+      // NetworkIsolationKey-based pruning will do nothing.
+      state.AddExpectCT(CreateUniqueHostName(), first_group_expiry,
+                        test_case.first_group_has_enforce, report_uri,
+                        CreateUniqueNetworkIsolationKey(
+                            test_case.first_group_has_transient_nik));
+    }
+
+    // Skip forward in time slightly, so the first group is always older than
+    // the first.
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+    // If only the first group should be old enough to be pruned, wait until
+    // enough time for the group to be prunable has passed.
+    if (test_case.groups_old_enough_to_be_pruned ==
+        GroupsOldEnoughToBePruned::kFirstGroupOnly) {
+      FastForwardBy(base::TimeDelta::FromDays(
+          features::kExpectCTSafeFromPruneDays.Get() + 1));
+    }
+
+    // Always add entries unexpired.
+    base::Time second_group_expiry =
+        test_case.second_group_is_expired
+            ? base::Time::Now() + base::TimeDelta::FromMilliseconds(1)
+            : unexpired_expiry_time;
+
+    base::Time second_group_observation_time = base::Time::Now();
+    ASSERT_NE(first_group_observation_time, second_group_observation_time);
+    for (size_t i = 0; i < kGroupSize; ++i) {
+      state.AddExpectCT(CreateUniqueHostName(), second_group_expiry,
+                        test_case.second_group_has_enforce, report_uri,
+                        CreateUniqueNetworkIsolationKey(
+                            test_case.second_group_has_transient_nik));
+    }
+
+    // Skip forward in time slightly, so the first group is always older than
+    // the first. This needs to be long enough so that if
+    // |second_group_is_expired| is true, the entry will expire.
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+    // If both the first and second groups should be old enough to be pruned,
+    // wait until enough time has passed for both groups to prunable.
+    if (test_case.groups_old_enough_to_be_pruned ==
+        GroupsOldEnoughToBePruned::kFirstAndSecondGroups) {
+      FastForwardBy(base::TimeDelta::FromDays(
+          features::kExpectCTSafeFromPruneDays.Get() + 1));
+    }
+
+    for (size_t i = 0; i < kThirdGroupSize; ++i) {
+      state.AddExpectCT(
+          CreateUniqueHostName(),
+          base::Time::Now() + base::TimeDelta::FromSeconds(1),
+          true /* enforce */, report_uri,
+          CreateUniqueNetworkIsolationKey(false /* is_transient */));
+    }
+
+    size_t first_group_size = 0;
+    size_t second_group_size = 0;
+    size_t third_group_size = 0;
+    for (TransportSecurityState::ExpectCTStateIterator iterator(state);
+         iterator.HasNext(); iterator.Advance()) {
+      if (iterator.domain_state().last_observed ==
+          first_group_observation_time) {
+        ++first_group_size;
+      } else if (iterator.domain_state().last_observed ==
+                 second_group_observation_time) {
+        ++second_group_size;
+      } else {
+        ++third_group_size;
+      }
+    }
+
+    EXPECT_EQ(test_case.expect_first_group_retained ? kGroupSize : 0,
+              first_group_size);
+    EXPECT_EQ(test_case.expect_second_group_retained ? kGroupSize : 0,
+              second_group_size);
+    EXPECT_EQ(kThirdGroupSize, third_group_size);
+
+    // Make sure that |unexpired_expiry_time| was set correctly - if this fails,
+    // it will need to be increased to avoid unexpected entry expirations.
+    ASSERT_LT(base::Time::Now(), unexpired_expiry_time);
+  }
+}
+
+// Test the delay between pruning Expect-CT entries.
+TEST_F(TransportSecurityStateTest, PruneExpectCTDelay) {
+  const GURL report_uri(kReportUri);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  TransportSecurityState state;
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(10);
+  // Add prunable entries until pruning is triggered.
+  for (int i = 0; i < features::kExpectCTPruneMax.Get(); ++i) {
+    state.AddExpectCT(CreateUniqueHostName(), expiry, false /* enforce */,
+                      report_uri,
+                      CreateUniqueNetworkIsolationKey(true /* is_transient */));
+  }
+  // Should have removed enough entries to get down to kExpectCTPruneMin
+  // entries.
+  EXPECT_EQ(features::kExpectCTPruneMin.Get(),
+            static_cast<int>(state.num_expect_ct_entries()));
+
+  // Add more prunable entries, but pruning should not be triggered, due to the
+  // delay between subsequent pruning tasks.
+  for (int i = 0; i < features::kExpectCTPruneMax.Get(); ++i) {
+    state.AddExpectCT(CreateUniqueHostName(), expiry, false /* enforce */,
+                      report_uri,
+                      CreateUniqueNetworkIsolationKey(true /* is_transient */));
+  }
+  EXPECT_EQ(
+      features::kExpectCTPruneMax.Get() + features::kExpectCTPruneMin.Get(),
+      static_cast<int>(state.num_expect_ct_entries()));
+
+  // Time passes, which does not trigger pruning.
+  FastForwardBy(
+      base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+  EXPECT_EQ(
+      features::kExpectCTPruneMax.Get() + features::kExpectCTPruneMin.Get(),
+      static_cast<int>(state.num_expect_ct_entries()));
+
+  // Another entry is added, which triggers pruning, now that enough time has
+  // passed.
+  state.AddExpectCT(CreateUniqueHostName(), expiry, false /* enforce */,
+                    report_uri,
+                    CreateUniqueNetworkIsolationKey(true /* is_transient */));
+  EXPECT_EQ(features::kExpectCTPruneMin.Get(),
+            static_cast<int>(state.num_expect_ct_entries()));
+
+  // More time passes.
+  FastForwardBy(base::TimeDelta::FromSeconds(
+      10 * features::kExpectCTPruneDelaySecs.Get()));
+  EXPECT_EQ(features::kExpectCTPruneMin.Get(),
+            static_cast<int>(state.num_expect_ct_entries()));
+
+  // When enough entries are added to trigger pruning, it runs immediately,
+  // since enough time has passed.
+  for (int i = 0; i < features::kExpectCTPruneMax.Get() -
+                          features::kExpectCTPruneMin.Get();
+       ++i) {
+    state.AddExpectCT(CreateUniqueHostName(), expiry, false /* enforce */,
+                      report_uri,
+                      CreateUniqueNetworkIsolationKey(true /* is_transient */));
+  }
+  EXPECT_EQ(features::kExpectCTPruneMin.Get(),
+            static_cast<int>(state.num_expect_ct_entries()));
+}
+
+// Test that Expect-CT pruning respects kExpectCTMaxEntriesPerNik, which is only
+// applied if there are more than kExpectCTPruneMin entries after global
+// pruning.
+TEST_F(TransportSecurityStateTest, PruneExpectCTNetworkIsolationKeyLimit) {
+  const GURL report_uri(kReportUri);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  TransportSecurityState state;
+
+  // Three different expiration times, which are used to distinguish entries
+  // added by each loop. No entries actually expire in this test.
+  base::Time expiry1 = base::Time::Now() + base::TimeDelta::FromDays(10);
+  base::Time expiry2 = expiry1 + base::TimeDelta::FromDays(10);
+  base::Time expiry3 = expiry2 + base::TimeDelta::FromDays(10);
+
+  // Add non-prunable entries using different non-transient NIKs. They should
+  // not be pruned because they are recently-observed enforce entries.
+  for (int i = 0; i < features::kExpectCTPruneMax.Get(); ++i) {
+    state.AddExpectCT(
+        CreateUniqueHostName(), expiry1, true /* enforce */, report_uri,
+        CreateUniqueNetworkIsolationKey(false /* is_transient */));
+  }
+  EXPECT_EQ(features::kExpectCTPruneMax.Get(),
+            static_cast<int>(state.num_expect_ct_entries()));
+
+  // Add kExpectCTMaxEntriesPerNik non-prunable entries with a single NIK,
+  // allowing pruning to run each time. No entries should be deleted.
+  NetworkIsolationKey network_isolation_key =
+      CreateUniqueNetworkIsolationKey(false /* is_transient */);
+  for (int i = 0; i < features::kExpectCTMaxEntriesPerNik.Get(); ++i) {
+    FastForwardBy(
+        base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+    state.AddExpectCT(CreateUniqueHostName(), expiry2, true /* enforce */,
+                      report_uri, network_isolation_key);
+    EXPECT_EQ(features::kExpectCTPruneMax.Get() + i + 1,
+              static_cast<int>(state.num_expect_ct_entries()));
+  }
+
+  // Add kExpectCTMaxEntriesPerNik non-prunable entries with the same NIK as
+  // before, allowing pruning to run each time. Each time, a single entry should
+  // be removed, resulting in the same total number of entries as before.
+  for (int i = 0; i < features::kExpectCTMaxEntriesPerNik.Get(); ++i) {
+    FastForwardBy(
+        base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get()));
+    state.AddExpectCT(CreateUniqueHostName(), expiry3, true /* enforce */,
+                      report_uri, network_isolation_key);
+    EXPECT_EQ(features::kExpectCTPruneMax.Get() +
+                  features::kExpectCTMaxEntriesPerNik.Get(),
+              static_cast<int>(state.num_expect_ct_entries()));
+
+    // Count entries with |expiry2| and |expiry3|. For each loop iteration, an
+    // entry with |expiry2| should be replaced by one with |expiry3|.
+    int num_expiry2_entries = 0;
+    int num_expiry3_entries = 0;
+    for (TransportSecurityState::ExpectCTStateIterator iterator(state);
+         iterator.HasNext(); iterator.Advance()) {
+      if (iterator.domain_state().expiry == expiry2) {
+        EXPECT_EQ(network_isolation_key, iterator.network_isolation_key());
+        ++num_expiry2_entries;
+      } else if (iterator.domain_state().expiry == expiry3) {
+        EXPECT_EQ(network_isolation_key, iterator.network_isolation_key());
+        ++num_expiry3_entries;
+      }
+    }
+    EXPECT_EQ(features::kExpectCTMaxEntriesPerNik.Get() - i - 1,
+              num_expiry2_entries);
+    EXPECT_EQ(i + 1, num_expiry3_entries);
   }
 }
 

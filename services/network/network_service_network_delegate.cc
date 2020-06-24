@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/monitor.h"
+#include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -20,7 +21,6 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_proxy_delegate.h"
 #include "services/network/pending_callback_chain.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 
@@ -61,7 +61,7 @@ void NetworkServiceNetworkDelegate::MaybeTruncateReferrer(
   }
 
   if (base::FeatureList::IsEnabled(
-          features::kCapReferrerToOriginOnCrossOrigin)) {
+          net::features::kCapReferrerToOriginOnCrossOrigin)) {
     url::Origin destination_origin = url::Origin::Create(effective_url);
     url::Origin source_origin = url::Origin::Create(GURL(request->referrer()));
     if (!destination_origin.IsSameOriginWith(source_origin))

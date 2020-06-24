@@ -127,4 +127,10 @@ void RenderFrameMetadataProviderImpl::OnFrameSubmissionForTesting(
                                   weak_factory_.GetWeakPtr()));
 }
 
+void RenderFrameMetadataProviderImpl::OnRootScrollOffsetChanged(
+    const gfx::Vector2dF& root_scroll_offset) {
+  for (Observer& observer : observers_)
+    observer.OnRootScrollOffsetChanged(root_scroll_offset);
+}
+
 }  // namespace content

@@ -139,10 +139,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(::switches::kDisablePresentationAPI);
   // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.
   cl->AppendSwitch(::switches::kDisableRemotePlaybackAPI);
-#if defined(OS_ANDROID)
-  // TODO(crbug.com/1066263): make MediaSession work with WebLayer.
-  cl->AppendSwitch(::switches::kDisableMediaSessionAPI);
-#endif
   DisableFeaturesIfNotSet({
     // TODO(crbug.com/1025619): make web-payments work with WebLayer.
     ::features::kWebPayments,

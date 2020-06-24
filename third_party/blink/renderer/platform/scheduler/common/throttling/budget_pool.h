@@ -65,7 +65,10 @@ class PLATFORM_EXPORT BudgetPool {
       base::TimeTicks now,
       base::TimeTicks desired_run_time) = 0;
 
-  // Notifies budget pool that wakeup has happened.
+  // Invoked as part of a global wake up if any of the task queues associated
+  // with the budget pool has reached its next allowed run time. The next
+  // allowed run time of a queue is the maximum value returned from
+  // GetNextAllowedRunTime() among all the budget pools it is part of.
   virtual void OnWakeUp(base::TimeTicks now) = 0;
 
   // Specify how this budget pool should block affected queues.

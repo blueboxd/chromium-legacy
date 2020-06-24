@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 
@@ -26,11 +28,20 @@ struct SearchConcept;
 // LocalSearchService and providing metadata via GetTagMetadata().
 class SearchTagRegistry {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+    virtual void OnRegistryUpdated() = 0;
+  };
+
   SearchTagRegistry(
       local_search_service::LocalSearchService* local_search_service);
   SearchTagRegistry(const SearchTagRegistry& other) = delete;
   SearchTagRegistry& operator=(const SearchTagRegistry& other) = delete;
   virtual ~SearchTagRegistry();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   void AddSearchTags(const std::vector<SearchConcept>& search_tags);
   void RemoveSearchTags(const std::vector<SearchConcept>& search_tags);
@@ -47,6 +58,7 @@ class SearchTagRegistry {
 
   std::vector<local_search_service::Data> ConceptVectorToDataVector(
       const std::vector<SearchConcept>& search_tags);
+  void NotifyRegistryUpdated();
 
   // Index used by the LocalSearchService for string matching.
   local_search_service::Index* index_;
@@ -55,6 +67,8 @@ class SearchTagRegistry {
   // LocalSearchService. Contents are kept in sync with |index_|.
   std::unordered_map<std::string, const SearchConcept*>
       result_id_to_metadata_list_map_;
+
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace settings

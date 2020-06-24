@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">କାଲିବ୍ରାସନ୍‍ ସମ୍ପୂର୍ଣ୍ଣ ହୋ‍ଇଛି</translation>
 <translation id="252373100621549798">ଅଜଣା ଡିସ୍‌ପ୍ଲେ</translation>
 <translation id="2545651323591713692">ସ୍ନୁଜ୍ କରନ୍ତୁ</translation>
+<translation id="2570734079541893434">ସେଟିଂସ୍ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{ଘଣ୍ଟା ମଧ୍ୟରେ}other{# ଘଣ୍ଟା ମଧ୍ୟରେ}}</translation>
 <translation id="2583543531130364912">ଆପଣଙ୍କର ଟଚ୍‌ସ୍କ୍ରିନ୍‌କୁ କାଲିବ୍ରେଟ୍ କରନ୍ତୁ</translation>
 <translation id="2666092431469916601">ଶୀର୍ଷ</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">ପୃଷ୍ଠା <ph name="PAGE_NUMBER" />, ଧାଡ଼ି <ph name="ROW_NUMBER" />, ସ୍ତମ୍ଭ <ph name="COLUMN_NUMBER" />କୁ ଘୁଞ୍ଚାଯାଇଛି।</translation>
 <translation id="7879499977785298635">ଅବରୋଧ କରନ୍ତୁ ନାହିଁ</translation>
 <translation id="7907591526440419938">ଫାଇଲ୍ ଖୋଲନ୍ତୁ</translation>
+<translation id="7952747673138230804">Chrome OS ଏକ୍ସପ୍ଲୋର୍ କରିବାକୁ ନୂଆ ବିଷୟବସ୍ତୁର ପ୍ରସ୍ତାବଗୁଡ଼ିକ ଦେଖାଇଥାଏ। ଯଦି ଆପଣ ବ୍ୟବହାର ଡାଟା ସେୟାର୍ କରିବାକୁ ବାଛିଥାଆନ୍ତି ତେବେ କେବଳ ଗୁଣବତ୍ତାକୁ ଉନ୍ନତ କରିବା ପାଇଁ ପରିସଂଖ୍ୟାନ ପଠାଏ। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">କମାଣ୍ଡ</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ଆଉ ଅଧିକ 1ଟି ପଢ଼ାଯାଇନଥିବା ବିଜ୍ଞପ୍ତି}other{ଆଉ ଅଧିକ #ଟି ପଢ଼ାଯାଇନଥିବା ବିଜ୍ଞପ୍ତି}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 ମିନିଟରେ}other{# ମିନିଟରେ}}</translation>

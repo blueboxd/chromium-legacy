@@ -60,6 +60,7 @@ namespace assistant {
 
 namespace {
 
+using chromeos::assistant::features::IsAmbientAssistantEnabled;
 using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
 
 constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
@@ -110,7 +111,7 @@ bool IsSignedOutMode() {
   // We will switch the Libassitsant mode to signed-out/signed-in when user
   // enters/exits the ambient mode.
   const bool entered_ambient_mode =
-      chromeos::features::IsAmbientModeEnabled() && InAmbientMode();
+      IsAmbientAssistantEnabled() && InAmbientMode();
 
   // Note that we shouldn't toggle the flag to true when exiting ambient
   // mode if we have been using fake gaia login, e.g. in the Tast test.
@@ -238,7 +239,7 @@ void Service::Init() {
 
   ash::AssistantState::Get()->AddObserver(this);
 
-  if (chromeos::features::IsAmbientModeEnabled())
+  if (IsAmbientAssistantEnabled())
     ambient_ui_model_observer_.Add(ash::AmbientUiModel::Get());
 
   DCHECK(!assistant_manager_service_);
@@ -360,6 +361,8 @@ void Service::OnStateChanged(AssistantManagerService::State new_state) {
 
 void Service::OnAmbientUiVisibilityChanged(
     ash::AmbientUiVisibility visibility) {
+  DCHECK(IsAmbientAssistantEnabled());
+
   if (IsSignedOutMode()) {
     UpdateAssistantManagerState();
   } else {
@@ -421,7 +424,7 @@ void Service::UpdateAssistantManagerState() {
     case AssistantManagerService::State::RUNNING:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->SetUser(GetUserInfo());
-        if (chromeos::features::IsAmbientModeEnabled())
+        if (IsAmbientAssistantEnabled())
           assistant_manager_service_->EnableAmbientMode(InAmbientMode());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
         assistant_manager_service_->SetArcPlayStoreEnabled(

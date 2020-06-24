@@ -1023,7 +1023,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         // Only show the link that explains protected content settings when needed.
-        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
+        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)
+                && getSiteSettingsClient().getSiteSettingsHelpClient().isHelpAndFeedbackEnabled()) {
             explainProtectedMediaKey.setOnPreferenceClickListener(preference -> {
                 getSiteSettingsClient()
                         .getSiteSettingsHelpClient()

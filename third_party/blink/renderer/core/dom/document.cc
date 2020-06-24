@@ -761,7 +761,6 @@ Document::Document(const DocumentInit& initializer,
       write_recursion_depth_(0),
       scripted_animation_controller_(
           MakeGarbageCollected<ScriptedAnimationController>(domWindow())),
-      current_frame_is_throttled_(false),
       registration_context_(initializer.RegistrationContext(this)),
       element_data_cache_clear_timer_(
           GetTaskRunner(TaskType::kInternalUserInteraction),
@@ -7423,23 +7422,6 @@ void Document::ServiceScriptedAnimations(
     GetFrame()->GetFrameScheduler()->AddTaskTime(base::TimeTicks::Now() -
                                                  start_time);
   }
-}
-
-int Document::RequestPostAnimationFrame(
-    FrameRequestCallbackCollection::FrameCallback* cb) {
-  return scripted_animation_controller_->RegisterPostFrameCallback(cb);
-}
-
-void Document::CancelPostAnimationFrame(int id) {
-  scripted_animation_controller_->CancelPostFrameCallback(id);
-}
-
-void Document::RunPostAnimationFrameCallbacks() {
-  bool was_throttled = current_frame_is_throttled_;
-  current_frame_is_throttled_ = false;
-  if (was_throttled)
-    return;
-  scripted_animation_controller_->RunPostFrameCallbacks();
 }
 
 ScriptedIdleTaskController& Document::EnsureScriptedIdleTaskController() {

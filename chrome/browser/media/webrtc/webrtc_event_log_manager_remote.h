@@ -443,6 +443,12 @@ class WebRtcRemoteEventLogManager final
   // currently busy uploading it to a remote server.
   std::unique_ptr<WebRtcEventLogUploader> uploader_;
 
+  // The path to the file which is currently being uploaded.
+  // Used to ensure a callback from the uploader refers to the current
+  // file, rather than a second callback from the previously uploaded file,
+  // e.g. when when Cancel() is called right after the upload finishes.
+  base::FilePath currently_uploaded_file_;
+
   // Provides notifications of network changes.
   network::NetworkConnectionTracker* network_connection_tracker_;
 

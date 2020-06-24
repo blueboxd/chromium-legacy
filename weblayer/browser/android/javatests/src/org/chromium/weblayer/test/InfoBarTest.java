@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -130,15 +131,17 @@ public class InfoBarTest {
         // Scroll down and check that infobar container view is translated in response.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, -infoBarContainerViewHeight);
-        CriteriaHelper.pollUiThread(()
-                                            -> Assert.assertEquals(infoBarContainerViewHeight,
-                                                    (int) infoBarContainerView.getTranslationY()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat((int) infoBarContainerView.getTranslationY(),
+                    Matchers.is(infoBarContainerViewHeight));
+        });
 
         // Scroll back up and check that infobar container view is translated in response.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, infoBarContainerViewHeight);
-        CriteriaHelper.pollUiThread(
-                () -> Assert.assertEquals(0, (int) infoBarContainerView.getTranslationY()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat((int) infoBarContainerView.getTranslationY(), Matchers.is(0));
+        });
     }
 
     @Test

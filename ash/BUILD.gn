@@ -614,6 +614,8 @@ component("ash") {
     "quick_answers/quick_answers_controller_impl.h",
     "quick_answers/quick_answers_ui_controller.cc",
     "quick_answers/quick_answers_ui_controller.h",
+    "quick_answers/ui/quick_answers_focus_search.cc",
+    "quick_answers/ui/quick_answers_focus_search.h",
     "quick_answers/ui/quick_answers_pre_target_handler.cc",
     "quick_answers/ui/quick_answers_pre_target_handler.h",
     "quick_answers/ui/quick_answers_view.cc",

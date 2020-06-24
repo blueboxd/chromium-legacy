@@ -331,18 +331,10 @@ void URLRequestHttpJob::Start() {
   // plugin could set a referrer although sending the referrer is inhibited.
   request_info_.extra_headers.RemoveHeader(HttpRequestHeaders::kReferer);
 
-  // Our consumer should have made sure that this is a safe referrer. See for
-  // instance WebCore::FrameLoader::HideReferrer.
+  // Our consumer should have made sure that this is a safe referrer (e.g. via
+  // URLRequestJob::ComputeReferrerForPolicy).
   if (referrer.is_valid()) {
     std::string referer_value = referrer.spec();
-    // We limit the `referer` header to 4k: see step 6 of
-    // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-    // and https://github.com/whatwg/fetch/issues/903.
-    if (referer_value.length() > 4096) {
-      // Strip the referrer down to its origin, but ensure that it's serialized
-      // as a URL (e.g. retaining a trailing `/` character).
-      referer_value = url::Origin::Create(referrer).GetURL().spec();
-    }
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kReferer,
                                           referer_value);
   }

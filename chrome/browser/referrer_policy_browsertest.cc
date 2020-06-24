@@ -35,8 +35,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
@@ -766,8 +766,7 @@ struct ReferrerOverrideParams {
      .same_origin_to_cross_origin_subresource_redirect =
          ReferrerPolicyTest::EXPECT_EMPTY_REFERRER},
     {
-        .feature_to_enable =
-            network::features::kCapReferrerToOriginOnCrossOrigin,
+        .feature_to_enable = net::features::kCapReferrerToOriginOnCrossOrigin,
         .force_no_referrer_when_downgrade_default = false,
         .baseline_policy = network::mojom::ReferrerPolicy::kAlways,
         // Applying the cap doesn't change the "referrer policy"
@@ -997,7 +996,7 @@ class ReferrerPolicyCapReferrerToOriginOnCrossOriginTest
  public:
   ReferrerPolicyCapReferrerToOriginOnCrossOriginTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        network::features::kCapReferrerToOriginOnCrossOrigin);
+        net::features::kCapReferrerToOriginOnCrossOrigin);
   }
 
  private:

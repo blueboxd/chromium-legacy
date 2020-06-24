@@ -122,7 +122,7 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
                         completed_after_background);
 }
 
-void DispatchFirstPaintAfterBackForwardCacheRestore(
+void DispatchEventsAfterBackForwardCacheRestore(
     PageLoadMetricsObserver* observer,
     const std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>&
         last_timings,
@@ -133,26 +133,24 @@ void DispatchFirstPaintAfterBackForwardCacheRestore(
   for (size_t i = 0; i < new_timings.size(); i++) {
     auto first_paint =
         new_timings[i]->first_paint_after_back_forward_cache_restore;
-
-    // The back-forward navigation happened, but the first-paint event has not
-    // happened yet.
-    if (first_paint.is_zero())
-      continue;
-
-    if (i < last_timings.size()) {
-      auto last_first_paint =
-          last_timings[i]->first_paint_after_back_forward_cache_restore;
-
-      // The first-paint after the page was restored from the cache was already
-      // recorded.
-      if (!last_first_paint.is_zero()) {
-        DCHECK_EQ(last_first_paint, first_paint);
-        continue;
-      }
+    if (!first_paint.is_zero() &&
+        (i >= last_timings.size() ||
+         last_timings[i]
+             ->first_paint_after_back_forward_cache_restore.is_zero())) {
+      observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(*new_timings[i],
+                                                               i);
     }
 
-    observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(*new_timings[i],
-                                                             i);
+    auto first_input_delay =
+        new_timings[i]->first_input_delay_after_back_forward_cache_restore;
+    if (first_input_delay.has_value() &&
+        (i >= last_timings.size() ||
+         !last_timings[i]
+              ->first_input_delay_after_back_forward_cache_restore
+              .has_value())) {
+      observer->OnFirstInputAfterBackForwardCacheRestoreInPage(*new_timings[i],
+                                                               i);
+    }
   }
 }
 
@@ -177,7 +175,7 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
       !last_timing.paint_timing->first_paint) {
     observer->OnFirstPaintInPage(new_timing);
   }
-  DispatchFirstPaintAfterBackForwardCacheRestore(
+  DispatchEventsAfterBackForwardCacheRestore(
       observer, last_timing.back_forward_cache_timings,
       new_timing.back_forward_cache_timings);
   if (new_timing.paint_timing->first_image_paint &&

@@ -246,10 +246,16 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
     matched_bits.Set(TimingField::kFirstInputOrScroll);
   if (timing.interactive_timing->first_input_delay)
     matched_bits.Set(TimingField::kFirstInputDelay);
-  if (!timing.back_forward_cache_timings.empty() &&
-      !timing.back_forward_cache_timings.back()
-           ->first_paint_after_back_forward_cache_restore.is_zero()) {
-    matched_bits.Set(TimingField::kFirstPaintAfterBackForwardCacheRestore);
+  if (!timing.back_forward_cache_timings.empty()) {
+    if (!timing.back_forward_cache_timings.back()
+             ->first_paint_after_back_forward_cache_restore.is_zero()) {
+      matched_bits.Set(TimingField::kFirstPaintAfterBackForwardCacheRestore);
+    }
+    if (timing.back_forward_cache_timings.back()
+            ->first_input_delay_after_back_forward_cache_restore.has_value()) {
+      matched_bits.Set(
+          TimingField::kFirstInputDelayAfterBackForwardCacheRestore);
+    }
   }
 
   return matched_bits;

@@ -11883,7 +11883,6 @@ interface webkitURL
     method btoa
     method cancelAnimationFrame
     method cancelIdleCallback
-    method cancelPostAnimationFrame
     method captureEvents
     method chooseFileSystemEntries
     method clearInterval
@@ -11914,7 +11913,6 @@ interface webkitURL
     method releaseEvents
     method requestAnimationFrame
     method requestIdleCallback
-    method requestPostAnimationFrame
     method resizeBy
     method resizeTo
     method scroll

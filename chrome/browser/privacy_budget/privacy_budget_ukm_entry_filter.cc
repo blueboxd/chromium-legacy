@@ -13,13 +13,13 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 PrivacyBudgetUkmEntryFilter::PrivacyBudgetUkmEntryFilter(
-    IdentifiabilityStudyState* settings)
-    : identifiability_study_settings_(settings) {}
+    IdentifiabilityStudyState* state)
+    : identifiability_study_state_(state) {}
 
 bool PrivacyBudgetUkmEntryFilter::FilterEntry(
     ukm::mojom::UkmEntry* entry,
     base::flat_set<uint64_t>* removed_metric_hashes) const {
-  const bool enabled = identifiability_study_settings_->enabled();
+  const bool enabled = identifiability_study_state_->IsActive();
 
   // We don't yet deal with any event other than Identifiability. All other
   // types of events pass through.
@@ -31,7 +31,7 @@ bool PrivacyBudgetUkmEntryFilter::FilterEntry(
     return false;
 
   base::EraseIf(entry->metrics, [&](auto metric) {
-    return !identifiability_study_settings_->ShouldSampleSurface(
+    return !identifiability_study_state_->ShouldSampleSurface(
         blink::IdentifiableSurface::FromMetricHash(metric.first));
   });
 

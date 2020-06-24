@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Předtím, než webům bude povoleno vytvořit 3D mapu vašeho okolí nebo sledovat polohu kamery, se zeptat (doporučeno)</translation>
 <translation id="2212565012507486665">Povolit cookies</translation>
 <translation id="2289270750774289114">Zeptat se, když chce web objevit zařízení Bluetooth v okolí (doporučeno)</translation>
+<translation id="2315043854645842844">Volbu certifikátu na straně klienta operační systém nepodporuje.</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Stažení bylo dokončeno <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">Web používá váš fotoaparát</translation>
 <translation id="7817023149356982970">Budete odhlášeni z tohoto webu.</translation>
 <translation id="7828557259026017104">Soubory cookie jsou vytvářeny webovými stránkami, které navštěvujete. Weby je používají k tomu, aby si zapamatovaly vaše preference. Soubory cookie třetích stran jsou vytvářeny ostatními weby. Tyto weby na navštívené stránce vlastní nějaký obsah, např. reklamy nebo obrázky.</translation>
+<translation id="7835852323729233924">Přehrávání médií</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="7846621471902887024">Budete odhlášeni ze všech webů.</translation>
 <translation id="7882806643839505685">Zapne zvuk na konkrétním webu.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Opravdu chcete vymazat všechna místní data tohoto webu, včetně souborů cookie, a resetovat všechna jeho oprávnění?</translation>
 <translation id="8007176423574883786">Vypnuto v tomto zařízení</translation>
 <translation id="802154636333426148">Stažení se nezdařilo</translation>
+<translation id="8068648041423924542">Certifikát nelze vybrat.</translation>
 <translation id="8087000398470557479">Tento obsah pochází z domény <ph name="DOMAIN_NAME" />. Poskytováno společností Google.</translation>
 <translation id="8116925261070264013">Ztlumeno</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blokovat soubory cookie pro konkrétní web.</translation>
 <translation id="8959122750345127698">Navigace není dosažitelná: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Spravováno vašimi rodiči</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Přístup k mikrofonu</translation>
 <translation id="965817943346481315">Blokovat, pokud web zobrazuje rušivé nebo zavádějící reklamy (doporučeno)</translation>
 </translationbundle>

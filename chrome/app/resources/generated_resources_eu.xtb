@@ -509,6 +509,7 @@
 <translation id="1630873818549593964">Haurraren datuak babestuta egongo dira Classroom-en. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="1632082166874334883">Pasahitza Google-ko kontuan dago gordeta</translation>
 <translation id="1632803087685957583">Teklak sakatuta edukitzean, idatzitakoa zenbat aldiz errepikatuko den, hitzen iragarpena erabiliko den eta beste zenbait gauza doitzeko aukera ematen dizu</translation>
+<translation id="163309982320328737">Hasierako karakterearen zabalera beteta dago</translation>
 <translation id="1633947793238301227">Desgaitu Google-ren Laguntzailea</translation>
 <translation id="1634783886312010422">Aldatu al duzu pasahitza <ph name="WEBSITE" /> webgunean?</translation>
 <translation id="1637224376458524414">Izan laster-marka iPhone-an</translation>
@@ -987,7 +988,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2224551243087462610">Editatu karpetaren izena</translation>
 <translation id="2225864335125757863">Aldatu honako pasahitz hauek ahal bezain laster kontua babestuta mantentzeko:</translation>
 <translation id="2226449515541314767">Webguneak MIDI gailuen kontrol osoa izateko blokeatuta dago.</translation>
-<translation id="222657802677009088">Konfiguratu inprimagailua</translation>
 <translation id="222704500187107962">Salbuespen hau automatikoki kenduko da ezkutuko moduko uneko saiotik irteten zarenean</translation>
 <translation id="2227179592712503583">Kendu iradokizuna</translation>
 <translation id="2229161054156947610">Ordu bat baino gehiago geratzen da</translation>
@@ -1734,7 +1734,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3151786313568798007">Orientazioa</translation>
 <translation id="3154351730702813399">Gailuaren administratzaileak arakatze-jarduerak kontrola ditzake.</translation>
 <translation id="3154429428035006212">Konexiorik gabe egon da hilabete baino gehiago</translation>
-<translation id="3156423641959151603">Konfiguratu wifia</translation>
 <translation id="3156531245809797194">Chrome erabiltzeko, hasi saioa</translation>
 <translation id="3157931365184549694">Leheneratu</translation>
 <translation id="3158033540161634471">Konfiguratu hatz-marka</translation>
@@ -2072,6 +2071,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3590295622232282437">Saio kudeatuan sartzen.</translation>
 <translation id="3592260987370335752">&amp;Lortu informazio gehiago</translation>
 <translation id="359283478042092570">Sartu</translation>
+<translation id="3593152357631900254">Gaitu Fuzzy-Pinyin modua</translation>
 <translation id="3593965109698325041">Ziurtagiri-izenen murriztapenak</translation>
 <translation id="3596235046596950091">Gaitu hodeiko zerbitzuak</translation>
 <translation id="3596414637720633074">Blokeatu hirugarrenen cookieak ezkutuko moduan</translation>
@@ -2491,6 +2491,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4075639477629295004">Ezin da igorri <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Iragarkiak blokeatu egin dira webgune honetan</translation>
 <translation id="4077919383365622693">Garbitu egingo dira <ph name="SITE" /> webguneak gordetako datu eta cookie guztiak.</translation>
+<translation id="4078738236287221428">Neurriz gainekoa</translation>
 <translation id="4079140982534148664">Erabili ortografia-zuzentzaile hobetua</translation>
 <translation id="4081242589061676262">Ezin da igorri fitxategia.</translation>
 <translation id="4084682180776658562">Laster-marka</translation>
@@ -2651,6 +2652,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4303079906735388947">Konfiguratu beste PIN bat segurtasun-giltzarako</translation>
 <translation id="4305402730127028764">Kopiatu <ph name="DEVICE_NAME" /> gailuan</translation>
 <translation id="4306119971288449206">"<ph name="CONTENT_TYPE" />" eduki motarekin hornitu behar dira aplikazioak</translation>
+<translation id="4307992518367153382">Oinarrizko informazioa</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (zuzeneko <ph name="NUM_KILOBYTES_LIVE" /> K)</translation>
 <translation id="4310139701823742692">Fitxategiaren formatua ez da zuzena. Egiaztatu PPD fitxategia eta saiatu berriro.</translation>
 <translation id="431076611119798497">&amp;Xehetasunak</translation>
@@ -2842,6 +2844,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4561893854334016293">Ez dago duela gutxi aldatutako baimenik</translation>
 <translation id="4562155214028662640">Gehitu hatz-marka</translation>
 <translation id="4562494484721939086">Zerbitzurik ez</translation>
+<translation id="4563210852471260509">Hasierako idazteko hizkuntza txinera da</translation>
 <translation id="4563880231729913339">3. hatz-marka</translation>
 <translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="456717285308019641">Orriaren jatorrizko hizkuntza</translation>
@@ -3054,7 +3057,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4864805589453749318">Hautatu zer gurasok emango duen baimena ikastetxeko kontu bat gehitzeko.</translation>
 <translation id="486635084936119914">Ireki fitxategi mota jakin batzuk deskargatu bezain laster</translation>
 <translation id="4869213010169296107">Erretilu bat falta zaio <ph name="PRINTER_NAME" /> inprimagailuari</translation>
-<translation id="4869289251183233431">Biltegiratzeko toki gutxi dago gailuan. Gutxienez <ph name="MINIMUM_SPACE" /> behar dituzu <ph name="APP_NAME" /> erabiltzeko, eta <ph name="RECOMMENDED_SPACE" /> baino gehiago libre izatea gomendatzen dugu. Tokia egiteko, ezabatu gailuan dauden fitxategiak.</translation>
 <translation id="48704129375571883">Gehitu eginbide gehiago</translation>
 <translation id="4870758487381879312">Konfigurazioari buruzko informazioa lortzeko, idatzi administratzaileak emandako pasahitza</translation>
 <translation id="4870903493621965035">Ez dago parekatutako gailurik</translation>
@@ -3229,6 +3231,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5087926280563932024">Ezin izan da egiaztatu kontua. Saiatu berriro edo berrabiarazi Chromebook-a.</translation>
 <translation id="5088172560898466307">Zerbitzariaren ostalari-izena</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 RSA enkriptatzearekin</translation>
+<translation id="5089810972385038852">Estatua</translation>
 <translation id="5094721898978802975">Komunikatu aplikazio lankide natiboekin</translation>
 <translation id="5097002363526479830">Ezin izan da "<ph name="NAME" />" sarera konektatu: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Sakatu automatikoki kurtsorea gelditzen denean</translation>
@@ -3506,6 +3509,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5457459357461771897">Irakurri eta ezabatu ordenagailuko argazkiak, musika eta bestelako multimedia-edukia</translation>
 <translation id="5457599981699367932">Arakatu gonbidatu gisa</translation>
 <translation id="5457991019809708398">Aktibatuta; ez dago ibiltaritzan</translation>
+<translation id="5458214261780477893">Dvorak</translation>
 <translation id="5458998536542739734">Pantaila blokeatuko oharrak</translation>
 <translation id="546322474339998983">Chrome arakatzaileak eta <ph name="DEVICE_TYPE" /> gailuaren abiarazleak erabiltzen dute</translation>
 <translation id="5463231940765244860">Idatzi</translation>
@@ -3589,7 +3593,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5553089923092577885">Ziurtagiri-gidalerroen esleipenak</translation>
 <translation id="5554489410841842733">Ikonoa ikusgai egongo da luzapenak uneko orrian ekintzak egin ditzakeenean.</translation>
 <translation id="5554720593229208774">Mezu elektronikoaren ziurtagiri-emailea</translation>
-<translation id="5555119540139726793">Instalatu inprimagailu bat</translation>
 <translation id="5556459405103347317">Kargatu berriro</translation>
 <translation id="5557991081552967863">Izan wifi-sarea aktibatuta inaktibo zauden bitartean</translation>
 <translation id="5558125320634132440">Webgunea blokeatu egin da, agian helduentzako edukiak baititu</translation>
@@ -3621,7 +3624,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5587951903744313188">Ikusi ea nahi ez duzun softwarerik dagoen</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Aplikazioak kargatzen…</translation>
-<translation id="558984423786125616">Ataka lehendik dago ezarpenetan</translation>
 <translation id="5592595402373377407">Ez dago behar adina datu erabilgarri oraindik.</translation>
 <translation id="5593357315997824387">Sinkronizatu fitxategiak</translation>
 <translation id="5595485650161345191">Editatu helbidea</translation>
@@ -3692,7 +3694,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5677928146339483299">Blokeatuta</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> bolumena irakurtzeko eta bertan idazteko sarbidea baimendu da.</translation>
 <translation id="5678955352098267522">Irakurri <ph name="WEBSITE_1" /> webgunean dituzun datuak</translation>
-<translation id="5682818547921109831">Etiketa (aukerakoa)</translation>
 <translation id="5684181005476681636">Wifi-sarearen xehetasunak</translation>
 <translation id="5684661240348539843">Aktibo-identifikatzailea.</translation>
 <translation id="5687326903064479980">Ordu-zona</translation>
@@ -4042,6 +4043,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6120205520491252677">Ainguratu orria hasierako pantailan…</translation>
 <translation id="6122081475643980456">Luzapen bat kontrolatzen ari da Interneteko konexioa</translation>
 <translation id="6122095009389448667">Jarraitu blokeatzen webguneak arbeleko edukiak ikusteko aukera</translation>
+<translation id="6122191549521593678">Konektatu</translation>
 <translation id="6122831415929794347">Arakatze segurua desaktibatu nahi duzu?</translation>
 <translation id="6122875415561139701">"<ph name="DEVICE_NAME" />" gailuak ez du idazteko baimenik.</translation>
 <translation id="6124213551517593835"><ph name="SITE_GROUP_NAME" /> webguneak eta haren barneko webguneek gorde dituzten datu eta cookie guztiak garbituko dira</translation>
@@ -4323,7 +4325,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6494445798847293442">Ez da autoritate ziurtagiri-emailea</translation>
 <translation id="6494974875566443634">Pertsonalizazioa</translation>
 <translation id="6495925982925244349"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />; <ph name="CONNECTION_STATUS" />). Seinalearen indarra % <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua. Xehetasunak.</translation>
-<translation id="6496965928959882519">Biltegiratzeko toki gutxi dago gailuan. Gutxienez <ph name="RECOMMENDED_SPACE" /> libre izatea gomendatzen dugu <ph name="APP_NAME" /> erabiltzeko. Tokia egiteko, ezabatu gailuan dauden fitxategiak.</translation>
 <translation id="6497457470714179223">{NUM_FILES,plural, =0{Datuek kontuzko edukia edo eduki arriskutsua daukate}=1{Fitxategiak kontuzko edukia edo eduki arriskutsua dauka}other{Fitxategiek kontuzko edukia edo eduki arriskutsua daukate}}</translation>
 <translation id="6497789971060331894">Saguarekin gora eta behera alderantziz egiteko aukera</translation>
 <translation id="6498249116389603658">&amp;Zure hizkuntza guztiak</translation>
@@ -5424,7 +5425,6 @@ Haurrak ikastetxean ez badu Chromebook-ik erabiltzen, edo nahiago baduzu etxean 
 <translation id="7885253890047913815">Azken inprimagailuak</translation>
 <translation id="7887334752153342268">Bikoiztu</translation>
 <translation id="7887864092952184874">Bluetooth sagua parekatuta dago</translation>
-<translation id="7889565820482017512">Bistaratzeko tamaina</translation>
 <translation id="7893008570150657497">Atzitu ordenagailuko argazkiak, musika eta bestelako multimedia-edukia</translation>
 <translation id="7893153962594818789">Bluetooth-a desaktibatuta dago <ph name="DEVICE_TYPE" /> gailuan. Idatzi pasahitza eta aktibatu Bluetooth-a.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (lehenetsia)</translation>
@@ -5857,6 +5857,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8431909052837336408">Aldatu SIM txartelaren PIN kodea</translation>
 <translation id="8434480141477525001">NaCl arazte-ataka</translation>
 <translation id="8435395510592618362">Egiaztatu identitatea <ph name="APP_NAME" /> aplikazioa erabilita</translation>
+<translation id="8437209419043462667">US</translation>
 <translation id="8438328416656800239">Aldatu arakatzaile adimendun batera</translation>
 <translation id="8438566539970814960">Hobetu bilaketak eta arakatze-jarduerak</translation>
 <translation id="8439506636278576865">Eskaini hizkuntza honetako orriak itzultzea</translation>
@@ -6517,6 +6518,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="971774202801778802">Laster-markaren URLa</translation>
 <translation id="973473557718930265">Irten</translation>
 <translation id="975893173032473675">Itzulpenaren xede-hizkuntza</translation>
+<translation id="978146274692397928">Hasiera puntuazioaren zabalera osoa da</translation>
 <translation id="97905529126098460">Bertan behera uzteko prozesua amaitzen denean itxiko da leihoa.</translation>
 <translation id="981121421437150478">Konexiorik gabekoak</translation>
 <translation id="983511809958454316">Eginbide hau ezin da erabili errealitate birtualean</translation>

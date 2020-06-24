@@ -163,6 +163,10 @@ void CastComponent::DestroyComponent(int64_t exit_code,
     application_context_->OnApplicationExit(exit_code);
   }
 
+  // frame() is about to be destroyed, so there is no need to perform cleanup
+  // such as removing before-load JavaScripts.
+  api_bindings_client_->DetachFromFrame(frame());
+
   WebComponent::DestroyComponent(exit_code, reason);
 }
 

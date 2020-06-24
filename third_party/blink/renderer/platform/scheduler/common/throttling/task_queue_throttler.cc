@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/throttled_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 namespace scheduler {
@@ -180,7 +181,7 @@ void TaskQueueThrottler::OnQueueNextWakeUpChanged(
   // TODO(altimin): This probably can be removed —- budget pools should
   // schedule this.
   base::TimeTicks next_allowed_run_time =
-      GetNextAllowedRunTime(queue, next_wake_up);
+      UpdateNextAllowedRunTime(queue, next_wake_up);
   MaybeSchedulePumpThrottledTasks(
       FROM_HERE, now, std::max(next_wake_up, next_allowed_run_time));
 }
@@ -191,9 +192,26 @@ void TaskQueueThrottler::PumpThrottledTasks() {
 
   LazyNow lazy_now(tick_clock_);
 
-  for (const auto& pair : budget_pools_)
-    pair.key->OnWakeUp(lazy_now.Now());
+  // Collect BudgetPools for which at least one queue has reached its next
+  // granted run time.
+  HashSet<BudgetPool*> budget_pools_at_next_granted_run_time;
+  for (const TaskQueueMap::value_type& map_entry : queue_details_) {
+    const base::TimeTicks next_granted_run_time =
+        map_entry.value->next_granted_run_time();
+    if (next_granted_run_time <= lazy_now.Now()) {
+      budget_pools_at_next_granted_run_time.ReserveCapacityForSize(
+          map_entry.value->budget_pools().size());
+      for (BudgetPool* budget_pool : map_entry.value->budget_pools())
+        budget_pools_at_next_granted_run_time.insert(budget_pool);
+    }
+  }
 
+  // Notify BudgetPools for which at least one queue has reached its next
+  // granted run time about the wake up.
+  for (BudgetPool* budget_pool : budget_pools_at_next_granted_run_time)
+    budget_pool->OnWakeUp(lazy_now.Now());
+
+  // Update throttling state for all queues.
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.key;
     UpdateQueueSchedulingLifecycleStateInternal(lazy_now.Now(), task_queue,
@@ -282,6 +300,13 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
     base::TimeTicks now,
     TaskQueue* queue,
     bool is_wake_up) {
+  // Clear the next granted run time, to ensure that the queue's BudgetPools
+  // aren't incorrectly informed of a wake up at the next PumpThrottledTasks().
+  // If necessary, an up-to-date next granted run time will be set below.
+  auto find_it = queue_details_.find(queue);
+  if (find_it != queue_details_.end())
+    find_it->value->set_next_granted_run_time(base::TimeTicks::Max());
+
   if (!queue->IsQueueEnabled() || !IsThrottled(queue)) {
     return;
   }
@@ -319,7 +344,8 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
     // mentioned in the bug.
     if (next_wake_up) {
       MaybeSchedulePumpThrottledTasks(
-          FROM_HERE, now, GetNextAllowedRunTime(queue, next_wake_up.value()));
+          FROM_HERE, now,
+          UpdateNextAllowedRunTime(queue, next_wake_up.value()));
     }
 
     return;
@@ -328,8 +354,8 @@ void TaskQueueThrottler::UpdateQueueSchedulingLifecycleStateInternal(
   if (!next_desired_run_time)
     return;
 
-  base::TimeTicks next_run_time =
-      GetNextAllowedRunTime(queue, next_desired_run_time.value());
+  const base::TimeTicks next_run_time =
+      UpdateNextAllowedRunTime(queue, next_desired_run_time.value());
 
   // Insert a fence of an approriate type.
   base::Optional<QueueBlockType> block_type = GetQueueBlockType(now, queue);
@@ -442,7 +468,7 @@ void TaskQueueThrottler::UnregisterBudgetPool(BudgetPool* budget_pool) {
   budget_pools_.erase(budget_pool);
 }
 
-base::TimeTicks TaskQueueThrottler::GetNextAllowedRunTime(
+base::TimeTicks TaskQueueThrottler::UpdateNextAllowedRunTime(
     TaskQueue* queue,
     base::TimeTicks desired_run_time) {
   base::TimeTicks next_run_time = desired_run_time;
@@ -455,6 +481,8 @@ base::TimeTicks TaskQueueThrottler::GetNextAllowedRunTime(
     next_run_time = std::max(
         next_run_time, budget_pool->GetNextAllowedRunTime(desired_run_time));
   }
+
+  find_it->value->set_next_granted_run_time(next_run_time);
 
   return next_run_time;
 }

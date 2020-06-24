@@ -26,7 +26,6 @@ ChromeVoxE2ETest = class extends testing.Test {
   #include "base/bind.h"
   #include "base/callback.h"
   #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-  #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
   #include "chrome/common/extensions/extension_constants.h"
   #include "content/public/test/browser_test.h"
   #include "extensions/common/extension_l10n_util.h"
@@ -36,11 +35,6 @@ ChromeVoxE2ETest = class extends testing.Test {
   /** @override */
   testGenPreamble() {
     GEN(`
-
-    // SpeechMonitor swaps in a custom TtsPlatform to mock out events and
-    // voices. Do this for the current call stack to catch deferred load.
-    chromeos::SpeechMonitor speech_monitor;
-
     auto allow = extension_l10n_util::AllowGzippedMessagesAllowedForTest();
     base::Closure load_cb =
         base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,

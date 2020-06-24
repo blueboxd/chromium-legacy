@@ -13,9 +13,11 @@
 #include "components/page_load_metrics/browser/observers/back_forward_cache_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -159,5 +161,44 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     // recorded.
     histogram_tester_.ExpectTotalCount(
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 0);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
+                       FirstInputDelayAfterBackForwardCacheRestoreBackground) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHost* rfh_a = top_frame_host();
+
+  // Navigate to B.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramFirstInputDelayAfterBackForwardCacheRestore, 0);
+
+  // Go back to A.
+  {
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddPageExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+            kFirstInputDelayAfterBackForwardCacheRestore);
+
+    web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    EXPECT_EQ(rfh_a, top_frame_host());
+    EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+
+    content::SimulateMouseClick(web_contents(), 0,
+                                blink::WebPointerProperties::Button::kLeft);
+
+    waiter->Wait();
+
+    histogram_tester_.ExpectTotalCount(
+        internal::kHistogramFirstInputDelayAfterBackForwardCacheRestore, 1);
   }
 }

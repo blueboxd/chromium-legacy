@@ -66,9 +66,12 @@ class MockSyncer : public Syncer {
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, SyncCycle*));
 };
 
-std::unique_ptr<DataTypeActivationResponse> MakeFakeActivationResponse() {
+std::unique_ptr<DataTypeActivationResponse> MakeFakeActivationResponse(
+    ModelType model_type) {
   auto response = std::make_unique<DataTypeActivationResponse>();
   response->type_processor = std::make_unique<FakeModelTypeProcessor>();
+  response->model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(model_type));
   return response;
 }
 
@@ -137,13 +140,15 @@ class SyncSchedulerImplTest : public testing::Test {
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         &cancelation_signal_, test_user_share_.keystore_keys_handler());
-    model_type_registry_->ConnectNonBlockingType(HISTORY_DELETE_DIRECTIVES,
-                                                 MakeFakeActivationResponse());
-    model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
-    model_type_registry_->ConnectNonBlockingType(THEMES,
-                                                 MakeFakeActivationResponse());
-    model_type_registry_->ConnectNonBlockingType(TYPED_URLS,
-                                                 MakeFakeActivationResponse());
+    model_type_registry_->ConnectNonBlockingType(
+        HISTORY_DELETE_DIRECTIVES,
+        MakeFakeActivationResponse(HISTORY_DELETE_DIRECTIVES));
+    model_type_registry_->ConnectNonBlockingType(
+        NIGORI, MakeFakeActivationResponse(NIGORI));
+    model_type_registry_->ConnectNonBlockingType(
+        THEMES, MakeFakeActivationResponse(THEMES));
+    model_type_registry_->ConnectNonBlockingType(
+        TYPED_URLS, MakeFakeActivationResponse(TYPED_URLS));
 
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),

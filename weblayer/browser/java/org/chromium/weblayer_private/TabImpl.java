@@ -27,6 +27,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.browser_ui.http_auth.LoginPrompt;
+import org.chromium.components.browser_ui.media.MediaSessionHelper;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
@@ -112,6 +113,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private InterceptNavigationDelegateClientImpl mInterceptNavigationDelegateClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InfoBarContainer mInfoBarContainer;
+    private MediaSessionHelper mMediaSessionHelper;
 
     private boolean mPostContainerViewInitDone;
 
@@ -168,6 +170,17 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
             BrowserViewController viewController = getViewController();
             if (viewController != null && !mIgnoreRenderer) {
                 viewController.onBottomControlsChanged(bottomControlsOffsetY);
+            }
+        }
+
+        @Override
+        public void onBackgroundColorChanged(int color) {
+            if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
+                try {
+                    mClient.onBackgroundColorChanged(color);
+                } catch (RemoteException e) {
+                    throw new APICallException(e);
+                }
             }
         }
     }
@@ -240,6 +253,14 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         };
         // addObserver() calls to observer when added.
         WebLayerAccessibilityUtil.get().addObserver(mAccessibilityObserver);
+
+        // MediaSession only works if the client is new enough. Sadly, passing
+        // kDisableMediaSessionAPI does not fully disable the API, so a check is also necessary
+        // before installing this observer.
+        if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
+            mMediaSessionHelper = new MediaSessionHelper(
+                    mWebContents, MediaSessionManager.createMediaSessionHelperDelegate(mId));
+        }
     }
 
     private void doInitAfterSettingContainerView() {

@@ -160,8 +160,9 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
   // time the tab was closed.
   if (base::FeatureList::IsEnabled(features::kTabGroups) &&
       first_tab_in_group) {
-    group_model->GetTabGroup(group.value())
-        ->SetVisualData(std::move(group_visual_data));
+    const tab_groups::TabGroupVisualData new_data(
+        group_visual_data.title(), group_visual_data.color(), false);
+    group_model->GetTabGroup(group.value())->SetVisualData(new_data);
   }
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)

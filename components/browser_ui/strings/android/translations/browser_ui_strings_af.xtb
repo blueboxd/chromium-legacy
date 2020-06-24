@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Vra voordat werwe toegelaat word om 'n 3D-kaart van jou omgewing te skep of kameraposisie na te spoor (aanbeveel)</translation>
 <translation id="2212565012507486665">Laat webkoekies toe</translation>
 <translation id="2289270750774289114">Vra wanneer 'n werf Bluetooth-toestelle in die omtrek wil ontdek (aanbeveel)</translation>
+<translation id="2315043854645842844">Bedryfstelsel steun nie die sertifikaat wat die kliënt gekies het nie.</translation>
 <translation id="2359808026110333948">Gaan voort</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Aflaai is voltooi <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">'n Werf gebruik tans jou kamera</translation>
 <translation id="7817023149356982970">Jy sal op hierdie werf afgemeld word.</translation>
 <translation id="7828557259026017104">Webkoekies is lêers wat geskep word deur webwerwe wat jy besoek. Werwe kan hulle gebruik om jou voorkeure te onthou. Derdepartywebkoekies word deur ander werwe geskep. Hierdie werwe besit van die inhoud, soos advertensies of prente, wat jy sien op die webbladsy wat jy besoek.</translation>
+<translation id="7835852323729233924">Speel tans media</translation>
 <translation id="7846076177841592234">Kanselleer keuse</translation>
 <translation id="7846621471902887024">Jy sal op alle werwe afgemeld word.</translation>
 <translation id="7882806643839505685">Laat klank toe vir 'n spesifieke werf.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Is jy seker dat jy alle plaaslike data, insluitend webkoekies, wil uitvee en alle toestemmings vir hierdie webwerf wil terugstel?</translation>
 <translation id="8007176423574883786">Afgeskakel vir hierdie toestel</translation>
 <translation id="802154636333426148">Kon nie aflaai nie</translation>
+<translation id="8068648041423924542">Kan nie sertifikaat kies nie.</translation>
 <translation id="8087000398470557479">Hierdie inhoud kom van <ph name="DOMAIN_NAME" /> af, afgelewer deur Google.</translation>
 <translation id="8116925261070264013">Gedemp</translation>
 <translation id="8131740175452115882">Bevestig</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blokkeer webkoekies vir 'n spesifieke werf.</translation>
 <translation id="8959122750345127698">Navigasie is onbereikbaar: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Deur jou ouers bestuur</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Toegang tot jou mikrofoon</translation>
 <translation id="965817943346481315">Blokkeer as werf indringerige of misleidende advertensies wys (aanbeveel)</translation>
 </translationbundle>

@@ -28,6 +28,7 @@ class ArgumentSpec;
 class APISignature {
  public:
   explicit APISignature(const base::ListValue& specification);
+  APISignature(const base::Value& specification_list, bool supports_promises);
   explicit APISignature(std::vector<std::unique_ptr<ArgumentSpec>> signature);
   ~APISignature();
 

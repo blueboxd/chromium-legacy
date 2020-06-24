@@ -10,7 +10,9 @@
 #include "ui/base/x/x11_drag_drop_client.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -39,14 +41,14 @@ const char kChromiumDragReciever[] = "_CHROMIUM_DRAG_RECEIVER";
 }  // namespace
 
 XDragContext::XDragContext(x11::Window local_window,
-                           const XClientMessageEvent& event,
+                           const x11::ClientMessageEvent& event,
                            XDragDropClient* source_client,
                            const SelectionFormatMap& data)
     : local_window_(local_window),
-      source_window_(static_cast<x11::Window>(event.data.l[0])),
+      source_window_(static_cast<x11::Window>(event.data.data32[0])),
       source_client_(source_client) {
   if (!source_client_) {
-    bool get_types_from_property = ((event.data.l[1] & 1) != 0);
+    bool get_types_from_property = ((event.data.data32[1] & 1) != 0);
 
     if (get_types_from_property) {
       if (!GetAtomArrayProperty(source_window_, kXdndTypeList,
@@ -56,8 +58,10 @@ XDragContext::XDragContext(x11::Window local_window,
     } else {
       // data.l[2,3,4] contain the first three types. Unused slots can be None.
       for (size_t i = 2; i < 5; ++i) {
-        if (event.data.l[i] != x11::None)
-          unfetched_targets_.push_back(static_cast<x11::Atom>(event.data.l[i]));
+        if (event.data.data32[i]) {
+          unfetched_targets_.push_back(
+              static_cast<x11::Atom>(event.data.data32[i]));
+        }
       }
     }
 
@@ -69,7 +73,7 @@ XDragContext::XDragContext(x11::Window local_window,
 
     // We must perform a full sync here because we could be racing
     // |source_window_|.
-    XSync(gfx::GetXDisplay(), x11::False);
+    x11::Connection::Get()->Sync();
   } else {
     // This drag originates from an aura window within our process. This means
     // that we can shortcut the X11 server and ask the owning SelectionOwner
@@ -85,7 +89,7 @@ XDragContext::~XDragContext() = default;
 void XDragContext::OnXdndPositionMessage(XDragDropClient* client,
                                          x11::Atom suggested_action,
                                          x11::Window source_window,
-                                         Time time_stamp,
+                                         x11::Time time_stamp,
                                          const gfx::Point& screen_point) {
   DCHECK_EQ(source_window_, source_window);
   suggested_action_ = suggested_action;
@@ -113,14 +117,12 @@ void XDragContext::RequestNextTarget() {
   x11::Atom target = unfetched_targets_.back();
   unfetched_targets_.pop_back();
 
-  XConvertSelection(gfx::GetXDisplay(),
-                    static_cast<uint32_t>(gfx::GetAtom(kXdndSelection)),
-                    static_cast<uint32_t>(target),
-                    static_cast<uint32_t>(gfx::GetAtom(kChromiumDragReciever)),
-                    static_cast<uint32_t>(local_window_), position_time_stamp_);
+  x11::Connection::Get()->ConvertSelection(
+      {local_window_, gfx::GetAtom(kXdndSelection), target,
+       gfx::GetAtom(kChromiumDragReciever), position_time_stamp_});
 }
 
-void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
+void XDragContext::OnSelectionNotify(const x11::SelectionNotifyEvent& event) {
   if (!waiting_to_handle_position_) {
     // A misbehaved window may send SelectionNotify without us requesting data
     // via XConvertSelection().
@@ -128,12 +130,12 @@ void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
   }
   DCHECK(drag_drop_client_);
 
-  DVLOG(1) << "SelectionNotify, format " << event.target;
+  DVLOG(1) << "SelectionNotify, format " << static_cast<uint32_t>(event.target);
 
   auto property = static_cast<x11::Atom>(event.property);
   auto target = static_cast<x11::Atom>(event.target);
 
-  if (event.property != x11::None) {
+  if (event.property != x11::Atom::None) {
     DCHECK_EQ(property, gfx::GetAtom(kChromiumDragReciever));
 
     std::vector<uint8_t> data;
@@ -145,7 +147,7 @@ void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {
     // parlance) that we asked for. This happens, even though we only ask for
     // the formats advertised by the source. http://crbug.com/628099
     LOG(ERROR) << "XConvertSelection failed for source-advertised target "
-               << event.target;
+               << static_cast<uint32_t>(event.target);
   }
 
   if (!unfetched_targets_.empty()) {
@@ -192,11 +194,9 @@ void XDragContext::MaskOperation(x11::Atom xdnd_operation,
     *drag_operation |= DragDropTypes::DRAG_LINK;
 }
 
-bool XDragContext::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (xev->type == PropertyNotify &&
-      static_cast<x11::Atom>(xev->xproperty.atom) ==
-          gfx::GetAtom(kXdndActionList)) {
+bool XDragContext::DispatchPropertyNotifyEvent(
+    const x11::PropertyNotifyEvent& prop) {
+  if (prop.atom == gfx::GetAtom(kXdndActionList)) {
     ReadActions();
     return true;
   }

@@ -229,6 +229,17 @@ void GestureListenerManager::UpdateOnTouchDown() {
   Java_GestureListenerManagerImpl_updateOnTouchDown(env, obj);
 }
 
+void GestureListenerManager::OnRootScrollOffsetChanged(
+    const gfx::Vector2dF& root_scroll_offset) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_GestureListenerManagerImpl_onRootScrollOffsetChanged(
+      env, obj, root_scroll_offset.x(), root_scroll_offset.y());
+}
+
 void GestureListenerManager::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {

@@ -477,8 +477,21 @@ VirtualFidoDevice::GenerateAttestationCertificate(
       8 - transport_bit - 1,        // trailing bits unused
       0b10000000 >> transport_bit,  // transport
   };
+
+  // https://www.w3.org/TR/webauthn/#packed-attestation-cert-requirements
+  // The Basic Constraints extension MUST have the CA component set to false.
+  static constexpr uint8_t kBasicContraintsOID[] = {0x55, 0x1d, 0x13};
+  static constexpr uint8_t kBasicContraintsContents[] = {
+      0x30,  // SEQUENCE
+      0x03,  // three bytes long
+      0x01,  // BOOLEAN
+      0x01,  // one byte long
+      0x00,  // false
+  };
+
   const std::vector<net::x509_util::Extension> extensions = {
-      {kTransportTypesOID, false /* not critical */, kTransportTypesContents},
+      {kTransportTypesOID, /*critical=*/false, kTransportTypesContents},
+      {kBasicContraintsOID, /*critical=*/true, kBasicContraintsContents},
   };
 
   // https://w3c.github.io/webauthn/#sctn-packed-attestation-cert-requirements

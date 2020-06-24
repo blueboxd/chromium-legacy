@@ -73,6 +73,14 @@ void KioskAppDataBase::SaveToDictionary(DictionaryPrefUpdate& dict_update) {
   dict_update->SetString(icon_path_key, icon_path_.value());
 }
 
+void KioskAppDataBase::SaveIconToDictionary(DictionaryPrefUpdate& dict_update) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const std::string app_key = std::string(kKeyApps) + '.' + app_id_;
+  const std::string icon_path_key = app_key + '.' + kKeyIcon;
+
+  dict_update->SetString(icon_path_key, icon_path_.value());
+}
+
 bool KioskAppDataBase::LoadFromDictionary(const base::DictionaryValue& dict,
                                           bool lazy_icon_load) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -82,12 +90,15 @@ bool KioskAppDataBase::LoadFromDictionary(const base::DictionaryValue& dict,
   const std::string icon_path_key = app_key + '.' + kKeyIcon;
 
   std::string icon_path_string;
-  if (!dict.GetString(name_key, &name_) ||
-      !dict.GetString(icon_path_key, &icon_path_string)) {
+  // If there is no title stored, do not stop, sometimes only icon is cached.
+  dict.GetString(name_key, &name_);
+
+  if (!dict.GetString(icon_path_key, &icon_path_string)) {
     return false;
   }
 
   icon_path_ = base::FilePath(icon_path_string);
+
   if (!lazy_icon_load) {
     DecodeIcon();
   }

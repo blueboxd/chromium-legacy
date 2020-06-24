@@ -358,8 +358,8 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
     return mojom::PrintCompositor::Status::kHandleMapError;
   }
 
-  DeserializationContext subframes =
-      GetDeserializationContext(subframe_content_map);
+  PictureDeserializationContext subframes =
+      GetPictureDeserializationContext(subframe_content_map);
 
   // Read in content and convert it into pdf.
   SkMemoryStream stream(shared_mem.memory(), shared_mem.size());
@@ -418,8 +418,8 @@ void PrintCompositorImpl::CompositeSubframe(FrameInfo* frame_info) {
   frame_info->composited = true;
 
   // Composite subframes first.
-  DeserializationContext subframes =
-      GetDeserializationContext(frame_info->subframe_content_map);
+  PictureDeserializationContext subframes =
+      GetPictureDeserializationContext(frame_info->subframe_content_map);
 
   // Composite the entire frame.
   SkMemoryStream stream(frame_info->serialized_content.memory(),
@@ -428,10 +428,10 @@ void PrintCompositorImpl::CompositeSubframe(FrameInfo* frame_info) {
   frame_info->content = SkPicture::MakeFromStream(&stream, &procs);
 }
 
-PrintCompositorImpl::DeserializationContext
-PrintCompositorImpl::GetDeserializationContext(
+PrintCompositorImpl::PictureDeserializationContext
+PrintCompositorImpl::GetPictureDeserializationContext(
     const ContentToFrameMap& subframe_content_map) {
-  DeserializationContext subframes;
+  PictureDeserializationContext subframes;
   for (auto& content_info : subframe_content_map) {
     uint32_t content_id = content_info.first;
     uint64_t frame_guid = content_info.second;

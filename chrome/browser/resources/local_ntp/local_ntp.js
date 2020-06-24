@@ -1686,29 +1686,25 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
    * @param {!function()} callback
    */
   function createActionButton(callback) {
-    const icon = document.createElement('button');
+    const icon = document.createElement('div');
     icon.classList.add(CLASSES.REMOVE_ICON);
-    icon.tabIndex = -1;
-    icon.onmousedown = e => {
+    const action = document.createElement('button');
+    action.classList.add(CLASSES.REMOVE_MATCH);
+    action.appendChild(icon);
+    action.onmousedown = e => {
       e.preventDefault();  // Stops default browser action (focus)
     };
-    icon.onauxclick = e => {
+    action.onauxclick = e => {
       if (e.button == 1) {
         // Middle click on delete should just noop for now (matches omnibox).
         e.preventDefault();
       }
     };
-    icon.onclick = e => {
+    action.onclick = e => {
       callback();
       e.preventDefault();  // Stops default browser action (navigation)
     };
 
-    const action = document.createElement('div');
-
-    action.classList.add(CLASSES.REMOVE_MATCH);
-    action.tabIndex = 0;
-    action.setAttribute('role', 'button');
-    action.appendChild(icon);
     return action;
   }
 

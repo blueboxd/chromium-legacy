@@ -36,4 +36,7 @@ interface ITabClient {
 
   // Added in M84.
   void onTabDestroyed() = 8;
+
+  // Added in M85.
+  void onBackgroundColorChanged(in int color) = 9;
 }

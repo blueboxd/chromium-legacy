@@ -149,6 +149,7 @@ source_set("unit_tests") {
     "mailbox_video_frame_converter_unittest.cc",
     "platform_video_frame_pool_unittest.cc",
     "platform_video_frame_utils_unittest.cc",
+    "video_decoder_pipeline_unittest.cc",
   ]
 }
 

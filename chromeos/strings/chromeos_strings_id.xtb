@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Gagal - Tutup terbuka</translation>
 <translation id="3369013195428705271">Yakin ingin menghapus semua histori cetak? Pekerjaan cetak yang sedang berlangsung tidak akan dihapus.</translation>
 <translation id="3456078764689556234">Mencetak halaman <ph name="PRINTED_PAGES" /> dari <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Pekerjaan Cetak</translation>
 <translation id="3527036260304016759">Gagal - Error tidak diketahui</translation>
 <translation id="3749289110408117711">Nama file</translation>
 <translation id="38114475217616659">Hapus semua histori</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Gagal - Baki hasil cetak penuh</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Sandi kedaluwarsa dalam <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Tidak ada tugas pencetakan yang sedang berlangsung</translation>
 <translation id="428217921675623177">Tugas pencetakan yang sudah lebih dari 90 hari akan dihapus</translation>
 <translation id="4429881212383817840">Masa berlaku tiket Kerberos segera berakhir</translation>
 <translation id="445059817448385655">Sandi lama</translation>
@@ -61,11 +61,13 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Tindakan ini dikelola oleh administrator Anda</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7690294790491645610">Konfirmasi sandi baru</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Ubah sandi</translation>
 <translation id="8208861521865154048">Keuntungan</translation>
+<translation id="8347227221149377169">Pekerjaan cetak</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> mengelola pengguna ini. Domain dapat mengelola setelan dan memantau aktivitas pengguna dari jarak jauh.</translation>
 <translation id="871560550817059752">Gagal - Tinta habis</translation>
 <translation id="8747900814994928677">Konfirmasi perubahan</translation>

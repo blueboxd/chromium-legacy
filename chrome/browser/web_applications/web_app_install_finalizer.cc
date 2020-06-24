@@ -343,6 +343,10 @@ void WebAppInstallFinalizer::FinalizeUpdate(
     legacy_finalizer_->FinalizeUpdate(web_app_info, base::DoNothing());
 }
 
+void WebAppInstallFinalizer::RemoveLegacyInstallFinalizerForTesting() {
+  legacy_finalizer_ = nullptr;
+}
+
 void WebAppInstallFinalizer::Start() {
   DCHECK(!started_);
   started_ = true;

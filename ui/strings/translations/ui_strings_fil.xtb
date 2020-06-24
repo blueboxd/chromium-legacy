@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Nakumpleto na ang pag-calibrate</translation>
 <translation id="252373100621549798">Hindi Kilalang Display</translation>
 <translation id="2545651323591713692">I-snooze</translation>
+<translation id="2570734079541893434">Pamahalaan ang mga setting</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{sa loob ng 1 oras}one{sa loob ng # oras}other{sa loob ng # na oras}}</translation>
 <translation id="2583543531130364912">I-calibrate ang iyong touchscreen</translation>
 <translation id="2666092431469916601">Tuktok</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Inilipat sa Page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Huwag i-block</translation>
 <translation id="7907591526440419938">Buksan ang File</translation>
+<translation id="7952747673138230804">Nagpapakita ang Chrome OS ng mga suhestyon para sa bagong content na ie-explore. Magpapadala lang ng mga istatistika para mapahusay ang kalidad kung pinili mong ibahagi ang data ng paggamit. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mahigit sa 1 hindi pa nababasang notification}one{Mahigit sa # hindi pa nababasang notification}other{Mahigit sa # na hindi pa nababasang notification}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{sa loob ng 1 minuto}one{sa loob ng # minuto}other{sa loob ng # na minuto}}</translation>

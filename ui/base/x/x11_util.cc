@@ -455,6 +455,43 @@ void DefineCursor(x11::Window window, x11::Cursor cursor) {
       .Sync();
 }
 
+x11::Window CreateDummyWindow(const std::string& name) {
+  auto* connection = x11::Connection::Get();
+  auto window = connection->GenerateId<x11::Window>();
+  connection->CreateWindow({
+      .wid = window,
+      .parent = connection->default_root(),
+      .x = -100,
+      .y = -100,
+      .width = 10,
+      .height = 10,
+      .c_class = x11::WindowClass::InputOnly,
+      .override_redirect = x11::Bool32(true),
+  });
+  if (!name.empty())
+    SetStringProperty(window, x11::Atom::WM_NAME, x11::Atom::STRING, name);
+  return window;
+}
+
+x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym) {
+  uint8_t min_keycode = static_cast<uint8_t>(connection->setup().min_keycode);
+  uint8_t max_keycode = static_cast<uint8_t>(connection->setup().max_keycode);
+  uint8_t count = max_keycode - min_keycode + 1;
+  auto future =
+      connection->GetKeyboardMapping({connection->setup().min_keycode, count});
+  if (auto reply = future.Sync()) {
+    DCHECK_EQ(count * reply->keysyms_per_keycode,
+              static_cast<int>(reply->keysyms.size()));
+    for (size_t i = 0; i < reply->keysyms.size(); i++) {
+      if (reply->keysyms[i] == keysym) {
+        return static_cast<x11::KeyCode>(min_keycode +
+                                         i / reply->keysyms_per_keycode);
+      }
+    }
+  }
+  return {};
+}
+
 bool IsXInput2Available() {
   return DeviceDataManagerX11::GetInstance()->IsXInput2Available();
 }

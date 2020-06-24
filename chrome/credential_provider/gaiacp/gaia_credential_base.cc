@@ -71,6 +71,8 @@ namespace {
 
 constexpr wchar_t kEmailDomainsKey[] = L"ed";  // deprecated.
 constexpr wchar_t kEmailDomainsKeyNew[] = L"domains_allowed_to_login";
+constexpr wchar_t kPermittedAccounts[] = L"permitted_accounts";
+constexpr wchar_t kPermittedAccountsSeparator[] = L",";
 constexpr char kGetAccessTokenBodyWithScopeFormat[] =
     "client_id=%s&"
     "client_secret=%s&"
@@ -96,6 +98,16 @@ constexpr UINT kPasswordErrors[] = {IDS_PASSWORD_COMPLEXITY_ERROR_BASE,
                                     IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE,
                                     IDS_AD_PASSWORD_CHANGE_DENIED_BASE};
 
+std::vector<base::string16> GetPermittedAccounts() {
+  base::string16 permitted_accounts_reg =
+      GetGlobalFlagOrDefault(kPermittedAccounts, L"");
+
+  return base::SplitString(base::ToLowerASCII(permitted_accounts_reg),
+                           kPermittedAccountsSeparator,
+                           base::WhitespaceHandling::TRIM_WHITESPACE,
+                           base::SplitResult::SPLIT_WANT_NONEMPTY);
+}
+
 base::string16 GetEmailDomains(
     const base::string16 restricted_domains_reg_key) {
   return GetGlobalFlagOrDefault(restricted_domains_reg_key, L"");
@@ -119,12 +131,9 @@ base::string16 GetEmailDomainsPrintableString() {
                         base::ASCIIToUTF16(kEmailDomainsSeparator),
                         base::WhitespaceHandling::TRIM_WHITESPACE,
                         base::SplitResult::SPLIT_WANT_NONEMPTY);
-  base::string16 email_domains_str;
-  for (size_t i = 0; i < domains.size(); ++i) {
-    email_domains_str += domains[i];
-    if (i < domains.size() - 1)
-      email_domains_str += L", ";
-  }
+  base::string16 email_domains_str =
+      base::JoinString(domains, base::string16(L", "));
+
   return email_domains_str;
 }
 
@@ -2409,6 +2418,15 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     if (FAILED(hr)) {
       LOGFN(ERROR) << "ValidateResult hr=" << putHR(hr);
       return hr;
+    }
+
+    base::string16 email = GetDictString(*properties, kKeyEmail);
+    std::vector<base::string16> permitted_accounts = GetPermittedAccounts();
+    if (!permitted_accounts.empty() &&
+        std::find(permitted_accounts.begin(), permitted_accounts.end(),
+                  email) == permitted_accounts.end()) {
+      *status_text = AllocErrorString(IDS_EMAIL_MISMATCH_BASE);
+      return E_FAIL;
     }
 
     // The value in |dict| is now known to contain everything that is needed

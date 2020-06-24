@@ -35,7 +35,6 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/base/release_channel.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_devtools_list_fetcher.h"

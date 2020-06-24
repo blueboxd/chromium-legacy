@@ -184,6 +184,7 @@ static_library("common") {
     "//chrome/app/theme:theme_resources",
     "//chrome/common:constants",
     "//chrome/common/net",
+    "//chrome/common/privacy_budget",
     "//chrome/common/profiler",
     "//chrome/common/qr_code_generator",
     "//chrome/common/search:mojo_bindings",

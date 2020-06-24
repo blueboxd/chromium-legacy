@@ -50,6 +50,7 @@ class WebPerformance {
   struct BackForwardCacheRestoreTiming {
     double navigation_start = 0;
     double first_paint = 0;
+    base::Optional<base::TimeDelta> first_input_delay;
   };
 
   using BackForwardCacheRestoreTimings =

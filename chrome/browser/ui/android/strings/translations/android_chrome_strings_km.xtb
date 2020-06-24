@@ -85,6 +85,7 @@
 <translation id="1670399744444387456">មូលដ្ឋាន</translation>
 <translation id="1671236975893690980">ការ​ទាញ​យក​មិន​ទាន់​សម្រេច...</translation>
 <translation id="1672586136351118594">កុំ​បង្ហាញ​ម្ដងទៀត</translation>
+<translation id="1680919990519905526">រកទិញរូបភាពដោយប្រើ Google Lens <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="1692118695553449118">សមកម្មបានបើក</translation>
 <translation id="1718835860248848330">មួយម៉ោងមុន</translation>
 <translation id="1736419249208073774">រុករក</translation>
@@ -99,6 +100,7 @@
 <translation id="1807246157184219062">ភ្លឺ</translation>
 <translation id="1810845389119482123">ការរៀបចំ​សមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ</translation>
 <translation id="1821253160463689938">ប្រើ​ខូគី​ដើម្បី​ចងចាំ​ចំណូលចិត្ត​របស់អ្នក បើ​ទោះ​បី​ជា​អ្នក​​មិន​ចូលមើល​ទំព័រ​ទាំងនោះ​ក៏ដោយ</translation>
+<translation id="1826516787628120939">កំពុងពិនិត្យមើល</translation>
 <translation id="1829244130665387512">ស្វែងរកក្នុងទំព័រ</translation>
 <translation id="1853692000353488670">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="1856325424225101786">កំណត់​មុខងារស្រាល​ឡើងវិញឬ?</translation>
@@ -157,7 +159,6 @@
 <translation id="2268044343513325586">សម្រាំង</translation>
 <translation id="2286841657746966508">អាសយដ្ឋានទូទាត់​វិក្កយបត្រ</translation>
 <translation id="230115972905494466">រកមិន​ឃើញ​ឧបករណ៍​ដែល​ត្រូវគ្នាទេ</translation>
-<translation id="2315043854645842844">ការជ្រើសរើសវិញ្ញាបនបត្រសម្រាប់ម៉ាស៊ីនកូនមិនគាំទ្រដោយប្រព័ន្ធដំណើរការនេះទេ។</translation>
 <translation id="2318045970523081853">ចុច​ដើម្បី​ហៅទូរសព្ទ</translation>
 <translation id="2321086116217818302">កំពុង​រៀប​ចំពាក្យ​សម្ងាត់…</translation>
 <translation id="2321958826496381788">ទាញរបារំកិលរហូតអ្នកអាចអានបានយ៉ាងងាយស្រួល។ អត្ថបទគួរតែមើលទៅធំប៉ុននេះ បន្ទាប់ពីប៉ះពីរដងនៅលើកថាខណ្ឌ។</translation>
@@ -256,6 +257,7 @@
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">ទីតាំង​ត្រូវ​បាន​បិទ សូម​បើក​វា​នៅ​ក្នុង <ph name="BEGIN_LINK" />ការ​កំណត់ Android<ph name="END_LINK" /> ។</translation>
 <translation id="3058498974290601450">អ្នកអាចបើក​សមកាលកម្ម​បានគ្រប់ពេល​នៅក្នុងការកំណត់</translation>
+<translation id="3059710691562604940">បានបិទមុខងាររុករក​ដោយសុវត្ថិភាព​។ Chrome ណែនាំឱ្យបើក​មុខងារនេះ។</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{ចំណាំ <ph name="BOOKMARKS_COUNT_ONE" />}other{ចំណាំ <ph name="BOOKMARKS_COUNT_MANY" />}}</translation>
 <translation id="3089395242580810162">បើកនៅក្នុងផ្ទាំងអនាមិក</translation>
 <translation id="3114012059975132928">កម្មវិធី​ចាក់​វីដេអូ</translation>
@@ -303,16 +305,17 @@
 <translation id="3398320232533725830">បើកកម្មវិធីគ្រប់គ្រងចំណាំ</translation>
 <translation id="3414952576877147120">ទំហំ៖</translation>
 <translation id="3443221991560634068">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ</translation>
-<translation id="3445014427084483498">អម្បាញ់មិញ</translation>
 <translation id="3478363558367712427">អ្នកអាច​ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរក​របស់អ្នក​បាន</translation>
 <translation id="3492207499832628349">ផ្ទាំងអនាមិកថ្មី</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" />អំពីមាតិកាដែលបានណែនាំ</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="3507132249039706973">ការការពារស្តង់ដារត្រូវបានបើក</translation>
 <translation id="3513704683820682405">AR</translation>
 <translation id="3518985090088779359">ព្រមទទួល និងបន្ត</translation>
 <translation id="3522247891732774234">មានផ្តល់ជូនការអាប់ដេត។ ជម្រើសច្រើនទៀត</translation>
 <translation id="3524138585025253783">UI អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="3527085408025491307">ថតឯកសារ</translation>
+<translation id="3533694711092285624">គ្មានពាក្យសម្ងាត់ដែលបានរក្សាទុកទេ។ Chrome អាចពិនិត្យពាក្យសម្ងាត់របស់អ្នក នៅពេលអ្នករក្សាទុកពាក្យសម្ងាត់ទាំងនោះ។</translation>
 <translation id="3542235761944717775">ទំនេរ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ស្វែងរក​ប្រវត្តិ​របស់អ្នក</translation>
 <translation id="3557336313807607643">បញ្ចូល​ទៅ​ក្នុង​ទំនាក់ទំនង</translation>
@@ -384,6 +387,7 @@
 <translation id="4183868528246477015">ស្វែងរកដោយប្រើ Google Lens <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="4198423547019359126">មិនមាន​ទីតាំង​សម្រាប់​ការទាញយក​ទេ</translation>
+<translation id="4202553989407425169">Chrome អាចពិនិត្យថាតើការកំណត់របស់អ្នកកំពុងការពារអ្នកពី៖</translation>
 <translation id="4209895695669353772">ដើម្បីទទួលបានខ្លឹមសារ​ស្រប​តាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>
 <translation id="423219824432660969">អ៊ីនគ្រីបទិន្នន័យ​ដែលបាន​ធ្វើសមកាលកម្មដោយប្រើពាក្យសម្ងាត់ Google ពីថ្ងៃទី <ph name="TIME" /></translation>
 <translation id="4242533952199664413">បើកការកំណត់</translation>
@@ -392,6 +396,7 @@
 <translation id="4256782883801055595">អាជ្ញាប័ណ្ណប្រភពបើកចំហ</translation>
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
 <translation id="4298388696830689168">គេហទំព័រ​ដែលបានតភ្ជាប់</translation>
+<translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4307992518367153382">មូលដ្ឋាន</translation>
 <translation id="4314815835985389558">គ្រប់គ្រង​សមកាលកម្ម</translation>
 <translation id="4320177379694898372">គ្មានការភ្ជាប់អ៊ីនធឺណិតទេ</translation>
@@ -492,11 +497,13 @@
 <translation id="5039804452771397117">អនុញ្ញាត</translation>
 <translation id="5040262127954254034">ឯកជនភាព</translation>
 <translation id="5087580092889165836">បន្ថែមកាត</translation>
+<translation id="509429900233858213">កំហុសឆ្គងបានកើតឡើង។</translation>
 <translation id="510275257476243843">នៅសល់ 1 ម៉ោងទៀត</translation>
 <translation id="5123685120097942451">ផ្ទាំង​អនាមិក</translation>
 <translation id="5127805178023152808">សមកម្មបានបិទ</translation>
 <translation id="5129038482087801250">ដំឡើងកម្មវិធីតាមអ៊ឺនធឺណិត</translation>
 <translation id="5132942445612118989">ធ្វើសម​កាល​កម្មពាក្យសម្ងាត់ ប្រវត្តិ និងអ្វីៗ​ជាច្រើនទៀត​នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក</translation>
+<translation id="5136035049889637840">រកទិញផលិតផលស្រដៀងគ្នា <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="5139940364318403933">ស្វែងយល់​ពីរបៀប​ប្រើកម្មវិធី Google ថាស</translation>
 <translation id="5152843274749979095">មិន​មាន​ការ​ដំឡើង​កម្មវិធី​ដែលស្គាល់ទេ</translation>
 <translation id="5161254044473106830">ត្រូវមានចំណងជើង</translation>
@@ -520,6 +527,7 @@
 <translation id="5324858694974489420">ការកំណត់មាតាបិតា</translation>
 <translation id="5327248766486351172">ឈ្មោះ</translation>
 <translation id="5342314432463739672">សំណើសុំ​ការអនុញ្ញាត</translation>
+<translation id="5355191726083956201">ការការពារបន្ថែម​ត្រូវបានបើក</translation>
 <translation id="5357811892247919462">បាន​ទទួលផ្ទាំង</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{ផ្ទាំងបើក <ph name="OPEN_TABS_ONE" /> ចុច​ដើម្បីប្ដូរផ្ទាំង}other{ផ្ទាំងបើក <ph name="OPEN_TABS_MANY" /> ចុច​ដើម្បីប្ដូរផ្ទាំង}}</translation>
 <translation id="5384883051496921101">ទំព័រនេះ​ត្រៀមនឹង​ចែករំលែក​ព័ត៌មាន​ជាមួយ​កម្មវិធី​ខាងក្រៅ​មុខងារអនាមិក។</translation>
@@ -585,6 +593,7 @@
 <translation id="583281660410589416">មិនស្គាល់</translation>
 <translation id="5833984609253377421">ចែក​រំលែក​តំណ</translation>
 <translation id="5836192821815272682">កំពុងទាញយក​កំណែថ្មី Chrome …</translation>
+<translation id="584120177693484274">បានដោះធីក</translation>
 <translation id="5853623416121554550">បាន​ផ្អាក</translation>
 <translation id="5854790677617711513">ចាស់ជាង 30 ថ្ងៃ</translation>
 <translation id="5858741533101922242">Chrome មិនអាចបើក​អាដាប់ទ័រ​ប៊្លូធូស​បានទេ</translation>
@@ -628,6 +637,7 @@
 <translation id="6201345951596836663">បានចម្លង​តំណ</translation>
 <translation id="6206830853671714236">ជ្រើសរើសពេលដែលត្រូវទាញយក</translation>
 <translation id="6210748933810148297">មិនមែន <ph name="EMAIL" /> ទេ?</translation>
+<translation id="6218096829563201111">ស្វែងរកផលិតផលស្រដៀងគ្នា <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="6221633008163990886">ដោះសោ​ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់​អ្នកចេញ</translation>
 <translation id="6232535412751077445">ការបើកដំណើរការរបៀប “កុំតាមដាន” មានន័យថាការស្នើសុំនឹងត្រូវរាប់បញ្ចូលជាមួយចរាចរណ៍នៃការរុករករបស់អ្នក។ ផលប៉ះពាល់ទាំងឡាយគឺអាស្រ័យលើថាតើគេហទំព័រឆ្លើយតបទៅនឹងការស្នើសុំ ឬអត់ ហើយការស្នើសុំត្រូវបានបកស្រាយយ៉ាងដូចម្តេច។
 
@@ -645,6 +655,7 @@
 <translation id="6333140779060797560">ចែករំលែកតាមរយៈ <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">ការអ៊ីនគ្រីប</translation>
 <translation id="6341580099087024258">សួររក​កន្លែងដែលត្រូវរក្សាទុក​ឯកសារ</translation>
+<translation id="6342069812937806050">អំបាញ់មិញនេះ</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}}</translation>
 <translation id="6364438453358674297">យកការផ្តល់យោបល់ចេញពីប្រវត្តិ?</translation>
 <translation id="6366047038980456022"><ph name="APP_NAME" /> មានមុខងារឆ្លាតវៃ និងល្បឿនដែលអ្នកត្រូវការ ដើម្បីបំពេញកិច្ចការ បង្កើត និងរុករកនៅលើអ៊ីនធឺណិតដោយសុវត្ថិភាព</translation>
@@ -706,6 +717,7 @@
 <translation id="6710213216561001401">មុន</translation>
 <translation id="671481426037969117">កម្មវិធី​កំណត់​ម៉ោង <ph name="FQDN" /> របស់អ្នកបានបញ្ចប់​​ហើយ។ វានឹង​ចាប់ផ្ដើម​ឡើងវិញនៅថ្ងៃស្អែក។</translation>
 <translation id="6738867403308150051">កំពុងទាញយក…</translation>
+<translation id="6741063444351041466"><ph name="BEGIN_LINK" />អ្នកគ្រប់គ្រង​របស់អ្នក<ph name="END_LINK" />បានបិទ​ការរុករកដោយសុវត្ថិភាព</translation>
 <translation id="6767294960381293877">បានបើកពាក់​កណ្ដាល​អេក្រង់នូវបញ្ជីឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ​។</translation>
 <translation id="6811034713472274749">ទំព័រអាច​មើលបានហើយ</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -827,7 +839,6 @@
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
-<translation id="7835852323729233924">ការចាក់មេឌៀ</translation>
 <translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
 <translation id="7846296061357476882">សេវាកម្ម Google</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
@@ -862,7 +873,6 @@
 <translation id="8063895661287329888">បានបរាជ័យក្នុងការបន្ថែមចំណាំ</translation>
 <translation id="806745655614357130">រក្សាទិន្នន័យរបស់ខ្ញុំដាច់ដោយឡែកពីគ្នា</translation>
 <translation id="8067883171444229417">ចាក់​វីដេអូ</translation>
-<translation id="8068648041423924542">មិនអាចជ្រើសរើសវិញ្ញាបនបត្រទេ</translation>
 <translation id="8073388330009372546">បើករូបភាពនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="8076492880354921740">ផ្ទាំង</translation>
 <translation id="8084114998886531721">ពាក្យសម្ងាត់​ដែល​បានរក្សាទុក</translation>

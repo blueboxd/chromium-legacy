@@ -118,6 +118,12 @@ ResultExpr NaClBPFSandboxPolicy::EvaluateSyscall(int sysno) const {
     // NaCl runtime uses flock to simulate POSIX behavior for pwrite.
     case __NR_flock:
     case __NR_pwrite64:
+    // set_robust_list(2) is generating quite a bit of logspam on Chrome OS
+    // (and probably on Linux too), and per its manpage it should never EPERM.
+    // Moreover, it also doesn't allow affecting other processes, since it
+    // doesn't take a |pid| argument.
+    // See crbug.com/1051197 for details.
+    case __NR_set_robust_list:
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sysinfo:

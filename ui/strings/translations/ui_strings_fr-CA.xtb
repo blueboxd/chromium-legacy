@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Le calibrage est terminé</translation>
 <translation id="252373100621549798">Écran inconnu</translation>
 <translation id="2545651323591713692">Reporter</translation>
+<translation id="2570734079541893434">Gérer les paramètres</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{dans 1 h}one{dans # h}other{dans # h}}</translation>
 <translation id="2583543531130364912">Calibrez votre écran tactile</translation>
 <translation id="2666092431469916601">Haut</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Déplacée à la page <ph name="PAGE_NUMBER" />, ligne <ph name="ROW_NUMBER" />, colonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Ne pas bloquer</translation>
 <translation id="7907591526440419938">Ouvrir un fichier</translation>
+<translation id="7952747673138230804">Chrome OS affiche des suggestions de nouveau contenu à explorer. Envoie des statistiques afin d'améliorer la qualité seulement si vous avez choisi de partager les données d'utilisation. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Commande</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Vous avez plus d'une notification non lue}one{Vous avez plus de # notification non lue}other{Vous avez plus de # notifications non lues}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dans 1 min}one{dans # min}other{dans # min}}</translation>

@@ -912,6 +912,9 @@ if (enable_java_templates) {
         deps = []
       }
 
+      # https://crbug.com/1098752 Fix for bot OOM (https://crbug.com/1098333).
+      pool = "//build/toolchain:link_pool($default_toolchain)"
+
       # Lint only requires generated sources and generated resources from the
       # build. Since turbine __header targets already depend on and generate all
       # the generated sources, and the __assetres targets include all generated

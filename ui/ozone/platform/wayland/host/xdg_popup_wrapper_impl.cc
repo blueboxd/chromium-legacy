@@ -18,7 +18,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
-#include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
 namespace ui {
@@ -286,8 +286,8 @@ bool XDGPopupWrapperImpl::Initialize(WaylandConnection* connection,
         static_cast<XDGPopupWrapperImpl*>(wayland_popup->shell_popup());
     parent_xdg_surface = popup->xdg_surface();
   } else {
-    WaylandSurface* wayland_surface =
-        static_cast<WaylandSurface*>(wayland_window_->parent_window());
+    WaylandToplevelWindow* wayland_surface =
+        static_cast<WaylandToplevelWindow*>(wayland_window_->parent_window());
     parent_xdg_surface =
         static_cast<XDGSurfaceWrapperImpl*>(wayland_surface->shell_surface());
   }

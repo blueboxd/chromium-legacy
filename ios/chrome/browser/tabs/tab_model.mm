@@ -189,19 +189,6 @@ void RecordInterfaceOrientationMetric() {
   }
 }
 
-// Records metrics for main frame navigation.
-void RecordMainFrameNavigationMetric(web::WebState* web_state) {
-  DCHECK(web_state);
-  DCHECK(web_state->GetBrowserState());
-  DCHECK(web_state->GetNavigationManager());
-  web::NavigationItem* item =
-      web_state->GetNavigationManager()->GetLastCommittedItem();
-  navigation_metrics::RecordMainFrameNavigation(
-      item ? item->GetVirtualURL() : GURL::EmptyGURL(), true,
-      web_state->GetBrowserState()->IsOffTheRecord(),
-      GetBrowserStateType(web_state->GetBrowserState()));
-}
-
 }  // anonymous namespace
 
 @interface TabModel ()<CRWWebStateObserver, WebStateListObserving> {
@@ -404,12 +391,20 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
+  if (!navigation->HasCommitted())
+    return;
 
-  if (!navigation->IsSameDocument() && navigation->HasCommitted() &&
-      !self.offTheRecord) {
+  if (!navigation->IsSameDocument() && !self.offTheRecord) {
     int tabCount = static_cast<int>(self.count);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tabCount, 1, 200, 50);
   }
+
+  web::NavigationItem* item =
+      webState->GetNavigationManager()->GetLastCommittedItem();
+  navigation_metrics::RecordMainFrameNavigation(
+      item ? item->GetVirtualURL() : GURL::EmptyGURL(),
+      navigation->IsSameDocument(), self.offTheRecord,
+      GetBrowserStateType(webState->GetBrowserState()));
 }
 
 - (void)webState:(web::WebState*)webState
@@ -460,7 +455,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   RecordInterfaceOrientationMetric();
-  RecordMainFrameNavigationMetric(webState);
 
   [[OmniboxGeolocationController sharedInstance]
       finishPageLoadForWebState:webState

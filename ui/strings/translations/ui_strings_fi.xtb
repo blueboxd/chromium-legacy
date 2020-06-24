@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibrointi on valmis.</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
 <translation id="2545651323591713692">Torkuta</translation>
+<translation id="2570734079541893434">Muuta asetuksia</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 h:n päästä}other{# h:n päästä}}</translation>
 <translation id="2583543531130364912">Kalibroi kosketusnäyttö</translation>
 <translation id="2666092431469916601">Yleisin</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Siirretty, nyt sivulla <ph name="PAGE_NUMBER" />, rivillä <ph name="ROW_NUMBER" />, sarakkeessa <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Älä estä</translation>
 <translation id="7907591526440419938">Avaa tiedosto</translation>
+<translation id="7952747673138230804">Chrome-käyttöjärjestelmä näyttää ehdotuksia uudesta sisällöstä. Lähettää tilastoja laadun parantamiseksi vain, jos olet sallinut käyttödatan jakamisen. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Komento</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Enemmän kuin 1 lukematon ilmoitus}other{Enemmän kuin # lukematonta ilmoitusta}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 min päästä}other{# min päästä}}</translation>

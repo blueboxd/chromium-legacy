@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/quick_answers/ui/quick_answers_focus_search.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -38,6 +39,8 @@ class UserConsentView : public views::View, public views::ButtonListener {
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnFocus() override;
+  views::FocusTraversable* GetPaneFocusTraversable() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -52,11 +55,16 @@ class UserConsentView : public views::View, public views::ButtonListener {
   void AddDogfoodButton();
   void UpdateWidgetBounds();
 
+  // QuickAnswersFocusSearch::GetFocusableViewsCallback to poll currently
+  // focusable views.
+  std::vector<views::View*> GetFocusableViews();
+
   // Cached bounds of the anchor this view is tied to.
   gfx::Rect anchor_view_bounds_;
 
   std::unique_ptr<QuickAnswersPreTargetHandler> event_handler_;
   QuickAnswersUiController* const ui_controller_;
+  std::unique_ptr<QuickAnswersFocusSearch> focus_search_;
 
   // Owned by view hierarchy.
   views::View* main_view_ = nullptr;

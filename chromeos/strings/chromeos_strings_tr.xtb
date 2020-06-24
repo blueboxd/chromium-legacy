@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">İşlem başarısız - Kapak açık</translation>
 <translation id="3369013195428705271">Tüm yazdırma geçmişini temizlemek istediğinizden emin misiniz? Devam eden yazdırma işleriniz silinmez.</translation>
 <translation id="3456078764689556234">Yazdırılan sayfa: <ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Yazdırma İşleri</translation>
 <translation id="3527036260304016759">İşlem başarısız - Bilinmeyen hata</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
 <translation id="38114475217616659">Tüm geçmişi temizle</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">İşlem başarısız - Çıkış dolu</translation>
 <translation id="4034824040120875894">Yazıcı</translation>
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
+<translation id="4238516577297848345">Devam eden bir yazdırma işi yok</translation>
 <translation id="428217921675623177">90 günden eski yazdırma işleri silinir</translation>
 <translation id="4429881212383817840">Kerberos biletinin süresi yakında doluyor</translation>
 <translation id="445059817448385655">Eski şifre</translation>
@@ -61,11 +61,13 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Bu işlem, yöneticiniz tarafından yönetilir.</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7690294790491645610">Yeni şifreyi doğrula</translation>
 <translation id="7805768142964895445">Durum</translation>
 <translation id="808894953321890993">Şifreyi değiştir</translation>
 <translation id="8208861521865154048">Avantajlar</translation>
+<translation id="8347227221149377169">Yazdırma işleri</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />, bu kullanıcıyı yönetiyor. Ayarları uzaktan yönetebilir ve kullanıcı etkinliğini izleyebilir.</translation>
 <translation id="871560550817059752">İşlem başarısız - Mürekkep yok</translation>
 <translation id="8747900814994928677">Değişikliği onaylayın</translation>

@@ -123,7 +123,8 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
   // The map needed during content deserialization. It stores the mapping
   // between content id and its actual content.
-  using DeserializationContext = base::flat_map<uint32_t, sk_sp<SkPicture>>;
+  using PictureDeserializationContext =
+      base::flat_map<uint32_t, sk_sp<SkPicture>>;
 
   // Base structure to store a frame's content and its subframe
   // content information.
@@ -218,7 +219,7 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
   // Composite the content of a subframe.
   void CompositeSubframe(FrameInfo* frame_info);
 
-  DeserializationContext GetDeserializationContext(
+  PictureDeserializationContext GetPictureDeserializationContext(
       const ContentToFrameMap& subframe_content_map);
 
   mojo::Receiver<mojom::PrintCompositor> receiver_{this};

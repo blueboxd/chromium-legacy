@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Ebaõnnestus – luuk on avatud</translation>
 <translation id="3369013195428705271">Kas soovite kindlasti kogu printimise ajaloo kustutada? Teie pooleliolevaid prinditöid ei kustutata.</translation>
 <translation id="3456078764689556234">Prinditi <ph name="PRINTED_PAGES" />. leht <ph name="TOTAL_PAGES" />-st.</translation>
-<translation id="3515615323037921860">Prinditööd</translation>
 <translation id="3527036260304016759">Ebaõnnestus – tundmatu viga</translation>
 <translation id="3749289110408117711">Faili nimi</translation>
 <translation id="38114475217616659">Kustuta kogu ajalugu</translation>
@@ -68,6 +67,7 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7805768142964895445">Olek</translation>
 <translation id="808894953321890993">Muuda parooli</translation>
 <translation id="8208861521865154048">Hüved</translation>
+<translation id="8347227221149377169">Prinditööd</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> haldab seda kasutajat. See võib eemalt hallata seadeid ja jälgida kasutaja tegevusi.</translation>
 <translation id="871560550817059752">Ebaõnnestus – tint on otsas</translation>
 <translation id="8747900814994928677">Kinnita muudatus</translation>

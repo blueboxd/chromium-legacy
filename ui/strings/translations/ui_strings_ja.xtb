@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">キャリブレーションが完了しました</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
 <translation id="2545651323591713692">スヌーズ</translation>
+<translation id="2570734079541893434">設定を管理</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1時間}other{#時間}}</translation>
 <translation id="2583543531130364912">タッチスクリーンのキャリブレーション</translation>
 <translation id="2666092431469916601">一番上</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537"><ph name="PAGE_NUMBER" /> ページの行 <ph name="ROW_NUMBER" />、列 <ph name="COLUMN_NUMBER" /> に移動しました。</translation>
 <translation id="7879499977785298635">ブロックしない</translation>
 <translation id="7907591526440419938">ファイルを開く</translation>
+<translation id="7952747673138230804">Chrome OS により新しいコンテンツの検索候補を表示します。使用状況データを共有するよう指定した場合のみ、検索候補の精度を向上させるために統計情報を送信します。<ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">コマンド</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 件以上の未読の通知}other{# 件以上の未読の通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1分}other{#分}}</translation>

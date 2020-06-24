@@ -251,6 +251,29 @@ TEST(PageAllocatorTest, PageTagging) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_MACOSX)
+
+TEST(PageAllocatorTest, DecommitErasesMemory) {
+  size_t size = kPageAllocationGranularity;
+  void* buffer = AllocPages(nullptr, size, kPageAllocationGranularity,
+                            PageReadWrite, PageTag::kChromium, true);
+  ASSERT_TRUE(buffer);
+
+  memset(buffer, 42, size);
+
+  DecommitSystemPages(buffer, size);
+  EXPECT_TRUE(RecommitSystemPages(buffer, size, PageReadWrite));
+
+  uint8_t* recommitted_buffer = reinterpret_cast<uint8_t*>(buffer);
+  uint32_t sum = 0;
+  for (size_t i = 0; i < size; i++) {
+    sum += recommitted_buffer[i];
+  }
+  EXPECT_EQ(0u, sum) << "Data was not erased";
+}
+
+#endif  // defined(OS_MACOSX)
+
 }  // namespace base
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

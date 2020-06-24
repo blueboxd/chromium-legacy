@@ -133,7 +133,9 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
   PageLoadMetricsBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {ukm::kUkmFeature, blink::features::kPortals}, {});
+        {ukm::kUkmFeature, blink::features::kPortals,
+         blink::features::kPortalsCrossOrigin},
+        {});
   }
 
   ~PageLoadMetricsBrowserTest() override {}

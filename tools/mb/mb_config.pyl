@@ -266,6 +266,7 @@
       'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot',
       'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
+      'ios-asan': 'ios_simulator_release_static_asan_bot',
       'ios-simulator': 'ios_error',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
@@ -1947,6 +1948,10 @@
 
     'ios_simulator_debug_static_rbe_bot': [
         'debug_static_bot', 'ios_simulator', 'ios_use_goma_rbe'
+    ],
+
+    'ios_simulator_release_static_asan_bot': [
+        'ios_simulator', 'release_bot', 'asan'
     ],
 
     'libfuzzer_asan_debug_bot': [

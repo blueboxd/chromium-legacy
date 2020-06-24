@@ -41,6 +41,14 @@ SearchTagRegistry::SearchTagRegistry(
 
 SearchTagRegistry::~SearchTagRegistry() = default;
 
+void SearchTagRegistry::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void SearchTagRegistry::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 void SearchTagRegistry::AddSearchTags(
     const std::vector<SearchConcept>& search_tags) {
   if (!base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
@@ -54,6 +62,8 @@ void SearchTagRegistry::AddSearchTags(
   for (const auto& concept : search_tags) {
     result_id_to_metadata_list_map_[ToResultId(concept)] = &concept;
   }
+
+  NotifyRegistryUpdated();
 }
 
 void SearchTagRegistry::RemoveSearchTags(
@@ -69,6 +79,8 @@ void SearchTagRegistry::RemoveSearchTags(
   }
 
   index_->Delete(data_ids);
+
+  NotifyRegistryUpdated();
 }
 
 const SearchConcept* SearchTagRegistry::GetTagMetadata(
@@ -118,6 +130,11 @@ SearchTagRegistry::ConceptVectorToDataVector(
   }
 
   return data_list;
+}
+
+void SearchTagRegistry::NotifyRegistryUpdated() {
+  for (auto& observer : observer_list_)
+    observer.OnRegistryUpdated();
 }
 
 }  // namespace settings

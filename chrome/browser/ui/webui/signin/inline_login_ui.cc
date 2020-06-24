@@ -84,13 +84,6 @@ void AddEduStrings(content::WebUIDataSource* source,
       l10n_util::GetStringFUTF16(
           IDS_EDU_LOGIN_INFO_BODY,
           base::ASCIIToUTF16(chrome::kGsuiteTermsEducationPrivacyURL)));
-  source->AddString(
-      "parentInfoDataProtectionText",
-      l10n_util::GetStringFUTF16(
-          IDS_EDU_LOGIN_INFO_DATA_PROTECTION,
-          base::ASCIIToUTF16(chrome::kClassroomSigninLearnMoreURL)));
-  source->AddLocalizedString("parentInfoResourcesAvailabilityText",
-                             IDS_EDU_LOGIN_INFO_RESOURCES_AVAILABILITY);
   source->AddLocalizedString("coexistenceTitle",
                              IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE);
   source->AddLocalizedString("coexistenceBody",

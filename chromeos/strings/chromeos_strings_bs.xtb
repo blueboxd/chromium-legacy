@@ -21,10 +21,9 @@
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
 <translation id="3091839911843451378">Nije uspjelo – zaustavljeno</translation>
-<translation id="3268178239013324452">Nije uspjelo – otvoren je poklopac</translation>
+<translation id="3268178239013324452">Nije uspjelo – poklopac je otvoren</translation>
 <translation id="3369013195428705271">Jeste li sigurni da želite obrisati svu historiju štampanja? Vaši trenutni zadaci štampanja se neće izbrisati.</translation>
-<translation id="3456078764689556234">Odštampane stanice: <ph name="PRINTED_PAGES" /> od <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Zadaci štampanja</translation>
+<translation id="3456078764689556234">Odštampanih stanica: <ph name="PRINTED_PAGES" /> od <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3527036260304016759">Nije uspjelo – nepoznata greška</translation>
 <translation id="3749289110408117711">Naziv fajla</translation>
 <translation id="38114475217616659">Obriši svu historiju</translation>
@@ -68,6 +67,7 @@ Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Promijenite lozinku</translation>
 <translation id="8208861521865154048">Privilegije</translation>
+<translation id="8347227221149377169">Zadaci štampanja</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može udaljeno upravljati postavkama i pratiti aktivnost korisnika.</translation>
 <translation id="871560550817059752">Nije uspjelo – nema tinte</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>

@@ -40,6 +40,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
@@ -174,6 +175,8 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   InfoBarService::CreateForWebContents(portal_contents);
   PrefsTabHelper::CreateForWebContents(portal_contents);
   DataReductionProxyTabHelper::CreateForWebContents(portal_contents);
+  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
+      portal_contents);
 }
 
 void TabWebContentsDelegateAndroid::RunFileChooser(

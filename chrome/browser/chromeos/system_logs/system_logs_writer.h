@@ -17,10 +17,12 @@ namespace chromeos {
 namespace system_logs_writer {
 
 // Writes system_logs.txt.zip to |dest_dir|, containing the contents from
-// Feedback reports. Runs |callback| on completion with the complete file path
-// on success, or nullopt on failure.
+// Feedback reports. If |scrub_data| is true then the logs are scrubbed of PII.
+// Runs |callback| on completion with the complete file path on success, or
+// nullopt on failure.
 void WriteSystemLogs(
     const base::FilePath& dest_dir,
+    bool scrub_data,
     base::OnceCallback<void(base::Optional<base::FilePath>)> callback);
 
 }  // namespace system_logs_writer

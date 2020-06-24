@@ -51,12 +51,13 @@ class WebLayerNotificationChannels extends ChannelDefinitions {
      * channel, remove the ID from this StringDef, remove its entry from Predefined Channels.MAP,
      * and add it to the return value of {@link #getLegacyChannelIds()}.
      */
-    @StringDef({ChannelId.ACTIVE_DOWNLOADS, ChannelId.COMPLETED_DOWNLOADS,
+    @StringDef({ChannelId.ACTIVE_DOWNLOADS, ChannelId.COMPLETED_DOWNLOADS, ChannelId.MEDIA_PLAYBACK,
             ChannelId.WEBRTC_CAM_AND_MIC})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String ACTIVE_DOWNLOADS = "org.chromium.weblayer.active_downloads";
         String COMPLETED_DOWNLOADS = "org.chromium.weblayer.completed_downloads";
+        String MEDIA_PLAYBACK = "org.chromium.weblayer.media_playback";
         String WEBRTC_CAM_AND_MIC = "org.chromium.weblayer.webrtc_cam_and_mic";
     }
 
@@ -80,6 +81,10 @@ class WebLayerNotificationChannels extends ChannelDefinitions {
             map.put(ChannelId.COMPLETED_DOWNLOADS,
                     PredefinedChannel.create(ChannelId.COMPLETED_DOWNLOADS,
                             R.string.notification_category_completed_downloads,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
+            map.put(ChannelId.MEDIA_PLAYBACK,
+                    PredefinedChannel.create(ChannelId.MEDIA_PLAYBACK,
+                            R.string.notification_category_media_playback,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
             map.put(ChannelId.WEBRTC_CAM_AND_MIC,
                     PredefinedChannel.create(ChannelId.WEBRTC_CAM_AND_MIC,

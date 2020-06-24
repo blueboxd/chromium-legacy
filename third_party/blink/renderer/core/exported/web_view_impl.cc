@@ -2446,8 +2446,10 @@ void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
     // Record the metics.
     if (local_frame && local_frame->View()) {
       Document* document = local_frame->GetDocument();
-      if (document)
+      if (document) {
         PaintTiming::From(*document).OnRestoredFromBackForwardCache();
+        InteractiveDetector::From(*document)->OnRestoredFromBackForwardCache();
+      }
       DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
       if (loader) {
         loader->GetTiming().MarkBackForwardCacheRestoreNavigationStart(

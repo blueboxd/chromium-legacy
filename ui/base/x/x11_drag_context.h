@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -22,7 +23,7 @@ class XDragDropClient;
 class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
  public:
   XDragContext(x11::Window local_window,
-               const XClientMessageEvent& event,
+               const x11::ClientMessageEvent& event,
                XDragDropClient* source_client,
                const SelectionFormatMap& data);
   ~XDragContext();
@@ -41,11 +42,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   void OnXdndPositionMessage(XDragDropClient* client,
                              x11::Atom suggested_action,
                              x11::Window source_window,
-                             Time time_stamp,
+                             x11::Time time_stamp,
                              const gfx::Point& screen_point);
 
   // Called when XSelection data has been copied to our process.
-  void OnSelectionNotify(const XSelectionEvent& xselection);
+  void OnSelectionNotify(const x11::SelectionNotifyEvent& xselection);
 
   // Reads the kXdndActionList property from |source_window_| and copies it
   // into |actions_|.
@@ -55,7 +56,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // action list.
   int GetDragOperation() const;
 
-  bool DispatchXEvent(x11::Event* event);
+  bool DispatchPropertyNotifyEvent(const x11::PropertyNotifyEvent& event);
 
  private:
   // Called to request the next target from the source window. This is only
@@ -90,7 +91,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // The time stamp of the last XdndPosition event we received.  The XDND
   // specification mandates that we use this time stamp when querying the source
   // about the drag and drop data.
-  Time position_time_stamp_;
+  x11::Time position_time_stamp_;
 
   // A SelectionFormatMap of data that we have in our process.
   SelectionFormatMap fetched_targets_;

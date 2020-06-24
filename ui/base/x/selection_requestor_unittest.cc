@@ -55,7 +55,8 @@ class SelectionRequestorTest : public testing::Test {
     event->property = static_cast<uint32_t>(requestor_->x_property_);
     event->time = x11::CurrentTime;
 
-    requestor_->OnSelectionNotify(x11::Event(&ge, x11::Connection::Get()));
+    x11::Event xev(&ge, x11::Connection::Get());
+    requestor_->OnSelectionNotify(*xev.As<x11::SelectionNotifyEvent>());
   }
 
  protected:
@@ -75,8 +76,7 @@ class SelectionRequestorTest : public testing::Test {
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
-    requestor_ =
-        std::make_unique<SelectionRequestor>(x_display_, x_window_, nullptr);
+    requestor_ = std::make_unique<SelectionRequestor>(x_window_, nullptr);
   }
 
   void TearDown() override {

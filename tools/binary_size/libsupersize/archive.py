@@ -1737,48 +1737,32 @@ def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
     return build_id, section_ranges, elf_overhead_size
 
 
-def _AutoIdentifyInputFile(args):
-  if args.f.endswith('.minimal.apks'):
-    args.minimal_apks_file = args.f
-    logging.info('Auto-identified --minimal-apks-file.')
-  elif args.f.endswith('.apk'):
-    args.apk_file = args.f
-    logging.info('Auto-identified --apk-file.')
-  elif args.f.endswith('.so') or '.' not in os.path.basename(args.f):
-    logging.info('Auto-identified --elf-file.')
-    args.elf_file = args.f
-  elif args.f.endswith('.map') or args.f.endswith('.map.gz'):
-    logging.info('Auto-identified --map-file.')
-    args.map_file = args.f
-  elif args.f.endswith('.ssargs'):
-    logging.info('Auto-identified --ssargs-file.')
-    args.ssargs_file = args.f
-  else:
-    return False
-  return True
-
-
 def _AddContainerArguments(parser):
   """Add arguments applicable to a single container."""
 
-  # Main container file arguments. These are mutually-exclusive.
+  # Special: Use _IdentifyInputFile() to detect main file argument.
   parser.add_argument('-f', metavar='FILE',
                       help='Auto-identify input file type.')
+
+  # Main file argument: Exactly one should be specified (perhaps via -f), with
+  # the exception that --map-file can be specified in addition.
+  # _IdentifyInputFile() and _GetMainFiles() should be kept updated.
   parser.add_argument('--apk-file',
                       help='.apk file to measure. Other flags can generally be '
-                           'derived when this is used.')
+                      'derived when this is used.')
   parser.add_argument('--minimal-apks-file',
                       help='.minimal.apks file to measure. Other flags can '
-                           'generally be derived when this is used.')
-  parser.add_argument('--elf-file',
-                      help='Path to input ELF file. Currently used for '
-                           'capturing metadata.')
-
-  # Auxiliary file arguments.
+                      'generally be derived when this is used.')
+  parser.add_argument('--elf-file', help='Path to input ELF file.')
   parser.add_argument('--map-file',
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?. If given without '
                            '--elf-file, no size metadata will be recorded.')
+  parser.add_argument('--ssargs-file',
+                      help='Path to SuperSize multi-container arguments '
+                      'file.')
+
+  # Auxiliary file arguments.
   parser.add_argument('--mapping-file',
                       help='Proguard .mapping file for deobfuscation.')
   parser.add_argument('--resources-pathmap-file',
@@ -1789,6 +1773,9 @@ def _AddContainerArguments(parser):
   parser.add_argument('--pak-info-file',
                       help='This file should contain all ids found in the pak '
                            'files that have been passed in.')
+  parser.add_argument('--aux-elf-file',
+                      help='Path to auxiliary ELF if the main file is APK, '
+                      'useful for capturing metadata.')
 
   # Non-file argument.
   parser.add_argument('--no-string-literals', dest='track_string_literals',
@@ -1827,13 +1814,78 @@ def AddArguments(parser):
                       help='Path to the root build directory.')
   parser.add_argument('--tool-prefix',
                       help='Path prefix for c++filt, nm, readelf.')
-
   _AddContainerArguments(parser)
-  parser.add_argument('--ssargs-file',
-                      help='Path to SuperSize multi-container arguments file.')
 
 
-def _ParseSsargs(lines):
+def _IdentifyInputFile(args):
+  """Identifies main input file type from |args.f|, and updates |args|.
+
+  Identification is performed on filename alone, i.e., the file need not exist.
+  The result is written to a field in |args|. If the field exists then it
+  simply gets overwritten.
+
+  If '.' is missing from |args.f| then --elf-file is assumed.
+
+  Returns:
+    True if identification was successful, else False.
+"""
+  if args.f.endswith('.minimal.apks'):
+    args.minimal_apks_file = args.f
+    logging.info('Auto-identified --minimal-apks-file.')
+  elif args.f.endswith('.apk'):
+    args.apk_file = args.f
+    logging.info('Auto-identified --apk-file.')
+  elif args.f.endswith('.so') or '.' not in os.path.basename(args.f):
+    args.elf_file = args.f
+    logging.info('Auto-identified --elf-file.')
+  elif args.f.endswith('.map') or args.f.endswith('.map.gz'):
+    args.map_file = args.f
+    logging.info('Auto-identified --map-file.')
+  elif args.f.endswith('.ssargs'):
+    args.ssargs_file = args.f
+    logging.info('Auto-identified --ssargs-file.')
+  else:
+    return False
+  return True
+
+
+def _GetMainFiles(args):
+  ret = [args.apk_file, args.elf_file, args.minimal_apks_file, args.ssargs_file]
+  ret = [v for v in ret if v]
+  # --map-file can be a main file or used with another main file. So only add it
+  # if no main file is found yet
+  if not ret and args.map_file:
+    ret.append(args.map_file)
+  # |ret| should only one element; the caller should check and handle errors.
+  return ret
+
+
+def _DeduceDerivedArgsAndCheckMainInput(args, is_top_level_args,
+                                        on_config_error):
+  """Stores values derived from |args|, and ensures one main input exists.
+
+  Args:
+    args: Parsed command-line arguments, or .ssargs input.
+    is_top_level_args: Whether this is processing SuperSize command line
+      (instead of .ssargs input).
+    on_config_error: Error callback.
+  """
+  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
+  main_files = _GetMainFiles(args)
+  if not main_files:
+    on_config_error(
+        'Must pass at least one of --apk-file, --minimal-apks-file, '
+        '--elf-file, --map-file, --ssargs-file')
+  # --map-file can be a main file, or used with another main file.
+  if len(main_files) > 1:
+    on_config_error(
+        'Found colliding --apk-file, --minimal-apk-file, --elf-file, '
+        '--ssargs-file')
+  if is_top_level_args:
+    setattr(args, 'any_path_within_output_directory', main_files[0])
+
+
+def ParseSsargs(lines):
   """Parses .ssargs data.
 
   An .ssargs file is a text file to specify multiple containers as input to
@@ -1854,7 +1906,7 @@ def _ParseSsargs(lines):
   Raises:
     ValueError: Parse error, including input line number.
   """
-  container_args_list = []
+  sub_args_list = []
   parser = argparse.ArgumentParser(add_help=False)
   parser.error = lambda msg: (_ for _ in ()).throw(ValueError(msg))
   parser.add_argument('name')
@@ -1864,16 +1916,22 @@ def _ParseSsargs(lines):
       toks = shlex.split(line, comments=True)
       if not toks:  # Skip if line is empty after stripping comments.
         continue
-      container_args = parser.parse_args(toks)
-      if set(container_args.name) & set('<>'):
+      sub_args = parser.parse_args(toks)
+      if set(sub_args.name) & set('<>'):
         parser.error('container name cannot have characters in "<>"')
-      if container_args.f and container_args.f.endswith('.ssargs'):
+      if sub_args.f:
+        if not _IdentifyInputFile(sub_args):
+          parser.error('cannot identify file type: {}'.format(sub_args.f))
+      if sub_args.ssargs_file:  # May be added by the -f flag.
         parser.error('cannot nest .ssargs files')
-      container_args_list.append(container_args)
+      _DeduceDerivedArgsAndCheckMainInput(sub_args,
+                                          is_top_level_args=False,
+                                          on_config_error=parser.error)
+      sub_args_list.append(sub_args)
   except ValueError as e:
     e.args = ('Line %d: %s' % (lineno, e.args[0]), )
     raise e
-  return container_args_list
+  return sub_args_list
 
 
 def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
@@ -1941,22 +1999,10 @@ def _DeduceAuxPaths(args, apk_prefix):
   return mapping_path, resources_pathmap_path
 
 
-def _DeduceDerivedArgs(args, is_top_level_args, on_config_error):
-  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
-  if is_top_level_args:
-    any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
-                or args.map_file or args.ssargs_file)
-    if any_path is None:
-      on_config_error(
-          'Must pass at least one of --apk-file, --minimal-apks-file, '
-          '--elf-file, --map-file, --ssargs-file')
-    setattr(args, 'any_path_within_output_directory', any_path)
-
-
 def _ReadMultipleArgsFromStream(lines, base_dir, err_prefix, args,
                                 on_config_error):
   try:
-    container_args_list = _ParseSsargs(lines)
+    container_args_list = ParseSsargs(lines)
   except ValueError as e:
     on_config_error('%s: %s' % (err_prefix, e.args[0]))
   sub_args_list = []
@@ -1965,15 +2011,10 @@ def _ReadMultipleArgsFromStream(lines, base_dir, err_prefix, args,
     sub_args = argparse.Namespace(**{k: None for k in vars(args)})
     # Copy parsed values to |sub_args|.
     for k, v in container_args.__dict__.items():
-      # Translate ile arguments to be relative to |sub_dir|.
+      # Translate file arguments to be relative to |sub_dir|.
       if (k.endswith('_file') or k == 'f') and v is not None:
         v = os.path.join(base_dir, v)
       sub_args.__dict__[k] = v
-    if sub_args.f is not None:
-      _AutoIdentifyInputFile(sub_args)
-    _DeduceDerivedArgs(sub_args,
-                       is_top_level_args=False,
-                       on_config_error=on_config_error)
     logging.info('Container: %r' %
                  {k: v
                   for k, v in sub_args.__dict__.items() if v is not None})
@@ -2028,8 +2069,8 @@ def _DeduceMainPaths(args, on_config_error):
     tool_prefix = None
     if opts.analyze_native:
       elf_path, map_path, apk_so_path = _DeduceNativeInfo(
-          output_directory, apk_path, sub_args.elf_file, sub_args.map_file,
-          on_config_error)
+          output_directory, apk_path, sub_args.elf_file
+          or sub_args.aux_elf_file, sub_args.map_file, on_config_error)
       if map_path:
         linker_name = _DetectLinkerName(map_path)
         logging.info('Linker name: %s' % linker_name)
@@ -2085,13 +2126,11 @@ def Run(args, on_config_error):
     on_config_error('size_file must end with .size')
 
   if args.f is not None:
-    if not _AutoIdentifyInputFile(args):
+    if not _IdentifyInputFile(args):
       on_config_error('Cannot identify file %s' % args.f)
-  if args.apk_file and args.minimal_apks_file:
-    on_config_error('Cannot use both --apk-file and --minimal-apks-file.')
-  _DeduceDerivedArgs(args,
-                     is_top_level_args=True,
-                     on_config_error=on_config_error)
+  _DeduceDerivedArgsAndCheckMainInput(args,
+                                      is_top_level_args=True,
+                                      on_config_error=on_config_error)
   knobs = SectionSizeKnobs()
 
   build_config = {}

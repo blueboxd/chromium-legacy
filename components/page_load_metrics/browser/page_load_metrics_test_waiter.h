@@ -32,6 +32,7 @@ class PageLoadMetricsTestWaiter
     kFirstInputOrScroll = 1 << 7,
     kFirstInputDelay = 1 << 8,
     kFirstPaintAfterBackForwardCacheRestore = 1 << 9,
+    kFirstInputDelayAfterBackForwardCacheRestore = 1 << 10,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;

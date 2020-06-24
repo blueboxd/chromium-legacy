@@ -1283,13 +1283,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void CancelAnimationFrame(int id);
   void ServiceScriptedAnimations(
       base::TimeTicks monotonic_animation_start_time);
-  void SetCurrentFrameIsThrottled(bool throttled) {
-    current_frame_is_throttled_ = true;
-  }
-
-  int RequestPostAnimationFrame(FrameRequestCallbackCollection::FrameCallback*);
-  void CancelPostAnimationFrame(int id);
-  void RunPostAnimationFrameCallbacks();
 
   int RequestIdleCallback(ScriptedIdleTaskController::IdleTask*,
                           const IdleRequestOptions*);
@@ -2044,7 +2037,6 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned write_recursion_depth_;
 
   Member<ScriptedAnimationController> scripted_animation_controller_;
-  bool current_frame_is_throttled_;
   Member<ScriptedIdleTaskController> scripted_idle_task_controller_;
   Member<TextAutosizer> text_autosizer_;
 

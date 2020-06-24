@@ -12,8 +12,10 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/enum_utils.h"
 #include "net/base/features.h"
+#include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 
 namespace content {
@@ -55,81 +57,18 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
 blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
     const GURL& request,
     const blink::mojom::Referrer& referrer) {
-  blink::mojom::ReferrerPtr sanitized_referrer = blink::mojom::Referrer::New(
-      referrer.url.GetAsReferrer(), referrer.policy);
-  if (sanitized_referrer->policy == network::mojom::ReferrerPolicy::kDefault) {
-    sanitized_referrer->policy =
-        Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-            Referrer::GetDefaultReferrerPolicy());
+  network::mojom::ReferrerPolicy effective_policy = referrer.policy;
+  if (effective_policy == network::mojom::ReferrerPolicy::kDefault) {
+    effective_policy =
+        NetReferrerPolicyToBlinkReferrerPolicy(GetDefaultReferrerPolicy());
   }
+  DCHECK_NE(effective_policy, network::mojom::ReferrerPolicy::kDefault);
 
-  if (sanitized_referrer->policy < network::mojom::ReferrerPolicy::kMinValue ||
-      sanitized_referrer->policy > network::mojom::ReferrerPolicy::kMaxValue) {
-    NOTREACHED();
-    sanitized_referrer->policy = network::mojom::ReferrerPolicy::kNever;
-  }
-
-  bool is_web_scheme = request.SchemeIsHTTPOrHTTPS() || request.IsAboutBlank();
-  if (!is_web_scheme || !sanitized_referrer->url.SchemeIsValidForReferrer()) {
-    sanitized_referrer->url = GURL();
-    return sanitized_referrer;
-  }
-
-  bool is_downgrade = sanitized_referrer->url.SchemeIsCryptographic() &&
-                      !request.SchemeIsCryptographic();
-
-  switch (sanitized_referrer->policy) {
-    case network::mojom::ReferrerPolicy::kDefault:
-      NOTREACHED();
-      break;
-    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-      if (is_downgrade)
-        sanitized_referrer->url = GURL();
-      break;
-    case network::mojom::ReferrerPolicy::kAlways:
-      break;
-    case network::mojom::ReferrerPolicy::kNever:
-      sanitized_referrer->url = GURL();
-      break;
-    case network::mojom::ReferrerPolicy::kOrigin:
-      sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
-      break;
-    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-      if (request.GetOrigin() != sanitized_referrer->url.GetOrigin())
-        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
-      break;
-    case network::mojom::ReferrerPolicy::kStrictOrigin:
-      if (is_downgrade) {
-        sanitized_referrer->url = GURL();
-      } else {
-        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
-      }
-      break;
-    case network::mojom::ReferrerPolicy::kSameOrigin:
-      if (request.GetOrigin() != sanitized_referrer->url.GetOrigin())
-        sanitized_referrer->url = GURL();
-      break;
-    case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin:
-      if (is_downgrade) {
-        sanitized_referrer->url = GURL();
-      } else if (request.GetOrigin() != sanitized_referrer->url.GetOrigin()) {
-        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
-      }
-      break;
-  }
-
-  // We limit the `referer` header to 4k: see step  of
-  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-  // and https://github.com/whatwg/fetch/issues/903.
-  if (sanitized_referrer->url.spec().length() > 4096 ||
-      (base::FeatureList::IsEnabled(
-           network::features::kCapReferrerToOriginOnCrossOrigin) &&
-       !url::Origin::Create(sanitized_referrer->url)
-            .IsSameOriginWith(url::Origin::Create(request)))) {
-    sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
-  }
-
-  return sanitized_referrer;
+  return blink::mojom::Referrer::New(
+      net::URLRequestJob::ComputeReferrerForPolicy(
+          ReferrerPolicyForUrlRequest(effective_policy),
+          referrer.url /* original_referrer */, request /* destination */),
+      effective_policy);
 }
 
 // static
@@ -138,8 +77,8 @@ url::Origin Referrer::SanitizeOriginForRequest(
     const url::Origin& initiator,
     network::mojom::ReferrerPolicy policy) {
   Referrer fake_referrer(initiator.GetURL(), policy);
-  Referrer sanitizied_referrer = SanitizeForRequest(request, fake_referrer);
-  return url::Origin::Create(sanitizied_referrer.url);
+  Referrer sanitized_referrer = SanitizeForRequest(request, fake_referrer);
+  return url::Origin::Create(sanitized_referrer.url);
 }
 
 // static

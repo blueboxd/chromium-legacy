@@ -62,7 +62,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   DesktopDragDropClientAuraX11(
       aura::Window* root_window,
       views::DesktopNativeCursorManager* cursor_manager,
-      Display* xdisplay,
       x11::Window xwindow);
   ~DesktopDragDropClientAuraX11() override;
 

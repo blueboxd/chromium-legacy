@@ -42,6 +42,7 @@ class MockRenderFrameMetadataObserverClient
                void(uint32_t frame_token,
                     const cc::RenderFrameMetadata& metadata));
   MOCK_METHOD1(OnFrameSubmissionForTesting, void(uint32_t frame_token));
+  MOCK_METHOD1(OnRootScrollOffsetChanged, void(const gfx::Vector2dF& offset));
 
  private:
   mojo::Receiver<mojom::RenderFrameMetadataObserverClient>
@@ -223,10 +224,8 @@ TEST_F(RenderFrameMetadataObserverImplTest, SendRootScrollsForAccessibility) {
                                           false /* force_send */);
   {
     base::RunLoop run_loop;
-    // The 0u frame token indicates that the client should not expect
-    // a corresponding frame token from Viz.
-    EXPECT_CALL(client(), OnRenderFrameMetadataChanged(expected_frame_token,
-                                                       render_frame_metadata))
+    EXPECT_CALL(client(), OnRootScrollOffsetChanged(
+                              *(render_frame_metadata.root_scroll_offset)))
         .WillOnce(InvokeClosure(run_loop.QuitClosure()));
     run_loop.Run();
   }

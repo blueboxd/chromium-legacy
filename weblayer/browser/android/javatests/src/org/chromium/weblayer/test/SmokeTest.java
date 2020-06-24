@@ -10,12 +10,15 @@ import android.content.pm.ActivityInfo;
 import androidx.fragment.app.Fragment;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -77,9 +80,9 @@ public class SmokeTest {
             Reference enqueuedReference = referenceQueue.poll();
             if (enqueuedReference == null) {
                 Runtime.getRuntime().gc();
-                Assert.fail("No enqueued reference");
+                throw new CriteriaNotSatisfiedException("No enqueued reference");
             }
-            Assert.assertEquals(reference, enqueuedReference);
+            Criteria.checkThat(reference, Matchers.is(enqueuedReference));
         });
     }
 
@@ -133,9 +136,9 @@ public class SmokeTest {
             Reference enqueuedReference = referenceQueue.poll();
             if (enqueuedReference == null) {
                 Runtime.getRuntime().gc();
-                Assert.fail("No enqueued reference");
+                throw new CriteriaNotSatisfiedException("No enqueued reference");
             }
-            Assert.assertEquals(reference, enqueuedReference);
+            Criteria.checkThat(reference, Matchers.is(enqueuedReference));
         });
     }
 }

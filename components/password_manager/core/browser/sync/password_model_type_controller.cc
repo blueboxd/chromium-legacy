@@ -124,6 +124,17 @@ void PasswordModelTypeController::OnAccountsCookieDeletedByUserAction() {
   features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
 }
 
+void PasswordModelTypeController::OnPrimaryAccountCleared(
+    const CoreAccountInfo& previous_primary_account_info) {
+  // Note: OnPrimaryAccountCleared() basically means that the consent for
+  // Sync-the-feature was revoked. In this case, also clear any possible
+  // matching opt-in for the account-scoped storage, since it'd probably be
+  // surprising to the user if their account passwords still remained after
+  // disabling Sync.
+  features_util::OptOutOfAccountStorageAndClearSettingsForAccount(
+      pref_service_, previous_primary_account_info.gaia);
+}
+
 void PasswordModelTypeController::OnOptInStateMaybeChanged() {
   // Note: This method gets called in many other situations as well, not just
   // when the opt-in state changes, but DataTypePreconditionChanged() is cheap

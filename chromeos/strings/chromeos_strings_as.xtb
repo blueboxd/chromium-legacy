@@ -3,6 +3,7 @@
 <translationbundle lang="as">
 <translation id="1018656279737460067">বাতিল কৰা হ’ল</translation>
 <translation id="1195447618553298278">অজ্ঞাত আসোঁৱাহ।</translation>
+<translation id="1413240736185167732">বিফল হৈছে - ফিল্টাৰ বিফল হৈছে</translation>
 <translation id="1468664791493211953">অ'ফাৰসমূহ</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" />এ এই ডিভাইচটো পৰিচালনা কৰে তথা আপোনাৰ কাৰ্যকলাপো নিৰীক্ষণ কৰিব পাৰে।</translation>
 <translation id="150962533380566081">অমান্য PUK।</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">এই ডিভাইচ এণ্টাৰপ্ৰাইজৰ দ্বাৰা পৰিচালিত</translation>
 <translation id="1905710495812624430">চেষ্টা কৰাৰ সৰ্বাধিক সীমা অতিক্ৰম কৰিছে।</translation>
 <translation id="1930797645656624981">Chrome OS ইনপুট পদ্ধতি সেৱা</translation>
+<translation id="1947737735496445907">প্ৰিণ্ট কৰা হ’ল</translation>
 <translation id="1979103255016296513">পাছৱর্ড সলনি কৰাৰ সময় উকলিছে</translation>
 <translation id="2049639323467105390">এই ডিভাইচটো <ph name="DOMAIN" />এ পৰিচালনা কৰে।</translation>
 <translation id="2338501278241028356">ওচৰ-পাজৰৰ ডিভাইচসমূহ চাবলৈ ব্লুটুথ অন কৰক</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">এপ্</translation>
 <translation id="2872961005593481000">শ্বাট ডাউন কৰক</translation>
 <translation id="3008341117444806826">ৰিফ্ৰেশ্ব কৰক</translation>
+<translation id="3091839911843451378">বিফল হৈছে - বন্ধ হৈছে</translation>
+<translation id="3268178239013324452">বিফল হৈছে - দুৱাৰ খোল খাই আছে</translation>
 <translation id="3369013195428705271">আপুনি সকলো প্ৰিণ্টৰ ইতিহাস নিশ্চিতভাৱে মচিব বিচাৰেনে? আপোনাৰ চলি থকা প্ৰিণ্টৰ কামসমূহ মচা নহয়।</translation>
-<translation id="3515615323037921860">প্ৰিণ্ট কাৰ্যসমূহ</translation>
+<translation id="3456078764689556234"><ph name="TOTAL_PAGES" /> খনৰ ভিতৰত <ph name="PRINTED_PAGES" /> নম্বৰৰ পৃষ্ঠাখন প্ৰিণ্ট কৰা হৈছে।</translation>
+<translation id="3527036260304016759">বিফল হৈছে - অজ্ঞাত আসোঁৱাহ</translation>
 <translation id="3749289110408117711">ফাইলৰ নাম</translation>
 <translation id="38114475217616659">সকলো ইতিহাস মচক</translation>
 <translation id="3820172043799983114">অমান্য পিন।</translation>
 <translation id="3838338534323494292">নতুন পাছৱৰ্ড</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="TOTAL_PAGE_NUMBER" /> খনৰ ভিতৰত <ph name="PRINTED_PAGE_NUMBER" /> নম্বৰৰ পৃষ্ঠা</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />এ এই ডিভাইচটো পৰিচালনা কৰে আৰু চোৱা ৱেবপৃষ্ঠাসমূহ, পাছৱৰ্ডসমূহ আৰু ইমেইলকে ধৰি ব্যৱহাৰকাৰীৰ সকলো কাৰ্যকলাপ এক্সেছ কৰিব পাৰে।</translation>
+<translation id="4003384961948020559">বিফল হৈছে - আউটপুট ভৰ্তি হৈ গৈছে</translation>
 <translation id="4034824040120875894">প্ৰিণ্টাৰ</translation>
 <translation id="4227825898293920515">পাছৱর্ডৰ ম্যাদ উকলাৰ সময় <ph name="TIME" /></translation>
+<translation id="4238516577297848345">কোনো প্ৰিণ্টৰ কাম চলি থকা নাই</translation>
+<translation id="428217921675623177">৯০ দিনতকৈ পুৰণি প্ৰিণ্টৰ কামসমূহ আঁতৰোৱা হ’ব</translation>
 <translation id="4429881212383817840">Kerberos টিকেটৰ ম্যাদ শীঘ্ৰেই উকলি যাব</translation>
 <translation id="445059817448385655">পুৰণি পাছৱৰ্ড</translation>
 <translation id="467510802200863975">পাছৱৰ্ডসমূহ মিলা নাই</translation>
@@ -37,24 +46,33 @@
 মোক কিবা সুধিবলৈ মাইকটো টিপক।</translation>
 <translation id="5222676887888702881">ছাইন আউট কৰক</translation>
 <translation id="5317780077021120954">ছেভ কৰক</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">এতিয়া নতুন এটা বাছনি কৰক</translation>
 <translation id="5457599981699367932">অতিথি হিচাপে ব্ৰাউজ কৰক</translation>
 <translation id="54609108002486618">পৰিচালিত</translation>
 <translation id="5832805196449965646">অন্য লোক যোগ কৰক</translation>
 <translation id="5895138241574237353">ৰিষ্টাৰ্ট কৰক</translation>
+<translation id="6048107060512778456">বিফল হৈছে - কাগজ ঠাহ খাই গৈছে</translation>
 <translation id="6058625436358447366">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি আৰু নতুন পাছৱর্ডসমূহ দিয়ক</translation>
 <translation id="6106186594183574873">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি পাছৱর্ড দিয়ক</translation>
 <translation id="6146993107019042706">সম্পূর্ণ কৰিবলৈ আপোনাৰ নতুন পাছৱর্ড দিয়ক</translation>
 <translation id="6517239166834772319">অন্বেষণ</translation>
+<translation id="6564646048574748301">বিফল হৈছে - প্ৰিণ্টাৰৰ সৈতে সংযোগ কৰিব পৰা নাই</translation>
 <translation id="6643016212128521049">মচক</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">এই কাৰ্যটো আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে</translation>
 <translation id="7658239707568436148">বাতিল কৰক</translation>
 <translation id="7690294790491645610">নতুন পাছৱর্ড নিশ্চিত কৰক</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="808894953321890993">পাছৱৰ্ড সলনি কৰক</translation>
 <translation id="8208861521865154048">লাভালাভসমূহ</translation>
+<translation id="8347227221149377169">প্ৰিণ্টিঙৰ কামসমূহ</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />এ এই ব্যৱহাৰকাৰী গৰাকীক পৰিচালনা কৰে। এইটোৱে হয়তো দূৰৰ পৰা ছেটিংসমূহ পৰিচালনা কৰিব আৰু ব্যৱহাৰকাৰীৰ কার্যকলাপ নিৰীক্ষণ কৰিব পাৰে।</translation>
+<translation id="871560550817059752">বিফল হৈছে - চিয়াহী শেষ হৈছে</translation>
 <translation id="8747900814994928677">সলনি কৰাটো নিশ্চিত কৰক</translation>
+<translation id="8919837981463578619">বিফল হৈছে - ট্ৰে’ উপলব্ধ নহয়</translation>
+<translation id="8928727111548978589">বিফল হৈছে - কাগজ শেষ হৈছে</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> টা প্ৰয়াস বাকী আছে</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />ৰ টিকেট ৰিফ্ৰেশ্ব কৰক</translation>
 <translation id="9111102763498581341">আনলক</translation>

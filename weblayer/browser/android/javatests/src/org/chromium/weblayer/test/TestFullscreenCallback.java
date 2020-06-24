@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer.test;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.weblayer.FullscreenCallback;
@@ -28,10 +30,11 @@ public class TestFullscreenCallback extends FullscreenCallback {
     }
 
     public void waitForFullscreen() {
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mEnterFullscreenCount));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mEnterFullscreenCount, Matchers.is(1)));
     }
 
     public void waitForExitFullscreen() {
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mExitFullscreenCount));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mExitFullscreenCount, Matchers.is(1)));
     }
 }

@@ -54,7 +54,10 @@ class PortalBrowserTest : public InProcessBrowserTest {
   PortalBrowserTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(blink::features::kPortals);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPortals,
+                              blink::features::kPortalsCrossOrigin},
+        /*disabled_features=*/{});
     InProcessBrowserTest::SetUp();
   }
 

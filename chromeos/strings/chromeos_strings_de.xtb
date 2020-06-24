@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Fehlgeschlagen – Druckerklappe offen</translation>
 <translation id="3369013195428705271">Möchten Sie den gesamten Druckverlauf wirklich löschen? Ihre aktiven Druckaufträge werden nicht gelöscht.</translation>
 <translation id="3456078764689556234">Seite <ph name="PRINTED_PAGES" /> von <ph name="TOTAL_PAGES" /> wird gedruckt.</translation>
-<translation id="3515615323037921860">Druckaufträge</translation>
 <translation id="3527036260304016759">Fehlgeschlagen – Unbekannter Fehler</translation>
 <translation id="3749289110408117711">Dateiname</translation>
 <translation id="38114475217616659">Gesamten Verlauf löschen</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Fehlgeschlagen – Ausgabefach ist voll</translation>
 <translation id="4034824040120875894">Drucker</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
+<translation id="4238516577297848345">Keine laufenden Druckaufträge</translation>
 <translation id="428217921675623177">Druckaufträge, die älter als 90 Tage sind, werden entfernt</translation>
 <translation id="4429881212383817840">Kerberos-Ticket läuft bald ab</translation>
 <translation id="445059817448385655">Altes Passwort</translation>
@@ -61,11 +61,13 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Diese Aktion wird von Ihrem Administrator verwaltet</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
 <translation id="8208861521865154048">Vorteile</translation>
+<translation id="8347227221149377169">Druckaufträge</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> verwaltet diesen Nutzer. Es werden möglicherweise per Remotezugriff Einstellungen verwaltet und Nutzeraktivitäten überwacht.</translation>
 <translation id="871560550817059752">Fehlgeschlagen – Keine Tinte</translation>
 <translation id="8747900814994928677">Änderung bestätigen</translation>

@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Сәтсіз: есігі ашық</translation>
 <translation id="3369013195428705271">Басып шығару тарихын шынымен толығымен тазалағыңыз келе ме? Қазір орындалып жатқан басып шығару жұмысының деректері сақталады.</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> бет (жалпы саны: <ph name="TOTAL_PAGES" />) басып шығарылды.</translation>
-<translation id="3515615323037921860">Баспа жұмыстары</translation>
 <translation id="3527036260304016759">Сәтсіз: белгісіз қате шықты</translation>
 <translation id="3749289110408117711">Файл атауы</translation>
 <translation id="38114475217616659">Тарихты толығымен тазалау</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Сәтсіз: шығыс науа толып кеткен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
+<translation id="4238516577297848345">Ешқандай баспа жұмысы орындалып жатқан жоқ.</translation>
 <translation id="428217921675623177">90 күннен аса уақыт бұрын орындалған баспа жұмыстары өшіріледі.</translation>
 <translation id="4429881212383817840">Kerberos билетінің жарамдылық мерзімі жақында аяқталады</translation>
 <translation id="445059817448385655">Ескі құпия сөз</translation>
@@ -60,11 +60,13 @@
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Бұл параметрді әкімшіңіз басқарады.</translation>
 <translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7690294790491645610">Жаңа құпия сөзді қайталаңыз</translation>
 <translation id="7805768142964895445">Күйі</translation>
 <translation id="808894953321890993">Кұпия сөзді өзгерту</translation>
 <translation id="8208861521865154048">Бонустар</translation>
+<translation id="8347227221149377169">Баспа жұмыстары</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> пайдаланушыны басқарады. Сонымен қатар қашықтан параметрлерді басқарады және пайдаланушының әрекетін қадағалайды.</translation>
 <translation id="871560550817059752">Сәтсіз: сия бітіп қалды</translation>
 <translation id="8747900814994928677">Өзгерісті растау</translation>

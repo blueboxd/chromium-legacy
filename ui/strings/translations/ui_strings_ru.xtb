@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Калибровка завершена</translation>
 <translation id="252373100621549798">Неизвестный дисплей</translation>
 <translation id="2545651323591713692">Отложить</translation>
+<translation id="2570734079541893434">Настройки</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{через 1 ч.}one{через # ч.}few{через # ч.}many{через # ч.}other{через # ч.}}</translation>
 <translation id="2583543531130364912">Откалибруйте сенсорный экран</translation>
 <translation id="2666092431469916601">Наверх</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Приложение перенесено на страницу <ph name="PAGE_NUMBER" />, строка <ph name="ROW_NUMBER" />, столбец <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Не блокировать</translation>
 <translation id="7907591526440419938">Открытие файла</translation>
+<translation id="7952747673138230804">В Chrome OS показываются рекомендации нового контента. Статистику для улучшения рекомендаций мы будем собирать, только если вы разрешите отправку данных об использовании функции. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{У вас более 1 непрочитанного уведомления}one{У вас более # непрочитанного уведомления}few{У вас более # непрочитанных уведомлений}many{У вас более # непрочитанных уведомлений}other{У вас более # непрочитанного уведомления}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{через 1 мин.}one{через # мин.}few{через # мин.}many{через # мин.}other{через # мин.}}</translation>

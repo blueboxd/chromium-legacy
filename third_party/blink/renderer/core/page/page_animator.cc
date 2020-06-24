@@ -61,7 +61,6 @@ void PageAnimator::ServiceScriptedAnimations(
       if (document->View()->ShouldThrottleRendering()) {
         document->GetDocumentAnimations()
             .UpdateAnimationTimingForAnimationFrame();
-        document->SetCurrentFrameIsThrottled(true);
         continue;
       }
       // Disallow throttling in case any script needs to do a synchronous
@@ -108,11 +107,6 @@ void PageAnimator::PostAnimate() {
     if (frame->IsLocalFrame())
       documents.push_back(To<LocalFrame>(frame)->GetDocument());
   }
-
-  // Run the post-animation frame callbacks. See
-  // https://github.com/WICG/requestPostAnimationFrame
-  for (auto& document : documents)
-    document->RunPostAnimationFrameCallbacks();
 
   // If we don't have an imminently incoming frame, we need to let the
   // AnimationClock update its own time to properly service out-of-lifecycle

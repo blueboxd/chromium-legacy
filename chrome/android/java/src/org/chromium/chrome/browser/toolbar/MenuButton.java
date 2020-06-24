@@ -103,11 +103,19 @@ public class MenuButton extends FrameLayout implements TintObserver {
         updateContentDescription(visible);
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed) {
+            updateImageResources();
+        }
+    }
+
     private void updateImageResources() {
         mMenuImageButtonAnimationDrawable = (BitmapDrawable) mMenuImageButton.getDrawable()
-                                                    .mutate()
                                                     .getConstantState()
-                                                    .newDrawable();
+                                                    .newDrawable()
+                                                    .mutate();
 
         mMenuImageButtonAnimationDrawable.setBounds(mMenuImageButton.getPaddingLeft(),
                 mMenuImageButton.getPaddingTop(),
@@ -127,9 +135,9 @@ public class MenuButton extends FrameLayout implements TintObserver {
         mUpdateBadgeView.setImageDrawable(
                 ApiCompatibilityUtils.getDrawable(getResources(), drawable));
         mUpdateBadgeAnimationDrawable = (BitmapDrawable) mUpdateBadgeView.getDrawable()
-                                                .mutate()
                                                 .getConstantState()
-                                                .newDrawable();
+                                                .newDrawable()
+                                                .mutate();
         mUpdateBadgeAnimationDrawable.setBounds(mUpdateBadgeView.getPaddingLeft(),
                 mUpdateBadgeView.getPaddingTop(),
                 mUpdateBadgeView.getWidth() - mUpdateBadgeView.getPaddingRight(),

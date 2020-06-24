@@ -243,7 +243,7 @@ class ProcessManager : public KeyedService,
  protected:
   static ProcessManager* Create(content::BrowserContext* context);
 
-  // |context| is incognito pass the master context as |original_context|.
+  // |context| is incognito pass the original context as |original_context|.
   // Otherwise pass the same context for both. Pass the ExtensionRegistry for
   // |context| as |registry|, or override it for testing.
   ProcessManager(content::BrowserContext* context,

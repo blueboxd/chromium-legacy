@@ -1,7 +1,6 @@
 <style include="cr-hidden-style">
   :host {
     --ntp-logo-height: 230px;
-    --ntp-logo-vertical-box-padding: 16px;
     display: inline-block;
     flex-shrink: 0;
     min-height: var(--ntp-logo-height);
@@ -32,6 +31,10 @@
     justify-content: center;
   }
 
+  :host([doodle-boxed_]) #doodle {
+    justify-content: flex-end;
+  }
+
   #imageDoodle {
     cursor: pointer;
     outline: none;
@@ -40,7 +43,8 @@
   :host([doodle-boxed_]) #imageDoodle {
     background-color: var(--ntp-logo-box-color);
     border-radius: 20px;
-    padding: var(--ntp-logo-vertical-box-padding) 24px;
+    margin-bottom: 30px;
+    padding: 16px 24px;
   }
 
   :host-context(.focus-outline-visible) #imageDoodle:focus {
@@ -60,8 +64,7 @@
   }
 
   :host([doodle-boxed_]) #image {
-    max-height: calc(
-        var(--ntp-logo-height) - 2 * var(--ntp-logo-vertical-box-padding));
+    max-height: 160px;
   }
 
   #animation {

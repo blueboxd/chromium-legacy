@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">Fråga innan webbplatser tillåts att skapa en 3D-karta över dina omgivningar eller registrera kamerans position (rekommenderas)</translation>
 <translation id="2212565012507486665">Tillåt cookies</translation>
 <translation id="2289270750774289114">Fråga när en webbplats försöker söka efter Bluetooth-enheter i närheten (rekommenderas)</translation>
+<translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">Nedladdningen är klar<ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">En webbplats använder kameran</translation>
 <translation id="7817023149356982970">Du loggas ut från webbplatsen.</translation>
 <translation id="7828557259026017104">Cookies är filer som har skapats av webbplatser du besöker. De används för att spara inställningar på en webbplats. Cookies från tredje part skapas av andra webbplatser. Dessa webbplatser äger en del av innehållet som visas på webbplatsen du besöker, till exempel annonser eller bilder.</translation>
+<translation id="7835852323729233924">Spelar upp media</translation>
 <translation id="7846076177841592234">Rensa val</translation>
 <translation id="7846621471902887024">Du loggas ut från alla webbplatser.</translation>
 <translation id="7882806643839505685">Tillåt ljud för en webbplats.</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
 <translation id="802154636333426148">Nedladdningen misslyckades</translation>
+<translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">Blockera cookies för en enskild webbplats.</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="965817943346481315">Blockera om påträngande eller vilseledande annonser visas på webbplatsen (rekommenderas)</translation>
 </translationbundle>

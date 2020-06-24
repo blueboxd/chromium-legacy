@@ -319,7 +319,7 @@ class BaseSizeInfo(object):
     return [c.metadata for c in self.containers]
 
   def ContainerForName(self, name, default=None):
-    return next((c for c in containers if c.name == name), default)
+    return next((c for c in self.containers if c.name == name), default)
 
 
 class SizeInfo(BaseSizeInfo):

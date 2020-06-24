@@ -17,6 +17,7 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/background.h"
@@ -26,6 +27,8 @@
 namespace ash {
 
 namespace {
+
+using chromeos::assistant::features::IsAmbientAssistantEnabled;
 
 // Appearance.
 constexpr int kHorizontalMarginDip = 16;
@@ -53,8 +56,11 @@ gfx::Size AmbientContainerView::CalculatePreferredSize() const {
 void AmbientContainerView::Layout() {
   // Layout child views first to have proper bounds set for children.
   LayoutPhotoView();
-  LayoutAssistantView();
   LayoutGlanceableInfoView();
+  // The assistant view may not exist if |kAmbientAssistant| feature is
+  // disabled.
+  if (ambient_assistant_container_view_)
+    LayoutAssistantView();
 
   View::Layout();
 }
@@ -65,12 +71,14 @@ void AmbientContainerView::Init() {
 
   photo_view_ = AddChildView(std::make_unique<PhotoView>(delegate_));
 
-  ambient_assistant_container_view_ =
-      AddChildView(std::make_unique<AmbientAssistantContainerView>());
-  ambient_assistant_container_view_->SetVisible(false);
-
   glanceable_info_view_ =
       AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
+
+  if (IsAmbientAssistantEnabled()) {
+    ambient_assistant_container_view_ =
+        AddChildView(std::make_unique<AmbientAssistantContainerView>());
+    ambient_assistant_container_view_->SetVisible(false);
+  }
 }
 
 void AmbientContainerView::LayoutPhotoView() {

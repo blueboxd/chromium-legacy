@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Falha – Porta aberta</translation>
 <translation id="3369013195428705271">Tem a certeza de que pretende limpar todo o histórico de impressões? As suas tarefas de impressão em curso não serão limpas.</translation>
 <translation id="3456078764689556234">Página <ph name="PRINTED_PAGES" /> impressa de <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Tarefas de Impressão</translation>
 <translation id="3527036260304016759">Falha – Erro desconhecido</translation>
 <translation id="3749289110408117711">Nome do ficheiro</translation>
 <translation id="38114475217616659">Limpar todo o histórico</translation>
@@ -62,12 +61,13 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
-<translation id="7561454561030345039">Esta definição é gerida pelo seu administrador.</translation>
+<translation id="7561454561030345039">Esta ação é gerida pelo seu administrador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar a nova palavra-passe</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="808894953321890993">Alterar palavra-passe</translation>
 <translation id="8208861521865154048">Benefícios</translation>
+<translation id="8347227221149377169">Tarefas de impressão</translation>
 <translation id="8701136875688985581">Este utilizador é gerido por <ph name="ENROLLMENT_DOMAIN" />. Pode gerir definições e monitorizar remotamente a atividade do utilizador.</translation>
 <translation id="871560550817059752">Falha – Sem tinta</translation>
 <translation id="8747900814994928677">Confirme a alteração</translation>

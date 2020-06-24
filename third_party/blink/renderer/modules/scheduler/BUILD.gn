@@ -14,7 +14,5 @@ blink_modules_sources("scheduler") {
     "dom_task_controller.h",
     "dom_task_signal.cc",
     "dom_task_signal.h",
-    "window_scheduler.cc",
-    "window_scheduler.h",
   ]
 }

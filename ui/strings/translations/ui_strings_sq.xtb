@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibrimi përfundoi</translation>
 <translation id="252373100621549798">Ekran i panjohur</translation>
 <translation id="2545651323591713692">Shty alarmin</translation>
+<translation id="2570734079541893434">Menaxho cilësimet</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{në 1 orë}other{në # orë}}</translation>
 <translation id="2583543531130364912">Kalibro ekranin me prekje</translation>
 <translation id="2666092431469916601">I sipërm</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">U zhvendos te faqja <ph name="PAGE_NUMBER" />, radha <ph name="ROW_NUMBER" />, kolona <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Mos blloko</translation>
 <translation id="7907591526440419938">Hap skedarin</translation>
+<translation id="7952747673138230804">Chrome OS shfaq sugjerimet për përmbajtje të re për të eksploruar. Dërgon statistika për të përmirësuar cilësinë vetëm nëse ke zgjedhur të ndash të dhënat e përdorimit. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Komanda</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Më shumë se 1 njoftim i palexuar}other{Më shumë se # njoftime të palexuara}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{në 1 min.}other{në # min.}}</translation>

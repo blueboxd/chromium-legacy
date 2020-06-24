@@ -42,6 +42,7 @@
 <translation id="2182457891543959921">サイトに周囲の 3D マップの作成またはカメラ位置の追跡を許可する前に確認します（推奨）</translation>
 <translation id="2212565012507486665">Cookie を許可</translation>
 <translation id="2289270750774289114">サイトから近くにある Bluetooth デバイスの検出を求められたときに確認する（推奨）</translation>
+<translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2434158240863470628">ダウンロードが完了しました<ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -205,6 +206,7 @@
 <translation id="7804248752222191302">サイトでカメラが使用されています</translation>
 <translation id="7817023149356982970">このサイトからログアウトします。</translation>
 <translation id="7828557259026017104">Cookie は、アクセスしたサイトによって作成されるファイルです。サイトではこのファイルを使用して各ユーザーが行なった設定が記憶されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまり現在ウェブページに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
+<translation id="7835852323729233924">再生中のメディア</translation>
 <translation id="7846076177841592234">選択解除</translation>
 <translation id="7846621471902887024">すべてのサイトからログアウトします。</translation>
 <translation id="7882806643839505685">特定のサイトに対して音声の再生を許可します。</translation>
@@ -212,6 +214,7 @@
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を削除して、このウェブサイトに指定したすべての権限をリセットしてもよろしいですか？</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
+<translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
 <translation id="8116925261070264013">ミュート中</translation>
 <translation id="8131740175452115882">確認</translation>
@@ -245,6 +248,7 @@
 <translation id="8958424370300090006">特定のサイトの Cookie をブロックします。</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="965817943346481315">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロック（推奨）</translation>
 </translationbundle>

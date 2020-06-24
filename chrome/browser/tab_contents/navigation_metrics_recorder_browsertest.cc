@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/navigation_metrics/navigation_metrics.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -53,11 +54,13 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
   base::HistogramTester histograms;
   ui_test_utils::NavigateToURL(browser(),
                                GURL("data:text/html, <html></html>"));
-  histograms.ExpectTotalCount("Navigation.MainFrameScheme", 1);
-  histograms.ExpectBucketCount("Navigation.MainFrameScheme", 5 /* data: */, 1);
-  histograms.ExpectTotalCount("Navigation.MainFrameSchemeDifferentPage", 1);
-  histograms.ExpectBucketCount("Navigation.MainFrameSchemeDifferentPage",
+  histograms.ExpectTotalCount(navigation_metrics::kMainFrameScheme, 1);
+  histograms.ExpectBucketCount(navigation_metrics::kMainFrameScheme,
                                5 /* data: */, 1);
+  histograms.ExpectTotalCount(navigation_metrics::kMainFrameSchemeDifferentPage,
+                              1);
+  histograms.ExpectBucketCount(
+      navigation_metrics::kMainFrameSchemeDifferentPage, 5 /* data: */, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,

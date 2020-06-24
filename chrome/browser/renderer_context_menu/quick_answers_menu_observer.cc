@@ -102,8 +102,7 @@ void QuickAnswersMenuObserver::InitMenu(
   if (!is_eligible_ || !proxy_ || !quick_answers_client_)
     return;
 
-  if (params.input_field_type ==
-      blink::ContextMenuDataInputFieldType::kPassword)
+  if (params.is_editable)
     return;
 
   auto selected_text = base::UTF16ToUTF8(SanitizeText(params.selection_text));
@@ -141,8 +140,7 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (!quick_answers_controller_)
     return;
 
-  if (params.input_field_type ==
-      blink::ContextMenuDataInputFieldType::kPassword)
+  if (params.is_editable)
     return;
 
   auto selected_text = base::UTF16ToUTF8(params.selection_text);

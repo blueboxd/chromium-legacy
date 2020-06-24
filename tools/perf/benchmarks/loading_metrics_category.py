@@ -31,4 +31,5 @@ def AugmentOptionsForLoadingMetrics(tbm_options):
   cat_filter.AddDisabledByDefault('disabled-by-default-network')
 
   tbm_options.AddTimelineBasedMetric('loadingMetric')
+  tbm_options.AddTimelineBasedMetric('memoryAblationMetric')
   return tbm_options

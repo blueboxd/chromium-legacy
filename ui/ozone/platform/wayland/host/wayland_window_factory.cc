@@ -8,7 +8,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
-#include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
@@ -26,7 +26,7 @@ std::unique_ptr<WaylandWindow> WaylandWindow::Create(
       // parent window to be set. Thus, create a normal window instead then.
       if (properties.parent_widget == gfx::kNullAcceleratedWidget &&
           !connection->wayland_window_manager()->GetCurrentFocusedWindow()) {
-        window.reset(new WaylandSurface(delegate, connection));
+        window.reset(new WaylandToplevelWindow(delegate, connection));
       } else if (connection->IsDragInProgress()) {
         // We are in the process of drag and requested a popup. Most probably,
         // it is an arrow window.
@@ -43,7 +43,7 @@ std::unique_ptr<WaylandWindow> WaylandWindow::Create(
     case PlatformWindowType::kDrag:
       // TODO(msisov): Figure out what kind of surface we need to create for
       // bubble and drag windows.
-      window.reset(new WaylandSurface(delegate, connection));
+      window.reset(new WaylandToplevelWindow(delegate, connection));
       break;
     default:
       NOTREACHED();

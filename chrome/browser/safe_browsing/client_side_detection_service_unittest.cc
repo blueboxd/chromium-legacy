@@ -337,8 +337,7 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("blah"));
 }
 
-// Failing test (crbug.com/1096972)
-TEST_F(ClientSideDetectionServiceTest, DISABLED_SetEnabledAndRefreshState) {
+TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   // Check that the model isn't downloaded until the service is enabled.
   profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   csd_service_ = std::make_unique<ClientSideDetectionService>(profile_);
@@ -384,8 +383,7 @@ TEST_F(ClientSideDetectionServiceTest, DISABLED_SetEnabledAndRefreshState) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Failing test (crbug.com/1096972)
-TEST_F(ClientSideDetectionServiceTest, DISABLED_TestModelFollowsPrefs) {
+TEST_F(ClientSideDetectionServiceTest, TestModelFollowsPrefs) {
   profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   profile_->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                                    false);

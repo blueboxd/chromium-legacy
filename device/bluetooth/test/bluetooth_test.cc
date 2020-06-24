@@ -116,6 +116,10 @@ BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
   return nullptr;
 }
 
+void BluetoothTestBase::SimulateLowEnergyDiscoveryFailure() {
+  NOTIMPLEMENTED();
+}
+
 BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
   NOTIMPLEMENTED();
   return nullptr;

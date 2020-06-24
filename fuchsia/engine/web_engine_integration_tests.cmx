@@ -13,6 +13,7 @@
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
       "fuchsia.media.SessionAudioConsumerFactory",
+      "fuchsia.memorypressure.Provider",
       "fuchsia.net.NameLookup",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",

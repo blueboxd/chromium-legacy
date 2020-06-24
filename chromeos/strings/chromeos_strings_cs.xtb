@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Tisk selhal – jsou otevřená dvířka</translation>
 <translation id="3369013195428705271">Opravdu chcete vymazat celou historii tisku? Probíhající tiskové úlohy vymazány nebudou.</translation>
 <translation id="3456078764689556234">Vytisknuta stránka <ph name="PRINTED_PAGES" /> z <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Tiskové úlohy</translation>
 <translation id="3527036260304016759">Tisk selhal – neznámá chyba</translation>
 <translation id="3749289110408117711">Název souboru</translation>
 <translation id="38114475217616659">Vymazat celou historii</translation>
@@ -35,6 +34,7 @@
 <translation id="4003384961948020559">Tisk selhal – výstupní zásobní je plný</translation>
 <translation id="4034824040120875894">Tiskárna</translation>
 <translation id="4227825898293920515">Platnost hesla vyprší za <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nemáte žádné probíhající tiskové úlohy</translation>
 <translation id="428217921675623177">Tiskové úlohy starší než 90 dní budou odstraněny</translation>
 <translation id="4429881212383817840">Platnost lístku Kerberos brzy vyprší</translation>
 <translation id="445059817448385655">Staré heslo</translation>
@@ -61,11 +61,13 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Tuto akci spravuje administrátor</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="808894953321890993">Změnit heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
+<translation id="8347227221149377169">Tiskové úlohy</translation>
 <translation id="8701136875688985581">Tohoto uživatele spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Může vzdáleně spravovat nastavení a sledovat aktivitu uživatele.</translation>
 <translation id="871560550817059752">Tisk selhal – došel inkoust</translation>
 <translation id="8747900814994928677">Potvrdit změnu</translation>

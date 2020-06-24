@@ -1704,8 +1704,9 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   }
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 // Flaky on Linux, especially under sanitizers: https://crbug.com/1073052
+// Flaky UAF on Mac under ASAN: https://crbug.com/1082355
 #define MAYBE_FromBackgroundServiceWorker_NoSniffXml \
   DISABLED_FromBackgroundServiceWorker_NoSniffXml
 #else

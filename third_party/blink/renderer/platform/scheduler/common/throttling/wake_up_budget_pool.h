@@ -23,9 +23,8 @@ class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
   ~WakeUpBudgetPool() override;
 
   // Sets the interval between wake ups. This can be invoked at any time. If a
-  // next wake up is already scheduled, it is rescheduled only if the new
-  // |interval| is smaller than the old interval. Wake ups after that will be
-  // scheduled according to |interval|.
+  // next wake up is already scheduled, it is rescheduled according to the new
+  // |interval| as part of this call.
   void SetWakeUpInterval(base::TimeTicks now, base::TimeDelta interval);
 
   // Sets the duration of wake ups. This does not have an immediate effect and
@@ -54,6 +53,10 @@ class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
   void OnWakeUp(base::TimeTicks now) final;
   void AsValueInto(base::trace_event::TracedValue* state,
                    base::TimeTicks now) const final;
+
+  base::Optional<base::TimeTicks> last_wake_up_for_testing() const {
+    return last_wake_up_;
+  }
 
  protected:
   QueueBlockType GetBlockType() const final;

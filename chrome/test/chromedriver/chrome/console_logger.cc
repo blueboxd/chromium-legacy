@@ -42,17 +42,8 @@ Status ConsoleLogger::OnConnected(DevToolsClient* client) {
   base::DictionaryValue params;
   Status status = client->SendCommand("Log.enable", params);
   if (status.IsError()) {
-    std::string message = status.message();
-    if (message.find("'Log.enable' wasn't found") != std::string::npos) {
-      // If the Log.enable command doesn't exist, then we're on Chrome 53 or
-      // earlier. Enable the Console domain so we can listen for
-      // Console.messageAdded events.
-      return client->SendCommand("Console.enable", params);
-    }
     return status;
   }
-  // Otherwise, we're on Chrome 54+. Enable the Log and Runtime domains so we
-  // can listen for Log.entryAdded and Runtime.exceptionThrown events.
   return client->SendCommand("Runtime.enable", params);
 }
 
@@ -60,66 +51,12 @@ Status ConsoleLogger::OnEvent(
     DevToolsClient* client,
     const std::string& method,
     const base::DictionaryValue& params) {
-  if (method == "Console.messageAdded")
-    return OnConsoleMessageAdded(params);
   if (method == "Log.entryAdded")
     return OnLogEntryAdded(params);
   if (method == "Runtime.consoleAPICalled")
     return OnRuntimeConsoleApiCalled(params);
   if (method == "Runtime.exceptionThrown")
     return OnRuntimeExceptionThrown(params);
-  return Status(kOk);
-}
-
-Status ConsoleLogger::OnConsoleMessageAdded(
-    const base::DictionaryValue& params) {
-  // If the event has proper structure and fields, log formatted.
-  // Else it's a weird message that we don't know how to format, log full JSON.
-  const base::DictionaryValue* message_dict = nullptr;
-  if (params.GetDictionary("message", &message_dict)) {
-    std::string text;
-    std::string level_name;
-    Log::Level level = Log::kInfo;
-    if (message_dict->GetString("text", &text) && !text.empty() &&
-        message_dict->GetString("level", &level_name) &&
-        ConsoleLevelToLogLevel(level_name, &level)) {
-      const char* origin_cstr = "unknown";
-      std::string origin;
-      if ((message_dict->GetString("url", &origin) && !origin.empty()) ||
-          (message_dict->GetString("source", &origin) && !origin.empty())) {
-        origin_cstr = origin.c_str();
-      }
-
-      std::string line_column;
-      int line = -1;
-      if (message_dict->GetInteger("line", &line)) {
-        int column = -1;
-        if (message_dict->GetInteger("column", &column)) {
-          base::SStringPrintf(&line_column, "%d:%d", line, column);
-        } else {
-          base::SStringPrintf(&line_column, "%d", line);
-        }
-      } else {
-        // No line number, but print anyway, just to maintain the number of
-        // fields in the formatted message in case someone wants to parse it.
-        line_column = "-";
-      }
-
-      std::string source;
-      message_dict->GetString("source", &source);
-      log_->AddEntry(level, source, base::StringPrintf("%s %s %s",
-                                                       origin_cstr,
-                                                       line_column.c_str(),
-                                                       text.c_str()));
-
-      return Status(kOk);
-    }
-  }
-
-  // Don't know how to format, log full JSON.
-  std::string message_json;
-  base::JSONWriter::Write(params, &message_json);
-  log_->AddEntry(Log::kWarning, message_json);
   return Status(kOk);
 }
 
@@ -240,12 +177,8 @@ Status ConsoleLogger::OnRuntimeConsoleApiCalled(
 Status ConsoleLogger::OnRuntimeExceptionThrown(
     const base::DictionaryValue& params) {
   const base::DictionaryValue* exception_details = nullptr;
-  // In Chrome 54, |url|, |lineNumber| and |columnNumber| are properties of the
-  // |details| dictionary. In Chrome 55+, they are inside the |exceptionDetails|
-  // dictionary.
-  // TODO(samuong): Stop looking at |details| once we stop supporting Chrome 54.
+
   if (!params.GetDictionary("exceptionDetails", &exception_details))
-    if (!params.GetDictionary("details", &exception_details))
       return Status(kUnknownError, "missing or invalid exception details");
 
   std::string origin;
@@ -259,13 +192,6 @@ Status ConsoleLogger::OnRuntimeExceptionThrown(
   if (!exception_details->GetInteger("columnNumber", &column))
     return Status(kUnknownError, "missing or invalid columnNumber");
   std::string line_column = base::StringPrintf("%d:%d", line, column);
-
-  // In Chrome 54, the exception object is serialized as a dictionary called
-  // |exception|. In Chrome 55+, the exception object properties are in the
-  // |exceptionDetails| object.
-  // TODO(samuong): Delete this once we stop supporting Chrome 54.
-  if (!params.GetDictionary("exceptionDetails", &exception_details))
-    exception_details = &params;
 
   std::string text;
   const base::DictionaryValue* exception = nullptr;

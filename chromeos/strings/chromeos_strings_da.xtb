@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Handlingen mislykkedes – Åben låge</translation>
 <translation id="3369013195428705271">Er du sikker på, at du vil rydde hele udskriftshistorikken? Dine igangværende udskriftsjobs ryddes ikke.</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> ud af <ph name="TOTAL_PAGES" /> er blevet udskrevet.</translation>
-<translation id="3515615323037921860">Udskriftsjob</translation>
 <translation id="3527036260304016759">Handlingen mislykkedes – Ukendt fejl</translation>
 <translation id="3749289110408117711">Filnavn</translation>
 <translation id="38114475217616659">Ryd hele historikken</translation>
@@ -32,10 +31,11 @@
 <translation id="3838338534323494292">Ny adgangskode</translation>
 <translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> ud af <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne enhed og har adgang til al brugeraktivitet, bl.a. besøgte websider, adgangskoder og mails.</translation>
-<translation id="4003384961948020559">Handlingen mislykkedes – Fuld papirbakke</translation>
+<translation id="4003384961948020559">Handlingen mislykkedes – Fuld udskriftsbakke</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Adgangskoden udløber om <ph name="TIME" /></translation>
-<translation id="428217921675623177">Udskriftjobs, der er ældre end 90 dage, fjernes</translation>
+<translation id="4238516577297848345">Ingen udskriftsjobs er i gang</translation>
+<translation id="428217921675623177">Udskriftsjobs, der er ældre end 90 dage, fjernes</translation>
 <translation id="4429881212383817840">Din Kerberos-billet er ved at udløbe</translation>
 <translation id="445059817448385655">Gammel adgangskode</translation>
 <translation id="467510802200863975">Adgangskoderne stemmer ikke overens</translation>
@@ -60,16 +60,18 @@
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Denne handling administreres af din administrator</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7690294790491645610">Bekræft den nye adgangskode</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Skift adgangskode</translation>
 <translation id="8208861521865154048">Fordele</translation>
+<translation id="8347227221149377169">Udskriftsjobs</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne bruger. Det kan administrere indstillinger via fjernadgang og overvåge brugeraktivitet.</translation>
-<translation id="871560550817059752">Handlingen mislykkedes – Blæk mangler</translation>
+<translation id="871560550817059752">Handlingen mislykkedes – Mangler blæk</translation>
 <translation id="8747900814994928677">Bekræft ændring</translation>
 <translation id="8919837981463578619">Handlingen mislykkedes – Bakke mangler</translation>
-<translation id="8928727111548978589">Handlingen mislykkedes – Papir mangler</translation>
+<translation id="8928727111548978589">Handlingen mislykkedes – Papirbakken er tom</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> forsøg tilbage</translation>
 <translation id="910415269708673980">Gendan billetten for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Lås op</translation>

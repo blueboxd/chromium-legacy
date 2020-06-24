@@ -88,6 +88,9 @@ class CORE_EXPORT InteractiveDetector
   // pointer down followed by a pointer up.
   base::Optional<base::TimeDelta> GetFirstInputDelay() const;
 
+  WTF::Vector<base::Optional<base::TimeDelta>>
+  GetFirstInputDelaysAfterBackForwardCacheRestore() const;
+
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
   base::Optional<base::TimeTicks> GetFirstInputTimestamp() const;
 
@@ -137,6 +140,8 @@ class CORE_EXPORT InteractiveDetector
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
                                   base::TimeTicks first_scroll_timestamp);
 
+  void OnRestoredFromBackForwardCache();
+
  private:
   friend class InteractiveDetectorTest;
 
@@ -162,6 +167,9 @@ class CORE_EXPORT InteractiveDetector
     base::Optional<base::TimeDelta> first_input_processing_time;
     base::Optional<base::TimeTicks> first_scroll_timestamp;
     base::Optional<base::TimeDelta> frist_scroll_delay;
+
+    WTF::Vector<base::Optional<base::TimeDelta>>
+        first_input_delays_after_back_forward_cache_restore;
   } page_event_times_;
 
   struct VisibilityChangeEvent {

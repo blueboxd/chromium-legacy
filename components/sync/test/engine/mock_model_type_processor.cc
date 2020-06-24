@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/hash/sha1.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/engine/commit_queue.h"
@@ -20,7 +21,6 @@ MockModelTypeProcessor::~MockModelTypeProcessor() = default;
 
 void MockModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> commit_queue) {
-  NOTREACHED();
 }
 
 void MockModelTypeProcessor::DisconnectSync() {
@@ -31,10 +31,20 @@ void MockModelTypeProcessor::DisconnectSync() {
 
 void MockModelTypeProcessor::GetLocalChanges(size_t max_entries,
                                              GetLocalChangesCallback callback) {
-  DCHECK_LE(commit_request_.size(), max_entries);
   get_local_changes_call_count_++;
-  std::move(callback).Run(std::move(commit_request_));
-  commit_request_.clear();
+
+  // Truncation may be needed due to |max_entries|.
+  CommitRequestDataList remaining_changes;
+  if (commit_request_.size() > max_entries) {
+    for (size_t i = max_entries; i < commit_request_.size(); ++i) {
+      remaining_changes.push_back(std::move(commit_request_[i]));
+    }
+    commit_request_.resize(max_entries);
+  }
+
+  CommitRequestDataList returned_changes = std::move(commit_request_);
+  commit_request_ = std::move(remaining_changes);
+  std::move(callback).Run(std::move(returned_changes));
 }
 
 void MockModelTypeProcessor::OnCommitCompleted(
@@ -76,14 +86,20 @@ void MockModelTypeProcessor::RunQueuedTasks() {
 std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
     const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
+  const std::string server_id = HasServerAssignedId(tag_hash)
+                                    ? GetServerAssignedId(tag_hash)
+                                    : base::GenerateGUID();
+  return CommitRequest(tag_hash, specifics, server_id);
+}
+
+std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
+    const ClientTagHash& tag_hash,
+    const sync_pb::EntitySpecifics& specifics,
+    const std::string& server_id) {
   const int64_t base_version = GetBaseVersion(tag_hash);
 
   auto data = std::make_unique<syncer::EntityData>();
-
-  if (HasServerAssignedId(tag_hash)) {
-    data->id = GetServerAssignedId(tag_hash);
-  }
-
+  data->id = server_id;
   data->client_tag_hash = tag_hash;
   data->specifics = specifics;
 
@@ -93,6 +109,8 @@ std::unique_ptr<CommitRequestData> MockModelTypeProcessor::CommitRequest(
   data->modification_time =
       data->creation_time + base::TimeDelta::FromSeconds(base_version);
   data->name = "Name: " + tag_hash.value();
+
+  DCHECK(!data->is_deleted());
 
   auto request_data = std::make_unique<CommitRequestData>();
   request_data->entity = std::move(data);
@@ -208,6 +226,22 @@ void MockModelTypeProcessor::SetDisconnectCallback(
 void MockModelTypeProcessor::SetCommitRequest(
     CommitRequestDataList commit_request) {
   commit_request_ = std::move(commit_request);
+}
+
+void MockModelTypeProcessor::AppendCommitRequest(
+    const ClientTagHash& tag_hash,
+    const sync_pb::EntitySpecifics& specifics) {
+  const std::string server_id = HasServerAssignedId(tag_hash)
+                                    ? GetServerAssignedId(tag_hash)
+                                    : base::GenerateGUID();
+  AppendCommitRequest(tag_hash, specifics, server_id);
+}
+
+void MockModelTypeProcessor::AppendCommitRequest(
+    const ClientTagHash& tag_hash,
+    const sync_pb::EntitySpecifics& specifics,
+    const std::string& server_id) {
+  commit_request_.push_back(CommitRequest(tag_hash, specifics, server_id));
 }
 
 int MockModelTypeProcessor::GetLocalChangesCallCount() const {

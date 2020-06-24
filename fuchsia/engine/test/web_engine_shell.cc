@@ -26,7 +26,6 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/values.h"
 #include "fuchsia/base/init_logging.h"
-#include "fuchsia/base/release_channel.h"
 #include "url/gurl.h"
 
 fuchsia::sys::ComponentControllerPtr component_controller_;
@@ -96,10 +95,8 @@ fuchsia::web::ContextProviderPtr ConnectToContextProvider(
   component_context->svc()->Connect(launcher.NewRequest());
 
   fuchsia::sys::LaunchInfo launch_info;
-  launch_info.url = base::StrCat({"fuchsia-pkg://fuchsia.com/web_engine",
-                                  BUILDFLAG(FUCHSIA_RELEASE_CHANNEL_SUFFIX),
-                                  "#meta/context_provider.cmx"});
-
+  launch_info.url =
+      "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cmx";
   launch_info.arguments = extra_command_line_arguments;
   fidl::InterfaceHandle<fuchsia::io::Directory> service_directory;
   launch_info.directory_request = service_directory.NewRequest().TakeChannel();

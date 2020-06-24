@@ -94,6 +94,8 @@ class AccessibilityFeaturesApiTest : public ExtensionApiTest,
       return ash::prefs::kAccessibilitySelectToSpeakEnabled;
     if (feature == "switchAccess")
       return ash::prefs::kAccessibilitySwitchAccessEnabled;
+    if (feature == "cursorColor")
+      return ash::prefs::kAccessibilityCursorColorEnabled;
     return NULL;
   }
 

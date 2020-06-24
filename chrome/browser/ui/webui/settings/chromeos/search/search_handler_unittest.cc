@@ -24,6 +24,27 @@ namespace chromeos {
 namespace settings {
 namespace {
 
+class FakeObserver : public mojom::SearchResultsObserver {
+ public:
+  FakeObserver() = default;
+  ~FakeObserver() override = default;
+
+  mojo::PendingRemote<mojom::SearchResultsObserver> GenerateRemote() {
+    mojo::PendingRemote<mojom::SearchResultsObserver> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    return remote;
+  }
+
+  size_t num_calls() const { return num_calls_; }
+
+ private:
+  // mojom::SearchResultsObserver:
+  void OnSearchResultAvailabilityChanged() override { ++num_calls_; }
+
+  size_t num_calls_;
+  mojo::Receiver<mojom::SearchResultsObserver> receiver_{this};
+};
+
 // Note: Copied from printing_section.cc but does not need to stay in sync with
 // it.
 const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
@@ -92,6 +113,9 @@ class SearchHandlerTest : public testing::Test {
                                        mojom::Setting::kAddPrinter);
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,
                                        mojom::Setting::kSavedPrinters);
+
+    handler_remote_->Observe(observer_.GenerateRemote());
+    handler_remote_.FlushForTesting();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -102,11 +126,15 @@ class SearchHandlerTest : public testing::Test {
   FakeHierarchy fake_hierarchy_;
   SearchHandler handler_;
   mojo::Remote<mojom::SearchHandler> handler_remote_;
+  FakeObserver observer_;
 };
 
 TEST_F(SearchHandlerTest, AddAndRemove) {
   // Add printing search tags to registry and search for "Print".
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  handler_remote_.FlushForTesting();
+  EXPECT_EQ(1u, observer_.num_calls());
+
   std::vector<mojom::SearchResultPtr> search_results;
 
   // 3 results should be available for a "Print" query.
@@ -142,6 +170,7 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
               mojom::ParentResultBehavior::kDoNotIncludeParentResults,
               &search_results);
   EXPECT_TRUE(search_results.empty());
+  EXPECT_EQ(2u, observer_.num_calls());
 }
 
 TEST_F(SearchHandlerTest, UrlModification) {

@@ -60,13 +60,18 @@ class SystemMemoryPressureEvaluatorFuchsiaTest
   fuchsia::memorypressure::WatcherPtr watcher_;
 };
 
-TEST_F(SystemMemoryPressureEvaluatorFuchsiaTest, ProviderUnavailable) {
+using SystemMemoryPressureEvaluatorFuchsiaDeathTest =
+    SystemMemoryPressureEvaluatorFuchsiaTest;
+
+TEST_F(SystemMemoryPressureEvaluatorFuchsiaDeathTest, ProviderUnavailable) {
   auto voter = std::make_unique<MockMemoryPressureVoter>();
   SystemMemoryPressureEvaluatorFuchsia evaluator(std::move(voter));
 
   // Spin the loop to allow the evaluator to notice that the Provider is not
-  // available, to verify that that doesn't trigger a fatal failure.
-  base::RunLoop().RunUntilIdle();
+  // available and verify that this causes a fatal failure.
+  ASSERT_DEATH(base::RunLoop().RunUntilIdle(),
+               "fuchsia\\.memorypressure\\.Provider disconnected: "
+               "ZX_ERR_PEER_CLOSED \\(-24\\)");
 }
 
 TEST_F(SystemMemoryPressureEvaluatorFuchsiaTest, Basic) {

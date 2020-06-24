@@ -35,6 +35,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -251,7 +252,12 @@ class ButtonTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(ButtonTest);
 };
 
-// Tests that hover state changes correctly when visiblity/enableness changes.
+// Iterate through the metadata for Button to ensure it all works.
+TEST_F(ButtonTest, MetadataTest) {
+  test::TestViewMetadata(button());
+}
+
+// Tests that hover state changes correctly when visibility/enableness changes.
 TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
   event_generator()->MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
   event_generator()->PressLeftButton();

@@ -6,7 +6,6 @@ assert(is_fuchsia)
 
 import("//build/config/fuchsia/generate_runner_scripts.gni")
 import("//build/config/fuchsia/symbol_archive.gni")
-import("//fuchsia/release_channel.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -247,8 +246,6 @@ cr_fuchsia_package("web_engine") {
   binary = ":web_engine_exe"
   manifest = "context_provider.cmx"
   component_name_override = "context_provider"
-  package_name_override = "web_engine${release_channel_suffix}"
-  archive_name_override = "web_engine"
 
   excluded_files = [
     "lib/libswiftshader_libEGL.so",
@@ -395,7 +392,6 @@ executable("web_engine_shell_exec") {
   deps = [
     "//base",
     "//fuchsia/base",
-    "//fuchsia/base:release_channel_buildflags",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",

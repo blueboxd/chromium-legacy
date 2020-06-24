@@ -90,6 +90,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  cell.accessibilityTraits |= UIAccessibilityTraitButton;
 
   switch (indexPath.row) {
     case RowIdentifier::RowIdentifierURL:
@@ -280,6 +281,8 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                                                          target:self
                                                          action:action];
   [tooltip showMessage:message atBottomOf:cell];
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  tooltip);
 }
 
 @end

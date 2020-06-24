@@ -1678,10 +1678,12 @@ InputMethodController::VirtualKeyboardPolicyOfFocusedElement() const {
 
 void InputMethodController::SetVirtualKeyboardVisibilityRequest(
     ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request) {
-  // show/hide API behavior is only applicable for elements that have manual VK
-  // policy.
-  if (VirtualKeyboardPolicyOfFocusedElement() ==
-      ui::mojom::VirtualKeyboardPolicy::MANUAL) {
+  // show/hide API behavior is only applicable for elements/editcontexts that
+  // have manual VK policy.
+  if ((VirtualKeyboardPolicyOfFocusedElement() ==
+       ui::mojom::VirtualKeyboardPolicy::MANUAL) ||
+      (GetActiveEditContext() &&
+       GetActiveEditContext()->IsVirtualKeyboardPolicyManual())) {
     last_vk_visibility_request_ = vk_visibility_request;
   }  // else we don't change the last VK visibility request.
 }

@@ -11,12 +11,14 @@ import android.webkit.ValueCallback;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -97,7 +99,8 @@ public class DownloadCallbackTest {
         }
 
         public void waitForIntercept() {
-            CriteriaHelper.pollInstrumentationThread(() -> Assert.assertNotNull(mUrl));
+            CriteriaHelper.pollInstrumentationThread(
+                    () -> Criteria.checkThat(mUrl, Matchers.notNullValue()));
         }
 
         public void waitForStarted() {

@@ -49,7 +49,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
@@ -65,6 +67,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/chromeos/devicetype_utils.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -339,6 +342,11 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     crostini_features_ = std::make_unique<crostini::FakeCrostiniFeatures>();
     SetUpConnectManager();
     chromeos::NetworkHandler::Initialize();
+    // The |DeviceSettingsTestBase| setup above instantiates
+    // |FakeShillManagerClient| with a default environment which will post
+    // tasks on the current thread to setup a initial network configuration with
+    // a connected default network.
+    base::RunLoop().RunUntilIdle();
   }
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
@@ -879,6 +887,39 @@ TEST_F(ManagementUIHandlerTests, ProxyServerShowReport) {
                       expected_elements);
 }
 
+TEST_F(ManagementUIHandlerTests, ProxyServerShowReportDeviceOffline) {
+  PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
+  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                          &local_state_);
+  // Simulate network disconnected state.
+  chromeos::NetworkStateHandler::NetworkStateList networks;
+  chromeos::NetworkHandler::Get()
+      ->network_state_handler()
+      ->GetNetworkListByType(chromeos::NetworkTypePattern::Default(),
+                             true,   // configured_only
+                             false,  // visible_only,
+                             0,      // no limit to number of results
+                             &networks);
+  chromeos::ShillServiceClient::TestInterface* service =
+      chromeos::DBusThreadManager::Get()
+          ->GetShillServiceClient()
+          ->GetTestInterface();
+  for (const auto* const network : networks) {
+    service->SetServiceProperty(network->path(), shill::kStateProperty,
+                                base::Value(shill::kStateOffline));
+  }
+  base::RunLoop().RunUntilIdle();
+
+  ResetTestConfig(false);
+  const base::Value info = SetUpForReportingInfo();
+
+  const std::map<std::string, std::string> expected_elements = {};
+
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+                      expected_elements);
+  chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
+}
+
 TEST_F(ManagementUIHandlerTests, ProxyServerHideReportForDirectProxy) {
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
   chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
@@ -896,6 +937,7 @@ TEST_F(ManagementUIHandlerTests, ProxyServerHideReportForDirectProxy) {
   const std::map<std::string, std::string> expected_elements = {};
   ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
                       expected_elements);
+  chromeos::NetworkHandler::Get()->NetworkHandler::ShutdownPrefServices();
 }
 
 #endif

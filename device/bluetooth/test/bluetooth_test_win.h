@@ -182,6 +182,7 @@ class BluetoothTestWinrt
   void SimulateAdapterPoweredOn() override;
   void SimulateAdapterPoweredOff() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  void SimulateLowEnergyDiscoveryFailure() override;
   void SimulateDevicePaired(BluetoothDevice* device, bool is_paired) override;
   void SimulatePairingPinCode(BluetoothDevice* device,
                               std::string pin_code) override;

@@ -98,8 +98,8 @@ SkColor GetThemeColor(const ui::ThemeProvider& tp, int id) {
   // If web contents are being inverted because the system is in high-contrast
   // mode, any system theme colors we use must be inverted too to cancel out.
   return ui::NativeTheme::GetInstanceForNativeUi()
-                     ->GetHighContrastColorScheme() ==
-                 ui::NativeTheme::HighContrastColorScheme::kDark
+                     ->GetPlatformHighContrastColorScheme() ==
+                 ui::NativeTheme::PlatformHighContrastColorScheme::kDark
              ? color_utils::InvertColor(color)
              : color;
 }

@@ -26,7 +26,6 @@ from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
 from .codegen_expr import expr_from_exposure
 from .codegen_format import format_template as _format
-from .codegen_utils import collect_include_headers_of_idl_types
 from .codegen_utils import component_export
 from .codegen_utils import component_export_header
 from .codegen_utils import enclose_with_header_guard
@@ -146,9 +145,54 @@ def _make_include_headers(cg_context):
         "third_party/blink/renderer/platform/heap/visitor.h",
     ])
 
-    header_includes.update(
-        collect_include_headers_of_idl_types(
-            [member.idl_type for member in dictionary.own_members]))
+    def add_include_headers(idl_type):
+        if idl_type.is_numeric or idl_type.is_boolean or idl_type.is_typedef:
+            pass
+        elif idl_type.is_string:
+            header_includes.add(
+                "third_party/blink/renderer/platform/wtf/text/wtf_string.h")
+        elif idl_type.is_buffer_source_type:
+            header_includes.update([
+                "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h",
+                "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h",
+                "third_party/blink/renderer/platform/heap/handle.h",
+            ])
+        elif idl_type.is_object or idl_type.is_any:
+            header_includes.add(
+                "third_party/blink/renderer/bindings/core/v8/script_value.h")
+        elif idl_type.is_enumeration:
+            type_def_obj = idl_type.type_definition_object
+            header_includes.add(PathManager(type_def_obj).api_path(ext="h"))
+        elif idl_type.is_dictionary:
+            type_def_obj = idl_type.type_definition_object
+            header_includes.add(
+                "third_party/blink/renderer/platform/heap/handle.h")
+            source_includes.add(PathManager(type_def_obj).api_path(ext="h"))
+        elif idl_type.type_definition_object:
+            type_def_obj = idl_type.type_definition_object
+            header_includes.add(
+                "third_party/blink/renderer/platform/heap/handle.h")
+            source_includes.add(PathManager(type_def_obj).api_path(ext="h"))
+        elif (idl_type.is_sequence or idl_type.is_frozen_array
+              or idl_type.is_variadic or idl_type.is_record):
+            header_includes.update([
+                "third_party/blink/renderer/platform/wtf/vector.h",
+                "third_party/blink/renderer/platform/heap/heap_allocator.h",
+            ])
+        elif idl_type.is_promise:
+            header_includes.add(
+                "third_party/blink/renderer/bindings/core/v8/script_promise.h")
+        elif idl_type.is_union:
+            union_def_obj = idl_type.union_definition_object
+            header_includes.add(PathManager(union_def_obj).api_path(ext="h"))
+        elif idl_type.is_nullable:
+            if not blink_type_info(idl_type.inner_type).has_null_value:
+                header_includes.add("base/optional.h")
+        else:
+            assert False, "Unknown type: {}".format(idl_type.syntactic_form)
+
+    for member in dictionary.own_members:
+        member.idl_type.apply_to_all_composing_elements(add_include_headers)
 
     return header_includes, source_includes
 
@@ -166,6 +210,14 @@ def _make_forward_declarations(cg_context):
 
     source_class_fwd_decls = set()
     source_struct_fwd_decls = set()
+
+    def add_fwd_decls(idl_type):
+        if idl_type.is_dictionary:
+            header_class_fwd_decls.add(
+                blink_class_name(idl_type.type_definition_object))
+
+    for member in dictionary.own_members:
+        member.idl_type.apply_to_all_composing_elements(add_fwd_decls)
 
     return (header_class_fwd_decls, header_struct_fwd_decls,
             source_class_fwd_decls, source_struct_fwd_decls)

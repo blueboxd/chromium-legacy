@@ -86,7 +86,7 @@ TEST(ReferrerSanitizerTest, DataURLRequest) {
   auto result = Referrer::SanitizeForRequest(
       GURL("data:text/html,<div>foo</div>"),
       Referrer(GURL("http://foo"), network::mojom::ReferrerPolicy::kAlways));
-  EXPECT_TRUE(result.url.is_empty());
+  EXPECT_EQ(result.url, GURL("http://foo"));
 }
 
 TEST(ReferrerTest, BlinkNetRoundTripConversion) {

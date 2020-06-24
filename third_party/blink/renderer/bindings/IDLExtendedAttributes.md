@@ -109,7 +109,9 @@ Extended attributes on partial interface members work as normal. However, only t
 * If a flag obviously applies to only one member of a single-member interface (i.e., it is named after that member), the extended attribute should be on the member.
 
 The remaining extended attribute, `[ImplementedAs]`, is mandatory. A partial
-interface must have `[ImplementedAs]` extended attribute to specify a static-only C++ class.
+interface must have `[ImplementedAs]` extended attribute to specify the C++ class that includes the required static methods.
+This may be a static-only class, or for cases where a single static method is a simple getter for an object, that object's
+class may implement the required static method.
 This is stored internally via `[PartialInterfaceImplementedAs]` (see below).
 
 ### interface mixins

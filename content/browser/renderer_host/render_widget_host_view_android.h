@@ -317,6 +317,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderFrameMetadataChangedBeforeActivation(
       const cc::RenderFrameMetadata& metadata) override;
   void OnRenderFrameMetadataChangedAfterActivation() override;
+  void OnRootScrollOffsetChanged(
+      const gfx::Vector2dF& root_scroll_offset) override;
 
   void WasEvicted();
 

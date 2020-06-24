@@ -7,10 +7,12 @@ package org.chromium.weblayer.test;
 import android.os.RemoteException;
 import android.view.View;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Tab;
@@ -51,8 +53,8 @@ public final class BrowserControlsHelper {
 
     void waitForBrowserControlsViewToBeVisible(View v) {
         CriteriaHelper.pollUiThread(() -> {
-            Assert.assertTrue(v.getHeight() > 0);
-            Assert.assertEquals(View.VISIBLE, v.getVisibility());
+            Criteria.checkThat(v.getHeight(), Matchers.greaterThan(0));
+            Criteria.checkThat(v.getVisibility(), Matchers.is(View.VISIBLE));
         });
     }
 

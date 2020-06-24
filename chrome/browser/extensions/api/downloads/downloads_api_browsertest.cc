@@ -1366,15 +1366,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |state| option for search().
-//
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchState DISABLED_DownloadExtensionTest_SearchState
-#else
-#define MAYBE_DownloadExtensionTest_SearchState DownloadExtensionTest_SearchState
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchState) {
+                       DownloadExtensionTest_SearchState) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);
@@ -1390,15 +1383,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test the |limit| option for search().
-//
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_DownloadExtensionTest_SearchLimit DISABLED_DownloadExtensionTest_SearchLimit
-#else
-#define MAYBE_DownloadExtensionTest_SearchLimit DownloadExtensionTest_SearchLimit
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_SearchLimit) {
+                       DownloadExtensionTest_SearchLimit) {
   DownloadManager::DownloadVector items;
   CreateTwoDownloads(&items);
   ScopedItemVectorCanceller delete_items(&items);

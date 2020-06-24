@@ -285,6 +285,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetSwitchAccessEnabled(bool enabled);
   bool switch_access_enabled() const { return switch_access().enabled(); }
+  // Switch access may be disabled in prefs but still running when the disable
+  // dialog is displaying.
+  bool IsSwitchAccessRunning() const;
   bool IsSwitchAccessSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForSwitchAccess();
 
@@ -475,6 +478,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   SwitchAccessEventHandlerDelegate* switch_access_event_handler_delegate_ =
       nullptr;
   bool no_switch_access_disable_confirmation_dialog_for_testing_ = false;
+  bool switch_access_disable_dialog_showing_ = false;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

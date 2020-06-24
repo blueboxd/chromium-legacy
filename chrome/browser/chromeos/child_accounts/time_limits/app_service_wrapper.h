@@ -114,6 +114,12 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // Installed apps of unsupported types will not be included.
   std::vector<AppId> GetInstalledApps() const;
 
+  // Returns true if the application is a hidden arc++ app.
+  bool IsHiddenArcApp(const AppId& app_id) const;
+
+  // Returns the list of arc++ apps hidden from user.
+  std::vector<AppId> GetHiddenArcApps() const;
+
   // Returns short name of the app identified by |app_id|.
   // Might return empty string.
   std::string GetAppName(const AppId& app_id) const;
@@ -154,6 +160,10 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   apps::AppServiceProxy* GetAppProxy();
   apps::AppRegistryCache& GetAppCache() const;
   apps::InstanceRegistry& GetInstanceRegistry() const;
+
+  // Return whether app with |app_id| should be included for per-app time
+  // limits.
+  bool ShouldIncludeApp(const AppId& app_id) const;
 
   base::ObserverList<EventListener> listeners_;
 

@@ -48,6 +48,17 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
 NSString* const kRemindersSharingServiceName =
     @"com.apple.reminders.RemindersShareExtension";
 
+bool CanShare() {
+  Browser* last_active_browser = chrome::FindLastActive();
+  return last_active_browser &&
+         last_active_browser->location_bar_model()->ShouldDisplayURL() &&
+         last_active_browser->tab_strip_model()->GetActiveWebContents() &&
+         last_active_browser->tab_strip_model()
+             ->GetActiveWebContents()
+             ->GetLastCommittedURL()
+             .is_valid();
+}
+
 }  // namespace
 
 @implementation ShareMenuController {
@@ -82,12 +93,7 @@ NSString* const kRemindersSharingServiceName =
   [menu removeAllItems];
   [menu setAutoenablesItems:NO];
 
-  Browser* lastActiveBrowser = chrome::FindLastActive();
-  BOOL canShare =
-      lastActiveBrowser != nullptr &&
-      // Avoid |CanEmailPageLocation| segfault in interactive UI tests
-      lastActiveBrowser->tab_strip_model()->GetActiveWebContents() != nullptr &&
-      chrome::CanEmailPageLocation(lastActiveBrowser);
+  bool canShare = CanShare();
   // Using a real URL instead of empty string to avoid system log about relative
   // URLs in the pasteboard. This URL will not actually be shared to, just used
   // to fetch sharing services that can handle the NSURL type.

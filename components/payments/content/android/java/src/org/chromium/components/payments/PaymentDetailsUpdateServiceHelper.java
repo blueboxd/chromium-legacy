@@ -91,7 +91,6 @@ public class PaymentDetailsUpdateServiceHelper {
 
         String stringifiedDetails = paymentHandlerMethodData.getString(
                 PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, /*defaultValue=*/"{}");
-
         if (isWaitingForPaymentDetailsUpdate() || mListener == null
                 || !mListener.changePaymentMethodFromInvokedApp(methodName, stringifiedDetails)) {
             runCallbackWithError(ErrorStrings.INVALID_STATE, callback);
@@ -134,10 +133,15 @@ public class PaymentDetailsUpdateServiceHelper {
             return;
         }
 
+        Address address = Address.createFromBundle(shippingAddress);
+        if (!address.isValid()) {
+            runCallbackWithError(ErrorStrings.SHIPPING_ADDRESS_INVALID, callback);
+            return;
+        }
+
         if (isWaitingForPaymentDetailsUpdate() || mListener == null
                 || !mListener.changeShippingAddressFromInvokedApp(
-                        PaymentAddressTypeConverter.convertAddressToMojoPaymentAddress(
-                                Address.createFromBundle(shippingAddress)))) {
+                        PaymentAddressTypeConverter.convertAddressToMojoPaymentAddress(address))) {
             runCallbackWithError(ErrorStrings.INVALID_STATE, callback);
             return;
         }

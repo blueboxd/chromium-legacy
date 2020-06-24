@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">נכשלה – דלת המדפסת פתוחה</translation>
 <translation id="3369013195428705271">לנקות את כל היסטוריית ההדפסות? משימות ההדפסה הנוכחיות לא יימחקו.</translation>
 <translation id="3456078764689556234">הודפס עמוד <ph name="PRINTED_PAGES" /> מתוך <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">משימות הדפסה</translation>
 <translation id="3527036260304016759">נכשלה – שגיאה לא ידועה</translation>
 <translation id="3749289110408117711">שם קובץ</translation>
 <translation id="38114475217616659">ניקוי כל ההיסטוריה</translation>
@@ -68,6 +67,7 @@
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="808894953321890993">שינוי הסיסמה</translation>
 <translation id="8208861521865154048">הטבות</translation>
+<translation id="8347227221149377169">משימות הדפסה</translation>
 <translation id="8701136875688985581">משתמש זה מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" />. הדומיין עשוי לנהל מרחוק את ההגדרות ולעקוב אחרי פעילות המשתמש.</translation>
 <translation id="871560550817059752">נכשלה – הדיו נגמר</translation>
 <translation id="8747900814994928677">אישור השינוי</translation>

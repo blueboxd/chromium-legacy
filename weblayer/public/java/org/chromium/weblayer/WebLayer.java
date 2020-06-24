@@ -180,6 +180,14 @@ public class WebLayer {
         return mImpl;
     }
 
+    static WebLayer getLoadedWebLayer(@NonNull Context appContext)
+            throws UnsupportedVersionException {
+        ThreadCheck.ensureOnUiThread();
+        appContext = appContext.getApplicationContext();
+        checkAvailable(appContext);
+        return getWebLayerLoader(appContext).getLoadedWebLayer();
+    }
+
     /**
      * Returns the supported version. Using any functions defined in a newer version than
      * returned by {@link getSupportedMajorVersion} result in throwing an
@@ -362,6 +370,10 @@ public class WebLayer {
             } catch (Exception e) {
                 throw new APICallException(e);
             }
+        }
+
+        WebLayer getLoadedWebLayer() {
+            return mWebLayer;
         }
 
         @Nullable
@@ -671,6 +683,19 @@ public class WebLayer {
             // broadcast receiver that will handle them. The broadcast receiver needs to be in the
             // client library because it's referenced in the manifest.
             return new Intent(WebLayer.getAppContext(), BroadcastReceiver.class);
+        }
+
+        @Override
+        public Intent createMediaSessionServiceIntent() {
+            StrictModeWorkaround.apply();
+            return new Intent(WebLayer.getAppContext(), MediaSessionService.class);
+        }
+
+        @Override
+        public int getMediaSessionNotificationId() {
+            StrictModeWorkaround.apply();
+            // The id is part of the public library to avoid conflicts.
+            return R.id.weblayer_media_session_notification;
         }
     }
 }

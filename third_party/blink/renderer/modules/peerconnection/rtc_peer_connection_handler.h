@@ -225,12 +225,19 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // WebRTC event log fragments sent back from PeerConnection land here.
   void OnWebRtcEventLogWrite(const WTF::Vector<uint8_t>& output);
 
+  // Virtual for testing purposes.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
+
   bool force_encoded_audio_insertable_streams() {
     return force_encoded_audio_insertable_streams_;
   }
 
   bool force_encoded_video_insertable_streams() {
     return force_encoded_video_insertable_streams_;
+  }
+
+  bool enable_rtp_data_channel() const {
+    return configuration_.enable_rtp_data_channel;
   }
 
  protected:
@@ -372,8 +379,6 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   std::unique_ptr<blink::RTCRtpTransceiverImpl> CreateOrUpdateTransceiver(
       blink::RtpTransceiverState transceiver_state,
       blink::TransceiverStateUpdateMode update_mode);
-
-  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.

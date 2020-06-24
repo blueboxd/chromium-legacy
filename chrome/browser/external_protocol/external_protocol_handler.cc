@@ -112,6 +112,19 @@ void RunExternalProtocolDialogWithDelegate(
                                         has_user_gesture, initiating_origin);
     return;
   }
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // If the Shell does not have a registered name for the protocol,
+  // attempting to invoke the protocol will fail.
+  if (shell_integration::GetApplicationNameForProtocol(url).empty()) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Failed to launch '" + url.possibly_invalid_spec() +
+            "' because the scheme does not have a registered handler.");
+    return;
+  }
+#endif
+
   ExternalProtocolHandler::RunExternalProtocolDialog(
       url, web_contents, page_transition, has_user_gesture, initiating_origin);
 }
@@ -129,6 +142,10 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
   // that the external protocol request came from the main frame.
   if (!web_contents)
     return;
+
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kInfo,
+      "Launched external handler for '" + url.possibly_invalid_spec() + "'.");
 
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
@@ -391,6 +408,11 @@ void ExternalProtocolHandler::LaunchUrl(
       escaped_url.scheme(), base::OptionalOrNullptr(initiating_origin),
       g_external_protocol_handler_delegate, profile);
   if (block_state == BLOCK) {
+    web_contents->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Not allowed to launch '" + url.possibly_invalid_spec() + "'" +
+            (g_accept_requests ? "." : " because a user gesture is required."));
+
     if (g_external_protocol_handler_delegate)
       g_external_protocol_handler_delegate->BlockRequest();
     return;

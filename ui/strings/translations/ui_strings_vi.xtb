@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Hiệu chỉnh xong</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
 <translation id="2545651323591713692">Tạm hoãn</translation>
+<translation id="2570734079541893434">Quản lý các tùy chọn cài đặt</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{trong 1 giờ}other{trong # giờ}}</translation>
 <translation id="2583543531130364912">Hiệu chỉnh màn hình cảm ứng</translation>
 <translation id="2666092431469916601">Hàng đầu</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Đã di chuyển sang Trang <ph name="PAGE_NUMBER" />, hàng <ph name="ROW_NUMBER" />, cột <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Không chặn</translation>
 <translation id="7907591526440419938">Mở Tệp</translation>
+<translation id="7952747673138230804">Chrome OS hiển thị các đề xuất về nội dung mới để khám phá. Hệ thống chỉ gửi số liệu thống kê để cải thiện chất lượng khi bạn chọn chia sẻ dữ liệu sử dụng. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Phím Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Bạn có hơn 1 thông báo chưa đọc}other{Bạn có hơn # thông báo chưa đọc}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{trong 1 phút}other{trong # phút}}</translation>

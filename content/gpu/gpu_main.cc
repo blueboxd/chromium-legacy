@@ -329,9 +329,14 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_init->set_sandbox_helper(&sandbox_helper);
 
-  // Since GPU initialization calls into skia, its important to initialize skia
+  // Since GPU initialization calls into skia, it's important to initialize skia
   // before it.
   InitializeSkia();
+
+  // Create the ThreadPool before invoking |gpu_init| as it needs the ThreadPool
+  // (in angle::InitializePlatform()). Do not start it until after the sandbox
+  // is initialized however to avoid creating threads outside the sandbox.
+  base::ThreadPoolInstance::Create("GPU");
 
   // Gpu initialization may fail for various reasons, in which case we will need
   // to tear down this process. However, we can not do so safely until the IPC
@@ -346,6 +351,9 @@ int GpuMain(const MainFunctionParams& parameters) {
   const bool dead_on_arrival = !init_success;
 
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
+
+  // Start the ThreadPoolInstance now that the sandbox is initialized.
+  base::ThreadPoolInstance::Get()->StartWithDefaultParams();
 
   const base::ThreadPriority io_thread_priority =
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)

@@ -26,19 +26,28 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_window_event_manager.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
 
+namespace {
+
+constexpr x11::KeySym kEscKeysym = static_cast<x11::KeySym>(0xff1b);
+
 // XGrabKey requires the modifier mask to explicitly be specified.
-const unsigned int kModifiersMasks[] = {0,         // No additional modifier.
-                                        Mod2Mask,  // Num lock
-                                        LockMask,  // Caps lock
-                                        Mod5Mask,  // Scroll lock
-                                        Mod2Mask | LockMask,
-                                        Mod2Mask | Mod5Mask,
-                                        LockMask | Mod5Mask,
-                                        Mod2Mask | LockMask | Mod5Mask};
+constexpr x11::ModMask kModifiersMasks[] = {
+    {},                  // No additional modifier.
+    x11::ModMask::c_2,   // Num lock
+    x11::ModMask::Lock,  // Caps lock
+    x11::ModMask::c_5,   // Scroll lock
+    x11::ModMask::c_2 | x11::ModMask::Lock,
+    x11::ModMask::c_2 | x11::ModMask::c_5,
+    x11::ModMask::Lock | x11::ModMask::c_5,
+    x11::ModMask::c_2 | x11::ModMask::Lock | x11::ModMask::c_5,
+};
+
+}  // namespace
 
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
@@ -131,7 +140,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(bool can_grab_pointer,
   // restored when the move loop finishes.
   initial_cursor_ = old_cursor;
 
-  CreateDragInputWindow(gfx::GetXDisplay());
+  CreateDragInputWindow(x11::Connection::Get());
 
   // Only grab mouse capture of |grab_input_window_| if |can_grab_pointer| is
   // true aka the source that initiated the move loop doesn't have explicit
@@ -145,8 +154,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(bool can_grab_pointer,
   if (can_grab_pointer) {
     grabbed_pointer_ = GrabPointer(new_cursor);
     if (!grabbed_pointer_) {
-      XDestroyWindow(gfx::GetXDisplay(),
-                     static_cast<uint32_t>(grab_input_window_));
+      x11::Connection::Get()->DestroyWindow({grab_input_window_});
       return false;
     }
   }
@@ -195,18 +203,16 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
   else
     UpdateCursor(initial_cursor_);
 
-  XDisplay* display = gfx::GetXDisplay();
-  unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (auto mask : kModifiersMasks) {
-    XUngrabKey(display, esc_keycode, mask,
-               static_cast<uint32_t>(grab_input_window_));
-  }
+  auto* connection = x11::Connection::Get();
+  auto esc_keycode = KeysymToKeycode(connection, kEscKeysym);
+  for (auto mask : kModifiersMasks)
+    connection->UngrabKey({esc_keycode, grab_input_window_, mask});
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
   delegate_->OnMoveLoopEnded();
   grab_input_window_events_.reset();
-  XDestroyWindow(display, static_cast<uint32_t>(grab_input_window_));
+  connection->DestroyWindow({grab_input_window_});
   grab_input_window_ = x11::Window::None;
 
   in_move_loop_ = false;
@@ -214,45 +220,48 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 }
 
 bool X11WholeScreenMoveLoop::GrabPointer(::Cursor cursor) {
-  XDisplay* display = gfx::GetXDisplay();
+  auto* connection = x11::Connection::Get();
 
   // Pass "owner_events" as false so that X sends all mouse events to
   // |grab_input_window_|.
   int ret = ui::GrabPointer(grab_input_window_, false, cursor);
   if (ret != GrabSuccess) {
     DLOG(ERROR) << "Grabbing pointer for dragging failed: "
-                << ui::GetX11ErrorString(display, ret);
+                << ui::GetX11ErrorString(connection->display(), ret);
   }
-  XFlush(display);
+  connection->Flush();
   return ret == GrabSuccess;
 }
 
 void X11WholeScreenMoveLoop::GrabEscKey() {
-  XDisplay* display = gfx::GetXDisplay();
-  unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
+  auto* connection = x11::Connection::Get();
+  auto esc_keycode = KeysymToKeycode(connection, kEscKeysym);
   for (auto mask : kModifiersMasks) {
-    XGrabKey(display, esc_keycode, mask,
-             static_cast<uint32_t>(grab_input_window_), x11::False,
-             GrabModeAsync, GrabModeAsync);
+    connection->GrabKey({false, grab_input_window_, mask, esc_keycode,
+                         x11::GrabMode::Async, x11::GrabMode::Async});
   }
 }
 
-void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
-  XSetWindowAttributes swa;
-  memset(&swa, 0, sizeof(swa));
-  swa.override_redirect = x11::True;
-  grab_input_window_ = static_cast<x11::Window>(
-      XCreateWindow(display, DefaultRootWindow(display), -100, -100, 10, 10, 0,
-                    static_cast<int>(x11::WindowClass::CopyFromParent),
-                    static_cast<int>(x11::WindowClass::InputOnly), nullptr,
-                    CWOverrideRedirect, &swa));
+void X11WholeScreenMoveLoop::CreateDragInputWindow(
+    x11::Connection* connection) {
+  grab_input_window_ = connection->GenerateId<x11::Window>();
+  connection->CreateWindow({
+      .wid = grab_input_window_,
+      .parent = connection->default_root(),
+      .x = -100,
+      .y = -100,
+      .width = 10,
+      .height = 10,
+      .c_class = x11::WindowClass::InputOnly,
+      .override_redirect = x11::Bool32(true),
+  });
   uint32_t event_mask = ButtonPressMask | ButtonReleaseMask |
                         PointerMotionMask | KeyPressMask | KeyReleaseMask |
                         StructureNotifyMask;
   grab_input_window_events_ = std::make_unique<ui::XScopedEventSelector>(
       grab_input_window_, event_mask);
-
-  XMapRaised(display, static_cast<uint32_t>(grab_input_window_));
+  connection->MapWindow({grab_input_window_});
+  RaiseWindow(grab_input_window_);
 }
 
 }  // namespace ui

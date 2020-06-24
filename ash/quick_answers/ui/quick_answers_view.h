@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/quick_answers/ui/quick_answers_focus_search.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -19,7 +20,6 @@ struct QuickAnswer;
 }  // namespace chromeos
 
 namespace views {
-class FocusSearch;
 class ImageButton;
 class Label;
 class LabelButton;
@@ -32,8 +32,7 @@ class QuickAnswersPreTargetHandler;
 
 // A bubble style view to show QuickAnswer.
 class ASH_EXPORT QuickAnswersView : public views::Button,
-                                    public views::ButtonListener,
-                                    public views::FocusTraversable {
+                                    public views::ButtonListener {
  public:
   QuickAnswersView(const gfx::Rect& anchor_view_bounds,
                    const std::string& title,
@@ -55,11 +54,6 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::FocusTraversable:
-  views::FocusSearch* GetFocusSearch() override;
-  views::FocusTraversable* GetFocusTraversableParent() override;
-  views::View* GetFocusTraversableParentView() override;
-
   // Called when a click happens to trigger Assistant Query.
   void SendQuickAnswersQuery();
 
@@ -72,8 +66,6 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   void ShowRetryView();
 
  private:
-  friend class QuickAnswersFocusSearch;
-
   void InitLayout();
   void InitWidget();
   void AddDogfoodButton();
@@ -88,6 +80,10 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   // mouse-release), since events of former type dismiss the accompanying menu.
   void SetButtonNotifyActionToOnPress(views::Button* button);
 
+  // QuickAnswersFocusSearch::GetFocusableViewsCallback to poll currently
+  // focusable views.
+  std::vector<views::View*> GetFocusableViews();
+
   gfx::Rect anchor_view_bounds_;
   QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
@@ -100,7 +96,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   views::ImageButton* dogfood_button_ = nullptr;
 
   std::unique_ptr<QuickAnswersPreTargetHandler> quick_answers_view_handler_;
-  std::unique_ptr<views::FocusSearch> focus_search_;
+  std::unique_ptr<QuickAnswersFocusSearch> focus_search_;
   base::WeakPtrFactory<QuickAnswersView> weak_factory_{this};
 };
 }  // namespace ash

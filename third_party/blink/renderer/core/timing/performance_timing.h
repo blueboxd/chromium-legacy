@@ -63,6 +63,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   struct BackForwardCacheRestoreTiming {
     uint64_t navigation_start;
     uint64_t first_paint;
+    base::Optional<base::TimeDelta> first_input_delay;
   };
 
   using BackForwardCacheRestoreTimings =

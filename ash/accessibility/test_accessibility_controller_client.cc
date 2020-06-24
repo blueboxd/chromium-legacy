@@ -68,6 +68,8 @@ void TestAccessibilityControllerClient::RequestSelectToSpeakStateChange() {
 void TestAccessibilityControllerClient::
     RequestAutoclickScrollableBoundsForPoint(gfx::Point& point_in_screen) {}
 
+void TestAccessibilityControllerClient::OnSwitchAccessDisabled() {}
+
 int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
   int32_t tmp = sound_key_;
   sound_key_ = -1;

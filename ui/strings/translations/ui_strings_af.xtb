@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibrering is voltooi</translation>
 <translation id="252373100621549798">Onbekende skerm</translation>
 <translation id="2545651323591713692">Sluimer</translation>
+<translation id="2570734079541893434">Bestuur instellings</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{oor 1 u.}other{oor # u.}}</translation>
 <translation id="2583543531130364912">Kalibreer jou raakskerm</translation>
 <translation id="2666092431469916601">Top</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Is geskuif na Bladsy <ph name="PAGE_NUMBER" />, ry <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Moenie blokkeer nie</translation>
 <translation id="7907591526440419938">Maak lêer oop</translation>
+<translation id="7952747673138230804">Chrome-bedryfstelsel wys voorstelle vir nuwe inhoud om te verken. Stuur net statistieke om gehalte beter te maak as jy gekies het om gebruiksdata te deel. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Meer as 1 ongelese kennisgewing}other{Meer as # ongelese kennisgewings}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{oor 1 m.}other{oor # m.}}</translation>

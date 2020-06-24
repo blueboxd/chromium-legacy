@@ -61,6 +61,12 @@ void OptOutOfAccountStorageAndClearSettings(
     PrefService* pref_service,
     const syncer::SyncService* sync_service);
 
+// Like OptOutOfAccountStorageAndClearSettings(), but applies to a specific
+// given |gaia_id| rather than to the current signed-in user.
+void OptOutOfAccountStorageAndClearSettingsForAccount(
+    PrefService* pref_service,
+    const std::string& gaia_id);
+
 // Whether it makes sense to ask the user about the store when saving a
 // password (i.e. profile or account store). This is true if the user has
 // opted in already, or hasn't opted in but all other requirements are met (i.e.

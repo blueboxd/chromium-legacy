@@ -24,7 +24,6 @@
 <translation id="3268178239013324452">Bajarilmadi - Eshikchasi ochiq</translation>
 <translation id="3369013195428705271">Chop etish tarixi tozalansinmi? Joriy chop etish vazifalari oʻchirib tashlanmaydi.</translation>
 <translation id="3456078764689556234">Sahifa chop etildi: <ph name="PRINTED_PAGES" /> / <ph name="TOTAL_PAGES" />.</translation>
-<translation id="3515615323037921860">Chop etish vazifalari</translation>
 <translation id="3527036260304016759">Bajarilmadi - Notanish xato</translation>
 <translation id="3749289110408117711">Fayl nomi</translation>
 <translation id="38114475217616659">Tarixni tozalash</translation>
@@ -58,7 +57,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6106186594183574873">Yakunlash uchun eski parolni kiriting</translation>
 <translation id="6146993107019042706">Yakunlash uchun yangi parolni kiriting</translation>
 <translation id="6517239166834772319">Tanishuv</translation>
-<translation id="6564646048574748301">Bajarilmadi - Printer bilan aloqa yoʻq</translation>
+<translation id="6564646048574748301">Bajarilmadi - Printer ulanmagan</translation>
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="7162487448488904999">Galereya</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -68,6 +67,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7805768142964895445">Holat</translation>
 <translation id="808894953321890993">Parolni almashtirish</translation>
 <translation id="8208861521865154048">Imtiyozlar</translation>
+<translation id="8347227221149377169">Chop etish vazifalari</translation>
 <translation id="8701136875688985581">Bu hisob <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi. Bu domenda foydalanuvchilar faoliyati masofadan kuzatilishi va boshqarilishi mumkin.</translation>
 <translation id="871560550817059752">Bajarilmadi - Rang tugadi</translation>
 <translation id="8747900814994928677">Almashtiruvni tasdiqlang</translation>

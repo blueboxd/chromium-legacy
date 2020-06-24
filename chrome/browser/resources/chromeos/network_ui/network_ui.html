@@ -13,6 +13,7 @@
   <link rel="import" href="chrome://resources/cr_components/chromeos/network_health/network_health_summary.html">
   <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
   <link rel="import" href="network_state_ui.html">
+  <link rel="import" href="network_logs_ui.html">
 
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/cr/ui.js"></script>
@@ -57,14 +58,13 @@
   <tabs>
     <tab>$i18n{generalTab}</tab>
     <tab>$i18n{networkHealthTab}</tab>
+    <tab>$i18n{networkLogsTab}</tab>
     <tab>$i18n{networkStateTab}</tab>
     <tab>$i18n{networkSelectTab}</tab>
   </tabs>
   <tabpanels>
     <tabpanel id="general">
       <h2>$i18n{titleText}</h2>
-      <span>$i18nRaw{deviceLogLinkText}</span>
-
       <div>
         <h2>$i18n{globalPolicyLabel}</h2>
         <div id="global-policy"></div>
@@ -97,6 +97,10 @@
     <tabpanel id="health">
       <h2>$i18n{networkHealthLabel}</h2>
       <network-health-summary></network-health-summary>
+    </tabpanel>
+
+    <tabpanel id="logs">
+      <network-logs-ui></network-logs-ui>
     </tabpanel>
 
     <tabpanel id="state">

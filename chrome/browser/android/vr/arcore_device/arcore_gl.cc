@@ -124,12 +124,14 @@ ArCoreGl::~ArCoreGl() {
   CloseBindingsIfOpen();
 }
 
-void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
-                          ArCoreFactory* arcore_factory,
-                          gfx::AcceleratedWidget drawing_widget,
-                          const gfx::Size& frame_size,
-                          display::Display::Rotation display_rotation,
-                          base::OnceCallback<void(bool)> callback) {
+void ArCoreGl::Initialize(
+    vr::ArCoreSessionUtils* session_utils,
+    ArCoreFactory* arcore_factory,
+    gfx::AcceleratedWidget drawing_widget,
+    const gfx::Size& frame_size,
+    display::Display::Rotation display_rotation,
+    const std::vector<device::mojom::XRSessionFeature>& enabled_features,
+    base::OnceCallback<void(bool)> callback) {
   DVLOG(3) << __func__;
 
   DCHECK(IsOnGlThread());
@@ -138,6 +140,9 @@ void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
   transfer_size_ = frame_size;
   camera_image_size_ = frame_size;
   display_rotation_ = display_rotation;
+  // TODO(https://crbug.com/953503): start using the list to control the
+  // behavior & send appropriate data in GetFrameData().
+  enabled_features_ = enabled_features;
   should_update_display_geometry_ = true;
 
   if (!InitializeGl(drawing_widget)) {

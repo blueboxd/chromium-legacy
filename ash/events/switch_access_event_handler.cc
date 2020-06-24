@@ -16,8 +16,8 @@ namespace ash {
 
 namespace {
 
-bool IsSwitchAccessEnabled() {
-  return Shell::Get()->accessibility_controller()->switch_access_enabled();
+bool IsSwitchAccessRunning() {
+  return Shell::Get()->accessibility_controller()->IsSwitchAccessRunning();
 }
 
 void CancelEvent(ui::Event* event) {
@@ -89,7 +89,7 @@ bool SwitchAccessEventHandler::SetKeyCodesForCommand(
 }
 
 void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
-  DCHECK(IsSwitchAccessEnabled());
+  DCHECK(IsSwitchAccessRunning());
   DCHECK(event);
 
   if (ShouldCancelEvent(*event)) {

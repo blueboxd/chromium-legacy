@@ -144,7 +144,7 @@ const char kTrustTokenKeyCommitmentKeyField[] = "Y";
 
 // https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#bookmark=id.6wh9crbxdizi
 // {
-//   "batchsize" : ..., // Optional batch size; value of type int.
+//   "batchsize" : ..., // Batch size; value of type int.
 //   "srrkey" : ...,    // Required Signed Redemption Record (SRR)
 //                      // verification key, in base64.
 //

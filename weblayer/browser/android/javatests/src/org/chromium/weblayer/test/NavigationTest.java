@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
@@ -139,7 +140,7 @@ public class NavigationTest {
 
             public void waitUntilValueObserved(String expectation) {
                 CriteriaHelper.pollInstrumentationThread(
-                        () -> Assert.assertThat(expectation, Matchers.isIn(mObservedValues)));
+                        () -> Criteria.checkThat(expectation, Matchers.isIn(mObservedValues)));
             }
         }
 

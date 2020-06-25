@@ -6,21 +6,22 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "url/gurl.h"
 
 namespace ash {
 namespace assistant {
 namespace util {
 
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantQuerySource;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantQuerySource;
 
 using DeepLinkUtilTest = AshTestBase;
 

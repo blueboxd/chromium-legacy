@@ -11,6 +11,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/gfx/range/range.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -158,22 +160,6 @@ bool FlexCodeInput::HandleKeyEvent(views::Textfield* sender,
   return false;
 }
 
-void AccessibleInputField::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  views::Textfield::GetAccessibleNodeData(node_data);
-  // The following property setup is needed to match the custom behavior of
-  // pin input. It results in the following a11y vocalizations:
-  // * when input field is empty: "Next number, {current field index} of
-  // {number of fields}"
-  // * when input field is populated: "{value}, {current field index} of
-  // {number of fields}"
-  node_data->RemoveState(ax::mojom::State::kEditable);
-  node_data->role = ax::mojom::Role::kListItem;
-  base::string16 description =
-      views::Textfield::GetText().empty() ? accessible_description_ : GetText();
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
-                                base::UTF16ToUTF8(description));
-}
-
 bool AccessibleInputField::IsGroupFocusTraversable() const {
   return false;
 }
@@ -228,11 +214,15 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
     field->SetBorder(views::CreateSolidSidedBorder(
         0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
     field->SetGroup(kFixedLengthInputGroup);
-    field->set_accessible_description(l10n_util::GetStringUTF16(
-        IDS_ASH_LOGIN_PIN_REQUEST_NEXT_NUMBER_PROMPT));
+
+    // Ignores the a11y focus of |field| because the a11y needs to focus to the
+    // FixedLengthCodeInput object.
+    field->GetViewAccessibility().OverrideIsIgnored(true);
     input_fields_.push_back(field);
     AddChildView(field);
   }
+
+  text_value_for_a11y_ = std::string(length, ' ');
 }
 
 FixedLengthCodeInput::~FixedLengthCodeInput() = default;
@@ -245,13 +235,9 @@ void FixedLengthCodeInput::InsertDigit(int value) {
 
   ActiveField()->SetText(base::NumberToString16(value));
   bool was_last_field = IsLastFieldActive();
-
-  // Moving focus is delayed by using PostTask to allow for proper
-  // a11y announcements. Without that some of them are skipped.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FixedLengthCodeInput::FocusNextField,
-                                weak_ptr_factory_.GetWeakPtr()));
-
+  ResetTextValueForA11y();
+  FocusNextField();
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
   on_input_change_.Run(was_last_field, GetCode().has_value());
 }
 
@@ -263,6 +249,9 @@ void FixedLengthCodeInput::Backspace() {
   }
 
   ActiveField()->SetText(base::string16());
+  ResetTextValueForA11y();
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
   on_input_change_.Run(IsLastFieldActive(), false /*complete*/);
 }
 
@@ -299,9 +288,38 @@ void FixedLengthCodeInput::RequestFocus() {
   ActiveField()->RequestFocus();
 }
 
+void FixedLengthCodeInput::ResetTextValueForA11y() {
+  std::string result = std::string(input_fields_.size(), ' ');
+
+  for (size_t i = 0; i < input_fields_.size(); ++i) {
+    if (!input_fields_[i]->GetText().empty())
+      result[i] = base::UTF16ToUTF8(input_fields_[i]->GetText())[0];
+  }
+
+  text_value_for_a11y_ = result;
+}
+
+gfx::Range FixedLengthCodeInput::GetSelectedRangeOfTextValueForA11y() {
+  int text_sel_start = active_input_index_;
+  bool empty = text_value_for_a11y_[text_sel_start] == ' ';
+  int text_sel_end = text_sel_start + (empty ? 0 : 1);
+  return gfx::Range(text_sel_start, text_sel_end);
+}
+
 void FixedLengthCodeInput::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  views::View::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kGroup;
+  node_data->role = ax::mojom::Role::kTextField;
+  node_data->AddState(ax::mojom::State::kEditable);
+
+  node_data->SetValue(text_value_for_a11y_);
+  node_data->html_attributes.push_back(std::make_pair("type", "tel"));
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kName,
+      l10n_util::GetStringUTF8(
+          IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION));
+  const gfx::Range& range = GetSelectedRangeOfTextValueForA11y();
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
+                             range.start());
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, range.end());
 }
 
 bool FixedLengthCodeInput::HandleKeyEvent(views::Textfield* sender,
@@ -325,10 +343,13 @@ bool FixedLengthCodeInput::HandleKeyEvent(views::Textfield* sender,
     InsertDigit(key_code - ui::VKEY_NUMPAD0);
   } else if (key_code == ui::VKEY_LEFT) {
     FocusPreviousField();
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
   } else if (key_code == ui::VKEY_RIGHT) {
     // Do not allow to leave empty field when moving focus with arrow key.
-    if (!ActiveInput().empty())
+    if (!ActiveInput().empty()) {
       FocusNextField();
+      NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+    }
   } else if (key_code == ui::VKEY_BACK) {
     Backspace();
   } else if (key_code == ui::VKEY_RETURN) {
@@ -353,6 +374,7 @@ bool FixedLengthCodeInput::HandleMouseEvent(views::Textfield* sender,
     if (input_fields_[i] == sender) {
       active_input_index_ = i;
       RequestFocus();
+      NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
       break;
     }
   }
@@ -371,6 +393,7 @@ bool FixedLengthCodeInput::HandleGestureEvent(
     if (input_fields_[i] == sender) {
       active_input_index_ = i;
       RequestFocus();
+      NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
       break;
     }
   }

@@ -549,24 +549,16 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  std::string red_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_255_0_0.png"), &red_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
-  test_dir.WriteFile(FILE_PATH_LITERAL("red_icon.png"), red_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_255_0_0.png"),
+                      FILE_PATH_LITERAL("red_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -672,20 +664,14 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithJavascriptHooks) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -738,13 +724,6 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
            "background": { "scripts": ["background.js"] }
          })";
 
-  std::string blue_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
@@ -752,7 +731,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                      base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.CopyFileTo(test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"),
+                      FILE_PATH_LITERAL("blue_icon.png"));
 
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);

@@ -406,12 +406,13 @@ bool WebRtcRemoteEventLogManager::PeerConnectionSessionIdSet(
     return false;  // Unknown peer connection; already closed?
   }
 
-  if (!peer_connection->second.empty()) {
-    LOG(ERROR) << "Session ID already set.";
+  if (peer_connection->second.empty()) {
+    peer_connection->second = session_id;
+  } else if (session_id != peer_connection->second) {
+    LOG(ERROR) << "Session ID already set to " << peer_connection->second
+               << ". Cannot change to " << session_id << ".";
     return false;
   }
-
-  peer_connection->second = session_id;
 
   return true;
 }

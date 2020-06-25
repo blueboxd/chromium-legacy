@@ -27,15 +27,15 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModelObserver
       chromeos::assistant::mojom::AssistantNotification;
 
   // Invoked when the specified |notification| has been added.
-  virtual void OnNotificationAdded(const AssistantNotification* notification) {}
+  virtual void OnNotificationAdded(const AssistantNotification& notification) {}
 
   // Invoked when the specified |notification| has been updated.
   virtual void OnNotificationUpdated(
-      const AssistantNotification* notification) {}
+      const AssistantNotification& notification) {}
 
   // Invoked when the specified |notification| has been removed. If
   // |from_server| is true the request to remove was initiated by the server.
-  virtual void OnNotificationRemoved(const AssistantNotification* notification,
+  virtual void OnNotificationRemoved(const AssistantNotification& notification,
                                      bool from_server) {}
 
   // Invoked when all notifications have been removed. If |from_server| is true

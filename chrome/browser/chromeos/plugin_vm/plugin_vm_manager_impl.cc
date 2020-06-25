@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_impl.h"
 
-#include "ash/public/cpp/notification_utils.h"
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -15,11 +14,10 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -27,14 +25,10 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/message_center/public/cpp/notification.h"
 
 namespace plugin_vm {
 
 namespace {
-
-constexpr char kStartVmFailedNotificationId[] = "plugin-vm-start-vm-failed";
-constexpr char kStartVmFailedNotifierId[] = "plugin-vm-start-vm-failed";
 
 // Checks if the VM is in a state in which we can't immediately start it.
 bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
@@ -44,8 +38,7 @@ bool VmIsStopping(vm_tools::plugin_dispatcher::VmState state) {
          state == vm_tools::plugin_dispatcher::VmState::VM_STATE_PAUSING;
 }
 
-void ShowStartVmFailedNotification(Profile* profile,
-                                   PluginVmLaunchResult result) {
+void ShowStartVmFailedDialog(PluginVmLaunchResult result) {
   LOG(ERROR) << "Failed to start VM with launch result "
              << static_cast<int>(result);
   base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
@@ -76,21 +69,9 @@ void ShowStartVmFailedNotification(Profile* profile,
       message_id = IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE;
       break;
   }
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kStartVmFailedNotificationId, std::move(title),
-          l10n_util::GetStringUTF16(message_id), std::move(app_name), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kStartVmFailedNotifierId),
-          {}, new message_center::NotificationDelegate(),
-          kNotificationPluginVmIcon,
-          message_center::SystemNotificationWarningLevel::WARNING);
-  notification->set_renotify(true);
-  NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+
+  chrome::ShowWarningMessageBox(nullptr, std::move(title),
+                                l10n_util::GetStringUTF16(message_id));
 }
 
 }  // namespace
@@ -421,7 +402,7 @@ void PluginVmManagerImpl::OnStartVm(
   }
 
   if (result != PluginVmLaunchResult::kSuccess) {
-    ShowStartVmFailedNotification(profile_, result);
+    ShowStartVmFailedDialog(result);
     LaunchFailed(result);
     return;
   }

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/time/default_tick_clock.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -23,7 +22,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -218,8 +216,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, current_context.frame_tree_node_id),
           browser_context_, signed_exchange_prefetch_metric_recorder_,
-          std::move(prefetched_signed_exchange_cache), blob_storage_context_,
-          accept_langs_,
+          std::move(prefetched_signed_exchange_cache), accept_langs_,
           base::BindOnce(
               &PrefetchURLLoaderService::GenerateRecursivePrefetchToken, this,
               current_context.weak_ptr_factory.GetWeakPtr())),

@@ -74,8 +74,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MockAssistantViewDelegate
   MOCK_METHOD(void, OnOptInButtonPressed, (), (override));
 
   MOCK_METHOD(void,
-              OnSuggestionChipPressed,
-              (const AssistantSuggestion*),
+              OnSuggestionPressed,
+              (const base::UnguessableToken& suggestion_id),
               (override));
 };
 

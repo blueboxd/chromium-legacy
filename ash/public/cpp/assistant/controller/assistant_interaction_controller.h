@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -27,7 +27,7 @@ class ASH_PUBLIC_EXPORT AssistantInteractionController {
   virtual void StartTextInteraction(
       const std::string& query,
       bool allow_tts,
-      chromeos::assistant::mojom::AssistantQuerySource source) = 0;
+      chromeos::assistant::AssistantQuerySource source) = 0;
 
  protected:
   AssistantInteractionController();

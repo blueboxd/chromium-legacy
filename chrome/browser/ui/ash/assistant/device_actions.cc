@@ -30,8 +30,8 @@
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
-using chromeos::assistant::mojom::AndroidAppInfoPtr;
-using chromeos::assistant::mojom::AppStatus;
+using chromeos::assistant::AndroidAppInfo;
+using chromeos::assistant::AppStatus;
 
 namespace {
 
@@ -57,24 +57,24 @@ base::Optional<std::string> GetActivity(const std::string& package_name) {
   return base::nullopt;
 }
 
-std::string GetLaunchIntent(AndroidAppInfoPtr app_info) {
-  auto& package_name = app_info->package_name;
-  if (app_info->intent.empty() || app_info->action.empty()) {
+std::string GetLaunchIntent(const AndroidAppInfo& app_info) {
+  auto& package_name = app_info.package_name;
+  if (app_info.intent.empty() || app_info.action.empty()) {
     // No action or data specified. Using launch intent from ARC.
     return arc::GetLaunchIntent(package_name,
                                 GetActivity(package_name).value_or(""),
                                 /*extra_params=*/{});
   }
   return base::StringPrintf("%s;%s;%s=%s;%s=0x%x;%s=%s;%s",
-                            app_info->intent.c_str(), kIntentPrefix, kAction,
-                            app_info->action.c_str(), kLaunchFlags,
+                            app_info.intent.c_str(), kIntentPrefix, kAction,
+                            app_info.action.c_str(), kLaunchFlags,
                             arc::Intent::FLAG_ACTIVITY_NEW_TASK |
                                 arc::Intent::FLAG_ACTIVITY_RESET_TASK_IF_NEEDED,
                             kPackage, package_name.c_str(), kEndSuffix);
 }
 
-std::vector<AndroidAppInfoPtr> GetAppsInfo() {
-  std::vector<AndroidAppInfoPtr> android_apps_info;
+std::vector<AndroidAppInfo> GetAppsInfo() {
+  std::vector<AndroidAppInfo> android_apps_info;
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (!prefs) {
     LOG(ERROR) << "ArcAppListPrefs is not available.";
@@ -84,15 +84,14 @@ std::vector<AndroidAppInfoPtr> GetAppsInfo() {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (!app_info)
       continue;
-    AndroidAppInfoPtr app_info_ptr =
-        chromeos::assistant::mojom::AndroidAppInfo::New();
-    app_info_ptr->package_name = app_info->package_name;
+    AndroidAppInfo android_app_info;
+    android_app_info.package_name = app_info->package_name;
     auto package = prefs->GetPackage(app_info->package_name);
     if (package)
-      app_info_ptr->version = package->package_version;
-    app_info_ptr->localized_app_name = app_info->name;
-    app_info_ptr->intent = app_info->intent_uri;
-    android_apps_info.push_back(std::move(app_info_ptr));
+      android_app_info.version = package->package_version;
+    android_app_info.localized_app_name = app_info->name;
+    android_app_info.intent = app_info->intent_uri;
+    android_apps_info.push_back(std::move(android_app_info));
   }
   return android_apps_info;
 }
@@ -100,9 +99,9 @@ std::vector<AndroidAppInfoPtr> GetAppsInfo() {
 void NotifyAndroidAppListRefreshed(
     base::ObserverList<chromeos::assistant::AppListEventSubscriber>*
         subscribers) {
-  std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
+  std::vector<AndroidAppInfo> android_apps_info = GetAppsInfo();
   for (auto& subscriber : *subscribers)
-    subscriber.OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+    subscriber.OnAndroidAppListRefreshed(android_apps_info);
 }
 
 }  // namespace
@@ -176,10 +175,9 @@ void DeviceActions::SetSwitchAccessEnabled(bool enabled) {
                                   enabled);
 }
 
-bool DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info) {
-  app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
-
-  if (app_info->status != AppStatus::AVAILABLE)
+bool DeviceActions::OpenAndroidApp(const AndroidAppInfo& app_info) {
+  auto status = delegate_->GetAndroidAppStatus(app_info.package_name);
+  if (status != AppStatus::AVAILABLE)
     return false;
 
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
@@ -189,14 +187,13 @@ bool DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info) {
                       display::kDefaultDisplayId);
   } else {
     LOG(ERROR) << "Android container is not running. Discard request for launch"
-               << app_info->package_name;
+               << app_info.package_name;
   }
 
   return app != nullptr;
 }
 
-chromeos::assistant::mojom::AppStatus DeviceActions::GetAndroidAppStatus(
-    const chromeos::assistant::mojom::AndroidAppInfo& app_info) {
+AppStatus DeviceActions::GetAndroidAppStatus(const AndroidAppInfo& app_info) {
   return delegate_->GetAndroidAppStatus(app_info.package_name);
 }
 
@@ -215,8 +212,8 @@ void DeviceActions::AddAppListEventSubscriber(
     chromeos::assistant::AppListEventSubscriber* subscriber) {
   auto* prefs = ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (prefs && prefs->package_list_initial_refreshed()) {
-    std::vector<AndroidAppInfoPtr> android_apps_info = GetAppsInfo();
-    subscriber->OnAndroidAppListRefreshed(mojo::Clone(android_apps_info));
+    std::vector<AndroidAppInfo> android_apps_info = GetAppsInfo();
+    subscriber->OnAndroidAppListRefreshed(android_apps_info);
   }
 
   app_list_subscribers_.AddObserver(subscriber);
@@ -231,10 +228,9 @@ void DeviceActions::RemoveAppListEventSubscriber(
 }
 
 base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
-    chromeos::assistant::mojom::AndroidAppInfoPtr app_info) {
-  app_info->status = delegate_->GetAndroidAppStatus(app_info->package_name);
-
-  if (app_info->status != AppStatus::AVAILABLE)
+    const AndroidAppInfo& app_info) {
+  auto status = delegate_->GetAndroidAppStatus(app_info.package_name);
+  if (status != AppStatus::AVAILABLE)
     return base::nullopt;
 
   return GetLaunchIntent(std::move(app_info));

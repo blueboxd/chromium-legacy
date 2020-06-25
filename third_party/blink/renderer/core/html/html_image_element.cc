@@ -355,7 +355,7 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
       continue;
 
     if (!source->FastGetAttribute(html_names::kSrcAttr).IsNull()) {
-      Deprecation::CountDeprecation(GetDocument(),
+      Deprecation::CountDeprecation(GetExecutionContext(),
                                     WebFeature::kPictureSourceSrc);
     }
     String srcset = source->FastGetAttribute(html_names::kSrcsetAttr);

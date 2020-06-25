@@ -14,13 +14,10 @@ ShutdownController* g_instance = nullptr;
 
 }  // namespace
 
-ShutdownController::ScopedResetterForTest::ScopedResetterForTest()
-    : instance_(g_instance) {
-  g_instance = nullptr;
-}
-
-ShutdownController::ScopedResetterForTest::~ScopedResetterForTest() {
-  g_instance = instance_;
+template <>
+ShutdownController*&
+ShutdownController::ScopedResetterForTest::GetGlobalInstanceHolder() {
+  return g_instance;
 }
 
 // static

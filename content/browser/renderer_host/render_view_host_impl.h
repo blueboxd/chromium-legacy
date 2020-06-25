@@ -238,6 +238,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     return main_frame_theme_color_;
   }
 
+  void SetContentsMimeType(std::string mime_type);
+  const std::string& contents_mime_type() { return contents_mime_type_; }
+
   // Notifies that / returns whether main document's onload() handler was
   // completed.
   void DocumentOnLoadCompletedInMainFrame();
@@ -404,6 +407,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The theme color for the underlying document as specified
   // by theme-color meta tag.
   base::Optional<SkColor> main_frame_theme_color_;
+
+  // Contents MIME type for the main document. It can be used to check whether
+  // we can do something for special contents.
+  std::string contents_mime_type_;
 
   // ---------- Per page state END --------------------------------------------
 

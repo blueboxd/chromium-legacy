@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -44,8 +44,8 @@ enum class AssistantButtonId {
 // Models the Assistant UI.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
  public:
-  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
-  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+  using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
 
   AssistantUiModel();
   ~AssistantUiModel();

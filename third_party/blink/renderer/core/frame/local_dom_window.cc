@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -642,7 +643,42 @@ void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
 }
 
 void LocalDOMWindow::CountDeprecation(mojom::WebFeature feature) {
-  document()->CountDeprecation(feature);
+  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
+  // crbug.com/946875.
+  if (feature == WebFeature::kHTMLImports &&
+      GetOriginTrialContext()->IsFeatureEnabled(
+          OriginTrialFeature::kHTMLImports)) {
+    CountUse(WebFeature::kHTMLImportsOnReverseOriginTrials);
+  } else if (feature == WebFeature::kElementCreateShadowRoot &&
+             GetOriginTrialContext()->IsFeatureEnabled(
+                 OriginTrialFeature::kShadowDOMV0)) {
+    CountUse(WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
+  } else if (feature == WebFeature::kDocumentRegisterElement &&
+             GetOriginTrialContext()->IsFeatureEnabled(
+                 OriginTrialFeature::kCustomElementsV0)) {
+    CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
+  }
+
+  if (!GetFrame())
+    return;
+
+  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
+  // the deprecation messages.
+  auto* loader = GetFrame()->Loader().GetDocumentLoader();
+  if (Url().ProtocolIs("chrome") &&
+      (feature == WebFeature::kHTMLImports ||
+       feature == WebFeature::kElementCreateShadowRoot ||
+       feature == WebFeature::kDocumentRegisterElement)) {
+    Deprecation::DeprecationWarningOnly(loader, feature);
+  } else {
+    Deprecation::CountDeprecation(loader, feature);
+  }
+}
+
+void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
+    mojom::blink::WebFeature feature) {
+  if (GetFrame() && GetFrame()->IsCrossOriginToMainFrame())
+    CountUse(feature);
 }
 
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
@@ -957,13 +993,13 @@ FrameConsole* LocalDOMWindow::GetFrameConsole() const {
   return &GetFrame()->Console();
 }
 
-ApplicationCache* LocalDOMWindow::applicationCache() const {
+ApplicationCache* LocalDOMWindow::applicationCache() {
   DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(this));
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
   if (!IsSecureContext()) {
     Deprecation::CountDeprecation(
-        document(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+        this, WebFeature::kApplicationCacheAPIInsecureOrigin);
   }
   if (!application_cache_)
     application_cache_ = MakeGarbageCollected<ApplicationCache>(GetFrame());
@@ -1112,10 +1148,9 @@ void LocalDOMWindow::print(ScriptState* script_state) {
   }
 
   if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    document()->CountUse(WebFeature::kSameOriginIframeWindowPrint);
+    CountUse(WebFeature::kSameOriginIframeWindowPrint);
   }
-  document()->CountUseOnlyInCrossOriginIframe(
-      WebFeature::kCrossOriginWindowPrint);
+  CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowPrint);
 
   should_print_when_finished_loading_ = false;
   GetFrame()->GetPage()->GetChromeClient().Print(GetFrame());
@@ -1153,10 +1188,9 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
     return;
 
   if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    document()->CountUse(WebFeature::kSameOriginIframeWindowAlert);
+    CountUse(WebFeature::kSameOriginIframeWindowAlert);
   }
-  document()->CountUseOnlyInCrossOriginIframe(
-      WebFeature::kCrossOriginWindowAlert);
+  CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowAlert);
 
   page->GetChromeClient().OpenJavaScriptAlert(GetFrame(), message);
 }
@@ -1187,10 +1221,9 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
     return false;
 
   if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    document()->CountUse(WebFeature::kSameOriginIframeWindowConfirm);
+    CountUse(WebFeature::kSameOriginIframeWindowConfirm);
   }
-  document()->CountUseOnlyInCrossOriginIframe(
-      WebFeature::kCrossOriginWindowConfirm);
+  CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowConfirm);
 
   return page->GetChromeClient().OpenJavaScriptConfirm(GetFrame(), message);
 }
@@ -1228,10 +1261,9 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
     return return_value;
 
   if (!GetFrame()->IsMainFrame() && !GetFrame()->IsCrossOriginToMainFrame()) {
-    document()->CountUse(WebFeature::kSameOriginIframeWindowPrompt);
+    CountUse(WebFeature::kSameOriginIframeWindowPrompt);
   }
-  document()->CountUseOnlyInCrossOriginIframe(
-      WebFeature::kCrossOriginWindowPrompt);
+  CountUseOnlyInCrossOriginIframe(WebFeature::kCrossOriginWindowPrompt);
 
   return String();
 }

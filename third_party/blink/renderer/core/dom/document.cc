@@ -8448,35 +8448,8 @@ void Document::CountUse(mojom::WebFeature feature) {
 }
 
 void Document::CountDeprecation(mojom::WebFeature feature) {
-  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
-  // crbug.com/946875.
-  if (const OriginTrialContext* origin_trial_context =
-          GetOriginTrialContext()) {
-    if (feature == WebFeature::kHTMLImports &&
-        origin_trial_context->IsFeatureEnabled(
-            OriginTrialFeature::kHTMLImports)) {
-      CountUse(WebFeature::kHTMLImportsOnReverseOriginTrials);
-    } else if (feature == WebFeature::kElementCreateShadowRoot &&
-               origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kShadowDOMV0)) {
-      CountUse(WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
-    } else if (feature == WebFeature::kDocumentRegisterElement &&
-               origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kCustomElementsV0)) {
-      CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
-    }
-  }
-
-  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
-  // the deprecation messages.
-  if (Url().ProtocolIs("chrome") &&
-      (feature == WebFeature::kHTMLImports ||
-       feature == WebFeature::kElementCreateShadowRoot ||
-       feature == WebFeature::kDocumentRegisterElement)) {
-    Deprecation::DeprecationWarningOnly(Loader(), feature);
-  } else {
-    Deprecation::CountDeprecation(Loader(), feature);
-  }
+  if (GetExecutionContext())
+    GetExecutionContext()->CountDeprecation(feature);
 }
 
 void Document::CountProperty(CSSPropertyID property) const {
@@ -8491,13 +8464,6 @@ void Document::CountAnimatedProperty(CSSPropertyID property) const {
     loader->GetUseCounterHelper().Count(
         property, UseCounterHelper::CSSPropertyType::kAnimation, GetFrame());
   }
-}
-
-void Document::CountUseOnlyInCrossOriginIframe(
-    mojom::WebFeature feature) const {
-  LocalFrame* frame = GetFrame();
-  if (frame && frame->IsCrossOriginToMainFrame())
-    CountUse(feature);
 }
 
 bool Document::IsUseCounted(mojom::WebFeature feature) const {

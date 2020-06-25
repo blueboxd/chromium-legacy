@@ -551,7 +551,7 @@ TEST_P(HomeButtonTest, LongPressGesture) {
             AssistantUiController::Get()->GetModel()->visibility());
 
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+      chromeos::assistant::AssistantExitPoint::kUnspecified);
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
@@ -607,7 +607,7 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
             AssistantUiController::Get()->GetModel()->visibility());
 
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+      chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
 TEST_P(HomeButtonTest, LongPressGestureWithSecondaryUser) {

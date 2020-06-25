@@ -152,7 +152,7 @@ Polymer({
       // The search field should only focus initially if settings is opened
       // directly to the base page, with no path. Opening to a section or a
       // subpage should not focus the search field.
-      searchInput.focus();
+      toolbarSearchField.showAndFocus();
     }
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));

@@ -129,7 +129,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#include "services/network/nss_temp_certs_cache_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_IOS)
@@ -969,23 +968,18 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
-    // TODO(crbug.com/1085379): include this CHECK somewhere in the
-    // CertVerifierService when it's launched on ChromeOS.
-    CHECK(g_cert_verifier_for_testing || !params_->cert_verifier_params ||
-          params_->cert_verifier_params->is_remote_params() ||
-          params_->cert_verifier_params->get_creation_params()
-              ->username_hash.empty());
+    CHECK(g_cert_verifier_for_testing);
     return;
   }
   if (!additional_certificates) {
-    nss_temp_certs_cache_.reset();
-    cert_verifier_with_trust_anchors_->SetTrustAnchors(net::CertificateList());
+    cert_verifier_with_trust_anchors_->SetAdditionalCerts(
+        net::CertificateList(), net::CertificateList());
     return;
   }
-  nss_temp_certs_cache_ = std::make_unique<network::NSSTempCertsCacheChromeOS>(
+
+  cert_verifier_with_trust_anchors_->SetAdditionalCerts(
+      additional_certificates->trust_anchors,
       additional_certificates->all_certificates);
-  cert_verifier_with_trust_anchors_->SetTrustAnchors(
-      additional_certificates->trust_anchors);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -1734,11 +1728,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   } else {
     if (params_->cert_verifier_params &&
         params_->cert_verifier_params->is_remote_params()) {
-#if defined(OS_CHROMEOS)
-      DLOG(FATAL) << "Servicified cert verifier not yet supported on ChromeOS.";
-      CHECK(false);
-#endif
-
       // base::Unretained() is safe below because |this| will own
       // |cert_verifier|.
       // TODO(https://crbug.com/1085233): this cert verifier should deal with

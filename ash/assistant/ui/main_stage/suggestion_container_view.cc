@@ -160,7 +160,7 @@ void SuggestionContainerView::InitLayout() {
 }
 
 void SuggestionContainerView::OnConversationStartersChanged(
-    const std::vector<const AssistantSuggestion*>& conversation_starters) {
+    const std::vector<AssistantSuggestion>& conversation_starters) {
   // We don't show conversation starters when showing onboarding since the
   // onboarding experience already provides the user w/ suggestions.
   if (assistant::util::ShouldShowOnboarding())
@@ -178,7 +178,7 @@ void SuggestionContainerView::OnConversationStartersChanged(
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::HandleSuggestion(
-    const AssistantSuggestion* suggestion) {
+    const AssistantSuggestion& suggestion) {
   // When no longer showing conversation starters, we start align our content.
   layout_manager_->set_main_axis_alignment(
       has_committed_query_ ? views::BoxLayout::MainAxisAlignment::kStart
@@ -193,7 +193,7 @@ void SuggestionContainerView::OnAllViewsRemoved() {
 }
 
 std::unique_ptr<ElementAnimator> SuggestionContainerView::AddSuggestionChip(
-    const AssistantSuggestion* suggestion) {
+    const AssistantSuggestion& suggestion) {
   auto suggestion_chip_view = std::make_unique<SuggestionChipView>(
       delegate(), suggestion, /*listener=*/this);
 
@@ -211,7 +211,7 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   // Remember which chip was selected, so we can give it a special animation.
   selected_chip_ = static_cast<SuggestionChipView*>(sender);
-  delegate()->OnSuggestionChipPressed(selected_chip_->suggestion());
+  delegate()->OnSuggestionPressed(selected_chip_->suggestion_id());
 }
 
 void SuggestionContainerView::OnUiVisibilityChanged(

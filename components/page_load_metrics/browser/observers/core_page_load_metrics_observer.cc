@@ -392,7 +392,7 @@ CorePageLoadMetricsObserver::OnCommit(
   }
   UMA_HISTOGRAM_COUNTS_100("PageLoad.Navigation.RedirectChainLength",
                            redirect_chain_size_);
-  RecordNavigationTimingHistograms(navigation_handle);
+  navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
   return CONTINUE_OBSERVING;
 }
 
@@ -731,6 +731,7 @@ void CorePageLoadMetricsObserver::OnParseStop(
 
 void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  RecordNavigationTimingHistograms();
   RecordTimingHistograms(timing);
   RecordByteAndResourceHistograms(timing);
   RecordCpuUsageHistograms();
@@ -745,6 +746,7 @@ CorePageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we record final metrics collected up to this point.
   if (GetDelegate().DidCommit()) {
+    RecordNavigationTimingHistograms();
     RecordTimingHistograms(timing);
     RecordByteAndResourceHistograms(timing);
     RecordCpuUsageHistograms();
@@ -823,15 +825,10 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
   }
 }
 
-void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
-    content::NavigationHandle* navigation_handle) {
-  // Record only main frame navigation.
-  DCHECK(navigation_handle->IsInMainFrame());
-
+void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms() {
   const base::TimeTicks navigation_start_time =
-      navigation_handle->NavigationStart();
-  const content::NavigationHandleTiming& timing =
-      navigation_handle->GetNavigationHandleTiming();
+      GetDelegate().GetNavigationStart();
+  const content::NavigationHandleTiming& timing = navigation_handle_timing_;
 
   // Record metrics for navigation only when all relevant milestones are
   // recorded and in the expected order. It is allowed that they have the same

@@ -105,15 +105,19 @@ AssistantInteractionControllerImpl::AssistantInteractionControllerImpl(
 
 AssistantInteractionControllerImpl::~AssistantInteractionControllerImpl() {
   model_.RemoveObserver(this);
+  if (assistant_)
+    assistant_->RemoveAssistantInteractionSubscriber(this);
 }
 
 void AssistantInteractionControllerImpl::SetAssistant(
-    chromeos::assistant::mojom::Assistant* assistant) {
+    chromeos::assistant::Assistant* assistant) {
+  if (assistant_)
+    assistant_->RemoveAssistantInteractionSubscriber(this);
+
   assistant_ = assistant;
 
-  // Subscribe to Assistant interaction events.
-  assistant_->AddAssistantInteractionSubscriber(
-      assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
+  if (assistant_)
+    assistant_->AddAssistantInteractionSubscriber(this);
 }
 
 const AssistantInteractionModel* AssistantInteractionControllerImpl::GetModel()
@@ -340,7 +344,7 @@ void AssistantInteractionControllerImpl::OnCommittedQueryChanged(
 // TODO(b/140565663): Set pending query from |metadata| and remove calls to set
 // pending query that occur outside of this method.
 void AssistantInteractionControllerImpl::OnInteractionStarted(
-    AssistantInteractionMetadataPtr metadata) {
+    const AssistantInteractionMetadata& metadata) {
   // Abort any request in progress.
   screen_context_request_factory_.InvalidateWeakPtrs();
 
@@ -352,8 +356,7 @@ void AssistantInteractionControllerImpl::OnInteractionStarted(
   }
 
   const bool is_voice_interaction =
-      chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
-      metadata->type;
+      chromeos::assistant::AssistantInteractionType::kVoice == metadata.type;
 
   if (is_voice_interaction) {
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is
@@ -381,7 +384,7 @@ void AssistantInteractionControllerImpl::OnInteractionStarted(
     // pending query type will always be |kNull| here.
     if (model_.pending_query().type() == AssistantQueryType::kNull) {
       model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-          metadata->query, metadata->source));
+          metadata.query, metadata.source));
     }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
@@ -505,8 +508,20 @@ void AssistantInteractionControllerImpl::OnHtmlResponse(
   }
 }
 
-void AssistantInteractionControllerImpl::OnSuggestionChipPressed(
-    const AssistantSuggestion* suggestion) {
+void AssistantInteractionControllerImpl::OnSuggestionPressed(
+    const base::UnguessableToken& suggestion_id) {
+  // There are two potential data model that provide suggestions. One is the
+  // AssistantSuggestionModel which provides the zero state suggestions, the
+  // other is AssistantResponse which provider server generated suggestions
+  // based on current query.
+  auto* suggestion =
+      AssistantSuggestionsController::Get()->GetModel()->GetSuggestionById(
+          suggestion_id);
+  if (!suggestion && model_.response())
+    suggestion = model_.response()->GetSuggestionById(suggestion_id);
+
+  DCHECK(suggestion);
+
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
@@ -566,7 +581,7 @@ void AssistantInteractionControllerImpl::OnTabletModeChanged() {
 }
 
 void AssistantInteractionControllerImpl::OnSuggestionsResponse(
-    std::vector<AssistantSuggestionPtr> suggestions) {
+    const std::vector<AssistantSuggestion>& suggestions) {
   if (!HasActiveInteraction())
     return;
 
@@ -733,25 +748,18 @@ void AssistantInteractionControllerImpl::OnOpenUrlResponse(const GURL& url,
   AssistantController::Get()->OpenUrl(url, in_background, /*from_server=*/true);
 }
 
-void AssistantInteractionControllerImpl::OnOpenAppResponse(
-    chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-    OnOpenAppResponseCallback callback) {
-  if (!HasActiveInteraction()) {
-    std::move(callback).Run(false);
-    return;
-  }
+bool AssistantInteractionControllerImpl::OnOpenAppResponse(
+    const chromeos::assistant::AndroidAppInfo& app_info) {
+  if (!HasActiveInteraction())
+    return false;
 
   auto* android_helper = AndroidIntentHelper::GetInstance();
-  if (!android_helper) {
-    std::move(callback).Run(false);
-    return;
-  }
+  if (!android_helper)
+    return false;
 
-  auto intent = android_helper->GetAndroidAppLaunchIntent(std::move(app_info));
-  if (!intent.has_value()) {
-    std::move(callback).Run(false);
-    return;
-  }
+  auto intent = android_helper->GetAndroidAppLaunchIntent(app_info);
+  if (!intent.has_value())
+    return false;
 
   // Common Android intent might starts with intent scheme "intent://" or
   // Android app scheme "android-app://". But it might also only contains
@@ -766,7 +774,7 @@ void AssistantInteractionControllerImpl::OnOpenAppResponse(
   }
   AssistantController::Get()->OpenUrl(GURL(intent_str), /*in_background=*/false,
                                       /*from_server=*/true);
-  std::move(callback).Run(true);
+  return true;
 }
 
 void AssistantInteractionControllerImpl::OnDialogPlateButtonPressed(

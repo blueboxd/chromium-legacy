@@ -23,6 +23,21 @@ ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(
   Apply(parameters);
 }
 
+ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(Presets presets) {
+  switch (presets) {
+    case kEnable:
+      Apply(Parameters());
+      break;
+
+    case kDisable: {
+      Parameters parameters;
+      parameters.enabled = false;
+      Apply(parameters);
+      break;
+    }
+  }
+}
+
 void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
   if (!parameters.enabled) {
     scoped_feature_list_.InitAndDisableFeature(features::kIdentifiabilityStudy);

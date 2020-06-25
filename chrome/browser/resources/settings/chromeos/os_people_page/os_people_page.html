@@ -30,6 +30,7 @@
 <link rel="import" href="fingerprint_list.html">
 <link rel="import" href="kerberos_accounts.html">
 <link rel="import" href="lock_screen.html">
+<link rel="import" href="lock_screen_password_prompt_dialog.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="users_page.html">
 <link rel="import" href="os_sync_controls.html">
@@ -181,8 +182,9 @@
         <settings-subpage
             page-title="[[selectLockScreenTitleString(hasPinLogin)]]"
             associated-control="[[$$('#lock-screen-subpage-trigger')]]">
-          <settings-lock-screen id="lock-screen"
-              prefs="{{prefs}}" auth-token="{{authToken_}}">
+          <settings-lock-screen id="lock-screen" set-modes="[[setModes_]]"
+              prefs="{{prefs}}" auth-token="[[authToken_]]"
+              on-password-requested="onPasswordRequested_">
           </settings-lock-screen>
         </settings-subpage>
       </template>
@@ -190,7 +192,9 @@
         <template is="dom-if" route-path="/lockScreen/fingerprint" no-search>
           <settings-subpage page-title="$i18n{lockScreenFingerprintTitle}">
             <settings-fingerprint-list id="fingerprint-list"
-                auth-token="[[authToken_.token]]">
+                auth-token="[[authToken_.token]]"
+                set-modes="[[setModes_]]"
+                on-password-requested="onPasswordRequested_">
             </settings-fingerprint-list>
           </settings-subpage>
         </template>
@@ -221,6 +225,13 @@
         </template>
       </template>
     </settings-animated-pages>
+
+    <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
+      <settings-lock-screen-password-prompt-dialog
+          on-close="onPasswordPromptDialogClose_"
+          on-auth-token-obtained="onAuthTokenObtained_">
+      </settings-lock-screen-password-prompt-dialog>
+    </template>
 
     <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
       <settings-signout-dialog sync-status="[[syncStatus]]"

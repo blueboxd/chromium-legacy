@@ -44,8 +44,8 @@ class ASH_EXPORT AssistantUiControllerImpl
   AssistantUiControllerImpl();
   ~AssistantUiControllerImpl() override;
 
-  // Provides a pointer to the |assistant| owned by AssistantController.
-  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+  // Provides a pointer to the |assistant| owned by AssistantService.
+  void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // AssistantUiController:
   const AssistantUiModel* GetModel() const override;
@@ -86,8 +86,8 @@ class ASH_EXPORT AssistantUiControllerImpl
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt,
                     bool due_to_interaction = false);
 
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
+  // Owned by AssistantService.
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   AssistantUiModel model_;
 

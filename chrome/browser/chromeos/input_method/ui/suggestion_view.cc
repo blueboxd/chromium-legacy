@@ -114,6 +114,13 @@ void SuggestionView::SetSuggestionText(const base::string16& text,
   suggestion_style.override_color = kSuggestionColor;
   suggestion_label_->AddStyleRange(gfx::Range(confirmed_length, text.length()),
                                    suggestion_style);
+
+  // TODO(crbug/1099146): Add tests to check view's height and width with
+  // confirmed length.
+  // StyleRanged may cause the label to split into multi-line, passing 0 to
+  // SizeToFit allows layout to be calculated with maximum int to ensure the
+  // text is on one line.
+  suggestion_label_->SizeToFit(0);
 }
 
 void SuggestionView::SetHighlighted(bool highlighted) {

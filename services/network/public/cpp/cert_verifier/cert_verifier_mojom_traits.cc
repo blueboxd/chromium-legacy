@@ -34,8 +34,12 @@ bool StructTraits<cert_verifier::mojom::CertVerifierConfigDataView,
          net::CertVerifier::Config* config) {
   mojo_base::BigBuffer crl_set_buffer;
   std::vector<scoped_refptr<net::X509Certificate>> additional_trust_anchors;
+  std::vector<scoped_refptr<net::X509Certificate>>
+      additional_untrusted_authorities;
   if (!data.ReadCrlSet(&crl_set_buffer) ||
-      !data.ReadAdditionalTrustAnchors(&additional_trust_anchors))
+      !data.ReadAdditionalTrustAnchors(&additional_trust_anchors) ||
+      !data.ReadAdditionalUntrustedAuthorities(
+          &additional_untrusted_authorities))
     return false;
 
   scoped_refptr<net::CRLSet> crl_set;
@@ -54,6 +58,8 @@ bool StructTraits<cert_verifier::mojom::CertVerifierConfigDataView,
   config->disable_symantec_enforcement = data.disable_symantec_enforcement();
   config->crl_set = std::move(crl_set);
   config->additional_trust_anchors = std::move(additional_trust_anchors);
+  config->additional_untrusted_authorities =
+      std::move(additional_untrusted_authorities);
   return true;
 }
 

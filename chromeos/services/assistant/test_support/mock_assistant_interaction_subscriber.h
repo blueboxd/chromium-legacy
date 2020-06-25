@@ -5,14 +5,17 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_INTERACTION_SUBSCRIBER_H_
 #define CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_INTERACTION_SUBSCRIBER_H_
 
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include <string>
+#include <vector>
+
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 namespace assistant {
 
 class MockAssistantInteractionSubscriber
-    : public mojom::AssistantInteractionSubscriber {
+    : public AssistantInteractionSubscriber {
  public:
   MockAssistantInteractionSubscriber();
   MockAssistantInteractionSubscriber(
@@ -21,14 +24,14 @@ class MockAssistantInteractionSubscriber
       const MockAssistantInteractionSubscriber&) = delete;
   ~MockAssistantInteractionSubscriber() override;
 
-  // mojom::AssistantInteractionSubscriber:
+  // AssistantInteractionSubscriber:
   MOCK_METHOD(void,
               OnInteractionStarted,
-              (mojom::AssistantInteractionMetadataPtr),
+              (const AssistantInteractionMetadata&),
               (override));
   MOCK_METHOD(void,
               OnInteractionFinished,
-              (mojom::AssistantInteractionResolution),
+              (AssistantInteractionResolution),
               (override));
   MOCK_METHOD(void,
               OnHtmlResponse,
@@ -36,14 +39,11 @@ class MockAssistantInteractionSubscriber
               (override));
   MOCK_METHOD(void,
               OnSuggestionsResponse,
-              (std::vector<mojom::AssistantSuggestionPtr>),
+              (const std::vector<AssistantSuggestion>&),
               (override));
   MOCK_METHOD(void, OnTextResponse, (const std::string&), (override));
   MOCK_METHOD(void, OnOpenUrlResponse, (const ::GURL&, bool), (override));
-  MOCK_METHOD(void,
-              OnOpenAppResponse,
-              (mojom::AndroidAppInfoPtr, OnOpenAppResponseCallback),
-              (override));
+  MOCK_METHOD(bool, OnOpenAppResponse, (const AndroidAppInfo&), (override));
   MOCK_METHOD(void, OnSpeechRecognitionStarted, (), (override));
   MOCK_METHOD(void,
               OnSpeechRecognitionIntermediateResult,

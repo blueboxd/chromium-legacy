@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "media/base/async_destroy_video_decoder.h"
 #include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
@@ -97,7 +98,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
     // In either case, vda_->Destroy() should be called once.
     EXPECT_CALL(*vda_, Destroy());
 
-    vdavd_.reset(new VdaVideoDecoder(
+    auto* vdavd = new VdaVideoDecoder(
         parent_task_runner, gpu_task_runner, media_log_.Clone(),
         gfx::ColorSpace(),
         base::BindOnce(&VdaVideoDecoderTest::CreatePictureBufferManager,
@@ -106,8 +107,10 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
                        base::Unretained(this)),
         base::BindRepeating(&VdaVideoDecoderTest::CreateAndInitializeVda,
                             base::Unretained(this)),
-        GetCapabilities()));
-    client_ = vdavd_.get();
+        GetCapabilities());
+    vdavd_ = std::make_unique<AsyncDestroyVideoDecoder<VdaVideoDecoder>>(
+        base::WrapUnique(vdavd));
+    client_ = vdavd;
   }
 
   ~VdaVideoDecoderTest() override {
@@ -137,7 +140,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
   }
 
   void Initialize() {
-    EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
+    EXPECT_CALL(*vda_, Initialize(_, client_)).WillOnce(Return(true));
     EXPECT_CALL(*vda_, TryToSetupDecodeOnSeparateThread(_, _))
         .WillOnce(Return(GetParam()));
     EXPECT_CALL(init_cb_, Run(IsOkStatus()));
@@ -304,7 +307,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
   testing::StrictMock<MockVideoDecodeAccelerator>* vda_;
   std::unique_ptr<VideoDecodeAccelerator> owned_vda_;
   scoped_refptr<PictureBufferManager> pbm_;
-  std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>> vdavd_;
+  std::unique_ptr<AsyncDestroyVideoDecoder<VdaVideoDecoder>> vdavd_;
 
   VideoDecodeAccelerator::Client* client_;
   uint64_t next_release_count_ = 1;
@@ -341,7 +344,7 @@ TEST_P(VdaVideoDecoderTest, Initialize_UnsupportedCodec) {
 }
 
 TEST_P(VdaVideoDecoderTest, Initialize_RejectedByVda) {
-  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(false));
+  EXPECT_CALL(*vda_, Initialize(_, client_)).WillOnce(Return(false));
   InitializeWithConfig(VideoDecoderConfig(
       kCodecVP9, VP9PROFILE_PROFILE0, VideoDecoderConfig::AlphaMode::kIsOpaque,
       VideoColorSpace::REC709(), kNoTransformation, gfx::Size(1920, 1088),
@@ -423,7 +426,7 @@ TEST_P(VdaVideoDecoderTest, Decode_OutputAndDismiss) {
 
 TEST_P(VdaVideoDecoderTest, Decode_Output_MaintainsAspect) {
   // Initialize with a config that has a 2:1 pixel aspect ratio.
-  EXPECT_CALL(*vda_, Initialize(_, vdavd_.get())).WillOnce(Return(true));
+  EXPECT_CALL(*vda_, Initialize(_, client_)).WillOnce(Return(true));
   EXPECT_CALL(*vda_, TryToSetupDecodeOnSeparateThread(_, _))
       .WillOnce(Return(GetParam()));
   InitializeWithConfig(VideoDecoderConfig(

@@ -205,6 +205,7 @@ const CGFloat kIconImageSize = 28;
 
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
+  self.accessibilityTraits = UIAccessibilityTraitNone;
   [self setIconImage:nil withTintColor:nil];
   [self hideActivityIndicator];
 }

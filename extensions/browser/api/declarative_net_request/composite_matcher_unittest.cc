@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "components/version_info/channel.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
@@ -19,7 +18,6 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,10 +123,6 @@ TEST_F(CompositeMatcherTest, SamePrioritySpace) {
 
 // Tests the GetModifyHeadersActions method.
 TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   TestRule rule_1 = CreateModifyHeadersRule(
       kMinValidID, kMinValidPriority, "google.com", base::nullopt,
       std::vector<TestHeaderInfo>(
@@ -258,11 +252,6 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
 // priority than a matched allow or allowAllRequests rule.
 TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
   using HeaderInfo = RequestAction::HeaderInfo;
-
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   int allow_rule_priority = kMinValidPriority + 1;
 
   TestRule allow_rule = CreateGenericRule();

@@ -708,12 +708,16 @@ if (enable_java_templates) {
         _cpu_family,
       ]
       if (invoker.use_final_fields) {
+        # Write native_libraries_list_file via depfile rather than specifyin it
+        # as a dep in order allow R8 to run in parallel with native compilation.
+        depfile = "$target_gen_dir/$target_name.d"
         args += [
           "--final",
+          "--depfile",
+          rebase_path(depfile, root_build_dir),
           "--native-libraries-list",
           rebase_path(invoker.native_libraries_list_file, root_build_dir),
         ]
-        inputs = [ invoker.native_libraries_list_file ]
         if (defined(invoker.version_number)) {
           args += [
             "--version-number",
@@ -2633,16 +2637,17 @@ if (enable_java_templates) {
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
         forward_variables_from(invoker, [ "main_component_library" ])
-        deps = [
-          ":${_template_name}__secondary_abi_shared_library_list",
-          ":${_template_name}__shared_library_list",
-        ]
+        deps = []
         if (defined(invoker.native_lib_version_rule)) {
           deps += [ invoker.native_lib_version_rule ]
         }
         if (defined(invoker.native_lib_version_arg)) {
           version_number = invoker.native_lib_version_arg
         }
+
+        # Do not add a dep on the generated_file target in order to avoid having
+        # to build the native libraries before this target. The dependency is
+        # instead captured via a depfile.
         if (_native_libs_deps != []) {
           native_libraries_list_file = _shared_library_list_file
         } else {
@@ -2833,10 +2838,9 @@ if (enable_java_templates) {
         }
       }
 
-      # Don't depend on the runtime_deps target in order to avoid having to
-      # build the native libraries just to create the .build_config file.
-      # The dep is unnecessary since the runtime_deps file is created by gn gen
-      # and the runtime_deps file is added to write_build_config.py's depfile.
+      # Do not add a dep on the generated_file target in order to avoid having
+      # to build the native libraries before this target. The dependency is
+      # instead captured via a depfile.
       if (_native_libs_deps != []) {
         shared_libraries_runtime_deps_file = _shared_library_list_file
       }
@@ -3391,14 +3395,16 @@ if (enable_java_templates) {
         data_deps = []
       }
 
+      # Include unstripped native libraries so tests can symbolize stacks.
+      data_deps += _all_native_libs_deps
+
       if (_enable_lint) {
         data_deps += [ ":$_android_lint_target" ]
       }
 
       if (_incremental_apk) {
         # device/commands is used by the installer script to push files via .zip.
-        data_deps +=
-            [ "//build/android/pylib/device/commands" ] + _native_libs_deps
+        data_deps += [ "//build/android/pylib/device/commands" ]
       }
       if (_uses_static_library) {
         data_deps += [ invoker.static_library_provider ]

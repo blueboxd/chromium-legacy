@@ -20,8 +20,8 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -60,7 +60,7 @@ AssistantUiControllerImpl::~AssistantUiControllerImpl() {
 }
 
 void AssistantUiControllerImpl::SetAssistant(
-    chromeos::assistant::mojom::Assistant* assistant) {
+    chromeos::assistant::Assistant* assistant) {
   assistant_ = assistant;
 }
 

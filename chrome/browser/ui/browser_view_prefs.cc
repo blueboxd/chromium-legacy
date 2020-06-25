@@ -11,6 +11,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -25,6 +26,22 @@ namespace {
 // Old values: 0 = SHRINK (default), 1 = STACKED.
 const char kTabStripLayoutType[] = "tab_strip_layout_type";
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+bool GetCustomFramePrefDefault() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .custom_frame_pref_default;
+  }
+#endif  // defined(USE_OZONE)
+#if defined(USE_X11)
+  return ui::GetCustomFramePrefDefault();
+#endif  // defined(USE_X11)
+  return false;
+}
+#endif
+
 }  // namespace
 
 void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
@@ -35,17 +52,9 @@ void RegisterBrowserViewLocalPrefs(PrefRegistrySimple* registry) {
 void RegisterBrowserViewProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  bool custom_frame_pref_default = false;
-#if defined(USE_X11)
-  custom_frame_pref_default = ui::GetCustomFramePrefDefault();
-#elif defined(USE_OZONE)
-  custom_frame_pref_default = ui::OzonePlatform::GetInstance()
-                                  ->GetPlatformProperties()
-                                  .custom_frame_pref_default;
-#endif
   registry->RegisterBooleanPref(prefs::kUseCustomChromeFrame,
-                                custom_frame_pref_default);
-#endif  // OS_LINUX && !OS_CHROMEOS
+                                GetCustomFramePrefDefault());
+#endif  // defined(OS_LINUX) && defined(!OS_CHROMEOS)
 }
 
 void MigrateBrowserTabStripPrefs(PrefService* prefs) {

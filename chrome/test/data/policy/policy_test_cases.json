@@ -5049,6 +5049,16 @@
     ]
   },
 
+  "SuggestedContentEnabled": {
+    "os": ["chromeos"],
+    "test_policy": {"SuggestedContentEnabled": false },
+    "policy_pref_mapping_tests": {
+      "settings.suggested_content_enabled": {
+        "value": false
+      }
+    }
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

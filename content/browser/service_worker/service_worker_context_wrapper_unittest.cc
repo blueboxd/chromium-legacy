@@ -170,36 +170,14 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistrationsForSameOrigin) {
       CreateServiceWorkerRegistrationAndVersion(context(), scope2, script2, 1);
 
   // Store both registrations.
-  base::RunLoop loop1;
-  registry()->StoreRegistration(
-      registration1.get(), registration1->waiting_version(),
-      base::BindLambdaForTesting(
-          [&loop1](blink::ServiceWorkerStatusCode status1) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status1);
-            loop1.Quit();
-          }));
-  loop1.Run();
-
-  base::RunLoop loop2;
-  registry()->StoreRegistration(
-      registration2.get(), registration2->waiting_version(),
-      base::BindLambdaForTesting(
-          [&loop2](blink::ServiceWorkerStatusCode status2) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status2);
-            loop2.Quit();
-          }));
-  loop2.Run();
+  ASSERT_EQ(StoreRegistration(registration1),
+            blink::ServiceWorkerStatusCode::kOk);
+  ASSERT_EQ(StoreRegistration(registration2),
+            blink::ServiceWorkerStatusCode::kOk);
 
   // Delete one of the registrations.
-  base::RunLoop loop3;
-  registry()->DeleteRegistration(
-      registration1.get(), registration1->scope().GetOrigin(),
-      base::BindLambdaForTesting(
-          [&loop3](blink::ServiceWorkerStatusCode status3) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status3);
-            loop3.Quit();
-          }));
-  loop3.Run();
+  ASSERT_EQ(DeleteRegistration(registration1),
+            blink::ServiceWorkerStatusCode::kOk);
 
   // Run loop until idle to wait for
   // ServiceWorkerRegistry::DidDeleteRegistration() to be executed, and make
@@ -211,15 +189,8 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistrationsForSameOrigin) {
       url::Origin::Create(GURL("https://example1.com"))));
 
   // Remove second registration.
-  base::RunLoop loop4;
-  registry()->DeleteRegistration(
-      registration2.get(), registration2->scope().GetOrigin(),
-      base::BindLambdaForTesting(
-          [&loop4](blink::ServiceWorkerStatusCode status4) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status4);
-            loop4.Quit();
-          }));
-  loop4.Run();
+  ASSERT_EQ(DeleteRegistration(registration2),
+            blink::ServiceWorkerStatusCode::kOk);
 
   // Run loop until idle to wait for
   // ServiceWorkerRegistry::DidDeleteRegistration() to be executed, and make
@@ -245,15 +216,8 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
                                                 /*resource_id=*/1);
 
   // Store registration.
-  base::RunLoop loop1;
-  registry()->StoreRegistration(
-      registration.get(), registration->waiting_version(),
-      base::BindLambdaForTesting(
-          [&loop1](blink::ServiceWorkerStatusCode status1) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status1);
-            loop1.Quit();
-          }));
-  loop1.Run();
+  ASSERT_EQ(StoreRegistration(registration),
+            blink::ServiceWorkerStatusCode::kOk);
 
   wrapper_->OnRegistrationCompleted(registration->id(), registration->scope());
   base::RunLoop().RunUntilIdle();
@@ -263,15 +227,8 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
       url::Origin::Create(GURL("https://example2.com"))));
 
   // Delete registration from storage.
-  base::RunLoop loop2;
-  registry()->DeleteRegistration(
-      registration.get(), registration->scope().GetOrigin(),
-      base::BindLambdaForTesting(
-          [&loop2](blink::ServiceWorkerStatusCode status2) {
-            ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status2);
-            loop2.Quit();
-          }));
-  loop2.Run();
+  ASSERT_EQ(DeleteRegistration(registration),
+            blink::ServiceWorkerStatusCode::kOk);
 
   // Finish deleting registration from storage.
   base::RunLoop().RunUntilIdle();

@@ -124,7 +124,8 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_close_tab_suggestions/true"})
+    @CommandLineFlags.
+    Add({BASE_PARAMS + "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     @DisableIf.Build(sdk_is_less_than = VERSION_CODES.N, message = "https://crbug.com/1095535")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1095535")
     public void closeTabSuggestionReviewedAndDismissed() {
@@ -139,7 +140,8 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true"})
+    @CommandLineFlags.
+    Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true/min_time_between_prefetches/0"})
     public void groupTabSuggestionReviewedAndAccepted() {
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 
@@ -152,7 +154,8 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true"})
+    @CommandLineFlags.
+    Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true/min_time_between_prefetches/0"})
     public void groupTabSuggestionReviewedAndDismissed() {
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 
@@ -188,7 +191,7 @@ public class TabSuggestionMessageCardTest {
     @MediumTest
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
-            "/baseline_close_tab_suggestions/true"})
+            "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})
     public void groupAndCloseTabSuggestionDismissedAndShowNext_temp() {
         // clang-format on
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);

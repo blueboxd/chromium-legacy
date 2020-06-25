@@ -386,6 +386,11 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     waiter->AddMinimumCompleteResourcesExpectation(1);
     waiter->Wait();
     EXPECT_TRUE(observer.has_committed());
+
+    // Force navigation to another page, which should force logging of
+    // histograms persisted at the end of the page load lifetime.
+    NavigateToUntrackedUrl();
+
     VerifyNavigationMetricsCount(1);
 
     return observer.navigation_handle_timing();
@@ -469,6 +474,11 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     waiter->AddMinimumCompleteResourcesExpectation(1);
     waiter->Wait();
     EXPECT_TRUE(observer.has_committed());
+
+    // Force navigation to another page, which should force logging of
+    // histograms persisted at the end of the page load lifetime.
+    NavigateToUntrackedUrl();
+
     VerifyNavigationMetricsCount(1);
 
     return observer.navigation_handle_timing();
@@ -824,17 +834,21 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
 
-  VerifyNavigationMetricsCount(1);
-
   waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
   waiter->Wait();
 
+  VerifyNavigationMetricsCount(1);
+
   // We expect one histogram sample for each navigation to title1.html.
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
 
   VerifyNavigationMetricsCount(2);
 }
@@ -2490,6 +2504,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
 
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
+
   // Navigation should record the metrics twice because of the initial pageload
   // and the second pageload initiated by the link click.
   VerifyNavigationMetricsCount(2);
@@ -2512,6 +2530,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
 
   VerifyNavigationMetricsCount(1);
 }
@@ -2543,6 +2565,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
 
   // Navigation should record the metrics twice because of the initial pageload
   // and the second pageload initiated by the link click.
@@ -2579,6 +2605,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Close all pages, which should force logging of histograms persisted at the
+  // end of the page load lifetime.
+  browser()->tab_strip_model()->CloseAllTabs();
 
   // Navigation should record the metrics twice because of the initial pageload
   // and the second pageload initiated by the link click.
@@ -2644,6 +2674,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ServiceWorkerMetrics) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 2);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramServiceWorkerFirstPaint, 1);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
 
   // Navigation should record the metrics twice because of the initial pageload
   // to register a service worker and the page load controlled by the service

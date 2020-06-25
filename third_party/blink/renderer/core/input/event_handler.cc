@@ -597,7 +597,7 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
         IntRect visible_rect = page->GetVisualViewport().VisibleContentRect();
         if (!visible_rect.Contains(cursor_rect)) {
           Deprecation::CountDeprecation(
-              &node->GetDocument(),
+              node->GetExecutionContext(),
               WebFeature::kCustomCursorIntersectsViewport);
           continue;
         }

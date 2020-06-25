@@ -67,7 +67,7 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
     return;
 
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kSetup);
+      chromeos::assistant::AssistantExitPoint::kSetup);
 
   assistant_setup->StartAssistantOptInFlow(
       type, base::BindOnce(&AssistantSetupController::OnOptInFlowFinished,
@@ -78,7 +78,7 @@ void AssistantSetupController::OnOptInFlowFinished(bool relaunch,
                                                    bool completed) {
   if (relaunch && completed) {
     AssistantUiController::Get()->ShowUi(
-        chromeos::assistant::mojom::AssistantEntryPoint::kSetup);
+        chromeos::assistant::AssistantEntryPoint::kSetup);
   }
 }
 

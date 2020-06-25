@@ -322,6 +322,7 @@ cr.define('settings', function() {
         return false;
       }
       this.$$('os-toolbar').getSearchField().showAndFocus();
+      this.$$('os-toolbar').getSearchField().getSearchInput().select();
       return true;
     },
 

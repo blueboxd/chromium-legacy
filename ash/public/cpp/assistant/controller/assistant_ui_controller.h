@@ -10,10 +10,8 @@
 
 namespace chromeos {
 namespace assistant {
-namespace mojom {
 enum class AssistantEntryPoint;
 enum class AssistantExitPoint;
-}  // namespace mojom
 }  // namespace assistant
 }  // namespace chromeos
 
@@ -31,11 +29,11 @@ class ASH_PUBLIC_EXPORT AssistantUiController {
   virtual const AssistantUiModel* GetModel() const = 0;
 
   // Invoke to show/close/toggle Assistant UI.
-  virtual void ShowUi(chromeos::assistant::mojom::AssistantEntryPoint) = 0;
-  virtual void CloseUi(chromeos::assistant::mojom::AssistantExitPoint) = 0;
+  virtual void ShowUi(chromeos::assistant::AssistantEntryPoint) = 0;
+  virtual void CloseUi(chromeos::assistant::AssistantExitPoint) = 0;
   virtual void ToggleUi(
-      base::Optional<chromeos::assistant::mojom::AssistantEntryPoint>,
-      base::Optional<chromeos::assistant::mojom::AssistantExitPoint>) = 0;
+      base::Optional<chromeos::assistant::AssistantEntryPoint>,
+      base::Optional<chromeos::assistant::AssistantExitPoint>) = 0;
 
  protected:
   AssistantUiController();

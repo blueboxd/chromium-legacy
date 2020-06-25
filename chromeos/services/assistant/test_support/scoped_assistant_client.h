@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 

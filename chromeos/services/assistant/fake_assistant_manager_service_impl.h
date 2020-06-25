@@ -52,29 +52,29 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void SyncDeviceAppsStatus() override {}
   void UpdateInternalMediaPlayerStatus(MediaSessionAction action) override;
 
-  // mojom::Assistant overrides:
+  // Assistant overrides:
   void StartEditReminderInteraction(const std::string& client_id) override;
   void StartScreenContextInteraction(
       ax::mojom::AssistantStructurePtr assistant_structure,
       const std::vector<uint8_t>& assistant_screenshot) override;
   void StartTextInteraction(const std::string& query,
-                            mojom::AssistantQuerySource source,
+                            AssistantQuerySource source,
                             bool allow_tts) override;
   void StartVoiceInteraction() override;
   void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
                                      bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
-      mojo::PendingRemote<mojom::AssistantInteractionSubscriber> subscriber)
-      override;
-  void RetrieveNotification(mojom::AssistantNotificationPtr notification,
+      AssistantInteractionSubscriber* subscriber) override;
+  void RemoveAssistantInteractionSubscriber(
+      AssistantInteractionSubscriber* subscriber) override;
+  void RetrieveNotification(const mojom::AssistantNotification& notification,
                             int action_index) override;
   void DismissNotification(
-      mojom::AssistantNotificationPtr notification) override;
+      const mojom::AssistantNotification& notification) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
-  void SendAssistantFeedback(mojom::AssistantFeedbackPtr feedback) override;
-  void NotifyEntryIntoAssistantUi(
-      mojom::AssistantEntryPoint entry_point) override;
+  void SendAssistantFeedback(const AssistantFeedback& feedback) override;
+  void NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point) override;
   void AddTimeToTimer(const std::string& id, base::TimeDelta duration) override;
   void PauseTimer(const std::string& id) override;
   void RemoveAlarmOrTimer(const std::string& id) override;

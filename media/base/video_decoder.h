@@ -39,6 +39,7 @@ class MEDIA_EXPORT VideoDecoder {
   using DecodeCB = base::OnceCallback<void(DecodeStatus)>;
 
   VideoDecoder();
+  virtual ~VideoDecoder();
 
   // Returns the name of the decoder for logging and decoder selection purposes.
   // This name should be available immediately after construction (e.g. before
@@ -134,39 +135,9 @@ class MEDIA_EXPORT VideoDecoder {
   // [|limits::kMinVideoDecodeThreads|, |limits::kMaxVideoDecodeThreads|].
   static int GetRecommendedThreadCount(int desired_threads);
 
- protected:
-  // Deletion is only allowed via Destroy().
-  virtual ~VideoDecoder();
-
- private:
-  friend struct std::default_delete<VideoDecoder>;
-
-  // Fires any pending callbacks, stops and destroys the decoder. After this
-  // call, external resources (e.g. raw pointers) |this| holds might be
-  // invalidated immediately. So if the decoder is destroyed asynchronously
-  // (e.g. DeleteSoon), external resources must be released in this call.
-  virtual void Destroy();
-
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);
 };
 
 }  // namespace media
-
-namespace std {
-
-// Specialize std::default_delete to call Destroy().
-template <>
-struct MEDIA_EXPORT default_delete<media::VideoDecoder> {
-  constexpr default_delete() = default;
-
-  template <typename U,
-            typename = typename std::enable_if<
-                std::is_convertible<U*, media::VideoDecoder*>::value>::type>
-  default_delete(const default_delete<U>& d) {}
-
-  void operator()(media::VideoDecoder* ptr) const;
-};
-
-}  // namespace std
 
 #endif  // MEDIA_BASE_VIDEO_DECODER_H_

@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace base {
 class UnguessableToken;
@@ -23,9 +23,7 @@ class AssistantSuggestionsModelObserver;
 
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   AssistantSuggestionsModel();
   ~AssistantSuggestionsModel();
@@ -34,30 +32,31 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   void AddObserver(AssistantSuggestionsModelObserver* observer) const;
   void RemoveObserver(AssistantSuggestionsModelObserver* observer) const;
 
-  // Sets the cache of conversation starters.
-  void SetConversationStarters(
-      std::vector<AssistantSuggestionPtr> conversation_starters);
-
-  // Returns the conversation starter uniquely identified by |id|.
-  const AssistantSuggestion* GetConversationStarterById(
+  // Returns the AssistantSuggestion uniquely identified by |id|. Returns
+  // nullptr if not found.
+  const AssistantSuggestion* GetSuggestionById(
       const base::UnguessableToken& id) const;
 
+  // Sets the cache of conversation starters.
+  void SetConversationStarters(
+      std::vector<AssistantSuggestion>&& conversation_starters);
+
   // Returns all cached conversation starters.
-  std::vector<const AssistantSuggestion*> GetConversationStarters() const;
+  const std::vector<AssistantSuggestion>& GetConversationStarters() const;
 
   // Sets the cache of onboarding suggestions.
   void SetOnboardingSuggestions(
-      std::vector<AssistantSuggestionPtr> onboarding_suggestions);
+      std::vector<AssistantSuggestion> onboarding_suggestions);
 
   // Returns all cached onboarding suggestions.
-  std::vector<const AssistantSuggestion*> GetOnboardingSuggestions() const;
+  const std::vector<AssistantSuggestion>& GetOnboardingSuggestions() const;
 
  private:
   void NotifyConversationStartersChanged();
   void NotifyOnboardingSuggestionsChanged();
 
-  std::vector<AssistantSuggestionPtr> conversation_starters_;
-  std::vector<AssistantSuggestionPtr> onboarding_suggestions_;
+  std::vector<AssistantSuggestion> conversation_starters_;
+  std::vector<AssistantSuggestion> onboarding_suggestions_;
 
   mutable base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 

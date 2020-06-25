@@ -20,6 +20,7 @@
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -34,7 +35,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/ui_base_features.h"           // nogncheck
 #include "ui/platform_window/x11/x11_window.h"  // nogncheck
 #endif
 
@@ -118,15 +118,22 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   std::unique_ptr<ui::PlatformWindow> CreatePlatformWindow(
       const gfx::Rect& bounds) {
     ui::PlatformWindowInitProperties props(bounds);
+#if defined(USE_X11) || defined(USE_OZONE)
 #if defined(USE_OZONE)
-    return ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-        this, std::move(props));
-#elif defined(OS_WIN)
-    return std::make_unique<ui::WinWindow>(this, props.bounds);
-#elif defined(USE_X11)
+    if (features::IsUsingOzonePlatform()) {
+      return ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+          this, std::move(props));
+    }
+#endif
+#if defined(USE_X11)
     auto x11_window = std::make_unique<ui::X11Window>(this);
     x11_window->Initialize(std::move(props));
     return x11_window;
+#endif
+    NOTREACHED();
+    return nullptr;
+#elif defined(OS_WIN)
+    return std::make_unique<ui::WinWindow>(this, props.bounds);
 #else
     NOTIMPLEMENTED();
     return nullptr;

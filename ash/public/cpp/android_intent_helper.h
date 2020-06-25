@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -24,7 +24,7 @@ class ASH_PUBLIC_EXPORT AndroidIntentHelper {
   // Get the intent that can be used to launch an Android activity specified by
   // the |app_info|.
   virtual base::Optional<std::string> GetAndroidAppLaunchIntent(
-      chromeos::assistant::mojom::AndroidAppInfoPtr app_info) = 0;
+      const chromeos::assistant::AndroidAppInfo& app_info) = 0;
 
  protected:
   AndroidIntentHelper();

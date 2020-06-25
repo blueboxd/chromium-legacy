@@ -58,6 +58,7 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kGooglePlayMoviesAppId,  // Play Movies & TV Chrome app
     arc::kPlayMusicAppId,                    // Play Music ARC app
     extension_misc::kGooglePlayMusicAppId,   // Play Music Chrome app
+    default_web_apps::kYoutubeMusicAppId,
     arc::kPlayGamesAppId,
     arc::kPlayBooksAppId,                   // Play Books ARC app
     extension_misc::kGooglePlayBooksAppId,  // Play Books Chrome app

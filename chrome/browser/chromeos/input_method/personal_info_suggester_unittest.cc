@@ -38,6 +38,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     suggestion_text_ = details.text;
     confirmed_length_ = details.confirmed_length;
     show_tab_ = details.show_tab;
+    show_setting_link_ = details.show_setting_link;
     return true;
   }
 
@@ -85,6 +86,9 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   }
 
   void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
+  void VerifyShowSettingLink(const bool show_setting_link) {
+    EXPECT_EQ(show_setting_link_, show_setting_link);
+  }
 
   bool IsSuggestionAccepted() { return suggestion_accepted_; }
 
@@ -92,6 +96,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   base::string16 suggestion_text_;
   size_t confirmed_length_ = 0;
   bool show_tab_ = false;
+  bool show_setting_link_ = false;
   bool suggestion_accepted_ = false;
   std::vector<std::string> previous_suggestions_;
 };
@@ -332,6 +337,33 @@ TEST_F(PersonalInfoSuggesterTest, DoNotAnnouncePressTabWhenTabNotShown) {
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
   tts_handler_->VerifyAnnouncement(base::StringPrintf(
       "Suggested text %s. ", base::UTF16ToUTF8(email_).c_str()));
+}
+
+TEST_F(PersonalInfoSuggesterTest, ShowSettingLink) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->RemoveKey(kPersonalInfoSuggesterShowSettingCount);
+  update->RemoveKey(kPersonalInfoSuggesterTabAcceptanceCount);
+  for (int i = 0; i < kMaxShowSettingCount; i++) {
+    suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+    // Dismiss suggestion.
+    SendKeyboardEvent("Esc");
+    suggestion_handler_->VerifyShowSettingLink(true);
+  }
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowSettingLink(false);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotShowSettingLinkAfterAcceptance) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              prefs::kAssistiveInputFeatureSettings);
+  update->SetIntKey(kPersonalInfoSuggesterShowSettingCount, 0);
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowSettingLink(true);
+  // Accept suggestion.
+  SendKeyboardEvent("Tab");
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifyShowSettingLink(false);
 }
 
 }  // namespace chromeos

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 
+#include <tuple>
 #include <utility>
 
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
@@ -75,6 +76,16 @@ RequestAction RequestAction::Clone() const {
 
 RequestAction::RequestAction(const RequestAction&) = default;
 
+bool operator<(const RequestAction& lhs, const RequestAction& rhs) {
+  return std::tie(lhs.index_priority, lhs.ruleset_id, lhs.rule_id) <
+         std::tie(rhs.index_priority, rhs.ruleset_id, rhs.rule_id);
+}
+
+bool operator>(const RequestAction& lhs, const RequestAction& rhs) {
+  return std::tie(lhs.index_priority, lhs.ruleset_id, lhs.rule_id) >
+         std::tie(rhs.index_priority, rhs.ruleset_id, rhs.rule_id);
+}
+
 base::Optional<RequestAction> GetMaxPriorityAction(
     base::Optional<RequestAction> lhs,
     base::Optional<RequestAction> rhs) {
@@ -82,8 +93,7 @@ base::Optional<RequestAction> GetMaxPriorityAction(
     return rhs;
   if (!rhs)
     return lhs;
-  return lhs->index_priority >= rhs->index_priority ? std::move(lhs)
-                                                    : std::move(rhs);
+  return lhs > rhs ? std::move(lhs) : std::move(rhs);
 }
 
 }  // namespace declarative_net_request

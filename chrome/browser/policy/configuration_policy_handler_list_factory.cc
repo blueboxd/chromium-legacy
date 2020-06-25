@@ -1116,6 +1116,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDeletePrintJobHistoryAllowed,
     prefs::kDeletePrintJobHistoryAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kSuggestedContentEnabled,
+    chromeos::prefs::kSuggestedContentEnabled,
+    base::Value::Type::BOOLEAN },
 
 #else  // defined(OS_CHROMEOS)
   { key::kMetricsReportingEnabled,

@@ -14,7 +14,7 @@ import unittest
 from pylib.constants import host_paths
 from pylib.utils import gold_utils
 
-with host_paths.SysPath(host_paths.TESTING_PATH):
+with host_paths.SysPath(host_paths.BUILD_PATH):
   from skia_gold_common import unittest_utils
 
 import mock  # pylint: disable=import-error

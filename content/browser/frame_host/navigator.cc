@@ -299,8 +299,11 @@ void Navigator::DidNavigate(
   // TODO(nasko): Verify the correctness of the above comment, since some of the
   // code doesn't exist anymore. Also, move this code in the
   // PageTransitionIsMainFrame code block above.
-  if (ui::PageTransitionIsMainFrame(params.transition) && delegate_)
-    delegate_->SetMainFrameMimeType(params.contents_mime_type);
+  if (ui::PageTransitionIsMainFrame(params.transition) && delegate_) {
+    RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+        render_frame_host->GetRenderViewHost());
+    rvh->SetContentsMimeType(params.contents_mime_type);
+  }
 
   int old_entry_count = controller_->GetEntryCount();
   LoadCommittedDetails details;

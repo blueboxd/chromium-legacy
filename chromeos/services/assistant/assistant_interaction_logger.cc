@@ -11,10 +11,9 @@ namespace assistant {
 
 namespace {
 
-std::string ResolutionToString(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
+std::string ResolutionToString(AssistantInteractionResolution resolution) {
   std::stringstream result;
-  result << resolution;
+  result << static_cast<int>(resolution);
   return result.str();
 }
 
@@ -32,26 +31,21 @@ AssistantInteractionLogger::AssistantInteractionLogger() = default;
 
 AssistantInteractionLogger::~AssistantInteractionLogger() = default;
 
-mojo::PendingRemote<mojom::AssistantInteractionSubscriber>
-AssistantInteractionLogger::BindNewPipeAndPassRemote() {
-  return receiver_.BindNewPipeAndPassRemote();
-}
-
 void AssistantInteractionLogger::OnInteractionStarted(
-    chromeos::assistant::mojom::AssistantInteractionMetadataPtr metadata) {
-  switch (metadata->type) {
-    case mojom::AssistantInteractionType::kText:
-      LOG_INTERACTION() << "Text interaction with query '" << metadata->query
+    const AssistantInteractionMetadata& metadata) {
+  switch (metadata.type) {
+    case AssistantInteractionType::kText:
+      LOG_INTERACTION() << "Text interaction with query '" << metadata.query
                         << "'";
       break;
-    case mojom::AssistantInteractionType::kVoice:
+    case AssistantInteractionType::kVoice:
       LOG_INTERACTION() << "Voice interaction";
       break;
   }
 }
 
 void AssistantInteractionLogger::OnInteractionFinished(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
+    AssistantInteractionResolution resolution) {
   LOG_INTERACTION() << "with resolution " << ResolutionToString(resolution);
 }
 
@@ -63,10 +57,10 @@ void AssistantInteractionLogger::OnHtmlResponse(const std::string& response,
 }
 
 void AssistantInteractionLogger::OnSuggestionsResponse(
-    std::vector<chromeos::assistant::mojom::AssistantSuggestionPtr> response) {
+    const std::vector<chromeos::assistant::AssistantSuggestion>& response) {
   std::stringstream suggestions;
   for (const auto& suggestion : response)
-    suggestions << "'" << suggestion->text << "', ";
+    suggestions << "'" << suggestion.text << "', ";
   LOG_INTERACTION() << "{ " << suggestions.str() << " }";
 }
 
@@ -74,16 +68,15 @@ void AssistantInteractionLogger::OnTextResponse(const std::string& response) {
   LOG_INTERACTION() << "'" << response << "'";
 }
 
-void AssistantInteractionLogger::OnOpenUrlResponse(const ::GURL& url,
+void AssistantInteractionLogger::OnOpenUrlResponse(const GURL& url,
                                                    bool in_background) {
   LOG_INTERACTION() << "with url '" << url.possibly_invalid_spec() << "'";
 }
 
-void AssistantInteractionLogger::OnOpenAppResponse(
-    chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-    OnOpenAppResponseCallback callback) {
-  LOG_INTERACTION() << "with app '" << app_info->package_name << "'";
-  std::move(callback).Run(true);
+bool AssistantInteractionLogger::OnOpenAppResponse(
+    const AndroidAppInfo& app_info) {
+  LOG_INTERACTION() << "with app '" << app_info.package_name << "'";
+  return true;
 }
 
 void AssistantInteractionLogger::OnSpeechRecognitionStarted() {

@@ -9,7 +9,6 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -661,18 +660,6 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
   context->CountDeprecation(feature);
 }
 
-void Deprecation::CountDeprecation(const Document& document,
-                                   WebFeature feature) {
-  Deprecation::CountDeprecation(document.Loader(), feature);
-}
-
-void Deprecation::CountDeprecation(Document* document, WebFeature feature) {
-  if (!document)
-    return;
-
-  Deprecation::CountDeprecation(document->GetExecutionContext(), feature);
-}
-
 void Deprecation::CountDeprecation(DocumentLoader* loader, WebFeature feature) {
   Deprecation::CountDeprecation(loader, feature, /*count_usage=*/true);
 }
@@ -701,19 +688,18 @@ void Deprecation::CountDeprecation(DocumentLoader* loader,
   GenerateReport(frame, feature);
 }
 
-void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
+void Deprecation::CountDeprecationCrossOriginIframe(LocalDOMWindow* window,
                                                     WebFeature feature) {
-  LocalFrame* frame = document.GetFrame();
-  if (!frame)
+  DCHECK(window);
+  if (!window->GetFrame())
     return;
 
-  // Check to see if the frame can script into the top level document.
-  const SecurityOrigin* security_origin =
-      frame->GetSecurityContext()->GetSecurityOrigin();
-  Frame& top = frame->Tree().Top();
-  if (!security_origin->CanAccess(
-          top.GetSecurityContext()->GetSecurityOrigin()))
-    CountDeprecation(document, feature);
+  // Check to see if the frame can script into the top level window.
+  Frame& top = window->GetFrame()->Tree().Top();
+  if (!window->GetSecurityOrigin()->CanAccess(
+          top.GetSecurityContext()->GetSecurityOrigin())) {
+    CountDeprecation(window, feature);
+  }
 }
 
 void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {

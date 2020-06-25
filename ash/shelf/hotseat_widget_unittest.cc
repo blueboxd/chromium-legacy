@@ -46,7 +46,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -130,7 +130,7 @@ class HotseatWidgetTest
     if (!navigation_buttons_shown_in_tablet_mode_ &&
         Shell::Get()->tablet_mode_controller()->InTabletMode()) {
       AssistantUiController::Get()->ShowUi(
-          chromeos::assistant::mojom::AssistantEntryPoint::kLongPressLauncher);
+          chromeos::assistant::AssistantEntryPoint::kLongPressLauncher);
       return;
     }
 

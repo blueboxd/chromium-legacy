@@ -5,12 +5,371 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_SERVICE_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_SERVICE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/component_export.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "base/observer_list_types.h"
+#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
 namespace assistant {
+
+// Enumeration of possible Assistant query sources. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never
+// be reused. Append new values to the end.
+enum class AssistantQuerySource {
+  kUnspecified = 0,
+  kMinValue = kUnspecified,
+  kDeepLink = 1,
+  kDialogPlateTextField = 2,
+  kStylus = 3,
+  kSuggestionChip = 4,
+  kVoiceInput = 5,
+  kProactiveSuggestions = 6,
+  kLibAssistantInitiated = 7,
+  kWarmerWelcome = 8,
+  kConversationStarter = 9,
+  kWhatsOnMyScreen = 10,
+  kQuickAnswers = 11,
+  kLauncherChip = 12,
+  kBetterOnboarding = 13,
+  kMaxValue = kBetterOnboarding,
+};
+
+// Enumeration of possible Assistant interaction types.
+enum class AssistantInteractionType {
+  kText,
+  kVoice,
+};
+
+// Describes an Assistant interaction.
+struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantInteractionMetadata {
+  AssistantInteractionMetadata();
+  AssistantInteractionMetadata(AssistantInteractionType type,
+                               AssistantQuerySource source,
+                               const std::string& query);
+  AssistantInteractionMetadata(const AssistantInteractionMetadata& suggestion);
+  AssistantInteractionMetadata& operator=(const AssistantInteractionMetadata&);
+  AssistantInteractionMetadata(AssistantInteractionMetadata&& suggestion);
+  AssistantInteractionMetadata& operator=(AssistantInteractionMetadata&&);
+  ~AssistantInteractionMetadata();
+
+  AssistantInteractionType type{AssistantInteractionType::kText};
+  AssistantQuerySource source{AssistantQuerySource::kUnspecified};
+  std::string query;
+};
+
+// Enumeration of possible completions for an Assistant interaction.
+enum class AssistantInteractionResolution {
+  // Assistant interaction completed normally.
+  kNormal,
+  // Assistant interaction completed due to barge in or cancellation.
+  kInterruption,
+  // Assistant interaction completed due to error.
+  kError,
+  // Assistant interaction completed due to mic timeout.
+  kMicTimeout,
+  // Assistant interaction completed due to multi-device hotword loss.
+  kMultiDeviceHotwordLoss,
+};
+
+// Enumeration of possible Assistant suggestion types.
+enum class AssistantSuggestionType {
+  kUnspecified,
+  kConversationStarter,
+  kBetterOnboarding,
+};
+
+// Models an Assistant suggestion.
+struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
+  AssistantSuggestion();
+  AssistantSuggestion(base::UnguessableToken id,
+                      AssistantSuggestionType type,
+                      const std::string& text);
+  AssistantSuggestion(const AssistantSuggestion& suggestion);
+  AssistantSuggestion& operator=(const AssistantSuggestion&);
+  AssistantSuggestion(AssistantSuggestion&& suggestion);
+  AssistantSuggestion& operator=(AssistantSuggestion&&);
+  ~AssistantSuggestion();
+  // Uniquely identifies a given suggestion.
+  base::UnguessableToken id;
+
+  // Allows us to differentiate between a typical Assistant suggestion and an
+  // Assistant suggestion of another type (e.g. a conversation starter).
+  AssistantSuggestionType type{AssistantSuggestionType::kUnspecified};
+
+  // Display text. e.g. "Cancel".
+  std::string text;
+
+  // Optional URL for icon. e.g. "https://www.gstatic.com/icon.png".
+  GURL icon_url;
+
+  // Optional URL for action. e.g.
+  // "https://www.google.com/search?query=action".
+  GURL action_url;
+};
+
+// Models status of an app.
+// TODO(xiaohuic): update to constant style naming.
+enum class AppStatus {
+  UNKNOWN,
+  AVAILABLE,
+  UNAVAILABLE,
+  VERSION_MISMATCH,
+  DISABLED
+};
+
+// Models an Android app.
+struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AndroidAppInfo {
+  AndroidAppInfo();
+  AndroidAppInfo(const AndroidAppInfo& suggestion);
+  AndroidAppInfo& operator=(const AndroidAppInfo&);
+  AndroidAppInfo(AndroidAppInfo&& suggestion);
+  AndroidAppInfo& operator=(AndroidAppInfo&&);
+  ~AndroidAppInfo();
+
+  // Unique name to identify a specific app.
+  std::string package_name;
+
+  // Version number of the app.
+  int version{0};
+
+  // Localized app name.
+  std::string localized_app_name;
+
+  // Intent data to operate on.
+  std::string intent;
+
+  // Status of the app.
+  AppStatus status{AppStatus::UNKNOWN};
+
+  // The general action to be performed, such as ACTION_VIEW, ACTION_MAIN, etc.
+  std::string action;
+};
+
+// Subscribes to Assistant's interaction event. These events are server driven
+// in response to the user's direct interaction with the assistant. Responses
+// from the assistant may contain untrusted third-party content. Subscriber
+// implementations must be sure to handle the response data appropriately.
+class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantInteractionSubscriber
+    : public base::CheckedObserver {
+ public:
+  AssistantInteractionSubscriber() = default;
+  AssistantInteractionSubscriber(const AssistantInteractionSubscriber&) =
+      delete;
+  AssistantInteractionSubscriber& operator=(
+      const AssistantInteractionSubscriber&) = delete;
+  ~AssistantInteractionSubscriber() override = default;
+
+  // Assistant interaction has started.
+  virtual void OnInteractionStarted(
+      const AssistantInteractionMetadata& metadata) {}
+
+  // Assistant interaction has ended with the specified |resolution|.
+  virtual void OnInteractionFinished(
+      AssistantInteractionResolution resolution) {}
+
+  // Assistant got Html response with fallback text from server.
+  virtual void OnHtmlResponse(const std::string& response,
+                              const std::string& fallback) {}
+
+  // Assistant got suggestions response from server.
+  virtual void OnSuggestionsResponse(
+      const std::vector<AssistantSuggestion>& response) {}
+
+  // Assistant got text response from server.
+  virtual void OnTextResponse(const std::string& response) {}
+
+  // Assistant got open URL response from server. |in_background| refers to
+  // being in background of Assistant UI, not in background of browser.
+  virtual void OnOpenUrlResponse(const GURL& url, bool in_background) {}
+
+  // Assistant got open Android app response from server. Returns if the app is
+  // opened.
+  virtual bool OnOpenAppResponse(const AndroidAppInfo& app_info);
+
+  // Assistant speech recognition has started.
+  virtual void OnSpeechRecognitionStarted() {}
+
+  // Assistant speech recognition intermediate result is available.
+  virtual void OnSpeechRecognitionIntermediateResult(
+      const std::string& high_confidence_text,
+      const std::string& low_confidence_text) {}
+
+  // Assistant speech recognition detected end of utterance.
+  virtual void OnSpeechRecognitionEndOfUtterance() {}
+
+  // Assistant speech recognition final result is available.
+  virtual void OnSpeechRecognitionFinalResult(const std::string& final_result) {
+  }
+
+  // Assistant got an instantaneous speech level update in dB.
+  virtual void OnSpeechLevelUpdated(float speech_level) {}
+
+  // Assistant has started speaking. When TTS is started due to an error that
+  // occurred during the interaction, |due_to_error| is true.
+  virtual void OnTtsStarted(bool due_to_error) {}
+
+  // Assistant has started waiting. This occur during execution of a routine to
+  // give the user time to digest a response before continuing execution.
+  virtual void OnWaitStarted() {}
+};
+
+//  Details for Assistant feedback.
+struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantFeedback {
+  // User input to be sent with the feedback report.
+  std::string description;
+
+  // Whether user consent to send debug info.
+  bool assistant_debug_info_allowed{false};
+
+  // Screenshot if allowed by user.
+  // Raw data (non-encoded binary octets)
+  std::string screenshot_png;
+};
+
+// Enumeration of Assistant entry points. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+// Only append to this enum is allowed if the possible entry source grows.
+enum class AssistantEntryPoint {
+  kUnspecified = 0,
+  kMinValue = kUnspecified,
+  kDeepLink = 1,
+  kHotkey = 2,
+  kHotword = 3,
+  // kLauncherSearchBoxDeprecated = 4,
+  kLongPressLauncher = 5,
+  kSetup = 6,
+  kStylus = 7,
+  kLauncherSearchResult = 8,
+  kLauncherSearchBoxIcon = 9,
+  kProactiveSuggestions = 10,
+  kLauncherChip = 11,
+  kMaxValue = kLauncherChip,
+};
+
+// Enumeration of Assistant exit points. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+// Only append to this enum is allowed if the possible exit source grows.
+enum class AssistantExitPoint {
+  // Includes keyboard interruptions (e.g. launching Chrome OS feedback
+  // using keyboard shortcuts, pressing search button).
+  kUnspecified = 0,
+  kMinValue = kUnspecified,
+  kCloseButton = 1,
+  kHotkey = 2,
+  kNewBrowserTabFromServer = 3,
+  kNewBrowserTabFromUser = 4,
+  kOutsidePress = 5,
+  kSetup = 6,
+  kStylus = 7,
+  kBackInLauncher = 8,
+  kLauncherClose = 9,
+  kLauncherOpen = 10,
+  kScreenshot = 11,
+  kOverviewMode = 12,
+  kMaxValue = kOverviewMode,
+};
+
+class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {
+ public:
+  Assistant() = default;
+  Assistant(const Assistant&) = delete;
+  Assistant& operator=(const Assistant&) = delete;
+  virtual ~Assistant() = default;
+
+  // Starts an interaction to edit the reminder uniquely identified by
+  // |client_id|. In response to the request, LibAssistant will initiate
+  // a user facing interaction with the context pre-populated with details
+  // to edit the specified reminder.
+  virtual void StartEditReminderInteraction(const std::string& client_id) = 0;
+
+  // Starts a screen context interaction. Results related to the screen context
+  // will be returned through the |AssistantInteractionSubscriber| interface to
+  // registered subscribers.
+  // |assistant_screenshot| contains JPEG data.
+  virtual void StartScreenContextInteraction(
+      ax::mojom::AssistantStructurePtr assistant_structure,
+      const std::vector<uint8_t>& assistant_screenshot) = 0;
+
+  // Starts a new Assistant text interaction. If |allow_tts| is true, the
+  // result will contain TTS. Otherwise TTS will not be present in the
+  // generated server response. Results will be returned through registered
+  // |AssistantInteractionSubscriber|.
+  virtual void StartTextInteraction(const std::string& query,
+                                    AssistantQuerySource source,
+                                    bool allow_tts) = 0;
+
+  // Starts a new Assistant voice interaction.
+  virtual void StartVoiceInteraction() = 0;
+
+  // Starts a warmer welcome interaction for Assistant launch.
+  // |num_warmer_welcome_triggered| is the count of warmer welcomes
+  // already triggered. If |allow_tts| is true, the result may contain TTS.
+  // Otherwise TTS will not be present in the generated server response.
+  virtual void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
+                                             bool allow_tts) = 0;
+
+  // Stops the active Assistant interaction and cancel the conversation if
+  // |cancel_conversation|. If there is no active interaction, this method
+  // is a no-op.
+  virtual void StopActiveInteraction(bool cancel_conversation) = 0;
+
+  // Registers assistant interaction event subscriber. Subscribers'
+  // implementation is responsible for selecting events of interest.
+  virtual void AddAssistantInteractionSubscriber(
+      AssistantInteractionSubscriber* subscriber) = 0;
+  virtual void RemoveAssistantInteractionSubscriber(
+      AssistantInteractionSubscriber* subscriber) = 0;
+
+  // Retrieves a notification. A voiceless interaction will be sent to server to
+  // retrieve the notification of |action_index|, which can trigger other
+  // Assistant events such as OnTextResponse to show the result in the UI. The
+  // retrieved notification will be removed from the UI.
+  // |action_index| is the index of the tapped action. The main UI in the
+  // notification contains the top level action, which index is 0. The buttons
+  // have the additional actions, which are indexed starting from 1.
+  virtual void RetrieveNotification(
+      const mojom::AssistantNotification& notification,
+      int action_index) = 0;
+
+  // Dismisses a notification.
+  virtual void DismissNotification(
+      const mojom::AssistantNotification& notification) = 0;
+
+  // Invoked when accessibility status is changed. Note that though
+  // accessibility status has changed, |spoken_feedback_enabled| may not have.
+  virtual void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) = 0;
+
+  // Send Assistant feedback to Assistant server.
+  virtual void SendAssistantFeedback(const AssistantFeedback& feedback) = 0;
+
+  // Invoked on entry to Assistant UI.
+  virtual void NotifyEntryIntoAssistantUi(AssistantEntryPoint entry_point) = 0;
+
+  // Alarm/Timer methods -------------------------------------------------------
+
+  // Adds the specified |duration| to the timer identified by |id|.  Note that
+  // this method is a no-op if there is no existing timer identified by |id|.
+  virtual void AddTimeToTimer(const std::string& id,
+                              base::TimeDelta duration) = 0;
+
+  // Pauses the timer specified by |id|. Note that this method is a no-op if
+  // there is no existing timer identified by |id| or if a timer does exist but
+  // is already paused.
+  virtual void PauseTimer(const std::string& id) = 0;
+
+  // Remove the alarm/timer specified by |id|.
+  // NOTE: this is a no-op if no such alarm/timer exists.
+  virtual void RemoveAlarmOrTimer(const std::string& id) = 0;
+
+  // Resumes the timer specified by |id|. Note that this method is a no-op if
+  // there is no existing timer identified by |id| or if a timer does exist but
+  // isn't currently paused.
+  virtual void ResumeTimer(const std::string& id) = 0;
+};
 
 // Main interface between browser and |chromeos::assistant::Service|.
 class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
@@ -25,12 +384,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
   // Initiates assistant service.
   virtual void Init() = 0;
 
-  // Binds the main assistant backend interface.
-  virtual void BindAssistant(
-      mojo::PendingReceiver<mojom::Assistant> receiver) = 0;
-
   // Signals system shutdown, the service could start cleaning up if needed.
   virtual void Shutdown() = 0;
+
+  // Get the main Assistant interface.
+  virtual Assistant* GetAssistant() = 0;
 };
 
 }  // namespace assistant

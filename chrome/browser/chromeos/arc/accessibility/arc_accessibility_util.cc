@@ -172,7 +172,7 @@ std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type) {
     default:
       NOTREACHED();
   }
-  return std::string();  // Dummy.
+  return std::string();  // Placeholder.
 }
 
 }  // namespace arc

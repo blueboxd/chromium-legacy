@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "libassistant/shared/public/platform_net.h"
 #include "mojo/public/cpp/bindings/receiver.h"

@@ -160,15 +160,15 @@ class MockVideoDecoder : public VideoDecoder {
                                                   std::move(reset_cb));
   }
 
- private:
-  // Destructing a std::unique_ptr<VideoDecoder>(this) is a no-op.
-  // TODO(sandersd): After this, any method call is an error. Implement checks
-  // for that.
-  void Destroy() override { DVLOG(1) << __func__ << "(): Ignored"; }
+  base::WeakPtr<MockVideoDecoder> GetWeakPtr() {
+    return weak_this_factory_.GetWeakPtr();
+  }
 
+ private:
   VideoDecoderConfig config_;
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
+  base::WeakPtrFactory<MockVideoDecoder> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
@@ -333,8 +333,12 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   StrictMock<MockMediaLog> client_media_log_;
 
   // VideoDecoder (impl used by service) under test.
-  std::unique_ptr<MockVideoDecoder> decoder_ =
-      std::make_unique<StrictMock<MockVideoDecoder>>();
+  // |decoder_owner_| owns the decoder until ownership is transferred to the
+  // |MojoVideoDecoderService|. |decoder_| references it for the duration of its
+  // lifetime.
+  std::unique_ptr<MockVideoDecoder> decoder_owner_ =
+      std::make_unique<MockVideoDecoder>();
+  base::WeakPtr<MockVideoDecoder> decoder_ = decoder_owner_->GetWeakPtr();
 
   // MediaLog that the service has provided to |decoder_|. This should be
   // proxied to |client_media_log_|.
@@ -345,9 +349,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(MediaLog* media_log) {
     DCHECK(!decoder_media_log_);
     decoder_media_log_ = media_log;
-    // Since MockVideoDecoder::Destroy() is a no-op, this doesn't actually
-    // transfer ownership.
-    return std::unique_ptr<VideoDecoder>(decoder_.get());
+    return std::move(decoder_owner_);
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -394,7 +396,7 @@ TEST_F(MojoVideoDecoderIntegrationTest, InitializeFailNoDecoder) {
               Run(HasStatusCode(StatusCode::kMojoDecoderNoWrappedDecoder)));
 
   // Clear |decoder_| so that Initialize() should fail.
-  decoder_.reset();
+  decoder_owner_.reset();
   client_->Initialize(TestVideoConfig::NormalH264(), false, nullptr,
                       init_cb.Get(), output_cb_.Get(), waiting_cb_.Get());
   RunUntilIdle();

@@ -20880,6 +20880,7 @@ Called by update_document_policy_enum.py.-->
   <int value="723" label="ManagedGuestSessionPrivacyWarningsEnabled"/>
   <int value="724" label="PluginVmRequiredFreeDiskSpace"/>
   <int value="725" label="UserAgentClientHintsEnabled"/>
+  <int value="726" label="SuggestedContentEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28113,6 +28114,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3335" label="InlineOverflowAutoWithInlineEndPadding"/>
   <int value="3336" label="InlineOverflowScrollWithInlineEndPadding"/>
   <int value="3337" label="CSSSelectorPseudoWebKitDetailsMarker"/>
+  <int value="3338" label="SerialPortGetInfo"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

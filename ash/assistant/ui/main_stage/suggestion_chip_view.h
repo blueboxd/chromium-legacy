@@ -7,7 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -23,12 +23,12 @@ class AssistantViewDelegate;
 // View representing a suggestion chip.
 class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   static constexpr char kClassName[] = "SuggestionChipView";
 
   SuggestionChipView(AssistantViewDelegate* delegate,
-                     const AssistantSuggestion* suggestion,
+                     const AssistantSuggestion& suggestion,
                      views::ButtonListener* listener);
   ~SuggestionChipView() override;
 
@@ -47,13 +47,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionChipView : public views::Button {
   void SetText(const base::string16& text);
   const base::string16& GetText() const;
 
-  const AssistantSuggestion* suggestion() const { return suggestion_; }
+  const base::UnguessableToken& suggestion_id() const { return suggestion_id_; }
 
  private:
-  void InitLayout();
+  void InitLayout(const AssistantSuggestion& suggestion);
 
   AssistantViewDelegate* const delegate_;
-  const AssistantSuggestion* const suggestion_;
+
+  const base::UnguessableToken suggestion_id_;
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
   views::ImageView* icon_view_;       // Owned by view hierarchy.

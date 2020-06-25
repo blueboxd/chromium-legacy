@@ -150,6 +150,8 @@ body.files-ng .drive-welcome.header .drive-welcome-links {
 
 .drive-welcome.header .drive-welcome-links > a {
   display: inline-block;
+  outline-offset: -1px;
+  padding: 0 4px;
 }
 
 body:not(.files-ng) .drive-welcome.header .banner-close {

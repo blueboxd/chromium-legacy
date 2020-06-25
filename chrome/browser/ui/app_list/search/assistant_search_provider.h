@@ -45,8 +45,7 @@ class AssistantSearchProvider : public SearchProvider,
 
   // ash::AssistantSuggestionsModelObserver:
   void OnConversationStartersChanged(
-      const std::vector<const AssistantSuggestion*>& conversation_starters)
-      override;
+      const std::vector<AssistantSuggestion>& conversation_starters) override;
 
   // Invoke to update results based on current state.
   void UpdateResults();

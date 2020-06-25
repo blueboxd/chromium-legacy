@@ -91,14 +91,8 @@ class CertVerifyProcNetLogBrowserTest
  public:
   void SetUpInProcessBrowserTestFixture() override {
     if (GetParam()) {
-#if defined(OS_CHROMEOS)
-      // TODO(crbug.com/1085379): remove this GTEST_SKIP().
-      GTEST_SKIP() << "Skipping test, CertVerifierService feature not yet "
-                      "available on ChromeOS.";
-#else
       scoped_feature_list_.InitAndEnableFeature(
           network::features::kCertVerifierService);
-#endif
     } else {
       scoped_feature_list_.InitAndDisableFeature(
           network::features::kCertVerifierService);

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
@@ -48,7 +49,8 @@ enum class Error {
   kNoSettingsIcon = 2,
   kSearchHandlerUnavailable = 3,
   kHierarchyEmpty = 4,
-  kMaxValue = kHierarchyEmpty
+  kNoHierarchy = 5,
+  kMaxValue = kNoHierarchy,
 };
 
 void LogError(Error error) {
@@ -111,10 +113,15 @@ ash::SearchResultType OsSettingsResult::GetSearchResultType() const {
 
 OsSettingsProvider::OsSettingsProvider(Profile* profile)
     : profile_(profile),
-      search_handler_(
-          chromeos::settings::OsSettingsManagerFactory::GetForProfile(profile)
-              ->search_handler()) {
+      settings_manager_(
+          chromeos::settings::OsSettingsManagerFactory::GetForProfile(
+              profile)) {
   DCHECK(profile_);
+
+  if (settings_manager_) {
+    search_handler_ = settings_manager_->search_handler();
+    hierarchy_ = settings_manager_->hierarchy();
+  }
 
   // |search_handler_| can be nullptr in the case that the new OS settings
   // search chrome flag is disabled. If it is, we should effectively disable the
@@ -123,6 +130,13 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
     LogError(Error::kSearchHandlerUnavailable);
     return;
   }
+
+  if (!hierarchy_) {
+    LogError(Error::kNoHierarchy);
+  }
+
+  search_handler_->Observe(
+      search_results_observer_receiver_.BindNewPipeAndPassRemote());
 
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (app_service_proxy_) {
@@ -163,6 +177,7 @@ ash::AppListSearchResultType OsSettingsProvider::ResultType() {
 }
 
 void OsSettingsProvider::Start(const base::string16& query) {
+  last_query_ = query;
   if (!search_handler_)
     return;
 
@@ -183,6 +198,10 @@ void OsSettingsProvider::Start(const base::string16& query) {
                                          weak_factory_.GetWeakPtr(), query));
 }
 
+void OsSettingsProvider::ViewClosing() {
+  last_query_.clear();
+}
+
 void OsSettingsProvider::OnSearchReturned(
     const base::string16& query,
     std::vector<chromeos::settings::mojom::SearchResultPtr> sorted_results) {
@@ -195,7 +214,7 @@ void OsSettingsProvider::OnSearchReturned(
 
   SearchProvider::Results search_results;
   int i = 0;
-  for (const auto& result : FilterResults(query, sorted_results)) {
+  for (const auto& result : FilterResults(query, sorted_results, hierarchy_)) {
     const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(
         std::make_unique<OsSettingsResult>(profile_, result, score, icon_));
@@ -228,11 +247,20 @@ void OsSettingsProvider::OnAppRegistryCacheWillBeDestroyed(
   Observe(nullptr);
 }
 
+void OsSettingsProvider::OnSearchResultAvailabilityChanged() {
+  if (last_query_.empty())
+    return;
+
+  Start(last_query_);
+}
+
 std::vector<chromeos::settings::mojom::SearchResultPtr>
 OsSettingsProvider::FilterResults(
     const base::string16& query,
-    const std::vector<chromeos::settings::mojom::SearchResultPtr>& results) {
+    const std::vector<chromeos::settings::mojom::SearchResultPtr>& results,
+    const chromeos::settings::Hierarchy* hierarchy) {
   base::flat_set<std::string> seen_urls;
+  base::flat_set<chromeos::settings::mojom::Subpage> seen_subpages;
   std::vector<SettingsResultPtr> clean_results;
 
   for (const SettingsResultPtr& result : results) {
@@ -257,13 +285,46 @@ OsSettingsProvider::FilterResults(
     const auto it = seen_urls.find(url);
     if (it != seen_urls.end())
       continue;
-    seen_urls.insert(url);
 
+    seen_urls.insert(url);
     clean_results.push_back(result.Clone());
-    if (clean_results.size() == kMaxShownResults)
-      break;
+    if (result->type == SettingsResultType::kSubpage)
+      seen_subpages.insert(result->id->get_subpage());
   }
 
+  // Iterate through the clean results a second time. Remove subpage or setting
+  // results whose parent subpage is also present.
+  for (size_t i = 0; i < clean_results.size(); ++i) {
+    bool should_remove = false;
+    const auto& result = clean_results[i];
+
+    if (result->type == SettingsResultType::kSubpage) {
+      const auto& metadata =
+          hierarchy->GetSubpageMetadata(result->id->get_subpage());
+      if (!metadata.parent_subpage)
+        continue;
+      const auto it = seen_subpages.find(metadata.parent_subpage.value());
+      if (it != seen_subpages.end())
+        should_remove = true;
+
+    } else if (result->type == SettingsResultType::kSetting) {
+      const auto& metadata =
+          hierarchy->GetSettingMetadata(result->id->get_setting());
+      if (!metadata.primary.second)
+        continue;
+      const auto it = seen_subpages.find(metadata.primary.second.value());
+      if (it != seen_subpages.end())
+        should_remove = true;
+    }
+
+    if (should_remove) {
+      clean_results.erase(clean_results.begin() + i);
+      --i;
+    }
+  }
+
+  if (clean_results.size() > static_cast<size_t>(kMaxShownResults))
+    clean_results.resize(kMaxShownResults);
   return clean_results;
 }
 

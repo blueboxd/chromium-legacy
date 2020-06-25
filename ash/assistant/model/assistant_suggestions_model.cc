@@ -25,62 +25,53 @@ void AssistantSuggestionsModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+const chromeos::assistant::AssistantSuggestion*
+AssistantSuggestionsModel::GetSuggestionById(
+    const base::UnguessableToken& id) const {
+  for (auto& conversation_starter : conversation_starters_) {
+    if (conversation_starter.id == id)
+      return &conversation_starter;
+  }
+  for (auto& onboarding_suggestion : onboarding_suggestions_) {
+    if (onboarding_suggestion.id == id)
+      return &onboarding_suggestion;
+  }
+  return nullptr;
+}
+
 void AssistantSuggestionsModel::SetConversationStarters(
-    std::vector<AssistantSuggestionPtr> conversation_starters) {
+    std::vector<AssistantSuggestion>&& conversation_starters) {
   conversation_starters_.clear();
   conversation_starters_.swap(conversation_starters);
 
   NotifyConversationStartersChanged();
 }
 
-const chromeos::assistant::mojom::AssistantSuggestion*
-AssistantSuggestionsModel::GetConversationStarterById(
-    const base::UnguessableToken& id) const {
-  for (auto& conversation_starter : conversation_starters_) {
-    if (conversation_starter->id == id)
-      return conversation_starter.get();
-  }
-  return nullptr;
-}
-
-std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
+const std::vector<chromeos::assistant::AssistantSuggestion>&
 AssistantSuggestionsModel::GetConversationStarters() const {
-  // Transform |conversation_starters_| to a vector of *const* starters.
-  std::vector<const AssistantSuggestion*> conversation_starters;
-  std::transform(conversation_starters_.begin(), conversation_starters_.end(),
-                 std::back_inserter(conversation_starters),
-                 [](const auto& starter) { return starter.get(); });
-  return conversation_starters;
+  return conversation_starters_;
 }
 
 void AssistantSuggestionsModel::SetOnboardingSuggestions(
-    std::vector<AssistantSuggestionPtr> onboarding_suggestions) {
+    std::vector<AssistantSuggestion> onboarding_suggestions) {
   onboarding_suggestions_.clear();
   onboarding_suggestions_.swap(onboarding_suggestions);
 
   NotifyOnboardingSuggestionsChanged();
 }
 
-std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
+const std::vector<chromeos::assistant::AssistantSuggestion>&
 AssistantSuggestionsModel::GetOnboardingSuggestions() const {
-  // Transform |onboarding_suggestions_| to a vector of *const* suggestions.
-  std::vector<const AssistantSuggestion*> onboarding_suggestions;
-  std::transform(onboarding_suggestions_.begin(), onboarding_suggestions_.end(),
-                 std::back_inserter(onboarding_suggestions),
-                 [](const auto& suggestion) { return suggestion.get(); });
-  return onboarding_suggestions;
+  return onboarding_suggestions_;
 }
 
 void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
-  const std::vector<const AssistantSuggestion*> conversation_starters =
-      GetConversationStarters();
-
   for (AssistantSuggestionsModelObserver& observer : observers_)
-    observer.OnConversationStartersChanged(conversation_starters);
+    observer.OnConversationStartersChanged(conversation_starters_);
 }
 
 void AssistantSuggestionsModel::NotifyOnboardingSuggestionsChanged() {
-  const std::vector<const AssistantSuggestion*> onboarding_suggestions =
+  const std::vector<AssistantSuggestion>& onboarding_suggestions =
       GetOnboardingSuggestions();
 
   for (AssistantSuggestionsModelObserver& observer : observers_)

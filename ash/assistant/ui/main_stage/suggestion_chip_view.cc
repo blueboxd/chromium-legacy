@@ -43,10 +43,10 @@ constexpr int kPreferredHeightDip = 32;
 constexpr char SuggestionChipView::kClassName[];
 
 SuggestionChipView::SuggestionChipView(AssistantViewDelegate* delegate,
-                                       const AssistantSuggestion* suggestion,
+                                       const AssistantSuggestion& suggestion,
                                        views::ButtonListener* listener)
-    : Button(listener), delegate_(delegate), suggestion_(suggestion) {
-  InitLayout();
+    : Button(listener), delegate_(delegate), suggestion_id_(suggestion.id) {
+  InitLayout(suggestion);
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
@@ -75,8 +75,8 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void SuggestionChipView::InitLayout() {
-  const base::string16 text = base::UTF8ToUTF16(suggestion_->text);
+void SuggestionChipView::InitLayout(const AssistantSuggestion& suggestion) {
+  const base::string16 text = base::UTF8ToUTF16(suggestion.text);
 
   // Accessibility.
   SetAccessibleName(text);
@@ -90,7 +90,7 @@ void SuggestionChipView::InitLayout() {
   // Layout.
   // Note that padding differs depending on icon visibility.
   const int padding_left_dip =
-      suggestion_->icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
+      suggestion.icon_url.is_empty() ? kChipPaddingDip : kIconMarginDip;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -107,10 +107,10 @@ void SuggestionChipView::InitLayout() {
   // Download our icon if necessary. Note that we *don't* hide the associated
   // view while an image is being downloaded. This prevents layout jank that
   // would otherwise occur when the image is finally rendered.
-  if (suggestion_->icon_url.is_empty()) {
+  if (suggestion.icon_url.is_empty()) {
     icon_view_->SetVisible(false);
   } else {
-    delegate_->DownloadImage(suggestion_->icon_url,
+    delegate_->DownloadImage(suggestion.icon_url,
                              base::BindOnce(&SuggestionChipView::SetIcon,
                                             weak_factory_.GetWeakPtr()));
   }

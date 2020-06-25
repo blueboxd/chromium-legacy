@@ -14,13 +14,10 @@ MediaController* g_instance = nullptr;
 
 }  // namespace
 
-MediaController::ScopedResetterForTest::ScopedResetterForTest()
-    : instance_(g_instance) {
-  g_instance = nullptr;
-}
-
-MediaController::ScopedResetterForTest::~ScopedResetterForTest() {
-  g_instance = instance_;
+template <>
+MediaController*&
+MediaController::ScopedResetterForTest::GetGlobalInstanceHolder() {
+  return g_instance;
 }
 
 // static

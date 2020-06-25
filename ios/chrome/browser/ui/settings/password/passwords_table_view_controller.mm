@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -31,6 +32,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -38,12 +40,16 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_password_check_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_password_check_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
@@ -77,6 +83,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSavedPasswords,
   SectionIdentifierBlocked,
   SectionIdentifierExportPasswordsButton,
+  SectionIdentifierPasswordCheck,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -84,6 +91,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
   ItemTypeManagedSavePasswords,
+  ItemTypePasswordCheckStatus,
+  ItemTypeCheckForProblemsButton,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlocked,        // This is a repeated item type.
   ItemTypeExportPasswordsButton,
@@ -162,10 +171,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     PasswordDetailsTableViewControllerDelegate,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
+    PasswordsConsumer,
     SavePasswordsConsumerDelegate,
     UISearchControllerDelegate,
     UISearchBarDelegate,
     SuccessfulReauthTimeAccessor> {
+  // Mediator is owned here because there is no coordinator.
+  PasswordsMediator* _mediator;
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* _passwordManagerEnabled;
@@ -175,8 +187,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   SettingsSwitchItem* _savePasswordsItem;
   // The item related to the enterprise managed save password setting.
   TableViewInfoButtonItem* _managedSavePasswordItem;
+  // The item related to the password check status.
+  SettingsPasswordCheckItem* _passwordProblemsItem;
+  // The button to start password check.
+  TableViewTextItem* _checkForProblemsItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
+  // The service responsible for password check feature.
+  std::unique_ptr<IOSChromePasswordCheckManager> _passwordCheck;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
   // A helper object for passing data about saved passwords from a finished
@@ -250,6 +268,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     _passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         _browserState, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(_passwordStore);
+    _passwordCheck.reset(new IOSChromePasswordCheckManager(_browserState));
+    _mediator =
+        [[PasswordsMediator alloc] initWithConsumer:self
+                               passwordCheckManager:_passwordCheck.get()];
     _passwordManagerEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:_browserState->GetPrefs()
                    prefName:password_manager::prefs::kCredentialsEnableService];
@@ -375,6 +397,22 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   }
 
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordCheck)) {
+    // Password check.
+    [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
+    if (!_passwordProblemsItem) {
+      _passwordProblemsItem = [self passwordProblemsItem];
+    }
+    [model addItem:_passwordProblemsItem
+        toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+    if (!_checkForProblemsItem) {
+      _checkForProblemsItem = [self checkForProblemsItem];
+    }
+    [model addItem:_checkForProblemsItem
+        toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+  }
+
   // Saved passwords.
   if (!_savedForms.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
@@ -480,6 +518,27 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return managedSavePasswordItem;
 }
 
+- (SettingsPasswordCheckItem*)passwordProblemsItem {
+  SettingsPasswordCheckItem* passwordProblemsItem =
+      [[SettingsPasswordCheckItem alloc]
+          initWithType:ItemTypePasswordCheckStatus];
+  passwordProblemsItem.enabled = NO;
+  passwordProblemsItem.text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
+  passwordProblemsItem.detailText =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+  return passwordProblemsItem;
+}
+
+- (TableViewTextItem*)checkForProblemsItem {
+  TableViewTextItem* checkForProblemsItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeCheckForProblemsButton];
+  checkForProblemsItem.text =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
+  checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+  checkForProblemsItem.accessibilityTraits = UIAccessibilityTraitButton;
+  return checkForProblemsItem;
+}
+
 - (TableViewTextItem*)exportPasswordsItem {
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
@@ -563,6 +622,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       buttonView.bounds;
   bubbleViewController.popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionAny;
+}
+
+#pragma mark - PasswordsConsumer
+
+- (void)setPasswordCheckUIState:(PasswordCheckUIState)state {
+  [self updatePasswordCheckButtonWithState:state];
+  [self updatePasswordCheckStatusLabelWithState:state];
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -795,6 +861,78 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   _passwordStore->GetAllLogins(_savedPasswordsConsumer.get());
 }
 
+// Updates password check button according to provided state.
+- (void)updatePasswordCheckButtonWithState:(PasswordCheckUIState)state {
+  if (!_checkForProblemsItem)
+    return;
+
+  switch (state) {
+    case PasswordCheckStateSafe:
+    case PasswordCheckStateUnSafe:
+    case PasswordCheckStateDefault:
+      _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
+      _checkForProblemsItem.accessibilityTraits &=
+          ~UIAccessibilityTraitNotEnabled;
+      break;
+    case PasswordCheckStateRunning:
+    case PasswordCheckStateDisabled:
+      _checkForProblemsItem.textColor = UIColor.cr_secondaryLabelColor;
+      _checkForProblemsItem.accessibilityTraits |=
+          UIAccessibilityTraitNotEnabled;
+      break;
+  }
+  [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+}
+
+// Updates password check status label according to provided state.
+- (void)updatePasswordCheckStatusLabelWithState:(PasswordCheckUIState)state {
+  if (!_passwordProblemsItem)
+    return;
+
+  _passwordProblemsItem.image = nil;
+  _passwordProblemsItem.enabled = YES;
+  _passwordProblemsItem.indicatorHidden = YES;
+  _passwordProblemsItem.accessoryType = UITableViewCellAccessoryNone;
+  _passwordProblemsItem.detailText =
+      l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+
+  switch (state) {
+    case PasswordCheckStateRunning: {
+      _passwordProblemsItem.image = nil;
+      _passwordProblemsItem.indicatorHidden = NO;
+      break;
+    }
+    case PasswordCheckStateDisabled: {
+      _passwordProblemsItem.enabled = NO;
+      break;
+    }
+    case PasswordCheckStateUnSafe: {
+      _passwordProblemsItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_UNSAFE_STATE);
+      UIImage* unSafeIconImage = [[UIImage imageNamed:@"settings_unsafe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      _passwordProblemsItem.image = unSafeIconImage;
+      _passwordProblemsItem.tintColor = [UIColor colorNamed:kRedColor];
+      _passwordProblemsItem.accessoryType =
+          UITableViewCellAccessoryDisclosureIndicator;
+      break;
+    }
+    case PasswordCheckStateSafe: {
+      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      _passwordProblemsItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_SAFE_STATE);
+      _passwordProblemsItem.image = safeIconImage;
+      _passwordProblemsItem.tintColor = [UIColor colorNamed:kGreenColor];
+      break;
+    }
+    case PasswordCheckStateDefault: {
+      break;
+    }
+  }
+  [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+}
+
 - (void)updateExportPasswordsButton {
   if (!_exportPasswordsItem)
     return;
@@ -994,6 +1132,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
     case ItemTypeManagedSavePasswords:
+    case ItemTypePasswordCheckStatus:
+      // TODO(crbug.com/1075494) - Show password issues page.
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
@@ -1019,6 +1159,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       if (_exportReady) {
         [self startPasswordsExportFlow];
       }
+      break;
+    case ItemTypeCheckForProblemsButton:
+      _passwordCheck->StartPasswordCheck();
       break;
     default:
       NOTREACHED();

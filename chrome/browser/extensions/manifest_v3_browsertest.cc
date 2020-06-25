@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
@@ -123,18 +122,12 @@ IN_PROC_BROWSER_TEST_F(ManifestV3BrowserTest, ActionAPI) {
          });
          chrome.test.sendMessage('ready');)";
 
-  std::string blue_icon;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(
-        test_data_dir_.AppendASCII("api_test/icon_rgb_0_0_255.png"),
-        &blue_icon));
-  }
-
   TestExtensionDir test_dir;
   test_dir.WriteManifest(kManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("worker.js"), kWorker);
-  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+  test_dir.CopyFileTo(
+      test_data_dir_.AppendASCII("api_test/icon_rgb_0_0_255.png"),
+      FILE_PATH_LITERAL("blue_icon.png"));
 
   ExtensionTestMessageListener listener("ready", /*will_reply=*/false);
   const Extension* extension = LoadMv3Extension(test_dir.UnpackedPath());

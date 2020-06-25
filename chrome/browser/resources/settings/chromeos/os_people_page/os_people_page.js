@@ -45,7 +45,7 @@ Polymer({
     pageVisibility: Object,
 
     /**
-     * Authentication token provided by settings-lock-screen.
+     * Authentication token.
      * @private {!chrome.quickUnlockPrivate.TokenInfo|undefined}
      */
     authToken_: {
@@ -144,6 +144,22 @@ Polymer({
         return map;
       },
     },
+
+    /** @private {boolean} */
+    showPasswordPromptDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * setModes_ is a partially applied function that stores the current auth
+     * token. It's defined only when the user has entered a valid password.
+     * @type {Object|undefined}
+     * @private
+     */
+    setModes_: {
+      type: Object,
+    },
   },
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -171,6 +187,19 @@ Polymer({
         'sync-status-changed', this.handleSyncStatus_.bind(this));
   },
 
+  /** @private */
+  onPasswordRequested_() {
+    this.showPasswordPromptDialog_ = true;
+  },
+
+  /** @private */
+  onPasswordPromptDialogClose_() {
+    this.showPasswordPromptDialog_ = false;
+    if (!this.setModes_) {
+      settings.Router.getInstance().navigateToPreviousRoute();
+    }
+  },
+
   /** @protected */
   currentRouteChanged() {
     if (settings.Router.getInstance().getCurrentRoute() ==
@@ -184,6 +213,14 @@ Polymer({
         this.showSignoutDialog_ = true;
       }
     }
+  },
+
+  /**
+   * @param {!CustomEvent<!chrome.quickUnlockPrivate.TokenInfo>} e
+   * @private
+   * */
+  onAuthTokenObtained_(e) {
+    this.authToken_ = e.detail;
   },
 
   /** @private */
@@ -388,6 +425,23 @@ Polymer({
 
   /** @private */
   onAuthTokenChanged_() {
+    if (this.authToken_ === undefined) {
+      this.setModes_ = undefined;
+    } else {
+      this.setModes_ = (modes, credentials, onComplete) => {
+        this.quickUnlockPrivate.setModes(
+            this.authToken_.token, modes, credentials, () => {
+              let result = true;
+              if (chrome.runtime.lastError) {
+                console.error(
+                    'setModes failed: ' + chrome.runtime.lastError.message);
+                result = false;
+              }
+              onComplete(result);
+            });
+      };
+    }
+
     if (this.clearAuthTokenTimeoutId_) {
       clearTimeout(this.clearAccountPasswordTimeoutId_);
     }

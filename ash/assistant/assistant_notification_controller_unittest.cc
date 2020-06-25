@@ -5,6 +5,8 @@
 #include "ash/assistant/assistant_notification_controller.h"
 
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
@@ -13,7 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/task_environment.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
@@ -40,10 +42,10 @@ constexpr bool kAnyBool = false;
 // Matchers --------------------------------------------------------------------
 
 MATCHER_P(IdIs, expected_id, "") {
-  if (arg->client_id != expected_id) {
+  if (arg.client_id != expected_id) {
     *result_listener << "Received notification with a wrong id.\n"
                      << "Expected:\n    '" << expected_id << "'\n"
-                     << "Actual:\n    '" << arg->client_id << "'\n";
+                     << "Actual:\n    '" << arg.client_id << "'\n";
     return false;
   }
   return true;
@@ -167,15 +169,15 @@ class AssistantNotificationModelObserverMock
 
   MOCK_METHOD(void,
               OnNotificationAdded,
-              (const AssistantNotification* notification),
+              (const AssistantNotification& notification),
               (override));
   MOCK_METHOD(void,
               OnNotificationUpdated,
-              (const AssistantNotification* notification),
+              (const AssistantNotification& notification),
               (override));
   MOCK_METHOD(void,
               OnNotificationRemoved,
-              (const AssistantNotification* notification, bool from_server),
+              (const AssistantNotification& notification, bool from_server),
               (override));
   MOCK_METHOD(void, OnAllNotificationsRemoved, (bool from_server), (override));
 
@@ -187,7 +189,7 @@ class AssistantServiceMock : public TestAssistantService {
  public:
   MOCK_METHOD(void,
               RetrieveNotification,
-              (AssistantNotificationPtr notification, int action_index),
+              (const AssistantNotification& notification, int action_index),
               (override));
 };
 

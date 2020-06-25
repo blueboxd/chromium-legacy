@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -27,7 +27,7 @@ enum class AssistantQueryType {
 // Base class for an Assistant query.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantQuery {
  public:
-  using AssistantQuerySource = chromeos::assistant::mojom::AssistantQuerySource;
+  using AssistantQuerySource = chromeos::assistant::AssistantQuerySource;
 
   virtual ~AssistantQuery() = default;
 

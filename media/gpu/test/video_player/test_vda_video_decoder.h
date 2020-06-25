@@ -41,6 +41,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer,
                       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+
   ~TestVDAVideoDecoder() override;
 
   // media::VideoDecoder implementation
@@ -59,8 +60,6 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   int GetMaxDecodeRequests() const override;
 
  private:
-  void Destroy() override;
-
   // media::VideoDecodeAccelerator::Client implementation
   void NotifyInitializationComplete(Status status) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,

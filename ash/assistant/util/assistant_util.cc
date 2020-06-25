@@ -21,7 +21,7 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-using chromeos::assistant::mojom::AssistantEntryPoint;
+using chromeos::assistant::AssistantEntryPoint;
 
 bool IsStartingSession(AssistantVisibility new_visibility,
                        AssistantVisibility old_visibility) {

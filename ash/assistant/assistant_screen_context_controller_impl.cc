@@ -190,7 +190,7 @@ AssistantScreenContextControllerImpl::~AssistantScreenContextControllerImpl() =
     default;
 
 void AssistantScreenContextControllerImpl::SetAssistant(
-    chromeos::assistant::mojom::Assistant* assistant) {
+    chromeos::assistant::Assistant* assistant) {
   assistant_ = assistant;
 }
 

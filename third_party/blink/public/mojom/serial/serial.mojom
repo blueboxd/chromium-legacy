@@ -11,11 +11,11 @@ struct SerialPortInfo {
   // Opaque identifier for this port.
   mojo_base.mojom.UnguessableToken token;
 
-  // USB or Bluetooth device vendor and product IDs.
-  uint32 vendor_id;
-  bool has_vendor_id;
-  uint16 product_id;
-  bool has_product_id;
+  // USB device properties.
+  uint16 usb_vendor_id;
+  bool has_usb_vendor_id = false;
+  uint16 usb_product_id;
+  bool has_usb_product_id = false;
 };
 
 struct SerialPortFilter {

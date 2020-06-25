@@ -121,7 +121,7 @@ void SpeechSynthesis::speak(ScriptState* script_state,
   // are generally global, whereas these are scoped to a single page load.
   LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
   UseCounter::Count(window, WebFeature::kTextToSpeech_Speak);
-  window->document()->CountUseOnlyInCrossOriginIframe(
+  window->CountUseOnlyInCrossOriginIframe(
       WebFeature::kTextToSpeech_SpeakCrossOrigin);
   if (!IsAllowedToStartByAutoplay()) {
     Deprecation::CountDeprecation(

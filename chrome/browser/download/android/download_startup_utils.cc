@@ -16,20 +16,19 @@
 static void JNI_DownloadStartupUtils_EnsureDownloadSystemInitialized(
     JNIEnv* env,
     jboolean is_full_browser_started,
-    jboolean is_incognito) {
-  DCHECK(is_full_browser_started || !is_incognito)
-      << "Incognito mode must load full browser.";
-  Profile* profile = nullptr;
+    jboolean is_off_the_record) {
+  DCHECK(is_full_browser_started || !is_off_the_record)
+      << "OffTheRecord mode must load full browser.";
+  std::vector<Profile*> profiles;
   if (is_full_browser_started) {
-    profile = ProfileManager::GetActiveUserProfile();
-    if (is_incognito) {
-      if (profile->HasOffTheRecordProfile())
-        profile = profile->GetOffTheRecordProfile();
-      else
-        return;
-    }
+    Profile* active_profile = ProfileManager::GetActiveUserProfile();
+    if (is_off_the_record)
+      profiles = active_profile->GetAllOffTheRecordProfiles();
+    else
+      profiles.push_back(active_profile);
   }
-  DownloadStartupUtils::EnsureDownloadSystemInitialized(profile);
+  for (Profile* profile : profiles)
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(profile);
 }
 
 // static

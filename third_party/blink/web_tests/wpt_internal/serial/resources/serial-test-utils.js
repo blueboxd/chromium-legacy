@@ -322,28 +322,30 @@ class FakeSerialService {
     this.selectedPort_ = null;
   }
 
-  addPort(vendorId, productId) {
-    let info = new blink.mojom.SerialPortInfo();
-    if (vendorId !== undefined) {
-      info.hasVendorId = true;
-      info.vendorId = vendorId;
+  addPort(info) {
+    let portInfo = new blink.mojom.SerialPortInfo();
+    if (info?.usbVendorId !== undefined) {
+      portInfo.hasUsbVendorId = true;
+      portInfo.usbVendorId = info.usbVendorId;
     }
-    if (productId !== undefined) {
-      info.hasProductId = true;
-      info.productId = productId;
+    if (info?.usbProductId !== undefined) {
+      portInfo.hasUsbProductId = true;
+      portInfo.usbProductId = info.usbProductId;
     }
+
     let token = ++this.nextToken_;
-    info.token = new mojoBase.mojom.UnguessableToken();
-    info.token.high = 0;
-    info.token.low = token;
+    portInfo.token = new mojoBase.mojom.UnguessableToken();
+    portInfo.token.high = 0;
+    portInfo.token.low = token;
+
     let record = {
-      portInfo: info,
+      portInfo: portInfo,
       fakePort: new FakeSerialPort(),
     };
     this.ports_.set(token, record);
 
     for (let client of this.clients_) {
-      client.onPortAdded(info);
+      client.onPortAdded(portInfo);
     }
 
     return token;

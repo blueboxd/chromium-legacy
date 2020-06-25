@@ -1141,6 +1141,10 @@ void RenderViewHostImpl::OnThemeColorChanged(
   delegate_->OnThemeColorChanged(this);
 }
 
+void RenderViewHostImpl::SetContentsMimeType(const std::string mime_type) {
+  contents_mime_type_ = mime_type;
+}
+
 void RenderViewHostImpl::DocumentOnLoadCompletedInMainFrame() {
   is_document_on_load_completed_in_main_frame_ = true;
 }

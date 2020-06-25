@@ -48,8 +48,8 @@ void LockScreenNoteDisplayStateHandler::OnBacklightsForcedOffChanged(
 }
 
 void LockScreenNoteDisplayStateHandler::OnScreenStateChanged(
-    BacklightsForcedOffSetter::ScreenState screen_state) {
-  if (screen_state != BacklightsForcedOffSetter::ScreenState::ON &&
+    ScreenState screen_state) {
+  if (screen_state != ScreenState::ON &&
       note_launch_delayed_until_screen_off_) {
     RunLockScreenNoteLauncher();
   }
@@ -76,8 +76,7 @@ void LockScreenNoteDisplayStateHandler::AttemptNoteLaunchForStylusEject() {
   // been turned off yet - the note should be launched when the pending
   // backlights state is finished (i.e. the screen is turned off).
   if (backlights_forced_off_setter_->backlights_forced_off() &&
-      backlights_forced_off_setter_->screen_state() ==
-          BacklightsForcedOffSetter::ScreenState::ON) {
+      backlights_forced_off_setter_->screen_state() == ScreenState::ON) {
     note_launch_delayed_until_screen_off_ = true;
     return;
   }
@@ -125,8 +124,7 @@ bool LockScreenNoteDisplayStateHandler::ShouldForceBacklightsOffForNoteLaunch()
   // delay between request to force backlights off and screen state getting
   // updated due to that request.
   return backlights_forced_off_setter_->backlights_forced_off() ||
-         backlights_forced_off_setter_->screen_state() ==
-             BacklightsForcedOffSetter::ScreenState::OFF_AUTO;
+         backlights_forced_off_setter_->screen_state() == ScreenState::OFF_AUTO;
 }
 
 bool LockScreenNoteDisplayStateHandler::NoteLaunchInProgressOrDelayed() const {

@@ -92,8 +92,8 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       result.blob_uuid = element.blob_uuid_;
       result.blob_length = std::numeric_limits<uint64_t>::max();
       if (element.optional_blob_data_handle_) {
-        result.optional_blob_handle =
-            element.optional_blob_data_handle_->CloneBlobRemote().PassPipe();
+        result.optional_blob =
+            element.optional_blob_data_handle_->CloneBlobRemote();
         result.blob_length = element.optional_blob_data_handle_->size();
       }
       break;
@@ -103,7 +103,7 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
           data_pipe_getter;
       element.data_pipe_getter_->GetDataPipeGetter()->Clone(
           data_pipe_getter.InitWithNewPipeAndPassReceiver());
-      result.data_pipe_getter = data_pipe_getter.PassPipe();
+      result.data_pipe_getter = std::move(data_pipe_getter);
       break;
   }
 
@@ -136,24 +136,20 @@ void WebHTTPBody::AppendBlob(const WebString& uuid) {
   private_->AppendBlob(uuid, nullptr);
 }
 
-void WebHTTPBody::AppendBlob(const WebString& uuid,
-                             uint64_t length,
-                             mojo::ScopedMessagePipeHandle blob_handle) {
+void WebHTTPBody::AppendBlob(
+    const WebString& uuid,
+    uint64_t length,
+    CrossVariantMojoRemote<mojom::BlobInterfaceBase> blob) {
   EnsureMutable();
-  mojo::PendingRemote<mojom::blink::Blob> blob_remote(
-      std::move(blob_handle), mojom::blink::Blob::Version_);
   private_->AppendBlob(
       uuid, BlobDataHandle::Create(uuid, "" /* type is not necessary */, length,
-                                   std::move(blob_remote)));
+                                   std::move(blob)));
 }
 
-void WebHTTPBody::AppendDataPipe(mojo::ScopedMessagePipeHandle message_pipe) {
+void WebHTTPBody::AppendDataPipe(
+    CrossVariantMojoRemote<network::mojom::DataPipeGetterInterfaceBase>
+        data_pipe_getter) {
   EnsureMutable();
-
-  // Convert the raw message pipe to
-  // mojo::Remote<network::mojom::blink::DataPipeGetter>.
-  mojo::PendingRemote<network::mojom::blink::DataPipeGetter> data_pipe_getter(
-      std::move(message_pipe), 0u);
 
   auto wrapped =
       base::MakeRefCounted<WrappedDataPipeGetter>(std::move(data_pipe_getter));

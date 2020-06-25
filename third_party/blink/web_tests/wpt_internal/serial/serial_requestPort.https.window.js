@@ -37,7 +37,6 @@ serial_test(async (t, fake) => {
   await trustedClick();
   let port = await navigator.serial.requestPort();
   assert_true(port instanceof SerialPort);
-  // TODO: Assert that product IDs (if provided) are passed through.
 }, 'requestPort() returns the selected port');
 
 serial_test(async (t, fake) => {

@@ -93,7 +93,7 @@ class VideoDecoderPipelineTest
   ~VideoDecoderPipelineTest() override = default;
 
   void TearDown() override {
-    decoder_.release()->Destroy();
+    VideoDecoderPipeline::DestroyAsync(std::move(decoder_));
     task_environment_.RunUntilIdle();
   }
   MOCK_METHOD1(OnInit, void(Status));

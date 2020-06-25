@@ -63,9 +63,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   bool HasNotificationForId(const std::string& id) const;
 
  private:
-  void NotifyNotificationAdded(const AssistantNotification* notification);
-  void NotifyNotificationUpdated(const AssistantNotification* notification);
-  void NotifyNotificationRemoved(const AssistantNotification* notification,
+  void NotifyNotificationAdded(const AssistantNotification& notification);
+  void NotifyNotificationUpdated(const AssistantNotification& notification);
+  void NotifyNotificationRemoved(const AssistantNotification& notification,
                                  bool from_server);
   void NotifyAllNotificationsRemoved(bool from_server);
 

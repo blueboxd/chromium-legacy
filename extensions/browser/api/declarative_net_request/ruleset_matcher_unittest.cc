@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -30,7 +29,6 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -183,10 +181,6 @@ TEST_F(RulesetMatcherTest, FailedVerification) {
 }
 
 TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("example.com");
   std::unique_ptr<RulesetMatcher> matcher;
@@ -201,10 +195,6 @@ TEST_F(RulesetMatcherTest, ModifyHeaders_IsExtraHeaderMatcher) {
 }
 
 TEST_F(RulesetMatcherTest, ModifyHeaders) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   TestRule rule_1 = CreateGenericRule();
   rule_1.id = kMinValidID;
   rule_1.priority = kMinValidPriority + 1;
@@ -457,10 +447,6 @@ TEST_F(RulesetMatcherTest, UrlTransform) {
 
 // Tests regex rules are evaluated correctly for different action types.
 TEST_F(RulesetMatcherTest, RegexRules) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   auto create_regex_rule = [](size_t id, const std::string& regex_filter) {
     TestRule rule = CreateGenericRule();
     rule.id = id;
@@ -865,10 +851,6 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RedirectPriority) {
 }
 
 TEST_F(RulesetMatcherTest, RegexAndFilterListRules_ModifyHeaders) {
-  // TODO(crbug.com/947591): Remove the channel override once implementation of
-  // modifyHeaders action is complete.
-  ScopedCurrentChannel channel(::version_info::Channel::UNKNOWN);
-
   std::vector<TestRule> rules;
 
   TestRule rule = CreateGenericRule();

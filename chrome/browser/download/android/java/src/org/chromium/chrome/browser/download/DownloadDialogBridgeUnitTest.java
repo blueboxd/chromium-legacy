@@ -102,8 +102,29 @@ public class DownloadDialogBridgeUnitTest {
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
+        verify(mLocationDialog)
+                .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
+                        eq(SUGGESTED_PATH));
+        verify(mNativeMock)
+                .onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(false),
+                        eq(INVALID_START_TIME));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
+    public void testShowDialog_notShowOnWifi() {
+        doAnswer(invocation -> {
+            mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
+            return null;
+        })
+                .when(mLocationDialog)
+                .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
+                        eq(SUGGESTED_PATH));
+
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, false /*isOnMeteredNetwork*/);
         verify(mLocationDialog)
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
@@ -129,8 +150,8 @@ public class DownloadDialogBridgeUnitTest {
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
         verify(mNativeMock).onCanceled(anyLong(), any());
     }
 
@@ -151,8 +172,8 @@ public class DownloadDialogBridgeUnitTest {
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
         verify(mDownloadLaterDialog).showDialog(any(), any(), any());
         verify(mLocationDialog)
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
@@ -180,8 +201,8 @@ public class DownloadDialogBridgeUnitTest {
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
         verify(mDownloadLaterDialog).showDialog(any(), any(), any());
         verify(mLocationDialog)
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
@@ -216,8 +237,8 @@ public class DownloadDialogBridgeUnitTest {
                 .when(mDateTimePickerDialog)
                 .showDialog(any(), any(), any());
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
         verify(mDownloadLaterDialog).showDialog(any(), any(), any());
         verify(mLocationDialog)
                 .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
@@ -238,8 +259,8 @@ public class DownloadDialogBridgeUnitTest {
                 .when(mDownloadLaterDialog)
                 .showDialog(any(), any(), any());
 
-        mBridge.showDialog(
-                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        mBridge.showDialog(mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE,
+                SUGGESTED_PATH, true);
         verify(mDownloadLaterDialog).showDialog(any(), any(), any());
         verify(mLocationDialog, times(0))
                 .showDialog(any(), any(), anyLong(), anyInt(), anyString());

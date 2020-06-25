@@ -1805,12 +1805,19 @@ body:not(.files-ng) .downloads-warning .warning-message {
   margin-inline-end: 40px;
 }
 
+body.files-ng .downloads-warning .warning-message {
+  margin-inline-end: 20px;
+}
+
 body.files-ng .warning-message .link-wrapper {
   display: inline;
 }
 
 body.files-ng .warning-message .link-wrapper > a {
   display: inline-block;
+  outline-offset: -2px;
+  padding: 0 4px;
+  text-decoration: none;
 }
 
 body:not(.files-ng) .downloads-warning[hidden] {

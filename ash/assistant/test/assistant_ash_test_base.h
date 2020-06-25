@@ -39,8 +39,8 @@ class TestImageDownloader;
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
  public:
-  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
-  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+  using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
   using ConsentStatus = chromeos::assistant::prefs::ConsentStatus;
 
   AssistantAshTestBase();
@@ -125,7 +125,7 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the current interaction. Returns |base::nullopt| if no interaction
   // is in progress.
-  base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+  base::Optional<chromeos::assistant::AssistantInteractionMetadata>
   current_interaction();
 
   // Create a new App window, and activate it.

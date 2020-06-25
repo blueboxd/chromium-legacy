@@ -101,6 +101,10 @@ bool ConfigsEqual(const net::CertVerifier::Config& config1,
                              config2.additional_trust_anchors))
     return false;
 
+  if (!CertificateListsEqual(config1.additional_untrusted_authorities,
+                             config2.additional_untrusted_authorities))
+    return false;
+
   return true;
 }
 }  // namespace
@@ -128,7 +132,7 @@ TEST(CertVerifierMojomTraitsTest, ConfigTrue) {
   ASSERT_TRUE(ConfigsEqual(config, out_config));
 }
 
-TEST(CertVerifierMojomTraitsTest, ConfigCRLAndAnchors) {
+TEST(CertVerifierMojomTraitsTest, ConfigCRLAndAdditionalCerts) {
   std::string crl_set;
 
   {
@@ -146,6 +150,9 @@ TEST(CertVerifierMojomTraitsTest, ConfigCRLAndAnchors) {
       net::ImportCertFromFile(certs_dir, "root_ca_cert.pem"));
   config.additional_trust_anchors.push_back(
       net::ImportCertFromFile(certs_dir, "aia-root.pem"));
+
+  config.additional_untrusted_authorities.push_back(
+      net::ImportCertFromFile(certs_dir, "aia-intermediate.der"));
 
   net::CertVerifier::Config out_config;
 

@@ -58,11 +58,14 @@ struct PendingDecode {
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
-class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
+class MEDIA_GPU_EXPORT MediaCodecVideoDecoder final : public VideoDecoder {
  public:
   static std::vector<SupportedVideoDecoderConfig> GetSupportedConfigs();
 
-  MediaCodecVideoDecoder(
+  ~MediaCodecVideoDecoder() override;
+  static void DestroyAsync(std::unique_ptr<MediaCodecVideoDecoder>);
+
+  static std::unique_ptr<VideoDecoder> Create(
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       std::unique_ptr<MediaLog> media_log,
@@ -87,9 +90,20 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
- protected:
-  // Protected for testing.
-  ~MediaCodecVideoDecoder() override;
+ private:
+  // The test has access for PumpCodec() and the constructor.
+  friend class MediaCodecVideoDecoderTest;
+
+  MediaCodecVideoDecoder(
+      const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      std::unique_ptr<MediaLog> media_log,
+      DeviceInfo* device_info,
+      CodecAllocator* codec_allocator,
+      std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
+      AndroidOverlayMojoFactoryCB overlay_factory_cb,
+      RequestOverlayInfoCB request_overlay_info_cb,
+      std::unique_ptr<VideoFrameFactory> video_frame_factory);
 
   // Set up |cdm_context| as part of initialization.  Guarantees that |init_cb|
   // will be called depending on the outcome, though not necessarily before this
@@ -101,11 +115,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   void OnMediaCryptoReady(InitCB init_cb,
                           JavaObjectPtr media_crypto,
                           bool requires_secure_video_codec);
-
- private:
-  // The test has access for PumpCodec().
-  friend class MediaCodecVideoDecoderTest;
-  friend class base::DeleteHelper<MediaCodecVideoDecoder>;
 
   enum class State {
     // Initializing resources required to create a codec.
@@ -123,9 +132,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   };
 
   enum class DrainType { kForReset, kForDestroy };
-
-  // Starts teardown.
-  void Destroy() override;
 
   // Finishes initialization.
   void StartLazyInit();

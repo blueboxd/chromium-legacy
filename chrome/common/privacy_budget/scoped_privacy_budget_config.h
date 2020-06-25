@@ -51,16 +51,33 @@ class ScopedPrivacyBudgetConfig {
     std::map<blink::IdentifiableSurface::Type, int> per_type_sampling_rate;
   };
 
+  enum Presets {
+    // Represents the default state of `Parameters` which enables the study with
+    // the following settings:
+    //
+    // * `generation` = 1
+    // * `surface_selection_rate`= 1 (i.e. includes every surface)
+    // * `max_surfaces` = <very large number> (i.e. unlimited)
+    kEnable,
+
+    // Disables the study. The other parameters are undefined and should not be
+    // relied upon.
+    kDisable
+  };
+
   // Doesn't do anything until Apply() is called.
   ScopedPrivacyBudgetConfig();
 
-  // Constructs and applies the configuration described in |parameters|. No need
+  // Applies the configuration indicated by `preset`.
+  explicit ScopedPrivacyBudgetConfig(Presets preset);
+
+  // Constructs and applies the configuration described in `parameters`. No need
   // to call Apply()
   explicit ScopedPrivacyBudgetConfig(const Parameters& parameters);
 
   ~ScopedPrivacyBudgetConfig();
 
-  // Apply the configuration as described in |parameters|. Should only be called
+  // Apply the configuration as described in `parameters`. Should only be called
   // once.
   void Apply(const Parameters& parameters);
 

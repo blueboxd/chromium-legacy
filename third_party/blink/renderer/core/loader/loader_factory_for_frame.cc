@@ -84,7 +84,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   // resource loader handle's task runner.
   if (url_loader_factory) {
     return Platform::Current()
-        ->WrapURLLoaderFactory(url_loader_factory.PassPipe())
+        ->WrapURLLoaderFactory(std::move(url_loader_factory))
         ->CreateURLLoader(
             webreq, frame_scheduler->CreateResourceLoadingTaskRunnerHandle());
   }

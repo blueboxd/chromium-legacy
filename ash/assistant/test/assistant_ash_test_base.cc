@@ -27,8 +27,8 @@ namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantInteractionMetadata;
-using chromeos::assistant::mojom::AssistantInteractionType;
+using chromeos::assistant::AssistantInteractionMetadata;
+using chromeos::assistant::AssistantInteractionType;
 
 gfx::Point GetPointInside(const views::View* view) {
   return view->GetBoundsInScreen().CenterPoint();
@@ -238,7 +238,7 @@ void AssistantAshTestBase::ClickOnAndWait(
   base::RunLoop().RunUntilIdle();
 }
 
-base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+base::Optional<chromeos::assistant::AssistantInteractionMetadata>
 AssistantAshTestBase::current_interaction() {
   return assistant_service()->current_interaction();
 }

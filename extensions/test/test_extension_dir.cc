@@ -36,6 +36,15 @@ void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
                             contents.size()));
 }
 
+void TestExtensionDir::CopyFileTo(
+    const base::FilePath& from_path,
+    const base::FilePath::StringType& local_filename) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ASSERT_TRUE(base::PathExists(from_path)) << from_path;
+  EXPECT_TRUE(base::CopyFile(from_path, dir_.GetPath().Append(local_filename)))
+      << "Failed to copy file from " << from_path << " to " << local_filename;
+}
+
 base::FilePath TestExtensionDir::Pack() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   ExtensionCreator creator;

@@ -235,7 +235,12 @@ js_library("constants") {
 }
 
 js_library("crostini_controller") {
-  deps = [ "ui:directory_tree" ]
+  deps = [
+    ":directory_model",
+    ":file_manager_commands",
+    "ui:directory_tree",
+    "//ui/file_manager/file_manager/foreground/elements:files_message",
+  ]
 }
 
 js_library("dialog_action_controller") {

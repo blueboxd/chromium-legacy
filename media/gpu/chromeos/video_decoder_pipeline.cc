@@ -14,6 +14,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "media/base/async_destroy_video_decoder.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
@@ -89,9 +90,11 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     return nullptr;
   }
 
-  return base::WrapUnique<VideoDecoder>(new VideoDecoderPipeline(
+  auto* decoder = new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), std::move(get_create_decoder_functions_cb)));
+      std::move(frame_converter), std::move(get_create_decoder_functions_cb));
+  return std::make_unique<AsyncDestroyVideoDecoder<VideoDecoderPipeline>>(
+      base::WrapUnique(decoder));
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
@@ -125,37 +128,30 @@ VideoDecoderPipeline::VideoDecoderPipeline(
 }
 
 VideoDecoderPipeline::~VideoDecoderPipeline() {
-  // We have to destroy |main_frame_pool_| on |decoder_task_runner_|, so the
-  // destructor is also called on |decoder_task_runner_|.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-}
-
-void VideoDecoderPipeline::Destroy() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DVLOGF(2);
-
-  client_weak_this_factory_.InvalidateWeakPtrs();
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoDecoderPipeline::DestroyTask, decoder_weak_this_));
-}
-
-void VideoDecoderPipeline::DestroyTask() {
+  // We have to destroy |main_frame_pool_| and |frame_converter_| on
+  // |decoder_task_runner_|, so the destructor must be called on
+  // |decoder_task_runner_|.
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
   decoder_weak_this_factory_.InvalidateWeakPtrs();
 
-  // The frame pool and converter should be destroyed on |decoder_task_runner_|.
   main_frame_pool_.reset();
   frame_converter_.reset();
 
   decoder_.reset();
   remaining_create_decoder_functions_.clear();
+}
 
-  delete this;
+void VideoDecoderPipeline::DestroyAsync(
+    std::unique_ptr<VideoDecoderPipeline> decoder) {
+  DVLOGF(2);
+  DCHECK(decoder);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder->client_sequence_checker_);
+
+  decoder->client_weak_this_factory_.InvalidateWeakPtrs();
+  auto* decoder_task_runner = decoder->decoder_task_runner_.get();
+  decoder_task_runner->DeleteSoon(FROM_HERE, std::move(decoder));
 }
 
 std::string VideoDecoderPipeline::GetDisplayName() const {

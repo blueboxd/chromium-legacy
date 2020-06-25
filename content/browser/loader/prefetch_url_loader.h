@@ -24,10 +24,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
-namespace storage {
-class BlobStorageContext;
-}  // namespace storage
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -43,7 +39,8 @@ class PrefetchedSignedExchangeCacheAdapter;
 class SignedExchangePrefetchHandler;
 class SignedExchangePrefetchMetricRecorder;
 
-// PrefetchURLLoader which basically just keeps draining the data.
+// A URLLoader for loading a prefetch request, including <link rel="prefetch">.
+// It basically just keeps draining the data.
 class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
                                          public network::mojom::URLLoaderClient,
                                          public mojo::DataPipeDrainer::Client {
@@ -72,7 +69,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
           signed_exchange_prefetch_metric_recorder,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       const std::string& accept_langs,
       RecursivePrefetchTokenGenerator recursive_prefetch_token_generator);
   ~PrefetchURLLoader() override;

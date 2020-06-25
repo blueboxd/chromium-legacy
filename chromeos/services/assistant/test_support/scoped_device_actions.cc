@@ -14,13 +14,13 @@ void ScopedDeviceActions::GetScreenBrightnessLevel(
   std::move(callback).Run(/*success=*/true, current_brightness_);
 }
 
-bool ScopedDeviceActions::OpenAndroidApp(mojom::AndroidAppInfoPtr app_info) {
+bool ScopedDeviceActions::OpenAndroidApp(const AndroidAppInfo& app_info) {
   return true;
 }
 
-mojom::AppStatus ScopedDeviceActions::GetAndroidAppStatus(
-    const mojom::AndroidAppInfo& app_info) {
-  return mojom::AppStatus::AVAILABLE;
+AppStatus ScopedDeviceActions::GetAndroidAppStatus(
+    const AndroidAppInfo& app_info) {
+  return AppStatus::AVAILABLE;
 }
 
 }  // namespace assistant

@@ -349,7 +349,7 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
 
   EXPECT_EQ(10, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 
-  // Sanity check tree output.
+  // Check completeness of tree output.
   ExpectTree(
       "id=100 window FOCUSABLE (0, 0)-(0, 0) modal=true child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
@@ -396,6 +396,40 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {
   EXPECT_EQ("window title", name);
 
   EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+}
+
+TEST_F(AXTreeSourceArcTest, NotificationWindow) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 10;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root = event->window_data->back().get();
+  root->window_id = 1;
+  root->root_node_id = node->id;
+  root->window_type = mojom::AccessibilityWindowType::TYPE_APPLICATION;
+
+  ui::AXNodeData data;
+
+  // Properties of normal app window.
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedWindow(root->window_id);
+  ASSERT_TRUE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
+  ASSERT_EQ(ax::mojom::Role::kApplication, data.role);
+
+  // Set the tree as notification window.
+  event->notification_key = "test.notification.key";
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedWindow(root->window_id);
+  ASSERT_FALSE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, data.role);
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {

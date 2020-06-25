@@ -19,8 +19,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
@@ -31,6 +31,11 @@ AssistantControllerImpl::AssistantControllerImpl() {
   assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
+
+  // The Assistant service needs to have accessibility state synced with ash
+  // and be notified of any accessibility status changes in the future to
+  // provide an opportunity to turn on/off A11Y features.
+  Shell::Get()->accessibility_controller()->AddObserver(this);
 
   NotifyConstructed();
 }
@@ -56,36 +61,33 @@ void AssistantControllerImpl::BindReceiver(
 }
 
 void AssistantControllerImpl::SetAssistant(
-    mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant) {
-  assistant_.Bind(std::move(assistant));
+    chromeos::assistant::Assistant* assistant) {
+  assistant_ = assistant;
 
   // Provide reference to sub-controllers.
-  assistant_alarm_timer_controller_.SetAssistant(assistant_.get());
-  assistant_interaction_controller_.SetAssistant(assistant_.get());
-  assistant_notification_controller_.SetAssistant(assistant_.get());
-  assistant_screen_context_controller_.SetAssistant(assistant_.get());
-  assistant_ui_controller_.SetAssistant(assistant_.get());
+  assistant_alarm_timer_controller_.SetAssistant(assistant);
+  assistant_interaction_controller_.SetAssistant(assistant);
+  assistant_notification_controller_.SetAssistant(assistant);
+  assistant_screen_context_controller_.SetAssistant(assistant);
+  assistant_ui_controller_.SetAssistant(assistant);
 
-  // The Assistant service needs to have accessibility state synced with ash
-  // and be notified of any accessibility status changes in the future to
-  // provide an opportunity to turn on/off A11Y features.
-  Shell::Get()->accessibility_controller()->AddObserver(this);
   OnAccessibilityStatusChanged();
 
-  for (AssistantControllerObserver& observer : observers_)
-    observer.OnAssistantReady();
+  if (assistant) {
+    for (AssistantControllerObserver& observer : observers_)
+      observer.OnAssistantReady();
+  }
 }
 
 void AssistantControllerImpl::SendAssistantFeedback(
     bool assistant_debug_info_allowed,
     const std::string& feedback_description,
     const std::string& screenshot_png) {
-  chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
-      chromeos::assistant::mojom::AssistantFeedback::New();
-  assistant_feedback->assistant_debug_info_allowed =
+  chromeos::assistant::AssistantFeedback assistant_feedback;
+  assistant_feedback.assistant_debug_info_allowed =
       assistant_debug_info_allowed;
-  assistant_feedback->description = feedback_description;
-  assistant_feedback->screenshot_png = screenshot_png;
+  assistant_feedback.description = feedback_description;
+  assistant_feedback.screenshot_png = screenshot_png;
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
 }
 
@@ -207,7 +209,7 @@ void AssistantControllerImpl::OnDeepLinkReceived(
       // We close the UI before taking the screenshot as it's probably not the
       // user's intention to include the Assistant in the picture.
       assistant_ui_controller_.CloseUi(
-          chromeos::assistant::mojom::AssistantExitPoint::kScreenshot);
+          chromeos::assistant::AssistantExitPoint::kScreenshot);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
@@ -263,6 +265,9 @@ void AssistantControllerImpl::OnOutputNodeVolumeChanged(uint64_t node,
 }
 
 void AssistantControllerImpl::OnAccessibilityStatusChanged() {
+  if (!assistant_)
+    return;
+
   // The Assistant service needs to be informed of changes to accessibility
   // state so that it can turn on/off A11Y features appropriately.
   assistant_->OnAccessibilityStatusChanged(
@@ -312,13 +317,13 @@ void AssistantControllerImpl::OnAssistantStatusChanged(
     chromeos::assistant::AssistantStatus status) {
   if (status == chromeos::assistant::AssistantStatus::NOT_READY)
     assistant_ui_controller_.CloseUi(
-        chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+        chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
 void AssistantControllerImpl::OnLockedFullScreenStateChanged(bool enabled) {
   if (enabled)
     assistant_ui_controller_.CloseUi(
-        chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+        chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
 void AssistantControllerImpl::BindNotificationController(

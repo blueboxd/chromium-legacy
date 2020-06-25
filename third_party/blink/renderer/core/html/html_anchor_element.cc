@@ -437,7 +437,7 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
        ping_value.Contains('\t')) &&
       ping_value.Contains('<')) {
     Deprecation::CountDeprecation(
-        GetDocument(), WebFeature::kCanRequestURLHTTPContainingNewline);
+        GetExecutionContext(), WebFeature::kCanRequestURLHTTPContainingNewline);
     return;
   }
 

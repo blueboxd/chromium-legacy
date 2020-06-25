@@ -149,7 +149,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         break;
       case network::mojom::DataElementType::kDataPipe: {
-        http_body.AppendDataPipe(element.CloneDataPipeGetter().PassPipe());
+        http_body.AppendDataPipe(element.CloneDataPipeGetter());
         break;
       }
       case network::mojom::DataElementType::kUnknown:
@@ -203,11 +203,10 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         }
         break;
       case WebHTTPBody::Element::kTypeBlob: {
-        DCHECK(element.optional_blob_handle.is_valid());
+        DCHECK(element.optional_blob);
         mojo::Remote<blink::mojom::Blob> blob_remote(
             mojo::PendingRemote<blink::mojom::Blob>(
-                std::move(element.optional_blob_handle),
-                blink::mojom::Blob::Version_));
+                std::move(element.optional_blob)));
 
         mojo::PendingRemote<network::mojom::DataPipeGetter>
             data_pipe_getter_remote;
@@ -222,7 +221,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         // mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter.
         mojo::Remote<network::mojom::DataPipeGetter> data_pipe_getter(
             mojo::PendingRemote<network::mojom::DataPipeGetter>(
-                std::move(element.data_pipe_getter), 0u));
+                std::move(element.data_pipe_getter)));
 
         // Set the cloned DataPipeGetter to the output |request_body|, while
         // keeping the original message pipe back in the input |httpBody|. This
@@ -231,7 +230,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         mojo::PendingRemote<network::mojom::DataPipeGetter> cloned_getter;
         data_pipe_getter->Clone(cloned_getter.InitWithNewPipeAndPassReceiver());
         request_body->AppendDataPipe(std::move(cloned_getter));
-        element.data_pipe_getter = data_pipe_getter.Unbind().PassPipe();
+        element.data_pipe_getter = data_pipe_getter.Unbind();
         break;
       }
     }

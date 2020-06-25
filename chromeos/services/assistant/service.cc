@@ -221,6 +221,7 @@ Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ash::AssistantState::Get()->RemoveObserver(this);
+  ash::AssistantController::Get()->SetAssistant(nullptr);
 }
 
 // static
@@ -247,18 +248,17 @@ void Service::Init() {
   RequestAccessToken();
 }
 
-void Service::BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(assistant_manager_service_);
-  assistant_receivers_.Add(assistant_manager_service_.get(),
-                           std::move(receiver));
-}
-
 void Service::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (assistant_manager_service_)
     StopAssistantManagerService();
+}
+
+Assistant* Service::GetAssistant() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(assistant_manager_service_);
+  return assistant_manager_service_.get();
 }
 
 void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
@@ -525,7 +525,7 @@ void Service::CreateAssistantManagerService() {
   if (AssistantInteractionLogger::IsLoggingEnabled()) {
     interaction_logger_ = std::make_unique<AssistantInteractionLogger>();
     assistant_manager_service_->AddAssistantInteractionSubscriber(
-        interaction_logger_->BindNewPipeAndPassRemote());
+        interaction_logger_.get());
   }
 }
 
@@ -564,17 +564,14 @@ void Service::FinalizeAssistantManagerService() {
     return;
   is_assistant_manager_service_finalized_ = true;
 
-  // Bind to the AssistantController in ash.
-  mojo::PendingRemote<mojom::Assistant> remote_for_controller;
-  BindAssistant(remote_for_controller.InitWithNewPipeAndPassReceiver());
-  ash::AssistantController::Get()->SetAssistant(
-      std::move(remote_for_controller));
-
   // Bind to the AssistantNotificationController in ash.
   AssistantClient::Get()->RequestAssistantNotificationController(
       assistant_notification_controller_.BindNewPipeAndPassReceiver());
 
   AddAshSessionObserver();
+
+  ash::AssistantController::Get()->SetAssistant(
+      assistant_manager_service_.get());
 }
 
 void Service::StopAssistantManagerService() {

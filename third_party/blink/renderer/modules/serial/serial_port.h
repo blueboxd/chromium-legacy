@@ -29,6 +29,7 @@ class ScriptState;
 class Serial;
 class SerialOptions;
 class SerialOutputSignals;
+class SerialPortInfo;
 class SerialPortUnderlyingSink;
 class SerialPortUnderlyingSource;
 class WritableStream;
@@ -44,6 +45,7 @@ class SerialPort final : public ScriptWrappable,
   ~SerialPort() override;
 
   // Web-exposed functions
+  SerialPortInfo* getInfo();
   ScriptPromise open(ScriptState*,
                      const SerialOptions* options,
                      ExceptionState&);

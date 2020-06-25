@@ -352,8 +352,10 @@ class GpuIntegrationTest(
     assert gpu_vendor_id in _SUPPORTED_WIN_GPU_VENDORS
     if os_version in _SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION:
       config['direct_composition'] = True
+      config['supports_overlays'] = True
+      config['yuy2_overlay_support'] = 'SOFTWARE'
+      config['nv12_overlay_support'] = 'SOFTWARE'
       if gpu_vendor_id == 0x8086:
-        config['supports_overlays'] = True
         assert gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS:
           config['yuy2_overlay_support'] = 'SCALING'

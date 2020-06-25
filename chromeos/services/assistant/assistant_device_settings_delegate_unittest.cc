@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/command_line.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
@@ -58,10 +59,10 @@ class ScopedDeviceActionsMock : public ScopedDeviceActions {
   MOCK_METHOD(void, SetSwitchAccessEnabled, (bool enabled));
   MOCK_METHOD(bool,
               OpenAndroidApp,
-              (chromeos::assistant::mojom::AndroidAppInfoPtr app_info));
-  MOCK_METHOD(chromeos::assistant::mojom::AppStatus,
+              (const chromeos::assistant::AndroidAppInfo& app_info));
+  MOCK_METHOD(chromeos::assistant::AppStatus,
               GetAndroidAppStatus,
-              (const chromeos::assistant::mojom::AndroidAppInfo& app_info));
+              (const chromeos::assistant::AndroidAppInfo& app_info));
   MOCK_METHOD(void, LaunchAndroidIntent, (const std::string& intent));
   MOCK_METHOD(void,
               AddAppListEventSubscriber,

@@ -1074,8 +1074,8 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
   }
 
   AssistantUiController::Get()->ToggleUi(
-      /*entry_point=*/chromeos::assistant::mojom::AssistantEntryPoint::kHotkey,
-      /*exit_point=*/chromeos::assistant::mojom::AssistantExitPoint::kHotkey);
+      /*entry_point=*/chromeos::assistant::AssistantEntryPoint::kHotkey,
+      /*exit_point=*/chromeos::assistant::AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {

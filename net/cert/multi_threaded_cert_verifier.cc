@@ -22,6 +22,10 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 
+#if defined(USE_NSS_CERTS)
+#include "net/cert/x509_util_nss.h"
+#endif
+
 namespace net {
 
 // Allows DoVerifyOnWorkerThread to wait on a base::WaitableEvent.
@@ -232,6 +236,21 @@ void MultiThreadedCertVerifier::SetConfig(const CertVerifier::Config& config) {
       << "Attempted to set a CertVerifier::Config with additional trust "
          "anchors, but |verify_proc_| does not support additional trust "
          "anchors.";
+
+// TODO(https://crbug.com/978854): Pass these into the actual CertVerifyProc
+// rather than relying on global side-effects.
+#if !defined(USE_NSS_CERTS)
+  // Not yet implemented.
+  DCHECK(config.additional_untrusted_authorities.empty());
+#else
+  for (const auto& cert : config.additional_untrusted_authorities) {
+    ScopedCERTCertificate x509_cert =
+        x509_util::CreateCERTCertificateFromX509Certificate(cert.get());
+    DCHECK(x509_cert);
+    temp_certs_.push_back(std::move(x509_cert));
+  }
+#endif
+
   config_ = config;
   if (!config_.crl_set)
     config_.crl_set = CRLSet::BuiltinCRLSet();

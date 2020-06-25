@@ -3904,12 +3904,11 @@ void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
 bool WebContentsImpl::IsSavable() {
   // WebKit creates Document object when MIME type is application/xhtml+xml,
   // so we also support this MIME type.
-  return contents_mime_type_ == "text/html" ||
-         contents_mime_type_ == "text/xml" ||
-         contents_mime_type_ == "application/xhtml+xml" ||
-         contents_mime_type_ == "text/plain" ||
-         contents_mime_type_ == "text/css" ||
-         blink::IsSupportedJavascriptMimeType(contents_mime_type_);
+  std::string mime_type = GetContentsMimeType();
+  return mime_type == "text/html" || mime_type == "text/xml" ||
+         mime_type == "application/xhtml+xml" || mime_type == "text/plain" ||
+         mime_type == "text/css" ||
+         blink::IsSupportedJavascriptMimeType(mime_type);
 }
 
 void WebContentsImpl::OnSavePage() {
@@ -4061,7 +4060,7 @@ void WebContentsImpl::GenerateWebBundle(
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
-  return contents_mime_type_;
+  return GetRenderViewHost()->contents_mime_type();
 }
 
 blink::mojom::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
@@ -4679,10 +4678,6 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   if (params.gesture == NavigationGestureUser && dialog_manager_) {
     dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
-}
-
-void WebContentsImpl::SetMainFrameMimeType(const std::string& mime_type) {
-  contents_mime_type_ = mime_type;
 }
 
 bool WebContentsImpl::CanOverscrollContent() const {

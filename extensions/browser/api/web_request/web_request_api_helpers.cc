@@ -63,6 +63,7 @@ namespace extension_web_request_api_helpers {
 
 namespace {
 
+namespace dnr_api = extensions::api::declarative_net_request;
 using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
 
 void ClearCacheOnNavigationOnUI() {
@@ -331,35 +332,82 @@ static_assert(static_cast<size_t>(ResponseHeaderType::kMaxValue) - 1 ==
 static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
               "Invalid response header entries");
 
-// Helper to modify request headers from |headers_to_modify|. Returns whether
-// or not request headers were actually modified and populates
-// |removed_headers|. |removed_headers| maps headers specified to be removed by
-// |headers_to_modify| to whether they were actually removed from |headers|.
+// Represents an action to be taken on a given header.
+struct DNRHeaderAction {
+  DNRHeaderAction(const DNRRequestAction::HeaderInfo* header_info,
+                  const extensions::ExtensionId* extension_id)
+      : header_info(header_info), extension_id(extension_id) {}
+
+  // Returns whether for the same header, the operation specified by
+  // |next_action| conflicts with the operation specified by this action.
+  bool ConflictsWithSubsequentAction(const DNRHeaderAction& next_action) const {
+    DCHECK_EQ(header_info->header, next_action.header_info->header);
+
+    switch (header_info->operation) {
+      case dnr_api::HEADER_OPERATION_APPEND:
+        return next_action.header_info->operation !=
+               dnr_api::HEADER_OPERATION_APPEND;
+      case dnr_api::HEADER_OPERATION_SET:
+        return *extension_id != *next_action.extension_id ||
+               next_action.header_info->operation !=
+                   dnr_api::HEADER_OPERATION_APPEND;
+      case dnr_api::HEADER_OPERATION_REMOVE:
+        return true;
+      case dnr_api::HEADER_OPERATION_NONE:
+        NOTREACHED();
+        return true;
+    }
+  }
+
+  // Non-owning pointers to HeaderInfo and ExtensionId.
+  const DNRRequestAction::HeaderInfo* header_info;
+  const extensions::ExtensionId* extension_id;
+};
+
+// Helper to modify request headers from
+// |request_action.request_headers_to_modify|. Returns whether or not request
+// headers were actually modified and modifies |removed_headers|, |set_headers|
+// and |header_actions|. |header_actions| maps a header name to the operation
+// to be performed on the header.
 bool ModifyRequestHeadersForAction(
     net::HttpRequestHeaders* headers,
-    const std::vector<DNRRequestAction::HeaderInfo>& headers_to_modify,
-    std::map<base::StringPiece, bool>* removed_headers) {
+    const DNRRequestAction& request_action,
+    std::set<std::string>* removed_headers,
+    std::set<std::string>* set_headers,
+    std::map<base::StringPiece, DNRHeaderAction>* header_actions) {
   bool request_headers_modified = false;
-  for (const DNRRequestAction::HeaderInfo& header_info : headers_to_modify) {
+  for (const DNRRequestAction::HeaderInfo& header_info :
+       request_action.request_headers_to_modify) {
     bool header_modified = false;
     const std::string& header = header_info.header;
 
-    // Skip this header if it has already been removed.
-    if (base::Contains(*removed_headers, header))
+    DNRHeaderAction header_action(&header_info, &request_action.extension_id);
+    auto iter = header_actions->find(header);
+    if (iter != header_actions->end() &&
+        iter->second.ConflictsWithSubsequentAction(header_action)) {
       continue;
+    }
+    header_actions->emplace(header, header_action);
 
+    // TODO(crbug.com/1088103): Record request headers modified by the
+    // Declarative Net Request API.
     switch (header_info.operation) {
+      case extensions::api::declarative_net_request::HEADER_OPERATION_SET:
+        headers->SetHeader(header, *header_info.value);
+        header_modified = true;
+        set_headers->insert(header);
+        break;
       case extensions::api::declarative_net_request::HEADER_OPERATION_REMOVE: {
         while (headers->HasHeader(header)) {
           header_modified = true;
           headers->RemoveHeader(header);
         }
 
-        removed_headers->emplace(header, header_modified);
+        if (header_modified)
+          removed_headers->insert(header);
         break;
       }
       case extensions::api::declarative_net_request::HEADER_OPERATION_APPEND:
-      case extensions::api::declarative_net_request::HEADER_OPERATION_SET:
       case extensions::api::declarative_net_request::HEADER_OPERATION_NONE:
         NOTREACHED();
     }
@@ -370,16 +418,15 @@ bool ModifyRequestHeadersForAction(
   return request_headers_modified;
 }
 
-// Helper to modify response headers from |headers_to_modify|. Returns whether
-// or not response headers were actually modified and populates
-// |removed_header_names|. |removed_header_names| maps headers specified to be
-// removed by |headers_to_modify| to whether they were actually removed from
-// |override_response_headers|.
+// Helper to modify response headers from |request_action|. Returns whether or
+// not response headers were actually modified and modifies |header_actions|.
+// |header_actions| maps a header name to a list of operations to be performed
+// on the header.
 bool ModifyResponseHeadersForAction(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
-    const std::vector<DNRRequestAction::HeaderInfo>& headers_to_modify,
-    std::map<base::StringPiece, bool>* removed_header_names) {
+    const DNRRequestAction& request_action,
+    std::map<base::StringPiece, std::vector<DNRHeaderAction>>* header_actions) {
   bool response_headers_modified = false;
 
   // Check for |header| in |override_response_headers| if headers have been
@@ -403,14 +450,29 @@ bool ModifyResponseHeadersForAction(
         }
       };
 
-  for (const DNRRequestAction::HeaderInfo& header_info : headers_to_modify) {
+  for (const DNRRequestAction::HeaderInfo& header_info :
+       request_action.response_headers_to_modify) {
     bool header_modified = false;
     const std::string& header = header_info.header;
 
-    // Skip this header if it has already been removed.
-    if (base::Contains(*removed_header_names, header))
-      continue;
+    DNRHeaderAction header_action(&header_info, &request_action.extension_id);
+    auto iter = header_actions->find(header);
 
+    // Checking the first DNRHeaderAction should suffice for determining if a
+    // conflict exists, since the contents of |header_actions| for a given
+    // header will always be one of:
+    // [remove]
+    // [append+] one or more appends
+    // [set, append*] set, any number of appends from the same extension
+    if (iter != header_actions->end() &&
+        (*header_actions)[header][0].ConflictsWithSubsequentAction(
+            header_action)) {
+      continue;
+    }
+    (*header_actions)[header].push_back(header_action);
+
+    // TODO(crbug.com/1088103): Record response headers modified by the
+    // Declarative Net Request API.
     switch (header_info.operation) {
       case extensions::api::declarative_net_request::HEADER_OPERATION_REMOVE: {
         if (has_header(header)) {
@@ -419,11 +481,21 @@ bool ModifyResponseHeadersForAction(
           override_response_headers->get()->RemoveHeader(header);
         }
 
-        removed_header_names->emplace(header, header_modified);
         break;
       }
-      case extensions::api::declarative_net_request::HEADER_OPERATION_APPEND:
-      case extensions::api::declarative_net_request::HEADER_OPERATION_SET:
+      case extensions::api::declarative_net_request::HEADER_OPERATION_APPEND: {
+        header_modified = true;
+        create_override_headers_if_needed(override_response_headers);
+        override_response_headers->get()->AddHeader(header, *header_info.value);
+        break;
+      }
+      case extensions::api::declarative_net_request::HEADER_OPERATION_SET: {
+        header_modified = true;
+        create_override_headers_if_needed(override_response_headers);
+        override_response_headers->get()->RemoveHeader(header);
+        override_response_headers->get()->AddHeader(header, *header_info.value);
+        break;
+      }
       case extensions::api::declarative_net_request::HEADER_OPERATION_NONE:
         NOTREACHED();
     }
@@ -1018,23 +1090,27 @@ void MergeOnBeforeSendHeadersResponses(
   DCHECK(matched_dnr_actions);
   *request_headers_modified = false;
 
-  // Maps a request header specified to be removed by the Declarative Net
-  // Request API to whether or not it was actually removed.
-  std::map<base::StringPiece, bool> dnr_removed_headers;
+  std::map<base::StringPiece, DNRHeaderAction> dnr_header_actions;
   for (const auto& action : *request.dnr_actions) {
-    bool headers_modified_for_action = ModifyRequestHeadersForAction(
-        request_headers, action.request_headers_to_modify,
-        &dnr_removed_headers);
+    bool headers_modified_for_action =
+        ModifyRequestHeadersForAction(request_headers, action, removed_headers,
+                                      set_headers, &dnr_header_actions);
 
     *request_headers_modified |= headers_modified_for_action;
     if (headers_modified_for_action)
       matched_dnr_actions->push_back(&action);
   }
 
-  // Exhaustive subsets of |set_headers|. Split into a set for added headers and
-  // a set for overridden headers.
-  std::set<std::string> overridden_headers;
-  std::set<std::string> added_headers;
+  // A strict subset of |removed_headers| consisting of headers removed by the
+  // web request API. Used for metrics.
+  // TODO(crbug.com/1098945): Use base::StringPiece to avoid copying header
+  // names.
+  std::set<std::string> web_request_removed_headers;
+
+  // Subsets of |set_headers| consisting of headers modified by the web request
+  // API. Split into a set for added headers and a set for overridden headers.
+  std::set<std::string> web_request_overridden_headers;
+  std::set<std::string> web_request_added_headers;
 
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
@@ -1056,15 +1132,20 @@ void MergeOnBeforeSendHeadersResponses(
         const std::string key = base::ToLowerASCII(modification.name());
         const std::string& value = modification.value();
 
-        // We must not modify anything that has been deleted before.
-        if (base::Contains(*removed_headers, key)) {
+        // We must not modify anything that was specified to be removed by the
+        // Declarative Net Request API. Note that the actual header
+        // modifications made by Declarative Net Request should be represented
+        // in |removed_headers| and |set_headers|.
+        auto iter = dnr_header_actions.find(key);
+        if (iter != dnr_header_actions.end() &&
+            iter->second.header_info->operation ==
+                dnr_api::HEADER_OPERATION_REMOVE) {
           extension_conflicts = true;
           break;
         }
 
-        // We must not modify anything that was specified to be removed by the
-        // Declarative Net Request API.
-        if (base::Contains(dnr_removed_headers, key)) {
+        // We must not modify anything that has been deleted before.
+        if (base::Contains(*removed_headers, key)) {
           extension_conflicts = true;
           break;
         }
@@ -1102,11 +1183,11 @@ void MergeOnBeforeSendHeadersResponses(
       while (modification.GetNext()) {
         std::string key = base::ToLowerASCII(modification.name());
         if (!request_headers->HasHeader(key)) {
-          added_headers.insert(key);
-        } else if (!base::Contains(added_headers, key)) {
+          web_request_added_headers.insert(key);
+        } else if (!base::Contains(web_request_added_headers, key)) {
           // Note: |key| will only be present in |added_headers| if this is an
           // identical edit.
-          overridden_headers.insert(key);
+          web_request_overridden_headers.insert(key);
         }
 
         set_headers->insert(key);
@@ -1117,8 +1198,11 @@ void MergeOnBeforeSendHeadersResponses(
       // Perform all deletions and record which keys were deleted.
       {
         for (const auto& header : delta.deleted_request_headers) {
+          std::string lowercase_header = base::ToLowerASCII(header);
+
           request_headers->RemoveHeader(header);
-          removed_headers->insert(base::ToLowerASCII(header));
+          removed_headers->insert(lowercase_header);
+          web_request_removed_headers.insert(lowercase_header);
         }
       }
       *request_headers_modified = true;
@@ -1143,26 +1227,24 @@ void MergeOnBeforeSendHeadersResponses(
                      IsStringLowerCaseASCII));
   DCHECK(std::all_of(set_headers->begin(), set_headers->end(),
                      IsStringLowerCaseASCII));
-  DCHECK(std::all_of(overridden_headers.begin(), overridden_headers.end(),
-                     IsStringLowerCaseASCII));
-  DCHECK(std::all_of(added_headers.begin(), added_headers.end(),
-                     IsStringLowerCaseASCII));
-  DCHECK(*set_headers == base::STLSetUnion<std::set<std::string>>(
-                             added_headers, overridden_headers));
-  DCHECK(base::STLSetIntersection<std::set<std::string>>(added_headers,
-                                                         overridden_headers)
+  DCHECK(base::STLIncludes(
+      *set_headers,
+      base::STLSetUnion<std::set<std::string>>(
+          web_request_added_headers, web_request_overridden_headers)));
+  DCHECK(base::STLSetIntersection<std::set<std::string>>(
+             web_request_added_headers, web_request_overridden_headers)
              .empty());
   DCHECK(base::STLSetIntersection<std::set<std::string>>(*removed_headers,
                                                          *set_headers)
              .empty());
+  DCHECK(base::STLIncludes(*removed_headers, web_request_removed_headers));
 
   // Record request header removals, additions and modifications.
-  record_request_headers(*removed_headers, &RecordRequestHeaderRemoved);
-  record_request_headers(added_headers, &RecordRequestHeaderAdded);
-  record_request_headers(overridden_headers, &RecordRequestHeaderChanged);
-
-  // TODO(crbug.com/1088103): Record request headers modified by the Declarative
-  // Net Request API.
+  record_request_headers(web_request_removed_headers,
+                         &RecordRequestHeaderRemoved);
+  record_request_headers(web_request_added_headers, &RecordRequestHeaderAdded);
+  record_request_headers(web_request_overridden_headers,
+                         &RecordRequestHeaderChanged);
 
   // Currently, conflicts are ignored while merging cookies.
   MergeCookiesInOnBeforeSendHeadersResponses(request.url, deltas,
@@ -1402,15 +1484,14 @@ void MergeOnHeadersReceivedResponses(
   DCHECK(response_headers_modified);
   *response_headers_modified = false;
 
-  // Maps a response header specified to be removed by the Declarative Net
-  // Request API to whether or not it was actually removed.
-  std::map<base::StringPiece, bool> dnr_removed_header_names;
   DCHECK(request.dnr_actions);
   DCHECK(matched_dnr_actions);
+
+  std::map<base::StringPiece, std::vector<DNRHeaderAction>> dnr_header_actions;
   for (const auto& action : *request.dnr_actions) {
     bool headers_modified_for_action = ModifyResponseHeadersForAction(
-        original_response_headers, override_response_headers,
-        action.response_headers_to_modify, &dnr_removed_header_names);
+        original_response_headers, override_response_headers, action,
+        &dnr_header_actions);
 
     *response_headers_modified |= headers_modified_for_action;
     if (headers_modified_for_action)
@@ -1447,18 +1528,26 @@ void MergeOnHeadersReceivedResponses(
     for (const ResponseHeader& header : delta.deleted_response_headers) {
       ResponseHeader lowercase_header(ToLowerCase(header));
       if (base::Contains(removed_headers, lowercase_header) ||
-          base::Contains(dnr_removed_header_names, lowercase_header.first)) {
+          base::Contains(dnr_header_actions, lowercase_header.first)) {
         extension_conflicts = true;
         break;
       }
     }
 
     // Prevent extensions from adding any response header which was specified to
-    // be removed by the Declarative Net Request API.
+    // be removed or set by the Declarative Net Request API. However, multiple
+    // appends are allowed.
     if (!extension_conflicts) {
       for (const ResponseHeader& header : delta.added_response_headers) {
-        if (base::Contains(dnr_removed_header_names,
-                           ToLowerCase(header).first)) {
+        ResponseHeader lowercase_header(ToLowerCase(header));
+
+        auto it = dnr_header_actions.find(lowercase_header.first);
+        if (it == dnr_header_actions.end())
+          continue;
+
+        // Multiple appends are allowed.
+        if (it->second[0].header_info->operation !=
+            dnr_api::HEADER_OPERATION_APPEND) {
           extension_conflicts = true;
           break;
         }
@@ -1531,9 +1620,6 @@ void MergeOnHeadersReceivedResponses(
     std::set<base::StringPiece> modified_header_names;
     std::set<base::StringPiece> added_header_names;
     std::set<base::StringPiece> removed_header_names;
-
-    // TODO(crbug.com/1088103): Record response headers modified by the
-    // Declarative Net Request API.
 
     for (const ResponseHeader& header : added_headers) {
       // Skip logging this header if this was subsequently removed by an

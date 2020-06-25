@@ -431,7 +431,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                                    state_description);
     } else {
       // TODO(sahok): Append strings anotated as kDescription(which is now
-      // overwritten)
+      // overwritten).
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                                    state_description);
     }

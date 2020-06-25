@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
@@ -36,7 +35,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
@@ -412,15 +410,6 @@ ParseInfo RulesetSource::IndexAndPersistRules(
       bool inserted = id_set.insert(rule_id).second;
       if (!inserted)
         return ParseInfo(ParseResult::ERROR_DUPLICATE_IDS, &rule_id);
-
-      // Ensure modifyHeaders actions don't have any side-effects on Stable
-      // since it's under development.
-      // TODO(crbug.com/947591): Remove the channel check once implementation
-      // of modifyHeaders action is complete.
-      if (rule.action.type == dnr_api::RULE_ACTION_TYPE_MODIFYHEADERS &&
-          GetCurrentChannel() == version_info::Channel::STABLE) {
-        continue;
-      }
 
       IndexedRule indexed_rule;
       ParseResult parse_result = IndexedRule::CreateIndexedRule(

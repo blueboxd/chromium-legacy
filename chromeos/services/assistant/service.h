@@ -24,12 +24,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class GoogleServiceAuthError;
@@ -93,8 +88,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // AssistantService overrides:
   void Init() override;
-  void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
   void Shutdown() override;
+  Assistant* GetAssistant() override;
 
  private:
   friend class AssistantServiceTest;
@@ -158,8 +153,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // method also take power status into account if dsp support is not available
   // for the device.
   bool ShouldEnableHotword();
-
-  mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
   signin::IdentityManager* const identity_manager_;
   std::unique_ptr<ScopedAshSessionObserver> scoped_ash_session_observer_;

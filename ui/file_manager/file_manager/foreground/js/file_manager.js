@@ -1165,7 +1165,9 @@ class FileManager extends cr.EventTarget {
     chrome.fileManagerPrivate.onCrostiniChanged.addListener(
         this.onCrostiniChanged_.bind(this));
     this.crostiniController_ = new CrostiniController(
-        assert(this.crostini_), assert(this.directoryTree));
+        assert(this.crostini_), /** @type {!FilesMessage} */
+        (this.document_.querySelector('#files-message')), this.directoryModel_,
+        assert(this.directoryTree));
     await this.crostiniController_.redraw();
     // Never show toast in an open-file dialog.
     const maybeShowToast = this.dialogType === DialogType.FULL_PAGE;

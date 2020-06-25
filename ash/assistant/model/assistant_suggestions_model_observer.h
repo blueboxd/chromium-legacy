@@ -10,7 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -19,15 +19,15 @@ namespace ash {
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
     : public base::CheckedObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   // Invoked when the cache of conversation starters has changed.
   virtual void OnConversationStartersChanged(
-      const std::vector<const AssistantSuggestion*>& conversation_starters) {}
+      const std::vector<AssistantSuggestion>& conversation_starters) {}
 
   // Invoked when the cache of onboarding suggestions has changed.
   virtual void OnOnboardingSuggestionsChanged(
-      const std::vector<const AssistantSuggestion*>& onboarding_suggestions) {}
+      const std::vector<AssistantSuggestion>& onboarding_suggestions) {}
 
  protected:
   ~AssistantSuggestionsModelObserver() override = default;

@@ -6,6 +6,12 @@
 const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 
 /**
+ * Placeholder Blob used when a null file is received. For null files we only
+ * know the name until the file is navigated to.
+ */
+const PLACEHOLDER_BLOB = new Blob([]);
+
+/**
  * A file received from the privileged context, and decorated with IPC methods
  * added in the untrusted (this) context to communicate back.
  * @implements {mediaApp.AbstractFile}
@@ -13,8 +19,8 @@ const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 class ReceivedFile {
   /** @param {!FileContext} file */
   constructor(file) {
-    this.blob = file.file || new File([], file.name);
-    this.name = this.blob.name;
+    this.blob = file.file || PLACEHOLDER_BLOB;
+    this.name = file.name;
     this.size = this.blob.size;
     this.mimeType = this.blob.type;
     this.token = file.token;

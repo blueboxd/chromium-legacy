@@ -67,6 +67,32 @@ function checkCookieHeaderRemoved(expectRemoved) {
   });
 }
 
+// Checks that the |headerName| request header with a value of |expectedValue|
+// is present in the request. Then proceeds to the next test.
+function checkCustomRequestHeaderValue(headerName, expectedValue) {
+  navigateTab(getServerURL(`echoheader?${headerName}`), function(tab) {
+    chrome.tabs.executeScript(
+        tab.id, {code: 'document.body.innerText'}, function(results) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertEq(expectedValue, results[0]);
+          chrome.test.succeed();
+        });
+  });
+}
+
+// Makes a request to the set-header URL with a set of initial headers specified
+// as a URL parameters string, and checks that all (header name, value) pairs
+// are present in the request's response headers.
+function checkCustomResponseHeaders(initialHeadersParam, headers) {
+  fetch(getServerURL(`set-header?${initialHeadersParam}`)).then(response => {
+    for (const header in headers) {
+      chrome.test.assertEq(headers[header], response.headers.get(header));
+    }
+
+    chrome.test.succeed();
+  });
+}
+
 // Removes all the cookies and optionally checks if |optCurrentCookiesSet|
 // corresponds to the current cookies. Returns a promise.
 function checkAndResetCookies(optCurrentCookiesSet) {
@@ -242,6 +268,15 @@ var allowRule = {
   condition: {urlFilter: host, resourceTypes: ['main_frame']},
   action: {type: 'allow'}
 };
+var setCustomRequestHeaderRule = {
+  id: 10,
+  priority: 1,
+  condition: {urlFilter: host, resourceTypes: ['main_frame']},
+  action: {
+    type: 'modifyHeaders',
+    requestHeaders: [{header: 'header1', operation: 'set', value: 'value-1'}]
+  }
+};
 
 var tests = [
   function testCookieWithoutRules() {
@@ -307,6 +342,72 @@ var tests = [
     chrome.declarativeNetRequest.updateDynamicRules([], [allowRule], () => {
       checkAddWebRequestSetCookie(false);
     });
+  },
+
+  function testSetCustomRequestHeaderRule() {
+    var rules = [setCustomRequestHeaderRule];
+    chrome.declarativeNetRequest.updateDynamicRules(
+        [allowRule.id], rules, function() {
+          chrome.test.assertNoLastError();
+          checkCustomRequestHeaderValue('header1', 'value-1');
+        });
+  },
+
+  function testSetCustomResponseHeaderRule() {
+    var rules = [
+      {
+        id: 20,
+        priority: 3,
+        condition: {urlFilter: host},
+        action: {
+          type: 'modifyHeaders',
+          responseHeaders: [
+            {header: 'header1', operation: 'append', value: 'rule-20'},
+            {header: 'header2', operation: 'append', value: 'rule-20'},
+            {header: 'header3', operation: 'set', value: 'rule-20'}
+          ]
+        }
+      },
+      {
+        id: 21,
+        priority: 2,
+        condition: {urlFilter: host},
+        action: {
+          type: 'modifyHeaders',
+          responseHeaders: [
+            {header: 'header3', operation: 'remove'},
+          ]
+        }
+      },
+      {
+        id: 22,
+        priority: 1,
+        condition: {urlFilter: host},
+        action: {
+          type: 'modifyHeaders',
+          responseHeaders: [
+            {header: 'header1', operation: 'append', value: 'rule-22'},
+            {header: 'header2', operation: 'set', value: 'rule-22'},
+            {header: 'header3', operation: 'append', value: 'rule-22'},
+            {header: 'header4', operation: 'set', value: 'rule-22'},
+          ]
+        }
+      }
+    ];
+
+    var expectedResponseHeaders = {
+      header1: 'original, rule-20, rule-22',
+      header2: 'rule-20',
+      header3: 'rule-20, rule-22',
+      header4: 'rule-22'
+    };
+
+    chrome.declarativeNetRequest.updateDynamicRules(
+        [setCustomRequestHeaderRule.id], rules, function() {
+          chrome.test.assertNoLastError();
+          checkCustomResponseHeaders(
+              'header1: original&header3: original', expectedResponseHeaders);
+        });
   },
 ];
 

@@ -32,7 +32,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -74,8 +74,7 @@ class ASH_EXPORT AssistantControllerImpl
   void OpenAssistantSettings() override;
   void OpenUrl(const GURL& url, bool in_background, bool from_server) override;
   base::WeakPtr<ash::AssistantController> GetWeakPtr() override;
-  void SetAssistant(mojo::PendingRemote<chromeos::assistant::mojom::Assistant>
-                        assistant) override;
+  void SetAssistant(chromeos::assistant::Assistant* assistant) override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
@@ -150,7 +149,7 @@ class ASH_EXPORT AssistantControllerImpl
       assistant_volume_control_receiver_{this};
   mojo::RemoteSet<mojom::VolumeObserver> volume_observers_;
 
-  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   // Assistant sub-controllers.
   AssistantAlarmTimerControllerImpl assistant_alarm_timer_controller_{this};

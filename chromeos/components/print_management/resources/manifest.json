@@ -8,9 +8,9 @@
     "scope": "./",
     "icons": [
       {
-        "src": "app_icon_192.png",
+        "src": "printing_app_icon.svg",
         "sizes": "192x192",
-        "type": "image/png"
+        "type": "image/svg"
       }
     ]
   }

@@ -229,7 +229,13 @@ void TestWebContents::SetTitle(const base::string16& title) {
 }
 
 void TestWebContents::SetMainFrameMimeType(const std::string& mime_type) {
-  WebContentsImpl::SetMainFrameMimeType(mime_type);
+  static_cast<RenderViewHostImpl*>(GetRenderViewHost())
+      ->SetContentsMimeType(mime_type);
+}
+
+const std::string& TestWebContents::GetContentsMimeType() {
+  return static_cast<RenderViewHostImpl*>(GetRenderViewHost())
+      ->contents_mime_type();
 }
 
 void TestWebContents::SetIsCurrentlyAudible(bool audible) {

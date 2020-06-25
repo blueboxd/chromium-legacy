@@ -42,8 +42,8 @@ class ArcBridgeService;
 arc::mojom::CaptionStylePtr GetCaptionStyleFromPrefs(PrefService* prefs);
 
 // ArcAccessibilityHelperBridge is an instance to receive converted Android
-// accessibility events and info via mojo interface and dispatch them to chrome
-// os components.
+// accessibility events and info via mojo interface and dispatch them to Chrome
+// OS components.
 class ArcAccessibilityHelperBridge
     : public KeyedService,
       public mojom::AccessibilityHelperHost,

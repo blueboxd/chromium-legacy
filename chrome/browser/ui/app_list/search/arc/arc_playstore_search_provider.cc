@@ -102,6 +102,10 @@ ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() {
 }
 
 void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
+  last_query_ = query;
+  // Clear any results from the previous query.
+  ClearResultsSilently();
+
   // Always check if suggested content is enabled before searching for play
   // store apps.
   PrefService* pref_service = profile_->GetPrefs();
@@ -113,11 +117,6 @@ void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
     if (!is_suggested_content_enabled)
       return;
   }
-
-  last_query_ = query;
-
-  // Clear any results from the previous query.
-  ClearResultsSilently();
 
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()

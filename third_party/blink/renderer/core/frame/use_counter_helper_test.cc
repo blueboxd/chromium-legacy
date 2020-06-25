@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -349,26 +350,26 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   deprecation_.MuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
+  Deprecation::CountDeprecation(GetFrame()->DomWindow(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.MuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
+  Deprecation::CountDeprecation(GetFrame()->DomWindow(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.UnmuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
+  Deprecation::CountDeprecation(GetFrame()->DomWindow(), feature);
   EXPECT_FALSE(use_counter_.HasRecordedMeasurement(feature));
 
   deprecation_.UnmuteForInspector();
   Deprecation::WarnOnDeprecatedProperties(GetFrame(), property);
   // TODO: use the actually deprecated property to get a deprecation message.
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
-  Deprecation::CountDeprecation(dummy_->GetDocument(), feature);
+  Deprecation::CountDeprecation(GetFrame()->DomWindow(), feature);
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
 }
 

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -30,10 +30,9 @@ namespace app_list {
 namespace test {
 
 using chromeos::assistant::AssistantAllowedState;
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantQuerySource;
-using chromeos::assistant::mojom::AssistantSuggestion;
-using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantQuerySource;
+using chromeos::assistant::AssistantSuggestion;
 using testing::DoAll;
 using testing::NiceMock;
 using testing::SaveArg;
@@ -80,14 +79,14 @@ class ConversationStarterBuilder {
       delete;
   ~ConversationStarterBuilder() = default;
 
-  AssistantSuggestionPtr Build() {
+  AssistantSuggestion Build() {
     DCHECK(!id_.is_empty());
     DCHECK(!text_.empty());
 
-    AssistantSuggestionPtr conversation_starter = AssistantSuggestion::New();
-    conversation_starter->id = id_;
-    conversation_starter->text = text_;
-    conversation_starter->action_url = action_url_;
+    AssistantSuggestion conversation_starter;
+    conversation_starter.id = id_;
+    conversation_starter.text = text_;
+    conversation_starter.action_url = action_url_;
     return conversation_starter;
   }
 
@@ -167,14 +166,14 @@ class TestAssistantSuggestionsController
 
   void ClearConversationStarters() { SetConversationStarters({}); }
 
-  void SetConversationStarter(AssistantSuggestionPtr conversation_starter) {
-    std::vector<AssistantSuggestionPtr> conversation_starters;
+  void SetConversationStarter(AssistantSuggestion conversation_starter) {
+    std::vector<AssistantSuggestion> conversation_starters;
     conversation_starters.push_back(std::move(conversation_starter));
     SetConversationStarters(std::move(conversation_starters));
   }
 
   void SetConversationStarters(
-      std::vector<AssistantSuggestionPtr> conversation_starters) {
+      std::vector<AssistantSuggestion> conversation_starters) {
     model_.SetConversationStarters(std::move(conversation_starters));
   }
 
@@ -214,14 +213,14 @@ class AssistantSearchProviderTest : public AppListTestBase {
 // Tests -----------------------------------------------------------------------
 
 TEST_F(AssistantSearchProviderTest, ShouldHaveAnInitialResult) {
-  std::vector<const AssistantSuggestion*> conversation_starters =
+  const std::vector<AssistantSuggestion>& conversation_starters =
       suggestions_controller().GetModel()->GetConversationStarters();
 
   ASSERT_EQ(1u, conversation_starters.size());
   ASSERT_EQ(1u, search_provider().results().size());
 
   const ChromeSearchResult& result = *search_provider().results().at(0);
-  Expect(result).Matches(*conversation_starters.front());
+  Expect(result).Matches(conversation_starters.front());
 }
 
 TEST_F(AssistantSearchProviderTest,
@@ -268,36 +267,36 @@ TEST_F(AssistantSearchProviderTest,
 
 TEST_F(AssistantSearchProviderTest,
        ShouldUpdateResultsWhenConversationStartersChange) {
-  AssistantSuggestionPtr update = ConversationStarterBuilder()
-                                      .WithId(base::UnguessableToken::Create())
-                                      .WithText("Updated result")
-                                      .Build();
+  AssistantSuggestion update = ConversationStarterBuilder()
+                                   .WithId(base::UnguessableToken::Create())
+                                   .WithText("Updated result")
+                                   .Build();
 
-  suggestions_controller().SetConversationStarter(update->Clone());
+  suggestions_controller().SetConversationStarter(update);
   ASSERT_EQ(1u, search_provider().results().size());
 
   const ChromeSearchResult& result = *search_provider().results().at(0);
-  Expect(result).Matches(*update);
+  Expect(result).Matches(update);
 }
 
 TEST_F(AssistantSearchProviderTest,
        ShouldDelegateOpeningResultsToAssistantController) {
-  std::vector<std::pair<AssistantSuggestionPtr, GURL>> test_cases;
+  std::vector<std::pair<AssistantSuggestion, GURL>> test_cases;
 
   // Test case 1:
   // Action URLs which are *not* Assistant deep links should *not* be modified.
-  test_cases.push_back(
-      std::make_pair(ConversationStarterBuilder()
-                         .WithId(base::UnguessableToken::Create())
-                         .WithText("Search")
-                         .WithActionUrl("https://www.google.com/search")
-                         .Build(),
-                     /*expected_url=*/GURL("https://www.google.com/search")));
+  test_cases.emplace_back(
+      ConversationStarterBuilder()
+          .WithId(base::UnguessableToken::Create())
+          .WithText("Search")
+          .WithActionUrl("https://www.google.com/search")
+          .Build(),
+      /*expected_url=*/GURL("https://www.google.com/search"));
 
   // Test case 2:
   // We expect Assistant deep links to accurately reflect launcher chip as being
   // both the entry point into Assistant UI as well as the query source.
-  test_cases.push_back(std::make_pair(
+  test_cases.emplace_back(
       ConversationStarterBuilder()
           .WithId(base::UnguessableToken::Create())
           .WithText("Weather")
@@ -306,13 +305,13 @@ TEST_F(AssistantSearchProviderTest,
       /*expected_url=*/GURL(base::StringPrintf(
           "googleassistant://send-query?q=weather&entryPoint=%d&querySource=%d",
           static_cast<int>(AssistantEntryPoint::kLauncherChip),
-          static_cast<int>(AssistantQuerySource::kLauncherChip)))));
+          static_cast<int>(AssistantQuerySource::kLauncherChip))));
 
   // Test case 3:
   // When conversation starters do *not* specify an action URL explicitly, it is
   // implicitly understood that they should trigger an Assistant query composed
   // of their display text.
-  test_cases.push_back(std::make_pair(
+  test_cases.emplace_back(
       ConversationStarterBuilder()
           .WithId(base::UnguessableToken::Create())
           .WithText("What can you do?")
@@ -321,7 +320,7 @@ TEST_F(AssistantSearchProviderTest,
           "googleassistant://"
           "send-query?q=What+can+you+do%%3F&entryPoint=%d&querySource=%d",
           static_cast<int>(AssistantEntryPoint::kLauncherChip),
-          static_cast<int>(AssistantQuerySource::kLauncherChip)))));
+          static_cast<int>(AssistantQuerySource::kLauncherChip))));
 
   for (auto& test_case : test_cases) {
     suggestions_controller().SetConversationStarter(std::move(test_case.first));

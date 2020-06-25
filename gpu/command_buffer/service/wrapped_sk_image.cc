@@ -77,14 +77,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 
       DCHECK(context_state_->IsCurrent(nullptr));
 
-      if (context_state_->GrContextIsVulkan()) {
-        // There could be some work in skia has been recorded in skia internal
-        // VkCommandBuffer, but not be submitted yet. We need to submit them
-        // first.
-        // TODO(penghuang): Remove this submit.
-        context_state_->gr_context()->submit();
-      }
-
       SkImageInfo info = MakeSkImageInfo(size(), format());
       SkPixmap pixmap(info, shared_memory_wrapper_.GetMemory(),
                       shared_memory_wrapper_.GetStride());

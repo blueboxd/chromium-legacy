@@ -8,11 +8,19 @@
 class CrostiniController {
   /**
    * @param {!Crostini} crostini Crostini background object.
+   * @param {!FilesMessage} filesMessage FilesMessage.
+   * @param {!DirectoryModel} directoryModel DirectoryModel.
    * @param {!DirectoryTree} directoryTree DirectoryTree.
    */
-  constructor(crostini, directoryTree) {
+  constructor(crostini, filesMessage, directoryModel, directoryTree) {
     /** @private @const */
     this.crostini_ = crostini;
+
+    /** @private @const */
+    this.filesMessage_ = filesMessage;
+
+    /** @private @const */
+    this.directoryModel_ = directoryModel;
 
     /** @private @const */
     this.directoryTree_ = directoryTree;
@@ -22,6 +30,9 @@ class CrostiniController {
 
     /** @private */
     this.entrySharedWithPluginVm_ = false;
+
+    directoryModel.addEventListener(
+        'directory-changed', () => this.maybeShowSharedMessage());
   }
 
   /**
@@ -99,5 +110,48 @@ class CrostiniController {
         'app-management/pluginVm/sharedPaths',
         CommandHandler.MenuCommandsForUMA
             .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
+  }
+
+  maybeShowSharedMessage() {
+    const entry =
+        /** @type {Entry} */ (this.directoryModel_.getCurrentDirEntry());
+    if (!entry) {
+      return;
+    }
+    const sharedWithCrostini = this.crostini_.isPathShared('termina', entry);
+    const sharedWithPluginVm = this.crostini_.isPathShared('PvmDefault', entry);
+    if (sharedWithCrostini == this.entrySharedWithCrostini_ &&
+        sharedWithPluginVm == this.entrySharedWithPluginVm_) {
+      return;
+    }
+    this.entrySharedWithCrostini_ = sharedWithCrostini;
+    this.entrySharedWithPluginVm_ = sharedWithPluginVm;
+
+    let msg = '';
+    let subpage = '';
+    if (sharedWithCrostini && sharedWithPluginVm) {
+      msg = 'MESSAGE_FOLDER_SHARED_WITH_CROSTINI_AND_PLUGIN_VM';
+      subpage = 'app-management/pluginVm/sharedPaths';
+    } else if (sharedWithCrostini) {
+      msg = 'MESSAGE_FOLDER_SHARED_WITH_CROSTINI';
+      subpage = 'crostini/sharedPaths';
+    } else if (sharedWithPluginVm) {
+      msg = 'MESSAGE_FOLDER_SHARED_WITH_PLUGIN_VM';
+      subpage = 'app-management/pluginVm/sharedPaths';
+    } else {
+      this.filesMessage_.hidden = true;
+      return;
+    }
+
+    this.filesMessage_.setContent({
+      message: str(msg),
+      action: str('MANAGE_TOAST_BUTTON_LABEL'),
+      hidden: false,
+    });
+    this.filesMessage_.setSignalCallback((signal) => {
+      if (signal === 'action') {
+        chrome.fileManagerPrivate.openSettingsSubpage(subpage);
+      }
+    });
   }
 }

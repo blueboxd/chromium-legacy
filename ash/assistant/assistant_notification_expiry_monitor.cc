@@ -4,11 +4,13 @@
 
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
 
+#include <algorithm>
+
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/bind.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -37,19 +39,20 @@ base::Optional<base::Time> Min(base::Optional<base::Time> left,
 class AssistantNotificationExpiryMonitor::Observer
     : public AssistantNotificationModelObserver {
  public:
-  Observer(AssistantNotificationExpiryMonitor* monitor) : monitor_(monitor) {}
+  explicit Observer(AssistantNotificationExpiryMonitor* monitor)
+      : monitor_(monitor) {}
   ~Observer() override = default;
 
-  void OnNotificationAdded(const AssistantNotification* notification) override {
+  void OnNotificationAdded(const AssistantNotification& notification) override {
     monitor_->UpdateTimer();
   }
 
   void OnNotificationUpdated(
-      const AssistantNotification* notification) override {
+      const AssistantNotification& notification) override {
     monitor_->UpdateTimer();
   }
 
-  void OnNotificationRemoved(const AssistantNotification* notification,
+  void OnNotificationRemoved(const AssistantNotification& notification,
                              bool from_server) override {
     monitor_->UpdateTimer();
   }

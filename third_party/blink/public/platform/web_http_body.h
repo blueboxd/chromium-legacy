@@ -33,7 +33,9 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-shared.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -62,12 +64,9 @@ class WebHTTPBody {
     base::Optional<base::Time> modification_time;
     WebString blob_uuid;
     uint64_t blob_length;
-    mojo::ScopedMessagePipeHandle optional_blob_handle;
-    // |data_pipe_getter| is a
-    // mojo::PendingRemote<network::mojom::DataPipeGetter>. It's declared as a
-    // generic ScopedMessagePipeHandle so it can be "cast" between Blink and
-    // non-Blink variant types.
-    mojo::ScopedMessagePipeHandle data_pipe_getter;
+    CrossVariantMojoRemote<mojom::BlobInterfaceBase> optional_blob;
+    CrossVariantMojoRemote<network::mojom::DataPipeGetterInterfaceBase>
+        data_pipe_getter;
   };
 
   ~WebHTTPBody() { Reset(); }
@@ -105,13 +104,10 @@ class WebHTTPBody {
   BLINK_PLATFORM_EXPORT void AppendBlob(
       const WebString& uuid,
       uint64_t length,
-      mojo::ScopedMessagePipeHandle blob_handle);
-  // |data_pipe_getter| is a
-  // mojo::PendingRemote<network::mojom::DataPipeGetter>. It's declared as a
-  // generic ScopedMessagePipeHandle so it can be "cast" between Blink and
-  // non-Blink variant types.
+      CrossVariantMojoRemote<mojom::BlobInterfaceBase> blob);
   BLINK_PLATFORM_EXPORT void AppendDataPipe(
-      mojo::ScopedMessagePipeHandle data_pipe_getter);
+      CrossVariantMojoRemote<network::mojom::DataPipeGetterInterfaceBase>
+          data_pipe_getter);
 
   BLINK_PLATFORM_EXPORT void SetUniqueBoundary();
 

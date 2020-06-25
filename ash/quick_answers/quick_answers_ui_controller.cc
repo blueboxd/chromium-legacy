@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,7 +49,7 @@ void QuickAnswersUiController::OnQuickAnswersViewPressed() {
 
   ash::AssistantInteractionController::Get()->StartTextInteraction(
       query_, /*allow_tts=*/false,
-      chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
+      chromeos::assistant::AssistantQuerySource::kQuickAnswers);
   controller_->OnQuickAnswerClick();
 }
 

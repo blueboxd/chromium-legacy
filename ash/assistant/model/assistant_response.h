@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace base {
 class UnguessableToken;
@@ -32,10 +32,7 @@ class AssistantUiElement;
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
     : public base::RefCounted<AssistantResponse> {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
   using ProcessingCallback = base::OnceCallback<void(bool)>;
 
   enum class ProcessingState {
@@ -66,14 +63,14 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
-  void AddSuggestions(std::vector<AssistantSuggestionPtr> suggestions);
+  void AddSuggestions(std::vector<AssistantSuggestion> suggestions);
 
   // Returns the suggestion uniquely identified by |id|.
   const AssistantSuggestion* GetSuggestionById(
       const base::UnguessableToken& id) const;
 
   // Returns all suggestions belongs to the response.
-  std::vector<const AssistantSuggestion*> GetSuggestions() const;
+  const std::vector<AssistantSuggestion>& GetSuggestions() const;
 
   // Gets/sets the processing state for the response.
   ProcessingState processing_state() const { return processing_state_; }
@@ -93,7 +90,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
 
  private:
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
-  void NotifySuggestionsAdded(const std::vector<const AssistantSuggestion*>&);
+  void NotifySuggestionsAdded(const std::vector<AssistantSuggestion>&);
 
   struct PendingUiElement;
   class Processor;
@@ -102,7 +99,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   ~AssistantResponse();
 
   std::deque<std::unique_ptr<PendingUiElement>> pending_ui_elements_;
-  std::vector<AssistantSuggestionPtr> suggestions_;
+  std::vector<AssistantSuggestion> suggestions_;
   ProcessingState processing_state_ = ProcessingState::kUnprocessed;
   bool has_tts_ = false;
 

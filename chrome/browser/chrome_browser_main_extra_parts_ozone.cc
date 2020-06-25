@@ -11,6 +11,7 @@
 #if defined(USE_X11)
 #include "ui/base/x/x11_error_handler.h"
 #else
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -19,27 +20,39 @@ ChromeBrowserMainExtraPartsOzone::ChromeBrowserMainExtraPartsOzone() = default;
 ChromeBrowserMainExtraPartsOzone::~ChromeBrowserMainExtraPartsOzone() = default;
 
 void ChromeBrowserMainExtraPartsOzone::PreEarlyInitialization() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::PreEarlyInitialization();
+    return;
+  }
+#endif
 #if defined(USE_X11)
   ui::SetNullErrorHandlers();
-#else
-  ui::OzonePlatform::PreEarlyInitialization();
 #endif
 }
 
 void ChromeBrowserMainExtraPartsOzone::PostMainMessageLoopStart() {
   auto shutdown_cb = base::BindOnce(&chrome::SessionEnding);
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::GetInstance()->PostMainMessageLoopStart(
+        std::move(shutdown_cb));
+    return;
+  }
+#endif
 #if defined(USE_X11)
   ui::SetErrorHandlers(std::move(shutdown_cb));
-#else
-  ui::OzonePlatform::GetInstance()->PostMainMessageLoopStart(
-      std::move(shutdown_cb));
 #endif
 }
 
 void ChromeBrowserMainExtraPartsOzone::PostMainMessageLoopRun() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::GetInstance()->PostMainMessageLoopRun();
+    return;
+  }
+#endif
 #if defined(USE_X11)
   ui::SetEmptyErrorHandlers();
-#else
-  ui::OzonePlatform::GetInstance()->PostMainMessageLoopRun();
 #endif
 }

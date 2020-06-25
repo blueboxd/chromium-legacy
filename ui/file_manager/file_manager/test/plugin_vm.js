@@ -53,7 +53,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
     });
   }
 
-  // Verify that /PvmDefault has label 'Plugin VM'.
+  // Verify that /PvmDefault has label 'Windows files'.
   await test.setupAndWaitUntilReady([], [], []);
   test.addEntries(
       [test.ENTRIES.pluginVm, test.ENTRIES.photosInPluginVm], [], []);

@@ -38,13 +38,17 @@ void CompleteAndSignalAnchorUse(
   std::move(completion_callback).Run(error);
 }
 
-net::CertVerifier::Config ExtendTrustAnchors(
+net::CertVerifier::Config ExtendTrustAnchorsAndTempCerts(
     const net::CertVerifier::Config& config,
-    const net::CertificateList& trust_anchors) {
+    const net::CertificateList& trust_anchors,
+    const net::CertificateList& untrusted_authorities) {
   net::CertVerifier::Config new_config = config;
   new_config.additional_trust_anchors.insert(
       new_config.additional_trust_anchors.begin(), trust_anchors.begin(),
       trust_anchors.end());
+  new_config.additional_untrusted_authorities.insert(
+      new_config.additional_untrusted_authorities.begin(),
+      untrusted_authorities.begin(), untrusted_authorities.end());
   return new_config;
 }
 
@@ -64,18 +68,23 @@ void CertVerifierWithTrustAnchors::InitializeOnIOThread(
     std::unique_ptr<net::CertVerifier> delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_ = std::move(delegate);
-  delegate_->SetConfig(ExtendTrustAnchors(orig_config_, trust_anchors_));
+  delegate_->SetConfig(ExtendTrustAnchorsAndTempCerts(
+      orig_config_, trust_anchors_, untrusted_authorities_));
 }
 
-void CertVerifierWithTrustAnchors::SetTrustAnchors(
-    const net::CertificateList& trust_anchors) {
+void CertVerifierWithTrustAnchors::SetAdditionalCerts(
+    const net::CertificateList& trust_anchors,
+    const net::CertificateList& untrusted_authorities) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (trust_anchors == trust_anchors_)
+  if (std::tie(trust_anchors, untrusted_authorities) ==
+      std::tie(trust_anchors_, untrusted_authorities_))
     return;
   trust_anchors_ = trust_anchors;
+  untrusted_authorities_ = untrusted_authorities;
   if (!delegate_)
     return;
-  delegate_->SetConfig(ExtendTrustAnchors(orig_config_, trust_anchors_));
+  delegate_->SetConfig(ExtendTrustAnchorsAndTempCerts(
+      orig_config_, trust_anchors_, untrusted_authorities_));
 }
 
 int CertVerifierWithTrustAnchors::Verify(
@@ -100,7 +109,8 @@ int CertVerifierWithTrustAnchors::Verify(
 void CertVerifierWithTrustAnchors::SetConfig(const Config& config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   orig_config_ = config;
-  delegate_->SetConfig(ExtendTrustAnchors(orig_config_, trust_anchors_));
+  delegate_->SetConfig(ExtendTrustAnchorsAndTempCerts(
+      orig_config_, trust_anchors_, untrusted_authorities_));
 }
 
 }  // namespace network

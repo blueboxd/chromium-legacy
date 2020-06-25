@@ -2824,6 +2824,7 @@ ci.linux_builder(
     schedule = '0 0,6,12,18 * * *',
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
     triggered_by = [],
+    notifies = ['component-mapping'],
 )
 
 

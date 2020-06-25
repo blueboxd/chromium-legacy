@@ -28,12 +28,12 @@ blink::mojom::SerialPortInfoPtr ToBlinkType(
     const device::mojom::SerialPortInfo& port) {
   auto info = blink::mojom::SerialPortInfo::New();
   info->token = port.token;
-  info->has_vendor_id = port.has_vendor_id;
+  info->has_usb_vendor_id = port.has_vendor_id;
   if (port.has_vendor_id)
-    info->vendor_id = port.vendor_id;
-  info->has_product_id = port.has_product_id;
+    info->usb_vendor_id = port.vendor_id;
+  info->has_usb_product_id = port.has_product_id;
   if (port.has_product_id)
-    info->product_id = port.product_id;
+    info->usb_product_id = port.product_id;
   return info;
 }
 

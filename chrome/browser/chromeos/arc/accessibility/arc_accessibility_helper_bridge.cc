@@ -547,8 +547,9 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
   // notification updated. As order of OnNotificationSurfaceAdded call is not
   // guaranteed, we are dispatching the event in both
   // ArcAccessibilityHelperBridge and ArcNotificationContentView. The event
-  // needs to be dispatched after 1. ax tree id is set to the surface, 2 the
-  // surface is attached to the content view.
+  // needs to be dispatched after:
+  // 1. ax_tree_id is set to the surface
+  // 2. the surface is attached to the content view
   if (surface->IsAttached()) {
     surface->GetAttachedHost()->NotifyAccessibilityEvent(
         ax::mojom::Event::kChildrenChanged, false);

@@ -301,7 +301,7 @@ cr.define('settings_people_page_quick_unlock', function() {
               document.body.appendChild(testElement);
               Polymer.dom.flush();
 
-              testElement.setModes_ = quickUnlockPrivateApi.setModes.bind(
+              testElement.setModes = quickUnlockPrivateApi.setModes.bind(
                   quickUnlockPrivateApi,
                   quickUnlockPrivateApi.getFakeToken().token, [], [], () => {
                     return true;

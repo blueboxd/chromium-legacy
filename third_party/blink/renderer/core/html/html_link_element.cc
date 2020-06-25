@@ -77,7 +77,8 @@ void HTMLLinkElement::ParseAttribute(
     rel_attribute_ = LinkRelAttribute(value);
     if (rel_attribute_.IsImport()) {
       if (RuntimeEnabledFeatures::HTMLImportsEnabled(GetExecutionContext())) {
-        Deprecation::CountDeprecation(&GetDocument(), WebFeature::kHTMLImports);
+        Deprecation::CountDeprecation(GetExecutionContext(),
+                                      WebFeature::kHTMLImports);
       } else {
         // Show a warning that HTML Imports (<link rel=import>) were detected,
         // but HTML Imports have been disabled. Without this, the failure would

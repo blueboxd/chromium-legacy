@@ -20,9 +20,9 @@ BUILD_COMMON_PATH = os.path.join(
 ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'android_platform', 'development',
     'scripts')
+BUILD_PATH = os.path.join(DIR_SOURCE_ROOT, 'build')
 DEVIL_PATH = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'catapult', 'devil')
-TESTING_PATH = os.path.join(DIR_SOURCE_ROOT, 'testing')
 TRACING_PATH = os.path.join(
     DIR_SOURCE_ROOT, 'third_party', 'catapult', 'tracing')
 

@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_constraints.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -472,7 +471,7 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
   if (window->IsSecureContext(error_message)) {
     UseCounter::Count(window, WebFeature::kGetUserMediaSecureOrigin);
-    window->document()->CountUseOnlyInCrossOriginIframe(
+    window->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGetUserMediaSecureOriginIframe);
 
     // Feature policy deprecation messages.
@@ -500,7 +499,7 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
   Deprecation::CountDeprecation(window,
                                 WebFeature::kGetUserMediaInsecureOrigin);
   Deprecation::CountDeprecationCrossOriginIframe(
-      *window->document(), WebFeature::kGetUserMediaInsecureOriginIframe);
+      window, WebFeature::kGetUserMediaInsecureOriginIframe);
   return false;
 }
 

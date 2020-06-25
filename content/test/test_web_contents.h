@@ -110,6 +110,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetLastCommittedURL(const GURL& url) override;
   void SetTitle(const base::string16& new_title) override;
   void SetMainFrameMimeType(const std::string& mime_type) override;
+  const std::string& GetContentsMimeType() override;
   void SetIsCurrentlyAudible(bool audible) override;
   void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
   void TestDidFinishLoad(const GURL& url) override;

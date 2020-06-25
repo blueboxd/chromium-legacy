@@ -238,8 +238,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   // Cursor is visible by default in tests.
   shell->cursor_manager()->ShowCursor();
 
-  shell->assistant_controller()->SetAssistant(
-      assistant_service_->CreateRemoteAndBind());
+  shell->assistant_controller()->SetAssistant(assistant_service_.get());
 
   shell->system_tray_model()->SetClient(system_tray_client_.get());
 

@@ -32,7 +32,6 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -155,7 +154,7 @@ void Geolocation::RecordOriginTypeAccess() const {
   String insecure_origin_msg;
   if (window->IsSecureContext(insecure_origin_msg)) {
     UseCounter::Count(window, WebFeature::kGeolocationSecureOrigin);
-    window->document()->CountUseOnlyInCrossOriginIframe(
+    window->CountUseOnlyInCrossOriginIframe(
         WebFeature::kGeolocationSecureOriginIframe);
   } else if (GetFrame()
                  ->GetSettings()
@@ -165,13 +164,13 @@ void Geolocation::RecordOriginTypeAccess() const {
     Deprecation::CountDeprecation(
         window, WebFeature::kGeolocationInsecureOriginDeprecatedNotRemoved);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *window->document(),
+        window,
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
   } else {
     Deprecation::CountDeprecation(window,
                                   WebFeature::kGeolocationInsecureOrigin);
     Deprecation::CountDeprecationCrossOriginIframe(
-        *window->document(), WebFeature::kGeolocationInsecureOriginIframe);
+        window, WebFeature::kGeolocationInsecureOriginIframe);
   }
 }
 

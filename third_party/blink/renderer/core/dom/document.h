@@ -1576,9 +1576,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void CountUse(mojom::WebFeature feature) const;
   void CountProperty(CSSPropertyID property_id) const;
   void CountAnimatedProperty(CSSPropertyID property_id) const;
-  // Count |feature| only when this document is associated with a cross-origin
-  // iframe.
-  void CountUseOnlyInCrossOriginIframe(mojom::WebFeature feature) const;
   // Return whether the Feature was previously counted for this document.
   // NOTE: only for use in testing.
   bool IsUseCounted(mojom::WebFeature) const;

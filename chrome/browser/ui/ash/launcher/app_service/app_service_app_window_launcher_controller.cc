@@ -31,8 +31,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_util.h"
+#include "components/exo/shell_surface_base.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -40,6 +42,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -479,6 +483,14 @@ void AppServiceAppWindowLauncherController::RegisterWindow(
     }
 
     AddWindowToShelf(window, shelf_id);
+
+    if (plugin_vm::IsPluginVmAppWindow(window)) {
+      // Set an icon for the Plugin VM app window.
+      static_cast<exo::ShellSurfaceBase*>(
+          views::Widget::GetWidgetForNativeWindow(window)->widget_delegate())
+          ->SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGO_PLUGIN_VM_DEFAULT_32));
+    }
   }
 }
 

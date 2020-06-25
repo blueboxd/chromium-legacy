@@ -17,7 +17,7 @@ from gpu_tests.skia_gold import gpu_skia_gold_session
 
 from pyfakefs import fake_filesystem_unittest
 
-path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'testing')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'build')
 from skia_gold_common import unittest_utils
 
 createSkiaGoldArgs = unittest_utils.createSkiaGoldArgs

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
@@ -22,9 +23,8 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/label.h"
@@ -33,14 +33,12 @@ namespace ash {
 
 namespace {
 
-using chromeos::assistant::DefaultAssistantInteractionSubscriber;
-using chromeos::assistant::mojom::Assistant;
-using chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
-using chromeos::assistant::mojom::AssistantInteractionType;
-using chromeos::assistant::mojom::AssistantQuerySource;
-using chromeos::assistant::mojom::AssistantSuggestion;
-using chromeos::assistant::mojom::AssistantSuggestionPtr;
-using chromeos::assistant::mojom::AssistantSuggestionType;
+using chromeos::assistant::Assistant;
+using chromeos::assistant::AssistantInteractionMetadata;
+using chromeos::assistant::AssistantInteractionType;
+using chromeos::assistant::AssistantQuerySource;
+using chromeos::assistant::AssistantSuggestion;
+using chromeos::assistant::AssistantSuggestionType;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -56,16 +54,25 @@ void FindChildByClassName(views::View* parent, T** result) {
 // Mocks -----------------------------------------------------------------------
 
 class MockAssistantInteractionSubscriber
-    : public testing::NiceMock<DefaultAssistantInteractionSubscriber> {
+    : public testing::NiceMock<
+          chromeos::assistant::AssistantInteractionSubscriber> {
  public:
-  MockAssistantInteractionSubscriber(Assistant* service) {
-    service->AddAssistantInteractionSubscriber(BindNewPipeAndPassRemote());
+  explicit MockAssistantInteractionSubscriber(Assistant* service)
+      : service_(service) {
+    service_->AddAssistantInteractionSubscriber(this);
+  }
+
+  ~MockAssistantInteractionSubscriber() override {
+    service_->RemoveAssistantInteractionSubscriber(this);
   }
 
   MOCK_METHOD(void,
               OnInteractionStarted,
-              (AssistantInteractionMetadataPtr),
+              (const AssistantInteractionMetadata&),
               (override));
+
+ private:
+  Assistant* service_;
 };
 
 // ScopedShowUi ----------------------------------------------------------------
@@ -76,7 +83,7 @@ class ScopedShowUi {
       : original_visibility_(
             AssistantUiController::Get()->GetModel()->visibility()) {
     AssistantUiController::Get()->ShowUi(
-        chromeos::assistant::mojom::AssistantEntryPoint::kUnspecified);
+        chromeos::assistant::AssistantEntryPoint::kUnspecified);
   }
 
   ScopedShowUi(const ScopedShowUi&) = delete;
@@ -86,7 +93,7 @@ class ScopedShowUi {
     switch (original_visibility_) {
       case AssistantVisibility::kClosed:
         AssistantUiController::Get()->CloseUi(
-            chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+            chromeos::assistant::AssistantExitPoint::kUnspecified);
         return;
       case AssistantVisibility::kVisible:
         // No action necessary.
@@ -116,7 +123,7 @@ class AssistantOnboardingViewTest : public AssistantAshTestBase {
   }
 
   void SetOnboardingSuggestions(
-      std::vector<AssistantSuggestionPtr> onboarding_suggestions) {
+      std::vector<AssistantSuggestion> onboarding_suggestions) {
     const_cast<AssistantSuggestionsModel*>(
         AssistantSuggestionsController::Get()->GetModel())
         ->SetOnboardingSuggestions(std::move(onboarding_suggestions));
@@ -247,10 +254,11 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {
   // Expect a text interaction originating from the onboarding feature...
   MockAssistantInteractionSubscriber subscriber(assistant_service());
   EXPECT_CALL(subscriber, OnInteractionStarted)
-      .WillOnce(testing::Invoke([](AssistantInteractionMetadataPtr metadata) {
-        EXPECT_EQ(AssistantInteractionType::kText, metadata->type);
-        EXPECT_EQ(AssistantQuerySource::kBetterOnboarding, metadata->source);
-      }));
+      .WillOnce(
+          testing::Invoke([](const AssistantInteractionMetadata& metadata) {
+            EXPECT_EQ(AssistantInteractionType::kText, metadata.type);
+            EXPECT_EQ(AssistantQuerySource::kBetterOnboarding, metadata.source);
+          }));
 
   // ...when an onboarding suggestion is pressed.
   TapOnAndWait(suggestions_grid()->children().at(0));
@@ -262,13 +270,13 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionUpdates) {
   EXPECT_FALSE(suggestions_grid()->children().empty());
 
   // Manually create a suggestion.
-  AssistantSuggestionPtr suggestion = AssistantSuggestion::New();
-  suggestion->id = base::UnguessableToken();
-  suggestion->type = AssistantSuggestionType::kBetterOnboarding;
-  suggestion->text = "Forced suggestion";
+  AssistantSuggestion suggestion;
+  suggestion.id = base::UnguessableToken();
+  suggestion.type = AssistantSuggestionType::kBetterOnboarding;
+  suggestion.text = "Forced suggestion";
 
   // Force a model update.
-  std::vector<AssistantSuggestionPtr> suggestions;
+  std::vector<AssistantSuggestion> suggestions;
   suggestions.push_back(std::move(suggestion));
   SetOnboardingSuggestions(std::move(suggestions));
 

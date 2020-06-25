@@ -112,7 +112,8 @@ for grdp in grdp_files:
     resource_bundle[msg.attrib['name']] = ''.join(msg.itertext()).strip()
 private_api_strings = read('chrome/browser/chromeos/'
                            'file_manager/file_manager_string_util.cc')
-for m in re.finditer(r'SET_STRING\(\"(.*?)\",\s+(\w+)\);', private_api_strings):
+for m in re.finditer(
+    r'SET_STRING\(\s*\"(.*?)\",\s+(\w+)\);', private_api_strings):
   strings[m.group(1)] = resource_bundle.get(m.group(2), m.group(2))
 
 

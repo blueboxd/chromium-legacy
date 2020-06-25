@@ -5055,14 +5055,14 @@
   </message>
 
   <!-- Strings for Plugin VM -->
-  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Plugin VM' app.">
-    Plugin VM
+  <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Parallels' app.">
+    Parallels Desktop
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE" desc="Title of the Plugin VM installer when asking user to start installation.">
     Set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> on your Chromebook
   </message>
-  <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_MESSAGE" desc="Body of the Plugin VM installer when asking user to start installation." translateable="false">
-    <ph name="MINIMUM_SPACE">$1<ex>20GB</ex></ph> of free space is required for installation.
+  <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_MESSAGE" desc="Body of the Parallels installer when asking user to start installation.">
+    <ph name="PARALLELS_NAME">Parallels Desktop</ph> allows you to run Windows® apps on your Chromebook. <ph name="MINIMUM_SPACE">$1<ex>20GB</ex></ph> of free space is recommended for installation.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Plugin VM installer to begin installion.">
     Install
@@ -5097,8 +5097,8 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_IMPORTED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
     <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> is ready to use.
   </message>
-  <message name="IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE" desc="Text of the Plugin VM installer after new VM creation.">
-    Please launch Plugin VM to install the Guest Operating System.
+  <message name="IDS_PLUGIN_VM_INSTALLER_CREATED_MESSAGE" desc="Text of the Parallels installer after new VM creation.">
+    Please launch Parallels Desktop to install Windows.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR" desc="Text of the Plugin VM installer if the installation failed due to an internal error.">
     Couldn't install <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
@@ -5152,7 +5152,7 @@
     Something went wrong. Please try again.
   </message>
   <message name="IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY" desc="Message of the confirmation dialog displayed before removal begins.">
-    Removing Plugin VM will delete your VM. This includes its applications, settings, and data. Are you sure you wish to continue?
+    Uninstalling Parallels Desktop will delete your Windows image. This includes its applications, settings, and data. Are you sure you wish to continue?
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app.">
     Uninstalling <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>...

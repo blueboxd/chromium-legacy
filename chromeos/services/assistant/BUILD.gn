@@ -202,6 +202,7 @@ source_set("tests") {
       "//chromeos/services/network_config/public/mojom",
       "//services/audio/public/cpp:test_support",
       "//services/device/public/cpp:test_support",
+      "//services/media_session/public/mojom",
     ]
   }
 }

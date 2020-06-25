@@ -85,10 +85,6 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
     conversation_starters_client_ =
         std::make_unique<ConversationStartersClientImpl>(profile_);
   }
-
-  for (auto& receiver : pending_assistant_receivers_)
-    service_->BindAssistant(std::move(receiver));
-  pending_assistant_receivers_.clear();
 }
 
 void AssistantClientImpl::MaybeStartAssistantOptInFlow() {
@@ -96,17 +92,6 @@ void AssistantClientImpl::MaybeStartAssistantOptInFlow() {
     return;
 
   assistant_setup_->MaybeStartAssistantOptInFlow();
-}
-
-void AssistantClientImpl::BindAssistant(
-    mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver) {
-  if (!initialized_) {
-    pending_assistant_receivers_.push_back(std::move(receiver));
-    return;
-  }
-
-  chromeos::assistant::AssistantService::Get()->BindAssistant(
-      std::move(receiver));
 }
 
 void AssistantClientImpl::Observe(int type,

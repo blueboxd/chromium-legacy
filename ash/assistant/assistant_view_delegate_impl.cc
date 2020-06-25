@@ -4,6 +4,8 @@
 
 #include "ash/assistant/assistant_view_delegate_impl.h"
 
+#include <utility>
+
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
@@ -99,10 +101,10 @@ void AssistantViewDelegateImpl::OnOptInButtonPressed() {
     observer.OnOptInButtonPressed();
 }
 
-void AssistantViewDelegateImpl::OnSuggestionChipPressed(
-    const AssistantSuggestion* suggestion) {
+void AssistantViewDelegateImpl::OnSuggestionPressed(
+    const base::UnguessableToken& suggestion_id) {
   for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
-    observer.OnSuggestionChipPressed(suggestion);
+    observer.OnSuggestionPressed(suggestion_id);
 }
 
 }  // namespace ash

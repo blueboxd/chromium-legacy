@@ -4,6 +4,10 @@
 
 #include "components/viz/service/display_embedder/output_presenter_gl.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -18,6 +22,10 @@
 
 #if defined(OS_ANDROID)
 #include "ui/gl/gl_surface_egl_surface_control.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace viz {
@@ -211,11 +219,16 @@ OutputPresenterGL::OutputPresenterGL(scoped_refptr<gl::GLSurface> gl_surface,
   // used, and the gfx::BufferFormat specified in Reshape should be used
   // instead, because it may be updated to reflect changes in the content being
   // displayed (e.g, HDR content appearing on-screen).
-#if defined(USE_OZONE)
-  image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   image_format_ = BGRA_8888;
 #else
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    image_format_ =
+        GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
+    return;
+  }
+#endif
   image_format_ = RGBA_8888;
 #endif
 }

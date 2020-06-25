@@ -82,7 +82,8 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
       !GetExecutionContext()->IsSecureContext()) {
     if (!manifest.IsEmpty()) {
       Deprecation::CountDeprecation(
-          GetDocument(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+          GetExecutionContext(),
+          WebFeature::kApplicationCacheAPIInsecureOrigin);
     }
     return;
   }

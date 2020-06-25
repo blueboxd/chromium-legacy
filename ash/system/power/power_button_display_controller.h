@@ -29,7 +29,7 @@ class ScopedBacklightsForcedOff;
 // backlights off or disabling the touchscreen) on behalf of
 // PowerButtonController and TabletPowerButtonController.
 class ASH_EXPORT PowerButtonDisplayController
-    : public BacklightsForcedOffSetter::Observer,
+    : public ScreenBacklightObserver,
       public chromeos::PowerManagerClient::Observer,
       public ui::EventHandler,
       public ui::InputDeviceEventObserver {
@@ -50,10 +50,9 @@ class ASH_EXPORT PowerButtonDisplayController
   // |forced_off|.
   void SetBacklightsForcedOff(bool forced_off);
 
-  // Overridden from BacklightsForcedOffObserver:
+  // Overridden from ScreenBacklightObserver:
   void OnBacklightsForcedOffChanged(bool forced_off) override;
-  void OnScreenStateChanged(
-      BacklightsForcedOffSetter::ScreenState screen_state) override;
+  void OnScreenStateChanged(ScreenState screen_state) override;
 
   // Overridden from chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
@@ -75,7 +74,7 @@ class ASH_EXPORT PowerButtonDisplayController
 
   BacklightsForcedOffSetter* backlights_forced_off_setter_;  // Not owned.
 
-  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+  ScopedObserver<BacklightsForcedOffSetter, ScreenBacklightObserver>
       backlights_forced_off_observer_;
 
   // Whether an accessibility alert should be sent when the backlights

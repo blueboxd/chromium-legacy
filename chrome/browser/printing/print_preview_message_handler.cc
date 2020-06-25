@@ -320,6 +320,10 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     mojom::PrintCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (PrintPreviewUI::ShouldCancelRequest(ids))
+    return;
+
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PrintCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
@@ -398,6 +402,10 @@ void PrintPreviewMessageHandler::OnCompositeToPdfDone(
     mojom::PrintCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (PrintPreviewUI::ShouldCancelRequest(ids))
+    return;
+
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PrintCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Completion of document to pdf failed with error " << status;

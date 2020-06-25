@@ -17,6 +17,7 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_crypto_context.h"
+#include "media/base/async_destroy_video_decoder.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
@@ -51,12 +52,6 @@ std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
     AndroidOverlayConfig) {
   return nullptr;
 }
-
-// Make MCVD's destruction observable for teardown tests.
-struct DestructionObservableMCVD : public DestructionObservable,
-                                   public MediaCodecVideoDecoder {
-  using MediaCodecVideoDecoder::MediaCodecVideoDecoder;
-};
 
 }  // namespace
 
@@ -149,18 +144,16 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
     ON_CALL(*video_frame_factory_, Initialize(ExpectedOverlayMode(), _))
         .WillByDefault(RunCallback<1>(texture_owner));
 
-    auto* observable_mcvd = new DestructionObservableMCVD(
+    auto* mcvd = new MediaCodecVideoDecoder(
         gpu_preferences_, gpu_feature_info_, std::make_unique<NullMediaLog>(),
         device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::BindRepeating(&CreateAndroidOverlayCb),
         base::BindRepeating(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                             base::Unretained(this)),
         std::move(video_frame_factory));
-    mcvd_.reset(observable_mcvd);
-    mcvd_raw_ = observable_mcvd;
-    destruction_observer_ = observable_mcvd->CreateDestructionObserver();
-    // Ensure MCVD doesn't leak by default.
-    destruction_observer_->ExpectDestruction();
+    mcvd_ = std::make_unique<AsyncDestroyVideoDecoder<MediaCodecVideoDecoder>>(
+        base::WrapUnique(mcvd));
+    mcvd_raw_ = mcvd;
   }
 
   VideoFrameFactory::OverlayMode ExpectedOverlayMode() const {
@@ -291,7 +284,6 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   gpu::MockTextureOwner* texture_owner_;
   MockVideoFrameFactory* video_frame_factory_;
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
-  std::unique_ptr<DestructionObserver> destruction_observer_;
   ProvideOverlayInfoCB provide_overlay_info_cb_;
   bool restart_for_transitions_;
   gpu::GpuPreferences gpu_preferences_;
@@ -308,7 +300,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
   MediaCodecVideoDecoder* mcvd_raw_;
-  std::unique_ptr<MediaCodecVideoDecoder> mcvd_;
+  std::unique_ptr<VideoDecoder> mcvd_;
 };
 
 // Tests which only work for a single codec.
@@ -687,9 +679,6 @@ TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeAsyncDestruction) {
   // before the decoder is actually destructed, asynchronously.
   EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
   mcvd_.reset();
-
-  // Make sure the decoder has not been destroyed yet.
-  destruction_observer_->DoNotAllowDestruction();
 }
 
 // A reference test for UnregisterPlayerBeforeAsyncDestruction.
@@ -704,9 +693,6 @@ TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeSyncDestruction) {
   // When |mcvd_| is reset, expect that it will unregister itself immediately.
   EXPECT_CALL(*cdm_, UnregisterPlayer(MockMediaCryptoContext::kRegistrationId));
   mcvd_.reset();
-
-  // Make sure the decoder is now destroyed.
-  destruction_observer_->ExpectDestruction();
 }
 
 TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
@@ -818,18 +804,9 @@ TEST_P(MediaCodecVideoDecoderTest, EosDecodeCbIsRunAfterEosIsDequeued) {
   std::move(video_frame_factory_->last_closure_).Run();
 }
 
-TEST_P(MediaCodecVideoDecoderTest, TeardownBeforeInitWorks) {
-  // Since we assert that MCVD is destructed by default, this test verifies that
-  // MCVD is destructed safely before Initialize().
-}
-
 TEST_P(MediaCodecVideoDecoderTest, TeardownInvalidatesCodecCreationWeakPtr) {
   InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
-  destruction_observer_->DoNotAllowDestruction();
   mcvd_.reset();
-  // DeleteSoon() is now pending. Ensure it's safe if the codec creation
-  // completes before it runs.
-  destruction_observer_->ExpectDestruction();
   EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(NotNull()));
   ASSERT_TRUE(codec_allocator_->ProvideMockCodecAsync());
 }
@@ -837,11 +814,7 @@ TEST_P(MediaCodecVideoDecoderTest, TeardownInvalidatesCodecCreationWeakPtr) {
 TEST_P(MediaCodecVideoDecoderTest,
        TeardownInvalidatesCodecCreationWeakPtrButDoesNotCallReleaseMediaCodec) {
   InitializeWithTextureOwner_OneDecodePending(TestVideoConfig::Large(codec_));
-  destruction_observer_->DoNotAllowDestruction();
   mcvd_.reset();
-  // DeleteSoon() is now pending. Ensure it's safe if the codec creation
-  // completes before it runs.
-  destruction_observer_->ExpectDestruction();
 
   // A null codec should not be released via ReleaseMediaCodec().
   EXPECT_CALL(*codec_allocator_, MockReleaseMediaCodec(_)).Times(0);
@@ -880,7 +853,6 @@ TEST_P(MediaCodecVideoDecoderVp8Test,
   PumpCodec();
 
   // MCVD should not be destructed immediately.
-  destruction_observer_->DoNotAllowDestruction();
   mcvd_.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -888,7 +860,6 @@ TEST_P(MediaCodecVideoDecoderVp8Test,
   codec->AcceptOneInput(MockMediaCodecBridge::kEos);
   codec->ProduceOneOutput(MockMediaCodecBridge::kEos);
   EXPECT_CALL(*codec, Flush()).Times(0);
-  destruction_observer_->ExpectDestruction();
   PumpCodec();
   base::RunLoop().RunUntilIdle();
 }

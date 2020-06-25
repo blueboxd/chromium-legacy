@@ -958,7 +958,8 @@
         'DeviceAllowRedeemChromeOsRegistrationOffers',
         'DeviceQuirksDownloadEnabled',
         'ExtensionCacheSize',
-        'DeviceOffHours'
+        'DeviceOffHours',
+        'SuggestedContentEnabled',
       ],
     },
     {
@@ -21629,6 +21630,28 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
     },
+    {
+      'name': 'SuggestedContentEnabled',
+      'owners': ['wrong@chromium.org', 'chrome-knowledge-eng@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'default_for_enterprise_users': False,
+      'id': 726,
+      'caption': 'Enable Suggested Content',
+      'tags': [],
+      'desc': '''This feature enables suggestions for new content to explore. Includes apps, webpages, and more.
+      If this policy is set to True, then suggestions for new content to explore will be enabled.
+      If this policy is set to False, then suggestions for new content to explore will be disabled.
+      If this policy is left unset, then suggestions for new content to explore will be disabled for managed users.
+      '''
+    },
   ],
 
   'messages': {
@@ -22513,6 +22536,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 725,
+  'highest_id_currently_used': 726,
   'highest_atomic_group_id_currently_used': 38
 }

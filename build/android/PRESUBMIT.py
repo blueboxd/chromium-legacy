@@ -43,7 +43,7 @@ def CommonChecks(input_api, output_api):
               J('..', '..', 'third_party', 'catapult', 'tracing'),
               J('..', '..', 'third_party', 'depot_tools'),
               J('..', '..', 'third_party', 'colorama', 'src'),
-              J('..', '..', 'testing'),
+              J('..', '..', 'build'),
           ]))
   tests.extend(
       input_api.canned_checks.GetPylint(

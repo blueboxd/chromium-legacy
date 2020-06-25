@@ -107,7 +107,6 @@ class ASH_EXPORT PinRequestView : public views::DialogDelegateView,
     LoginPinView* pin_keyboard_view();
 
     views::Textfield* GetInputTextField(int index);
-
     PinRequestViewState state() const;
 
    private:

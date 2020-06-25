@@ -6,6 +6,7 @@ ortuno@chromium.org
 per-file chrome_help_app*=carpenterr@chromium.org
 per-file terminal_source*=calamity@chromium.org
 per-file terminal_source*=joelhockey@chromium.org
+per-file default_web_app_ids.h=jshikaram@chromium.org
 
 # TEAM: cros-essential-apps-dev@chromium.org
 # COMPONENT: Platform>Apps>SystemWebApps

@@ -362,6 +362,9 @@
   ProceduralBlock extendedCompletion = ^{
     [self.tabSwitcher.delegate
         tabSwitcherDismissTransitionDidEnd:self.tabSwitcher];
+    if (base::FeatureList::IsEnabled(kContainedBVC)) {
+      [self.bvcContainer.currentBVC becomeFirstResponder];
+    }
     if (completion) {
       completion();
     }
@@ -383,8 +386,6 @@
                                         toBrowser:self.bvcContainer
                                    withCompletion:^{
                                      extendedCompletion();
-                                     [self.bvcContainer
-                                             .currentBVC becomeFirstResponder];
                                    }];
 
   } else {

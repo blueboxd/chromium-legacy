@@ -14,7 +14,7 @@
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/scoped_observer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ui {
 class CallbackLayerAnimationObserver;
@@ -60,7 +60,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
       public AssistantInteractionModelObserver,
       public AssistantResponseObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   explicit AnimatedContainerView(AssistantViewDelegate* delegate);
   ~AnimatedContainerView() override;
@@ -80,7 +80,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   // AssistantResponseObserver:
   void OnUiElementAdded(const AssistantUiElement* ui_element) override;
   void OnSuggestionsAdded(
-      const std::vector<const AssistantSuggestion*>& suggestions) override;
+      const std::vector<AssistantSuggestion>& suggestions) override;
 
   // Remove all current responses/views.
   // This will abort all in progress animations, and remove all the child views
@@ -110,7 +110,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   //    - Return an ElementAnimator to animate the view. Note that it is
   //      permissible to return |nullptr| if no managed animation is desired.
   virtual std::unique_ptr<ElementAnimator> HandleSuggestion(
-      const AssistantSuggestion* suggestion);
+      const AssistantSuggestion& suggestion);
 
   AssistantViewDelegate* delegate() { return delegate_; }
 

@@ -75,6 +75,8 @@
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -431,7 +433,9 @@ bool IsCertInCertificateList(
 
 // Allows testing if user policy provided trust roots take effect, without
 // having device policy.
-class PolicyProvidedCertsRegularUserTest : public InProcessBrowserTest {
+class PolicyProvidedCertsRegularUserTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  protected:
   PolicyProvidedCertsRegularUserTest() {
     // Use the same testing slot as private and public slot for testing.
@@ -443,9 +447,19 @@ class PolicyProvidedCertsRegularUserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   UserPolicyCertsHelper user_policy_certs_helper_;
 
@@ -453,14 +467,14 @@ class PolicyProvidedCertsRegularUserTest : public InProcessBrowserTest {
   std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest, TrustAnchorApplied) {
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsRegularUserTest, TrustAnchorApplied) {
   user_policy_certs_helper_.SetRootCertONCUserPolicy(browser()->profile());
   EXPECT_EQ(net::OK,
             VerifyTestServerCert(browser()->profile(),
                                  user_policy_certs_helper_.server_cert()));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsRegularUserTest,
                        UntrustedIntermediateAuthorityApplied) {
   // Sanity check: Apply ONC policy which does not mention the intermediate
   // authority.
@@ -480,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
                 user_policy_certs_helper_.server_cert_by_intermediate()));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsRegularUserTest,
                        AuthorityAvailableThroughNetworkCertLoader) {
   // Set |NetworkCertLoader| to use a test NSS database - otherwise, it is not
   // properly initialized because |UserSessionManager| only sets the primary
@@ -505,10 +519,15 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest,
       chromeos::NetworkCertLoader::Get()->authority_certs()));
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         PolicyProvidedCertsRegularUserTest,
+                         ::testing::Bool());
+
 // Base class for testing policy-provided trust roots with device-local
 // accounts. Needs device policy.
 class PolicyProvidedCertsDeviceLocalAccountTest
-    : public DevicePolicyCrosBrowserTest {
+    : public DevicePolicyCrosBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   PolicyProvidedCertsDeviceLocalAccountTest() {
     // Use the same testing slot as private and public slot for testing.
@@ -523,6 +542,14 @@ class PolicyProvidedCertsDeviceLocalAccountTest
   virtual void SetupDevicePolicy() = 0;
 
   void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
     user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
@@ -541,6 +568,8 @@ class PolicyProvidedCertsDeviceLocalAccountTest
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 
@@ -596,7 +625,7 @@ class PolicyProvidedCertsPublicSessionTest
 
 // TODO(https://crbug.com/874831): Re-enable this after the source of the
 // flakiness has been identified.
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsPublicSessionTest,
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsPublicSessionTest,
                        DISABLED_AllowedInPublicSession) {
   StartLogin();
   chromeos::test::WaitForPrimaryUserSessionStart();
@@ -612,9 +641,27 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsPublicSessionTest,
                                  user_policy_certs_helper_.server_cert()));
 }
 
-class PolicyProvidedCertsOnUserSessionInitTest : public LoginPolicyTestBase {
+INSTANTIATE_TEST_SUITE_P(All,
+                         PolicyProvidedCertsPublicSessionTest,
+                         ::testing::Bool());
+
+class PolicyProvidedCertsOnUserSessionInitTest
+    : public LoginPolicyTestBase,
+      public ::testing::WithParamInterface<bool> {
  protected:
   PolicyProvidedCertsOnUserSessionInitTest() {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+
+    LoginPolicyTestBase::SetUpInProcessBrowserTestFixture();
+  }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
     std::string user_policy_blob = GetTestCertsFileContents(kRootCaCertOnc);
@@ -638,12 +685,13 @@ class PolicyProvidedCertsOnUserSessionInitTest : public LoginPolicyTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsOnUserSessionInitTest);
 };
 
 // Verifies that the policy-provided trust root is active as soon as the user
 // session starts.
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsOnUserSessionInitTest,
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsOnUserSessionInitTest,
                        TrustAnchorsAvailableImmediatelyAfterSessionStart) {
   // Load the certificate which is only OK if the policy-provided authority is
   // actually trusted.
@@ -662,13 +710,27 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsOnUserSessionInitTest,
   EXPECT_EQ(net::OK, VerifyTestServerCert(active_user_profile(), server_cert));
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         PolicyProvidedCertsOnUserSessionInitTest,
+                         ::testing::Bool());
+
 // Testing policy-provided client cert import.
-class PolicyProvidedClientCertsTest : public DevicePolicyCrosBrowserTest {
+class PolicyProvidedClientCertsTest
+    : public DevicePolicyCrosBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  protected:
   PolicyProvidedClientCertsTest() {}
   ~PolicyProvidedClientCertsTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+
     // Set up the mock policy provider.
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
@@ -697,10 +759,11 @@ class PolicyProvidedClientCertsTest : public DevicePolicyCrosBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   MockConfigurationPolicyProvider provider_;
 };
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
+IN_PROC_BROWSER_TEST_P(PolicyProvidedClientCertsTest, ClientCertsImported) {
   // Sanity check: we don't expect the client certificate to be present before
   // setting the user ONC policy.
   EXPECT_FALSE(
@@ -711,6 +774,8 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
       IsCertInNSSDatabase(browser()->profile(), kClientCertSubjectCommonName));
 }
 
+INSTANTIATE_TEST_SUITE_P(All, PolicyProvidedClientCertsTest, ::testing::Bool());
+
 // TODO(https://crbug.com/874937): Add a test case for a kiosk session.
 
 // Class for testing policy-provided extensions in the sign-in profile.
@@ -718,7 +783,8 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
 // |kSigninScreenExtension1|. Force-installs |kSigninScreenExtension1| and
 // |kSigninScreenExtension2| into the sign-in profile.
 class PolicyProvidedCertsForSigninExtensionTest
-    : public SigninProfileExtensionsPolicyTestBase {
+    : public SigninProfileExtensionsPolicyTestBase,
+      public ::testing::WithParamInterface<bool> {
  protected:
   // Use DEV channel as sign-in screen extensions are currently usable there.
   PolicyProvidedCertsForSigninExtensionTest()
@@ -726,6 +792,14 @@ class PolicyProvidedCertsForSigninExtensionTest
   ~PolicyProvidedCertsForSigninExtensionTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+
     // Apply |kRootCaCert| for |kSigninScreenExtension1| in Device ONC policy.
     base::FilePath test_certs_path = GetTestCertsPath();
     std::string x509_contents;
@@ -821,6 +895,8 @@ class PolicyProvidedCertsForSigninExtensionTest
     return onc_dict;
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PolicyProvidedCertsForSigninExtensionTest);
 };  // namespace policy
 
@@ -834,7 +910,7 @@ class PolicyProvidedCertsForSigninExtensionTest
 // Verification of all these aspects has been intentionally put into one test,
 // so if the verification result leaks (e.g. due to accidentally reusing
 // caches), the test is able to catch that.
-IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsForSigninExtensionTest,
+IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsForSigninExtensionTest,
                        ActiveOnlyInSelectedExtension) {
   chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
   content::StoragePartition* signin_profile_default_partition =
@@ -873,5 +949,9 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsForSigninExtensionTest,
             VerifyTestServerCertInStoragePartition(extension_2_partition,
                                                    server_cert_));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PolicyProvidedCertsForSigninExtensionTest,
+                         ::testing::Bool());
 
 }  // namespace policy

@@ -93,7 +93,6 @@ class NetworkService;
 class NetworkServiceNetworkDelegate;
 class NetworkServiceProxyDelegate;
 class MdnsResponderManager;
-class NSSTempCertsCacheChromeOS;
 class P2PSocketManager;
 class ProxyLookupRequest;
 class QuicTransport;
@@ -652,9 +651,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
 #if defined(OS_CHROMEOS)
   CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
-  // Additional certificates made available to NSS cert validation as temporary
-  // certificates.
-  std::unique_ptr<network::NSSTempCertsCacheChromeOS> nss_temp_certs_cache_;
 #endif
 
   // CertNetFetcher used by the context's CertVerifier. May be nullptr if

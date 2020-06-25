@@ -193,7 +193,7 @@ cr.define('cr.ui', function() {
       const target = e.target;
 
       // Ignore focus on a menu button or command item.
-      if (target.menu || target.command) {
+      if (target.menu || target.command || (target instanceof cr.ui.MenuItem)) {
         return;
       }
 

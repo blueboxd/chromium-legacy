@@ -16,7 +16,8 @@ class AssistantControllerImpl;
 
 class AssistantViewDelegateImpl : public AssistantViewDelegate {
  public:
-  AssistantViewDelegateImpl(AssistantControllerImpl* assistant_controller);
+  explicit AssistantViewDelegateImpl(
+      AssistantControllerImpl* assistant_controller);
   ~AssistantViewDelegateImpl() override;
 
   // AssistantViewDelegate:
@@ -36,7 +37,8 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
   void OnOptInButtonPressed() override;
-  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
+  void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) override;
 
  private:
   AssistantControllerImpl* const assistant_controller_;

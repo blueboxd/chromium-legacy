@@ -28,6 +28,7 @@ Polymer({
     authToken: {
       type: String,
       value: '',
+      observer: 'onAuthTokenChanged_',
     },
 
     /**
@@ -74,6 +75,19 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether an event was fired to show the password dialog.
+   * @private
+   */
+  requestPasswordIfApplicable_() {
+    const currentRoute = settings.Router.getInstance().getCurrentRoute();
+    if (currentRoute === settings.routes.FINGERPRINT && !this.authToken) {
+      this.fire('password-requested');
+      return true;
+    }
+    return false;
+  },
+
+  /**
    * Overridden from settings.RouteObserverBehavior.
    * @param {!settings.Route} newRoute
    * @param {!settings.Route} oldRoute
@@ -89,6 +103,10 @@ Polymer({
       // Start fingerprint authentication when going from LOCK_SCREEN to
       // FINGERPRINT page.
       this.browserProxy_.startAuthentication();
+    }
+
+    if (this.requestPasswordIfApplicable_()) {
+      this.showSetupFingerprintDialog_ = false;
     }
   },
 
@@ -195,6 +213,13 @@ Polymer({
         settings.Router.getInstance().getCurrentRoute() ==
             settings.routes.FINGERPRINT) {
       this.onSetupFingerprintDialogClose_();
+    }
+  },
+
+  /** @private */
+  onAuthTokenChanged_() {
+    if (this.requestPasswordIfApplicable_()) {
+      this.showSetupFingerprintDialog_ = false;
     }
   },
 

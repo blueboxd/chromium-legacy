@@ -117,7 +117,8 @@ void BatchingMediaLog::AddLogRecordLocked(
       case media::MediaLogRecord::Type::kMessage:
         queued_media_events_.push_back(*event);
         if (event->params.HasKey(media::MediaLogMessageLevelToString(
-                media::MediaLogMessageLevel::kERROR))) {
+                media::MediaLogMessageLevel::kERROR)) &&
+            !cached_media_error_for_message_) {
           cached_media_error_for_message_ = std::move(event);
         }
         break;

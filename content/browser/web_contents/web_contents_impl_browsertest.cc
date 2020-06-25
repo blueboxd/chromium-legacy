@@ -3961,6 +3961,19 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(shell()->web_contents()->GetThemeColor(), 0xFFFF0000u);
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MimeTypeResetWhenNavigatingAway) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/single_face.jpg"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_EQ(shell()->web_contents()->GetContentsMimeType(), "text/html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_EQ(shell()->web_contents()->GetContentsMimeType(), "image/jpeg");
+}
+
 namespace {
 
 // A WebContentsObserver which caches the total number of calls to

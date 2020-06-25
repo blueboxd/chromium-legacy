@@ -141,6 +141,7 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       GetCreateDecoderFunctionsCB get_create_decoder_functions_cb);
 
   ~VideoDecoderPipeline() override;
+  static void DestroyAsync(std::unique_ptr<VideoDecoderPipeline>);
 
   // VideoDecoder implementation
   std::string GetDisplayName() const override;
@@ -175,8 +176,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
       GetCreateDecoderFunctionsCB get_create_decoder_functions_cb);
-  void Destroy() override;
-  void DestroyTask();
 
   void InitializeTask(const VideoDecoderConfig& config,
                       InitCB init_cb,

@@ -8,7 +8,6 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {

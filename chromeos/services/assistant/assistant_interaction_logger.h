@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace chromeos {
 namespace assistant {
@@ -17,8 +16,7 @@ namespace assistant {
 // A subscriber that will log all Assistant interactions.
 // The interactions will be logged using
 //     VLOG(AssistantInteractionLogger::kVLogLevel)
-class AssistantInteractionLogger
-    : public mojom::AssistantInteractionSubscriber {
+class AssistantInteractionLogger : public AssistantInteractionSubscriber {
  public:
   // VLog level used for logging interactions.
   constexpr static const int kVLogLevel = 1;
@@ -32,31 +30,24 @@ class AssistantInteractionLogger
   AssistantInteractionLogger& operator=(AssistantInteractionLogger&) = delete;
   ~AssistantInteractionLogger() override;
 
-  mojo::PendingRemote<mojom::AssistantInteractionSubscriber>
-  BindNewPipeAndPassRemote();
-
   // AssistantInteractionSubscriber implementation:
   void OnInteractionStarted(
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr metadata)
-      override;
+      const AssistantInteractionMetadata& metadata) override;
 
   void OnInteractionFinished(
-      chromeos::assistant::mojom::AssistantInteractionResolution resolution)
-      override;
+      AssistantInteractionResolution resolution) override;
 
   void OnHtmlResponse(const std::string& response,
                       const std::string& fallback) override;
 
   void OnSuggestionsResponse(
-      std::vector<chromeos::assistant::mojom::AssistantSuggestionPtr> response)
-      override;
+      const std::vector<AssistantSuggestion>& response) override;
 
   void OnTextResponse(const std::string& response) override;
 
-  void OnOpenUrlResponse(const ::GURL& url, bool in_background) override;
+  void OnOpenUrlResponse(const GURL& url, bool in_background) override;
 
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override;
+  bool OnOpenAppResponse(const AndroidAppInfo& app_info) override;
 
   void OnSpeechRecognitionStarted() override;
 
@@ -73,9 +64,6 @@ class AssistantInteractionLogger
   void OnTtsStarted(bool due_to_error) override;
 
   void OnWaitStarted() override;
-
- private:
-  mojo::Receiver<AssistantInteractionSubscriber> receiver_{this};
 };
 
 }  // namespace assistant

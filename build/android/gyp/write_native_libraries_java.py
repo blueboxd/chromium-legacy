@@ -26,6 +26,7 @@ def _FormatLibraryName(library_name):
 def main():
   parser = argparse.ArgumentParser()
 
+  build_utils.AddDepfileOption(parser)
   parser.add_argument('--final', action='store_true', help='Use final fields.')
   parser.add_argument(
       '--enable-chromium-linker',
@@ -96,6 +97,13 @@ def main():
           zip_file=srcjar_file,
           zip_path='org/chromium/base/library_loader/NativeLibraries.java',
           data=NATIVE_LIBRARIES_TEMPLATE.format(**format_dict))
+
+  if options.depfile:
+    assert options.native_libraries_list
+    build_utils.WriteDepfile(options.depfile,
+                             options.output,
+                             inputs=[options.native_libraries_list],
+                             add_pydeps=False)
 
 
 if __name__ == '__main__':

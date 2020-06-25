@@ -41,6 +41,8 @@ testcase.sharePathWithCrostini = async () => {
       '[command="#share-with-linux"]:not([hidden]):not([disabled])';
   const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
+  const shareMessageShown = '#files-message:not([hidden])';
+  const shareMessageHidden = '#files-message[hidden]';
 
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
@@ -70,6 +72,11 @@ testcase.sharePathWithCrostini = async () => {
   await remoteCall.callRemoteTestUtil(
       'fakeMouseRightClick', appId, ['#file-list [file-name="photos"']);
   await remoteCall.waitForElement(appId, menuNoShareWithLinux);
+
+  // Click 'photos' to go in photos directory, ensure share message is shown.
+  await remoteCall.waitForElement(appId, shareMessageHidden);
+  remoteCall.callRemoteTestUtil('fakeMouseDoubleClick', appId, [photos]);
+  await remoteCall.waitForElement(appId, shareMessageShown);
 };
 
 testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
@@ -129,10 +136,11 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
       ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
   chrome.test.assertEq(
-      ['Unable to open with Plugin VM'], dialogTitles.map(el => el.text));
+      ['Unable to open with Parallels Desktop'],
+      dialogTitles.map(el => el.text));
   chrome.test.assertEq(
-      ['To open files with Plugin VM App (Plugin VM), ' +
-       'first move them to the Plugin VM folder.'],
+      ['To open files with Plugin VM App (Parallels Desktop), ' +
+       'first move them to the Windows files folder.'],
       dialogTexts.map(el => el.text));
 
   // TODO(crbug.com/1049453): Test file is moved. This can only be tested when
@@ -196,10 +204,11 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
       ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
   chrome.test.assertEq(
-      ['Unable to open with Plugin VM'], dialogTitles.map(el => el.text));
+      ['Unable to open with Parallels Desktop'],
+      dialogTitles.map(el => el.text));
   chrome.test.assertEq(
-      ['To open files with Plugin VM App (Plugin VM), ' +
-       'first copy them to the Plugin VM folder.'],
+      ['To open files with Plugin VM App (Parallels Desktop), ' +
+       'first copy them to the Windows files folder.'],
       dialogTexts.map(el => el.text));
 
   // TODO(crbug.com/1049453): Test file is moved. This can only be tested when

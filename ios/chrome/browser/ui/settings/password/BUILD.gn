@@ -10,6 +10,9 @@ source_set("password") {
     "password_details_table_view_controller_delegate.h",
     "password_exporter.h",
     "password_exporter.mm",
+    "passwords_consumer.h",
+    "passwords_mediator.h",
+    "passwords_mediator.mm",
     "passwords_table_view_controller.h",
     "passwords_table_view_controller.mm",
   ]
@@ -92,6 +95,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view:test_support",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",

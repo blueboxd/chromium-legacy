@@ -8,6 +8,7 @@ import amber_repo
 import boot_data
 import logging
 import os
+import runner_logs
 import subprocess
 import sys
 import target
@@ -55,29 +56,28 @@ class EmuTarget(target.Target):
 
     # Zircon sends debug logs to serial port (see kernel.serial=legacy flag
     # above). Serial port is redirected to a file through emulator stdout.
-    # Unless a |_system_log_file| is explicitly set, we output the kernel serial
-    # log to a temporary file, and print that out if we are unable to connect to
+    # Unless runner_pogs are enabled, we output the kernel serial log
+    # to a temporary file, and print that out if we are unable to connect to
     # the emulator guest, to make it easier to diagnose connectivity issues.
-    temporary_system_log_file = None
-    if self._system_log_file:
-      stdout = self._system_log_file
+    temporary_log_file = None
+    if runner_logs.IsEnabled():
+      stdout = runner_logs.FileStreamFor('serial_log')
     else:
-      temporary_system_log_file = tempfile.NamedTemporaryFile('w')
-      stdout = temporary_system_log_file
-    stderr = subprocess.STDOUT
-    emu_env = self._SetEnv()
+      temporary_log_file = tempfile.NamedTemporaryFile('w')
+      stdout = temporary_log_file
+
     self._emu_process = subprocess.Popen(emu_command,
                                          stdin=open(os.devnull),
                                          stdout=stdout,
-                                         stderr=stderr,
-                                         env=emu_env)
+                                         stderr=subprocess.STDOUT,
+                                         env=self._SetEnv())
 
     try:
       self._WaitUntilReady()
     except target.FuchsiaTargetException:
-      if temporary_system_log_file:
+      if temporary_log_file:
         logging.info('Kernel logs:\n' +
-                     open(temporary_system_log_file.name, 'r').read())
+                     open(temporary_log_file.name, 'r').read())
       raise
 
   def GetAmberRepo(self):

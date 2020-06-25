@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <set>
 #include <utility>
@@ -184,9 +185,7 @@ std::vector<RequestAction> CompositeMatcher::GetModifyHeadersActions(
 
   // Sort |modify_headers_actions| in descending order of priority.
   std::sort(modify_headers_actions.begin(), modify_headers_actions.end(),
-            [](const RequestAction& lhs, const RequestAction& rhs) {
-              return lhs.index_priority > rhs.index_priority;
-            });
+            std::greater<>());
   return modify_headers_actions;
 }
 

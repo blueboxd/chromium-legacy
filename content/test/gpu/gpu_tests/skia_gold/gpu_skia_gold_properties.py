@@ -7,7 +7,7 @@ import subprocess
 import sys
 
 from gpu_tests import path_util
-path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'testing')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'build')
 from skia_gold_common import skia_gold_properties
 
 

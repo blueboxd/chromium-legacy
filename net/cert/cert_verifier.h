@@ -65,6 +65,12 @@ class NET_EXPORT CertVerifier {
     // system store. This is implementation-specific plumbing for passing
     // additional anchors through.
     CertificateList additional_trust_anchors;
+
+    // Additional temporary certs to consider as intermediates during path
+    // validation. Ordinarily, implementations of CertVerifier use intermediate
+    // certs from the configured system store. This is implementation-specific
+    // plumbing for passing additional intermediates through.
+    CertificateList additional_untrusted_authorities;
   };
 
   class Request {

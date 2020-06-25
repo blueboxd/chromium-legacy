@@ -6,24 +6,24 @@
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 namespace assistant {
 namespace util {
 
 void IncrementAssistantQueryCountForEntryPoint(
-    chromeos::assistant::mojom::AssistantEntryPoint entry_point) {
+    chromeos::assistant::AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.QueryCountPerEntryPoint", entry_point);
 }
 
 void RecordAssistantEntryPoint(
-    chromeos::assistant::mojom::AssistantEntryPoint entry_point) {
+    chromeos::assistant::AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.EntryPoint", entry_point);
 }
 
 void RecordAssistantExitPoint(
-    chromeos::assistant::mojom::AssistantExitPoint exit_point) {
+    chromeos::assistant::AssistantExitPoint exit_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.ExitPoint", exit_point);
 }
 
@@ -33,7 +33,7 @@ void IncrementAssistantButtonClickCount(AssistantButtonId button_id) {
 }
 
 void RecordAssistantQuerySource(
-    chromeos::assistant::mojom::AssistantQuerySource source) {
+    chromeos::assistant::AssistantQuerySource source) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.QuerySource", source);
 }
 

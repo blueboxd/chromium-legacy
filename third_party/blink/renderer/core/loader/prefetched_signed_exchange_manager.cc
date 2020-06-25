@@ -236,7 +236,7 @@ PrefetchedSignedExchangeManager::CreatePrefetchedSignedExchangeURLLoader(
     mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
         loader_factory) {
   return Platform::Current()
-      ->WrapURLLoaderFactory(loader_factory.PassPipe())
+      ->WrapURLLoaderFactory(std::move(loader_factory))
       ->CreateURLLoader(
           request,
           frame_->GetFrameScheduler()->CreateResourceLoadingTaskRunnerHandle());

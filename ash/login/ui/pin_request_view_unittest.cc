@@ -32,6 +32,7 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/session_manager_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
@@ -129,6 +130,30 @@ class PinRequestViewTest : public LoginTestBase,
     EXPECT_EQ(1, pin_submitted_);
     EXPECT_EQ("012345", last_code_submitted_);
     pin_submitted_ = 0;
+  }
+
+  void PressKeyHelper(ui::KeyboardCode key) {
+    GetEventGenerator()->PressKey(key, ui::EF_NONE);
+    // Wait until the keypress is processed.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void ExpectTextSelection(int start, int end) {
+    PinRequestView::TestApi test_api(view_);
+    ui::AXNodeData ax_node_data;
+    test_api.access_code_view()->GetAccessibleNodeData(&ax_node_data);
+    EXPECT_EQ(start, ax_node_data.GetIntAttribute(
+                         ax::mojom::IntAttribute::kTextSelStart));
+    EXPECT_EQ(end, ax_node_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTextSelEnd));
+  }
+
+  void ExpectTextValue(const std::string& value) {
+    PinRequestView::TestApi test_api(view_);
+    ui::AXNodeData ax_node_data;
+    test_api.access_code_view()->GetAccessibleNodeData(&ax_node_data);
+    EXPECT_EQ(value, ax_node_data.GetStringAttribute(
+                         ax::mojom::StringAttribute::kValue));
   }
 
   std::unique_ptr<MockLoginScreenClient> login_client_;
@@ -536,6 +561,89 @@ TEST_F(PinRequestViewTest, VirtualKeyboardHidden) {
   EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 
   DismissWidget();
+}
+
+// Tests input value and text selection of the virtual text field used by a11y.
+TEST_F(PinRequestViewTest, VirtualTextFieldForA11y) {
+  StartView();
+  PinRequestView::TestApi test_api(view_);
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+
+  // Assert the initial value.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(0 /*start=*/, 0 /*end=*/);
+  ExpectTextValue("      ");
+
+  // Test Insert Digit
+  PressKeyHelper(ui::KeyboardCode::VKEY_0);
+  ExpectTextSelection(1 /*start=*/, 1 /*end=*/);
+  ExpectTextValue("0     ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_1);
+  ExpectTextSelection(2 /*start=*/, 2 /*end=*/);
+  ExpectTextValue("01    ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_2);
+  ExpectTextSelection(3 /*start=*/, 3 /*end=*/);
+  ExpectTextValue("012   ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_3);
+  ExpectTextSelection(4 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0123  ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_4);
+  ExpectTextSelection(5 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("01234 ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_5);
+  // It doesn't matter that start != 6 for the last field, since the focus
+  // will automatically move to "submit" button, and the last digit won't
+  // get read.
+  ExpectTextSelection(5 /*start=*/, 6 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Left Arrow.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(4 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("012345");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  ExpectTextSelection(3 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Right Arrow.
+  PressKeyHelper(ui::KeyboardCode::VKEY_RIGHT);
+  ExpectTextSelection(4 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("012345");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_RIGHT);
+  ExpectTextSelection(5 /*start=*/, 6 /*end=*/);
+  ExpectTextValue("012345");
+
+  // Test Backspace.
+  PressKeyHelper(ui::KeyboardCode::VKEY_BACK);
+  ExpectTextSelection(5 /*start=*/, 5 /*end=*/);
+  ExpectTextValue("01234 ");
+
+  PressKeyHelper(ui::KeyboardCode::VKEY_BACK);
+  ExpectTextSelection(4 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0123  ");
+
+  // Now the input fields will be [0][1][2][3][|][].
+
+  // Test moving left twice and change value.
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  PressKeyHelper(ui::KeyboardCode::VKEY_LEFT);
+  PressKeyHelper(ui::KeyboardCode::VKEY_3);
+  ExpectTextSelection(3 /*start=*/, 4 /*end=*/);
+  ExpectTextValue("0133  ");
+
+  // Test Mouse event, mouse click on input field at index 0, then press
+  // keyboard 1.
+  SimulateMouseClickAt(GetEventGenerator(), test_api.GetInputTextField(0));
+  PressKeyHelper(ui::KeyboardCode::VKEY_1);
+  ExpectTextSelection(1 /*start=*/, 2 /*end=*/);
+  ExpectTextValue("1133  ");
 }
 
 // Tests that spoken feedback keycombo starts screen reader.

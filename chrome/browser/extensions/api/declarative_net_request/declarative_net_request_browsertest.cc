@@ -3280,11 +3280,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        ModifyHeadersBadgeText) {
-  auto get_referer_url = [this](std::string host) {
+  auto get_referer_url = [this](const std::string& host) {
     return embedded_test_server()->GetURL(host, "/set-header?referer: none");
   };
-  auto get_set_cookie_url = [this](std::string host) {
+  auto get_set_cookie_url = [this](const std::string& host) {
     return embedded_test_server()->GetURL(host, "/set-cookie?a=b");
+  };
+  auto get_no_headers_url = [this](const std::string& host) {
+    return embedded_test_server()->GetURL(host,
+                                          "/pages_with_script/index.html");
   };
 
   const std::string kFrameName1 = "frame1";
@@ -3315,10 +3319,21 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
           {TestHeaderInfo("referer", "remove", base::nullopt)}),
       base::nullopt);
 
-  ASSERT_NO_FATAL_FAILURE(
-      LoadExtensionWithRules({example_set_cookie_rule, both_headers_rule,
-                              abc_set_cookie_rule, abc_referer_rule},
-                             "extension_1", {URLPattern::kAllUrlsPattern}));
+  TestRule ext1_set_custom_request_header_rule = CreateModifyHeadersRule(
+      kMinValidID + 4, kMinValidPriority, "def.com",
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "set", "ext_1")}),
+      base::nullopt);
+
+  TestRule ext1_add_custom_response_header_rule = CreateModifyHeadersRule(
+      kMinValidID + 5, kMinValidPriority, "ghi.com", base::nullopt,
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header2", "append", "ext_1")}));
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {example_set_cookie_rule, both_headers_rule, abc_set_cookie_rule,
+       abc_referer_rule, ext1_set_custom_request_header_rule,
+       ext1_add_custom_response_header_rule},
+      "extension_1", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId extension_1_id = last_loaded_extension_id();
   ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
@@ -3337,8 +3352,20 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
           {TestHeaderInfo("referer", "remove", base::nullopt)}),
       base::nullopt);
 
+  TestRule ext2_set_custom_request_header_rule = CreateModifyHeadersRule(
+      kMinValidID + 4, kMinValidPriority, "def.com",
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "set", "ext_2")}),
+      base::nullopt);
+
+  TestRule ext2_add_custom_response_header_rule = CreateModifyHeadersRule(
+      kMinValidID + 5, kMinValidPriority, "ghi.com", base::nullopt,
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header2", "append", "ext_2")}));
+
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
-      {example_referer_rule}, "extension_2", {URLPattern::kAllUrlsPattern}));
+      {example_referer_rule, ext2_set_custom_request_header_rule,
+       ext2_add_custom_response_header_rule},
+      "extension_2", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId extension_2_id = last_loaded_extension_id();
   ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
@@ -3372,6 +3399,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // separate rules from |extension_1| and so the action count for
       // |extension_1| should increment by two.
       {get_set_cookie_url("abc.com"), true, "5", "2"},
+      // This request without headers matches rules to set the header1 request
+      // header from both extensions. Since |extension_2| was installed later
+      // than |extension_1|, only the rule from |extension_2| should take effect
+      // and so the action count for |extension_2| should increment by one.
+      {get_no_headers_url("def.com"), false, "5", "3"},
+      // This request without headers matches rules to append the header2
+      // response header from both extensions. Since each extension has a rule
+      // which has taken effect, the action count for both extensions should
+      // increment by one.
+      {get_no_headers_url("ghi.com"), false, "6", "4"},
   };
 
   ui_test_utils::NavigateToURL(browser(), page_url);

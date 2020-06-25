@@ -118,20 +118,30 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    downloadHasPopup_: {
+      type: String,
+      computed: 'computeDownloadHasPopup_(' +
+          'pdfFormSaveEnabled_, hasEdits, hasEnteredAnnotationMode)',
+    },
+
     strings: {
       type: Object,
       observer: 'onStringsSet_',
+    },
+
+    /**
+     * Whether the PDF Form save feature is enabled.
+     * @private
+     */
+    pdfFormSaveEnabled_: {
+      type: Boolean,
+      value: false,
     },
   },
 
   /** @type {?Object} */
   animation_: null,
-
-  /**
-   * Whether the PDF Form save feature is enabled.
-   * @private {boolean}
-   */
-  pdfFormSaveEnabled_: false,
 
   /** @private {?PromiseResolver<boolean>} */
   waitForFormFocusChange_: null,
@@ -260,8 +270,7 @@ Polymer({
    * @private
    */
   waitForEdits_() {
-    if (this.hasEnteredAnnotationMode ||
-        (this.hasEdits && this.pdfFormSaveEnabled_)) {
+    if (this.hasEditsToSave_()) {
       return Promise.resolve(true);
     }
     if (!this.isFormFieldFocused || !this.pdfFormSaveEnabled_) {
@@ -291,8 +300,8 @@ Polymer({
   onDownloadEditedClick_() {
     this.fire(
         'save',
-        this.hasEnteredAnnotationsMode ? SaveRequestType.ANNOTATION :
-                                         SaveRequestType.EDITED);
+        this.hasEnteredAnnotationMode ? SaveRequestType.ANNOTATION :
+                                        SaveRequestType.EDITED);
     this.$.downloadMenu.close();
   },
 
@@ -371,6 +380,24 @@ Polymer({
    */
   isAnnotationTool_(toolName) {
     return !!this.annotationTool && this.annotationTool.tool === toolName;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasEditsToSave_() {
+    return this.hasEnteredAnnotationMode ||
+        (this.pdfFormSaveEnabled_ && this.hasEdits);
+  },
+
+  /**
+   * @return {string} The value for the aria-haspopup attribute for the download
+   *     button.
+   * @private
+   */
+  computeDownloadHasPopup_() {
+    return this.hasEditsToSave_() ? 'menu' : 'false';
   },
 
   /** @private */

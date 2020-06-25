@@ -78,7 +78,6 @@ class PanelItem extends HTMLElement {
                   font: 13px Roboto;
                   line-height: 20px;
                   max-width: 216px;
-                  min-width: fit-content;
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
@@ -88,13 +87,16 @@ class PanelItem extends HTMLElement {
                   outline: none;
               }
 
+              :host([panel-type='3']) .xf-panel-text {
+                  width: 216px;
+              }
+
               :host([panel-type='3']) .xf-panel-label-text {
                   display: -webkit-box;
                   -webkit-line-clamp: 2;
                   -webkit-box-orient: vertical;
                   overflow: hidden;
                   white-space: normal;
-                  width: 216px;
               }
 
               :host([panel-type='3']) .xf-linebreaker {
@@ -103,6 +105,10 @@ class PanelItem extends HTMLElement {
 
               .xf-panel-label-text {
                   color: rgb(32, 33, 36);
+                  max-width: 216px;
+                  text-overflow: ellipsis;
+                  overflow: hidden;
+                  white-space: nowrap;
               }
 
               .xf-panel-secondary-text {

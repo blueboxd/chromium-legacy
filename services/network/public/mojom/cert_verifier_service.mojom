@@ -26,6 +26,7 @@ struct CertVerifierConfig {
   bool disable_symantec_enforcement;
   mojo_base.mojom.BigBuffer crl_set;
   array<network.mojom.X509Certificate> additional_trust_anchors;
+  array<network.mojom.X509Certificate> additional_untrusted_authorities;
 };
 
 // Allows the CertVerifierService to connect a new URLLoaderFactory if its

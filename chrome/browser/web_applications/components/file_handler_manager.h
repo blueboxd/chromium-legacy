@@ -108,7 +108,7 @@ class FileHandlerManager : public AppRegistrarObserver {
   AppRegistrar* registrar() { return registrar_; }
 
   // Gets all file handlers for |app_id|. |nullptr| if the app has no file
-  // handlers.
+  // handlers or if app_id was uninstalled.
   // Note: The lifetime of the file handlers are tied to the app they belong to.
   virtual const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id) = 0;
 

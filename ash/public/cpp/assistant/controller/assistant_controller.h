@@ -9,8 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 class GURL;
 
@@ -41,8 +40,7 @@ class ASH_PUBLIC_EXPORT AssistantController {
   virtual base::WeakPtr<AssistantController> GetWeakPtr() = 0;
 
   // Provides a reference to the underlying |assistant| service.
-  virtual void SetAssistant(
-      mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant) = 0;
+  virtual void SetAssistant(chromeos::assistant::Assistant* assistant) = 0;
 
   // Methods below may only be called after |SetAssistant| is called.
   // Show speaker id enrollment flow.

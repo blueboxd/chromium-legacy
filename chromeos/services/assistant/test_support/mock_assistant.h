@@ -5,19 +5,19 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_H_
 #define CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_MOCK_ASSISTANT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
 namespace assistant {
 
-class MockAssistant : public mojom::Assistant {
+class MockAssistant : public Assistant {
  public:
   MockAssistant();
   ~MockAssistant() override;
@@ -30,7 +30,7 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD(void,
               StartTextInteraction,
-              (const std::string&, mojom::AssistantQuerySource, bool));
+              (const std::string&, AssistantQuerySource, bool));
 
   MOCK_METHOD0(StartVoiceInteraction, void());
 
@@ -38,23 +38,22 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD1(StopActiveInteraction, void(bool));
 
-  MOCK_METHOD1(
-      AddAssistantInteractionSubscriber,
-      void(mojo::PendingRemote<
-           chromeos::assistant::mojom::AssistantInteractionSubscriber>));
+  MOCK_METHOD1(AddAssistantInteractionSubscriber,
+               void(AssistantInteractionSubscriber*));
+
+  MOCK_METHOD1(RemoveAssistantInteractionSubscriber,
+               void(AssistantInteractionSubscriber*));
 
   MOCK_METHOD2(RetrieveNotification,
-               void(chromeos::assistant::mojom::AssistantNotificationPtr, int));
+               void(const mojom::AssistantNotification&, int));
 
-  MOCK_METHOD1(DismissNotification,
-               void(chromeos::assistant::mojom::AssistantNotificationPtr));
+  MOCK_METHOD1(DismissNotification, void(const mojom::AssistantNotification&));
 
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
-  MOCK_METHOD1(SendAssistantFeedback,
-               void(chromeos::assistant::mojom::AssistantFeedbackPtr));
+  MOCK_METHOD1(SendAssistantFeedback, void(const AssistantFeedback&));
 
-  MOCK_METHOD1(NotifyEntryIntoAssistantUi, void(mojom::AssistantEntryPoint));
+  MOCK_METHOD1(NotifyEntryIntoAssistantUi, void(AssistantEntryPoint));
 
   MOCK_METHOD0(StopAlarmTimerRinging, void());
   MOCK_METHOD1(CreateTimer, void(base::TimeDelta));

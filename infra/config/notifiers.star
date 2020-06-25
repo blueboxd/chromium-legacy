@@ -33,3 +33,9 @@ luci.notifier(
         'cronet-bots-observer@google.com',
     ],
 )
+
+luci.notifier(
+    name = 'component-mapping',
+    on_new_status = ['FAILURE'],
+    notify_emails = ['chromium-component-mapping@google.com'],
+)

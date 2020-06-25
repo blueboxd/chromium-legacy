@@ -6,7 +6,6 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
 
 import {SaveRequestType} from './constants.js';
 import {PartialPoint, Point, Viewport} from './viewport.js';
@@ -45,25 +44,6 @@ let EmailMessageData;
  * }}
  */
 export let PrintPreviewParams;
-
-// Note: Redefining this type here, to work around the fact that ink externs
-// are only available on Chrome OS, so the targets that contain them cannot be
-// built on other platforms.
-// TODO (rbpotter): Break InkController into its own file that is only included
-// on Chrome OS.
-
-/**
- * @typedef {{
- *   setAnnotationTool: function(AnnotationTool):void,
- *   viewportChanged: function():void,
- *   saveDocument: function():!Promise,
- *   undo: function():void,
- *   redo: function():void,
- *   load: function(string, !ArrayBuffer):!Promise,
- *   viewport: !Viewport,
- * }}
- */
-let ViewerInkHostElement;
 
 /**
  * Creates a cryptographically secure pseudorandom 128-bit token.
@@ -128,109 +108,6 @@ export class ContentController {
    * @abstract
    */
   unload() {}
-}
-
-// Controller for annotation mode, on Chrome OS only. Fires the following events
-// from its event target:
-// has-unsaved-changes: Fired to indicate there are ink annotations that have
-//     not been saved.
-// set-annotation-undo-state: Contains information about whether undo or redo
-//     options are available.
-export class InkController extends ContentController {
-  /**
-   * @param {!Viewport} viewport
-   * @param {!HTMLDivElement} contentElement
-   */
-  constructor(viewport, contentElement) {
-    super();
-
-    /** @private {!Viewport} */
-    this.viewport_ = viewport;
-
-    /** @private {!HTMLDivElement} */
-    this.contentElement_ = contentElement;
-
-    /** @private {?ViewerInkHostElement} */
-    this.inkHost_ = null;
-
-    /** @private {!EventTarget} */
-    this.eventTarget_ = new EventTarget();
-
-    /** @type {?AnnotationTool} */
-    this.tool_ = null;
-  }
-
-  /** @return {!EventTarget} */
-  getEventTarget() {
-    return this.eventTarget_;
-  }
-
-  /** @param {AnnotationTool} tool */
-  setAnnotationTool(tool) {
-    this.tool_ = tool;
-    if (this.inkHost_) {
-      this.inkHost_.setAnnotationTool(tool);
-    }
-  }
-
-  /** @override */
-  rotateClockwise() {
-    // TODO(dstockwell): implement rotation
-  }
-
-  /** @override */
-  rotateCounterclockwise() {
-    // TODO(dstockwell): implement rotation
-  }
-
-  /** @override */
-  setTwoUpView(enableTwoUpView) {
-    // TODO(dstockwell): Implement two up view.
-  }
-
-  /** @override */
-  viewportChanged() {
-    this.inkHost_.viewportChanged();
-  }
-
-  /** @override */
-  save(requestType) {
-    return this.inkHost_.saveDocument();
-  }
-
-  /** @override */
-  undo() {
-    this.inkHost_.undo();
-  }
-
-  /** @override */
-  redo() {
-    this.inkHost_.redo();
-  }
-
-  /** @override */
-  load(filename, data) {
-    if (!this.inkHost_) {
-      const inkHost = document.createElement('viewer-ink-host');
-      this.contentElement_.appendChild(inkHost);
-      this.inkHost_ = /** @type {!ViewerInkHostElement} */ (inkHost);
-      this.inkHost_.viewport = this.viewport_;
-      inkHost.addEventListener('stroke-added', e => {
-        this.eventTarget_.dispatchEvent(new CustomEvent('has-unsaved-changes'));
-      });
-      inkHost.addEventListener('undo-state-changed', e => {
-        this.eventTarget_.dispatchEvent(
-            new CustomEvent('set-annotation-undo-state', {detail: e.detail}));
-      });
-    }
-    return this.inkHost_.load(filename, data);
-  }
-
-  /** @override */
-  unload() {
-    this.inkHost_.remove();
-    this.inkHost_ = null;
-  }
 }
 
 // PDF plugin controller, responsible for communicating with the embedded plugin

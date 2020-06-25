@@ -12,6 +12,7 @@
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -43,7 +44,6 @@ PrefetchURLLoader::PrefetchURLLoader(
         signed_exchange_prefetch_metric_recorder,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     const std::string& accept_langs,
     RecursivePrefetchTokenGenerator recursive_prefetch_token_generator)
     : frame_tree_node_id_(frame_tree_node_id),

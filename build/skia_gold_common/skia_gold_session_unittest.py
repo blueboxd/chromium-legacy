@@ -600,7 +600,7 @@ class SkiaGoldSessionDiffTest(fake_filesystem_unittest.TestCase):
       session.Diff(None, None, None)
 
 
-class SkiaGoldSessionRunComparisonTest(fake_filesystem_unittest.TestCase):
+class SkiaGoldSessionTriageLinkOmissionTest(fake_filesystem_unittest.TestCase):
   """Tests the functionality of SkiaGoldSession.GetTriageLinkOmissionReason."""
 
   def setUp(self):

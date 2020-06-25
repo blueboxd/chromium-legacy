@@ -120,6 +120,11 @@ struct RequestAction {
   RequestAction(const RequestAction&);
 };
 
+// Compares RequestAction by |index_priority|, breaking ties by |ruleset_id|
+// then |rule_id|.
+bool operator<(const RequestAction& lhs, const RequestAction& rhs);
+bool operator>(const RequestAction& lhs, const RequestAction& rhs);
+
 base::Optional<RequestAction> GetMaxPriorityAction(
     base::Optional<RequestAction> lhs,
     base::Optional<RequestAction> rhs);

@@ -18,9 +18,6 @@ class TestAssistantClient : public AssistantClient {
   ~TestAssistantClient() override;
 
   // AssistantClient:
-  void BindAssistant(
-      mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver)
-      override {}
   void RequestAssistantStructure(
       RequestAssistantStructureCallback callback) override;
 };

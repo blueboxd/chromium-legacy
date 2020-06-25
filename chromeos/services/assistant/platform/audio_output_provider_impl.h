@@ -16,7 +16,7 @@
 #include "chromeos/services/assistant/platform/audio_device_owner.h"
 #include "chromeos/services/assistant/platform/audio_input_impl.h"
 #include "chromeos/services/assistant/platform/volume_control_impl.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

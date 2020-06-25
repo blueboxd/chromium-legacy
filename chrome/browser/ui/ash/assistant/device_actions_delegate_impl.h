@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 class DeviceActionsDelegateImpl : public DeviceActionsDelegate {
  public:
@@ -21,7 +21,7 @@ class DeviceActionsDelegateImpl : public DeviceActionsDelegate {
 
   ~DeviceActionsDelegateImpl() override;
 
-  chromeos::assistant::mojom::AppStatus GetAndroidAppStatus(
+  chromeos::assistant::AppStatus GetAndroidAppStatus(
       const std::string& package_name) override;
 };
 

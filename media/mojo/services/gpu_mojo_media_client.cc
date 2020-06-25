@@ -243,7 +243,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       // requiring the provider to set |is_vulkan| in the ImageRecord.
       auto frame_info_helper =
           FrameInfoHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
-      video_decoder = std::make_unique<MediaCodecVideoDecoder>(
+      video_decoder = MediaCodecVideoDecoder::Create(
           gpu_preferences_, gpu_feature_info_, media_log->Clone(),
           DeviceInfo::GetInstance(),
           CodecAllocator::GetInstance(gpu_task_runner_),

@@ -221,8 +221,7 @@ class CorePageLoadMetricsObserver
                                  int behavior_flags) override;
 
  private:
-  void RecordNavigationTimingHistograms(
-      content::NavigationHandle* navigation_handle);
+  void RecordNavigationTimingHistograms();
   void RecordTimingHistograms(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(
@@ -231,6 +230,8 @@ class CorePageLoadMetricsObserver
   void RecordForegroundDurationHistograms(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       base::TimeTicks app_background_time);
+
+  content::NavigationHandleTiming navigation_handle_timing_;
 
   ui::PageTransition transition_;
   bool was_no_store_main_resource_;

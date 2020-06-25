@@ -77,8 +77,8 @@
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
   </message>
-  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" translateable="false" desc="PluginVm local directory label.">
-    Plugin VM
+  <message name="IDS_FILE_BROWSER_PLUGIN_VM_DIRECTORY_LABEL" desc="Parallels local directory label.">
+    Windows files
   </message>
   <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
@@ -598,11 +598,11 @@
   <message name="IDS_FILE_BROWSER_MANAGE_LINUX_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the crostini Linux container.">
     Manage Linux sharing
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" translateable="false" desc="Label for menu that will share a folder with the Plugin VM.">
-    Share with Plugin VM
+  <message name="IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL" desc="Label for menu that will share a folder with Parallels.">
+    Share with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" translateable="false" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
-    Manage Plugin VM sharing
+  <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with Parallels.">
+    Manage Parallels Desktop sharing
   </message>
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="Title of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
     Unable to open with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
@@ -1230,20 +1230,29 @@
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the crostini container.">
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Linux
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE" translateable="false" desc="Message title shown when a user shares the root of a volume such as 'My files' with the Plugin VM.">
-    Share folder with PluginVm
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the Parallels.">
+    Share folder with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the Plugin VM." >
-    Give Plugin VM permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with Parallels." >
+    Give Parallels Desktop permission to modify files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
   </message>
-  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE" translateable="false" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the Plugin VM.">
-    Give Plugin VM permission to modify files in your Google Drive. Changes will sync to your other devices.
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with Parallels.">
+    Give Parallels Desktop permission to modify files in your Google Drive. Changes will sync to your other devices.
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" translateable="false" desc="Confirmation message shown when a user shares a folder with the Plugin VM.">
-    1 folder shared with Plugin VM
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM" desc="Confirmation message shown when a user shares a folder with Parallels.">
+    1 folder shared with Parallels Desktop
   </message>
-  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" translateable="false" desc="Confirmation message shown when a user shares more than 1 folder with the Plugin VM.">
-    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Plugin VM
+  <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with Parallels.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Parallels Desktop
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_CROSTINI" desc="Message shown in FilesApp message bar when a user has shared a folder with the crostini container.">
+    This folder is shared with Linux
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_CROSTINI_AND_PLUGIN_VM" desc="Message shown in FilesApp message bar when a user has shared a folder with the crostini container and Windows.">
+    This folder is shared with Linux and Windows
+  </message>
+  <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_PLUGIN_VM" desc="Message shown in FilesApp message bar when a user has shared a folder with Windows.">
+    This folder is shared with Windows
   </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">

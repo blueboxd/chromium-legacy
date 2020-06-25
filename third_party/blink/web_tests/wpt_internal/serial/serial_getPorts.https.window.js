@@ -25,7 +25,6 @@ serial_test(async (t, fake) => {
   assert_equals(ports.length, 2);
   assert_true(ports[0] instanceof SerialPort);
   assert_true(ports[1] instanceof SerialPort);
-  // TODO: Assert that product IDs (if provided) are passed through.
 }, 'getPorts() returns the set of configured fake ports');
 
 serial_test(async (t, fake) => {

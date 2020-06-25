@@ -497,6 +497,14 @@ GetNewCertVerifierServiceRemote(
   return cert_verifier_remote;
 }
 
+void CreateInProcessCertVerifierServiceOnThread(
+    mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
+        receiver) {
+  // Except in tests, our CertVerifierServiceFactoryImpl is a singleton.
+  static base::NoDestructor<cert_verifier::CertVerifierServiceFactoryImpl>
+      cv_service_factory(std::move(receiver));
+}
+
 // Owns the CertVerifierServiceFactory used by the browser.
 // Lives on the UI thread.
 class CertVerifierServiceFactoryOwner {
@@ -528,10 +536,18 @@ class CertVerifierServiceFactoryOwner {
   cert_verifier::mojom::CertVerifierServiceFactory*
   GetCertVerifierServiceFactory() {
     if (!service_factory_) {
-      // Except in tests, our CertVerifierServiceFactoryImpl is a singleton.
-      static base::NoDestructor<cert_verifier::CertVerifierServiceFactoryImpl>
-          cv_service_factory(
-              service_factory_remote_.BindNewPipeAndPassReceiver());
+#if defined(OS_CHROMEOS)
+      // ChromeOS's in-process CertVerifierService should run on the IO thread
+      // because it interacts with IO-bound NSS and ChromeOS user slots.
+      // See for example InitializeNSSForChromeOSUser().
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CreateInProcessCertVerifierServiceOnThread,
+                         service_factory_remote_.BindNewPipeAndPassReceiver()));
+#else
+      CreateInProcessCertVerifierServiceOnThread(
+          service_factory_remote_.BindNewPipeAndPassReceiver());
+#endif
       service_factory_ = service_factory_remote_.get();
     }
     return service_factory_;

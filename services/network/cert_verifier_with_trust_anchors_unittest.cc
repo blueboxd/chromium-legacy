@@ -227,7 +227,8 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   ASSERT_FALSE(test_ca_x509cert_list.empty());
 
   // Verify() again with the additional trust anchors.
-  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
+  cert_verifier_->SetAdditionalCerts(test_ca_x509cert_list,
+                                     net::CertificateList());
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
@@ -242,7 +243,8 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
 
   // Verify() again with the additional trust anchors will hit the cache.
-  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
+  cert_verifier_->SetAdditionalCerts(test_ca_x509cert_list,
+                                     net::CertificateList());
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
@@ -254,7 +256,8 @@ TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUsingAdditionalTrustAnchor) {
   EXPECT_TRUE(WasTrustAnchorUsedAndReset());
 
   // Verifying after removing the trust anchors should now fail.
-  cert_verifier_->SetTrustAnchors(net::CertificateList());
+  cert_verifier_->SetAdditionalCerts(net::CertificateList(),
+                                     net::CertificateList());
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;
@@ -296,7 +299,8 @@ TEST_F(CertVerifierWithTrustAnchorsTest,
   ASSERT_FALSE(test_ca_x509cert_list.empty());
 
   // Verify() again with the additional trust anchors.
-  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
+  cert_verifier_->SetAdditionalCerts(test_ca_x509cert_list,
+                                     net::CertificateList());
   {
     net::CertVerifyResult verify_result;
     net::TestCompletionCallback callback;

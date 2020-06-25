@@ -23,7 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace ash {
@@ -33,7 +33,7 @@ enum class AssistantButtonId;
 
 class AssistantInteractionControllerImpl
     : public AssistantInteractionController,
-      public chromeos::assistant::mojom::AssistantInteractionSubscriber,
+      public chromeos::assistant::AssistantInteractionSubscriber,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
@@ -42,26 +42,21 @@ class AssistantInteractionControllerImpl
       public HighlighterController::Observer {
  public:
   using AssistantInteractionMetadata =
-      chromeos::assistant::mojom::AssistantInteractionMetadata;
-  using AssistantInteractionMetadataPtr =
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
+      chromeos::assistant::AssistantInteractionMetadata;
   using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
+      chromeos::assistant::AssistantInteractionResolution;
   using AssistantInteractionType =
-      chromeos::assistant::mojom::AssistantInteractionType;
-  using AssistantQuerySource = chromeos::assistant::mojom::AssistantQuerySource;
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using AssistantSuggestionType =
-      chromeos::assistant::mojom::AssistantSuggestionType;
+      chromeos::assistant::AssistantInteractionType;
+  using AssistantQuerySource = chromeos::assistant::AssistantQuerySource;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
+  using AssistantSuggestionType = chromeos::assistant::AssistantSuggestionType;
 
   explicit AssistantInteractionControllerImpl(
       AssistantControllerImpl* assistant_controller);
   ~AssistantInteractionControllerImpl() override;
 
-  // Provides a pointer to the |assistant| owned by AssistantController.
-  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+  // Provides a pointer to the |assistant| owned by AssistantService.
+  void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // AssistantInteractionController:
   const AssistantInteractionModel* GetModel() const override;
@@ -92,18 +87,19 @@ class AssistantInteractionControllerImpl
   // HighlighterController::Observer:
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
-  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override;
+  // chromeos::assistant::AssistantInteractionSubscriber:
+  void OnInteractionStarted(
+      const AssistantInteractionMetadata& metadata) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response,
                       const std::string& fallback) override;
   void OnSuggestionsResponse(
-      std::vector<AssistantSuggestionPtr> response) override;
+      const std::vector<AssistantSuggestion>& response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override;
+  bool OnOpenAppResponse(
+      const chromeos::assistant::AndroidAppInfo& app_info) override;
   void OnSpeechRecognitionStarted() override;
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,
@@ -117,7 +113,8 @@ class AssistantInteractionControllerImpl
   // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
-  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
+  void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -149,11 +146,8 @@ class AssistantInteractionControllerImpl
 
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
-
-  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_receiver_{this};
+  // Owned by AssistantService.
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   AssistantInteractionModel model_;
 

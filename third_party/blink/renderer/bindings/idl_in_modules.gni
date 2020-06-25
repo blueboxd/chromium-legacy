@@ -1019,6 +1019,7 @@ if (!is_android) {
             "//third_party/blink/renderer/modules/serial/serial_output_signals.idl",
             "//third_party/blink/renderer/modules/serial/serial_port.idl",
             "//third_party/blink/renderer/modules/serial/serial_port_filter.idl",
+            "//third_party/blink/renderer/modules/serial/serial_port_info.idl",
             "//third_party/blink/renderer/modules/serial/serial_port_request_options.idl",
             "//third_party/blink/renderer/modules/serial/worker_navigator_serial.idl",
           ],

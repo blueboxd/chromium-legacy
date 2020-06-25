@@ -20,10 +20,6 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 
-namespace storage {
-class BlobStorageContext;
-}
-
 namespace blink {
 class URLLoaderThrottle;
 }
@@ -35,6 +31,9 @@ class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
 class URLLoaderFactoryGetter;
 
+// A URLLoaderFactory that can be passed to a renderer to use for performing
+// prefetches. The renderer uses it for prefetch requests including <link
+// rel="prefetch">.
 class CONTENT_EXPORT PrefetchURLLoaderService final
     : public base::RefCountedThreadSafe<
           PrefetchURLLoaderService,
@@ -126,11 +125,6 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       signed_exchange_prefetch_metric_recorder_;
 
   std::string accept_langs_;
-
-  // Used to create a BlobDataHandle from a DataPipe of signed exchange's inner
-  // response body to store to |prefetched_signed_exchange_cache_| when
-  // SignedExchangeSubresourcePrefetch is enabled.
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoaderService);
 };

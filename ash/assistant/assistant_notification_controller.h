@@ -13,7 +13,7 @@
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/message_center/message_center_observer.h"
@@ -42,7 +42,7 @@ class ASH_EXPORT AssistantNotificationController
   const AssistantNotificationModel* model() const { return &model_; }
 
   // Provides a pointer to the |assistant| owned by AssistantController.
-  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+  void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // mojom::AssistantNotificationController:
   void AddOrUpdateNotification(AssistantNotificationPtr notification) override;
@@ -53,10 +53,10 @@ class ASH_EXPORT AssistantNotificationController
   void SetQuietMode(bool enabled) override;
 
   // AssistantNotificationModelObserver:
-  void OnNotificationAdded(const AssistantNotification* notification) override;
+  void OnNotificationAdded(const AssistantNotification& notification) override;
   void OnNotificationUpdated(
-      const AssistantNotification* notification) override;
-  void OnNotificationRemoved(const AssistantNotification* notification,
+      const AssistantNotification& notification) override;
+  void OnNotificationRemoved(const AssistantNotification& notification,
                              bool from_server) override;
   void OnAllNotificationsRemoved(bool from_server) override;
 
@@ -76,8 +76,8 @@ class ASH_EXPORT AssistantNotificationController
   AssistantNotificationModel model_;
   AssistantNotificationExpiryMonitor expiry_monitor_;
 
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_ = nullptr;
+  // Owned by AssistantService
+  chromeos::assistant::Assistant* assistant_ = nullptr;
 
   const message_center::NotifierId notifier_id_;
 

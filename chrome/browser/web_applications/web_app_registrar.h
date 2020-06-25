@@ -122,6 +122,7 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
 
  private:
   Registry registry_;
+  bool registry_profile_being_deleted_ = false;
 #if DCHECK_IS_ON()
   size_t mutations_count_ = 0;
 #endif

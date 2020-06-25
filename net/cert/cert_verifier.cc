@@ -120,11 +120,13 @@ bool operator==(const CertVerifier::Config& lhs,
   return std::tie(
              lhs.enable_rev_checking, lhs.require_rev_checking_local_anchors,
              lhs.enable_sha1_local_anchors, lhs.disable_symantec_enforcement,
-             lhs.crl_set, lhs.additional_trust_anchors) ==
+             lhs.crl_set, lhs.additional_trust_anchors,
+             lhs.additional_untrusted_authorities) ==
          std::tie(
              rhs.enable_rev_checking, rhs.require_rev_checking_local_anchors,
              rhs.enable_sha1_local_anchors, rhs.disable_symantec_enforcement,
-             rhs.crl_set, rhs.additional_trust_anchors);
+             rhs.crl_set, rhs.additional_trust_anchors,
+             rhs.additional_untrusted_authorities);
 }
 
 bool operator!=(const CertVerifier::Config& lhs,

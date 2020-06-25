@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_midi_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -101,7 +100,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
     UseCounter::Count(
         window,
         WebFeature::kRequestMIDIAccessWithSysExOption_ObscuredByFootprinting);
-    window->document()->CountUseOnlyInCrossOriginIframe(
+    window->CountUseOnlyInCrossOriginIframe(
         WebFeature::
             kRequestMIDIAccessIframeWithSysExOption_ObscuredByFootprinting);
   } else {
@@ -114,7 +113,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
           window, WebFeature::kNoSysexWebMIDIWithoutPermission);
     }
   }
-  window->document()->CountUseOnlyInCrossOriginIframe(
+  window->CountUseOnlyInCrossOriginIframe(
       WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
   if (!window->IsFeatureEnabled(

@@ -29,7 +29,7 @@ class FakeAndroidIntentHelper : public AndroidIntentHelper {
   // AndroidIntentHelper overrides:
   void LaunchAndroidIntent(const std::string& intent) override;
   base::Optional<std::string> GetAndroidAppLaunchIntent(
-      chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
+      const chromeos::assistant::AndroidAppInfo& app_info) override;
 
   // Adds a fake Android app.
   // |intent| will be returned from GetAndroidAppLaunchIntent() if the value of

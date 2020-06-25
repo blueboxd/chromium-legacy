@@ -48,8 +48,7 @@ PowerButtonDisplayController::~PowerButtonDisplayController() {
 }
 
 bool PowerButtonDisplayController::IsScreenOn() const {
-  return backlights_forced_off_setter_->screen_state() ==
-         BacklightsForcedOffSetter::ScreenState::ON;
+  return backlights_forced_off_setter_->screen_state() == ScreenState::ON;
 }
 
 void PowerButtonDisplayController::SetBacklightsForcedOff(bool forced_off) {
@@ -85,7 +84,7 @@ void PowerButtonDisplayController::OnBacklightsForcedOffChanged(
 }
 
 void PowerButtonDisplayController::OnScreenStateChanged(
-    BacklightsForcedOffSetter::ScreenState screen_state) {
+    ScreenState screen_state) {
   screen_state_last_changed_ = tick_clock_->NowTicks();
 }
 

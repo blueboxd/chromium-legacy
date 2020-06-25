@@ -18,10 +18,10 @@ namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
 
-class Document;
 class DocumentLoader;
 class ExecutionContext;
 class KURL;
+class LocalDOMWindow;
 class LocalFrame;
 class Report;
 
@@ -45,17 +45,12 @@ class CORE_EXPORT Deprecation final {
   // deprecation warnings when we're actively interested in removing them from
   // the platform.
   static void CountDeprecation(ExecutionContext*, WebFeature);
-  static void CountDeprecation(const Document&, WebFeature);
   static void CountDeprecation(DocumentLoader*, WebFeature);
   static void DeprecationWarningOnly(DocumentLoader*, WebFeature);
 
-  // TODO(crbug.com/1029822): Temporary helpers to ease migrating
-  // ExecutionContext to LocalDOMWindow.
-  static void CountDeprecation(Document*, WebFeature);
-
   // Count only features if they're being used in an iframe which does not
-  // have script access into the top level document.
-  static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
+  // have script access into the top level window.
+  static void CountDeprecationCrossOriginIframe(LocalDOMWindow*, WebFeature);
 
   static String DeprecationMessage(WebFeature);
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prefs/pref_service_incognito_whitelist.h"
+#include "chrome/browser/prefs/pref_service_incognito_allowlist.h"
 
 #include <vector>
 
@@ -167,7 +167,7 @@ const char* const kPersistentPrefNames[] = {
 
 namespace prefs {
 
-std::vector<const char*> GetIncognitoPersistentPrefsWhitelist() {
+std::vector<const char*> GetIncognitoPersistentPrefsAllowlist() {
   std::vector<const char*> whitelist;
   whitelist.insert(whitelist.end(), kPersistentPrefNames,
                    kPersistentPrefNames + base::size(kPersistentPrefNames));

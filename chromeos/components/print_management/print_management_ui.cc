@@ -92,7 +92,8 @@ PrintManagementUI::PrintManagementUI(
                                IDR_PRINT_MANAGEMENT_MOJO_INTERFACE_PROVIDER_JS);
   html_source->AddResourcePath("pwa.html", IDR_PRINT_MANAGEMENT_PWA_HTML);
   html_source->AddResourcePath("manifest.json", IDR_PRINT_MANAGEMENT_MANIFEST);
-  html_source->AddResourcePath("app_icon_192.png", IDR_PRINT_MANAGEMENT_ICON);
+  html_source->AddResourcePath("printing_app_icon.svg",
+                               IDR_PRINT_MANAGEMENT_ICON);
   html_source->AddResourcePath("print_job_entry.html",
                                IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML);
   html_source->AddResourcePath("print_job_entry.js",

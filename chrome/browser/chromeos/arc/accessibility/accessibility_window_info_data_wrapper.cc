@@ -70,6 +70,12 @@ bool AccessibilityWindowInfoDataWrapper::IsAccessibilityFocusableContainer()
 
 void AccessibilityWindowInfoDataWrapper::PopulateAXRole(
     ui::AXNodeData* out_data) const {
+  if (tree_source_->is_notification()) {
+    // Notification window doesn't have window type. As the notification window
+    // is a part of notification center UI, use generic container role.
+    out_data->role = ax::mojom::Role::kGenericContainer;
+    return;
+  }
   switch (window_ptr_->window_type) {
     case mojom::AccessibilityWindowType::TYPE_ACCESSIBILITY_OVERLAY:
       out_data->role = ax::mojom::Role::kWindow;
@@ -113,8 +119,9 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   }
 
   if (root->GetId() == GetId()) {
-    // Make the root window of each ARC task modal
-    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
+    // Make the root window of each ARC task modal unless it's notification.
+    if (!tree_source_->is_notification())
+      out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
 
     // Focusable in Android simply means a node within the window is focusable.
     // The window itself is not focusable in Android, but ChromeVox sets the

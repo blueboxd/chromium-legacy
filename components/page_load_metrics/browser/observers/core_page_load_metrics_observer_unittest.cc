@@ -604,6 +604,7 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
 TEST_F(CorePageLoadMetricsObserverTest, NavigationTiming) {
   GURL url(kDefaultTestUrl);
   tester()->NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
+  tester()->NavigateToUntrackedUrl();
 
   // Verify if the elapsed times from the navigation start are recorded.
   std::vector<const char*> metrics_from_navigation_start = {

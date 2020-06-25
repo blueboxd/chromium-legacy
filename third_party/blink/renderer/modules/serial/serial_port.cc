@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/serial/serial.h"
+#include "third_party/blink/renderer/modules/serial/serial_port_info.h"
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_sink.h"
 #include "third_party/blink/renderer/modules/serial/serial_port_underlying_source.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
@@ -167,6 +168,15 @@ SerialPort::SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info)
       client_receiver_(this, parent->GetExecutionContext()) {}
 
 SerialPort::~SerialPort() = default;
+
+SerialPortInfo* SerialPort::getInfo() {
+  auto* info = MakeGarbageCollected<SerialPortInfo>();
+  if (info_->has_usb_vendor_id)
+    info->setUsbVendorId(info_->usb_vendor_id);
+  if (info_->has_usb_product_id)
+    info->setUsbProductId(info_->usb_product_id);
+  return info;
+}
 
 ScriptPromise SerialPort::open(ScriptState* script_state,
                                const SerialOptions* options,

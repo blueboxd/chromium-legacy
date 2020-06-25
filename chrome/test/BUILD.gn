@@ -1504,6 +1504,7 @@ if (!is_android) {
         "../browser/policy/arc_policy_browsertest.cc",
         "../browser/policy/assistant_policy_browsertest.cc",
         "../browser/policy/login_policy_test_base_browsertest.cc",
+        "../browser/policy/suggested_content_policy_browsertest.cc",
         "../browser/policy/system_features_policy_browsertest.cc",
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
       ]
@@ -6813,7 +6814,7 @@ if (!is_fuchsia && !is_android) {
       "//testing/scripts/run_telemetry_as_googletest.py",
 
       # For Skia Gold code, which has some GPU-specific unittests.
-      "//testing/skia_gold_common/",
+      "//build/skia_gold_common/",
     ]
   }
 }

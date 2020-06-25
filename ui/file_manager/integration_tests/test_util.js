@@ -1349,7 +1349,7 @@ const ENTRIES = {
     type: EntryType.DIRECTORY,
     targetPath: 'PvmDefault',
     lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
-    nameText: 'Plugin VM',
+    nameText: 'Windows Files',
     sizeText: '--',
     typeText: 'Folder'
   }),

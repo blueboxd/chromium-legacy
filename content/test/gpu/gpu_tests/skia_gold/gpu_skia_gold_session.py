@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 from gpu_tests import path_util
-path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'testing')
+path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'build')
 from skia_gold_common import skia_gold_session
 
 

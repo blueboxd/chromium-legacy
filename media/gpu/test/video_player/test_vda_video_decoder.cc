@@ -66,9 +66,7 @@ TestVDAVideoDecoder::TestVDAVideoDecoder(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
-TestVDAVideoDecoder::~TestVDAVideoDecoder() = default;
-
-void TestVDAVideoDecoder::Destroy() {
+TestVDAVideoDecoder::~TestVDAVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
 
   // Invalidate all scheduled tasks.
@@ -78,8 +76,6 @@ void TestVDAVideoDecoder::Destroy() {
 
   // Delete all video frames and related textures and the decoder.
   video_frames_.clear();
-
-  delete this;
 }
 
 std::string TestVDAVideoDecoder::GetDisplayName() const {

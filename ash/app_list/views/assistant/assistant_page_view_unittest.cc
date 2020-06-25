@@ -9,9 +9,10 @@
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
@@ -23,8 +24,8 @@ namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantInteractionMetadata;
-using chromeos::assistant::mojom::AssistantInteractionType;
+using chromeos::assistant::AssistantInteractionMetadata;
+using chromeos::assistant::AssistantInteractionType;
 
 #define EXPECT_INTERACTION_OF_TYPE(type_)                      \
   ({                                                           \
@@ -212,11 +213,11 @@ class AssistantPageViewTest : public AssistantAshTestBase {
 
 // Counts the number of Assistant interactions that are started.
 class AssistantInteractionCounter
-    : private chromeos::assistant::DefaultAssistantInteractionSubscriber {
+    : private chromeos::assistant::AssistantInteractionSubscriber {
  public:
   explicit AssistantInteractionCounter(
-      chromeos::assistant::mojom::Assistant* service) {
-    service->AddAssistantInteractionSubscriber(BindNewPipeAndPassRemote());
+      chromeos::assistant::Assistant* service) {
+    interaction_observer_.Add(service);
   }
   AssistantInteractionCounter(AssistantInteractionCounter&) = delete;
   AssistantInteractionCounter& operator=(AssistantInteractionCounter&) = delete;
@@ -225,13 +226,19 @@ class AssistantInteractionCounter
   int interaction_count() const { return interaction_count_; }
 
  private:
-  // DefaultAssistantInteractionSubscriber implementation:
+  // AssistantInteractionSubscriber implementation:
   void OnInteractionStarted(
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr) override {
+      const chromeos::assistant::AssistantInteractionMetadata&) override {
     interaction_count_++;
   }
 
   int interaction_count_ = 0;
+  ScopedObserver<
+      chromeos::assistant::Assistant,
+      chromeos::assistant::AssistantInteractionSubscriber,
+      &chromeos::assistant::Assistant::AddAssistantInteractionSubscriber,
+      &chromeos::assistant::Assistant::RemoveAssistantInteractionSubscriber>
+      interaction_observer_{this};
 };
 
 }  // namespace

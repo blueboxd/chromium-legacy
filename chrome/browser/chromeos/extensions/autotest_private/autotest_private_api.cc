@@ -116,7 +116,7 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
@@ -738,10 +738,23 @@ void ForwardSmoothessAndReset(int64_t display_id, int smoothness) {
 }
 
 std::string ResolutionToString(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
-  std::stringstream result;
-  result << resolution;
-  return result.str();
+    chromeos::assistant::AssistantInteractionResolution resolution) {
+  using chromeos::assistant::AssistantInteractionResolution;
+  switch (resolution) {
+    case AssistantInteractionResolution::kNormal:
+      return "kNormal";
+    case AssistantInteractionResolution::kError:
+      return "kError";
+    case AssistantInteractionResolution::kInterruption:
+      return "kInterruption";
+    case AssistantInteractionResolution::kMicTimeout:
+      return "kMicTimeout";
+    case AssistantInteractionResolution::kMultiDeviceHotwordLoss:
+      return "kMultiDeviceHotwordLoss";
+  }
+
+  // Not reachable here.
+  DCHECK(false);
 }
 
 }  // namespace
@@ -2462,7 +2475,7 @@ void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
 // |AutotestPrivateSendAssistantTextQueryFunction| and
 // |AutotestPrivateWaitForAssistantQueryStatusFunction|.
 class AssistantInteractionHelper
-    : public chromeos::assistant::DefaultAssistantInteractionSubscriber {
+    : public chromeos::assistant::AssistantInteractionSubscriber {
  public:
   using OnInteractionFinishedCallback =
       base::OnceCallback<void(const base::Optional<std::string>& error)>;
@@ -2470,15 +2483,15 @@ class AssistantInteractionHelper
   AssistantInteractionHelper()
       : query_status_(std::make_unique<base::DictionaryValue>()) {}
 
-  ~AssistantInteractionHelper() override = default;
+  ~AssistantInteractionHelper() override {
+    if (GetAssistant()) {
+      GetAssistant()->RemoveAssistantInteractionSubscriber(this);
+    }
+  }
 
   void Init(OnInteractionFinishedCallback on_interaction_finished_callback) {
-    // Bind to Assistant service interface.
-    ash::AssistantClient::Get()->BindAssistant(
-        assistant_.BindNewPipeAndPassReceiver());
-
     // Subscribe to Assistant interaction events.
-    assistant_->AddAssistantInteractionSubscriber(BindNewPipeAndPassRemote());
+    GetAssistant()->AddAssistantInteractionSubscriber(this);
 
     on_interaction_finished_callback_ =
         std::move(on_interaction_finished_callback);
@@ -2486,8 +2499,8 @@ class AssistantInteractionHelper
 
   void SendTextQuery(const std::string& query, bool allow_tts) {
     // Start text interaction with Assistant server.
-    assistant_->StartTextInteraction(
-        query, chromeos::assistant::mojom::AssistantQuerySource::kUnspecified,
+    GetAssistant()->StartTextInteraction(
+        query, chromeos::assistant::AssistantQuerySource::kUnspecified,
         allow_tts);
 
     query_status_->SetKey("queryText", base::Value(query));
@@ -2497,19 +2510,23 @@ class AssistantInteractionHelper
     return std::move(query_status_);
   }
 
- private:
-  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using AssistantInteractionMetadataPtr =
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
-  using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
+  chromeos::assistant::Assistant* GetAssistant() {
+    auto* assistant_service = chromeos::assistant::AssistantService::Get();
+    return assistant_service ? assistant_service->GetAssistant() : nullptr;
+  }
 
-  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
+ private:
+  // chromeos::assistant::AssistantInteractionSubscriber:
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
+  using AssistantInteractionMetadata =
+      chromeos::assistant::AssistantInteractionMetadata;
+  using AssistantInteractionResolution =
+      chromeos::assistant::AssistantInteractionResolution;
+
+  void OnInteractionStarted(
+      const AssistantInteractionMetadata& metadata) override {
     const bool is_voice_interaction =
-        chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
-        metadata->type;
+        chromeos::assistant::AssistantInteractionType::kVoice == metadata.type;
     query_status_->SetKey("isMicOpen", base::Value(is_voice_interaction));
     interaction_in_progress_ = true;
   }
@@ -2556,11 +2573,11 @@ class AssistantInteractionHelper
     query_status_->SetKey("queryText", base::Value(final_result));
   }
 
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override {
-    result_.SetKey("openAppResponse", base::Value(app_info->package_name));
-    std::move(callback).Run(true);
+  bool OnOpenAppResponse(
+      const chromeos::assistant::AndroidAppInfo& app_info) override {
+    result_.SetKey("openAppResponse", base::Value(app_info.package_name));
     CheckResponseIsValid(__FUNCTION__);
+    return true;
   }
 
   void CheckResponseIsValid(const std::string& function_name) {
@@ -2580,7 +2597,6 @@ class AssistantInteractionHelper
     std::move(on_interaction_finished_callback_).Run(error);
   }
 
-  mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
   std::unique_ptr<base::DictionaryValue> query_status_;
   base::DictionaryValue result_;
   bool interaction_in_progress_ = false;

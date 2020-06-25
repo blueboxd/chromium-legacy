@@ -42,8 +42,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
   // this method.
   void InitializeOnIOThread(std::unique_ptr<net::CertVerifier> delegate);
 
-  // Sets the additional trust anchors.
-  void SetTrustAnchors(const net::CertificateList& trust_anchors);
+  // Sets the additional trust anchors and untrusted authorities to be
+  // considered as intermediates.
+  void SetAdditionalCerts(const net::CertificateList& trust_anchors,
+                          const net::CertificateList& untrusted_authorities);
 
   // CertVerifier:
   int Verify(const RequestParams& params,
@@ -56,6 +58,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CertVerifierWithTrustAnchors
  private:
   net::CertVerifier::Config orig_config_;
   net::CertificateList trust_anchors_;
+  net::CertificateList untrusted_authorities_;
   base::RepeatingClosure anchor_used_callback_;
   std::unique_ptr<CertVerifier> delegate_;
   THREAD_CHECKER(thread_checker_);

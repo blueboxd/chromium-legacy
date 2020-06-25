@@ -1496,7 +1496,10 @@ static_library("ui") {
     ]
 
     if (use_ozone && !is_chromeos) {
-      deps += [ "//ui/ozone" ]
+      deps += [
+        "//ui/base:features",
+        "//ui/ozone",
+      ]
     }
 
     if (is_linux && !is_chromeos) {

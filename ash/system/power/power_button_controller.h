@@ -40,7 +40,7 @@ class ASH_EXPORT PowerButtonController
     : public display::DisplayConfigurator::Observer,
       public chromeos::PowerManagerClient::Observer,
       public AccelerometerReader::Observer,
-      public BacklightsForcedOffSetter::Observer,
+      public ScreenBacklightObserver,
       public TabletModeObserver,
       public LockStateObserver {
  public:
@@ -139,8 +139,7 @@ class ASH_EXPORT PowerButtonController
 
   // BacklightsForcedOffSetter::Observer:
   void OnBacklightsForcedOffChanged(bool forced_off) override;
-  void OnScreenStateChanged(
-      BacklightsForcedOffSetter::ScreenState screen_state) override;
+  void OnScreenStateChanged(ScreenState screen_state) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -276,7 +275,7 @@ class ASH_EXPORT PowerButtonController
   // display's height or width, respectively.
   double power_button_offset_percentage_ = 0.f;
 
-  ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
+  ScopedObserver<BacklightsForcedOffSetter, ScreenBacklightObserver>
       backlights_forced_off_observer_;
 
   // Used to maintain active state of the active window that exists before

@@ -30,7 +30,7 @@
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
@@ -52,7 +52,7 @@ constexpr char kWakeLockReason[] = "AmbientMode";
 void CloseAssistantUi() {
   DCHECK(AssistantUiController::Get());
   AssistantUiController::Get()->CloseUi(
-      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+      chromeos::assistant::AssistantExitPoint::kUnspecified);
 }
 
 std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {

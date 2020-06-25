@@ -130,14 +130,19 @@ def WriteResourceWhitelist(args):
   for input in args.inputs:
     with open(input, 'r') as f:
       magic = f.read(4)
+      chunk = f.read(60)
     if magic == '\x7fELF':
-      resource_ids = resource_ids.union(GetResourceWhitelistELF(input))
+      func = GetResourceWhitelistELF
     elif magic == 'Micr':
-      resource_ids = resource_ids.union(GetResourceWhitelistPDB(input))
-    elif magic == 'obj/':
-      resource_ids = resource_ids.union(GetResourceWhitelistFileList(input))
+      func = GetResourceWhitelistPDB
+    elif magic == 'obj/' or '/obj/' in chunk:
+      # For secondary toolchain, path will look like android_clang_arm/obj/...
+      func = GetResourceWhitelistFileList
     else:
       raise Exception('unknown file format')
+
+    resource_ids.update(func(input))
+
   if len(resource_ids) == 0:
     raise Exception('No debug info was dumped. Ensure GN arg "symbol_level" '
                     '!= 0 and that the file is not stripped.')

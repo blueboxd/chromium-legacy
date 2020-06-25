@@ -483,16 +483,10 @@ class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
       disabled_features.push_back(net::features::kCertVerifierBuiltinFeature);
     }
     if (enable_cert_verification_service_) {
-#if defined(OS_CHROMEOS)
-      // TODO(crbug.com/1085379): remove this GTEST_SKIP().
-      GTEST_SKIP() << "Skipping test, CertVerifierService feature not yet "
-                      "available on ChromeOS.";
-#else
       enabled_features.push_back(network::features::kCertVerifierService);
       test_cert_verifier_service_factory_.emplace();
       content::SetCertVerifierServiceFactoryForTesting(
           &test_cert_verifier_service_factory_.value());
-#endif
     } else {
       disabled_features.push_back(network::features::kCertVerifierService);
     }

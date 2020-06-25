@@ -242,8 +242,8 @@ void CSSParserContext::Count(WebFeature feature) const {
 }
 
 void CSSParserContext::CountDeprecation(WebFeature feature) const {
-  if (IsUseCounterRecordingEnabled())
-    Deprecation::CountDeprecation(*document_, feature);
+  if (IsUseCounterRecordingEnabled() && document_)
+    Deprecation::CountDeprecation(document_->GetExecutionContext(), feature);
 }
 
 void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {

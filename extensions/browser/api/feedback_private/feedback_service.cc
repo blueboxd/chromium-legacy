@@ -20,7 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #endif  // defined(OS_CHROMEOS)

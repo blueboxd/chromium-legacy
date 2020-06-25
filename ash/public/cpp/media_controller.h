@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_MEDIA_CONTROLLER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/scoped_singleton_resetter_for_test.h"
 #include "base/containers/flat_map.h"
 #include "components/account_id/account_id.h"
 
@@ -23,16 +24,7 @@ enum class MediaCaptureState {
 
 class ASH_PUBLIC_EXPORT MediaController {
  public:
-  // Helper class to reset ShutdowController instance in constructor and
-  // restore it in destructor so that tests could create its own instance.
-  class ScopedResetterForTest {
-   public:
-    ScopedResetterForTest();
-    ~ScopedResetterForTest();
-
-   private:
-    MediaController* const instance_;
-  };
+  using ScopedResetterForTest = ScopedSingletonResetterForTest<MediaController>;
 
   // Gets the singleton MediaController instance.
   static MediaController* Get();

@@ -285,6 +285,15 @@ TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
   EXPECT_EQ(title, contents()->GetTitle());
 }
 
+TEST_F(WebContentsImplTest, SetMainFrameMimeType) {
+  ASSERT_TRUE(controller().IsInitialNavigation());
+  std::string mime = "text/html";
+  RenderViewHostImpl* rvh =
+      static_cast<RenderViewHostImpl*>(main_test_rfh()->GetRenderViewHost());
+  rvh->SetContentsMimeType(mime);
+  EXPECT_EQ(mime, contents()->GetContentsMimeType());
+}
+
 TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
   const GURL kGURL(GetWebUIURL("blah"));
   controller().LoadURL(

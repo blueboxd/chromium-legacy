@@ -48,6 +48,7 @@
 #include "media/gpu/buildflags.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_context.h"
@@ -77,7 +78,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"                          // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
 #include "ui/gfx/x/x11.h"                                // nogncheck
@@ -275,22 +275,29 @@ int GpuMain(const MainFunctionParams& parameters) {
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
             base::MessagePumpType::DEFAULT);
-#elif defined(USE_X11)
-    // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
-    // and https://crbug.com/326995.
-    ui::SetDefaultX11ErrorHandlers();
-    if (!gfx::GetXDisplay())
-      return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
-    main_thread_task_executor =
-        std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePumpType::UI);
-    event_source = ui::PlatformEventSource::CreateDefault();
-#elif defined(USE_OZONE)
+#elif defined(USE_X11) || defined(USE_OZONE)
+#if defined(USE_X11)
+    if (!features::IsUsingOzonePlatform()) {
+      // We need a UI loop so that we can grab the Expose events. See
+      // GLSurfaceGLX and https://crbug.com/326995.
+      ui::SetDefaultX11ErrorHandlers();
+      if (!gfx::GetXDisplay())
+        return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
+      main_thread_task_executor =
+          std::make_unique<base::SingleThreadTaskExecutor>(
+              base::MessagePumpType::UI);
+      event_source = ui::PlatformEventSource::CreateDefault();
+    }
+#endif
+#if defined(USE_OZONE)
     // The MessagePump type required depends on the Ozone platform selected at
     // runtime.
-    main_thread_task_executor =
-        std::make_unique<base::SingleThreadTaskExecutor>(
-            gpu_preferences.message_pump_type);
+    if (!main_thread_task_executor) {
+      main_thread_task_executor =
+          std::make_unique<base::SingleThreadTaskExecutor>(
+              gpu_preferences.message_pump_type);
+    }
+#endif
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)

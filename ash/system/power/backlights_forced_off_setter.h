@@ -8,6 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/screen_backlight.h"
+#include "ash/public/cpp/screen_backlight_observer.h"
+#include "ash/public/cpp/screen_backlight_type.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -22,32 +25,9 @@ class ScopedBacklightsForcedOff;
 // BacklightsForcedOffSetter manages multiple requests to force the backlights
 // off and coalesces them into SetBacklightsForcedOff D-Bus calls to powerd.
 class ASH_EXPORT BacklightsForcedOffSetter
-    : public chromeos::PowerManagerClient::Observer {
+    : public chromeos::PowerManagerClient::Observer,
+      public ScreenBacklight {
  public:
-  // Screen state as communicated by D-Bus signals from powerd about backlight
-  // brightness changes.
-  enum class ScreenState {
-    // The screen is on.
-    ON,
-    // The screen is off.
-    OFF,
-    // The screen is off, specifically due to an automated change like user
-    // inactivity.
-    OFF_AUTO,
-  };
-
-  class Observer {
-   public:
-    virtual ~Observer() = default;
-
-    // Called when the observed BacklightsForcedOffSetter instance stops or
-    // starts forcing backlights off.
-    virtual void OnBacklightsForcedOffChanged(bool backlights_forced_off) {}
-
-    // Called when the screen state change is detected.
-    virtual void OnScreenStateChanged(ScreenState screen_state) {}
-  };
-
   BacklightsForcedOffSetter();
   ~BacklightsForcedOffSetter() override;
 
@@ -57,8 +37,9 @@ class ASH_EXPORT BacklightsForcedOffSetter
 
   ScreenState screen_state() const { return screen_state_; }
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // ScreenBacklight:
+  void AddObserver(ScreenBacklightObserver* observer) override;
+  void RemoveObserver(ScreenBacklightObserver* observer) override;
 
   // Forces the backlights off. The backlights will be kept in the forced-off
   // state until all requests have been destroyed.
@@ -112,7 +93,7 @@ class ASH_EXPORT BacklightsForcedOffSetter
   // Number of active backlights forced off requests.
   int active_backlights_forced_off_count_ = 0;
 
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<ScreenBacklightObserver>::Unchecked observers_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

@@ -793,7 +793,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // Check for non-escaped new lines in the url.
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     Deprecation::CountDeprecation(
-        origin_document, WebFeature::kCanRequestURLHTTPContainingNewline);
+        origin_document ? origin_document->GetExecutionContext() : nullptr,
+        WebFeature::kCanRequestURLHTTPContainingNewline);
     return;
   }
 

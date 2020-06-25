@@ -28,6 +28,7 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -68,18 +69,26 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
 
 void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
     ui::PlatformWindowInitProperties properties) {
+#if defined(USE_OZONE) || defined(USE_X11)
 #if defined(USE_OZONE)
-  platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      this, std::move(properties));
-#elif defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, properties.bounds));
-#elif defined(USE_X11)
+  if (features::IsUsingOzonePlatform()) {
+    platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
+        this, std::move(properties));
+    return;
+  }
+#endif
+#if defined(USE_X11)
   auto platform_window = std::make_unique<ui::X11Window>(this);
   auto* x11_window = platform_window.get();
   // platform_window() may be called during Initialize(), so call
   // SetPlatformWindow() now.
   SetPlatformWindow(std::move(platform_window));
   x11_window->Initialize(std::move(properties));
+  return;
+#endif
+  NOTREACHED();
+#elif defined(OS_WIN)
+  platform_window_.reset(new ui::WinWindow(this, properties.bounds));
 #else
   NOTIMPLEMENTED();
 #endif

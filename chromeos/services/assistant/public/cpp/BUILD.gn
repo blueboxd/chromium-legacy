@@ -18,18 +18,22 @@ component("cpp") {
     "assistant_service.h",
     "assistant_settings.cc",
     "assistant_settings.h",
-    "default_assistant_interaction_subscriber.cc",
-    "default_assistant_interaction_subscriber.h",
     "device_actions.cc",
     "device_actions.h",
     "features.cc",
     "features.h",
   ]
 
-  deps = [
+  public_deps = [
+    "//ash/public/mojom",
     "//chromeos/constants:constants",
     "//chromeos/services/assistant/public/mojom",
-    "//components/prefs",
-    "//mojo/public/cpp/bindings",
+    "//chromeos/services/network_config/public/mojom",
+    "//services/audio/public/mojom",
+    "//services/device/public/mojom",
+    "//services/media_session/public/mojom",
+    "//ui/accessibility/mojom",
   ]
+
+  deps = [ "//components/prefs" ]
 }

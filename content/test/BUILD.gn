@@ -660,7 +660,7 @@ group("telemetry_gpu_integration_test_support") {
     "//media/test/data/bear-1280x720.mp4",
 
     # For Skia Gold pixel test functionality.
-    "//testing/skia_gold_common/",
+    "//build/skia_gold_common/",
 
     # For isolate contract.
     "//testing/scripts/gpu_integration_test_adapter.py",

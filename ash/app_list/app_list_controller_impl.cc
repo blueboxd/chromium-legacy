@@ -70,8 +70,8 @@
 
 namespace ash {
 
-using chromeos::assistant::mojom::AssistantEntryPoint;
-using chromeos::assistant::mojom::AssistantExitPoint;
+using chromeos::assistant::AssistantEntryPoint;
+using chromeos::assistant::AssistantExitPoint;
 
 namespace {
 

@@ -45,6 +45,10 @@ constexpr char kGoogleMapsAppId[] = "mnhkaebcjjhencmpkapnbdaogjamfbcj";
 // Generated as web_app::GenerateAppIdFromURL(GURL("chrome://media-app/")).
 constexpr char kMediaAppId[] = "jhdjimmaggjajfjphpljagpgkidjilnj";
 
+// Generated as
+// web_app::GenerateAppIdFromURL(GURL("https://music.youtube.com/?source=pwa")).
+constexpr char kYoutubeMusicAppId[] = "cinhimbnkkaeohfgghhklpknlkffjgod";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

@@ -71,6 +71,10 @@ struct StructTraits<cert_verifier::mojom::CertVerifierConfigDataView,
   additional_trust_anchors(const net::CertVerifier::Config& config) {
     return config.additional_trust_anchors;
   }
+  static const std::vector<scoped_refptr<net::X509Certificate>>&
+  additional_untrusted_authorities(const net::CertVerifier::Config& config) {
+    return config.additional_untrusted_authorities;
+  }
 
   static bool Read(cert_verifier::mojom::CertVerifierConfigDataView data,
                    net::CertVerifier::Config* config);

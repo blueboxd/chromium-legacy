@@ -1397,18 +1397,38 @@ jinja_template_resources("chrome_test_apk_template_resources") {
 }
 
 # Chrome APK's native library.
-chrome_common_shared_library("libchrome") {
-  sources = [
-    "../browser/android/chrome_entry_point.cc",
-    chrome_jni_registration_header,
-  ]
-  deps = [ ":chrome_jni_registration($default_toolchain)" ]
+template("libchrome_impl") {
+  chrome_common_shared_library(target_name) {
+    sources = [
+      "../browser/android/chrome_entry_point.cc",
+      chrome_jni_registration_header,
+    ]
+    deps = [ ":chrome_jni_registration($default_toolchain)" ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
-  if (enable_vr) {
-    deps += [ "//chrome/browser/android/vr:module_factory" ]
+    if (enable_vr) {
+      deps += [ "//chrome/browser/android/vr:module_factory" ]
+    }
+
+    module_descs = chrome_modern_module_descs
+    forward_variables_from(invoker, "*", [ "deps" ])
   }
+}
 
-  module_descs = chrome_modern_module_descs
+if (enable_resource_whitelist_generation) {
+  libchrome_impl("libchrome_pak_whitelist_inputs") {
+    collect_inputs_only = true
+  }
+}
+
+libchrome_impl("libchrome") {
+  if (enable_resource_whitelist_generation) {
+    # Make sure whitelist_inputs is built first so when concurrent_links == 1
+    # it comes before the actual (very slow) link step.
+    deps = [ ":libchrome_pak_whitelist_inputs" ]
+  }
 }
 
 chrome_common_shared_library("libchromefortest") {
@@ -1495,9 +1515,9 @@ if (current_toolchain == default_toolchain) {
 
     if (enable_resource_whitelist_generation) {
       if (_is_trichrome || _is_monochrome) {
-        _lib = "libmonochrome"
+        _lib = "libmonochrome_pak_whitelist_inputs"
       } else {
-        _lib = "libchrome"
+        _lib = "libchrome_pak_whitelist_inputs"
       }
       _resource_whitelist_target = "${_variant}_resource_whitelist"
       _resource_whitelist_file =
@@ -1683,13 +1703,15 @@ if (current_toolchain == default_toolchain) {
 # Monochrome equivalent of Chrome's APK or bundle library template.
 template("libmonochrome_apk_or_bundle_tmpl") {
   chrome_common_shared_library(target_name) {
-    forward_variables_from(invoker, "*")
     sources = [ "../browser/android/monochrome_entry_point.cc" ]
     deps = [
       "//android_webview/lib",
       "//android_webview/nonembedded",
       "//components/crash/android:crashpad_main",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     if (webview_includes_weblayer) {
       defines = [ "WEBVIEW_INCLUDES_WEBLAYER" ]
@@ -1702,13 +1724,26 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     is_monochrome = true
     module_descs = monochrome_module_descs
+
+    forward_variables_from(invoker, "*", [ "deps" ])
   }
 }
 
 if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
-  # Monochrome APK native library.
+  if (enable_resource_whitelist_generation) {
+    # Avoiding a real link for this step allows the actual libmonochrome to
+    # run at the same time as R8.
+    libmonochrome_apk_or_bundle_tmpl("libmonochrome_pak_whitelist_inputs") {
+      collect_inputs_only = true
+    }
+  }
   libmonochrome_apk_or_bundle_tmpl("libmonochrome") {
+    if (enable_resource_whitelist_generation) {
+      # Make sure whitelist_inputs is built first so when concurrent_links == 1
+      # it comes before the actual (very slow) link step.
+      deps = [ ":libmonochrome_pak_whitelist_inputs" ]
+    }
   }
 
   if (android_64bit_target_cpu) {
@@ -2755,19 +2790,33 @@ if (public_android_sdk) {
   }
 
   if (is_official_build) {
+    _trichrome_library_basename = "TrichromeLibrary.apk"
+    _trichrome_chrome_basename = "TrichromeChrome.minimal.apks"
+    _trichrome_webview_basename = "TrichromeWebView.minimal.apks"
+
+    write_ssargs_trichrome("ssargs_trichrome") {
+      ssargs_path = "$root_build_dir/apks/Trichrome.ssargs"
+      trichrome_library_basename = _trichrome_library_basename
+      trichrome_chrome_basename = _trichrome_chrome_basename
+      trichrome_webview_basename = _trichrome_webview_basename
+    }
+
     # Used for binary size monitoring.
     create_app_bundle_minimal_apks("trichrome_chrome_minimal_apks") {
-      deps = [ ":trichrome_chrome_bundle" ]
+      deps = [
+        ":ssargs_trichrome",
+        ":trichrome_chrome_bundle",
+      ]
       bundle_path = "$root_build_dir/apks/TrichromeChrome.aab"
     }
 
     android_resource_sizes_test("resource_sizes_trichrome") {
       apk_name = "Trichrome"
-      trichrome_chrome_path =
-          "$root_build_dir/apks/TrichromeChrome.minimal.apks"
+      trichrome_library_path =
+          "$root_build_dir/apks/$_trichrome_library_basename"
+      trichrome_chrome_path = "$root_build_dir/apks/$_trichrome_chrome_basename"
       trichrome_webview_path =
-          "$root_build_dir/apks/TrichromeWebView.minimal.apks"
-      trichrome_library_path = "$root_build_dir/apks/TrichromeLibrary.apk"
+          "$root_build_dir/apks/$_trichrome_webview_basename"
       data_deps = [
         ":trichrome_chrome_minimal_apks",
         ":trichrome_library_apk",

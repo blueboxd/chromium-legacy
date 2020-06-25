@@ -9,7 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -19,14 +19,14 @@ class AssistantUiElement;
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponseObserver
     : public base::CheckedObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   // Invoked when the specified |ui_element| is added to the response.
   virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
 
   // Invoked when the specified |suggestions| are added to the response.
   virtual void OnSuggestionsAdded(
-      const std::vector<const AssistantSuggestion*>& suggestions) {}
+      const std::vector<AssistantSuggestion>& suggestions) {}
 
  protected:
   AssistantResponseObserver() = default;

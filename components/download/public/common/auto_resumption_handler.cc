@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/task/task_scheduler.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "url/gurl.h"
 
 namespace download {
@@ -47,23 +48,6 @@ const int64_t kWindowStartTimeSeconds = 0;
 
 // The window end time before which the system should fire the task.
 const int64_t kWindowEndTimeSeconds = 24 * 60 * 60;
-
-bool IsMetered(network::mojom::ConnectionType type) {
-  switch (type) {
-    case network::mojom::ConnectionType::CONNECTION_2G:
-    case network::mojom::ConnectionType::CONNECTION_3G:
-    case network::mojom::ConnectionType::CONNECTION_4G:
-      return true;
-    case network::mojom::ConnectionType::CONNECTION_ETHERNET:
-    case network::mojom::ConnectionType::CONNECTION_WIFI:
-    case network::mojom::ConnectionType::CONNECTION_UNKNOWN:
-    case network::mojom::ConnectionType::CONNECTION_NONE:
-    case network::mojom::ConnectionType::CONNECTION_BLUETOOTH:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
 
 bool IsConnected(network::mojom::ConnectionType type) {
   switch (type) {
@@ -134,7 +118,8 @@ void AutoResumptionHandler::SetResumableDownloads(
 }
 
 bool AutoResumptionHandler::IsActiveNetworkMetered() const {
-  return IsMetered(network_listener_->GetConnectionType());
+  return network::NetworkConnectionTracker::IsConnectionCellular(
+      network_listener_->GetConnectionType());
 }
 
 void AutoResumptionHandler::OnNetworkChanged(

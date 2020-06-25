@@ -1402,19 +1402,19 @@ TEST_F(WebRtcEventLogManagerTest,
 }
 
 TEST_F(WebRtcEventLogManagerTest,
-       PeerConnectionSessionIdSetReturnsFalseIfAlreadyCalledSameId) {
-  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  ASSERT_TRUE(PeerConnectionAdded(key));
-  ASSERT_TRUE(PeerConnectionSessionIdSet(key, kSessionId));
-  EXPECT_FALSE(PeerConnectionSessionIdSet(key, kSessionId));
-}
-
-TEST_F(WebRtcEventLogManagerTest,
        PeerConnectionSessionIdSetReturnsFalseIfPeerConnectionAlreadyRemoved) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key));
   ASSERT_TRUE(PeerConnectionRemoved(key));
   EXPECT_FALSE(PeerConnectionSessionIdSet(key, kSessionId));
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       PeerConnectionSessionIdSetReturnsTrueIfAlreadyCalledSameId) {
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key));
+  ASSERT_TRUE(PeerConnectionSessionIdSet(key, kSessionId));
+  EXPECT_TRUE(PeerConnectionSessionIdSet(key, kSessionId));
 }
 
 TEST_F(WebRtcEventLogManagerTest,

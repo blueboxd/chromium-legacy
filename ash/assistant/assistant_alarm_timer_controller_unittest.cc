@@ -115,19 +115,19 @@ class TimerEvent {
 
 class FireTimer : public TimerEvent {
  public:
-  FireTimer(const std::string& id)
+  explicit FireTimer(const std::string& id)
       : TimerEvent(id, AssistantTimerState::kFired) {}
 };
 
 class PauseTimer : public TimerEvent {
  public:
-  PauseTimer(const std::string& id)
+  explicit PauseTimer(const std::string& id)
       : TimerEvent(id, AssistantTimerState::kPaused) {}
 };
 
 class ScheduleTimer : public TimerEvent {
  public:
-  ScheduleTimer(const std::string& id)
+  explicit ScheduleTimer(const std::string& id)
       : TimerEvent(id, AssistantTimerState::kScheduled) {}
 };
 
@@ -288,13 +288,13 @@ class ScopedNotificationModelObserver
   }
 
   // AssistantNotificationModelObserver:
-  void OnNotificationAdded(const AssistantNotification* notification) override {
-    last_notification_ = notification->Clone();
+  void OnNotificationAdded(const AssistantNotification& notification) override {
+    last_notification_ = notification.Clone();
   }
 
   void OnNotificationUpdated(
-      const AssistantNotification* notification) override {
-    last_notification_ = notification->Clone();
+      const AssistantNotification& notification) override {
+    last_notification_ = notification.Clone();
   }
 
   const AssistantNotificationPtr& last_notification() const {

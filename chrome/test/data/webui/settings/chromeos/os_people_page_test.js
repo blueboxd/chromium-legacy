@@ -231,7 +231,7 @@ cr.define('settings_people_page', function() {
       const lockScreenPage = assert(peoplePage.$$('#lock-screen'));
 
       // Password dialog should not open because the authToken_ is set.
-      assertFalse(lockScreenPage.showPasswordPromptDialog_);
+      assertFalse(peoplePage.showPasswordPromptDialog_);
 
       const editFingerprintsTrigger = lockScreenPage.$$('#editFingerprints');
       editFingerprintsTrigger.click();
@@ -240,6 +240,7 @@ cr.define('settings_people_page', function() {
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),
           settings.routes.FINGERPRINT);
+      assertFalse(peoplePage.showPasswordPromptDialog_);
 
       const fingerprintTrigger =
           peoplePage.$$('#fingerprint-list').$$('#addFingerprint');
@@ -248,8 +249,8 @@ cr.define('settings_people_page', function() {
 
       assertEquals(
           settings.Router.getInstance().getCurrentRoute(),
-          settings.routes.LOCK_SCREEN);
-      assertTrue(lockScreenPage.showPasswordPromptDialog_);
+          settings.routes.FINGERPRINT);
+      assertTrue(peoplePage.showPasswordPromptDialog_);
     });
   });
 });

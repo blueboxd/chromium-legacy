@@ -4,6 +4,8 @@
 
 #include "ash/assistant/model/assistant_notification_model.h"
 
+#include <utility>
+
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/stl_util.h"
 #include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
@@ -34,9 +36,9 @@ void AssistantNotificationModel::AddOrUpdateNotification(
   notifications_[ptr->client_id] = std::move(notification);
 
   if (is_update)
-    NotifyNotificationUpdated(ptr);
+    NotifyNotificationUpdated(*ptr);
   else
-    NotifyNotificationAdded(ptr);
+    NotifyNotificationAdded(*ptr);
 }
 
 void AssistantNotificationModel::RemoveNotificationById(const std::string& id,
@@ -47,7 +49,7 @@ void AssistantNotificationModel::RemoveNotificationById(const std::string& id,
 
   AssistantNotificationPtr notification = std::move(it->second);
   notifications_.erase(id);
-  NotifyNotificationRemoved(notification.get(), from_server);
+  NotifyNotificationRemoved(*notification, from_server);
 }
 
 void AssistantNotificationModel::RemoveNotificationsByGroupingKey(
@@ -58,7 +60,7 @@ void AssistantNotificationModel::RemoveNotificationsByGroupingKey(
       AssistantNotificationPtr notification =
           std::move(notifications_[it->second->client_id]);
       it = notifications_.erase(it);
-      NotifyNotificationRemoved(notification.get(), from_server);
+      NotifyNotificationRemoved(*notification, from_server);
       continue;
     }
     ++it;
@@ -93,19 +95,19 @@ bool AssistantNotificationModel::HasNotificationForId(
 }
 
 void AssistantNotificationModel::NotifyNotificationAdded(
-    const AssistantNotification* notification) {
+    const AssistantNotification& notification) {
   for (auto& observer : observers_)
     observer.OnNotificationAdded(notification);
 }
 
 void AssistantNotificationModel::NotifyNotificationUpdated(
-    const AssistantNotification* notification) {
+    const AssistantNotification& notification) {
   for (auto& observer : observers_)
     observer.OnNotificationUpdated(notification);
 }
 
 void AssistantNotificationModel::NotifyNotificationRemoved(
-    const AssistantNotification* notification,
+    const AssistantNotification& notification,
     bool from_server) {
   for (auto& observer : observers_)
     observer.OnNotificationRemoved(notification, from_server);

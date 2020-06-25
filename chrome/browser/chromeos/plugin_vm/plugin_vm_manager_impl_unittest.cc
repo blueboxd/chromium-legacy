@@ -37,8 +37,6 @@ namespace {
 using MockLaunchPluginVmCallback =
     testing::StrictMock<base::MockCallback<base::OnceCallback<void(bool)>>>;
 
-constexpr char kStartVmFailedNotificationId[] = "plugin-vm-start-vm-failed";
-
 }  // namespace
 
 class PluginVmManagerImplTest : public testing::Test {
@@ -334,8 +332,6 @@ TEST_F(PluginVmManagerImplTest, LaunchPluginVmInvalidLicense) {
   EXPECT_CALL(callback, Run(false));
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
-
-  EXPECT_TRUE(display_service_->GetNotification(kStartVmFailedNotificationId));
 
   histogram_tester_->ExpectUniqueSample(
       kPluginVmLaunchResultHistogram, PluginVmLaunchResult::kInvalidLicense, 1);

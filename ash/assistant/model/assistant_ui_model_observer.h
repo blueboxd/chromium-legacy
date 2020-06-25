@@ -13,10 +13,8 @@
 
 namespace chromeos {
 namespace assistant {
-namespace mojom {
 enum class AssistantEntryPoint;
 enum class AssistantExitPoint;
-}  // namespace mojom
 }  // namespace assistant
 }  // namespace chromeos
 
@@ -30,8 +28,8 @@ enum class AssistantVisibility;
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModelObserver
     : public base::CheckedObserver {
  public:
-  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
-  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+  using AssistantEntryPoint = chromeos::assistant::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::AssistantExitPoint;
 
   // Invoked when the UI mode is changed. If |due_to_interaction| is true, the
   // UI mode was changed as a result of an Assistant interaction.

@@ -22,7 +22,8 @@ const apps::FileHandlers* WebAppFileHandlerManager::GetAllFileHandlers(
   WebAppRegistrar* web_app_registrar = registrar()->AsWebAppRegistrar();
   DCHECK(web_app_registrar);
 
-  return &web_app_registrar->GetAppById(app_id)->file_handlers();
+  const WebApp* web_app = web_app_registrar->GetAppById(app_id);
+  return web_app ? &web_app->file_handlers() : nullptr;
 }
 
 }  // namespace web_app

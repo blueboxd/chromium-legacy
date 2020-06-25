@@ -103,7 +103,7 @@ scoped_refptr<EncodedFormData> DataPipeFormData() {
   new SimpleDataPipeGetter(
       String(" hello world"),
       data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
-  body.AppendDataPipe(data_pipe_getter_remote.PassPipe());
+  body.AppendDataPipe(std::move(data_pipe_getter_remote));
 
   // Add another data pipe.
   mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
@@ -112,7 +112,7 @@ scoped_refptr<EncodedFormData> DataPipeFormData() {
   new SimpleDataPipeGetter(
       String(" here's another data pipe "),
       data_pipe_getter_remote2.InitWithNewPipeAndPassReceiver());
-  body.AppendDataPipe(data_pipe_getter_remote2.PassPipe());
+  body.AppendDataPipe(std::move(data_pipe_getter_remote2));
 
   // Add some more data.
   body.AppendData(WebData("bar baz", 7));

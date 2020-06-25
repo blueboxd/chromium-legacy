@@ -34,28 +34,26 @@ constexpr char kNotifierId[] = "assistant";
 
 std::unique_ptr<message_center::Notification> CreateSystemNotification(
     const message_center::NotifierId& notifier_id,
-    const chromeos::assistant::mojom::AssistantNotification* notification) {
-  const base::string16 title = base::UTF8ToUTF16(notification->title);
-  const base::string16 message = base::UTF8ToUTF16(notification->message);
+    const chromeos::assistant::mojom::AssistantNotification& notification) {
+  const base::string16 title = base::UTF8ToUTF16(notification.title);
+  const base::string16 message = base::UTF8ToUTF16(notification.message);
   const base::string16 display_source =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE);
 
   message_center::RichNotificationData data;
-  for (const auto& button : notification->buttons) {
-    data.buttons.push_back(
-        message_center::ButtonInfo(base::UTF8ToUTF16(button->label)));
-  }
+  for (const auto& button : notification.buttons)
+    data.buttons.emplace_back(base::UTF8ToUTF16(button->label));
 
   std::unique_ptr<message_center::Notification> system_notification =
       ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification->client_id,
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification.client_id,
           title, message, display_source, GURL(), notifier_id, data,
           /*delegate=*/nullptr, kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  system_notification->set_pinned(notification->is_pinned);
+  system_notification->set_pinned(notification.is_pinned);
 
-  switch (notification->priority) {
+  switch (notification.priority) {
     case chromeos::assistant::mojom::AssistantNotificationPriority::kLow:
       system_notification->set_priority(message_center::LOW_PRIORITY);
       break;
@@ -101,7 +99,7 @@ void AssistantNotificationController::BindReceiver(
 }
 
 void AssistantNotificationController::SetAssistant(
-    chromeos::assistant::mojom::Assistant* assistant) {
+    chromeos::assistant::Assistant* assistant) {
   assistant_ = assistant;
 }
 
@@ -135,7 +133,7 @@ void AssistantNotificationController::SetQuietMode(bool enabled) {
 // AssistantNotificationModelObserver ------------------------------------------
 
 void AssistantNotificationController::OnNotificationAdded(
-    const AssistantNotification* notification) {
+    const AssistantNotification& notification) {
   // Do not show system notifications if the setting is disabled.
   if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
@@ -145,26 +143,26 @@ void AssistantNotificationController::OnNotificationAdded(
 }
 
 void AssistantNotificationController::OnNotificationUpdated(
-    const AssistantNotification* notification) {
+    const AssistantNotification& notification) {
   // Do not show system notifications if the setting is disabled.
   if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
 
   message_center::MessageCenter::Get()->UpdateNotification(
-      notification->client_id,
+      notification.client_id,
       CreateSystemNotification(notifier_id_, notification));
 }
 
 void AssistantNotificationController::OnNotificationRemoved(
-    const AssistantNotification* notification,
+    const AssistantNotification& notification,
     bool from_server) {
   // Remove the notification from the message center.
   message_center::MessageCenter::Get()->RemoveNotification(
-      notification->client_id, /*by_user=*/false);
+      notification.client_id, /*by_user=*/false);
 
   // Dismiss the notification on the server to sync across devices.
   if (!from_server)
-    assistant_->DismissNotification(notification->Clone());
+    assistant_->DismissNotification(notification);
 }
 
 void AssistantNotificationController::OnAllNotificationsRemoved(
@@ -214,7 +212,7 @@ void AssistantNotificationController::OnNotificationClicked(
   // -------------------------------------------------
   // Action: | Top Level | Button 1 | Button 2 | ...
   const int action_index = button_index.value_or(-1) + 1;
-  assistant_->RetrieveNotification(notification->Clone(), action_index);
+  assistant_->RetrieveNotification(*notification, action_index);
 }
 
 void AssistantNotificationController::OnNotificationRemoved(

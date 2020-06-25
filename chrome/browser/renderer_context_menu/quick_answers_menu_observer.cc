@@ -19,7 +19,7 @@
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
@@ -256,7 +256,7 @@ void QuickAnswersMenuObserver::SetQuickAnswerClientForTesting(
 void QuickAnswersMenuObserver::SendAssistantQuery(const std::string& query) {
   ash::AssistantInteractionController::Get()->StartTextInteraction(
       query, /*allow_tts=*/false,
-      chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
+      chromeos::assistant::AssistantQuerySource::kQuickAnswers);
 }
 
 std::string QuickAnswersMenuObserver::GetDeviceLanguage() {

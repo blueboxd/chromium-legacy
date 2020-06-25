@@ -20,7 +20,6 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
 import {FittingType, SaveRequestType, TwoUpViewAction} from './constants.js';
-import {InkController, MessageData} from './controller.js';
 import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
@@ -29,6 +28,11 @@ import {PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 import {Point} from './viewport.js';
+
+// <if expr="chromeos">
+import {InkController} from './ink_controller.js';
+// </if>
+
 
 /**
  * @typedef {{
@@ -170,8 +174,10 @@ class PDFViewerElement extends PDFViewerBaseElement {
     /** @private {boolean} */
     this.toolbarEnabled_ = false;
 
+    // <if expr="chromeos">
     /** @private {?InkController} */
     this.inkController_ = null;
+    // </if>
 
     /** @private {?ToolbarManager} */
     this.toolbarManager_ = null;
@@ -228,6 +234,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
   init(browserApi) {
     super.init(browserApi);
 
+    // <if expr="chromeos">
     this.inkController_ = new InkController(
         this.viewport, /** @type {!HTMLDivElement} */ (this.getContent()));
     this.tracker.add(
@@ -236,6 +243,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.tracker.add(
         this.inkController_.getEventTarget(), 'set-annotation-undo-state',
         e => this.setAnnotationUndoState_(e));
+    // </if>
 
     this.title_ = getFilenameFromURL(this.originalUrl);
     if (this.toolbarEnabled_) {
@@ -828,6 +836,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.inkController_.setAnnotationTool(e.detail.value);
   }
 
+  // <if expr="chromeos">
   /**
    * @param {!CustomEvent<{canUndo: boolean, canRedo: boolean}>} e
    * @private
@@ -836,6 +845,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.getToolbar_().canUndoAnnotation = e.detail.canUndo;
     this.getToolbar_().canRedoAnnotation = e.detail.canRedo;
   }
+  // </if>
 
   /** @override */
   rotateClockwise() {

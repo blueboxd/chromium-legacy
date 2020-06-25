@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 
+#include <vector>
+
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
@@ -42,8 +44,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
 
   // AssistantSuggestionsModelObserver:
   void OnOnboardingSuggestionsChanged(
-      const std::vector<const AssistantSuggestion*>& onboarding_suggestions)
-      override;
+      const std::vector<AssistantSuggestion>& onboarding_suggestions) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(

@@ -56,6 +56,7 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util.h"
 #endif
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -545,8 +546,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
-  UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
-                            UMA_LINUX_WINDOW_MANAGER_COUNT);
+  // TODO(https://crbug.com/1097007): capture window manager name on Linux.
+  if (!features::IsUsingOzonePlatform()) {
+    UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
+                              UMA_LINUX_WINDOW_MANAGER_COUNT);
+  }
 #endif
 
   constexpr base::TaskTraits kBestEffortTaskTraits = {

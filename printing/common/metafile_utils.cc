@@ -98,15 +98,15 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
       break;
     case ax::mojom::Role::kColumnHeader:
       tag->fType = SkPDF::DocumentStructureType::kTH;
-      tag->fAttributes.appendString(kPDFTableAttributeOwner,
-                                    kPDFTableHeaderScopeAttribute,
-                                    kPDFTableHeaderScopeColumn);
+      tag->fAttributes.appendName(kPDFTableAttributeOwner,
+                                  kPDFTableHeaderScopeAttribute,
+                                  kPDFTableHeaderScopeColumn);
       break;
     case ax::mojom::Role::kRowHeader:
       tag->fType = SkPDF::DocumentStructureType::kTH;
-      tag->fAttributes.appendString(kPDFTableAttributeOwner,
-                                    kPDFTableHeaderScopeAttribute,
-                                    kPDFTableHeaderScopeRow);
+      tag->fAttributes.appendName(kPDFTableAttributeOwner,
+                                  kPDFTableHeaderScopeAttribute,
+                                  kPDFTableHeaderScopeRow);
       break;
     case ax::mojom::Role::kCell: {
       tag->fType = SkPDF::DocumentStructureType::kTD;
@@ -116,17 +116,14 @@ bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
       std::vector<ui::AXNode*> header_nodes;
       ax_node->GetTableCellColHeaders(&header_nodes);
       ax_node->GetTableCellRowHeaders(&header_nodes);
-      std::vector<SkString> header_id_strs;
-      header_id_strs.reserve(header_nodes.size());
+      std::vector<int> header_ids;
+      header_ids.reserve(header_nodes.size());
       for (ui::AXNode* header_node : header_nodes) {
-        int node_id =
-            header_node->GetIntAttribute(ax::mojom::IntAttribute::kDOMNodeId);
-        header_id_strs.push_back(
-            SkString(base::NumberToString(node_id).c_str()));
+        header_ids.push_back(header_node->GetIntAttribute(
+            ax::mojom::IntAttribute::kDOMNodeId));
       }
-      tag->fAttributes.appendStringArray(kPDFTableAttributeOwner,
-                                         kPDFTableCellHeadersAttribute,
-                                         header_id_strs);
+      tag->fAttributes.appendNodeIdArray(
+          kPDFTableAttributeOwner, kPDFTableCellHeadersAttribute, header_ids);
       break;
     }
     case ax::mojom::Role::kFigure:

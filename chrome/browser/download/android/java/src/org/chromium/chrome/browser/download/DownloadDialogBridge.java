@@ -89,7 +89,8 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
 
     @CalledByNative
     private void showDialog(WindowAndroid windowAndroid, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath) {
+            @DownloadLocationDialogType int dialogType, String suggestedPath,
+            boolean supportsLaterDialog) {
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
             onCancel();
@@ -98,11 +99,13 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
 
         ModalDialogManager modalDialogManager =
                 ((ModalDialogManagerHolder) activity).getModalDialogManager();
-        showDialog(activity, modalDialogManager, totalBytes, dialogType, suggestedPath);
+        showDialog(activity, modalDialogManager, totalBytes, dialogType, suggestedPath,
+                supportsLaterDialog);
     }
 
     void showDialog(Activity activity, ModalDialogManager modalDialogManager, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath) {
+            @DownloadLocationDialogType int dialogType, String suggestedPath,
+            boolean supportsLaterDialog) {
         mActivity = activity;
         mModalDialogManager = modalDialogManager;
         mTotalBytes = totalBytes;
@@ -113,7 +116,7 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
         mDownloadLaterTime = INVALID_START_TIME;
 
         // Download later dialogs flow.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER) && supportsLaterDialog) {
             PropertyModel model =
                     new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                             .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,

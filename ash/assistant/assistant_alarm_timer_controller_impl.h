@@ -19,9 +19,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
 namespace ash {
 
@@ -46,8 +44,8 @@ class AssistantAlarmTimerControllerImpl
       AssistantControllerImpl* assistant_controller);
   ~AssistantAlarmTimerControllerImpl() override;
 
-  // Provides a pointer to the |assistant| owned by AssistantController.
-  void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+  // Provides a pointer to the |assistant| owned by AssistantService.
+  void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // AssistantAlarmTimerController:
   const AssistantAlarmTimerModel* GetModel() const override;
@@ -80,8 +78,8 @@ class AssistantAlarmTimerControllerImpl
 
   base::RepeatingTimer ticker_;
 
-  // Owned by AssistantController.
-  chromeos::assistant::mojom::Assistant* assistant_;
+  // Owned by AssistantService.
+  chromeos::assistant::Assistant* assistant_;
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};

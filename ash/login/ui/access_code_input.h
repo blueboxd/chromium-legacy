@@ -8,6 +8,10 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
+namespace gfx {
+class Range;
+}
+
 namespace ash {
 
 class AccessCodeInput : public views::View, public views::TextfieldController {
@@ -107,19 +111,11 @@ class AccessibleInputField : public views::Textfield {
   AccessibleInputField() = default;
   ~AccessibleInputField() override = default;
 
-  void set_accessible_description(const base::string16& description) {
-    accessible_description_ = description;
-  }
-
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool IsGroupFocusTraversable() const override;
   View* GetSelectedViewForGroup(int group) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  base::string16 accessible_description_;
-
   DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
 };
 
@@ -186,6 +182,12 @@ class FixedLengthCodeInput : public AccessCodeInput {
 
   void RequestFocus() override;
 
+  // Resets the |text_value_for_a11y_| when input fields have changed.
+  void ResetTextValueForA11y();
+
+  // Returns current selected text range of |text_value_for_a11y_|.
+  gfx::Range GetSelectedRangeOfTextValueForA11y();
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::TextfieldController:
@@ -237,6 +239,11 @@ class FixedLengthCodeInput : public AccessCodeInput {
 
   // Unowned input textfields ordered from the first to the last digit.
   std::vector<AccessibleInputField*> input_fields_;
+
+  // Value of current input, associate with AX event. The value will be the
+  // concat string of input fields. i.e. [1][2][3][|][][], text_value_for_a11y_
+  // = "123   ".
+  std::string text_value_for_a11y_;
 
   base::WeakPtrFactory<FixedLengthCodeInput> weak_ptr_factory_{this};
 };

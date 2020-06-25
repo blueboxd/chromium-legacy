@@ -14,14 +14,6 @@ def CommonChecks(input_api, output_api):
   blacklist = [r'gmock.*', r'gtest.*']
   output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
       input_api, output_api, '.', [r'^.+_unittest\.py$']))
-  skia_gold_env = dict(input_api.environ)
-  skia_gold_env.update({
-      'PYTHONPATH': input_api.PresubmitLocalPath(),
-      'PYTHONDONTWRITEBYTECODE': '1',
-  })
-  output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
-      input_api, output_api, 'skia_gold_common', [r'^.+_unittest\.py$'],
-      env=skia_gold_env))
   output.extend(input_api.canned_checks.RunPylint(
       input_api, output_api, black_list=blacklist))
   return output

@@ -35,10 +35,12 @@
     self.indicatorHidden ? [cell hideActivityIndicator]
                          : [cell showActivityIndicator];
     cell.textLabel.textColor = UIColor.cr_labelColor;
+    cell.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
     [cell setIconImage:nil withTintColor:nil];
     [cell hideActivityIndicator];
     cell.textLabel.textColor = UIColor.cr_secondaryLabelColor;
+    cell.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
 }
 

@@ -823,7 +823,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) override;
-  void SetMainFrameMimeType(const std::string& mime_type) override;
   bool CanOverscrollContent() const override;
   void NotifyChangedNavigationState(InvalidateTypes changed_flags) override;
   bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
@@ -1745,10 +1744,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // When a title cannot be taken from any entry, this title will be used.
   base::string16 page_title_when_no_navigation_entry_;
-
-  // When a navigation occurs, we record its contents MIME type. It can be
-  // used to check whether we can do something for some special contents.
-  std::string contents_mime_type_;
 
   // Whether the initial empty page has been accessed by another page, making it
   // unsafe to show the pending URL. Usually false unless another window tries

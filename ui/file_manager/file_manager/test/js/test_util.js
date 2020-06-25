@@ -247,7 +247,7 @@ test.ENTRIES = {
 
   pluginVm: new test.TestEntryInfo(
       test.EntryType.DIRECTORY, '', 'PvmDefault', '', test.SharedOption.NONE,
-      'Jan 1, 2000, 1:00 AM', 'Plugin VM', '--', 'Folder'),
+      'Jan 1, 2000, 1:00 AM', 'Windows files', '--', 'Folder'),
 
   photosInPluginVm: new test.TestEntryInfo(
       test.EntryType.DIRECTORY, '', 'PvmDefault/photos', '',

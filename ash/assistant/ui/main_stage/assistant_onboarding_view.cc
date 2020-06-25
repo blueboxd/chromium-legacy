@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
@@ -19,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
@@ -36,9 +36,8 @@ namespace ash {
 
 namespace {
 
-using chromeos::assistant::mojom::AssistantSuggestion;
-using chromeos::assistant::mojom::AssistantSuggestionPtr;
-using chromeos::assistant::mojom::AssistantSuggestionType;
+using chromeos::assistant::AssistantSuggestion;
+using chromeos::assistant::AssistantSuggestionType;
 
 constexpr int kHorizontalMarginDip = 56;
 
@@ -123,13 +122,13 @@ SkColor GetSuggestionTextColor(int index) {
 class SuggestionView : public views::Button, public views::ButtonListener {
  public:
   SuggestionView(AssistantViewDelegate* delegate,
-                 const AssistantSuggestion* suggestion,
+                 const AssistantSuggestion& suggestion,
                  int index)
       : views::Button(this),
         delegate_(delegate),
-        suggestion_(std::move(suggestion)),
+        suggestion_id_(suggestion.id),
         index_(index) {
-    InitLayout();
+    InitLayout(suggestion);
   }
 
   SuggestionView(const SuggestionView&) = delete;
@@ -149,11 +148,11 @@ class SuggestionView : public views::Button, public views::ButtonListener {
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    delegate_->OnSuggestionChipPressed(suggestion_);
+    delegate_->OnSuggestionPressed(suggestion_id_);
   }
 
  private:
-  void InitLayout() {
+  void InitLayout(const AssistantSuggestion& suggestion) {
     // Background.
     SetBackground(views::CreateRoundedRectBackground(
         GetSuggestionBackgroundColor(index_), kSuggestionsCornerRadiusDip));
@@ -172,8 +171,8 @@ class SuggestionView : public views::Button, public views::ButtonListener {
     icon_->SetImageSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
     icon_->SetPreferredSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
 
-    if (suggestion_->icon_url.is_valid()) {
-      delegate_->DownloadImage(suggestion_->icon_url,
+    if (suggestion.icon_url.is_valid()) {
+      delegate_->DownloadImage(suggestion.icon_url,
                                base::BindOnce(&SuggestionView::OnIconDownloaded,
                                               weak_factory_.GetWeakPtr()));
     }
@@ -194,7 +193,7 @@ class SuggestionView : public views::Button, public views::ButtonListener {
         views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                  views::MaximumFlexSizeRule::kUnbounded,
                                  /*adjust_height_for_width=*/true));
-    label_->SetText(base::UTF8ToUTF16(suggestion_->text));
+    label_->SetText(base::UTF8ToUTF16(suggestion.text));
   }
 
   void OnIconDownloaded(const gfx::ImageSkia& icon) {
@@ -203,7 +202,7 @@ class SuggestionView : public views::Button, public views::ButtonListener {
   }
 
   AssistantViewDelegate* const delegate_;
-  const AssistantSuggestion* const suggestion_;
+  const base::UnguessableToken suggestion_id_;
   const int index_;
 
   views::ImageView* icon_;  // Owned by view hierarchy.
@@ -254,7 +253,7 @@ void AssistantOnboardingView::OnAssistantControllerDestroying() {
 }
 
 void AssistantOnboardingView::OnOnboardingSuggestionsChanged(
-    const std::vector<const AssistantSuggestion*>& onboarding_suggestions) {
+    const std::vector<AssistantSuggestion>& onboarding_suggestions) {
   UpdateSuggestions();
 }
 
@@ -328,7 +327,7 @@ void AssistantOnboardingView::UpdateSuggestions() {
         /*fixed_width=*/0, /*min_width=*/0);
   }
 
-  const std::vector<const AssistantSuggestion*> suggestions =
+  const std::vector<AssistantSuggestion>& suggestions =
       AssistantSuggestionsController::Get()
           ->GetModel()
           ->GetOnboardingSuggestions();

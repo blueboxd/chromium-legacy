@@ -2176,6 +2176,21 @@
             ]
         }
     ],
+    "DirectCompositionSoftwareOverlays": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DirectCompositionSoftwareOverlays"
+                    ]
+                }
+            ]
+        }
+    ],
     "DirectCompositionUseNV12DecodeSwapChain": [
         {
             "platforms": [
@@ -4246,6 +4261,21 @@
                     },
                     "enable_features": [
                         "IPH_NewTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NewUsbBackend": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NewUsbBackend"
                     ]
                 }
             ]

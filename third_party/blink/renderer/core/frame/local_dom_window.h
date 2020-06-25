@@ -110,8 +110,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void Trace(Visitor*) const override;
 
   // ExecutionContext overrides:
-  // TODO(crbug.com/1029822): Most of these just call in to Document, but should
-  // move entirely here.
   bool IsDocument() const final { return true; }
   bool IsContextThread() const final;
   bool ShouldInstallV8Extensions() const final;
@@ -157,6 +155,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // UseCounter orverrides:
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
+
+  // Count |feature| only when this window is associated with a cross-origin
+  // iframe.
+  void CountUseOnlyInCrossOriginIframe(mojom::blink::WebFeature feature);
 
   Document* InstallNewDocument(const DocumentInit&);
 
@@ -214,7 +216,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // WebKit extensions
   double devicePixelRatio() const;
 
-  ApplicationCache* applicationCache() const;
+  ApplicationCache* applicationCache();
 
   // This is the interface orientation in degrees. Some examples are:
   //  0 is straight up; -90 is when the device is rotated 90 clockwise;

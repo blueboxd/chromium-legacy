@@ -62,7 +62,7 @@ AudioContext* AudioContext::Create(Document& document,
     return nullptr;
   }
 
-  document.CountUseOnlyInCrossOriginIframe(
+  document.domWindow()->CountUseOnlyInCrossOriginIframe(
       WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);

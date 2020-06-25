@@ -12,7 +12,7 @@
 #include "ash/public/cpp/image_downloader.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -29,7 +29,7 @@ enum class DeepLinkType;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
     : public base::CheckedObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
   // Invoked when the dialog plate button identified by |id| is pressed.
   virtual void OnDialogPlateButtonPressed(AssistantButtonId id) {}
@@ -43,8 +43,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
 
-  // Invoked when a suggestion chip is pressed.
-  virtual void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) {}
+  // Invoked when a suggestion UI element is pressed.
+  virtual void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) {}
 };
 
 // A delegate of views in assistant/ui that handles views related actions e.g.
@@ -52,9 +53,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
 // etc.
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
+  using AssistantSuggestion = chromeos::assistant::AssistantSuggestion;
 
-  virtual ~AssistantViewDelegate() {}
+  virtual ~AssistantViewDelegate() = default;
 
   // Gets the notification model.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
@@ -100,9 +101,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
 
-  // Invoked when suggestion chip is pressed.
-  virtual void OnSuggestionChipPressed(
-      const AssistantSuggestion* suggestion) = 0;
+  // Invoked when suggestion UI is pressed.
+  virtual void OnSuggestionPressed(
+      const base::UnguessableToken& suggestion_id) = 0;
 };
 
 }  // namespace ash

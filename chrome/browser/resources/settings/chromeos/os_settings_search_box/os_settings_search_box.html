@@ -19,13 +19,14 @@
     <style include="settings-shared">
       :host {
         --cr-toolbar-field-width: 480px;
-        --cr-toolbar-focused-min-height: 48px;
+        --cr-toolbar-focused-min-height: 40px;
         --cr-toolbar-icon-container-size: 32px;
-        --cr-toolbar-icon-margin: 8px;
-        --cr-toolbar-search-icon-margin-inline-start: 8px;
+        --cr-toolbar-icon-margin: 8px 16px;
+        --cr-toolbar-search-icon-margin-inline-start: 16px;
         --cr-toolbar-query-exists-min-height:
             var(--cr-toolbar-focused-min-height);
         --separator-height: 8px;
+        -webkit-tap-highlight-color: transparent;
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
         transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -52,11 +53,12 @@
         --cr-toolbar-search-field-prompt-margin-inline-start: 140px;
         --cr-toolbar-search-field-input-text-color:
             var(--cr-primary-text-color);
+        font-size: 13px;
       }
 
-      :host(:focus-within) cr-toolbar-search-field {
+      :host(:focus-within[showing-search]) cr-toolbar-search-field {
         --cr-toolbar-search-field-background: var(--cr-card-background-color);
-        box-shadow: var(--cr-menu-shadow);
+        box-shadow: var(--cr-elevation-1);
         min-height: var(--cr-toolbar-focused-min-height);
       }
 
@@ -70,7 +72,8 @@
 
       :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
         --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
-        height: 50px;
+        box-shadow: var(--cr-elevation-3);
+        height: 56px;
         margin-top: var(--separator-height);
         padding-bottom: var(--separator-height);
       }
@@ -83,13 +86,13 @@
       }
 
       iron-dropdown {
-        margin-top: 60px;
+        margin-top: 74px;
       }
 
       iron-dropdown [slot='dropdown-content'] {
         background-color: var(--cr-menu-background-color);
         border-radius: 0 0 20px 20px;
-        box-shadow: var(--cr-menu-shadow);
+        box-shadow: var(--cr-elevation-3);
         display: table;
         padding-bottom: 16px;
       }
@@ -108,12 +111,12 @@
 
       #noSearchResultsContainer {
         height: 24px;
-        margin-inline-start: 48px;
+        margin-inline-start: 64px;
         margin-top: var(--separator-height);
       }
 
       /* The separator covers the top box shadow of the dropdown so that
-       * var(--cr-menu-shadow) can be used instead of custom values. */
+       * var(--cr-elevation-3) can be used instead of custom values. */
       .separator {
         background-color: var(--cr-menu-background-color);
         border-bottom: none;
@@ -123,7 +126,7 @@
         height: var(--separator-height);
         margin-inline-end: 0;
         margin-inline-start: 0;
-        margin-top: -5px;
+        margin-top: -10px;
       }
     </style>
     <cr-toolbar-search-field id="search" narrow="[[narrow]]"

@@ -28,6 +28,11 @@ class TestExtensionDir {
   void WriteFile(const base::FilePath::StringType& filename,
                  base::StringPiece contents);
 
+  // Copies the file at |from_path| into |local_filename| under the temp
+  // directory, overwriting anything that was already there.
+  void CopyFileTo(const base::FilePath& from_path,
+                  const base::FilePath::StringType& local_filename);
+
   // Packs the extension into a .crx, and returns the path to that
   // .crx. Multiple calls to Pack() will produce extensions with the same ID.
   base::FilePath Pack();

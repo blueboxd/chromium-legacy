@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/android/window_android.h"
 
 // -----------------------------------------------------------------------------
@@ -71,12 +73,19 @@ void DownloadDialogBridge::ShowDialog(gfx::NativeWindow native_window,
 
   is_dialog_showing_ = true;
 
+  // Only show download later dialog when on cellular network.
+  auto connection_type = network::mojom::ConnectionType(
+      net::NetworkChangeNotifier::GetConnectionType());
+  bool supports_later_dialog =
+      network::NetworkConnectionTracker::IsConnectionCellular(connection_type);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadDialogBridge_showDialog(
       env, java_obj_, native_window->GetJavaObject(),
       static_cast<long>(total_bytes), static_cast<int>(dialog_type),
       base::android::ConvertUTF8ToJavaString(env,
-                                             suggested_path.AsUTF8Unsafe()));
+                                             suggested_path.AsUTF8Unsafe()),
+      supports_later_dialog);
 }
 
 void DownloadDialogBridge::OnComplete(

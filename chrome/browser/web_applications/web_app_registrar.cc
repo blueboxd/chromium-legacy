@@ -22,6 +22,9 @@ WebAppRegistrar::WebAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 WebAppRegistrar::~WebAppRegistrar() = default;
 
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
+  if (registry_profile_being_deleted_)
+    return nullptr;
+
   auto it = registry_.find(app_id);
   return it == registry_.end() ? nullptr : it->second.get();
 }
@@ -171,6 +174,11 @@ void WebAppRegistrar::OnProfileMarkedForPermanentDeletion(
 
   for (const auto& app : AllApps())
     NotifyWebAppProfileWillBeDeleted(app.app_id());
+
+  // We can't do registry_.clear() here because it makes in-memory registry
+  // diverged from the sync server registry and from the on-disk registry
+  // (WebAppDatabase/LevelDB and "Web Applications" profile directory).
+  registry_profile_being_deleted_ = true;
 }
 
 WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)

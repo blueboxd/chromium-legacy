@@ -43,6 +43,7 @@ class SearchSection : public OsSettingsSection,
   void OnAssistantHotwordEnabled(bool enabled) override;
 
   bool IsAssistantAllowed() const;
+  bool IsQuickAnswersAllowed() const;
   void UpdateAssistantSearchTags();
 };
 

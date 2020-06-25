@@ -13,8 +13,18 @@
 
 namespace web {
 
+// Frame id constants which can be used to initialize FakeWebFrame.
+// Frame ids are base16 string of 128 bit numbers.
+extern const char kMainFakeFrameId[];
+extern const char kInvalidFrameId[];
+extern const char kChildFakeFrameId[];
+extern const char kChildFakeFrameId2[];
+
+// A fake web frame to use for testing.
 class FakeWebFrame : public WebFrame {
  public:
+  // Creates a web frame. |frame_id| must be a string representing a valid
+  // hexadecimal number.
   FakeWebFrame(const std::string& frame_id,
                bool is_main_frame,
                GURL security_origin);
@@ -75,6 +85,22 @@ class FakeWebFrame : public WebFrame {
   std::vector<std::string> java_script_calls_;
   // The return value of CanCallJavaScriptFunction().
   bool can_call_function_ = true;
+};
+
+// A fake web frame representing the main frame with a |frame_id_| of
+// |kMainFakeFrameId|.
+class FakeMainWebFrame : public FakeWebFrame {
+ public:
+  explicit FakeMainWebFrame(GURL security_origin);
+  ~FakeMainWebFrame() override;
+};
+
+// A fake web frame representing a child frame with a |frame_id_| of
+// |kChildFakeFrameId|.
+class FakeChildWebFrame : public FakeWebFrame {
+ public:
+  explicit FakeChildWebFrame(GURL security_origin);
+  ~FakeChildWebFrame() override;
 };
 
 }  // namespace web

@@ -24,6 +24,7 @@ class BottomStatusIndicator : public views::View {
  public:
   enum class ContentType {
     kNone,
+    kManagedDevice,
     kAdbSideLoadingEnabled,
   };
 
@@ -41,6 +42,9 @@ class BottomStatusIndicator : public views::View {
     content_type_ = content_type;
   }
   ContentType content_type() const { return content_type_; }
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   views::Label* label_ = nullptr;

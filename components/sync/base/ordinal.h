@@ -245,6 +245,16 @@ bool Ordinal<Traits>::EqualsFn::operator()(const Ordinal<Traits>& lhs,
 }
 
 template <typename Traits>
+bool operator==(const Ordinal<Traits>& lhs, const Ordinal<Traits>& rhs) {
+  return lhs.EqualsOrBothInvalid(rhs);
+}
+
+template <typename Traits>
+bool operator!=(const Ordinal<Traits>& lhs, const Ordinal<Traits>& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename Traits>
 Ordinal<Traits>::Ordinal(const std::string& bytes)
     : bytes_(bytes), is_valid_(IsValidOrdinalBytes(bytes_)) {}
 

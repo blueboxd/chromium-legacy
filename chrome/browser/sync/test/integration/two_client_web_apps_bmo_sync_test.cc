@@ -27,6 +27,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_system.h"
 
 namespace web_app {
 namespace {
@@ -61,15 +63,21 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
     return embedded_test_server()->GetURL("/web_apps/basic.html");
   }
 
+  GURL GetUserInitiatedAppURL2() const {
+    return embedded_test_server()->GetURL("/web_apps/no_service_worker.html");
+  }
+
   AppId InstallAppAsUserInitiated(
       Profile* profile,
-      WebappInstallSource source = WebappInstallSource::OMNIBOX_INSTALL_ICON) {
+      WebappInstallSource source = WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      GURL app_url = GURL()) {
     WebAppProvider::Get(profile)
         ->shortcut_manager()
         .SuppressShortcutsForTesting();
 
     Browser* browser = CreateBrowser(profile);
-    GURL app_url = GetUserInitiatedAppURL();
+    if (!app_url.is_valid())
+      app_url = GetUserInitiatedAppURL();
     ui_test_utils::NavigateToURL(browser, app_url);
 
     AppId app_id;
@@ -125,6 +133,10 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
         WebAppProvider::Get(profile)->registrar().AsWebAppRegistrar();
     EXPECT_TRUE(web_app_registrar);
     return *web_app_registrar;
+  }
+
+  extensions::AppSorting* GetAppSorting(Profile* profile) {
+    return extensions::ExtensionSystem::Get(profile)->app_sorting();
   }
 
   bool AllProfilesHaveSameWebAppIds() {
@@ -385,6 +397,85 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   ASSERT_TRUE(app);
   EXPECT_TRUE(app->IsPolicyInstalledApp());
   EXPECT_FALSE(app->IsSynced());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingSynced) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  AppId app_id = InstallAppAsUserInitiated(GetProfile(0));
+
+  syncer::StringOrdinal page_ordinal =
+      GetAppSorting(GetProfile(0))->GetNaturalAppPageOrdinal();
+  syncer::StringOrdinal launch_ordinal =
+      GetAppSorting(GetProfile(0))->CreateNextAppLaunchOrdinal(page_ordinal);
+  GetAppSorting(GetProfile(0))->SetPageOrdinal(app_id, page_ordinal);
+  GetAppSorting(GetProfile(0))->SetAppLaunchOrdinal(app_id, launch_ordinal);
+
+  // Install a 'dummy' app & wait for installation to ensure sync has processed
+  // the initial apps.
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy.org/"), GetProfile(0),
+                                GetProfile(1));
+
+  // The app is in both profiles.
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
+  EXPECT_EQ(page_ordinal, GetAppSorting(GetProfile(1))->GetPageOrdinal(app_id));
+  EXPECT_EQ(launch_ordinal,
+            GetAppSorting(GetProfile(1))->GetAppLaunchOrdinal(app_id));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingFixCollisions) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Install two different apps.
+  AppId app_id1 = InstallAppAsUserInitiated(GetProfile(0));
+  AppId app_id2 = InstallAppAsUserInitiated(
+      GetProfile(0), WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      GetUserInitiatedAppURL2());
+
+  // Wait for both installs.
+  EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id1).AwaitNextInstall(),
+            app_id1);
+  EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id2).AwaitNextInstall(),
+            app_id2);
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
+
+  syncer::StringOrdinal page_ordinal =
+      GetAppSorting(GetProfile(0))->GetNaturalAppPageOrdinal();
+  syncer::StringOrdinal launch_ordinal =
+      GetAppSorting(GetProfile(0))->CreateNextAppLaunchOrdinal(page_ordinal);
+
+  GetAppSorting(GetProfile(0))->SetPageOrdinal(app_id1, page_ordinal);
+  GetAppSorting(GetProfile(0))->SetAppLaunchOrdinal(app_id1, launch_ordinal);
+  GetAppSorting(GetProfile(1))->SetPageOrdinal(app_id2, page_ordinal);
+  GetAppSorting(GetProfile(1))->SetAppLaunchOrdinal(app_id2, launch_ordinal);
+
+  // Install 'dummy' apps & wait for installation to ensure sync has processed
+  // the ordinals both ways.
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy1.org/"), GetProfile(0),
+                                GetProfile(1));
+  InstallDummyAppAndWaitForSync(GURL("http://www.dummy2.org/"), GetProfile(1),
+                                GetProfile(0));
+
+  // Page & launch ordinals should be synced.
+  EXPECT_EQ(GetAppSorting(GetProfile(0))->GetPageOrdinal(app_id1),
+            GetAppSorting(GetProfile(1))->GetPageOrdinal(app_id1));
+  EXPECT_EQ(GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id1),
+            GetAppSorting(GetProfile(1))->GetAppLaunchOrdinal(app_id1));
+  EXPECT_EQ(GetAppSorting(GetProfile(0))->GetPageOrdinal(app_id2),
+            GetAppSorting(GetProfile(1))->GetPageOrdinal(app_id2));
+  EXPECT_EQ(GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id2),
+            GetAppSorting(GetProfile(1))->GetAppLaunchOrdinal(app_id2));
+
+  // The page of app1 and app2 should be the same.
+  EXPECT_EQ(GetAppSorting(GetProfile(0))->GetPageOrdinal(app_id1),
+            GetAppSorting(GetProfile(0))->GetPageOrdinal(app_id2));
+  // But the launch ordinal must be different.
+  EXPECT_NE(GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id1),
+            GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id2));
 }
 
 }  // namespace

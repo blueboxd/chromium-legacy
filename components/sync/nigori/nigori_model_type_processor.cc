@@ -4,7 +4,6 @@
 
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -12,7 +11,6 @@
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/forwarding_model_type_processor.h"
-#include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
@@ -168,9 +166,6 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     // of reapplying pending local changes after processing the remote update.
     entity_->RecordForcedUpdate(updates[0]);
     error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                              ConflictResolver::NIGORI_MERGE,
-                              ConflictResolver::CONFLICT_RESOLUTION_SIZE);
   } else if (!entity_->MatchesData(updates[0].entity)) {
     // Inform the bridge of the new or updated data.
     entity_->RecordAcceptedUpdate(updates[0]);

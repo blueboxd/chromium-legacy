@@ -1,121 +1,110 @@
-<!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<link rel="import" href="chrome://resources/html/polymer.html">
 
-<head>
-  <meta charset="utf-8">
-  <title>$i18n{titleText}</title>
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_select.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network_health/network_health_summary.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_tabs/cr_tabs.html">
+<link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
+<link rel="import" href="chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="network_ui_browser_proxy.html">
+<link rel="import" href="network_state_ui.html">
+<link rel="import" href="network_logs_ui.html">
 
-  <link rel="stylesheet" href="chrome://resources/css/tabs.css">
-  <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+<dom-module id="network-ui">
+  <template>
+    <style>
+      .tabpanel > div {
+        margin-bottom: 10px;
+      }
 
-  <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
-  <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_select.html">
-  <link rel="import" href="chrome://resources/cr_components/chromeos/network_health/network_health_summary.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-  <link rel="import" href="network_state_ui.html">
-  <link rel="import" href="network_logs_ui.html">
+      #global-policy {
+        white-space: pre-wrap;
+      }
 
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/cr/ui.js"></script>
-  <script src="chrome://resources/js/cr/ui/tabs.js"></script>
-  <script src="chrome://resources/js/load_time_data.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
+      #select-div {
+        display: flex;
+        height: 400px;
+        width: 500px;
+      }
 
-  <script src="chrome://network/strings.js"></script>
+      #onc-import-result {
+        margin: 10px 0
+      }
 
-  <style>
-    tabpanel > div {
-      margin-bottom: 10px;
-    }
+      iron-pages {
+        flex: 1;
+        position: relative;
+      }
+      
+      network-select {
+        flex: 1;
+      }
 
-    #global-policy {
-      white-space: pre-wrap;
-    }
+      .error {
+        color: red;
+      }
+    </style>
 
-    #select-div {
-      display: flex;
-      height: 400px;
-      width: 500px;
-    }
+    <cr-tabs selected="{{selectedTab_}}" tab-names="[[tabNames_]]">
+    </cr-tabs>
+    <iron-pages selected="[[selectedTab_]]">
+      <div class="tabpanel" id="general">
+        <h2>$i18n{titleText}</h2>
+        <div>
+          <h2>$i18n{globalPolicyLabel}</h2>
+          <div id="global-policy"></div>
+        </div>
 
-    #onc-import-result {
-      margin: 10px 0
-    }
+        <div>
+          <h2>$i18n{cellularActivationLabel}</h2>
+          <cr-button class="action-button" id="cellular-activation-button"
+              on-click="openCellularActivationUi_">
+            $i18n{cellularActivationButtonText}
+          </cr-button>
+          <div id="cellular-error-text" class="error" hidden>
+            $i18n{noCellularErrorText}
+          </div>
+        </div>
 
-    network-select {
-      flex: 1;
-    }
+        <div>
+          <h2>$i18n{addNewWifiLabel}</h2>
+          <cr-button class="action-button" id="add-new-wifi-button"
+              on-click="showAddNewWifi_">
+            $i18n{addNewWifiButtonText}
+          </cr-button>
+        </div>
 
-    .error {
-      color: red;
-    }
-  </style>
-</head>
-
-<body>
-
-<tabbox id="network-ui">
-  <tabs>
-    <tab>$i18n{generalTab}</tab>
-    <tab>$i18n{networkHealthTab}</tab>
-    <tab>$i18n{networkLogsTab}</tab>
-    <tab>$i18n{networkStateTab}</tab>
-    <tab>$i18n{networkSelectTab}</tab>
-  </tabs>
-  <tabpanels>
-    <tabpanel id="general">
-      <h2>$i18n{titleText}</h2>
-      <div>
-        <h2>$i18n{globalPolicyLabel}</h2>
-        <div id="global-policy"></div>
-      </div>
-
-      <div>
-        <h2>$i18n{cellularActivationLabel}</h2>
-        <cr-button class="action-button" id="cellular-activation-button">
-          $i18n{cellularActivationButtonText}
-        </cr-button>
-        <div id="cellular-error-text" class="error" hidden>
-          $i18n{noCellularErrorText}
+        <div>
+          <h2>$i18n{importOncButtonText}</h2>
+          <input type="file" id="import-onc" on-change="onImportOncChange_">
+          <div id="onc-import-result"></div>
         </div>
       </div>
 
-      <div>
-        <h2>$i18n{addNewWifiLabel}</h2>
-        <cr-button class="action-button" id="add-new-wifi-button">
-          $i18n{addNewWifiButtonText}
-        </cr-button>
+      <div class="tabpanel" id="health">
+        <h2>$i18n{networkHealthLabel}</h2>
+        <network-health-summary></network-health-summary>
       </div>
 
-      <div>
-        <h2>$i18n{importOncButtonText}</h2>
-        <input type="file" id="import-onc">
-        <div id="onc-import-result"></div>
+      <div class="tabpanel" id="logs">
+        <network-logs-ui></network-logs-ui>
       </div>
-    </tabpanel>
 
-    <tabpanel id="health">
-      <h2>$i18n{networkHealthLabel}</h2>
-      <network-health-summary></network-health-summary>
-    </tabpanel>
-
-    <tabpanel id="logs">
-      <network-logs-ui></network-logs-ui>
-    </tabpanel>
-
-    <tabpanel id="state">
-      <network-state-ui></network-state-ui>
-    </tabpanel>
-
-    <tabpanel id="select">
-      <div id="select-div">
-        <network-select></network-select>
+      <div class="tabpanel" id="state">
+        <network-state-ui></network-state-ui>
       </div>
-    </tabpanel>
-  </tabpanels>
-</tabbox>
 
-<script src="network_ui.js"></script>
-
-</body>
-</html>
+      <div class="tabpanel" id="select">
+        <div id="select-div">
+          <network-select
+              on-network-item-selected="onNetworkItemSelected_"
+              on-custom-item-selected="onCustomItemSelected_">
+          </network-select>
+        </div>
+      </div>
+    </iron-pages>
+  </template>
+  <script src="network_ui.js"></script>
+</dom-module>

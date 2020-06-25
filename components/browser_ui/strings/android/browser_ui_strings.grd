@@ -192,6 +192,9 @@
       <message name="IDS_DETAILS_LINK" desc="In 1) Settings > Clean up computer (desktop), a link to open details of incompatible applications. In 2) Settings > Lite mode (mobile), static title for data usage breakdown." meaning="Short for 'view details'. Link; static title.">
         Details
       </message>
+      <message name="IDS_CHANGE_LINK" desc="Any link text giving option to the user to edit some settings. [CHAR-LIMIT=20]">
+        Change
+      </message>
       <message name="IDS_DONE" desc="Label for a button to save a change or finish editing data. Used in multiple contexts. [CHAR-LIMIT=20]">
         Done
       </message>
@@ -254,6 +257,9 @@
       </message>
       <message name="IDS_ADD" desc="Prompt for the user to add something, like a new address. [CHAR-LIMIT=20]">
         Add
+      </message>
+      <message name="IDS_CHANGE" desc="Prompt for the user to change something. [CHAR-LIMIT=20]">
+        Change
       </message>
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
         Share

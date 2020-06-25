@@ -656,8 +656,6 @@ if (!BaseClass::FillWithMembers(isolate, creation_context, v8_dictionary)) {
 def make_fill_with_own_dict_members_func(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
-    T = TextNode
-
     dictionary = cg_context.dictionary
     own_members = dictionary.own_members
     name = "FillWithOwnMembers"
@@ -681,23 +679,35 @@ def make_fill_with_own_dict_members_func(cg_context):
     body.add_template_var("isolate", "isolate")
     bind_member_iteration_local_vars(body)
 
+    def to_v8_expr(member):
+        get_api = _blink_member_name(member).get_api
+        member_type = member.idl_type.unwrap(typedef=True)
+        expr = _format("ToV8({}(), creation_context, isolate)", get_api)
+        if member_type.is_nullable and member_type.unwrap().is_string:
+            expr = _format(
+                "({get_api}().IsNull() ? v8::Null(isolate) : {to_v8})",
+                get_api=get_api,
+                to_v8=expr)
+        return expr
+
     for key_index, member in enumerate(own_members):
-        _1 = _blink_member_name(member).has_api
-        _2 = key_index
-        _3 = _blink_member_name(member).get_api
-        pattern = ("""\
-if ({_1}()) {{
+        pattern = """\
+if ({has_api}()) {{
   if (!v8_dictionary
            ->CreateDataProperty(
                ${current_context},
-               ${member_names}[{_2}].Get(isolate),
-               ToV8({_3}(), creation_context, isolate))
+               ${member_names}[{index}].Get(isolate),
+               {to_v8_expr})
            .ToChecked()) {{
     return false;
   }}
 }}\
-""")
-        node = T(_format(pattern, _1=_1, _2=_2, _3=_3))
+"""
+        node = TextNode(
+            _format(pattern,
+                    has_api=_blink_member_name(member).has_api,
+                    index=key_index,
+                    to_v8_expr=to_v8_expr(member)))
 
         conditional = expr_from_exposure(member.exposure)
         if not conditional.is_always_true:
@@ -705,7 +715,7 @@ if ({_1}()) {{
 
         body.append(node)
 
-    body.append(T("return true;"))
+    body.append(TextNode("return true;"))
 
     return func_decl, func_def
 

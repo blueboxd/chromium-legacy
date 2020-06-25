@@ -68,6 +68,9 @@ blink::Worklist::PrivateSegmentHolder::private_pop_segment
 blink::Worklist::PrivateSegmentHolder::private_push_segment
 content::(anonymous namespace)::AudioStreamMonitorTest::monitor_
 content::AudioStreamMonitor::clock_
+remoting::ChromotingHostTest::client1_
+remoting::ChromotingHostTest::client2_
+WTF::ICUConverterWrapper::converter
 
 # Populated manually - always holds a pointer to an OilPan-allocated memory.
 blink::PersistentBase::raw_
@@ -141,7 +144,7 @@ ui::AXPlatformNodeAuraLinux::atk_object_
 # rewriter has no visibility into where the parameter is forwarded to.
 ProfileDestroyer::profile_
 (anonymous namespace)::BluetoothLowEnergyApiTest::mock_adapter_
-blink::trace_event::TraceValue::as_convertable
+base::trace_event::TraceValue::as_convertable
 content::RenderProcessHostImpl::browser_context_
 device::BluetoothDevice::adapter_
 

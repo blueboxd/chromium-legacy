@@ -29,6 +29,11 @@ const int64_t kExpiryTime = 30;
 
 }  // namespace
 
+bool ConversionDisallowingContentBrowserClient::AllowConversionMeasurement(
+    BrowserContext* context) {
+  return false;
+}
+
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 

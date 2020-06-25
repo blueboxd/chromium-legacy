@@ -1105,17 +1105,19 @@ const GUI = {
                    artifacts.hasOwnProperty('expected_image');
     let is_text = artifacts.hasOwnProperty('actual_text') ||
                   artifacts.hasOwnProperty('expected_text');
+    let is_audio = artifacts.hasOwnProperty('actual_audio') ||
+                   artifacts.hasOwnProperty('expected_audio');
+    let is_leak = artifacts.hasOwnProperty('leak_log');
+
     if (is_image && is_text)
       return 'IMAGE+TEXT';
     if (is_image)
       return 'IMAGE';
     if (is_text)
       return 'TEXT';
-    let is_audio = artifacts.hasOwnProperty('actual_audio') ||
-                   artifacts.hasOwnProperty('expected_audio');
     if (is_audio)
       return 'AUDIO';
-    if (artifacts.hasOwnProperty('leak_log'))
+    if (is_leak)
       return 'LEAK';
     console.error("Unknown failure type");
     return result;

@@ -1613,10 +1613,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         TraceEvent.scoped("ChromeTabbedActivity.prepareToShowStartPagePreNative")) {
             setupCompositorContentPreNativeForPhone();
             getCompositorViewHolder().setLayoutManager(mLayoutManager);
-            mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
             addOverviewModeObserverPreNative();
 
             if (shouldShowTabSwitcherOnStart()) {
+                mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
                 mIsAccessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
                 setInitialOverviewState();
             }

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ABOUT_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_ABOUT_SECTION_H_
 
+#include "build/branding_buildflags.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace content {
 class WebUIDataSource;
@@ -19,6 +21,11 @@ class SearchTagRegistry;
 // Provides UI strings and search tags for the settings "About Chrome OS" page.
 class AboutSection : public OsSettingsSection {
  public:
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  AboutSection(Profile* profile,
+               SearchTagRegistry* search_tag_registry,
+               PrefService* pref_service);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AboutSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~AboutSection() override;
 
@@ -31,6 +38,13 @@ class AboutSection : public OsSettingsSection {
   mojom::SearchResultIcon GetSectionIcon() const override;
   std::string GetSectionPath() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  void UpdateReportIssueSearchTags();
+
+  PrefService* pref_service_;
+  PrefChangeRegistrar pref_change_registrar_;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 };
 
 }  // namespace settings

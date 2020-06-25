@@ -177,9 +177,9 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type, MediaLog* media_log) {
     case FOURCC_EMSG:
       return true;
     default:
-      // Hex is used to show nonprintable characters and aid in debugging
-      MEDIA_LOG(DEBUG, media_log) << "Unrecognized top-level box type "
-                                  << FourCCToString(type);
+      // Hex is used to show nonprintable characters and aid in debugging.
+      MEDIA_LOG(ERROR, media_log)
+          << "Invalid top-level ISO BMFF box type " << FourCCToString(type);
       return false;
   }
 }

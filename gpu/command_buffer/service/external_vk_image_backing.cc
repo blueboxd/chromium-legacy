@@ -21,6 +21,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_util.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
@@ -186,7 +187,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
       color_space, usage, context_state, std::move(image), command_pool);
 
   if (!pixel_data.empty()) {
-    backing->WritePixels(
+    backing->WritePixelsWithCallback(
         pixel_data.size(), 0,
         base::BindOnce([](const void* data, size_t size,
                           void* buffer) { memcpy(buffer, data, size); },
@@ -682,19 +683,8 @@ void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
     if (latest_content_ & kInSharedMemory) {
       if (!shared_memory_wrapper_.IsValid())
         return;
-      // There could be some work in skia has been recorded in skia internal
-      // VkCommandBuffer, but not be submitted yet. We need to submit them
-      // first.
-      // TODO(penghuang): remove this submit.
-      context_state_->gr_context()->submit();
-      auto pixel_data = shared_memory_wrapper_.GetMemoryAsSpan();
-      if (!WritePixels(
-              pixel_data.size(), shared_memory_wrapper_.GetStride(),
-              base::BindOnce([](const void* data, size_t size,
-                                void* buffer) { memcpy(buffer, data, size); },
-                             pixel_data.data(), pixel_data.size()))) {
+      if (!WritePixels())
         return;
-      }
       latest_content_ |=
           use_separate_gl_texture() ? kInVkImage : kInVkImage | kInGLTexture;
       return;
@@ -718,9 +708,10 @@ void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
   }
 }
 
-bool ExternalVkImageBacking::WritePixels(size_t data_size,
-                                         size_t stride,
-                                         FillBufferCallback callback) {
+bool ExternalVkImageBacking::WritePixelsWithCallback(
+    size_t data_size,
+    size_t stride,
+    FillBufferCallback callback) {
   DCHECK(stride == 0 || size().height() * stride <= data_size);
 
   VkBufferCreateInfo buffer_create_info = {
@@ -830,6 +821,66 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
   return true;
 }
 
+bool ExternalVkImageBacking::WritePixels() {
+  std::vector<gpu::SemaphoreHandle> handles;
+  if (!BeginAccessInternal(false /* readonly */, &handles)) {
+    DLOG(ERROR) << "BeginAccess() failed.";
+    return false;
+  }
+
+  std::vector<GrBackendSemaphore> begin_access_semaphores;
+  begin_access_semaphores.reserve(handles.size() + 1);
+  for (auto& handle : handles) {
+    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
+        device(), std::move(handle));
+    begin_access_semaphores.emplace_back();
+    begin_access_semaphores.back().initVulkan(semaphore);
+  }
+
+  auto* gr_context = context_state_->gr_context();
+  gr_context->wait(begin_access_semaphores.size(),
+                   begin_access_semaphores.data());
+
+  auto info = SkImageInfo::Make(size().width(), size().height(),
+                                ResourceFormatToClosestSkColorType(
+                                    /*gpu_compositing=*/true, format()),
+                                kOpaque_SkAlphaType);
+  SkPixmap pixmap(info, shared_memory_wrapper_.GetMemory(),
+                  shared_memory_wrapper_.GetStride());
+
+  if (!gr_context->updateBackendTexture(backend_texture_, &pixmap,
+                                        /*levels=*/1, nullptr, nullptr)) {
+    DLOG(ERROR) << "updateBackendTexture() failed.";
+  }
+
+  if (!need_synchronization()) {
+    DCHECK(handles.empty());
+    EndAccessInternal(false /* readonly */, SemaphoreHandle());
+    return true;
+  }
+
+  VkSemaphore end_access_semaphore =
+      vulkan_implementation()->CreateExternalSemaphore(device());
+  GrBackendSemaphore end_access_backend_semaphore;
+  end_access_backend_semaphore.initVulkan(end_access_semaphore);
+
+  GrFlushInfo flush_info = {
+      .fNumSemaphores = 1,
+      .fSignalSemaphores = &end_access_backend_semaphore,
+  };
+
+  gr_context->flush(flush_info);
+  // Submit so the |end_access_semaphore| is ready for waiting.
+  gr_context->submit();
+
+  auto end_access_semaphore_handle =
+      vulkan_implementation()->GetSemaphoreHandle(device(),
+                                                  end_access_semaphore);
+  EndAccessInternal(false /* readonly */,
+                    std::move(end_access_semaphore_handle));
+  return true;
+}  // namespace gpu
+
 void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   DCHECK(use_separate_gl_texture());
   DCHECK_NE(!!texture_, !!texture_passthrough_);
@@ -878,16 +929,16 @@ void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   ScopedPixelStore pack_skip_rows(api, GL_PACK_SKIP_ROWS, 0);
   ScopedPixelStore pack_aligment(api, GL_PACK_ALIGNMENT, 1);
 
-  WritePixels(checked_size.ValueOrDie(), 0,
-              base::BindOnce(
-                  [](gl::GLApi* api, const gfx::Size& size, GLenum format,
-                     GLenum type, void* buffer) {
-                    api->glReadPixelsFn(0, 0, size.width(), size.height(),
-                                        format, type, buffer);
-                    DCHECK_EQ(api->glGetErrorFn(),
-                              static_cast<GLenum>(GL_NO_ERROR));
-                  },
-                  api, size(), gl_format, gl_type));
+  WritePixelsWithCallback(
+      checked_size.ValueOrDie(), 0,
+      base::BindOnce(
+          [](gl::GLApi* api, const gfx::Size& size, GLenum format, GLenum type,
+             void* buffer) {
+            api->glReadPixelsFn(0, 0, size.width(), size.height(), format, type,
+                                buffer);
+            DCHECK_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+          },
+          api, size(), gl_format, gl_type));
   api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, old_framebuffer);
   api->glDeleteFramebuffersEXTFn(1, &framebuffer);
 }

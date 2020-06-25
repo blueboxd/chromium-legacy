@@ -26,6 +26,7 @@ class Clock;
 namespace content {
 
 class StoragePartition;
+class StoragePartitionImpl;
 
 // This class is responsible for managing the dispatch of conversion reports to
 // a ConversionReporterImpl::NetworkSender. It maintains a queue of reports and
@@ -95,6 +96,10 @@ class CONTENT_EXPORT ConversionReporterImpl
       conversion_report_callbacks_;
 
   const base::Clock* clock_;
+
+  // Should never be nullptr, since StoragePartition owns the ConversionManager
+  // which owns |this|.
+  StoragePartitionImpl* partition_;
 
   // Timer which signals the next report in |report_queue_| should be sent.
   base::OneShotTimer send_report_timer_;

@@ -1121,7 +1121,7 @@ WebstorePrivateGetExtensionStatusFunction::BuildResponseWithoutManifest(
       GetWebstoreExtensionInstallStatus(extension_id, profile);
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
-  return OneArgument(GetExtensionStatus::Results::Create(api_status));
+  return ArgumentList(GetExtensionStatus::Results::Create(api_status));
 }
 
 void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
@@ -1153,7 +1153,7 @@ void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
       PermissionsParser::GetRequiredPermissions(dummy_extension.get()));
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
-  Respond(OneArgument(GetExtensionStatus::Results::Create(api_status)));
+  Respond(ArgumentList(GetExtensionStatus::Results::Create(api_status)));
 }
 
 WebstorePrivateRequestExtensionFunction::
@@ -1178,7 +1178,8 @@ WebstorePrivateRequestExtensionFunction::Run() {
 
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
-  return RespondNow(OneArgument(RequestExtension::Results::Create(api_status)));
+  return RespondNow(
+      ArgumentList(RequestExtension::Results::Create(api_status)));
 }
 
 }  // namespace extensions

@@ -10,12 +10,12 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "services/service_manager/sandbox/sandbox_delegate.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 namespace content {
@@ -43,7 +43,7 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Returns the zygote used to launch the process.
-  virtual service_manager::ZygoteHandle GetZygote();
+  virtual ZygoteHandle GetZygote();
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #if defined(OS_POSIX)

@@ -106,6 +106,9 @@ class ModelLoader {
   // next fetch.
   virtual void EndFetch(ClientModelStatus status, base::TimeDelta max_age);
 
+  // If the model isn't yet loaded, model_str_ will be empty.
+  std::string model_str_;
+
  private:
   // Use Finch to pick a model number.
   static int GetModelNumber();
@@ -129,8 +132,6 @@ class ModelLoader {
   // Full URL of the model.
   const GURL url_;
 
-  // If the model isn't yet loaded, model_str_ will be empty.
-  std::string model_str_;
   std::unique_ptr<ClientSideModel> model_;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 

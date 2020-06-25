@@ -99,8 +99,13 @@ void FileHandlerManager::DisableAndUnregisterOsFileHandlers(
   UpdateBoolWebAppPref(profile()->GetPrefs(), app_id, kFileHandlersEnabled,
                        /*value=*/false);
 
-  if (!ShouldRegisterFileHandlersWithOs() ||
-      disable_os_integration_for_testing_) {
+  // Temporarily allow file handlers unregistration only if an app has them.
+  // TODO(crbug.com/1088434, crbug.com/1076688): Do not start async
+  // CreateShortcuts process in OnWebAppUninstalled / Unregistration.
+  const apps::FileHandlers* file_handlers = GetAllFileHandlers(app_id);
+
+  if (!ShouldRegisterFileHandlersWithOs() || !file_handlers ||
+      file_handlers->empty() || disable_os_integration_for_testing_) {
     return;
   }
 

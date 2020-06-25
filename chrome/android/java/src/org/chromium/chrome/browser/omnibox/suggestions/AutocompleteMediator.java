@@ -1115,10 +1115,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param newHeightPx New height of the suggestion list in pixels.
      */
     @Override
-    public void onSuggestionDropdownHeightChanged(@Px int newHeightPx) {
-        if (!mEnableAdaptiveSuggestionsCount) return;
-        // TODO(crbug.com/1073169): pass the information to DropdownItemViewInfoListManager and
-        // group suggestions that are visible on screen.
+    public void onSuggestionDropdownHeightChanged(@Px int newHeight) {
+        mDropdownViewInfoListBuilder.setDropdownHeight(newHeight);
     }
 
     @Override

@@ -165,7 +165,7 @@ const base::Feature kEduCoexistenceConsentLog{"EduCoexistenceConsentLog",
 
 // If enabled, emoji suggestion will be shown when user type "space".
 const base::Feature kEmojiSuggestAddition{"EmojiSuggestAddition",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
@@ -252,6 +252,10 @@ const base::Feature kInstantTethering{"InstantTethering",
 // ("ash-chrome") acting as the Wayland server and window manager.
 const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables device management disclosure on login / lock screen.
+const base::Feature kLoginDeviceManagementDisclosure{
+    "LoginDeviceManagementDisclosure", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the display password button on login / lock screen.
 const base::Feature kLoginDisplayPasswordButton{
@@ -476,6 +480,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsLacrosSupportEnabled() {
   return base::FeatureList::IsEnabled(kLacrosSupport);
+}
+
+bool IsLoginDeviceManagementDisclosureEnabled() {
+  return base::FeatureList::IsEnabled(kLoginDeviceManagementDisclosure);
 }
 
 bool IsLoginDisplayPasswordButtonEnabled() {

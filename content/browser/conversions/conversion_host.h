@@ -46,6 +46,8 @@ class CONTENT_EXPORT ConversionHost : public WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(ConversionHostTest, PerPageConversionMetrics);
   FRIEND_TEST_ALL_PREFIXES(ConversionHostTest,
                            NoManager_NoPerPageConversionMetrics);
+  FRIEND_TEST_ALL_PREFIXES(ConversionHostTest,
+                           ValidConversionWithEmbedderDisable_NoConversion);
 
   ConversionHost(
       WebContents* web_contents,

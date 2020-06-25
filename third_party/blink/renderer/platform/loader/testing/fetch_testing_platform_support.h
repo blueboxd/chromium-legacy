@@ -6,10 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_FETCH_TESTING_PLATFORM_SUPPORT_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
+
+class WebURLLoaderMockFactory;
 
 class FetchTestingPlatformSupport
     : public TestingPlatformSupportWithMockScheduler {
@@ -17,8 +20,9 @@ class FetchTestingPlatformSupport
   FetchTestingPlatformSupport();
   ~FetchTestingPlatformSupport() override;
 
+  WebURLLoaderMockFactory* GetURLLoaderMockFactory();
+
   // Platform:
-  WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
   std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory() override;
 
  private:

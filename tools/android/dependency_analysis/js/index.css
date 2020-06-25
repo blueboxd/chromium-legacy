@@ -13,6 +13,17 @@
   height: 15vh;
 }
 
+#graph-and-node-details-container {
+  display: flex;
+  flex-direction: row;
+}
+
+#selected-node-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 400px;
+}
+
 .user-input-group {
   display: flex;
   flex-direction: column;

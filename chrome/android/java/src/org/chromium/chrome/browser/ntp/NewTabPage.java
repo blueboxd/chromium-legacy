@@ -34,12 +34,10 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.NtpStreamLifecycleManager;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
-import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
@@ -429,9 +427,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             SnackbarManager snackbarManager, TabModelSelector tabModelSelector, NewTabPageUma uma,
             boolean isInNightMode, BottomSheetController bottomSheetController) {
         Profile profile = Profile.fromWebContents(mTab.getWebContents());
-        ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
-                FeedProcessScopeFactory.getFeedConsumptionObserver(),
-                FeedProcessScopeFactory.getFeedLoggingBridge(), activity, profile);
+
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
 
@@ -448,8 +444,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mFeedSurfaceProvider =
                 new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector, tabProvider,
                         new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
-                        mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
-                        mNewTabPageManager.getNavigationDelegate(), profile,
+                        mNewTabPageLayout, sectionHeaderView, new FeedActionHandler.Options(),
+                        isInNightMode, this, mNewTabPageManager.getNavigationDelegate(), profile,
                         /* isPlaceholderShown= */ false, bottomSheetController);
 
         // Record the timestamp at which the new tab page's construction started.

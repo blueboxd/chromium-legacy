@@ -18,11 +18,6 @@ void FakeModelTypeConnector::ConnectNonBlockingType(
 
 void FakeModelTypeConnector::DisconnectNonBlockingType(ModelType type) {}
 
-void FakeModelTypeConnector::RegisterDirectoryType(ModelType type,
-                                                   ModelSafeGroup group) {}
-
-void FakeModelTypeConnector::UnregisterDirectoryType(ModelType type) {}
-
 void FakeModelTypeConnector::ConnectProxyType(ModelType type) {}
 
 void FakeModelTypeConnector::DisconnectProxyType(ModelType type) {}

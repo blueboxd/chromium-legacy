@@ -933,5 +933,84 @@ TEST_F(SystemPerfettoTest, RespectsFeatureList) {
                     ->IsDummySystemProducerForTesting());
   }
 }
+
+#if defined(OS_ANDROID)
+TEST_F(SystemPerfettoTest, RespectsFeaturePreAndroidPie) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_P) {
+    return;
+  }
+
+  auto run_test = [this](bool enable_feature) {
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
+
+    base::test::ScopedFeatureList feature_list;
+    if (enable_feature) {
+      feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
+    } else {
+      feature_list.InitAndDisableFeature(
+          features::kEnablePerfettoSystemTracing);
+    }
+    PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
+
+    std::string data_source_name = "temp_name";
+
+    base::RunLoop data_source_started_runloop;
+    std::unique_ptr<TestDataSource> data_source =
+        TestDataSource::CreateAndRegisterDataSource(data_source_name, 1);
+    data_source->set_start_tracing_callback(
+        data_source_started_runloop.QuitClosure());
+
+    auto system_service = CreateMockSystemService();
+
+    base::RunLoop system_no_more_packets_runloop;
+    MockConsumer system_consumer(
+        {data_source_name}, system_service->GetService(),
+        [&system_no_more_packets_runloop](bool has_more) {
+          if (!has_more) {
+            system_no_more_packets_runloop.Quit();
+          }
+        });
+
+    base::RunLoop system_data_source_enabled_runloop;
+    base::RunLoop system_data_source_disabled_runloop;
+    auto system_producer = CreateMockPosixSystemProducer(
+        system_service.get(),
+        /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
+        &system_data_source_disabled_runloop, /* check_sdk_level = */ true);
+    PerfettoTracedProcess::GetTaskRunner()->PostTask(
+        [&system_producer]() { system_producer->ConnectToSystemService(); });
+
+    if (enable_feature) {
+      system_data_source_enabled_runloop.Run();
+      data_source_started_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStarted();
+    }
+
+    // Post the task to ensure that the data will have been written and
+    // committed if any tracing is being done.
+    base::RunLoop stop_tracing;
+    PerfettoTracedProcess::GetTaskRunner()->PostTask(
+        [&system_consumer, &stop_tracing]() {
+          system_consumer.StopTracing();
+          stop_tracing.Quit();
+        });
+    stop_tracing.Run();
+
+    if (enable_feature) {
+      system_data_source_disabled_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStopped();
+    }
+    system_no_more_packets_runloop.Run();
+
+    PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
+    return system_consumer.received_test_packets();
+  };
+
+  EXPECT_EQ(1u, run_test(/* enable_feature = */ true));
+  EXPECT_EQ(0u, run_test(/* enable_feature = */ false));
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 }  // namespace tracing

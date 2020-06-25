@@ -718,6 +718,12 @@ void LocationBarView::Update(WebContents* contents) {
   if (send_tab_to_self_icon)
     send_tab_to_self_icon->SetVisible(false);
 
+  PageActionIconView* qr_generator_icon =
+      page_action_icon_controller_->GetIconView(
+          PageActionIconType::kQRCodeGenerator);
+  if (qr_generator_icon)
+    qr_generator_icon->SetVisible(false);
+
   OnChanged();  // NOTE: Calls Layout().
 }
 

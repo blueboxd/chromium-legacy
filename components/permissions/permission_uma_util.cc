@@ -30,19 +30,6 @@
 
 namespace permissions {
 
-// UMA keys need to be statically initialized so plain function would not
-// work. Use macros instead.
-#define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure, \
-                              permission_insecure, action)                  \
-  base::UmaHistogramEnumeration(permission, action, PermissionAction::NUM); \
-  if (secure_origin) {                                                      \
-    base::UmaHistogramEnumeration(permission_secure, action,                \
-                                  PermissionAction::NUM);                   \
-  } else {                                                                  \
-    base::UmaHistogramEnumeration(permission_insecure, action,              \
-                                  PermissionAction::NUM);                   \
-  }
-
 #define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type) \
   base::UmaHistogramEnumeration(metric_name, permission_bubble_type,    \
                                 PermissionRequestType::NUM)
@@ -494,31 +481,22 @@ void PermissionUmaUtil::RecordPermissionAction(
                      permission, dismiss_count, ignore_count, source_ui,
                      ui_disposition));
 
-  bool secure_origin = content::IsOriginSecure(requesting_origin);
-
   switch (permission) {
-    // Geolocation, MidiSysEx, Push, Media, Clipboard, and AR/VR permissions are
-    // disabled on insecure origins, so there's no need to record separate
-    // metrics for secure/insecure.
     case ContentSettingsType::GEOLOCATION:
       base::UmaHistogramEnumeration("Permissions.Action.Geolocation", action,
                                     PermissionAction::NUM);
       break;
     case ContentSettingsType::NOTIFICATIONS:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Notifications",
-                            "Permissions.Action.SecureOrigin.Notifications",
-                            "Permissions.Action.InsecureOrigin.Notifications",
-                            action);
+      base::UmaHistogramEnumeration("Permissions.Action.Notifications", action,
+                                    PermissionAction::NUM);
       break;
     case ContentSettingsType::MIDI_SYSEX:
       base::UmaHistogramEnumeration("Permissions.Action.MidiSysEx", action,
                                     PermissionAction::NUM);
       break;
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.ProtectedMedia",
-                            "Permissions.Action.SecureOrigin.ProtectedMedia",
-                            "Permissions.Action.InsecureOrigin.ProtectedMedia",
-                            action);
+      base::UmaHistogramEnumeration("Permissions.Action.ProtectedMedia", action,
+                                    PermissionAction::NUM);
       break;
     case ContentSettingsType::MEDIASTREAM_MIC:
       base::UmaHistogramEnumeration("Permissions.Action.AudioCapture", action,
@@ -529,9 +507,8 @@ void PermissionUmaUtil::RecordPermissionAction(
                                     PermissionAction::NUM);
       break;
     case ContentSettingsType::PLUGINS:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",
-                            "Permissions.Action.SecureOrigin.Flash",
-                            "Permissions.Action.InsecureOrigin.Flash", action);
+      base::UmaHistogramEnumeration("Permissions.Action.Flash", action,
+                                    PermissionAction::NUM);
       break;
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
       base::UmaHistogramEnumeration("Permissions.Action.ClipboardReadWrite",

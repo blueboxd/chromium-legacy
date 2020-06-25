@@ -31,7 +31,6 @@ public:
 };
 
 class DerivedLeftMixin : public LeftMixin, public GarbageCollected<DerivedLeftMixin> {
-  USING_GARBAGE_COLLECTED_MIXIN(DerivedLeftMixin);
 };
 
 }

@@ -159,8 +159,10 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
           IntentTypeToString(processed_request.preprocessed_output.intent_type),
           base::UTF8ToUTF16(
               processed_request.preprocessed_output.intent_text))) {
-    quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds_, title_,
-                                                         query_);
+    if (!quick_answers_ui_controller_->is_showing_quick_answers_view()) {
+      quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds_,
+                                                           title_, query_);
+    }
     quick_answers_client_->FetchQuickAnswers(processed_request);
   }
 }

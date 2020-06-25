@@ -77,7 +77,7 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
 
   const base::string16 title_text =
       GetSafetyTipTitle(safety_tip_status, suggested_url);
-  set_window_title(title_text);
+  SetTitle(title_text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
 

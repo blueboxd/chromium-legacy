@@ -126,7 +126,6 @@ WebPreferences::WebPreferences()
       primary_hover_type(ui::HOVER_TYPE_NONE),
       dont_send_key_events_to_javascript(false),
       sync_xhr_in_documents_enabled(true),
-      should_respect_image_orientation(false),
       number_of_cpu_cores(1),
 #if defined(OS_MACOSX)
       editing_behavior(EDITING_BEHAVIOR_MAC),

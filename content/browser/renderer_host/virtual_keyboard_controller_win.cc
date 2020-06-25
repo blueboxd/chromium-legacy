@@ -23,14 +23,19 @@ VirtualKeyboardControllerWin::VirtualKeyboardControllerWin(
 
 VirtualKeyboardControllerWin::~VirtualKeyboardControllerWin() {
   if (observers_registered_) {
-    // If the VK is already showing, then dismiss it first.
-    if (auto* controller = input_method_->GetInputMethodKeyboardController()) {
-      if (virtual_keyboard_shown_) {
-        controller->DismissVirtualKeyboard();
-        // Should also scroll the content into view after the VK dismisses.
-        OnKeyboardHidden();
-      }
+    // De-register the input pane observers.
+    if (auto* controller = input_method_->GetInputMethodKeyboardController())
       controller->RemoveObserver(this);
+  }
+}
+
+void VirtualKeyboardControllerWin::HideAndNotifyKeyboardInset() {
+  if (auto* controller = input_method_->GetInputMethodKeyboardController()) {
+    if (virtual_keyboard_shown_) {
+      // If the VK is already showing, then dismiss it first.
+      controller->DismissVirtualKeyboard();
+      // Should also scroll the content into view after the VK dismisses.
+      OnKeyboardHidden();
     }
   }
 }

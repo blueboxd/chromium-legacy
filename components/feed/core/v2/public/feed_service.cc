@@ -20,6 +20,7 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -123,6 +124,32 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   std::unique_ptr<HistoryObserverImpl> history_observer_;
 };
 
+class FeedService::IdentityManagerObserverImpl
+    : public signin::IdentityManager::Observer {
+ public:
+  IdentityManagerObserverImpl(signin::IdentityManager* identity_manager,
+                              FeedStream* stream)
+      : identity_manager_(identity_manager), feed_stream_(stream) {}
+  IdentityManagerObserverImpl(const IdentityManagerObserverImpl&) = delete;
+  IdentityManagerObserverImpl& operator=(const IdentityManagerObserverImpl&) =
+      delete;
+  ~IdentityManagerObserverImpl() override {
+    identity_manager_->RemoveObserver(this);
+  }
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override {
+    feed_stream_->OnSignedIn();
+  }
+  void OnPrimaryAccountCleared(
+      const CoreAccountInfo& previous_primary_account_info) override {
+    feed_stream_->OnSignedOut();
+  }
+
+ private:
+  signin::IdentityManager* identity_manager_;
+  FeedStream* feed_stream_;
+};
+
 FeedService::FeedService(std::unique_ptr<FeedStream> stream)
     : stream_(std::move(stream)) {}
 
@@ -161,8 +188,10 @@ FeedService::FeedService(
       history_service, static_cast<FeedStream*>(stream_.get()));
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 
-// TODO(harringtond): Call FeedStream::OnSignedIn()
-// TODO(harringtond): Call FeedStream::OnSignedOut()
+  identity_manager_observer_ = std::make_unique<IdentityManagerObserverImpl>(
+      identity_manager, stream_.get());
+  identity_manager->AddObserver(identity_manager_observer_.get());
+
 #if defined(OS_ANDROID)
   application_status_listener_ =
       base::android::ApplicationStatusListener::New(base::BindRepeating(

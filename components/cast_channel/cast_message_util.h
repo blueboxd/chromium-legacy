@@ -137,15 +137,23 @@ enum class V2MessageType {
 
 // Receiver App Type determines App types that can be supported by a Cast media
 // source. All Cast media sources support the web type.
+// Please keep it in sync with the EnumTable in
+// chrome/common/media_router/providers/cast/cast_media_source.cc.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Please keep it in sync with
+// MediaRouterResponseReceiverAppType in tools/metrics/histograms/enums.xml.
 enum class ReceiverAppType {
+  kOther = 0,
+
   // Web-based Cast receiver apps. This is supported by all Cast media source
   // by default.
-  kWeb,
+  kWeb = 1,
 
   // A media source may support launching an Android TV app in addition to a
   // Cast web app.
-  kAndroidTv,
+  kAndroidTv = 2,
 
+  // Do not reorder existing entries, and add new types above |kMaxValue|.
   kMaxValue = kAndroidTv,
 };
 

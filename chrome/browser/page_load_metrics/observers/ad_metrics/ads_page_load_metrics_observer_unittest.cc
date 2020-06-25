@@ -85,9 +85,26 @@ struct CreativeOriginTest {
   FrameData::OriginStatus expected_origin_status;
 };
 
+struct CreativeOriginTestWithThrottling {
+  std::string page_url;
+  std::vector<std::string> subframe_urls;
+  std::vector<bool> throttled;
+  size_t creative_index;
+  bool should_paint;
+  FrameData::OriginStatusWithThrottling expected_origin_status;
+};
+
 enum class ResourceCached { kNotCached = 0, kCachedHttp, kCachedMemory };
 enum class FrameType { AD = 0, NON_AD };
 
+const base::TimeDelta kParseStartTime = base::TimeDelta::FromMilliseconds(3);
+const base::TimeDelta kCreativeEligibleToPaintTime =
+    base::TimeDelta::FromMilliseconds(4);
+const base::TimeDelta kCreativeFCPTime = base::TimeDelta::FromMilliseconds(5);
+const base::TimeDelta kOtherFrameEligibleToPaintTime =
+    base::TimeDelta::FromMilliseconds(9);
+const base::TimeDelta kOtherFrameFCPTime =
+    base::TimeDelta::FromMilliseconds(10);
 const char kAdUrl[] = "https://ads.com/ad/disallowed.html";
 const char kNonAdUrl[] = "https://foo.com/";
 const char kNonAdUrlSameOrigin[] = "https://ads.com/foo";
@@ -515,15 +532,24 @@ class AdsPageLoadMetricsObserverTest
     tester_->SimulateResourceDataUseUpdate(resources, render_frame_host);
   }
 
-  void SimulateFirstContentfulPaint(base::TimeDelta first_contentful_paint,
-                                    RenderFrameHost* ad_frame) {
-    page_load_metrics::mojom::PageLoadTiming timing;
-    page_load_metrics::InitPageLoadTimingForTest(&timing);
-    timing.navigation_start = base::Time::Now();
-    timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(3);
-    timing.paint_timing->first_contentful_paint = first_contentful_paint;
-    PopulateRequiredTimingFields(&timing);
-    tester()->SimulateTimingUpdate(timing, ad_frame);
+  // Simulates FirstEligibleToPaint and/or FirstContentfulPaint
+  // and then runs a timing update. Note that a simulation of
+  // both of these separately one after the other doesn't work because
+  // the second call to SimulateTimingUpdate interferes with the results
+  // of the first call.
+  void SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+      RenderFrameHost* frame,
+      base::Optional<base::TimeDelta> first_eligible_to_paint,
+      base::Optional<base::TimeDelta> first_contentful_paint) {
+    page_load_metrics::InitPageLoadTimingForTest(&timing_);
+    timing_.navigation_start = base::Time::Now();
+    timing_.parse_timing->parse_start = kParseStartTime;
+    timing_.paint_timing->first_eligible_to_paint = first_eligible_to_paint;
+    if (first_contentful_paint.has_value())
+      timing_.paint_timing->first_contentful_paint =
+          first_contentful_paint.value();
+    PopulateRequiredTimingFields(&timing_);
+    tester()->SimulateTimingUpdate(timing_, frame);
   }
 
   // Given |creative_origin_test|, creates nested frames in the order given in
@@ -546,7 +572,7 @@ class AdsPageLoadMetricsObserverTest
     frames.push_back(main_frame);
 
     // Create and navigate each subframe so that it has the origin given at
-    // the corresponding index of |frame_origins.origins|.
+    // the corresponding index of |creative_origin_test.urls|.
     RenderFrameHost* current_frame = main_frame;
     for (size_t i = 1; i < creative_origin_test.urls.size(); ++i) {
       // Create subframe and page load timing.
@@ -559,16 +585,24 @@ class AdsPageLoadMetricsObserverTest
     }
 
     // In order to test that |creative_origin_status_| in FrameData is properly
-    // computed, we need to simulate first contentful paint for the ad creative.
-    SimulateFirstContentfulPaint(base::TimeDelta::FromMilliseconds(5),
-                                 frames[creative_origin_test.creative_index]);
+    // computed, we need to simulate first contentful paint for the ad creative
+    // first at |kCreativeFCPTime|.
+    base::TimeDelta eligible_time = kCreativeEligibleToPaintTime;
+    base::TimeDelta fcp_time = kCreativeFCPTime;
+    SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+        frames[creative_origin_test.creative_index], eligible_time, fcp_time);
 
-    // Simulate first contentful paint for other subframes.
+    // Now simulate first contentful paint for the other frames at
+    // |kOtherFrameFCPTime|.
+    eligible_time = kOtherFrameEligibleToPaintTime;
+    fcp_time = kOtherFrameFCPTime;
+
     for (size_t i = 0; i < frames.size(); ++i) {
-      if (i != creative_origin_test.creative_index) {
-        SimulateFirstContentfulPaint(base::TimeDelta::FromMilliseconds(10 + i),
-                                     frames[i]);
-      }
+      if (i == creative_origin_test.creative_index)
+        continue;
+
+      SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+          frames[i], eligible_time, fcp_time);
     }
 
     // Navigate again to trigger histograms, then test them.
@@ -576,6 +610,88 @@ class AdsPageLoadMetricsObserverTest
     histograms.ExpectUniqueSample(kCreativeOriginStatusHistogramId,
                                   creative_origin_test.expected_origin_status,
                                   1);
+  }
+
+  // Given |creative_origin_test|, creates nested frames in the order given in
+  // |creative_origin_test.urls|, causes the frame with index
+  // |creative_origin_test.creative_index| to paint text first, and verifies
+  // that the creative's origin matches
+  // |creative_origin_test.expected_origin_status|. This test variation has
+  // added parameters in the CreativeOriginTestWithThrottling struct, namely
+  // a vector of booleans to denote whether the corresponding frame in |urls|
+  // is to be throttled, and a single bool indicating whether or not to simulate
+  // any first contentful paints, so that the case
+  // FrameData::OriginStatusWithThrottling::kUnknownAndUnthrottled
+  // can be tested.
+  void TestCreativeOriginStatusWithThrottling(
+      const CreativeOriginTestWithThrottling& creative_origin_test) {
+    const char kCreativeOriginStatusWithThrottlingHistogramId[] =
+        "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+        "CreativeOriginStatusWithThrottling";
+
+    base::HistogramTester histograms;
+
+    // Navigate main frame.
+    RenderFrameHost* main_frame =
+        NavigateMainFrame(creative_origin_test.page_url);
+
+    // Create and navigate each subframe so that it has the origin given at
+    // the corresponding index of |frame_origins.subframe_urls|.
+    std::vector<RenderFrameHost*> frames;
+    RenderFrameHost* current_frame = main_frame;
+    for (const std::string& url : creative_origin_test.subframe_urls) {
+      // Create subframe and page load timing.
+      current_frame = CreateAndNavigateSubFrame(url, current_frame);
+      frames.push_back(current_frame);
+
+      // Load bytes in frame.
+      ResourceDataUpdate(current_frame, ResourceCached::kNotCached, 10);
+    }
+
+    // Create a vector of indices to easily ensure frames are processed in
+    // correct order. The creative frame must be processed before any of
+    // the other ad subframes.
+    std::vector<size_t> indices;
+    indices.push_back(creative_origin_test.creative_index);
+    for (size_t i = 0; i < frames.size(); ++i) {
+      if (i == creative_origin_test.creative_index)
+        continue;
+      indices.push_back(i);
+    }
+
+    // In order to test that |creative_origin_status_| and
+    // |first_eligible_to_paint_| in FrameData are properly
+    // computed, we need to simulate eligibility to paint and first
+    // contentful paint for the ad creative, unless it is render-throttled,
+    // and then do similarly for the other subframes.
+    for (size_t i : indices) {
+      bool is_creative = (i == creative_origin_test.creative_index);
+      base::TimeDelta eligible_time = is_creative
+                                          ? kCreativeEligibleToPaintTime
+                                          : kOtherFrameEligibleToPaintTime;
+      base::TimeDelta fcp_time =
+          is_creative ? kCreativeFCPTime : kOtherFrameFCPTime;
+
+      bool is_throttled = creative_origin_test.throttled[i];
+      bool should_paint = creative_origin_test.should_paint;
+
+      if (!is_throttled && should_paint) {
+        SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+            frames[i], eligible_time, fcp_time);
+      } else if (!is_throttled) {
+        SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+            frames[i], eligible_time, base::nullopt);
+      } else {
+        SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+            frames[i], base::nullopt, base::nullopt);
+      }
+    }
+
+    // Navigate again to trigger histograms, then test them.
+    NavigateFrame(kNonAdUrl, main_frame);
+    histograms.ExpectUniqueSample(
+        kCreativeOriginStatusWithThrottlingHistogramId,
+        creative_origin_test.expected_origin_status, 1);
   }
 
   void TimingUpdate(const page_load_metrics::mojom::PageLoadTiming& timing) {
@@ -594,8 +710,8 @@ class AdsPageLoadMetricsObserverTest
 
   HeavyAdBlocklist* blocklist() { return test_blocklist_.get(); }
 
-  // Flushes all intervention report messages and returns a bool if there was a
-  // message.
+  // Flushes all intervention report messages and returns a bool if there was
+  // a message.
   bool HasInterventionReportsAfterFlush(RenderFrameHost* render_frame_host) {
     return frame_remote_tester_.FlushForTesting(render_frame_host);
   }
@@ -677,6 +793,7 @@ class AdsPageLoadMetricsObserverTest
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
   FrameRemoteTester frame_remote_tester_;
+  page_load_metrics::mojom::PageLoadTiming timing_;
 
   // The clock used by the ui::ScopedVisibilityTracker, assigned if non-null.
   std::unique_ptr<base::SimpleTestTickClock> clock_;
@@ -1758,38 +1875,129 @@ TEST_F(AdsPageLoadMetricsObserverTest, CreativeOriginStatus) {
   // creative and the expected creative origin status.
   std::vector<CreativeOriginTest> test_cases = {
       {{"http://a.com", "http://a.com/disallowed.html"},
-       1,
+       1 /* creative_index */,
        OriginStatus::kSame},
       {{"http://a.com", "http://b.com/disallowed.html"},
-       1,
+       1 /* creative_index */,
        OriginStatus::kCross},
       {{"http://a.com", "http://a.com/disallowed.html", "http://b.com"},
-       1,
+       1 /* creative_index */,
        OriginStatus::kSame},
       {{"http://a.com", "http://a.com/disallowed.html", "http://b.com"},
-       2,
+       2 /* creative_index */,
        OriginStatus::kCross},
       {{"http://a.com", "http://b.com/disallowed.html", "http://a.com"},
-       1,
+       1 /* creative_index */,
        OriginStatus::kCross},
       {{"http://a.com", "http://b.com/disallowed.html", "http://a.com"},
-       2,
+       2 /* creative_index */,
        OriginStatus::kSame},
       {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
         "http://b.com"},
-       1,
+       1 /* creative_index */,
        OriginStatus::kCross},
       {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
         "http://b.com"},
-       2,
+       2 /* creative_index */,
        OriginStatus::kSame},
       {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
         "http://b.com"},
-       3,
+       3 /* creative_index */,
        OriginStatus::kCross}};
 
   for (const auto& creative_origin_test : test_cases) {
     TestCreativeOriginStatus(creative_origin_test);
+  }
+}
+
+// Tests that creative origin status with throttling is computed as intended,
+// i.e. as the origin status of the frame in the ad frame tree that has its
+// first contentful paint occur first, with throttling status determined by
+// whether or not at least one frame in the ad frame tree was unthrottled.
+TEST_F(AdsPageLoadMetricsObserverTest, CreativeOriginStatusWithThrottling) {
+  using OriginStatusWithThrottling = FrameData::OriginStatusWithThrottling;
+
+  // Each CreativeOriginTestWithThrottling struct lists the urls of the frames
+  // in the frame tree, from main frame to leaf ad frame, and a corresponding
+  // bool for each to denote whether that frame is throttled, along with the
+  // index of the ad creative and the expected creative origin status with
+  // throttling.
+  std::vector<CreativeOriginTestWithThrottling> test_cases = {
+      {"http://a.com",
+       {"http://a.com/disallowed.html"},
+       {false} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kSameAndUnthrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html"},
+       {false} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kCrossAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html"},
+       {true} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html"},
+       {true} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, false} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kSameAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, false} /* throttled */,
+       1 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kCrossAndUnthrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://a.com"},
+       {true, true} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://a.com"},
+       {true, true} /* throttled */,
+       1 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://a.com"},
+       {true, true} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndThrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, true} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kSameAndUnthrottled},
+      {"http://a.com",
+       {"http://b.com/disallowed.html", "http://a.com"},
+       {false, false} /* throttled */,
+       0 /* creative_index */,
+       true /* should_paint */,
+       OriginStatusWithThrottling::kCrossAndUnthrottled},
+      {"http://a.com",
+       {"http://a.com/disallowed.html", "http://b.com"},
+       {false, false} /* throttled */,
+       0 /* creative_index */,
+       false /* should_paint */,
+       OriginStatusWithThrottling::kUnknownAndUnthrottled}};
+
+  for (const auto& creative_origin_test : test_cases) {
+    TestCreativeOriginStatusWithThrottling(creative_origin_test);
   }
 }
 
@@ -2529,8 +2737,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, FirstContentfulPaint_Recorded) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 100);
 
   // Set FirstContentfulPaint.
-  SimulateFirstContentfulPaint(base::TimeDelta::FromMilliseconds(100),
-                               ad_frame);
+  SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+      ad_frame, base::TimeDelta::FromMilliseconds(90),
+      base::TimeDelta::FromMilliseconds(100));
 
   // Navigate away and check the histogram.
   NavigateFrame(kNonAdUrl, main_frame);

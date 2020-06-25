@@ -1911,8 +1911,7 @@ def main(argv):
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.build_config, all_inputs,
-                             add_pydeps=False)  # pydeps listed in GN.
+    build_utils.WriteDepfile(options.depfile, options.build_config, all_inputs)
 
 
 if __name__ == '__main__':

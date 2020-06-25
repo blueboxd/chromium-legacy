@@ -152,6 +152,13 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   // should have a animation smoothness histogram recorded.
   if (drag_enabled) {
     ShellTestApi().WaitForWindowFinishAnimating(window.get());
+
+    // Wait for one more frame presented for the metrics to get recorded.
+    // ignore_result() and timeout is because the frame could already be
+    // presented.
+    ignore_result(ui::WaitForNextFrameToBePresented(
+        compositor, base::TimeDelta::FromMilliseconds(500)));
+
     tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
   }
 }

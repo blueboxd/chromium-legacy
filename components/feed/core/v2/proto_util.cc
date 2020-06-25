@@ -118,6 +118,7 @@ feedwire::Request CreateFeedQueryRequest(
   feed_request.add_client_capability(feedwire::Capability::REQUEST_SCHEDULE);
   feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
   feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
+  feed_request.add_client_capability(feedwire::Capability::INFINITE_FEED);
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
@@ -130,7 +131,6 @@ feedwire::Request CreateFeedQueryRequest(
     query.mutable_next_page_token()
         ->mutable_next_page_token()
         ->set_next_page_token(next_page_token);
-    feed_request.mutable_consistency_token()->set_token(consistency_token);
   }
   return request;
 }

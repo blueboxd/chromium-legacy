@@ -502,7 +502,12 @@ enum AuthenticationButtonType {
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [button setImage:buttonImage forState:UIControlStateNormal];
   [self setSkipSigninStylingWithButton:button];
-  button.imageEdgeInsets = UIEdgeInsetsMake(0, -kImageInset, 0, 0);
+  if (UIApplication.sharedApplication.userInterfaceLayoutDirection ==
+      UIUserInterfaceLayoutDirectionLeftToRight) {
+    button.imageEdgeInsets = UIEdgeInsetsMake(0, -kImageInset, 0, 0);
+  } else {
+    button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, -kImageInset);
+  }
 }
 
 // Applies font and inset to |button| according to the current size class.

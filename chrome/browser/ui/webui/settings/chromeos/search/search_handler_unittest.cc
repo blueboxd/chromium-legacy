@@ -81,6 +81,7 @@ mojom::SearchResultPtr CreateDummyResult() {
       mojom::SearchResultIcon::kPrinter, /*relevance_score=*/0.5,
       /*hierarchy_strings=*/std::vector<base::string16>(),
       mojom::SearchResultDefaultRank::kMedium,
+      /*was_generated_from_text_match=*/false,
       mojom::SearchResultType::kSection,
       mojom::SearchResultIdentifier::NewSection(mojom::Section::kPrinting));
 }
@@ -229,6 +230,7 @@ TEST_F(SearchHandlerTest, AllowParentResult) {
               mojom::ParentResultBehavior::kAllowParentResults,
               &search_results);
   EXPECT_EQ(search_results.size(), 2u);
+  EXPECT_FALSE(search_results[1]->was_generated_from_text_match);
 }
 
 TEST_F(SearchHandlerTest, DefaultRank) {

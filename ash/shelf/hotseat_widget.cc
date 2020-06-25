@@ -720,7 +720,7 @@ gfx::Size HotseatWidget::CalculateTargetBoundsSize(
   // The minimum gap between hotseat widget and other shelf components including
   // the status area widget and shelf navigation widget (or the edge of display,
   // if the shelf navigation widget does not show).
-  const int group_margin = ShelfConfig::Get()->app_icon_group_margin();
+  const int group_margin = ShelfConfig::Get()->GetAppIconGroupMargin();
 
   if (shelf_->IsHorizontalAlignment()) {
     const int width = shelf_bounds.width() - nav_bounds.size().width() +
@@ -757,7 +757,7 @@ void HotseatWidget::CalculateTargetBounds() {
   // The minimum gap between hotseat widget and other shelf components including
   // the status area widget and shelf navigation widget (or the edge of display,
   // if the shelf navigation widget does not show).
-  const int group_margin = ShelfConfig::Get()->app_icon_group_margin();
+  const int group_margin = ShelfConfig::Get()->GetAppIconGroupMargin();
 
   gfx::Point hotseat_origin;
   if (shelf_->IsHorizontalAlignment()) {

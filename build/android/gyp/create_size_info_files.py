@@ -179,11 +179,9 @@ def main(args):
   _MergeResInfoFiles(options.res_info_path, res_inputs)
 
   all_inputs = jar_inputs + pak_inputs + res_inputs
-  build_utils.WriteDepfile(
-      options.depfile,
-      options.jar_info_path,
-      inputs=all_inputs,
-      add_pydeps=False)
+  build_utils.WriteDepfile(options.depfile,
+                           options.jar_info_path,
+                           inputs=all_inputs)
 
 
 if __name__ == '__main__':

@@ -38,9 +38,6 @@ COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER_SWITCHES)
 extern const char kSharedFiles[];
 
 COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER_SWITCHES)
-extern const char kZygoteCmdPrefix[];
-
-COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER_SWITCHES)
 extern const char kZygoteProcess[];
 
 }  // namespace switches

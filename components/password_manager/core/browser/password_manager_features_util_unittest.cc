@@ -167,7 +167,7 @@ TEST(PasswordFeatureManagerUtil, AccountStoragePerAccountSettings) {
   // Initially the user is not signed in, so everything is off/local.
   EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  EXPECT_FALSE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kProfileStore);
 
@@ -294,7 +294,7 @@ TEST(PasswordFeatureManagerUtil, SyncSuppressesAccountStorageOptIn) {
   // In this state, the user could opt in to the account storage.
   ASSERT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   ASSERT_TRUE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  ASSERT_TRUE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  ASSERT_TRUE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
 
   // Now the user enables Sync-the-feature.
   sync_service.SetIsAuthenticatedAccountPrimary(true);
@@ -304,7 +304,7 @@ TEST(PasswordFeatureManagerUtil, SyncSuppressesAccountStorageOptIn) {
   // Now the account-storage opt-in should *not* be available anymore.
   EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  EXPECT_FALSE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
 }
 
 TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
@@ -332,7 +332,7 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
   // and saving will default to the account store.
   ASSERT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   ASSERT_TRUE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  ASSERT_TRUE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  ASSERT_TRUE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
   ASSERT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kAccountStore);
 
@@ -340,7 +340,7 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
   OptInToAccountStorage(&pref_service, &sync_service);
   ASSERT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   ASSERT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  ASSERT_TRUE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  ASSERT_TRUE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
   ASSERT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kAccountStore);
 
@@ -352,7 +352,7 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
   ASSERT_TRUE(sync_service.IsSyncFeatureEnabled());
   EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
   EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service, &sync_service));
-  EXPECT_FALSE(ShouldShowPasswordStorePicker(&pref_service, &sync_service));
+  EXPECT_FALSE(ShouldShowAccountStorageBubbleUi(&pref_service, &sync_service));
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kProfileStore);
 }

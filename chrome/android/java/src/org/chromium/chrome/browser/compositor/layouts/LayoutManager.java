@@ -981,4 +981,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             });
         }
     }
+
+    @VisibleForTesting
+    public LayoutTab getLayoutTabForTesting(int tabId) {
+        return mTabCache.get(tabId);
+    }
 }

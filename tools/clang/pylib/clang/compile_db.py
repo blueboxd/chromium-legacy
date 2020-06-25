@@ -67,7 +67,7 @@ def _ProcessEntry(entry):
     match = _RSP_RE.search(entry['command'])
     if match:
       rsp_path = os.path.join(entry['directory'], match.group(2))
-      rsp_contents = file(rsp_path).read()
+      rsp_contents = open(rsp_path).read()
       entry['command'] = ''.join([
           entry['command'][:match.start(1)],
           rsp_contents,

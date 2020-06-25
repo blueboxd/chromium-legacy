@@ -1627,7 +1627,7 @@ void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
   // Make sure that the input method no longer references to this object before
   // this object is removed from the root window (i.e. this object loses access
   // to the input method).
-  DetachFromInputMethod();
+  DetachFromInputMethod(true);
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
@@ -1812,7 +1812,7 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
   host()->SetActive(false);
   host()->LostFocus();
 
-  DetachFromInputMethod();
+  DetachFromInputMethod(false);
 
   // TODO(wjmaclean): Do we need to let TouchSelectionControllerClientAura
   // handle this, just in case it stomps on a new highlight in another view
@@ -1923,7 +1923,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     // This call is usually no-op since |this| object is already removed from
     // the Aura root window and we don't have a way to get an input method
     // object associated with the window, but just in case.
-    DetachFromInputMethod();
+    DetachFromInputMethod(true);
   }
   if (popup_parent_host_view_) {
     DCHECK(!popup_parent_host_view_->popup_child_host_view_ ||
@@ -2277,7 +2277,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   if (cursor_client)
     cursor_client->RemoveObserver(this);
 
-  DetachFromInputMethod();
+  DetachFromInputMethod(true);
 
   window_->GetHost()->RemoveObserver(this);
   if (delegated_frame_host_)
@@ -2291,7 +2291,7 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
 #endif
 }
 
-void RenderWidgetHostViewAura::DetachFromInputMethod() {
+void RenderWidgetHostViewAura::DetachFromInputMethod(bool is_removed) {
   ui::InputMethod* input_method = GetInputMethod();
   if (input_method) {
     input_method->DetachTextInputClient(this);
@@ -2301,8 +2301,15 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
   }
 
 #if defined(OS_WIN)
-  // Reset the keyboard observer because it attaches to the input method.
-  virtual_keyboard_controller_win_.reset();
+  // If window is getting destroyed, then reset the VK controller, else,
+  // dismiss the VK and notify about the keyboard inset since window has lost
+  // focus.
+  if (virtual_keyboard_controller_win_) {
+    if (is_removed)
+      virtual_keyboard_controller_win_.reset();
+    else
+      virtual_keyboard_controller_win_->HideAndNotifyKeyboardInset();
+  }
 #endif  // defined(OS_WIN)
 }
 

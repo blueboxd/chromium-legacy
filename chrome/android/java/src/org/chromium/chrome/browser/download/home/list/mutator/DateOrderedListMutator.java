@@ -105,8 +105,8 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
         // If the update changed the creation time or filter type, remove and add the element to get
         // it positioned.
         if (oldItem.creationTimeMs != item.creationTimeMs || oldItem.filter != item.filter
-                || mJustNowProvider.isJustNowItem(oldItem)
-                        != mJustNowProvider.isJustNowItem((item))) {
+                || mJustNowProvider.isJustNowItem(oldItem) != mJustNowProvider.isJustNowItem((item))
+                || offlineItemScheduleDiffer(item, oldItem)) {
             // TODO(shaktisahu): Collect UMA when this happens.
             onItemsRemoved(CollectionUtil.newArrayList(oldItem));
             onItemsAdded(CollectionUtil.newArrayList(item));
@@ -134,5 +134,10 @@ public class DateOrderedListMutator implements OfflineItemFilterObserver {
                 break;
             }
         }
+    }
+
+    private static boolean offlineItemScheduleDiffer(OfflineItem item, OfflineItem oldItem) {
+        return (item.schedule == null && oldItem.schedule != null)
+                || (item.schedule != null && oldItem.schedule == null);
     }
 }

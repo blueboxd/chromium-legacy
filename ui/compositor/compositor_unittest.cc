@@ -270,6 +270,19 @@ TEST_F(CompositorTestWithMessageLoop, ThroughputTracker) {
   run_loop.Run();
 }
 
+TEST_F(CompositorTestWithMessageLoop, ThroughputTrackerOutliveCompositor) {
+  auto tracker = compositor()->RequestNewThroughputTracker();
+  tracker.Start(base::BindLambdaForTesting(
+      [&](cc::FrameSequenceMetrics::ThroughputData throughput) {
+        ADD_FAILURE() << "No report should happen";
+      }));
+
+  DestroyCompositor();
+
+  // No crash, no use-after-free and no report.
+  tracker.Stop();
+}
+
 #if defined(OS_WIN)
 // TODO(crbug.com/608436): Flaky on windows trybots
 #define MAYBE_CreateAndReleaseOutputSurface \

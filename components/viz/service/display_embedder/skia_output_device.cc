@@ -81,7 +81,9 @@ void SkiaOutputDevice::PostSubBuffer(
   NOTREACHED();
 }
 
-void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
+bool SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+  return false;
+}
 
 void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
   NOTIMPLEMENTED();

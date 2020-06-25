@@ -352,24 +352,33 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
 }
 
 ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
-  ModelTypeSet high_priority_types;
-  high_priority_types.PutAll(ControlTypes());
-  high_priority_types.PutAll(PriorityUserTypes());
-  return high_priority_types;
+  return PriorityUserTypes();
 }
 
 TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
     const ModelTypeSet& types) {
-  ModelTypeSet high_priority_types = GetPriorityTypes();
-  high_priority_types.RetainAll(types);
+  // Control types are usually downloaded before all other types during
+  // initialization of sync engine even before data type manager gets
+  // constructed. However, listing control types here with the highest priority
+  // makes the behavior consistent also for various flows for restarting sync
+  // such as migrating all data types or reconfiguring sync in ephemeral mode
+  // when all local data is wiped.
+  ModelTypeSet control_types = ControlTypes();
+  control_types.RetainAll(types);
 
-  ModelTypeSet low_priority_types = Difference(types, high_priority_types);
+  ModelTypeSet priority_types = GetPriorityTypes();
+  priority_types.RetainAll(types);
+
+  ModelTypeSet regular_types =
+      Difference(types, Union(control_types, priority_types));
 
   TypeSetPriorityList result;
-  if (!high_priority_types.Empty())
-    result.push(high_priority_types);
-  if (!low_priority_types.Empty())
-    result.push(low_priority_types);
+  if (!control_types.Empty())
+    result.push(control_types);
+  if (!priority_types.Empty())
+    result.push(priority_types);
+  if (!regular_types.Empty())
+    result.push(regular_types);
 
   // Could be empty in case of purging for migration, sync nothing, etc.
   // Configure empty set to purge data from backend.

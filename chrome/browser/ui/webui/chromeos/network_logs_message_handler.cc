@@ -197,7 +197,7 @@ void NetworkLogsMessageHandler::OnSetShillDebugging(
 void NetworkLogsMessageHandler::OnSetShillDebuggingCompleted(
     const std::string& callback_id,
     bool succeeded) {
-  Respond(callback_id, "", !succeeded);
+  Respond(callback_id, /*result=*/"", !succeeded);
 }
 
 }  // namespace chromeos

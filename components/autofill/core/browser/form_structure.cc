@@ -168,6 +168,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "name")
     return HTML_TYPE_NAME;
 
+  if (autocomplete_attribute_value == "honorific-prefix")
+    return HTML_TYPE_HONORIFIC_PREFIX;
+
   if (autocomplete_attribute_value == "given-name" ||
       autocomplete_attribute_value == "given_name" ||
       autocomplete_attribute_value == "first-name" ||

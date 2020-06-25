@@ -152,6 +152,14 @@ void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
   }
 }
 
+void WebApp::SetUserPageOrdinal(syncer::StringOrdinal page_ordinal) {
+  user_page_ordinal_ = std::move(page_ordinal);
+}
+
+void WebApp::SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal) {
+  user_launch_ordinal_ = std::move(launch_ordinal);
+}
+
 void WebApp::SetWebAppChromeOsData(
     base::Optional<WebAppChromeOsData> chromeos_data) {
   chromeos_data_ = std::move(chromeos_data);
@@ -241,6 +249,10 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  theme_color: " << ColorToString(app.theme_color_) << std::endl
       << "  display_mode: " << display_mode << std::endl
       << "  user_display_mode: " << user_display_mode << std::endl
+      << "  user_page_ordinal: " << app.user_page_ordinal_.ToDebugString()
+      << std::endl
+      << "  user_launch_ordinal_: " << app.user_launch_ordinal_.ToDebugString()
+      << std::endl
       << "  sources: " << app.sources_.to_string() << std::endl
       << "  is_locally_installed: " << is_locally_installed << std::endl
       << "  is_in_sync_install: " << is_in_sync_install << std::endl
@@ -283,6 +295,7 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.icon_infos_, app1.downloaded_icon_sizes_,
                   app1.display_mode_, app1.user_display_mode_,
+                  app1.user_page_ordinal_, app1.user_launch_ordinal_,
                   app1.chromeos_data_, app1.is_locally_installed_,
                   app1.is_in_sync_install_, app1.file_handlers_,
                   app1.additional_search_terms_, app1.sync_fallback_data_,
@@ -291,6 +304,7 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icon_infos_, app2.downloaded_icon_sizes_,
                   app2.display_mode_, app2.user_display_mode_,
+                  app2.user_page_ordinal_, app2.user_launch_ordinal_,
                   app2.chromeos_data_, app2.is_locally_installed_,
                   app2.is_in_sync_install_, app2.file_handlers_,
                   app2.additional_search_terms_, app2.sync_fallback_data_,

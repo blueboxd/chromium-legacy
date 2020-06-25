@@ -139,6 +139,7 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowEntrepriseDomainName(const std::string& entreprise_domain_name);
   void ShowAdbEnabled();
   void ToggleSystemInfo();
   void ShowParentAccessDialog();
@@ -292,7 +293,8 @@ class ASH_EXPORT LockContentsView
   void LayoutTopHeader();
 
   // Lay out the bottom status indicator. This is called when system information
-  // is shown if ADB is enabled.
+  // is shown if ADB is enabled and at the initialization of lock screen if the
+  // device is enrolled.
   void LayoutBottomStatusIndicator();
 
   // Lay out the expanded public session view.
@@ -450,7 +452,7 @@ class ASH_EXPORT LockContentsView
   // Bubble for displaying supervised user deprecation message.
   LoginErrorBubble* supervised_user_deprecation_bubble_;
 
-  // Bottom status indicator displaying ADB enabled alert.
+  // Bottom status indicator displaying entreprise domain or ADB enabled alert
   BottomStatusIndicator* bottom_status_indicator_;
 
   // Tracks the visibility of the extension Ui window.

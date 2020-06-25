@@ -1305,7 +1305,7 @@ class GoogleDocsDesktopScrollingStory(system_health_story.SystemHealthStory):
       'ccv':
           'telemetry:reported_by_page:viewable',
       'fcoe':
-          'telemetry:reported_by_page:editable',
+          'telemetry:reported_by_page:interactive',
     };
   '''
 
@@ -1328,10 +1328,11 @@ class GoogleDocsDesktopScrollingStory(system_health_story.SystemHealthStory):
   '''
 
   # Page event queries.
-  EDITABLE_EVENT = '''
+  INTERACTIVE_EVENT = '''
     (window.__telemetry_observed_page_events.has(
-        "telemetry:reported_by_page:editable"))
+        "telemetry:reported_by_page:interactive"))
   '''
+  CLEAR_EVENTS = 'window.__telemetry_observed_page_events.clear()'
 
   def __init__(self, story_set, take_memory_measurement):
     super(GoogleDocsDesktopScrollingStory, self).__init__(
@@ -1344,8 +1345,9 @@ class GoogleDocsDesktopScrollingStory(system_health_story.SystemHealthStory):
 
   def _DidLoadDocument(self, action_runner):
     # Wait for load.
-    action_runner.WaitForJavaScriptCondition(self.EDITABLE_EVENT)
-    action_runner.Wait(10)
+    action_runner.WaitForJavaScriptCondition(self.INTERACTIVE_EVENT)
+    action_runner.Wait(5)
+    action_runner.EvaluateJavaScript(self.CLEAR_EVENTS)
     # Scroll through the document.
     action_runner.RepeatableBrowserDrivenScroll(
         x_scroll_distance_ratio=0.0,

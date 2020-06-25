@@ -72,9 +72,9 @@ class IntersectionObserverDelegateImpl final
   DISALLOW_COPY_AND_ASSIGN(IntersectionObserverDelegateImpl);
 };
 
-void ParseRootMargin(String root_margin_parameter,
-                     Vector<Length>& root_margin,
-                     ExceptionState& exception_state) {
+void ParseMargin(String margin_parameter,
+                 Vector<Length>& margin,
+                 ExceptionState& exception_state) {
   // TODO(szager): Make sure this exact syntax and behavior is spec-ed
   // somewhere.
 
@@ -84,12 +84,12 @@ void ParseRootMargin(String root_margin_parameter,
   // "1px 2px" = top/bottom left/right
   // "1px 2px 3px" = top left/right bottom
   // "1px 2px 3px 4px" = top left right bottom
-  CSSTokenizer tokenizer(root_margin_parameter);
+  CSSTokenizer tokenizer(margin_parameter);
   const auto tokens = tokenizer.TokenizeToEOF();
   CSSParserTokenRange token_range(tokens);
   while (token_range.Peek().GetType() != kEOFToken &&
          !exception_state.HadException()) {
-    if (root_margin.size() == 4) {
+    if (margin.size() == 4) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "Extra text found at the end of rootMargin.");
@@ -98,16 +98,16 @@ void ParseRootMargin(String root_margin_parameter,
     const CSSParserToken& token = token_range.ConsumeIncludingWhitespace();
     switch (token.GetType()) {
       case kPercentageToken:
-        root_margin.push_back(Length::Percent(token.NumericValue()));
+        margin.push_back(Length::Percent(token.NumericValue()));
         break;
       case kDimensionToken:
         switch (token.GetUnitType()) {
           case CSSPrimitiveValue::UnitType::kPixels:
-            root_margin.push_back(
+            margin.push_back(
                 Length::Fixed(static_cast<int>(floor(token.NumericValue()))));
             break;
           case CSSPrimitiveValue::UnitType::kPercentage:
-            root_margin.push_back(Length::Percent(token.NumericValue()));
+            margin.push_back(Length::Percent(token.NumericValue()));
             break;
           default:
             exception_state.ThrowDOMException(
@@ -183,8 +183,8 @@ IntersectionObserver* IntersectionObserver::Create(
     return nullptr;
   }
 
-  Vector<Length> root_margin;
-  ParseRootMargin(observer_init->rootMargin(), root_margin, exception_state);
+  Vector<Length> margin;
+  ParseMargin(observer_init->rootMargin(), margin, exception_state);
   if (exception_state.HadException())
     return nullptr;
 
@@ -194,8 +194,8 @@ IntersectionObserver* IntersectionObserver::Create(
     return nullptr;
 
   return MakeGarbageCollected<IntersectionObserver>(
-      delegate, root, root_margin, thresholds, kFractionOfTarget, delay,
-      track_visibility, false);
+      delegate, root, margin, thresholds, kFractionOfTarget, delay,
+      track_visibility, false, kApplyMarginToRoot);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
@@ -214,7 +214,7 @@ IntersectionObserver* IntersectionObserver::Create(
 }
 
 IntersectionObserver* IntersectionObserver::Create(
-    const Vector<Length>& root_margin,
+    const Vector<Length>& margin,
     const Vector<float>& thresholds,
     Document* document,
     EventCallback callback,
@@ -223,57 +223,59 @@ IntersectionObserver* IntersectionObserver::Create(
     DOMHighResTimeStamp delay,
     bool track_visibility,
     bool always_report_root_bounds,
+    MarginTarget margin_target,
     ExceptionState& exception_state) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
           document->GetExecutionContext(), std::move(callback), behavior);
   return MakeGarbageCollected<IntersectionObserver>(
-      *intersection_observer_delegate, nullptr, root_margin, thresholds,
-      semantics, delay, track_visibility, always_report_root_bounds);
+      *intersection_observer_delegate, nullptr, margin, thresholds, semantics,
+      delay, track_visibility, always_report_root_bounds, margin_target);
 }
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverDelegate& delegate,
     Node* root,
-    const Vector<Length>& root_margin,
+    const Vector<Length>& margin,
     const Vector<float>& thresholds,
     ThresholdInterpretation semantics,
     DOMHighResTimeStamp delay,
     bool track_visibility,
-    bool always_report_root_bounds)
+    bool always_report_root_bounds,
+    MarginTarget margin_target)
     : ExecutionContextClient(delegate.GetExecutionContext()),
       delegate_(&delegate),
       root_(root),
       thresholds_(thresholds),
       delay_(delay),
-      root_margin_(4, Length::Fixed(0)),
+      margin_(4, Length::Fixed(0)),
+      margin_target_(margin_target),
       root_is_implicit_(root ? 0 : 1),
       track_visibility_(track_visibility),
       track_fraction_of_root_(semantics == kFractionOfRoot),
       always_report_root_bounds_(always_report_root_bounds),
       needs_delivery_(0),
       can_use_cached_rects_(0) {
-  switch (root_margin.size()) {
+  switch (margin.size()) {
     case 0:
       break;
     case 1:
-      root_margin_[0] = root_margin_[1] = root_margin_[2] = root_margin_[3] =
-          root_margin[0];
+      margin_[0] = margin_[1] = margin_[2] = margin_[3] = margin[0];
       break;
     case 2:
-      root_margin_[0] = root_margin_[2] = root_margin[0];
-      root_margin_[1] = root_margin_[3] = root_margin[1];
+      margin_[0] = margin_[2] = margin[0];
+      margin_[1] = margin_[3] = margin[1];
       break;
     case 3:
-      root_margin_[0] = root_margin[0];
-      root_margin_[1] = root_margin_[3] = root_margin[1];
-      root_margin_[2] = root_margin[2];
+      margin_[0] = margin[0];
+      margin_[1] = margin_[3] = margin[1];
+      margin_[2] = margin[2];
       break;
     case 4:
-      root_margin_[0] = root_margin[0];
-      root_margin_[1] = root_margin[1];
-      root_margin_[2] = root_margin[2];
-      root_margin_[3] = root_margin[3];
+      margin_[0] = margin[0];
+      margin_[1] = margin[1];
+      margin_[2] = margin[2];
+      margin_[3] = margin[3];
       break;
     default:
       NOTREACHED();
@@ -396,13 +398,19 @@ static void AppendLength(StringBuilder& string_builder, const Length& length) {
 
 String IntersectionObserver::rootMargin() const {
   StringBuilder string_builder;
-  AppendLength(string_builder, root_margin_[0]);
-  string_builder.Append(' ');
-  AppendLength(string_builder, root_margin_[1]);
-  string_builder.Append(' ');
-  AppendLength(string_builder, root_margin_[2]);
-  string_builder.Append(' ');
-  AppendLength(string_builder, root_margin_[3]);
+  const auto& margin = RootMargin();
+  if (margin.IsEmpty()) {
+    string_builder.Append("0px 0px 0px 0px");
+  } else {
+    DCHECK_EQ(margin.size(), 4u);
+    AppendLength(string_builder, margin[0]);
+    string_builder.Append(' ');
+    AppendLength(string_builder, margin[1]);
+    string_builder.Append(' ');
+    AppendLength(string_builder, margin[2]);
+    string_builder.Append(' ');
+    AppendLength(string_builder, margin[3]);
+  }
   return string_builder.ToString();
 }
 
@@ -423,7 +431,7 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   IntersectionGeometry::RootGeometry root_geometry(
       IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr,
                                                          false),
-      root_margin_);
+      RootMargin());
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
   CopyToVector(observations_, observations_to_process);

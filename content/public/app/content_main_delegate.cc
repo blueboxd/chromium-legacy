@@ -27,8 +27,7 @@ int ContentMainDelegate::RunProcess(
 #if defined(OS_LINUX)
 
 void ContentMainDelegate::ZygoteStarting(
-    std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-        delegates) {}
+    std::vector<std::unique_ptr<ZygoteForkDelegate>>* delegates) {}
 
 #endif  // defined(OS_LINUX)
 

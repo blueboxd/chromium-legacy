@@ -112,7 +112,6 @@ void ContentSettingsStore::SetExtensionContentSetting(
       type == ContentSettingsType::PLUGINS && primary_pattern.HasWildcards()) {
     return;
   }
-
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);

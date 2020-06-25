@@ -101,6 +101,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public static void startup() {
         if (sStartupCalled) return;
         sStartupCalled = true;
+        FeedServiceBridge.startup();
         xSurfaceProcessScope();
         if (sWaitingSurfaces != null) {
             for (FeedStreamSurface surface : sWaitingSurfaces) {

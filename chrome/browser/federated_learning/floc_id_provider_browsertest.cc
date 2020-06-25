@@ -10,6 +10,8 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/federated_learning/floc_id_provider_factory.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,9 +26,12 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_user_events/fake_user_event_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace federated_learning {
 
@@ -36,9 +41,14 @@ class FlocIdProviderBrowserTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+
+    RegisterRequestHandler();
+
     content::SetupCrossSiteRedirector(&https_server_);
     ASSERT_TRUE(https_server_.Start());
   }
+
+  virtual void RegisterRequestHandler() {}
 
   FlocIdProvider* floc_id_provider() {
     return FlocIdProviderFactory::GetForProfile(browser()->profile());
@@ -80,6 +90,33 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
   bool IsSwaaNacAccountEnabled() override { return true; }
 };
 
+class MockFlocRemotePermissionService : public FlocRemotePermissionService {
+ public:
+  MockFlocRemotePermissionService(
+      const std::string& replacement_host,
+      const std::string& replacement_port,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : FlocRemotePermissionService(std::move(url_loader_factory)),
+        replacement_host_(replacement_host),
+        replacement_port_(replacement_port) {}
+
+  GURL GetQueryFlocPermissionUrl() const override {
+    GURL query_url = FlocRemotePermissionService::GetQueryFlocPermissionUrl();
+
+    GURL::Replacements replacements;
+    replacements.SetHostStr(replacement_host_);
+    replacements.SetPortStr(replacement_port_);
+
+    query_url = query_url.ReplaceComponents(replacements);
+
+    return query_url;
+  }
+
+ private:
+  std::string replacement_host_;
+  std::string replacement_port_;
+};
+
 class FlocIdProviderWithCustomizedServicesBrowserTest
     : public FlocIdProviderBrowserTest {
  public:
@@ -88,6 +125,7 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
         {features::kFlocIdComputedEventLogging}, {});
   }
 
+  // BrowserTestBase::SetUpInProcessBrowserTestFixture
   void SetUpInProcessBrowserTestFixture() override {
     subscription_ =
         BrowserContextDependencyManager::GetInstance()
@@ -96,6 +134,34 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
                     &FlocIdProviderWithCustomizedServicesBrowserTest::
                         OnWillCreateBrowserContextServices,
                     base::Unretained(this)));
+  }
+
+  // FlocIdProviderBrowserTest::RegisterRequestHandler
+  void RegisterRequestHandler() override {
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &FlocIdProviderWithCustomizedServicesBrowserTest::HandleRequest,
+        base::Unretained(this)));
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    const GURL& url = request.GetURL();
+
+    // Use the default handler for unrelated requests.
+    if (url.path() != "/settings/do_ad_settings_allow_floc_poc")
+      return nullptr;
+
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+
+    auto it = request.headers.find("Cookie");
+    if (it == request.headers.end() || it->second != "user_id=123") {
+      response->set_code(net::HTTP_UNAUTHORIZED);
+      return std::move(response);
+    }
+
+    response->set_code(net::HTTP_OK);
+    response->set_content(std::string("[true, true, true]"));
+    return std::move(response);
   }
 
   std::vector<GURL> GetHistoryUrls() {
@@ -146,6 +212,12 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
                                 CreateUserEventService,
                             base::Unretained(this)));
 
+    FlocRemotePermissionServiceFactory::GetInstance()->SetTestingFactory(
+        context,
+        base::BindRepeating(&FlocIdProviderWithCustomizedServicesBrowserTest::
+                                CreateFlocRemotePermissionService,
+                            base::Unretained(this)));
+
     FlocIdProviderFactory::GetInstance()->SetTestingFactory(
         context,
         base::BindRepeating(&FlocIdProviderWithCustomizedServicesBrowserTest::
@@ -167,6 +239,19 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
   std::unique_ptr<KeyedService> CreateUserEventService(
       content::BrowserContext* context) {
     return std::make_unique<syncer::FakeUserEventService>();
+  }
+
+  std::unique_ptr<KeyedService> CreateFlocRemotePermissionService(
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
+
+    GURL test_host_base_url = https_server_.GetURL(test_host(), "/");
+    auto remote_permission_service =
+        std::make_unique<MockFlocRemotePermissionService>(
+            test_host_base_url.host(), test_host_base_url.port(),
+            content::BrowserContext::GetDefaultStoragePartition(profile)
+                ->GetURLLoaderFactoryForBrowserProcess());
+    return std::move(remote_permission_service);
   }
 
   std::unique_ptr<KeyedService> CreateFlocIdProvider(
@@ -219,6 +304,48 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
             event.event_trigger());
   EXPECT_EQ(FlocId::CreateFromHistory({test_host()}).ToUint64(),
             event.floc_id());
+}
+
+// TODO(yaoxia): Once the service is being used by the FlocIdProvider, we can
+// remove this standalone test and rely on the above FlocIdValue_OneNavigation
+// test for the same test guarantee.
+IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
+                       RemotePermissionService_Success) {
+  std::string cookies_to_set = "/set-cookie?user_id=123";
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(test_host(), cookies_to_set));
+
+  FlocRemotePermissionService* remote_permission_service =
+      FlocRemotePermissionServiceFactory::GetForProfile(browser()->profile());
+
+  base::RunLoop run_loop;
+  remote_permission_service->QueryFlocPermission(
+      base::BindLambdaForTesting([&](bool success) {
+        ASSERT_TRUE(success);
+        run_loop.Quit();
+      }),
+      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
+                       RemotePermissionService_NoCookie_PermissionDenied) {
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(test_host(), "/title1.html"));
+
+  FlocRemotePermissionService* remote_permission_service =
+      FlocRemotePermissionServiceFactory::GetForProfile(browser()->profile());
+
+  base::RunLoop run_loop;
+  remote_permission_service->QueryFlocPermission(
+      base::BindLambdaForTesting([&](bool success) {
+        ASSERT_FALSE(success);
+        run_loop.Quit();
+      }),
+      PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  run_loop.Run();
 }
 
 }  // namespace federated_learning

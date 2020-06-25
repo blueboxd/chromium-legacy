@@ -101,7 +101,8 @@ class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override {
     DCHECK(platform_);
-    return platform_->GetURLLoaderMockFactory()->CreateURLLoader();
+    return blink::WebURLLoaderMockFactory::GetSingletonInstance()
+        ->CreateURLLoader();
   }
 
  private:
@@ -130,8 +131,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
-
-  url_loader_factory_ = blink::WebURLLoaderMockFactory::Create();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
@@ -187,7 +186,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 }
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
-  url_loader_factory_.reset();
   if (main_thread_scheduler_)
     main_thread_scheduler_->Shutdown();
   g_test_platform = nullptr;
@@ -271,11 +269,6 @@ scoped_refptr<base::SingleThreadTaskRunner>
 TestBlinkWebUnitTestSupport::GetIOTaskRunner() const {
   return ChildProcess::current() ? ChildProcess::current()->io_task_runner()
                                  : nullptr;
-}
-
-blink::WebURLLoaderMockFactory*
-TestBlinkWebUnitTestSupport::GetURLLoaderMockFactory() {
-  return url_loader_factory_.get();
 }
 
 bool TestBlinkWebUnitTestSupport::IsThreadedAnimationEnabled() {

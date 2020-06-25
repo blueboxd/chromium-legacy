@@ -45,6 +45,7 @@ class VirtualKeyboardControllerWin
 
   void UpdateTextInputState(const ui::mojom::TextInputState* state);
   void FocusedNodeChanged(bool is_editable);
+  void HideAndNotifyKeyboardInset();
 
   // InputMethodKeyboardControllerObserver overrides.
   void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override;

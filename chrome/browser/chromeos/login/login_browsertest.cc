@@ -11,6 +11,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -167,7 +168,12 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
+#if defined(OS_LINUX) && defined(MEMORY_SANITIZER)
+#define MAYBE_GaiaAuthOffline DISABLED_GaiaAuthOffline
+#else
+#define MAYBE_GaiaAuthOffline GaiaAuthOffline
+#endif
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, MAYBE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
   offline_gaia_test_mixin_.InitOfflineLogin(test_account_id_,
                                             LoginManagerTest::kPassword);

@@ -63,15 +63,12 @@ def _GetSystemInfo(gpu='',
   return system_info.SystemInfo.FromDict(sys_info)
 
 
-def _GetTagsToTest(browser, test_class=None, args=None):
+def _GetTagsToTest(browser, test_class=None):
   test_class = test_class or gpu_integration_test.GpuIntegrationTest
   tags = None
   with mock.patch.object(
       test_class, 'ExpectationsFiles', return_value=['exp.txt']):
-    possible_browser = fakes.FakePossibleBrowser()
-    possible_browser._returned_browser = browser
-    args = args or gpu_helper.GetMockArgs()
-    tags = set(test_class.GenerateTags(args, possible_browser))
+    tags = set(test_class.GetPlatformTags(browser))
   return tags
 
 
@@ -131,16 +128,6 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testTestNamePrefixGenerationInRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('simple_integration_unittest')
     self.assertIn('expected_failure', self._test_result['tests'])
-
-  def testWithoutExpectationsFilesGenerateTagsReturnsEmptyList(self):
-    # we need to make sure that GenerateTags() returns an empty list if
-    # there are no expectations files returned from ExpectationsFiles() or
-    # else Typ will raise an exception
-    args = gpu_helper.GetMockArgs()
-    possible_browser = mock.MagicMock()
-    self.assertFalse(
-        gpu_integration_test.GpuIntegrationTest.GenerateTags(
-            args, possible_browser))
 
   def _TestTagGenerationForMockPlatform(self, test_class, args):
     tag_set = _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args)

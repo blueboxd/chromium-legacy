@@ -63,4 +63,14 @@ Rule ConcatenationIterator::Next() {
   return to_return;
 }
 
+EmptyRuleIterator::~EmptyRuleIterator() = default;
+
+bool EmptyRuleIterator::HasNext() const {
+  return false;
+}
+
+Rule EmptyRuleIterator::Next() {
+  return Rule();
+}
+
 }  // namespace content_settings

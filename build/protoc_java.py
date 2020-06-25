@@ -77,8 +77,7 @@ def main(argv):
   if options.depfile:
     assert options.srcjar
     deps = args + [options.protoc]
-    build_utils.WriteDepfile(options.depfile, options.srcjar, deps,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, options.srcjar, deps)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

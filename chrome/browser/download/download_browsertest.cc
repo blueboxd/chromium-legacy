@@ -1078,7 +1078,7 @@ class DownloadTest : public InProcessBrowserTest {
         base::FilePath destination_folder = GetDownloadDirectory(browser());
         base::FilePath my_downloaded_file = item->GetTargetFilePath();
         EXPECT_TRUE(base::PathExists(my_downloaded_file));
-        EXPECT_TRUE(base::DeleteFile(my_downloaded_file, false));
+        EXPECT_TRUE(base::DeleteFile(my_downloaded_file));
         item->Remove();
 
         EXPECT_EQ(download_info.should_redirect_to_documents ?
@@ -4100,7 +4100,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FileExistenceCheckOpeningDownloadsPage) {
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   DownloadItem* item = downloads[0];
-  base::DeleteFile(item->GetTargetFilePath(), false);
+  base::DeleteFile(item->GetTargetFilePath());
   ASSERT_FALSE(item->GetFileExternallyRemoved());
 
   // Open the downloads tab.

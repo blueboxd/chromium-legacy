@@ -23,6 +23,23 @@ settings = struct(
 )
 
 
+def _generate_project_pyl(ctx):
+  ctx.output['project.pyl'] = '\n'.join([
+      '# This is a non-LUCI generated file',
+      '# This is consumed by presubmit checks that need to validate the config',
+      repr(dict(
+          # On master, we want to ensure that we don't have source side specs
+          # defined for non-existent builders
+          # On branches, we don't want to re-generate the source side specs as
+          # that would increase branch day toil and complicate cherry-picks
+          validate_source_side_specs_have_builder = settings.is_master,
+      )),
+      '',
+  ])
+
+lucicfg.generator(_generate_project_pyl)
+
+
 def master_only_exec(f):
   if settings.is_master:
     exec(f)

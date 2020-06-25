@@ -9,11 +9,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -30,6 +37,22 @@
 namespace extensions {
 
 namespace {
+
+bool AreWebAppsOffExtensions() {
+  return base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions);
+}
+
+template <typename Multimap, typename Key, typename Value>
+bool DoesMultimapContainKeyAndValue(const Multimap& map,
+                                    const Key& key,
+                                    const Value& value) {
+  // Loop through all values under the |key| to see if |value| is found.
+  for (auto it = map.find(key); it != map.end() && it->first == key; ++it) {
+    if (it->second == value)
+      return true;
+  }
+  return false;
+}
 
 // The number of apps per page. This isn't a hard limit, but new apps installed
 // from the webstore will overflow onto a new page if this limit is reached.
@@ -168,6 +191,21 @@ void ChromeAppSorting::MigrateAppIndex(
   }
 }
 
+void ChromeAppSorting::InitializePageOrdinalMapFromWebApps() {
+  if (!AreWebAppsOffExtensions())
+    return;
+  auto* profile = Profile::FromBrowserContext(browser_context_);
+  DCHECK(profile);
+  auto* web_app_provider =
+      web_app::WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(web_app_provider);
+  web_app_registrar_ = web_app_provider->registrar().AsWebAppRegistrar();
+  web_app_sync_bridge_ =
+      web_app_provider->registry_controller().AsWebAppSyncBridge();
+  app_registrar_observer_.Add(&web_app_provider->registrar());
+  InitializePageOrdinalMap(web_app_registrar_->GetAppIds());
+}
+
 void ChromeAppSorting::FixNTPOrdinalCollisions() {
   for (auto page_it = ntp_ordinal_map_.begin();
        page_it != ntp_ordinal_map_.end(); ++page_it) {
@@ -175,6 +213,8 @@ void ChromeAppSorting::FixNTPOrdinalCollisions() {
 
     auto app_launch_it = page.begin();
     while (app_launch_it != page.end()) {
+      // This count is the number of apps that have the same ordinal. If there
+      // is more than one, then the collision needs to be resolved.
       int app_count = page.count(app_launch_it->first);
       if (app_count == 1) {
         ++app_launch_it;
@@ -185,11 +225,16 @@ void ChromeAppSorting::FixNTPOrdinalCollisions() {
 
       // Sort the conflicting keys by their extension id, this is how
       // the order is decided.
+      // Note - this iteration doesn't change app_launch_it->first, this just
+      // iterates through the value list in the multimap (as it only iterates
+      // |app_count| times)
       std::vector<std::string> conflicting_ids;
       for (int i = 0; i < app_count; ++i, ++app_launch_it)
         conflicting_ids.push_back(app_launch_it->second);
       std::sort(conflicting_ids.begin(), conflicting_ids.end());
 
+      // The upper bound is either the next ordinal in the map, or the end of
+      // the map.
       syncer::StringOrdinal upper_bound_ordinal = app_launch_it == page.end() ?
           syncer::StringOrdinal() :
           app_launch_it->first;
@@ -223,10 +268,13 @@ void ChromeAppSorting::EnsureValidOrdinals(
     const syncer::StringOrdinal& suggested_page) {
   syncer::StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   if (!page_ordinal.IsValid()) {
+    // There is no page ordinal yet.
     if (suggested_page.IsValid()) {
       page_ordinal = suggested_page;
     } else if (!GetDefaultOrdinals(extension_id, &page_ordinal, NULL) ||
         !page_ordinal.IsValid()) {
+      // If the extension is a default, then set |page_ordinal| to what the
+      // default mandates. Otherwise, use the next natural app page.
       page_ordinal = GetNaturalAppPageOrdinal();
     }
 
@@ -297,9 +345,11 @@ void ChromeAppSorting::OnExtensionMoved(
       content::Details<const std::string>(&moved_extension_id));
 }
 
-
 syncer::StringOrdinal ChromeAppSorting::GetAppLaunchOrdinal(
     const std::string& extension_id) const {
+  if (web_app_registrar_ && web_app_registrar_->IsInstalled(extension_id))
+    return web_app_registrar_->GetAppById(extension_id)->user_launch_ordinal();
+
   std::string raw_value;
   // If the preference read fails then raw_value will still be unset and we
   // will return an invalid StringOrdinal to signal that no app launch ordinal
@@ -323,12 +373,17 @@ void ChromeAppSorting::SetAppLaunchOrdinal(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
+  if (web_app_registrar_ && web_app_registrar_->IsInstalled(extension_id)) {
+    web_app_sync_bridge_->SetUserLaunchOrdinal(extension_id,
+                                               new_app_launch_ordinal);
+    // Fall through on purpose to ensure Extensions system has correct data.
+  }
+
   std::unique_ptr<base::Value> new_value =
       new_app_launch_ordinal.IsValid()
           ? std::make_unique<base::Value>(
                 new_app_launch_ordinal.ToInternalValue())
           : nullptr;
-
   ExtensionPrefs::Get(browser_context_)
       ->UpdateExtensionPref(extension_id, kPrefAppLaunchOrdinal,
                             std::move(new_value));
@@ -382,6 +437,9 @@ syncer::StringOrdinal ChromeAppSorting::GetNaturalAppPageOrdinal() const {
 
 syncer::StringOrdinal ChromeAppSorting::GetPageOrdinal(
     const std::string& extension_id) const {
+  if (web_app_registrar_ && web_app_registrar_->IsInstalled(extension_id))
+    return web_app_registrar_->GetAppById(extension_id)->user_page_ordinal();
+
   std::string raw_data;
   // If the preference read fails then raw_data will still be unset and we will
   // return an invalid StringOrdinal to signal that no page ordinal was found.
@@ -401,6 +459,11 @@ void ChromeAppSorting::SetPageOrdinal(
   RemoveOrdinalMapping(
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
+
+  if (web_app_registrar_ && web_app_registrar_->IsInstalled(extension_id)) {
+    web_app_sync_bridge_->SetUserPageOrdinal(extension_id, new_page_ordinal);
+    // Fall through on purpose to ensure Extensions system has correct data.
+  }
 
   std::unique_ptr<base::Value> new_value =
       new_page_ordinal.IsValid()
@@ -451,6 +514,61 @@ void ChromeAppSorting::SetExtensionVisible(const std::string& extension_id,
     ntp_hidden_extensions_.erase(extension_id);
   else
     ntp_hidden_extensions_.insert(extension_id);
+}
+
+void ChromeAppSorting::OnWebAppInstalled(const web_app::AppId& app_id) {
+  const web_app::WebApp* web_app = web_app_registrar_->GetAppById(app_id);
+  if (web_app->user_page_ordinal().IsValid() &&
+      web_app->user_launch_ordinal().IsValid()) {
+    AddOrdinalMapping(web_app->app_id(), web_app->user_page_ordinal(),
+                      web_app->user_launch_ordinal());
+    FixNTPOrdinalCollisions();
+  }
+}
+
+void ChromeAppSorting::OnWebAppsWillBeUpdatedFromSync(
+    const std::vector<const web_app::WebApp*>& updated_apps_state) {
+  DCHECK(web_app_registrar_);
+
+  // Unlike the extensions system (which calls SetPageOrdinal() and
+  // SetAppLaunchOrdinal() from within the extensions sync code), setting the
+  // ordinals of the web app happens within the WebAppSyncBridge system. In
+  // order to correctly update the internal map representation in this class,
+  // any changed ordinals are manually updated here.
+  bool fix_ntp = false;
+  for (const web_app::WebApp* new_web_app_state : updated_apps_state) {
+    const web_app::WebApp* old_web_app_state =
+        web_app_registrar_->GetAppById(new_web_app_state->app_id());
+    DCHECK(old_web_app_state);
+    DCHECK_EQ(new_web_app_state->app_id(), old_web_app_state->app_id());
+    if (old_web_app_state->user_page_ordinal() !=
+            new_web_app_state->user_page_ordinal() ||
+        old_web_app_state->user_launch_ordinal() !=
+            new_web_app_state->user_launch_ordinal()) {
+      RemoveOrdinalMapping(old_web_app_state->app_id(),
+                           old_web_app_state->user_page_ordinal(),
+                           old_web_app_state->user_launch_ordinal());
+      AddOrdinalMapping(new_web_app_state->app_id(),
+                        new_web_app_state->user_page_ordinal(),
+                        new_web_app_state->user_launch_ordinal());
+      fix_ntp = true;
+    }
+  }
+
+  // Only resolve collisions if values have changed. This must happen on a
+  // different task, as in this method call the WebAppRegistrar still doesn't
+  // have the 'new' values saved. Posting this task ensures that the values
+  // returned from GetPageOrdinal() and GetAppLaunchOrdinal() match what is in
+  // the internal map representation in this class.
+  if (fix_ntp) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ChromeAppSorting::FixNTPOrdinalCollisions,
+                                  weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ChromeAppSorting::OnAppRegistrarDestroyed() {
+  app_registrar_observer_.RemoveAll();
 }
 
 syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
@@ -515,6 +633,17 @@ void ChromeAppSorting::AddOrdinalMapping(
   if (!page_ordinal.IsValid() || !app_launch_ordinal.IsValid())
     return;
 
+  // Ignore ordinal mappings that already exist. This is necessary because:
+  // * the WebApps system and the Extensions system can have overlapping webapps
+  //   in them (until BMO is fully launched & old extension data is removed)
+  // * std::multimap allows multiple entries with the same key & value.
+  auto page_it = ntp_ordinal_map_.find(page_ordinal);
+  if (page_it != ntp_ordinal_map_.end()) {
+    if (DoesMultimapContainKeyAndValue(page_it->second, app_launch_ordinal,
+                                       extension_id)) {
+      return;
+    }
+  }
   ntp_ordinal_map_[page_ordinal].insert(
       std::make_pair(app_launch_ordinal, extension_id));
 }

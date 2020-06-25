@@ -38052,7 +38052,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38216,7 +38216,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38256,7 +38256,7 @@
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch)",
+          "iPad Pro (12.9-inch) (2nd generation)",
           "--version",
           "14.0",
           "--out-dir",
@@ -38269,7 +38269,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module_iPad Pro (12.9-inch) 14.0",
+        "name": "ios_chrome_integration_eg2tests_module_iPad Pro (12.9-inch) (2nd generation) 14.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -38384,7 +38384,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38552,7 +38552,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38591,7 +38591,7 @@
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch)",
+          "iPad Pro (12.9-inch) (2nd generation)",
           "--version",
           "14.0",
           "--out-dir",
@@ -38604,7 +38604,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module_iPad Pro (12.9-inch) 14.0",
+        "name": "ios_chrome_signin_eg2tests_module_iPad Pro (12.9-inch) (2nd generation) 14.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -38716,7 +38716,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38880,7 +38880,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -38920,7 +38920,7 @@
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch)",
+          "iPad Pro (12.9-inch) (2nd generation)",
           "--version",
           "14.0",
           "--out-dir",
@@ -38933,7 +38933,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module_iPad Pro (12.9-inch) 14.0",
+        "name": "ios_chrome_ui_eg2tests_module_iPad Pro (12.9-inch) (2nd generation) 14.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -39171,7 +39171,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -39458,7 +39458,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -39786,7 +39786,7 @@
           "--platform",
           "iPad (6th generation)",
           "--version",
-          "14_0",
+          "14.0",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -39825,7 +39825,7 @@
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch)",
+          "iPad Pro (12.9-inch) (2nd generation)",
           "--version",
           "14.0",
           "--out-dir",
@@ -39838,7 +39838,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module_iPad Pro (12.9-inch) 14.0",
+        "name": "ios_web_shell_eg2tests_module_iPad Pro (12.9-inch) (2nd generation) 14.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

@@ -716,6 +716,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
 
+  // Allows the embedder to control the conversion measurement API.
+  // This gates the following behaviors:
+  // - Impression registration
+  // - Conversion registration
+  // - Conversion reports
+  virtual bool AllowConversionMeasurement(
+      content::BrowserContext* browser_context);
+
 #if defined(OS_CHROMEOS)
   // Notification that a trust anchor was used by the given user.
   virtual void OnTrustAnchorUsed(BrowserContext* browser_context) {}

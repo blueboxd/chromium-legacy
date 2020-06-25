@@ -83,19 +83,6 @@ constexpr char kTestResourceFilename[] = "white-1x1.png";
 constexpr char kTestResourceMimeType[] = "image/png";
 constexpr uint32_t kTestResourceSize = 103;  // size of white-1x1.png
 
-void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
-                                             const WebString& file_path,
-                                             WebURLResponse response) {
-  url_test_helpers::RegisterMockedURLLoadWithCustomResponse(full_url, file_path,
-                                                            response);
-}
-
-void RegisterMockedURLLoad(const KURL& url) {
-  url_test_helpers::RegisterMockedURLLoad(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      kTestResourceMimeType);
-}
-
 const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
     network::mojom::IPAddressSpace address_space) {
   return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
@@ -178,6 +165,7 @@ class ResourceFetcherTest : public testing::Test {
   scoped_refptr<scheduler::FakeTaskRunner> CreateTaskRunner() {
     return base::MakeRefCounted<scheduler::FakeTaskRunner>();
   }
+
   ResourceFetcher* CreateFetcher(
       const TestResourceFetcherProperties& properties,
       FetchContext* context) {
@@ -185,16 +173,25 @@ class ResourceFetcherTest : public testing::Test {
         properties.MakeDetachable(), context, CreateTaskRunner(),
         MakeGarbageCollected<TestLoaderFactory>()));
   }
+
   ResourceFetcher* CreateFetcher(
       const TestResourceFetcherProperties& properties) {
     return CreateFetcher(properties, MakeGarbageCollected<MockFetchContext>());
   }
+
   ResourceFetcher* CreateFetcher() {
     return CreateFetcher(
         *MakeGarbageCollected<TestResourceFetcherProperties>());
   }
+
   void AddResourceToMemoryCache(Resource* resource) {
     GetMemoryCache()->Add(resource);
+  }
+
+  void RegisterMockedURLLoad(const KURL& url) {
+    url_test_helpers::RegisterMockedURLLoad(
+        url, test::PlatformTestDataPath(kTestResourceFilename),
+        kTestResourceMimeType, platform_->GetURLLoaderMockFactory());
   }
 
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
@@ -231,9 +228,9 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
 
   FetchParameters fetch_params{ResourceRequest(url)};
   Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
@@ -360,9 +357,9 @@ TEST_F(ResourceFetcherTest, VaryResource) {
   response.SetHttpStatusCode(200);
   response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHttpHeaderField(http_names::kVary, "*");
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
 
   FetchParameters fetch_params_original{ResourceRequest(url)};
   Resource* resource =
@@ -430,9 +427,9 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   response.SetHttpStatusCode(200);
   response.SetHttpHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHttpHeaderField(http_names::kETag, "1234567890");
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
 
   ResourceFetcher* fetcher1 = CreateFetcher(
       *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin));
@@ -471,8 +468,11 @@ class ServeRequestsOnCompleteClient final
   USING_GARBAGE_COLLECTED_MIXIN(ServeRequestsOnCompleteClient);
 
  public:
+  explicit ServeRequestsOnCompleteClient(WebURLLoaderMockFactory* mock_factory)
+      : mock_factory_(mock_factory) {}
+
   void NotifyFinished(Resource*) override {
-    url_test_helpers::ServeAsynchronousRequests();
+    mock_factory_->ServeAsynchronousRequests();
     ClearResource();
   }
 
@@ -501,6 +501,9 @@ class ServeRequestsOnCompleteClient final
   }
 
   String DebugName() const override { return "ServeRequestsOnCompleteClient"; }
+
+ private:
+  WebURLLoaderMockFactory* mock_factory_;
 };
 
 // Regression test for http://crbug.com/594072.
@@ -517,7 +520,8 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   FetchParameters fetch_params(std::move(resource_request));
   Persistent<ServeRequestsOnCompleteClient> client =
-      MakeGarbageCollected<ServeRequestsOnCompleteClient>();
+      MakeGarbageCollected<ServeRequestsOnCompleteClient>(
+          platform_->GetURLLoaderMockFactory());
   Resource* resource = RawResource::Fetch(fetch_params, fetcher, client);
   resource->Loader()->Cancel();
 }
@@ -527,9 +531,12 @@ class ScopedMockRedirectRequester {
 
  public:
   ScopedMockRedirectRequester(
+      WebURLLoaderMockFactory* mock_factory,
       MockFetchContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : context_(context), task_runner_(std::move(task_runner)) {}
+      : mock_factory_(mock_factory),
+        context_(context),
+        task_runner_(std::move(task_runner)) {}
 
   void RegisterRedirect(const WebString& from_url, const WebString& to_url) {
     KURL redirect_url(from_url);
@@ -539,13 +546,13 @@ class ScopedMockRedirectRequester {
     redirect_response.SetHttpHeaderField(http_names::kLocation, to_url);
     redirect_response.SetEncodedDataLength(kRedirectResponseOverheadBytes);
 
-    RegisterMockedURLLoadWithCustomResponse(redirect_url, "",
-                                            redirect_response);
+    mock_factory_->RegisterURL(redirect_url, redirect_response, "");
   }
 
   void RegisterFinalResource(const WebString& url) {
-    KURL final_url(url);
-    RegisterMockedURLLoad(final_url);
+    url_test_helpers::RegisterMockedURLLoad(
+        KURL(url), test::PlatformTestDataPath(kTestResourceFilename),
+        kTestResourceMimeType, mock_factory_);
   }
 
   void Request(const WebString& url) {
@@ -557,10 +564,11 @@ class ScopedMockRedirectRequester {
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     FetchParameters fetch_params(std::move(resource_request));
     RawResource::Fetch(fetch_params, fetcher, nullptr);
-    url_test_helpers::ServeAsynchronousRequests();
+    mock_factory_->ServeAsynchronousRequests();
   }
 
  private:
+  WebURLLoaderMockFactory* mock_factory_;
   MockFetchContext* context_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -571,7 +579,8 @@ TEST_F(ResourceFetcherTest, SameOriginRedirect) {
   const char kRedirectURL[] = "http://127.0.0.1:8000/redirect.html";
   const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(context, CreateTaskRunner());
+  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
+                                        context, CreateTaskRunner());
   requester.RegisterRedirect(kRedirectURL, kFinalURL);
   requester.RegisterFinalResource(kFinalURL);
   requester.Request(kRedirectURL);
@@ -584,7 +593,8 @@ TEST_F(ResourceFetcherTest, CrossOriginRedirect) {
   const char kRedirectURL[] = "http://otherorigin.test/redirect.html";
   const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(context, CreateTaskRunner());
+  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
+                                        context, CreateTaskRunner());
   requester.RegisterRedirect(kRedirectURL, kFinalURL);
   requester.RegisterFinalResource(kFinalURL);
   requester.Request(kRedirectURL);
@@ -598,7 +608,8 @@ TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
   const char kRedirectURL3[] = "http://127.0.0.1:8000/redirect3.html";
   const char kFinalURL[] = "http://127.0.0.1:8000/final.html";
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-  ScopedMockRedirectRequester requester(context, CreateTaskRunner());
+  ScopedMockRedirectRequester requester(platform_->GetURLLoaderMockFactory(),
+                                        context, CreateTaskRunner());
   requester.RegisterRedirect(kRedirectURL1, kRedirectURL2);
   requester.RegisterRedirect(kRedirectURL2, kRedirectURL3);
   requester.RegisterRedirect(kRedirectURL3, kFinalURL);
@@ -927,9 +938,9 @@ TEST_F(ResourceFetcherTest, ContentIdURL) {
   KURL url("cid:0123456789@example.com");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
 
   auto* fetcher = CreateFetcher();
 
@@ -963,9 +974,9 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   response.SetHttpHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
   Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
   ASSERT_TRUE(resource);
 
@@ -987,9 +998,9 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   ResourceResponse revalidate_response(url);
   revalidate_response.SetHttpStatusCode(200);
   platform_->GetURLLoaderMockFactory()->UnregisterURL(url);
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(revalidate_response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(revalidate_response),
+      test::PlatformTestDataPath(kTestResourceFilename));
   new_resource = MockResource::Fetch(fetch_params2, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
@@ -1011,9 +1022,9 @@ TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  RegisterMockedURLLoadWithCustomResponse(
-      url, test::PlatformTestDataPath(kTestResourceFilename),
-      WrappedResourceResponse(response));
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
   FetchParameters fetch_params{ResourceRequest(url)};
   MockResource::Fetch(fetch_params, fetcher, nullptr);
   ASSERT_NE(fetcher->CachedResource(url), nullptr);

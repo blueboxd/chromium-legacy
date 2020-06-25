@@ -66,13 +66,6 @@ const char kBrowserTest[] = "browser-test";
 // Causes the Conversion Measurement API to run without delays or noise.
 const char kConversionsDebugMode[] = "conversions-debug-mode";
 
-// Sets the tile size used by composited layers.
-const char kDefaultTileWidth[]              = "default-tile-width";
-const char kDefaultTileHeight[]             = "default-tile-height";
-
-// Sets the min tile height for GPU raster.
-const char kMinHeightForGpuRasterTile[] = "min-height-for-gpu-raster-tile";
-
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 
@@ -172,18 +165,9 @@ const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 const char kDisableSoftwareCompositingFallback[] =
     "disable-software-compositing-fallback";
 
-// When using CPU rasterizing disable low resolution tiling. This uses
-// less power, particularly during animations, but more white may be seen
-// during fast scrolling especially on slower devices.
-const char kDisableLowResTiling[] = "disable-low-res-tiling";
-
 // Disable the thread that crashes the GPU process if it stops responding to
 // messages.
 const char kDisableGpuWatchdog[] = "disable-gpu-watchdog";
-
-// Disallow image animations to be reset to the beginning to avoid skipping
-// many frames. Only effective if compositor image animations are enabled.
-const char kDisableImageAnimationResync[] = "disable-image-animation-resync";
 
 // Disables the IPC flooding protection.
 // It is activated by default. Some javascript functions can be used to flood
@@ -225,10 +209,6 @@ const char kDisableNewContentRenderingTimeout[] =
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
-// Disable partial raster in the renderer. Disabling this switch also disables
-// the use of persistent gpu memory buffers.
-const char kDisablePartialRaster[] = "disable-partial-raster";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -250,9 +230,6 @@ const char kDisablePresentationAPI[]        = "disable-presentation-api";
 
 // Disables throttling of history.pushState/replaceState calls.
 const char kDisablePushStateThrottle[] = "disable-pushstate-throttle";
-
-// Disables RGBA_4444 textures.
-const char kDisableRGBA4444Textures[]       = "disable-rgba-4444-textures";
 
 // Taints all <canvas> elements, regardless of origin.
 const char kDisableReadingFromCanvas[]      = "disable-reading-from-canvas";
@@ -310,9 +287,6 @@ const char kDisableWebGLImageChromium[]     = "disable-webgl-image-chromium";
 
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
-
-// Disable rasterizer that writes directly to GPU memory associated with tiles.
-const char kDisableZeroCopy[]                = "disable-zero-copy";
 
 // Disable the video decoder from drawing directly to a texture.
 const char kDisableZeroCopyDxgiVideo[]      = "disable-zero-copy-dxgi-video";
@@ -385,17 +359,9 @@ const char kEnableFtp[] = "enable-ftp";
 const char kDisableOriginTrialControlledBlinkFeatures[] =
     "disable-origin-trial-controlled-blink-features";
 
-// Specify that all compositor resources should be backed by GPU memory buffers.
-const char kEnableGpuMemoryBufferCompositorResources[] =
-    "enable-gpu-memory-buffer-compositor-resources";
-
 // Enable GpuMemoryBuffer backed VideoFrames.
 const char kEnableGpuMemoryBufferVideoFrames[] =
     "enable-gpu-memory-buffer-video-frames";
-
-// When using CPU rasterizing generate low resolution tiling. Low res
-// tiles may be displayed during fast scrolls especially on slower devices.
-const char kEnableLowResTiling[] = "enable-low-res-tiling";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
@@ -419,9 +385,6 @@ const char kEnablePluginPlaceholderTesting[] =
 // still available, but it is bucketized and updated less frequently. This flag
 // also applys to workers.
 const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
-
-// Enables RGBA_4444 textures.
-const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";
@@ -490,9 +453,6 @@ const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 // Enables WebGL rendering into a scanout buffer for overlay support.
 const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 
-// Enable rasterizer that writes directly to GPU memory associated with tiles.
-const char kEnableZeroCopy[]                = "enable-zero-copy";
-
 // Handle to the shared memory segment containing field trial state that is to
 // be shared between processes. The argument to this switch is the handle id
 // (pointer on Windows) as a string, followed by a comma, then the size of the
@@ -517,11 +477,6 @@ const char kEnableOopRasterization[] = "enable-oop-rasterization";
 // enterprise policy has been deleted.
 const char kForceLegacyDefaultReferrerPolicy[] =
     "force-legacy-default-referrer-policy";
-
-// The number of multisample antialiasing samples for GPU rasterization.
-// Requires MSAA support on GPU to have an effect. 0 disables MSAA.
-const char kGpuRasterizationMSAASampleCount[] =
-    "gpu-rasterization-msaa-sample-count";
 
 // Forces use of hardware overlay for fullscreen video playback. Useful for
 // testing the Android overlay fullscreen functionality on other platforms.
@@ -608,10 +563,6 @@ const char kMaxActiveWebGLContexts[] = "max-active-webgl-contexts";
 
 // Sets the maximium decoded image size limitation.
 const char kMaxDecodedImageSizeMb[] = "max-decoded-image-size-mb";
-
-// Sets the width and height above which a composited layer will get tiled.
-const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
-const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 
 // Indicates the utility process should run with a message loop type of UI.
 const char kMessageLoopTypeUi[] = "message-loop-type-ui";
@@ -759,14 +710,6 @@ const char kRunManualTestsFlag[] = "run-manual";
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
 
-// Visibly render a border around layout shift rects in the web page to help
-// debug and study layout shifts.
-const char kShowLayoutShiftRegions[] = "show-layout-shift-regions";
-
-// Visibly render a border around paint rects in the web page to help debug
-// and study painting behavior.
-const char kShowPaintRects[]                = "show-paint-rects";
-
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
 
@@ -893,6 +836,9 @@ const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
 
 // Set a default sample count for webgl if msaa is enabled.
 const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
+
+// The prefix used when starting the zygote process. (i.e. 'gdb --args')
+const char kZygoteCmdPrefix[] = "zygote-cmd-prefix";
 
 // Enables specified backend for the Web OTP API.
 const char kWebOtpBackend[] = "web-otp-backend";

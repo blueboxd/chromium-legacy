@@ -462,12 +462,12 @@ Panel = class {
 
       if (Panel.sessionState !== 'IN_SESSION') {
         tabsMenu.disable();
-        // Disable commands that contain the property 'disallowOOBE'.
+        // Disable commands that contain the property 'denyOOBE'.
         for (let i = 0; i < Panel.menus_.length; ++i) {
           const menu = Panel.menus_[i];
           for (let j = 0; j < menu.items.length; ++j) {
             const item = menu.items[j];
-            if (CommandStore.disallowOOBE(item.element.id)) {
+            if (CommandStore.denyOOBE(item.element.id)) {
               item.disable();
             }
           }

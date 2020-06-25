@@ -42,7 +42,7 @@
 #include "native_client/src/public/nacl_desc.h"
 
 #if defined(OS_LINUX)
-#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
+#include "content/public/common/zygote/sandbox_support_linux.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -229,8 +229,8 @@ void NaClListener::Listen() {
 #if defined(OS_LINUX)
 // static
 int NaClListener::MakeSharedMemorySegment(size_t length, int executable) {
-  return service_manager::SharedMemoryIPCSupport::MakeSharedMemorySegment(
-      length, executable);
+  return content::SharedMemoryIPCSupport::MakeSharedMemorySegment(length,
+                                                                  executable);
 }
 #endif
 

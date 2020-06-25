@@ -40,7 +40,11 @@ class SecureDnsUtilTest : public testing::Test {
         features::kPrivacySettingsRedesign, base::FieldTrialParams());
   }
 
-  void DisableRedesign() { scoped_feature_list_.Reset(); }
+  void DisableRedesign() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kPrivacySettingsRedesign);
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

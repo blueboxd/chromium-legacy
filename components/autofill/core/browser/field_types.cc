@@ -11,9 +11,13 @@ namespace autofill {
 
 bool IsFillableFieldType(ServerFieldType field_type) {
   switch (field_type) {
+    case NAME_HONORIFIC_PREFIX:
     case NAME_FIRST:
     case NAME_MIDDLE:
     case NAME_LAST:
+    case NAME_LAST_FIRST:
+    case NAME_LAST_CONJUNCTION:
+    case NAME_LAST_SECOND:
     case NAME_MIDDLE_INITIAL:
     case NAME_FULL:
     case NAME_SUFFIX:

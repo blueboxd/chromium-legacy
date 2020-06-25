@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/web_contents.h"
 
@@ -126,6 +127,11 @@ class MediaRouterMojoMetrics {
   // Records the audio playback state of a WebContents that is being
   // tab-mirrored.
   static void RecordTabMirroringMetrics(content::WebContents* web_contents);
+
+  // Records the audio capture setting of a site-initiated mirroring session.
+  static void RecordSiteInitiatedMirroringStarted(
+      content::WebContents* web_contents,
+      const MediaSource& media_source);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoMetricsTest,

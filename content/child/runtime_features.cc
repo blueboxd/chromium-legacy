@@ -26,6 +26,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/ui_base_features.h"
@@ -75,7 +76,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #if defined(OS_MACOSX)
   const bool enable_canvas_2d_image_chromium =
       command_line.HasSwitch(
-          switches::kEnableGpuMemoryBufferCompositorResources) &&
+          blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu) &&
       base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
@@ -88,7 +89,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #if defined(OS_MACOSX)
   const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(
-          switches::kEnableGpuMemoryBufferCompositorResources) &&
+          blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisableWebGLImageChromium) &&
       !command_line.HasSwitch(switches::kDisableGpu) &&
       base::FeatureList::IsEnabled(features::kWebGLImageChromium);

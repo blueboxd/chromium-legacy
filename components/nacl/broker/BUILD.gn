@@ -26,12 +26,12 @@ source_set("broker") {
     "//components/nacl/common:minimal",
     "//components/nacl/common:switches",
     "//content/public/common:static_switches",
+    "//content/public/common/zygote:buildflags",
     "//ipc",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
     "//sandbox",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/zygote:zygote_buildflags",
   ]
 
   if (current_cpu == target_cpu) {
@@ -137,9 +137,9 @@ if (current_cpu == "x86") {
     deps = [
       "//base",
       "//content/public/common:static_switches",
+      "//content/public/common/zygote:buildflags",
       "//sandbox",
       "//services/service_manager/sandbox",
-      "//services/service_manager/zygote:zygote_buildflags",
     ]
   }
 

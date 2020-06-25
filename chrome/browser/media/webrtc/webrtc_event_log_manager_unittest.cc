@@ -69,7 +69,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
@@ -1306,7 +1305,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
         // we cannot verify |log_file.browser_context_id| is correct.
         // This is unimportant to the test.
 
-        base::DeleteFile(log_file.path, false);
+        base::DeleteFile(log_file.path);
         expected_files_.pop_front();
       }
 

@@ -28,6 +28,7 @@ lucicfg.config(
         'luci-notify.cfg',
         'luci-scheduler.cfg',
         'project.cfg',
+        'project.pyl',
         'realms.cfg',
         'tricium-prod.cfg',
     ],

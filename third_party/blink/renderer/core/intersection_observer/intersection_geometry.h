@@ -76,6 +76,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const Element& target,
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
+                       const Vector<Length>& target_margin,
                        unsigned flags,
                        CachedRects* cached_rects = nullptr);
 
@@ -83,6 +84,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const Node& explicit_root,
                        const Element& target,
                        const Vector<float>& thresholds,
+                       const Vector<Length>& target_margin,
                        unsigned flags,
                        CachedRects* cached_rects = nullptr);
 
@@ -127,6 +129,7 @@ class CORE_EXPORT IntersectionGeometry {
                        const LayoutObject* root,
                        const LayoutObject* target,
                        const Vector<float>& thresholds,
+                       const Vector<Length>& target_margin,
                        CachedRects* cached_rects);
   // Map intersection_rect from the coordinate system of the target to the
   // coordinate system of the root, applying intervening clips.

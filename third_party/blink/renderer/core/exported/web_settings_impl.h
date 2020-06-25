@@ -146,7 +146,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
                           UScriptCode = USCRIPT_COMMON) override;
   void SetShouldPrintBackgrounds(bool) override;
   void SetShouldClearDocumentBackground(bool) override;
-  void SetShouldRespectImageOrientation(bool) override;
   void SetShowContextMenuOnMouseUp(bool) override;
   void SetShrinksViewportContentToFit(bool) override;
   void SetSmartInsertDeleteEnabled(bool) override;

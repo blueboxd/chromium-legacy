@@ -96,10 +96,6 @@ target(link_target_type, "gpu_sources") {
     ]
   }
 
-  if (is_linux) {
-    deps += [ "//services/service_manager/zygote" ]
-  }
-
   if (mojo_media_host == "gpu") {
     deps += [ "//media/mojo/services" ]
   }

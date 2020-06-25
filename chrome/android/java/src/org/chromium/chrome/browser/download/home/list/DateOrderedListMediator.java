@@ -218,6 +218,7 @@ class DateOrderedListMediator {
         mModel.getProperties().set(ListProperties.PROVIDER_FAVICON, this::getFavicon);
         mModel.getProperties().set(ListProperties.CALLBACK_SELECTION, this ::onSelection);
         mModel.getProperties().set(ListProperties.CALLBACK_RENAME, this::onRenameItem);
+        mModel.getProperties().set(ListProperties.CALLBACK_CHANGE, this::onChangeItem);
         mModel.getProperties().set(
                 ListProperties.CALLBACK_PAGINATION_CLICK, mListMutationController::loadMorePages);
         mModel.getProperties().set(ListProperties.CALLBACK_GROUP_PAGINATION_CLICK,
@@ -338,6 +339,11 @@ class DateOrderedListMediator {
         mRenameController.rename(item.title, (newName, renameCallback) -> {
             mProvider.renameItem(item, newName, renameCallback);
         });
+    }
+
+    private void onChangeItem(OfflineItem item) {
+        UmaUtils.recordItemAction(ViewAction.MENU_CHANGE);
+        // TODO(xingliu): Implement this by wiring to download later dialog.
     }
 
     /**

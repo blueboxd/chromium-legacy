@@ -5,8 +5,6 @@
 #include "content/browser/speech/tts_utterance_impl.h"
 
 #include "base/values.h"
-#include "content/public/browser/visibility.h"
-#include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
@@ -60,12 +58,6 @@ TtsUtteranceImpl::~TtsUtteranceImpl() {
   // It's an error if an Utterance is destructed without being finished,
   // unless |browser_context_| is nullptr because it's a unit test.
   DCHECK(finished_ || !browser_context_);
-}
-
-bool TtsUtteranceImpl::ShouldSpeak() {
-  return !was_created_with_web_contents_ ||
-         (web_contents() &&
-          web_contents()->GetVisibility() != Visibility::HIDDEN);
 }
 
 void TtsUtteranceImpl::OnTtsEvent(TtsEventType event_type,

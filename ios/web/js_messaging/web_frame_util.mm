@@ -14,8 +14,12 @@
 
 namespace web {
 
+WebFrame* GetMainFrame(WebState* web_state) {
+  return web_state->GetWebFramesManager()->GetMainWebFrame();
+}
+
 std::string GetMainWebFrameId(WebState* web_state) {
-  WebFrame* main_frame = web_state->GetWebFramesManager()->GetMainWebFrame();
+  WebFrame* main_frame = GetMainFrame(web_state);
   if (!main_frame) {
     return std::string();
   }

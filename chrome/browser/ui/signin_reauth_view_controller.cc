@@ -117,9 +117,9 @@ void SigninReauthViewController::OnModalSigninClosed() {
   dialog_delegate_observer_.Remove(dialog_delegate_);
   dialog_delegate_ = nullptr;
 
-  DCHECK(ui_state == UIState::kConfirmationDialog ||
-         ui_state == UIState::kGaiaReauthDialog);
-  UserAction action = ui_state == UIState::kConfirmationDialog
+  DCHECK(ui_state_ == UIState::kConfirmationDialog ||
+         ui_state_ == UIState::kGaiaReauthDialog);
+  UserAction action = ui_state_ == UIState::kConfirmationDialog
                           ? UserAction::kCloseConfirmationDialog
                           : UserAction::kCloseGaiaReauthDialog;
   signin_ui_util::RecordTransactionalReauthUserAction(access_point_, action);
@@ -156,14 +156,14 @@ void SigninReauthViewController::OnGaiaReauthPageComplete(
   gaia_reauth_page_state_ = GaiaReauthPageState::kDone;
   gaia_reauth_page_result_ = result;
 
-  if (ui_state == UIState::kGaiaReauthDialog ||
-      ui_state == UIState::kGaiaReauthTab) {
+  if (ui_state_ == UIState::kGaiaReauthDialog ||
+      ui_state_ == UIState::kGaiaReauthTab) {
     base::Optional<UserAction> action;
     if (gaia_reauth_page_result_ == signin::ReauthResult::kSuccess) {
       action = UserAction::kPassGaiaReauth;
     }
     if (gaia_reauth_page_result_ == signin::ReauthResult::kDismissedByUser) {
-      action = ui_state == UIState::kGaiaReauthDialog
+      action = ui_state_ == UIState::kGaiaReauthDialog
                    ? UserAction::kCloseGaiaReauthDialog
                    : UserAction::kCloseGaiaReauthTab;
     }
@@ -183,6 +183,16 @@ void SigninReauthViewController::SetObserverForTesting(
 }
 
 void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
+  signin::ReauthTabHelper* tab_helper = GetReauthTabHelper();
+  if (tab_helper && tab_helper->has_last_committed_error_page() &&
+      result != signin::ReauthResult::kSuccess &&
+      (ui_state_ == UIState::kGaiaReauthDialog ||
+       ui_state_ == UIState::kGaiaReauthTab)) {
+    // Override a non-successful result with |kLoadFailed| if the error page was
+    // last displayed to the user.
+    result = signin::ReauthResult::kLoadFailed;
+  }
+
   if (dialog_delegate_) {
     dialog_delegate_observer_.Remove(dialog_delegate_);
     dialog_delegate_->CloseModalSignin();
@@ -225,17 +235,27 @@ void SigninReauthViewController::OnStateChanged() {
 }
 
 void SigninReauthViewController::RecordClickOnce(UserAction click_action) {
-  if (has_recorded_click)
+  if (has_recorded_click_)
     return;
 
   signin_ui_util::RecordTransactionalReauthUserAction(access_point_,
                                                       click_action);
-  has_recorded_click = true;
+  has_recorded_click_ = true;
+}
+
+signin::ReauthTabHelper* SigninReauthViewController::GetReauthTabHelper() {
+  content::WebContents* web_contents = reauth_web_contents_
+                                           ? reauth_web_contents_.get()
+                                           : raw_reauth_web_contents_;
+  if (!web_contents)
+    return nullptr;
+
+  return signin::ReauthTabHelper::FromWebContents(web_contents);
 }
 
 void SigninReauthViewController::ShowReauthConfirmationDialog() {
-  DCHECK_EQ(ui_state, UIState::kNone);
-  ui_state = UIState::kConfirmationDialog;
+  DCHECK_EQ(ui_state_, UIState::kNone);
+  ui_state_ = UIState::kConfirmationDialog;
   dialog_delegate_ =
       SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
           browser_, account_id_, access_point_);
@@ -243,8 +263,7 @@ void SigninReauthViewController::ShowReauthConfirmationDialog() {
 }
 
 void SigninReauthViewController::ShowGaiaReauthPage() {
-  signin::ReauthTabHelper* tab_helper =
-      signin::ReauthTabHelper::FromWebContents(reauth_web_contents_.get());
+  signin::ReauthTabHelper* tab_helper = GetReauthTabHelper();
   DCHECK(tab_helper);
 
   if (tab_helper->is_within_reauth_origin()) {
@@ -259,14 +278,14 @@ void SigninReauthViewController::ShowGaiaReauthPage() {
 }
 
 void SigninReauthViewController::ShowGaiaReauthPageInDialog() {
-  DCHECK_EQ(ui_state, UIState::kConfirmationDialog);
-  ui_state = UIState::kGaiaReauthDialog;
+  DCHECK_EQ(ui_state_, UIState::kConfirmationDialog);
+  ui_state_ = UIState::kGaiaReauthDialog;
   dialog_delegate_->SetWebContents(reauth_web_contents_.get());
 }
 
 void SigninReauthViewController::ShowGaiaReauthPageInNewTab() {
-  DCHECK_EQ(ui_state, UIState::kConfirmationDialog);
-  ui_state = UIState::kGaiaReauthTab;
+  DCHECK_EQ(ui_state_, UIState::kConfirmationDialog);
+  ui_state_ = UIState::kGaiaReauthTab;
   // Remove the observer to not trigger OnModalSigninClosed() that will abort
   // the reauth flow.
   dialog_delegate_observer_.Remove(dialog_delegate_);

@@ -335,10 +335,7 @@ def main():
   build_utils.Touch(args.stamp)
 
   if args.depfile:
-    build_utils.WriteDepfile(args.depfile,
-                             args.stamp,
-                             depfile_deps,
-                             add_pydeps=False)  # pydeps listed in GN.
+    build_utils.WriteDepfile(args.depfile, args.stamp, depfile_deps)
 
 
 if __name__ == '__main__':

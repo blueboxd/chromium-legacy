@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_THROUGHPUT_TRACKER_H_
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/throughput_tracker_host.h"
 
@@ -47,11 +48,11 @@ class COMPOSITOR_EXPORT ThroughputTracker {
 
   // Private since it should only be created via Compositor's
   // RequestNewThroughputTracker call.
-  ThroughputTracker(TrackerId id, ThroughputTrackerHost* host);
+  ThroughputTracker(TrackerId id, base::WeakPtr<ThroughputTrackerHost> host);
 
   static const TrackerId kInvalidId = 0u;
   TrackerId id_ = kInvalidId;
-  ThroughputTrackerHost* host_ = nullptr;
+  base::WeakPtr<ThroughputTrackerHost> host_;
   bool started_ = false;
 };
 

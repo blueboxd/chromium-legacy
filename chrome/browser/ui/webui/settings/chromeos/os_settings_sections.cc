@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_section.h"
@@ -125,8 +126,13 @@ OsSettingsSections::OsSettingsSections(
   sections_map_[mojom::Section::kReset] = reset_section.get();
   sections_.push_back(std::move(reset_section));
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  auto about_section = std::make_unique<AboutSection>(
+      profile, search_tag_registry, profile->GetPrefs());
+#else
   auto about_section =
       std::make_unique<AboutSection>(profile, search_tag_registry);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   sections_map_[mojom::Section::kAboutChromeOs] = about_section.get();
   sections_.push_back(std::move(about_section));
 }

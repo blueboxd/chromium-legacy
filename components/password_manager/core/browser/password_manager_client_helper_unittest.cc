@@ -122,9 +122,9 @@ TEST_F(PasswordManagerClientHelperTest,
 }
 
 TEST_F(PasswordManagerClientHelperTest, PromptMoveForMovableForm) {
-  base::test::ScopedFeatureList account_storage_feature;
-  account_storage_feature.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(),
+              ShouldShowAccountStorageBubbleUi)
+      .WillOnce(Return(true));
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount);
   EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
 

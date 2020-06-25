@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,10 +20,14 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -51,6 +56,20 @@ const std::vector<SearchConcept>& GetAssistantSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAssistant}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAssistantOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantOnOff},
+       {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_ASSISTANT_PREFERRED_INPUT,
        mojom::kAssistantSubpagePath,
        mojom::SearchResultIcon::kAssistant,
@@ -69,20 +88,6 @@ const std::vector<SearchConcept>& GetAssistantSearchConcepts() {
        mojom::SearchResultDefaultRank::kLow,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kAssistantRelatedInfo}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetAssistantOnSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF,
-       mojom::kAssistantSubpagePath,
-       mojom::SearchResultIcon::kAssistant,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kAssistantOnOff},
-       {IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_OFF_ALT1,
-        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -143,10 +148,6 @@ bool IsVoiceMatchAllowed() {
   return !assistant::features::IsVoiceMatchDisabled();
 }
 
-bool AreQuickAnswersAllowed() {
-  return features::IsQuickAnswersSettingToggleEnabled();
-}
-
 void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"googleAssistantPageTitle", IDS_SETTINGS_GOOGLE_ASSISTANT},
@@ -189,7 +190,6 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("hotwordDspAvailable", IsHotwordDspAvailable());
   html_source->AddBoolean("voiceMatchDisabled", !IsVoiceMatchAllowed());
-  html_source->AddBoolean("quickAnswersAvailable", AreQuickAnswersAllowed());
 }
 
 }  // namespace
@@ -229,6 +229,7 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   const bool is_assistant_allowed = IsAssistantAllowed();
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
+  html_source->AddBoolean("quickAnswersAvailable", IsQuickAnswersAllowed());
   html_source->AddLocalizedString("osSearchPageTitle",
                                   is_assistant_allowed
                                       ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
@@ -311,6 +312,25 @@ bool SearchSection::IsAssistantAllowed() const {
          chromeos::assistant::AssistantAllowedState::ALLOWED;
 }
 
+bool SearchSection::IsQuickAnswersAllowed() const {
+  if (!features::IsQuickAnswersSettingToggleEnabled())
+    return false;
+
+  const PrefService* prefs = profile()->GetPrefs();
+  std::string pref_locale =
+      prefs->GetString(language::prefs::kApplicationLocale);
+  // Also accept runtime locale which maybe an approximation of user's pref
+  // locale.
+  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
+
+  base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
+  if (!::chromeos::quick_answers::QuickAnswersClient::
+          IsQuickAnswersAllowedForLocale(pref_locale, kRuntimeLocale))
+    return false;
+
+  return true;
+}
+
 void SearchSection::UpdateAssistantSearchTags() {
   // Start without any Assistant search concepts, then add if needed below.
   registry()->RemoveSearchTags(GetAssistantOnSearchConcepts());
@@ -331,7 +351,7 @@ void SearchSection::UpdateAssistantSearchTags() {
 
   registry()->AddSearchTags(GetAssistantOnSearchConcepts());
 
-  if (AreQuickAnswersAllowed() && assistant_state->context_enabled() &&
+  if (IsQuickAnswersAllowed() && assistant_state->context_enabled() &&
       assistant_state->context_enabled().value()) {
     registry()->AddSearchTags(GetAssistantQuickAnswersSearchConcepts());
   }

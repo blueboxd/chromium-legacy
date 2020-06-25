@@ -52,12 +52,9 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
                          content::WebContents* web_contents);
 
   // views::BubbleDialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
   PageInfoUI::SecurityDescriptionType GetSecurityDescriptionType() const;
-  void set_window_title(const base::string16& title) { window_title_ = title; }
   void set_security_description_type(
       const PageInfoUI::SecurityDescriptionType& type) {
     security_description_type_ = type;
@@ -72,7 +69,6 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidChangeVisibleSecurityState() override;
 
-  base::string16 window_title_;
   PageInfoUI::SecurityDescriptionType security_description_type_ =
       PageInfoUI::SecurityDescriptionType::CONNECTION;
 

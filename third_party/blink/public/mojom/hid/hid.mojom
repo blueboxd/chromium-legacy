@@ -68,7 +68,13 @@ struct HidDeviceFilter {
 // peripherals from the render process. The implementation is responsible for
 // checking device access permissions and should not return information about a
 // device unless permission to access that device has already been granted.
+// Each HidService instance manages permissions and device access for a single
+// render frame, and must be destroyed when that render frame is destroyed.
 interface HidService {
+  // Registers a HidManagerClient to be notified when HID devices are added or
+  // removed.
+  RegisterClient(associated device.mojom.HidManagerClient client);
+
   // Retrieves information about all devices that this client has permission to
   // access.
   GetDevices() => (array<device.mojom.HidDeviceInfo> devices);

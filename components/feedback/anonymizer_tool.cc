@@ -127,7 +127,7 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
     net::IPAddress ip_addr;
     int prefix_length;
     bool scrub;
-  } static const kWhitelistedIPRanges[] = {
+  } static const kNonIdentifyingIPRanges[] = {
       // Private.
       {net::IPAddress(10, 0, 0, 0), 8, true},
       {net::IPAddress(172, 16, 0, 0), 12, true},
@@ -172,7 +172,7 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
   if (input_addr.AssignFromIPLiteral(addr) && input_addr.IsValid()) {
     bool mapped = MaybeUnmapAddress(&input_addr);
     bool translated = !mapped ? MaybeUntranslateAddress(&input_addr) : false;
-    for (const auto& range : kWhitelistedIPRanges) {
+    for (const auto& range : kNonIdentifyingIPRanges) {
       if (IPAddressMatchesPrefix(input_addr, range.ip_addr,
                                  range.prefix_length)) {
         std::string prefix;
@@ -631,15 +631,15 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
   return result;
 }
 
-// This takes a |url| argument and returns true if the URL is whitelisted and
-// does NOT need to be redacted, returns false otherwise.
-bool IsUrlWhitelisted(re2::StringPiece url,
-                      const char* const* first_party_extension_ids) {
-  // We do not whitelist anything with a query parameter.
+// This takes a |url| argument and returns true if the URL is exempt from
+// redaction, returns false otherwise.
+bool IsUrlExempt(re2::StringPiece url,
+                 const char* const* first_party_extension_ids) {
+  // We do not exempt anything with a query parameter.
   if (url.contains("?"))
     return false;
 
-  // Check for whitelisting of chrome:// URLs.
+  // Check for chrome:// URLs that are exempt.
   if (url.starts_with("chrome://")) {
     // We allow everything in chrome://resources/.
     if (url.starts_with("chrome://resources/"))
@@ -652,11 +652,10 @@ bool IsUrlWhitelisted(re2::StringPiece url,
     return false;
   }
 
-  // If the whitelist is null, then don't check it.
   if (!first_party_extension_ids)
     return false;
 
-  // Whitelist URLs of the format chrome-extension://<first-party-id>/*.js
+  // Exempt URLs of the format chrome-extension://<first-party-id>/*.js
   if (!url.starts_with("chrome-extension://"))
     return false;
 
@@ -693,7 +692,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
   re2::StringPiece skipped;
   re2::StringPiece matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
-    if (IsUrlWhitelisted(matched_id, first_party_extension_ids_)) {
+    if (IsUrlExempt(matched_id, first_party_extension_ids_)) {
       skipped.AppendToString(&result);
       matched_id.AppendToString(&result);
       continue;

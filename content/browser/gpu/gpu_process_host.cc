@@ -55,6 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -94,6 +95,10 @@
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_switches.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(USE_ZYGOTE_HANDLE)
+#include "content/common/zygote/zygote_handle_impl_linux.h"
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -422,13 +427,13 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-  service_manager::ZygoteHandle GetZygote() override {
+  ZygoteHandle GetZygote() override {
     if (service_manager::IsUnsandboxedSandboxType(GetSandboxType()))
       return nullptr;
 
     // The GPU process needs a specialized sandbox, so fork from the unsandboxed
     // zygote and then apply the actual sandboxes in the forked process.
-    return service_manager::GetUnsandboxedZygote();
+    return GetUnsandboxedZygote();
   }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 

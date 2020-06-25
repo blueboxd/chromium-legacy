@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -303,7 +304,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             return;
         }
         String startupUrl = getUrlFromIntent(getIntent());
-        if (TextUtils.isEmpty(startupUrl)) {
+        if (TextUtils.isEmpty(startupUrl) || !URLUtil.isValidUrl(startupUrl)) {
             startupUrl = "https://google.com";
         }
         loadUrl(startupUrl);

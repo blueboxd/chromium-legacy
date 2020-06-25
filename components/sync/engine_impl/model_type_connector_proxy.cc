@@ -34,19 +34,6 @@ void ModelTypeConnectorProxy::DisconnectNonBlockingType(ModelType type) {
                                 model_type_connector_, type));
 }
 
-void ModelTypeConnectorProxy::RegisterDirectoryType(ModelType type,
-                                                    ModelSafeGroup group) {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ModelTypeConnector::RegisterDirectoryType,
-                                model_type_connector_, type, group));
-}
-
-void ModelTypeConnectorProxy::UnregisterDirectoryType(ModelType type) {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ModelTypeConnector::UnregisterDirectoryType,
-                                model_type_connector_, type));
-}
-
 void ModelTypeConnectorProxy::ConnectProxyType(ModelType type) {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&ModelTypeConnector::ConnectProxyType,

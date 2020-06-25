@@ -62,7 +62,10 @@ class TabViewManagerImpl implements TabViewManager, Comparator<TabViewProvider> 
     TabViewManagerImpl(TabImpl tab) {
         mTab = tab;
         mTabViewProviders = new PriorityQueue<>(PRIORITIZED_TAB_VIEW_PROVIDER_TYPES.length, this);
-        if (mTab.getActivity() == null) return;
+    }
+
+    private void initMarginSupplier() {
+        if (mTab.getActivity() == null || mMarginSupplier != null) return;
 
         mMarginSupplier =
                 new BrowserControlsMarginSupplier(mTab.getActivity().getFullscreenManager());
@@ -121,6 +124,7 @@ class TabViewManagerImpl implements TabViewManager, Comparator<TabViewProvider> 
                 assert view != null;
             }
             mCurrentView = view;
+            initMarginSupplier();
             updateViewMargins();
             mTab.setCustomView(mCurrentView);
             if (previousTabViewProvider != null) previousTabViewProvider.onHidden();

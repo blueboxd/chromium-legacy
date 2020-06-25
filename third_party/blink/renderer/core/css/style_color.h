@@ -32,42 +32,55 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_COLOR_H_
 
 #include "third_party/blink/public/platform/web_color_scheme.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
-class BLINK_EXPORT StyleColor {
+class StyleColor {
   DISALLOW_NEW();
 
  public:
-  StyleColor();
-  StyleColor(Color color);
-  static StyleColor CurrentColor();
+  StyleColor() : color_keyword_(CSSValueID::kCurrentcolor) {}
+  StyleColor(Color color)
+      : color_(color), color_keyword_(CSSValueID::kInvalid) {}
+  static StyleColor CurrentColor() { return StyleColor(); }
 
-  bool IsCurrentColor() const;
-  Color GetColor() const;
+  bool IsCurrentColor() const {
+    return color_keyword_ == CSSValueID::kCurrentcolor;
+  }
+  Color GetColor() const {
+    DCHECK(!IsCurrentColor());
+    return color_;
+  }
 
-  Color Resolve(Color current_color) const;
+  Color Resolve(Color current_color) const {
+    return IsCurrentColor() ? current_color : color_;
+  }
 
-  bool HasAlpha() const;
+  bool HasAlpha() const { return !IsCurrentColor() && color_.HasAlpha(); }
 
   static Color ColorFromKeyword(CSSValueID, WebColorScheme color_scheme);
   static bool IsColorKeyword(CSSValueID);
   static bool IsSystemColor(CSSValueID);
 
  private:
-  explicit StyleColor(CSSValueID keyword);
+  explicit StyleColor(CSSValueID keyword) : color_keyword_(keyword) {}
 
   Color color_;
   CSSValueID color_keyword_;
 };
 
-BLINK_EXPORT bool operator==(const StyleColor& a, const StyleColor& b);
+inline bool operator==(const StyleColor& a, const StyleColor& b) {
+  if (a.IsCurrentColor() || b.IsCurrentColor())
+    return a.IsCurrentColor() && b.IsCurrentColor();
+  return a.GetColor() == b.GetColor();
+}
 
-BLINK_EXPORT bool operator!=(const StyleColor& a, const StyleColor& b);
+inline bool operator!=(const StyleColor& a, const StyleColor& b) {
+  return !(a == b);
+}
 
 }  // namespace blink
 

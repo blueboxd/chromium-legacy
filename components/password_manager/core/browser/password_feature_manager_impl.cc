@@ -59,9 +59,9 @@ void PasswordFeatureManagerImpl::SetDefaultPasswordStore(
   features_util::SetDefaultPasswordStore(pref_service_, sync_service_, store);
 }
 
-bool PasswordFeatureManagerImpl::ShouldShowPasswordStorePicker() const {
-  return features_util::ShouldShowPasswordStorePicker(pref_service_,
-                                                      sync_service_);
+bool PasswordFeatureManagerImpl::ShouldShowAccountStorageBubbleUi() const {
+  return features_util::ShouldShowAccountStorageBubbleUi(pref_service_,
+                                                         sync_service_);
 }
 
 PasswordForm::Store PasswordFeatureManagerImpl::GetDefaultPasswordStore()

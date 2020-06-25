@@ -50,18 +50,11 @@ PageInfoBubbleViewBase::PageInfoBubbleViewBase(
   g_page_info_bubble = this;
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetShowCloseButton(true);
 
   set_parent_window(parent_window);
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
-}
-
-base::string16 PageInfoBubbleViewBase::GetWindowTitle() const {
-  return window_title_;
-}
-
-bool PageInfoBubbleViewBase::ShouldShowCloseButton() const {
-  return true;
 }
 
 void PageInfoBubbleViewBase::OnWidgetDestroying(views::Widget* widget) {

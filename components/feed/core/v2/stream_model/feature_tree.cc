@@ -11,6 +11,17 @@
 
 namespace feed {
 namespace stream_model {
+namespace {
+std::string ToAsciiForTesting(const std::string& s) {
+  std::string result = s;
+  for (size_t i = 0; i < result.size(); ++i) {
+    if (result[i] < 32 || result[i] > 126) {
+      result[i] = '?';
+    }
+  }
+  return result;
+}
+}  // namespace
 
 ContentMap::ContentMap() = default;
 ContentMap::~ContentMap() = default;
@@ -246,7 +257,7 @@ std::string FeatureTree::DumpStateForTesting() {
     }
     if (!node->content_revision.is_null()) {
       const feedstore::Content* content = FindContent(node->content_revision);
-      ss << " content.frame=" << content->frame();
+      ss << " content.frame=" << ToAsciiForTesting(content->frame());
     }
     ss << '\n';
   }

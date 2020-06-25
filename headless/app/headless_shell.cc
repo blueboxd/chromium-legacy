@@ -47,6 +47,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
@@ -687,7 +688,7 @@ int HeadlessShellMain(int argc, const char** argv) {
     command_line.AppendSwitch(::switches::kDisableNewContentRenderingTimeout);
     // Ensure that image animations don't resync their animation timestamps when
     // looping back around.
-    command_line.AppendSwitch(::switches::kDisableImageAnimationResync);
+    command_line.AppendSwitch(blink::switches::kDisableImageAnimationResync);
 
     // Renderer flags
     command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);

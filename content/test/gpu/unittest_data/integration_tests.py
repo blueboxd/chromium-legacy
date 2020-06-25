@@ -38,13 +38,6 @@ class _BaseSampleIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
 
   @classmethod
-  def GenerateTags(cls, possible_browser, finder_options):
-    # TODO(crbug.com/992260) Delete this after crrev.com/c/1769732 is merged.
-    # We should keep this for now so that a browser instance is not spawned
-    del possible_browser, finder_options
-    return []
-
-  @classmethod
   def AddCommandlineArgs(cls, parser):
     super(_BaseSampleIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option(
@@ -199,14 +192,6 @@ class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
 
 class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
   _flaky_test_run = 0
-
-  @classmethod
-  def GenerateTags(cls, possible_browser, finder_options):
-    # TODO(crbug.com/992260) Delete this after crrev.com/c/1769732 is merged.
-    # We should keep this for now so that a browser instance is not spawned
-    del possible_browser, finder_options
-    return cls.GetPlatformTags(
-        fakes.FakeBrowser(fakes.FakeLinuxPlatform, 'debug'))
 
   @classmethod
   def GetPlatformTags(cls, browser):

@@ -26,7 +26,7 @@ TestAmbientClient::TestAmbientClient(
 
 TestAmbientClient::~TestAmbientClient() = default;
 
-bool TestAmbientClient::IsAmbientModeAllowedForActiveUser() {
+bool TestAmbientClient::IsAmbientModeAllowed() {
   return true;
 }
 

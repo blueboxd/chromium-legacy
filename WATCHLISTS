@@ -641,6 +641,7 @@
                   'data_reduction_proxy|'\
                   'data_use_measurement|'\
                   'lazy_load|'\
+                  'lite_video|'\
                   'interventions_internals|'\
                   'navigation_predictor|'\
                   'net/nqe|'\

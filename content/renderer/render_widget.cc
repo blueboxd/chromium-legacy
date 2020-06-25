@@ -2282,36 +2282,36 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   // TODO(danakj): This should not be a setting O_O; it should change when the
   // device scale factor on LayerTreeHost changes.
   settings.default_tile_size = gfx::Size(default_tile_size, default_tile_size);
-  if (cmd.HasSwitch(switches::kDefaultTileWidth)) {
+  if (cmd.HasSwitch(blink::switches::kDefaultTileWidth)) {
     int tile_width = 0;
-    switch_value_as_int(cmd, switches::kDefaultTileWidth, 1,
+    switch_value_as_int(cmd, blink::switches::kDefaultTileWidth, 1,
                         std::numeric_limits<int>::max(), &tile_width);
     settings.default_tile_size.set_width(tile_width);
   }
-  if (cmd.HasSwitch(switches::kDefaultTileHeight)) {
+  if (cmd.HasSwitch(blink::switches::kDefaultTileHeight)) {
     int tile_height = 0;
-    switch_value_as_int(cmd, switches::kDefaultTileHeight, 1,
+    switch_value_as_int(cmd, blink::switches::kDefaultTileHeight, 1,
                         std::numeric_limits<int>::max(), &tile_height);
     settings.default_tile_size.set_height(tile_height);
   }
 
-  if (cmd.HasSwitch(switches::kMinHeightForGpuRasterTile)) {
+  if (cmd.HasSwitch(blink::switches::kMinHeightForGpuRasterTile)) {
     int min_height_for_gpu_raster_tile = 0;
-    switch_value_as_int(cmd, switches::kMinHeightForGpuRasterTile, 1,
+    switch_value_as_int(cmd, blink::switches::kMinHeightForGpuRasterTile, 1,
                         std::numeric_limits<int>::max(),
                         &min_height_for_gpu_raster_tile);
     settings.min_height_for_gpu_raster_tile = min_height_for_gpu_raster_tile;
   }
 
   int max_untiled_layer_width = settings.max_untiled_layer_size.width();
-  if (cmd.HasSwitch(switches::kMaxUntiledLayerWidth)) {
-    switch_value_as_int(cmd, switches::kMaxUntiledLayerWidth, 1,
+  if (cmd.HasSwitch(blink::switches::kMaxUntiledLayerWidth)) {
+    switch_value_as_int(cmd, blink::switches::kMaxUntiledLayerWidth, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_width);
   }
   int max_untiled_layer_height = settings.max_untiled_layer_size.height();
-  if (cmd.HasSwitch(switches::kMaxUntiledLayerHeight)) {
-    switch_value_as_int(cmd, switches::kMaxUntiledLayerHeight, 1,
+  if (cmd.HasSwitch(blink::switches::kMaxUntiledLayerHeight)) {
+    switch_value_as_int(cmd, blink::switches::kMaxUntiledLayerHeight, 1,
                         std::numeric_limits<int>::max(),
                         &max_untiled_layer_height);
   }
@@ -2377,9 +2377,9 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   settings.initial_debug_state.show_layer_animation_bounds_rects =
       cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
-      cmd.HasSwitch(switches::kShowPaintRects);
+      cmd.HasSwitch(blink::switches::kShowPaintRects);
   settings.initial_debug_state.show_layout_shift_regions =
-      cmd.HasSwitch(switches::kShowLayoutShiftRegions);
+      cmd.HasSwitch(blink::switches::kShowLayoutShiftRegions);
   settings.initial_debug_state.show_property_changed_rects =
       cmd.HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =
@@ -2498,7 +2498,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     //  - If we are not using vulkan, since some GPU drivers don't support
     //    using RGBA4444 as color buffer.
     // TODO(penghuang): query supported formats from GPU process.
-    if (!cmd.HasSwitch(switches::kDisableRGBA4444Textures) &&
+    if (!cmd.HasSwitch(blink::switches::kDisableRGBA4444Textures) &&
         base::SysInfo::AmountOfPhysicalMemoryMB() <= 512 &&
         !using_synchronous_compositor &&
         !base::FeatureList::IsEnabled(features::kVulkan)) {
@@ -2517,13 +2517,13 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     }
   }
 
-  if (cmd.HasSwitch(switches::kEnableLowResTiling))
+  if (cmd.HasSwitch(blink::switches::kEnableLowResTiling))
     settings.create_low_res_tiling = true;
-  if (cmd.HasSwitch(switches::kDisableLowResTiling))
+  if (cmd.HasSwitch(blink::switches::kDisableLowResTiling))
     settings.create_low_res_tiling = false;
 
-  if (cmd.HasSwitch(switches::kEnableRGBA4444Textures) &&
-      !cmd.HasSwitch(switches::kDisableRGBA4444Textures)) {
+  if (cmd.HasSwitch(blink::switches::kEnableRGBA4444Textures) &&
+      !cmd.HasSwitch(blink::switches::kDisableRGBA4444Textures)) {
     settings.use_rgba_4444 = true;
   }
 
@@ -2556,7 +2556,7 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   }
 
   settings.enable_image_animation_resync =
-      !cmd.HasSwitch(switches::kDisableImageAnimationResync);
+      !cmd.HasSwitch(blink::switches::kDisableImageAnimationResync);
 
   settings.send_compositor_frame_ack = false;
 

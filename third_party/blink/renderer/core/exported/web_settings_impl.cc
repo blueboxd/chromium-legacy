@@ -588,10 +588,6 @@ bool WebSettingsImpl::ShrinksViewportContentToFit() const {
   return settings_->GetShrinksViewportContentToFit();
 }
 
-void WebSettingsImpl::SetShouldRespectImageOrientation(bool enabled) {
-  settings_->SetShouldRespectImageOrientation(enabled);
-}
-
 void WebSettingsImpl::SetPictureInPictureEnabled(bool enabled) {
   settings_->SetPictureInPictureEnabled(enabled);
 }

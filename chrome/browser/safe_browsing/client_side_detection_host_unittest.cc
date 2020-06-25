@@ -137,6 +137,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
   MOCK_METHOD2(GetValidCachedResult, bool(const GURL&, bool*));
   MOCK_METHOD1(IsInCache, bool(const GURL&));
   MOCK_METHOD0(OverPhishingReportLimit, bool());
+  MOCK_METHOD0(GetModelStr, std::string());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientSideDetectionService);
@@ -638,6 +639,7 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneMultiplePings) {
   GURL other_phishing_url("http://other_phishing_url.com/bla");
   ExpectPreClassificationChecks(other_phishing_url, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   // We navigate away.  The callback cb should be revoked.
   NavigateAndCommit(other_phishing_url);
   // Wait for the pre-classification checks to finish for other_phishing_url.
@@ -712,6 +714,7 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_is_phishing(false);
 
   // First we have to navigate to the URL to set the unique page ID.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
   NavigateAndCommit(url);
@@ -737,6 +740,7 @@ TEST_F(ClientSideDetectionHostTest,
   // verdict string that isn't phishing, we should still send the report.
 
   // Do an initial navigation to a safe host.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL start_url("http://safe.example.com/");
   ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -751,6 +755,7 @@ TEST_F(ClientSideDetectionHostTest,
   verdict.set_client_score(0.1f);
   verdict.set_is_phishing(false);
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
   NavigateWithSBHitAndCommit(url);
@@ -767,6 +772,7 @@ TEST_F(ClientSideDetectionHostTest,
   base::RunLoop().Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
   NavigateWithoutSBHitAndCommit(start_url);
@@ -780,6 +786,7 @@ TEST_F(
   // in progress, the csd report should be sent for the committed page.
 
   // Do an initial navigation to a safe host.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL start_url("http://safe.example.com/");
   ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -793,6 +800,7 @@ TEST_F(
   verdict.set_client_score(0.1f);
   verdict.set_is_phishing(false);
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
   NavigateWithoutSBHitAndCommit(url);
@@ -852,6 +860,7 @@ TEST_F(ClientSideDetectionHostTest,
   // need to manually set up the IsPrivateIPAddress mock since if the same mock
   // expectation is specified twice, gmock will only use the last instance of
   // it, meaning the first will never be matched.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_))
       .WillOnce(Return(false))
       .WillOnce(Return(false));
@@ -869,6 +878,7 @@ TEST_F(ClientSideDetectionHostTest,
 
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckPass) {
   // Navigate the tab to a page.  We should see a StartPhishingDetection IPC.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -879,6 +889,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckPass) {
 }
 
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMatchWhitelist) {
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kTrue, nullptr, nullptr,
                                 nullptr);
@@ -888,6 +899,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMatchWhitelist) {
 
 TEST_F(ClientSideDetectionHostTest,
        TestPreClassificationCheckSameDocumentNavigation) {
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -910,6 +922,7 @@ TEST_F(ClientSideDetectionHostTest,
 
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckXHTML) {
   // Check that XHTML is supported, in addition to the default HTML type.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host.com/xhtml");
   auto navigation =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
@@ -925,6 +938,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckXHTML) {
 
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckTwoNavigations) {
   // Navigate to two hosts, which should cause two IPCs.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url1("http://host1.com/");
   ExpectPreClassificationChecks(url1, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -933,6 +947,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckTwoNavigations) {
 
   fake_phishing_detector_.CheckMessage(&url1);
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url2("http://host2.com/");
   ExpectPreClassificationChecks(url2, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -948,6 +963,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckTwoNavigations) {
 TEST_F(ClientSideDetectionHostTest,
        TestPreClassificationCheckPrivateIpAddress) {
   // If IsPrivateIPAddress returns true, no IPC should be triggered.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host3.com/");
   ExpectPreClassificationChecks(url, &kTrue, nullptr, nullptr, nullptr,
                                 nullptr);
@@ -961,6 +977,7 @@ TEST_F(ClientSideDetectionHostIncognitoTest,
        TestPreClassificationCheckIncognito) {
   // If the tab is incognito there should be no IPC.  Also, we shouldn't
   // even check the csd-whitelist.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host4.com/");
   ExpectPreClassificationChecks(url, &kFalse, nullptr, nullptr, nullptr,
                                 nullptr);
@@ -974,6 +991,7 @@ TEST_F(ClientSideDetectionHostIncognitoTest,
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckInvalidCache) {
   // If item is in the cache but it isn't valid, we will classify regardless
   // of whether we are over the reporting limit.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host6.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue,
                                 nullptr);
@@ -988,6 +1006,7 @@ TEST_F(ClientSideDetectionHostTest,
        TestPreClassificationCheckOverPhishingReportingLimit) {
   // If the url isn't in the cache and we are over the reporting limit, we
   // don't do classification.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host7.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kTrue);
@@ -999,6 +1018,7 @@ TEST_F(ClientSideDetectionHostTest,
 
 TEST_F(ClientSideDetectionHostTest,
        TestPreClassificationCheckOverBothReportingLimits) {
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kTrue);
@@ -1009,6 +1029,7 @@ TEST_F(ClientSideDetectionHostTest,
 }
 
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckHttpsUrl) {
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("https://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -1020,6 +1041,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckHttpsUrl) {
 
 TEST_F(ClientSideDetectionHostTest,
        TestPreClassificationCheckNoneHttpOrHttpsUrl) {
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("file://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, nullptr, nullptr, nullptr,
                                 nullptr);
@@ -1032,6 +1054,7 @@ TEST_F(ClientSideDetectionHostTest,
 TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckValidCached) {
   // If result is cached, we will try and display the blocking page directly
   // with no start classification message.
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://host8.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kTrue, &kFalse,
                                 &kFalse);
@@ -1054,6 +1077,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationWhitelistedByPolicy) {
                         prefs::kSafeBrowsingWhitelistDomains);
   update->AppendString("example.com");
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL url("http://example.com/");
   ExpectPreClassificationChecks(url, &kFalse, nullptr, nullptr, nullptr,
                                 nullptr);
@@ -1117,6 +1141,7 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
   histogram_tester.ExpectTotalCount(
       "SBClientPhishing.PhishingDetectionDuration", 0);
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   GURL start_url("http://safe.example.com/");
   ExpectPreClassificationChecks(start_url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
@@ -1132,6 +1157,7 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
   verdict.set_client_score(0.1f);
   verdict.set_is_phishing(false);
 
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("model_str"));
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
   NavigateWithSBHitAndCommit(url);
@@ -1162,8 +1188,8 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
 TEST_F(ClientSideDetectionHostTest, TestSendModelToRenderFrame) {
   StrictMock<MockModelLoader> loader;
   loader.SetModelStrForTesting("standard");
-  csd_host_->SendModelToRenderFrame(
-      web_contents()->GetMainFrame()->GetProcess(), profile(), &loader);
+  EXPECT_CALL(*csd_service_, GetModelStr()).WillRepeatedly(Return("standard"));
+  csd_host_->SendModelToRenderFrame();
   base::RunLoop().RunUntilIdle();
   fake_phishing_detector_.CheckModel("standard");
   fake_phishing_detector_.Reset();

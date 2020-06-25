@@ -594,9 +594,6 @@ void SimpleIndex::MergeInitializingSet(
   if (load_result->flush_required)
     WriteToDisk(INDEX_WRITE_REASON_STARTUP_MERGE);
 
-  SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
-                   "IndexInitializationWaiters", cache_type_,
-                   to_run_when_initialized_.size(), 0, 100, 20);
   SIMPLE_CACHE_UMA(CUSTOM_COUNTS, "IndexNumEntriesOnInit", cache_type_,
                    entries_set_.size(), 0, 100000, 50);
   SIMPLE_CACHE_UMA(
@@ -647,19 +644,6 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                    "IndexNumEntriesOnWrite", cache_type_,
                    entries_set_.size(), 0, 100000, 50);
-  const base::TimeTicks start = base::TimeTicks::Now();
-  if (!last_write_to_disk_.is_null()) {
-    if (app_on_background_) {
-      SIMPLE_CACHE_UMA(MEDIUM_TIMES,
-                       "IndexWriteInterval.Background", cache_type_,
-                       start - last_write_to_disk_);
-    } else {
-      SIMPLE_CACHE_UMA(MEDIUM_TIMES,
-                       "IndexWriteInterval.Foreground", cache_type_,
-                       start - last_write_to_disk_);
-    }
-  }
-  last_write_to_disk_ = start;
 
   base::OnceClosure after_write;
   if (cleanup_tracker_) {
@@ -671,7 +655,7 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   }
 
   index_file_->WriteToDisk(cache_type_, reason, entries_set_, cache_size_,
-                           start, app_on_background_, std::move(after_write));
+                           std::move(after_write));
 }
 
 }  // namespace disk_cache

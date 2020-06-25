@@ -37,6 +37,7 @@
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/gl/gl_switches.h"
 
 namespace content {
@@ -411,22 +412,22 @@ bool IsZeroCopyUploadEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 #if defined(OS_MACOSX)
-  return !command_line.HasSwitch(switches::kDisableZeroCopy);
+  return !command_line.HasSwitch(blink::switches::kDisableZeroCopy);
 #else
-  return command_line.HasSwitch(switches::kEnableZeroCopy);
+  return command_line.HasSwitch(blink::switches::kEnableZeroCopy);
 #endif
 }
 
 bool IsPartialRasterEnabled() {
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisablePartialRaster);
+  return !command_line.HasSwitch(blink::switches::kDisablePartialRaster);
 }
 
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(
-          switches::kEnableGpuMemoryBufferCompositorResources)) {
+          blink::switches::kEnableGpuMemoryBufferCompositorResources)) {
     return true;
   }
   if (command_line.HasSwitch(
@@ -445,7 +446,8 @@ int GpuRasterizationMSAASampleCount() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (!command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount))
+  if (!command_line.HasSwitch(
+          blink::switches::kGpuRasterizationMSAASampleCount))
 #if defined(OS_ANDROID)
     return 4;
 #else
@@ -453,14 +455,14 @@ int GpuRasterizationMSAASampleCount() {
     return -1;
 #endif
   std::string string_value = command_line.GetSwitchValueASCII(
-      switches::kGpuRasterizationMSAASampleCount);
+      blink::switches::kGpuRasterizationMSAASampleCount);
   int msaa_sample_count = 0;
   if (base::StringToInt(string_value, &msaa_sample_count) &&
       msaa_sample_count >= kMinMSAASampleCount) {
     return msaa_sample_count;
   } else {
     DLOG(WARNING) << "Failed to parse switch "
-                  << switches::kGpuRasterizationMSAASampleCount << ": "
+                  << blink::switches::kGpuRasterizationMSAASampleCount << ": "
                   << string_value;
     return 0;
   }

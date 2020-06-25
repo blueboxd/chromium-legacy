@@ -63,14 +63,6 @@ Background = class extends ChromeVoxState {
     LocaleOutputHelper.init();
 
     /**
-     * A list of site substring patterns to use with ChromeVox next. Keep these
-     * strings relatively specific.
-     * @type {!Array<string>}
-     * @private
-     */
-    this.whitelist_ = ['chromevox_next_test'];
-
-    /**
      * @type {cursors.Range}
      * @private
      */
@@ -297,7 +289,7 @@ Background = class extends ChromeVoxState {
       const curRootStart = range.start.node.root;
       const curRootEnd = range.end.node.root;
 
-      // Disallow crossing over the start of the page selection and roots.
+      // Deny crossing over the start of the page selection and roots.
       if (pageRootStart != pageRootEnd || pageRootStart != curRootStart ||
           pageRootEnd != curRootEnd) {
         o.format('@end_selection');

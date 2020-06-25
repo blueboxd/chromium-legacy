@@ -183,10 +183,9 @@ NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
   CHECK(false);
 }
 
-NGFragmentItem::NGFragmentItem(NGFragmentItem&& source)
+NGFragmentItem::NGFragmentItem(const NGFragmentItem& source)
     : layout_object_(source.layout_object_),
       rect_(source.rect_),
-      ink_overflow_(std::move(source.ink_overflow_)),
       fragment_id_(source.fragment_id_),
       delta_to_next_for_same_layout_object_(
           source.delta_to_next_for_same_layout_object_),
@@ -201,19 +200,24 @@ NGFragmentItem::NGFragmentItem(NGFragmentItem&& source)
   DCHECK(!source.ink_overflow_);  // Ensure it was moved.
   switch (Type()) {
     case kText:
-      new (&text_) TextItem(std::move(source.text_));
+      new (&text_) TextItem(source.text_);
       break;
     case kGeneratedText:
-      new (&generated_text_)
-          GeneratedTextItem(std::move(source.generated_text_));
+      new (&generated_text_) GeneratedTextItem(source.generated_text_);
       break;
     case kLine:
-      new (&line_) LineItem(std::move(source.line_));
+      new (&line_) LineItem(source.line_);
       break;
     case kBox:
-      new (&box_) BoxItem(std::move(source.box_));
+      new (&box_) BoxItem(source.box_);
       break;
   }
+
+  // Copy |ink_overflow_| only for text items, because ink overflow for other
+  // items may be chnaged even in simplified layout or when reusing lines, and
+  // that they need to be re-computed anyway.
+  if (source.ink_overflow_ && ink_overflow_computed_ && IsText())
+    ink_overflow_ = std::make_unique<NGInkOverflow>(*source.ink_overflow_);
 }
 
 NGFragmentItem::~NGFragmentItem() {

@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 #define UI_VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -257,8 +258,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // the included color.
   void SetIcon(const ui::ThemedVectorIcon& icon);
 
-  // Sets the visibility of the view used to render the icon.
-  void SetIconViewVisibilityAndInvalidate(bool is_visible);
+  // Sets the view used to render the icon. This clobbers any icon set via
+  // SetIcon(). MenuItemView takes ownership of |icon_view|.
+  void SetIconView(std::unique_ptr<ImageView> icon_view);
 
   void UpdateIconViewFromVectorIconAndTheme();
 
@@ -482,14 +484,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns true if the menu has items with a checkbox or a radio button.
   bool HasChecksOrRadioButtons() const;
 
-  // Returns null if all children are hidden. For example, where there is only a
-  // hidden |icon_view_|.
-  const View* GetFirstVisibleChild() const;
-  View* GetFirstVisibleChild() {
-    return const_cast<View*>(
-        static_cast<const MenuItemView*>(this)->GetFirstVisibleChild());
-  }
-
   // Returns whether or not a "new" badge should be shown on this menu item.
   // Takes into account whether the badging feature is enabled.
   bool ShouldShowNewBadge() const;
@@ -560,9 +554,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Set if menu has icons or icon_views (applies to root menu item only).
   bool has_icons_ = false;
 
-  // Pointer to a view with a menu icon. Visible only when the menu item
-  // contains an icon.
-  ImageView* icon_view_;
+  // Pointer to a view with a menu icon.
+  ImageView* icon_view_ = nullptr;
 
   // The tooltip to show on hover for this menu item.
   base::string16 tooltip_;

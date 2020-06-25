@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_system.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shelf_model.h"
@@ -66,6 +69,10 @@ void WebAppUiManagerImpl::Start() {
 
     ++num_windows_for_apps_map_[GetAppIdForBrowser(browser)];
   }
+
+  extensions::ExtensionSystem::Get(profile_)
+      ->app_sorting()
+      ->InitializePageOrdinalMapFromWebApps();
 
   BrowserList::AddObserver(this);
 }

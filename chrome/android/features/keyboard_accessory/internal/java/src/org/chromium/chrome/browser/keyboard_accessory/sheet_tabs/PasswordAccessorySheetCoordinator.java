@@ -27,9 +27,9 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
  */
 public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
-    private final AccessorySheetTabMediator mMediator =
-            new AccessorySheetTabMediator(mModel, AccessoryTabType.PASSWORDS, Type.PASSWORD_INFO,
-                    AccessoryAction.MANAGE_PASSWORDS, this::onToggleChanged);
+    private final PasswordAccessorySheetMediator mMediator =
+            new PasswordAccessorySheetMediator(mModel, AccessoryTabType.PASSWORDS,
+                    Type.PASSWORD_INFO, AccessoryAction.MANAGE_PASSWORDS, this::onToggleChanged);
     private final Context mContext;
 
     /**

@@ -112,18 +112,6 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
                 for screenshot_key, path in screenshot_paths_dict.items():
                     root_node["artifacts"][screenshot_key] = [path]
 
-            # Fixup statuses so the results viewer understands them. We have to
-            # use the deprecated statuses instead of "FAIL".
-            if root_node["actual"] == "FAIL":
-                if log_artifact and screenshot_artifact:
-                    root_node["actual"] = "IMAGE+TEXT"
-                elif screenshot_artifact:
-                    root_node["actual"] = "IMAGE"
-                else:
-                    # Fallback to text even if there are no artifacts, because
-                    # the results viewer will not display a test at all if its
-                    # status remains "FAIL".
-                    root_node["actual"] = "TEXT"
             return
 
         # We're not at a leaf node, continue traversing the trie.

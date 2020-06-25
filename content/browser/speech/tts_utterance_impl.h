@@ -31,9 +31,6 @@ class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance,
     return was_created_with_web_contents_;
   }
 
-  // Returns true if the utterance should be spoken.
-  bool ShouldSpeak();
-
   // TtsUtterance overrides.
   void OnTtsEvent(TtsEventType event_type,
                   int char_index,

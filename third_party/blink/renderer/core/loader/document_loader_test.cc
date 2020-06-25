@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
@@ -661,6 +663,29 @@ TEST_F(DocumentLoaderTest, CommitsNotDeferredOnDifferentOriginNavigation) {
   EXPECT_FALSE(local_frame->GetDocument()->DeferredCompositorCommitIsAllowed());
 }
 
+TEST_F(DocumentLoaderTest,
+       CommitsDeferredOnDifferentOriginNavigationWithCrossOriginEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPaintHoldingCrossOrigin);
+
+  const KURL& requestor_url =
+      KURL(NullURL(), "https://www.example.com/foo.html");
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad("https://example.com/foo.html");
+
+  const KURL& other_origin_url =
+      KURL(NullURL(), "https://www.another.com/bar.html");
+  std::unique_ptr<WebNavigationParams> params =
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
+                                                other_origin_url);
+  params->requestor_origin = WebSecurityOrigin::Create(WebURL(requestor_url));
+  LocalFrame* local_frame =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
+  local_frame->Loader().CommitNavigation(std::move(params), nullptr);
+
+  EXPECT_TRUE(local_frame->GetDocument()->DeferredCompositorCommitIsAllowed());
+}
+
 TEST_F(DocumentLoaderTest, CommitsNotDeferredOnDifferentPortNavigation) {
   const KURL& requestor_url =
       KURL(NullURL(), "https://www.example.com:8000/foo.html");
@@ -680,7 +705,52 @@ TEST_F(DocumentLoaderTest, CommitsNotDeferredOnDifferentPortNavigation) {
   EXPECT_FALSE(local_frame->GetDocument()->DeferredCompositorCommitIsAllowed());
 }
 
+TEST_F(DocumentLoaderTest,
+       CommitsDeferredOnDifferentPortNavigationWithCrossOriginEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPaintHoldingCrossOrigin);
+
+  const KURL& requestor_url =
+      KURL(NullURL(), "https://www.example.com:8000/foo.html");
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad("https://example.com:8000/foo.html");
+
+  const KURL& different_port_url =
+      KURL(NullURL(), "https://www.example.com:8080/bar.html");
+  std::unique_ptr<WebNavigationParams> params =
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
+                                                different_port_url);
+  params->requestor_origin = WebSecurityOrigin::Create(WebURL(requestor_url));
+  LocalFrame* local_frame =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
+  local_frame->Loader().CommitNavigation(std::move(params), nullptr);
+
+  EXPECT_TRUE(local_frame->GetDocument()->DeferredCompositorCommitIsAllowed());
+}
+
 TEST_F(DocumentLoaderTest, CommitsNotDeferredOnDataURLNavigation) {
+  const KURL& requestor_url =
+      KURL(NullURL(), "https://www.example.com/foo.html");
+  WebViewImpl* web_view_impl =
+      web_view_helper_.InitializeAndLoad("https://example.com/foo.html");
+
+  const KURL& data_url = KURL(NullURL(), "data:,Hello%2C%20World!");
+  std::unique_ptr<WebNavigationParams> params =
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
+                                                data_url);
+  params->requestor_origin = WebSecurityOrigin::Create(WebURL(requestor_url));
+  LocalFrame* local_frame =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
+  local_frame->Loader().CommitNavigation(std::move(params), nullptr);
+
+  EXPECT_FALSE(local_frame->GetDocument()->DeferredCompositorCommitIsAllowed());
+}
+
+TEST_F(DocumentLoaderTest,
+       CommitsNotDeferredOnDataURLNavigationWithCrossOriginEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPaintHoldingCrossOrigin);
+
   const KURL& requestor_url =
       KURL(NullURL(), "https://www.example.com/foo.html");
   WebViewImpl* web_view_impl =

@@ -292,6 +292,8 @@ class FeedNetworkImpl::NetworkFetch {
 
     SetRequestHeaders(!request_body_.empty(), *resource_request);
 
+    DVLOG(1) << "Feed Request url=" << url;
+    DVLOG(1) << "Feed Request headers=" << resource_request->headers.ToString();
     auto simple_loader = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     simple_loader->SetAllowHttpErrorResults(true);

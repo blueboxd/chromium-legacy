@@ -17,8 +17,12 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -150,6 +154,11 @@ void ConversionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
+  if (!GetContentClient()->browser()->AllowConversionMeasurement(
+          web_contents()->GetBrowserContext())) {
+    return;
+  }
+
   // Convert |impression| into a StorableImpression that can be forwarded to
   // storage. If a reporting origin was not provided, default to the conversion
   // destination for reporting.
@@ -205,6 +214,11 @@ void ConversionHost::RegisterConversion(
     mojo::ReportBadMessage(
         "blink.mojom.ConversionHost can only be used in secure contexts with a "
         "secure conversion registration origin.");
+    return;
+  }
+
+  if (!GetContentClient()->browser()->AllowConversionMeasurement(
+          web_contents()->GetBrowserContext())) {
     return;
   }
 

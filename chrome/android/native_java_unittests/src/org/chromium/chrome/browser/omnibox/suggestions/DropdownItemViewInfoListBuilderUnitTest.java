@@ -8,11 +8,13 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import android.util.Pair;
 import android.util.SparseArray;
 
 import org.junit.Assert;
@@ -203,11 +205,9 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         verifyNoMoreInteractions(mMockSuggestionProcessor);
     }
 
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @CalledByNativeJavaTest
     public void grouping_noGroupingForSuggestionsWithHeaders() {
-        mBuilder.onNativeInitialized();
-        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> actualList = new ArrayList<>();
         final SparseArray<String> headers = new SparseArray<>();
         headers.put(1, "Header 1");
 
@@ -216,43 +216,46 @@ public class DropdownItemViewInfoListBuilderUnitTest {
                         .setGroupId(1);
 
         // Build 4 mixed search/url suggestions with headers.
-        actualList.add(builder.setIsSearch(true).build());
-        actualList.add(builder.setIsSearch(false).build());
-        actualList.add(builder.setIsSearch(true).build());
-        actualList.add(builder.setIsSearch(false).build());
+        actualList.add(new Pair<>(builder.setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(false).build(), mMockSuggestionProcessor));
 
-        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> expectedList = new ArrayList<>();
         expectedList.addAll(actualList);
 
         mBuilder.groupSuggestionsBySearchVsURL(actualList, 4);
         Assert.assertEquals(actualList, expectedList);
     }
 
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @CalledByNativeJavaTest
     public void grouping_shortMixedContentGrouping() {
-        mBuilder.onNativeInitialized();
-        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> actualList = new ArrayList<>();
 
         OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
                 OmniboxSuggestionType.SEARCH_SUGGEST);
 
         // Default match.
-        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(0).setIsSearch(false).build(), mMockSuggestionProcessor));
         // Build 4 mixed search/url suggestions.
-        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(16).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(14).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(12).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(10).setIsSearch(true).build(), mMockSuggestionProcessor));
 
         // Build 4 mixed search/url suggestions with headers.
         builder.setGroupId(1);
-        actualList.add(builder.setIsSearch(true).build());
-        actualList.add(builder.setIsSearch(false).build());
-        actualList.add(builder.setIsSearch(true).build());
-        actualList.add(builder.setIsSearch(false).build());
+        actualList.add(new Pair<>(builder.setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(builder.setIsSearch(false).build(), mMockSuggestionProcessor));
 
-        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> expectedList = new ArrayList<>();
         expectedList.add(actualList.get(0)); // Default match.
         expectedList.add(actualList.get(2)); // Highest scored search suggestion
         expectedList.add(actualList.get(4)); // Next highest scored search suggestion
@@ -264,35 +267,42 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         verifyListsMatch(expectedList, actualList);
     }
 
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @CalledByNativeJavaTest
     public void grouping_longMixedContentGrouping() {
-        mBuilder.onNativeInitialized();
-        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> actualList = new ArrayList<>();
 
         OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
                 OmniboxSuggestionType.SEARCH_SUGGEST);
 
         // Default match.
-        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(0).setIsSearch(false).build(), mMockSuggestionProcessor));
         // Build 6 mixed search/url suggestions.
-        actualList.add(builder.setRelevance(18).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(8).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(18).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(16).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(14).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(12).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(10).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(8).setIsSearch(false).build(), mMockSuggestionProcessor));
 
         // Build 4 mixed search/url suggestions with headers.
         builder.setGroupId(1);
-        actualList.add(builder.setRelevance(100).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(100).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(100).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(100).setIsSearch(false).build(), mMockSuggestionProcessor));
 
         // Request splitting point to be at 4 suggestions.
         // This should split suggestions into 2 groups:
         // - relevance 18, 14, 16 (in this order)
         // - relevance 10, 18, 8 and 100 (in this order)
-        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> expectedList = new ArrayList<>();
 
         // 3 visible suggestions
         expectedList.add(actualList.get(0)); // Default match.
@@ -310,34 +320,41 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         verifyListsMatch(expectedList, actualList);
     }
 
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @CalledByNativeJavaTest
     public void grouping_longHeaderlessContentGrouping() {
-        mBuilder.onNativeInitialized();
-        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> actualList = new ArrayList<>();
 
         OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
                 OmniboxSuggestionType.SEARCH_SUGGEST);
 
         // Default match.
-        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(0).setIsSearch(false).build(), mMockSuggestionProcessor));
         // Build 8 mixed search/url suggestions.
         // The order is intentionally descending, as SortAndCull would order these items like this
         // for us.
-        actualList.add(builder.setRelevance(20).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(18).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
-        actualList.add(builder.setRelevance(8).setIsSearch(false).build());
-        actualList.add(builder.setRelevance(6).setIsSearch(false).build());
+        actualList.add(new Pair<>(
+                builder.setRelevance(20).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(18).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(16).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(14).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(12).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(10).setIsSearch(true).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(8).setIsSearch(false).build(), mMockSuggestionProcessor));
+        actualList.add(new Pair<>(
+                builder.setRelevance(6).setIsSearch(false).build(), mMockSuggestionProcessor));
 
         // Request splitting point to be at 4 suggestions.
         // This should split suggestions into 2 groups:
         // - relevance 18, 14, 20, 16 (in this order)
         // - relevance 10, 18, 8 and 100 (in this order)
-        final List<OmniboxSuggestion> expectedList = Arrays.asList(
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> expectedList = Arrays.asList(
                 // Top 4, visible suggestions
                 actualList.get(0), // Default match
                 actualList.get(2), // Search suggestion scored 18
@@ -352,5 +369,98 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
         mBuilder.groupSuggestionsBySearchVsURL(actualList, 4);
         verifyListsMatch(expectedList, actualList);
+    }
+
+    @CalledByNativeJavaTest
+    public void visibleSuggestions_missingDropdownHeightAssumesDefaultGroupSize() {
+        final OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest.searchWithType(
+                        OmniboxSuggestionType.SEARCH_SUGGEST);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair =
+                new Pair<>(builder.build(), mMockSuggestionProcessor);
+        // Create a list of large enough count of suggestions.
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> list =
+                Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
+        Assert.assertEquals(5, mBuilder.getVisibleSuggestionsCount(list));
+    }
+
+    @CalledByNativeJavaTest
+    public void visibleSuggestions_computeNumberOfVisibleSuggestionsFromDropdownHeight() {
+        final OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest.searchWithType(
+                        OmniboxSuggestionType.SEARCH_SUGGEST);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair =
+                new Pair<>(builder.build(), mMockSuggestionProcessor);
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> list =
+                Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
+
+        when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(10);
+        mBuilder.setDropdownHeight(60);
+        Assert.assertEquals(6, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(90);
+        Assert.assertEquals(9, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(30);
+        Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
+    }
+
+    @CalledByNativeJavaTest
+    public void visibleSuggestions_partiallyVisibleSuggestionsAreCountedAsVisible() {
+        final OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest.searchWithType(
+                        OmniboxSuggestionType.SEARCH_SUGGEST);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair =
+                new Pair<>(builder.build(), mMockSuggestionProcessor);
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> list =
+                Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
+
+        when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(10);
+        mBuilder.setDropdownHeight(45);
+        Assert.assertEquals(5, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(51);
+        Assert.assertEquals(6, mBuilder.getVisibleSuggestionsCount(list));
+    }
+
+    @CalledByNativeJavaTest
+    public void visibleSuggestions_queriesCorrespondingProcessorsToDetermineViewAllocation() {
+        final SuggestionProcessor mockProcessor1 = mock(SuggestionProcessor.class);
+        final SuggestionProcessor mockProcessor2 = mock(SuggestionProcessor.class);
+        final OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest.searchWithType(
+                        OmniboxSuggestionType.SEARCH_SUGGEST);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair1 =
+                new Pair<>(builder.build(), mMockSuggestionProcessor);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair2 =
+                new Pair<>(builder.build(), mockProcessor1);
+        final Pair<OmniboxSuggestion, SuggestionProcessor> pair3 =
+                new Pair<>(builder.build(), mockProcessor2);
+
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> list =
+                Arrays.asList(pair1, pair2, pair3);
+
+        // Heights reported by processors for suggestions 1, 2 and 3.
+        when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(10);
+        when(mockProcessor1.getMinimumViewHeight()).thenReturn(20);
+        when(mockProcessor2.getMinimumViewHeight()).thenReturn(30);
+
+        mBuilder.setDropdownHeight(90); // fits all three suggestions and then some.
+        Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(45); // fits 2 suggestions fully, and 3rd partially.
+        Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(30); // fits only 2 suggestions.
+        Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(20); // fits one suggestion fully and one partially.
+        Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(10); // fits only one suggestion.
+        Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(list));
+
+        mBuilder.setDropdownHeight(5); // fits one suggestion partiall.
+        Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(list));
     }
 }

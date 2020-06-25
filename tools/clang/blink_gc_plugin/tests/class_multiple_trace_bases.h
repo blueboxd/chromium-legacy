@@ -25,12 +25,10 @@ public:
 };
 
 class Derived1 : public Base, public Mixin1 {
-    USING_GARBAGE_COLLECTED_MIXIN(Derived1);
     // Requires Trace method.
 };
 
 class Derived2 : public Base, public Mixin1, public Mixin2 {
-    USING_GARBAGE_COLLECTED_MIXIN(Derived2);
     void Trace(Visitor*) const override;
 };
 

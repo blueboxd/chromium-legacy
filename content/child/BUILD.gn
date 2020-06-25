@@ -147,7 +147,6 @@ target(link_target_type, "child") {
     deps += [
       "//components/services/font/public/cpp",
       "//components/services/font/public/mojom",
-      "//services/service_manager/zygote",
     ]
   }
 

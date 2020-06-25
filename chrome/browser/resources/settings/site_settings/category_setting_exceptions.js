@@ -70,6 +70,36 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /**
+     * Boolean which tells if the block list has any discarded content setting
+     * pattern.
+     * @private
+     */
+    blockSiteListHasDiscardedExceptions_: {
+      type: Boolean,
+    },
+
+    /**
+     * Boolean which tells if the allow list has any discarded content setting
+     * pattern.
+     * @private
+     */
+    allowSiteListHasDiscardedExceptions_: {
+      type: Boolean,
+    },
+
+    /**
+     * Boolean which keeps a track if any of the displayed lists has discarded
+     * content setting patterns.
+     */
+    siteListsHaveDiscardedExceptions: {
+      type: Boolean,
+      computed: 'computeHasDiscarded_(blockSiteListHasDiscardedExceptions_, ' +
+          'allowSiteListHasDiscardedExceptions_)',
+      notify: true,
+    },
+
   },
 
   observers: [
@@ -118,5 +148,17 @@ Polymer({
    */
   getReadOnlyList_() {
     return this.readOnlyList || this.defaultManaged_;
-  }
+  },
+
+  /**
+   * Merges the flags which keep track of discarded content setting patterns
+   * from each list into one boolean.
+   * @return {boolean}
+   * @private
+   */
+  computeHasDiscarded_() {
+    return this.blockSiteListHasDiscardedExceptions_ ||
+        this.allowSiteListHasDiscardedExceptions_;
+  },
+
 });

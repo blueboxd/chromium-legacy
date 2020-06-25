@@ -76,8 +76,8 @@ class CORE_EXPORT NGFragmentItem {
   // Create a line item.
   explicit NGFragmentItem(const NGPhysicalLineBoxFragment& line);
 
-  // The move constructor.
-  NGFragmentItem(NGFragmentItem&&);
+  // The copy constructor.
+  NGFragmentItem(const NGFragmentItem&);
 
   ~NGFragmentItem();
 

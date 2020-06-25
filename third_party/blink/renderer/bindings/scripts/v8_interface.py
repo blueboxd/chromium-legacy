@@ -1095,8 +1095,6 @@ def overloads_context(interface, overloads):
         method['overload_index'] = index
 
     # [RuntimeEnabled]
-    # TODO(iclelland): Allow origin trials on method overloads
-    # (crbug.com/621641)
     if any(method.get('origin_trial_feature_name') for method in overloads):
         raise Exception(
             '[RuntimeEnabled] for origin trial cannot be specified on '

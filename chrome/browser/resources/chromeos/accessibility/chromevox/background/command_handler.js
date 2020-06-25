@@ -49,10 +49,10 @@ CommandHandler.smartStickyMode_ = new SmartStickyMode();
  * @return {boolean} True if the command should propagate.
  */
 CommandHandler.onCommand = function(command) {
-  // Check for a command disallowed in incognito contexts and kiosk.
+  // Check for a command denied in incognito contexts and kiosk.
   if ((CommandHandler.isIncognito_ || CommandHandler.isKioskSession_) &&
-      CommandStore.CMD_WHITELIST[command] &&
-      CommandStore.CMD_WHITELIST[command].disallowOOBE) {
+      CommandStore.CMD_ALLOWLIST[command] &&
+      CommandStore.CMD_ALLOWLIST[command].denyOOBE) {
     return true;
   }
 

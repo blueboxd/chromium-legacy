@@ -308,8 +308,7 @@ SupervisedUserWhitelistComponentInstallerPolicy::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
   // Delete the existing sanitized whitelist.
-  const bool success =
-      base::DeleteFile(GetSanitizedWhitelistPath(crx_id_), false);
+  const bool success = base::DeleteFile(GetSanitizedWhitelistPath(crx_id_));
   return update_client::CrxInstaller::Result(
       success ? update_client::InstallError::NONE
               : update_client::InstallError::GENERIC_ERROR);

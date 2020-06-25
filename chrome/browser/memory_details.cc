@@ -39,7 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#include "services/service_manager/zygote/zygote_host_linux.h"
+#include "content/public/browser/zygote_host/zygote_host_linux.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -340,7 +340,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    if (service_manager::ZygoteHost::GetInstance()->IsZygotePid(process.pid)) {
+    if (content::ZygoteHost::GetInstance()->IsZygotePid(process.pid)) {
       process.process_type = content::PROCESS_TYPE_ZYGOTE;
     }
 #endif

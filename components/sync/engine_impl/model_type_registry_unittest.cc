@@ -24,6 +24,8 @@
 
 namespace syncer {
 
+namespace {
+
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -62,17 +64,6 @@ class ModelTypeRegistryTest : public ::testing::Test {
     context->model_type_state = model_type_state;
     context->type_processor = std::make_unique<FakeModelTypeProcessor>();
     return context;
-  }
-
-  void MarkInitialSyncEndedForDirectoryType(ModelType type) {
-    syncable::ModelNeutralWriteTransaction trans(FROM_HERE, syncable::SYNCER,
-                                                 directory());
-    syncable::ModelNeutralMutableEntry entry(
-        &trans, syncable::CREATE_NEW_TYPE_ROOT, type);
-    ASSERT_TRUE(entry.good());
-    entry.PutServerIsDir(true);
-    entry.PutUniqueServerTag(ModelTypeToRootTag(type));
-    directory()->MarkInitialSyncEndedForType(&trans, type);
   }
 
   void SetDummyProgressMarkerForType(ModelType type) {
@@ -119,65 +110,22 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   // Sessions' ModelTypeSyncWorker.
 }
 
-TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
-  ModelTypeSet directory_types(NIGORI, BOOKMARKS, AUTOFILL);
-
-  ModelTypeSet current_types;
-  EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
-
-  // Add the themes non-blocking type.
-  registry()->ConnectNonBlockingType(
-      THEMES,
-      MakeDataTypeActivationResponse(MakeInitialModelTypeState(THEMES)));
-  current_types.Put(THEMES);
-  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
-
-  // Add some directory types.
-  for (ModelType type : directory_types)
-    registry()->RegisterDirectoryType(type, GROUP_PASSIVE);
-  current_types.PutAll(directory_types);
-  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
-
-  // Add sessions non-blocking type.
-  registry()->ConnectNonBlockingType(
-      SESSIONS,
-      MakeDataTypeActivationResponse(MakeInitialModelTypeState(SESSIONS)));
-  current_types.Put(SESSIONS);
-  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
-
-  // Remove themes non-blocking type.
-  registry()->DisconnectNonBlockingType(THEMES);
-  current_types.Remove(THEMES);
-  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
-
-  // Clear all directory types.
-  for (ModelType type : directory_types)
-    registry()->UnregisterDirectoryType(type);
-  current_types.RemoveAll(directory_types);
-  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
-}
-
 // Tests correct result returned from GetInitialSyncEndedTypes.
 TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
-  // Add two directory types.
-  registry()->RegisterDirectoryType(AUTOFILL, GROUP_PASSIVE);
-  registry()->RegisterDirectoryType(BOOKMARKS, GROUP_PASSIVE);
-
-  // Only Autofill and Themes types finished initial sync.
-  MarkInitialSyncEndedForDirectoryType(AUTOFILL);
-
-  // Add two non-blocking type.
+  // Themes has finished initial sync.
   sync_pb::ModelTypeState model_type_state = MakeInitialModelTypeState(THEMES);
   model_type_state.set_initial_sync_done(true);
   registry()->ConnectNonBlockingType(
       THEMES, MakeDataTypeActivationResponse(model_type_state));
 
+  // SESSIONS has NOT finished initial sync.
   registry()->ConnectNonBlockingType(
       SESSIONS,
       MakeDataTypeActivationResponse(MakeInitialModelTypeState(SESSIONS)));
 
-  EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
-            registry()->GetInitialSyncEndedTypes());
+  EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetInitialSyncEndedTypes());
 }
+
+}  // namespace
 
 }  // namespace syncer

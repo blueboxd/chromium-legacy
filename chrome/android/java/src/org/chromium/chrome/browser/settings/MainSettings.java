@@ -54,11 +54,16 @@ public class MainSettings extends PreferenceFragmentCompat
     public static final String PREF_PASSWORDS = "passwords";
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_UI_THEME = "ui_theme";
+    public static final String PREF_PRIVACY = "privacy";
     public static final String PREF_SAFETY_CHECK = "safety_check";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
     public static final String PREF_DOWNLOADS = "downloads";
     public static final String PREF_DEVELOPER = "developer";
+
+    // Used for elevating the privacy section behind the flag (see crbug.com/1099233).
+    public static final int PRIVACY_ORDER_DEFAULT = 14;
+    public static final int PRIVACY_ORDER_ELEVATED = 8;
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
@@ -124,6 +129,21 @@ public class MainSettings extends PreferenceFragmentCompat
 
     private void createPreferences() {
         SettingsUtils.addPreferencesFromResource(this, R.xml.main_preferences);
+        // If the flag for elevating the privacy is enabled, put the "Privacy"
+        // into the reserved space in the Basics section and move the "Homepage"
+        // down to Advanced to where "Privacy" was. See (crbug.com/1099233) for
+        // more context.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_ELEVATED_ANDROID)) {
+            Preference privacyPreference = findPreference(PREF_PRIVACY);
+            Preference homepagePreference = findPreference(PREF_HOMEPAGE);
+            getPreferenceScreen().removePreference(privacyPreference);
+            getPreferenceScreen().removePreference(homepagePreference);
+            privacyPreference.setOrder(PRIVACY_ORDER_ELEVATED);
+            homepagePreference.setOrder(PRIVACY_ORDER_DEFAULT);
+            getPreferenceScreen().addPreference(privacyPreference);
+            getPreferenceScreen().addPreference(homepagePreference);
+        }
+
         cachePreferences();
 
         mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);

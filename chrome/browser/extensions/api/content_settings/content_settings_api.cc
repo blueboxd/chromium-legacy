@@ -33,6 +33,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/permissions/features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -311,6 +312,16 @@ ContentSettingsContentSettingSetFunction::Run() {
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,
                                     resource_identifier, setting, scope);
+
+  if (base::FeatureList::IsEnabled(
+          content_settings::kDisallowWildcardsInPluginContentSettings) &&
+      content_type == ContentSettingsType::PLUGINS &&
+      primary_pattern.HasWildcards()) {
+    WriteToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        content_settings_api_constants::kWildcardPatternsForPluginsDisallowed);
+  }
+
   return RespondNow(NoArguments());
 }
 

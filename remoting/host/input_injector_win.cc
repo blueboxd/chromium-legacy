@@ -40,7 +40,9 @@ using protocol::MouseEvent;
 using protocol::TouchEvent;
 
 // Helper used to call SendInput() API.
-void SendKeyboardInput(uint32_t flags, uint16_t scancode) {
+void SendKeyboardInput(uint32_t flags,
+                       uint16_t scancode,
+                       uint16_t virtual_key) {
   // Populate a Windows INPUT structure for the event.
   INPUT input;
   memset(&input, 0, sizeof(input));
@@ -48,6 +50,7 @@ void SendKeyboardInput(uint32_t flags, uint16_t scancode) {
   input.ki.time = 0;
   input.ki.dwFlags = flags;
   input.ki.wScan = scancode;
+  input.ki.wVk = virtual_key;
 
   if ((flags & KEYEVENTF_UNICODE) == 0) {
     // Windows scancodes are only 8-bit, so store the low-order byte into the
@@ -167,20 +170,12 @@ bool IsLockKey(int scancode) {
 // Sets the keyboard lock states to those provided.
 void SetLockStates(base::Optional<bool> caps_lock,
                    base::Optional<bool> num_lock) {
-  // Can't use SendKeyboardInput because we need to send virtual key codes, not
-  // scan codes.
-  INPUT input[2] = {};
-  input[0].type = INPUT_KEYBOARD;
-  input[1].type = INPUT_KEYBOARD;
-  input[1].ki.dwFlags = KEYEVENTF_KEYUP;
-
   if (caps_lock) {
     bool client_capslock_state = *caps_lock;
     bool host_capslock_state = (GetKeyState(VK_CAPITAL) & 1) != 0;
     if (client_capslock_state != host_capslock_state) {
-      input[0].ki.wVk = VK_CAPITAL;
-      input[1].ki.wVk = VK_CAPITAL;
-      SendInput(base::size(input), input, sizeof(INPUT));
+      SendKeyboardInput(0, 0, VK_CAPITAL);
+      SendKeyboardInput(KEYEVENTF_KEYUP, 0, VK_CAPITAL);
     }
   }
 
@@ -189,9 +184,8 @@ void SetLockStates(base::Optional<bool> caps_lock,
     bool client_numlock_state = *num_lock;
     bool host_numlock_state = (GetKeyState(VK_NUMLOCK) & 1) != 0;
     if (client_numlock_state != host_numlock_state) {
-      input[0].ki.wVk = VK_NUMLOCK;
-      input[1].ki.wVk = VK_NUMLOCK;
-      SendInput(base::size(input), input, sizeof(INPUT));
+      SendKeyboardInput(0, 0, VK_NUMLOCK);
+      SendKeyboardInput(KEYEVENTF_KEYUP, 0, VK_NUMLOCK);
     }
   }
 }
@@ -420,7 +414,7 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
   }
 
   uint32_t flags = KEYEVENTF_SCANCODE | (event.pressed() ? 0 : KEYEVENTF_KEYUP);
-  SendKeyboardInput(flags, scancode);
+  SendKeyboardInput(flags, scancode, 0);
 }
 
 void InputInjectorWin::Core::HandleText(const TextEvent& event) {
@@ -430,8 +424,15 @@ void InputInjectorWin::Core::HandleText(const TextEvent& event) {
   base::string16 text = base::UTF8ToUTF16(event.text());
   for (base::string16::const_iterator it = text.begin();
        it != text.end(); ++it)  {
-    SendKeyboardInput(KEYEVENTF_UNICODE, *it);
-    SendKeyboardInput(KEYEVENTF_UNICODE | KEYEVENTF_KEYUP, *it);
+    if (*it == '\n') {
+      // The WM_CHAR event generated for carriage return is '\r', not '\n', and
+      // some applications may check for VK_RETURN explicitly, so handle
+      // newlines specially.
+      SendKeyboardInput(0, 0, VK_RETURN);
+      SendKeyboardInput(KEYEVENTF_KEYUP, 0, VK_RETURN);
+    }
+    SendKeyboardInput(KEYEVENTF_UNICODE, *it, 0);
+    SendKeyboardInput(KEYEVENTF_UNICODE | KEYEVENTF_KEYUP, *it, 0);
   }
 }
 

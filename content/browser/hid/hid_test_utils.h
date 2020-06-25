@@ -34,8 +34,8 @@ class MockHidDelegate : public HidDelegate {
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       HidChooser::Callback callback) override;
 
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void AddObserver(RenderFrameHost* frame, Observer* observer) override;
+  void RemoveObserver(RenderFrameHost* frame, Observer* observer) override;
 
   // MockHidDelegate does not register to receive device connection events. Use
   // these methods to broadcast device connections to all delegate observers.

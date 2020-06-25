@@ -130,8 +130,7 @@ bool SendIPCRequestAndReadReply(int ipc_channel,
 namespace nacl {
 
 void AddNaClZygoteForkDelegates(
-    std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-        delegates) {
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
   delegates->push_back(
       std::make_unique<NaClForkDelegate>(false /* nonsfi_mode */));
   delegates->push_back(

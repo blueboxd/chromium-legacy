@@ -72,14 +72,20 @@ void InstallPendingOriginTrialFeatureForCore(OriginTrialFeature feature,
   v8::Isolate* isolate = script_state->GetIsolate();
   const DOMWrapperWorld& world = script_state->World();
   V8PerContextData* context_data = script_state->PerContextData();
+  v8::Local<v8::Context> current_context = script_state->GetContext();
+  v8::Local<v8::Object> global_object = current_context->Global();
+  ALLOW_UNUSED_LOCAL(global_object);
+  ExecutionContext* execution_context = ToExecutionContext(current_context);
+  ALLOW_UNUSED_LOCAL(execution_context);
   switch (feature) {
     {% for feature in installers_by_feature %}
     case {{feature.name_constant}}: {
       {% for installer in feature.installers %}
       {% if installer.interface_is_global %}
-      {{installer.v8_class_or_partial}}::{{installer.install_method}}(
-          isolate, world, script_state->GetContext()->Global(),
-          v8::Local<v8::Object>(), v8::Local<v8::Function>());
+      if (execution_context && execution_context->{{installer.global_type_check_method}}()) {
+        {{installer.v8_class_or_partial}}::{{installer.install_method}}(
+            isolate, world, global_object, v8::Local<v8::Object>(), v8::Local<v8::Function>());
+      }
       {% else %}
       if (context_data->GetExistingConstructorAndPrototypeForType(
               {{installer.v8_class}}::GetWrapperTypeInfo(), &prototype_object, &interface_object)) {

@@ -43,7 +43,7 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
       : loader_(MakeGarbageCollected<BackgroundFetchIconLoader>()) {}
   ~BackgroundFetchIconLoaderTest() override {
     loader_->Stop();
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -134,7 +134,7 @@ TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
   LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
            run_loop.QuitClosure());
 
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
 
   run_loop.Run();
 
@@ -194,7 +194,7 @@ TEST_F(BackgroundFetchIconLoaderTest, EmptySizes) {
   LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
            run_loop.QuitClosure(), "", "ANY");
 
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
 
   run_loop.Run();
 
@@ -209,7 +209,7 @@ TEST_F(BackgroundFetchIconLoaderTest, EmptyPurpose) {
   LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
            run_loop.QuitClosure(), "500X500", "");
 
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
 
   run_loop.Run();
 

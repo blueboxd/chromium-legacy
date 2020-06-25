@@ -263,14 +263,21 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
 
   FrameData* ancestor_data = FindFrameData(subframe_rfh->GetFrameTreeNodeId());
 
-  // Only update the frame with the root frames timing updates.
-  if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
-                           subframe_rfh->GetFrameTreeNodeId())
+  if (!ancestor_data)
+    return;
+
+  // Only update the frame with the root frame's timing updates.
+  if (ancestor_data->root_frame_tree_node_id() ==
+      subframe_rfh->GetFrameTreeNodeId())
     ancestor_data->set_timing(timing.Clone());
+
+  // Set paint eligiblity status.
+  ancestor_data->SetFirstEligibleToPaint(
+      timing.paint_timing->first_eligible_to_paint);
 
   // Set creative origin status if this is the first FCP for any frame in the
   // root ad frame's subtree.
-  if (ancestor_data && timing.paint_timing->first_contentful_paint &&
+  if (timing.paint_timing->first_contentful_paint &&
       ancestor_data->creative_origin_status() ==
           FrameData::OriginStatus::kUnknown) {
     FrameData::OriginStatus origin_status =
@@ -1019,6 +1026,11 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.CreativeOriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.creative_origin_status());
+
+    ADS_HISTOGRAM(
+        "FrameCounts.AdFrames.PerFrame.CreativeOriginStatusWithThrottling",
+        UMA_HISTOGRAM_ENUMERATION, visibility,
+        ad_frame_data.GetCreativeOriginStatusWithThrottling());
 
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,

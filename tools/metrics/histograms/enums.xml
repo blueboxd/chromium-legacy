@@ -1360,6 +1360,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="MENU_DELETE"/>
   <int value="6" label="RETRY"/>
   <int value="7" label="MENU_RENAME"/>
+  <int value="8" label="MENU_CHANGE"/>
 </enum>
 
 <enum name="Android.DownloadManager.Menu.Actions">
@@ -11562,6 +11563,7 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="CONTEXT_LOST_RESHAPE_FAILED"/>
   <int value="14" label="CONTEXT_LOST_SET_DRAW_RECTANGLE_FAILED"/>
   <int value="15" label="CONTEXT_LOST_DIRECT_COMPOSITION_OVERLAY_FAILED"/>
+  <int value="16" label="CONTEXT_LOST_SWAP_FAILED"/>
 </enum>
 
 <enum name="ContextMenuDelayedElementDetails">
@@ -13558,6 +13560,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="Ad Creative Origin indeterminable"/>
   <int value="1" label="Main Frame Origin same as Ad Creative"/>
   <int value="2" label="Main Frame Origin differs from Ad Creative"/>
+</enum>
+
+<enum name="CrossOriginCreativeStatusWithThrottling">
+  <int value="0" label="Ad Creative Origin Unknown and Ad Not Throttled"/>
+  <int value="1" label="Ad Creative Origin Unknown and Ad Throttled"/>
+  <int value="2"
+      label="Ad Creative Origin Same as Main Frame and Ad Not Throttled"/>
+  <int value="3"
+      label="Ad Creative Origin Differs from Main Frame and Ad Not Throttled"/>
 </enum>
 
 <enum name="CrossOriginProtectionDecision">
@@ -17459,6 +17470,8 @@ Called by update_document_policy_enum.py.-->
   <int value="7" label="Multiple downloads complete"/>
   <int value="8" label="Multiple downloads failed"/>
   <int value="9" label="Multiple downloads pending"/>
+  <int value="10" label="Scheduled"/>
+  <int value="11" label="Multiple downloads scheduled"/>
 </enum>
 
 <enum name="DownloadInfoBarState">
@@ -39772,6 +39785,7 @@ from previous Chrome versions.
   <int value="-1533258008" label="CalculateNativeWinOcclusion:enabled"/>
   <int value="-1532035450" label="DragTabsInTabletMode:disabled"/>
   <int value="-1532014193" label="disable-encryption-migration"/>
+  <int value="-1530711962" label="PrivacyElevatedAndroid:disabled"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1525129540"
@@ -41302,6 +41316,7 @@ from previous Chrome versions.
   <int value="123097915" label="FaviconsFromWebManifest:enabled"/>
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
+  <int value="127789400" label="PrivacyElevatedAndroid:enabled"/>
   <int value="128086566" label="D3D11VideoDecoder:enabled"/>
   <int value="131881947" label="D3DVsync:enabled"/>
   <int value="132560299"
@@ -45311,6 +45326,12 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Sink List"/>
 </enum>
 
+<enum name="MediaRouterResponseReceiverAppType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Web"/>
+  <int value="2" label="Android Tv"/>
+</enum>
+
 <enum name="MediaRouterSinkPositionLabel">
   <int value="100" label="100+"/>
 </enum>
@@ -47638,6 +47659,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetNetworkErrorLoggingHeaderOutcome">
+  <obsolete>
+    Removed from code June 2020.
+  </obsolete>
   <int value="0" label="Discarded: no NetworkErrorLoggingService"/>
   <int value="1" label="Discarded: invalid SSLInfo"/>
   <int value="2" label="Discarded: cert status error"/>
@@ -47699,6 +47723,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetReportingHeaderEndpointGroupOutcome">
+  <obsolete>
+    Removed from code, June 2020.
+  </obsolete>
   <int value="0" label="Discarded: not a dictionary"/>
   <int value="1" label="Discarded: group not a string"/>
   <int value="2" label="Discarded: TTL missing"/>
@@ -47713,6 +47740,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetReportingHeaderEndpointOutcome">
+  <obsolete>
+    Removed from code, June 2020.
+  </obsolete>
   <int value="0" label="Discarded: not a dictionary"/>
   <int value="1" label="Discarded: URL missing"/>
   <int value="2" label="Discarded: URL not a string"/>
@@ -47728,6 +47758,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetReportingHeaderOutcome">
+  <obsolete>
+    Removed from code, June 2020.
+  </obsolete>
   <int value="0" label="Discarded: no ReportingService"/>
   <int value="1" label="Discarded: invalid SSLInfo"/>
   <int value="2" label="Discarded: cert status error"/>
@@ -47751,6 +47784,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="NetReportingUploadOutcome">
+  <obsolete>
+    Removed from code June 2020.
+  </obsolete>
   <int value="0" label="Canceled: redirect to insecure URL"/>
   <int value="1" label="Canceled: auth required"/>
   <int value="2" label="Canceled: certificate requested"/>
@@ -51651,6 +51687,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="1600" label="Powerwash"/>
   <int value="1700" label="Change Chrome Channel"/>
   <int value="1701" label="Copy Detailed Build Info"/>
+  <int value="1702" label="Check for OS Update"/>
+  <int value="1703" label="See What's New"/>
+  <int value="1704" label="Get Help with Chrome OS"/>
+  <int value="1705" label="Report an Issue"/>
+  <int value="1706" label="View Terms of Service"/>
 </enum>
 
 <enum name="OsSettingSearchBoxUserAction">
@@ -58304,6 +58345,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="15"
       label="Navigation buttons + spoken feedback + switch access +
              auto-click"/>
+</enum>
+
+<enum name="ReceiverAppTypeSet">
+  <int value="0" label="Other"/>
+  <int value="1" label="Web"/>
+  <int value="2" label="Android Tv and Web"/>
 </enum>
 
 <enum name="RecentTabsAction">
@@ -73286,10 +73333,13 @@ Called by update_scheduler_enums.py.-->
 
 <enum name="WelcomeSignInPromptOutcome">
   <int value="0" label="User navigated away from page"/>
-  <int value="1" label="User clicked the No Thanks button"/>
-  <int value="2" label="User completed sign-in flow"/>
-  <int value="3" label="User attempted sign-in flow, then navigated away"/>
-  <int value="4" label="User attempted sign-in flow, then clicked No Thanks"/>
+  <int value="1" label="User clicked the 'Get Started' button"/>
+  <int value="2" label="[Deprecated] User completed sign-in flow"/>
+  <int value="3"
+      label="[Deprecated] User attempted sign-in flow, then navigated away"/>
+  <int value="4"
+      label="[Deprecated] User attempted sign-in flow, then clicked No Thanks"/>
+  <int value="5" label="User clicked the 'Sign in' button"/>
 </enum>
 
 <enum name="WhitelistedDownloadType">

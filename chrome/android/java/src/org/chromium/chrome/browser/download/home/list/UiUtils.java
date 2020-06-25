@@ -350,8 +350,9 @@ public final class UiUtils {
 
     /** @return Whether the given {@link OfflineItem} can be shared. */
     public static boolean canShare(OfflineItem item) {
-        return LegacyHelpers.isLegacyDownload(item.id)
-                || LegacyHelpers.isLegacyOfflinePage(item.id);
+        return (item.state == OfflineItemState.COMPLETE)
+                && (LegacyHelpers.isLegacyDownload(item.id)
+                        || LegacyHelpers.isLegacyOfflinePage(item.id));
     }
 
     /** @return The domain associated with the given {@link OfflineItem}. */

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.sync;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.SyncContentResolverDelegate;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 

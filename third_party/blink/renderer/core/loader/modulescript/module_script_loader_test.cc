@@ -493,7 +493,8 @@ void ModuleScriptLoaderTest::TestFetchURL(
     TestModuleScriptLoaderClient* client) {
   KURL url("https://example.test/module.js");
   url_test_helpers::RegisterMockedURLLoad(
-      url, test::CoreTestDataPath("module.js"), "text/javascript");
+      url, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
 
   auto* registry = MakeGarbageCollected<ModuleScriptLoaderRegistry>();
   ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),

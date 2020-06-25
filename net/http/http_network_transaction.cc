@@ -1312,21 +1312,15 @@ void HttpNetworkTransaction::ProcessReportToHeader() {
     return;
 
   ReportingService* service = session_->reporting_service();
-  if (!service) {
-    ReportingHeaderParser::RecordHeaderDiscardedForNoReportingService();
+  if (!service)
     return;
-  }
 
   // Only accept Report-To headers on HTTPS connections that have no
   // certificate errors.
-  if (!response_.ssl_info.is_valid()) {
-    ReportingHeaderParser::RecordHeaderDiscardedForInvalidSSLInfo();
+  if (!response_.ssl_info.is_valid())
     return;
-  }
-  if (IsCertStatusError(response_.ssl_info.cert_status)) {
-    ReportingHeaderParser::RecordHeaderDiscardedForCertStatusError();
+  if (IsCertStatusError(response_.ssl_info.cert_status))
     return;
-  }
 
   service->ProcessHeader(url_.GetOrigin(), value);
 }
@@ -1340,11 +1334,8 @@ void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
 
   NetworkErrorLoggingService* service =
       session_->network_error_logging_service();
-  if (!service) {
-    NetworkErrorLoggingService::
-        RecordHeaderDiscardedForNoNetworkErrorLoggingService();
+  if (!service)
     return;
-  }
 
   // Don't accept NEL headers received via a proxy, because the IP address of
   // the destination server is not known.
@@ -1353,19 +1344,13 @@ void HttpNetworkTransaction::ProcessNetworkErrorLoggingHeader() {
 
   // Only accept NEL headers on HTTPS connections that have no certificate
   // errors.
-  if (!response_.ssl_info.is_valid()) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForInvalidSSLInfo();
-    return;
-  }
-  if (IsCertStatusError(response_.ssl_info.cert_status)) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForCertStatusError();
+  if (!response_.ssl_info.is_valid() ||
+      IsCertStatusError(response_.ssl_info.cert_status)) {
     return;
   }
 
-  if (remote_endpoint_.address().empty()) {
-    NetworkErrorLoggingService::RecordHeaderDiscardedForMissingRemoteEndpoint();
+  if (remote_endpoint_.address().empty())
     return;
-  }
 
   service->OnHeader(url::Origin::Create(url_), remote_endpoint_.address(),
                     value);

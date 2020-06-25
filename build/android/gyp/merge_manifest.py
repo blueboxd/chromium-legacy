@@ -137,8 +137,7 @@ def main(argv):
 
   if args.depfile:
     inputs = extras + classpath.split(':')
-    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs)
 
 
 if __name__ == '__main__':

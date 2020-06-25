@@ -596,7 +596,8 @@ TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
                   : network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
   }
 
-  platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();
+  WebURLLoaderMockFactory::GetSingletonInstance()
+      ->UnregisterAllURLsAndClearMemoryCache();
 }
 
 class LinkLoaderTest : public testing::Test,
@@ -662,7 +663,7 @@ TEST_F(LinkLoaderTest, Prefetch) {
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
     }
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 }

@@ -273,17 +273,16 @@ bool PasswordFormManager::WasUnblacklisted() const {
 }
 
 bool PasswordFormManager::IsMovableToAccountStore() const {
+  DCHECK(
+      client_->GetPasswordFeatureManager()->ShouldShowAccountStorageBubbleUi())
+      << "Ensure that the client supports moving passwords for this user!";
   signin::IdentityManager* identity_manager = client_->GetIdentityManager();
-  if (!identity_manager)
-    return false;
+  DCHECK(identity_manager);
   const std::string gaia_id =
       identity_manager
           ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
           .gaia;
-  // If there is no signed in user, we cannot move the credentials to the
-  // account store.
-  if (gaia_id.empty())
-    return false;
+  DCHECK(!gaia_id.empty()) << "Cannot move without signed in user";
 
   const base::string16& username = GetPendingCredentials().username_value;
   const base::string16& password = GetPendingCredentials().password_value;

@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 
+#include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -19,10 +19,13 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -63,9 +66,63 @@ const std::vector<SearchConcept>& GetAboutSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kChangeChromeChannel}},
+      {IDS_OS_SETTINGS_TAG_ABOUT_OS_UPDATE,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCheckForOsUpdate}},
+      {IDS_OS_SETTINGS_TAG_ABOUT_HELP,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kGetHelpWithChromeOs}},
   });
   return *tags;
 }
+
+const std::vector<SearchConcept>& GetAboutReleaseNotesSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_ABOUT_RELEASE_NOTES,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kSeeWhatsNew},
+       {IDS_OS_SETTINGS_TAG_ABOUT_RELEASE_NOTES_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const std::vector<SearchConcept>& GetAboutTermsOfServiceSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_ABOUT_TERMS_OF_SERVICE,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTermsOfService}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetAboutReportIssueSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_ABOUT_REPORT_ISSUE,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kReportAnIssue},
+       {IDS_OS_SETTINGS_TAG_ABOUT_REPORT_ISSUE_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Returns the link to the safety info for the device (if it exists).
 std::string GetSafetyInfoLink() {
@@ -97,10 +154,30 @@ bool IsDeviceManaged() {
 
 }  // namespace
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+AboutSection::AboutSection(Profile* profile,
+                           SearchTagRegistry* search_tag_registry,
+                           PrefService* pref_service)
+    : AboutSection(profile, search_tag_registry) {
+  pref_service_ = pref_service;
+  registry()->AddSearchTags(GetAboutTermsOfServiceSearchConcepts());
+
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      prefs::kUserFeedbackAllowed,
+      base::BindRepeating(&AboutSection::UpdateReportIssueSearchTags,
+                          base::Unretained(this)));
+  UpdateReportIssueSearchTags();
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 AboutSection::AboutSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
   registry()->AddSearchTags(GetAboutSearchConcepts());
+
+  if (base::FeatureList::IsEnabled(features::kReleaseNotes))
+    registry()->AddSearchTags(GetAboutReleaseNotesSearchConcepts());
 }
 
 AboutSection::~AboutSection() = default;
@@ -290,6 +367,12 @@ void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_ABOUT_OS, mojom::Subpage::kAboutChromeOsDetails,
       mojom::SearchResultIcon::kChrome, mojom::SearchResultDefaultRank::kMedium,
       mojom::kAboutChromeOsDetailsSubpagePath);
+  static constexpr mojom::Setting kAboutChromeOsDetailsSettings[] = {
+      mojom::Setting::kCheckForOsUpdate, mojom::Setting::kSeeWhatsNew,
+      mojom::Setting::kGetHelpWithChromeOs, mojom::Setting::kReportAnIssue,
+      mojom::Setting::kTermsOfService};
+  RegisterNestedSettingBulk(mojom::Subpage::kAboutChromeOsDetails,
+                            kAboutChromeOsDetailsSettings, generator);
 
   // Detailed build info.
   generator->RegisterNestedSubpage(
@@ -303,6 +386,15 @@ void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kDetailedBuildInfo,
                             kDetailedBuildInfoSettings, generator);
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void AboutSection::UpdateReportIssueSearchTags() {
+  if (pref_service_->GetBoolean(prefs::kUserFeedbackAllowed))
+    registry()->AddSearchTags(GetAboutReportIssueSearchConcepts());
+  else
+    registry()->RemoveSearchTags(GetAboutReportIssueSearchConcepts());
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace settings
 }  // namespace chromeos

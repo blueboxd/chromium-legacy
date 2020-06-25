@@ -206,9 +206,17 @@ enum ServerFieldType {
   // Currently not used by Chrome.
   ADDRESS_HOME_OTHER_SUBUNIT = 106,
 
+  // Types to represent the structure of a Hispanic/Latinx last name.
+  NAME_LAST_FIRST = 107,
+  NAME_LAST_CONJUNCTION = 108,
+  NAME_LAST_SECOND = 109,
+
+  // Type to catch name additions like "Mr.", "Ms." or "Dr.".
+  NAME_HONORIFIC_PREFIX = 110,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 107,
+  MAX_VALID_FIELD_TYPE = 111,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.
@@ -219,6 +227,7 @@ enum HtmlFieldType {
 
   // Name types.
   HTML_TYPE_NAME,
+  HTML_TYPE_HONORIFIC_PREFIX,
   HTML_TYPE_GIVEN_NAME,
   HTML_TYPE_ADDITIONAL_NAME,
   HTML_TYPE_FAMILY_NAME,

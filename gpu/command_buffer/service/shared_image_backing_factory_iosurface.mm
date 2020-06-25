@@ -262,11 +262,10 @@ class SharedImageRepresentationSkiaIOSurface
 class SharedImageRepresentationOverlayIOSurface
     : public SharedImageRepresentationOverlay {
  public:
-  SharedImageRepresentationOverlayIOSurface(
-      SharedImageManager* manager,
-      SharedImageBacking* backing,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<gl::GLImageIOSurface> gl_image)
+  SharedImageRepresentationOverlayIOSurface(SharedImageManager* manager,
+                                            SharedImageBacking* backing,
+                                            MemoryTypeTracker* tracker,
+                                            scoped_refptr<gl::GLImage> gl_image)
       : SharedImageRepresentationOverlay(manager, backing, tracker),
         gl_image_(gl_image) {}
 
@@ -277,7 +276,7 @@ class SharedImageRepresentationOverlayIOSurface
   void EndReadAccess() override {}
   gl::GLImage* GetGLImage() override { return gl_image_.get(); }
 
-  scoped_refptr<gl::GLImageIOSurface> gl_image_;
+  scoped_refptr<gl::GLImage> gl_image_;
 };
 
 // Representation of a SharedImageBackingIOSurface as a Dawn Texture.
@@ -523,7 +522,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
       MemoryTypeTracker* tracker) override {
     if (!EnsureGLImage())
       return nullptr;
-    return std::make_unique<SharedImageRepresentationOverlayIOSurface>(
+    return SharedImageBackingFactoryIOSurface::ProduceOverlay(
         manager, this, tracker, gl_image_);
   }
 
@@ -792,6 +791,75 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
 bool SharedImageBackingFactoryIOSurface::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
   return false;
+}
+
+// static
+sk_sp<SkPromiseImageTexture>
+SharedImageBackingFactoryIOSurface::ProduceSkiaPromiseTextureMetal(
+    SharedImageBacking* backing,
+    scoped_refptr<SharedContextState> context_state,
+    scoped_refptr<gl::GLImage> image) {
+  if (@available(macOS 10.11, *)) {
+    DCHECK(context_state->GrContextIsMetal());
+
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
+        static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
+
+    id<MTLDevice> mtl_device =
+        context_state->metal_context_provider()->GetMTLDevice();
+    auto mtl_texture = CreateMetalTexture(mtl_device, io_surface.get(),
+                                          backing->size(), backing->format());
+    DCHECK(mtl_texture);
+
+    GrMtlTextureInfo info;
+    info.fTexture.retain(mtl_texture.get());
+    auto gr_backend_texture =
+        GrBackendTexture(backing->size().width(), backing->size().height(),
+                         GrMipMapped::kNo, info);
+    return SkPromiseImageTexture::Make(gr_backend_texture);
+  }
+  return nullptr;
+}
+
+// static
+std::unique_ptr<SharedImageRepresentationOverlay>
+SharedImageBackingFactoryIOSurface::ProduceOverlay(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    scoped_refptr<gl::GLImage> image) {
+  return std::make_unique<SharedImageRepresentationOverlayIOSurface>(
+      manager, backing, tracker, image);
+}
+
+// static
+std::unique_ptr<SharedImageRepresentationDawn>
+SharedImageBackingFactoryIOSurface::ProduceDawn(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    WGPUDevice device,
+    scoped_refptr<gl::GLImage> image) {
+#if BUILDFLAG(USE_DAWN)
+  // See comments in SharedImageBackingFactoryIOSurface::CreateSharedImage
+  // regarding RGBA versus BGRA.
+  viz::ResourceFormat actual_format = backing->format();
+  if (actual_format == viz::RGBA_8888)
+    actual_format = viz::BGRA_8888;
+
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface =
+      static_cast<gl::GLImageIOSurface*>(image.get())->io_surface();
+
+  base::Optional<WGPUTextureFormat> wgpu_format =
+      viz::ToWGPUFormat(actual_format);
+  if (wgpu_format.value() == WGPUTextureFormat_Undefined)
+    return nullptr;
+
+  return std::make_unique<SharedImageRepresentationDawnIOSurface>(
+      manager, backing, tracker, device, io_surface, wgpu_format.value());
+#else   // BUILDFLAG(USE_DAWN)
+  return nullptr;
+#endif  // BUILDFLAG(USE_DAWN)
 }
 
 }  // namespace gpu

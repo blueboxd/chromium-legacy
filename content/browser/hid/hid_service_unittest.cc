@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "content/browser/hid/hid_test_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_delegate.h"
@@ -21,6 +22,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+
+using ::base::test::RunClosure;
+using ::testing::_;
+using ::testing::ByMove;
+using ::testing::Return;
 
 namespace content {
 
@@ -74,8 +80,7 @@ class MockHidManagerClient : public device::mojom::HidManagerClient {
 class HidServiceTest : public RenderViewHostImplTestHarness {
  public:
   HidServiceTest() {
-    ON_CALL(hid_delegate(), GetHidManager)
-        .WillByDefault(testing::Return(&hid_manager_));
+    ON_CALL(hid_delegate(), GetHidManager).WillByDefault(Return(&hid_manager_));
   }
   HidServiceTest(HidServiceTest&) = delete;
   HidServiceTest& operator=(HidServiceTest&) = delete;
@@ -127,8 +132,7 @@ TEST_F(HidServiceTest, GetDevicesWithPermission) {
   device_info->guid = kTestGuid;
   ConnectDevice(*device_info);
 
-  EXPECT_CALL(hid_delegate(), HasDevicePermission)
-      .WillOnce(testing::Return(true));
+  EXPECT_CALL(hid_delegate(), HasDevicePermission).WillOnce(Return(true));
 
   base::RunLoop run_loop;
   std::vector<device::mojom::HidDeviceInfoPtr> devices;
@@ -152,8 +156,7 @@ TEST_F(HidServiceTest, GetDevicesWithoutPermission) {
   device_info->guid = kTestGuid;
   ConnectDevice(*device_info);
 
-  EXPECT_CALL(hid_delegate(), HasDevicePermission)
-      .WillOnce(testing::Return(false));
+  EXPECT_CALL(hid_delegate(), HasDevicePermission).WillOnce(Return(false));
 
   base::RunLoop run_loop;
   std::vector<device::mojom::HidDeviceInfoPtr> devices;
@@ -180,9 +183,9 @@ TEST_F(HidServiceTest, RequestDevice) {
   ConnectDevice(*device_info);
 
   EXPECT_CALL(hid_delegate(), CanRequestDevicePermission)
-      .WillOnce(testing::Return(true));
+      .WillOnce(Return(true));
   EXPECT_CALL(hid_delegate(), RunChooserInternal)
-      .WillOnce(testing::Return(testing::ByMove(std::move(device_infos))));
+      .WillOnce(Return(ByMove(std::move(device_infos))));
 
   base::RunLoop run_loop;
   std::vector<device::mojom::HidDeviceInfoPtr> chosen_devices;
@@ -275,6 +278,57 @@ TEST_F(HidServiceTest, OpenAndNavigateCrossOrigin) {
   NavigateAndCommit(GURL(kCrossOriginTestUrl));
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(contents()->IsConnectedToHidDevice());
+}
+
+TEST_F(HidServiceTest, RegisterClient) {
+  MockHidManagerClient mock_hid_manager_client;
+
+  base::RunLoop device_added_loop;
+  EXPECT_CALL(mock_hid_manager_client, DeviceAdded(_))
+      .WillOnce(RunClosure(device_added_loop.QuitClosure()));
+
+  base::RunLoop device_removed_loop;
+  EXPECT_CALL(mock_hid_manager_client, DeviceRemoved(_))
+      .WillOnce(RunClosure(device_removed_loop.QuitClosure()));
+
+  EXPECT_CALL(hid_delegate(), HasDevicePermission)
+      .WillOnce(Return(true))
+      .WillOnce(Return(true));
+
+  NavigateAndCommit(GURL(kTestUrl));
+
+  mojo::Remote<blink::mojom::HidService> service;
+  contents()->GetMainFrame()->GetHidService(
+      service.BindNewPipeAndPassReceiver());
+
+  mojo::PendingAssociatedRemote<device::mojom::HidManagerClient>
+      hid_manager_client;
+  mock_hid_manager_client.Bind(
+      hid_manager_client.InitWithNewEndpointAndPassReceiver());
+
+  // 1. Register the mock client with the service. Wait for GetDevices to
+  // return to ensure the client has been set.
+  service->RegisterClient(std::move(hid_manager_client));
+
+  base::RunLoop run_loop;
+  std::vector<device::mojom::HidDeviceInfoPtr> devices;
+  service->GetDevices(base::BindLambdaForTesting(
+      [&run_loop, &devices](std::vector<device::mojom::HidDeviceInfoPtr> d) {
+        devices = std::move(d);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_TRUE(devices.empty());
+
+  // 2. Connect a device and wait for DeviceAdded.
+  auto device_info = device::mojom::HidDeviceInfo::New();
+  device_info->guid = kTestGuid;
+  ConnectDevice(*device_info);
+  device_added_loop.Run();
+
+  // 3. Disconnect the device and wait for DeviceRemoved.
+  DisconnectDevice(*device_info);
+  device_removed_loop.Run();
 }
 
 }  // namespace content

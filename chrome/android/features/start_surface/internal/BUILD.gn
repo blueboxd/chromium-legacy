@@ -83,7 +83,6 @@ android_library("java") {
 
   if (enable_feed_in_chrome) {
     sources += [
-      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceActionHandler.java",
       "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceCoordinator.java",
       "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceNavigationDelegate.java",
       "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceStreamLifecycleManager.java",

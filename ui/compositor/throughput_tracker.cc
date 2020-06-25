@@ -11,8 +11,9 @@
 
 namespace ui {
 
-ThroughputTracker::ThroughputTracker(TrackerId id, ThroughputTrackerHost* host)
-    : id_(id), host_(host) {
+ThroughputTracker::ThroughputTracker(TrackerId id,
+                                     base::WeakPtr<ThroughputTrackerHost> host)
+    : id_(id), host_(std::move(host)) {
   DCHECK(host_);
 }
 
@@ -22,11 +23,11 @@ ThroughputTracker::ThroughputTracker(ThroughputTracker&& other) {
 
 ThroughputTracker& ThroughputTracker::operator=(ThroughputTracker&& other) {
   id_ = other.id_;
-  host_ = other.host_;
+  host_ = std::move(other.host_);
   started_ = other.started_;
 
   other.id_ = kInvalidId;
-  other.host_ = nullptr;
+  other.host_.reset();
   other.started_ = false;
   return *this;
 }
@@ -37,18 +38,28 @@ ThroughputTracker::~ThroughputTracker() {
 }
 
 void ThroughputTracker::Start(ThroughputTrackerHost::ReportCallback callback) {
+  // Start after |host_| destruction is likely an error.
+  DCHECK(host_);
+  DCHECK(!started_);
+
   started_ = true;
   host_->StartThroughputTracker(id_, std::move(callback));
 }
 
 void ThroughputTracker::Stop() {
+  DCHECK(started_);
+
   started_ = false;
-  host_->StopThroughtputTracker(id_);
+  if (host_)
+    host_->StopThroughtputTracker(id_);
 }
 
 void ThroughputTracker::Cancel() {
+  DCHECK(started_);
+
   started_ = false;
-  host_->CancelThroughtputTracker(id_);
+  if (host_)
+    host_->CancelThroughtputTracker(id_);
 }
 
 }  // namespace ui

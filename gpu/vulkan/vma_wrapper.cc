@@ -118,18 +118,18 @@ void FreeMemory(VmaAllocator allocator, VmaAllocation allocation) {
   vmaFreeMemory(allocator, allocation);
 }
 
-void FlushAllocation(VmaAllocator allocator,
-                     VmaAllocation allocation,
-                     VkDeviceSize offset,
-                     VkDeviceSize size) {
-  vmaFlushAllocation(allocator, allocation, offset, size);
+VkResult FlushAllocation(VmaAllocator allocator,
+                         VmaAllocation allocation,
+                         VkDeviceSize offset,
+                         VkDeviceSize size) {
+  return vmaFlushAllocation(allocator, allocation, offset, size);
 }
 
-void InvalidateAllocation(VmaAllocator allocator,
-                          VmaAllocation allocation,
-                          VkDeviceSize offset,
-                          VkDeviceSize size) {
-  vmaInvalidateAllocation(allocator, allocation, offset, size);
+VkResult InvalidateAllocation(VmaAllocator allocator,
+                              VmaAllocation allocation,
+                              VkDeviceSize offset,
+                              VkDeviceSize size) {
+  return vmaInvalidateAllocation(allocator, allocation, offset, size);
 }
 
 void GetAllocationInfo(VmaAllocator allocator,

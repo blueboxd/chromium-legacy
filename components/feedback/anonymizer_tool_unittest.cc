@@ -430,11 +430,11 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
      "<IPv6: 18>"},
     {"aa:aa:aa:aa:aa:aa",  // MAC address (BSSID).
      "[MAC OUI=aa:aa:aa IFACE=1]"},
-    {"chrome://resources/foo",  // Secure chrome resource, whitelisted.
+    {"chrome://resources/foo",  // Secure chrome resource, exempt.
      "chrome://resources/foo"},
-    {"chrome://settings/crisper.js",  // Whitelisted settings URLs.
+    {"chrome://settings/crisper.js",  // Exempt settings URLs.
      "chrome://settings/crisper.js"},
-    // Whitelisted first party extension.
+    // Exempt first party extension.
     {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js",
      "chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js"},
     {"chrome://resources/f?user=bar",  // Potentially PII in parameter.

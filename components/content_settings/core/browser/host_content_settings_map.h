@@ -162,6 +162,11 @@ class HostContentSettingsMap : public content_settings::Observer,
                              base::Optional<content_settings::SessionModel>
                                  session_model = base::nullopt) const;
 
+  void GetDiscardedSettingsForOneType(
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      ContentSettingsForOneType* settings) const;
+
   // Sets the default setting for a particular content type. This method must
   // not be invoked on an incognito map.
   //

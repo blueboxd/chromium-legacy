@@ -16,11 +16,6 @@
 @class FindInPageModel;
 @protocol FindInPageResponseDelegate;
 
-// Names for Find In Page UMA actions (Find, FindNext, FindPrevious).
-extern const char kFindActionName[];
-extern const char kFindNextActionName[];
-extern const char kFindPreviousActionName[];
-
 // Adds support for the "Find in page" feature.
 class FindTabHelper : public web::WebStateObserver,
                       public web::WebStateUserData<FindTabHelper> {

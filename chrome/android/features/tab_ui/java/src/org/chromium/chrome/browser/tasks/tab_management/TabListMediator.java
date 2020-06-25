@@ -370,7 +370,12 @@ class TabListMediator {
         @Override
         public void onTitleUpdated(Tab updatedTab) {
             int index = mModel.indexFromId(updatedTab.getId());
-            if (index == TabModel.INVALID_TAB_INDEX) return;
+            // TODO(crbug.com/1098100) The null check for tab here should be redundant once we have
+            // resolved the bug.
+            if (index == TabModel.INVALID_TAB_INDEX
+                    || mTabModelSelector.getTabById(updatedTab.getId()) == null) {
+                return;
+            }
             mModel.get(index).model.set(
                     TabProperties.TITLE, getLatestTitleForTab(PseudoTab.fromTab(updatedTab)));
         }

@@ -14,7 +14,7 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
                               base::nullopt,
                               mojom::LargestContentfulPaintTiming::New(),
                               mojom::LargestContentfulPaintTiming::New(),
-                              base::nullopt, base::nullopt),
+                              base::nullopt, base::nullopt, base::nullopt),
       mojom::ParseTiming::New(),
       std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>{},
       base::Optional<base::TimeDelta>());
@@ -43,7 +43,8 @@ bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {
          !timing.largest_contentful_paint->largest_image_paint &&
          !timing.largest_contentful_paint->largest_text_paint &&
          !timing.experimental_largest_contentful_paint->largest_image_paint &&
-         !timing.experimental_largest_contentful_paint->largest_text_paint;
+         !timing.experimental_largest_contentful_paint->largest_text_paint &&
+         !timing.first_eligible_to_paint;
 }
 
 bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {

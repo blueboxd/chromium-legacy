@@ -20,9 +20,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
-namespace signin {
-class IdentityManager;
-}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -57,10 +54,9 @@ class FlocRemotePermissionService : public KeyedService {
 
   using QueryFlocPermissionCallback = base::OnceCallback<void(bool success)>;
 
-  using CompletionCallback = base::OnceCallback<void(Request*, bool success)>;
+  using CreateRequestCallback = base::OnceCallback<void(Request*)>;
 
   FlocRemotePermissionService(
-      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~FlocRemotePermissionService() override;
 
@@ -76,24 +72,23 @@ class FlocRemotePermissionService : public KeyedService {
   // This function is pulled out for testing purposes.
   virtual std::unique_ptr<Request> CreateRequest(
       const GURL& url,
-      CompletionCallback callback,
+      CreateRequestCallback callback,
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation);
+
+  // Virtual so that in browsertest it can return a URL that the test server can
+  // handle.
+  virtual GURL GetQueryFlocPermissionUrl() const;
 
   // Called by |request| when a floc permission settings query has completed.
   // Unpacks the response and calls |callback|, which is the original callback
   // that was passed to QueryFlocRelatedPermissions().
   void QueryFlocPermissionCompletionCallback(
       FlocRemotePermissionService::QueryFlocPermissionCallback callback,
-      FlocRemotePermissionService::Request* request,
-      bool success);
+      FlocRemotePermissionService::Request* request);
 
  private:
   friend class FlocRemotePermissionServiceTest;
-
-  // Stores pointer to IdentityManager instance. It must outlive the
-  // FlocRemotePermissionService and can be null during tests.
-  signin::IdentityManager* identity_manager_;
 
   // Request context getter to use.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

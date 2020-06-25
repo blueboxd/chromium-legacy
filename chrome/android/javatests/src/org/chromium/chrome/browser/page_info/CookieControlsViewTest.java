@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -97,6 +98,7 @@ public class CookieControlsViewTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1062645")
     public void testHiddenOnBlankPage() {
         setThirdPartyCookieBlocking(true);
         onView(withId(org.chromium.chrome.R.id.location_bar_status_icon)).perform(click());
@@ -109,6 +111,7 @@ public class CookieControlsViewTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1062645")
     public void testHiddenWhenDisabled() {
         setThirdPartyCookieBlocking(false);
         loadUrlAndOpenPageInfo(mTestServer.getURLWithHostName("foo.com", mPath));
@@ -121,6 +124,7 @@ public class CookieControlsViewTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1062645")
     public void testShow() {
         setThirdPartyCookieBlocking(true);
         loadUrlAndOpenPageInfo(mTestServer.getURLWithHostName("foo.com", mPath));
@@ -133,6 +137,7 @@ public class CookieControlsViewTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1062645")
     public void testUpdate() {
         Assert.assertEquals(0, getTotalPageActionHistogramCount());
 

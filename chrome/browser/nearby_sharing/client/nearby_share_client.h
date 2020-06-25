@@ -1,0 +1,95 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_CLIENT_NEARBY_SHARE_CLIENT_H_
+#define CHROME_BROWSER_NEARBY_SHARING_CLIENT_NEARBY_SHARE_CLIENT_H_
+
+#include <memory>
+#include <string>
+
+#include "base/callback_forward.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_request_error.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+
+namespace nearbyshare {
+namespace proto {
+class CheckContactsReachabilityRequest;
+class CheckContactsReachabilityResponse;
+class ListContactPeopleRequest;
+class ListContactPeopleResponse;
+class ListPublicCertificatesRequest;
+class ListPublicCertificatesResponse;
+class UpdateDeviceRequest;
+class UpdateDeviceResponse;
+}  // namespace proto
+}  // namespace nearbyshare
+
+// Interface for making API requests to the NearbyShare service, which
+// manages certificates and provides access to contacts.
+// Implementations shall only processes a single request, so create a new
+// instance for each request you make. DO NOT REUSE.
+class NearbyShareClient {
+ public:
+  using CheckContactsReachabilityCallback = base::OnceCallback<void(
+      const nearbyshare::proto::CheckContactsReachabilityResponse&)>;
+  using ErrorCallback = base::OnceCallback<void(NearbyShareRequestError)>;
+  using ListContactPeopleCallback = base::OnceCallback<void(
+      const nearbyshare::proto::ListContactPeopleResponse&)>;
+  using ListPublicCertificatesCallback = base::OnceCallback<void(
+      const nearbyshare::proto::ListPublicCertificatesResponse&)>;
+  using UpdateDeviceCallback =
+      base::OnceCallback<void(const nearbyshare::proto::UpdateDeviceResponse&)>;
+
+  NearbyShareClient() = default;
+  virtual ~NearbyShareClient() = default;
+
+  // NearbyShareService v1: UpdateDevice
+  virtual void UpdateDevice(
+      const nearbyshare::proto::UpdateDeviceRequest& request,
+      UpdateDeviceCallback&& callback,
+      ErrorCallback&& error_callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation) = 0;
+
+  // NearbyShareService v1: CheckContactsReachability
+  virtual void CheckContactsReachability(
+      const nearbyshare::proto::CheckContactsReachabilityRequest& request,
+      CheckContactsReachabilityCallback&& callback,
+      ErrorCallback&& error_callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation) = 0;
+
+  // NearbyShareService v1: ListContactPeople
+  virtual void ListContactPeople(
+      const nearbyshare::proto::ListContactPeopleRequest& request,
+      ListContactPeopleCallback&& callback,
+      ErrorCallback&& error_callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation) = 0;
+
+  // NearbyShareService v1: ListPublicCertificates
+  virtual void ListPublicCertificates(
+      const nearbyshare::proto::ListPublicCertificatesRequest& request,
+      ListPublicCertificatesCallback&& callback,
+      ErrorCallback&& error_callback,
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation) = 0;
+
+  // Returns the access token used to make the request. If no request has been
+  // made yet, this function will return an empty string.
+  virtual std::string GetAccessTokenUsed() = 0;
+};
+
+// Interface for creating NearbyShareClient instances. Because each
+// NearbyShareClient instance can only be used for one API call, a factory
+// makes it easier to make multiple requests in sequence or in parallel.
+class NearbyShareClientFactory {
+ public:
+  NearbyShareClientFactory() = default;
+  ~NearbyShareClientFactory() = default;
+
+  virtual std::unique_ptr<NearbyShareClient> CreateInstance() = 0;
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_CLIENT_NEARBY_SHARE_CLIENT_H_

@@ -76,7 +76,7 @@ class BrowserControlsTest : public testing::Test,
   }
 
   ~BrowserControlsTest() override {
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 

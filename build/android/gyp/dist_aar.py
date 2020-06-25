@@ -152,8 +152,7 @@ def main(args):
   if options.depfile:
     all_inputs = (options.jars + options.dependencies_res_zips +
                   options.r_text_files + options.proguard_configs)
-    build_utils.WriteDepfile(options.depfile, options.output, all_inputs,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, options.output, all_inputs)
 
 
 if __name__ == '__main__':

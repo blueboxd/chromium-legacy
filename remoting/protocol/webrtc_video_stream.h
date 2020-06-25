@@ -22,6 +22,7 @@
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
+#include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/common_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -73,11 +74,12 @@ class WebrtcVideoStream : public VideoStream,
   void OnFrameEncoded(WebrtcVideoEncoder::EncodeResult encode_result,
                       std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame);
 
-  void OnEncoderCreated(webrtc::VideoCodecType codec_type);
+  void OnEncoderCreated(webrtc::VideoCodecType codec_type,
+                        const webrtc::SdpVideoFormat::Parameters& parameters);
 
   // Helper functions to create software encoders that run on the encode thread.
   std::unique_ptr<WebrtcVideoEncoder> CreateVP8Encoder();
-  std::unique_ptr<WebrtcVideoEncoder> CreateVP9Encoder();
+  std::unique_ptr<WebrtcVideoEncoder> CreateVP9Encoder(bool lossless_color);
 
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;

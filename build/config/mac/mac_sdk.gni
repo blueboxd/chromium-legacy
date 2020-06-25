@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/gclient_args.gni")
 import("//build/config/mac/mac_sdk_overrides.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
@@ -112,7 +113,13 @@ if (use_system_xcode) {
     mac_bin_path = find_sdk_lines[1]
   }
 } else {
-  mac_sdk_version = mac_sdk_official_version
+  if (mac_xcode_version == "default") {
+    mac_sdk_version = mac_sdk_official_version
+  } else if (mac_xcode_version == "xcode_12_beta") {
+    mac_sdk_version = "11.0"
+  } else {
+    assert(false, "unknown mac_xcode_version $mac_xcode_version")
+  }
   _dev = _hermetic_xcode_path + "/Contents/Developer"
   _sdk = "MacOSX${mac_sdk_version}.sdk"
   mac_sdk_path = _dev + "/Platforms/MacOSX.platform/Developer/SDKs/$_sdk"

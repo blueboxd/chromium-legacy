@@ -20,11 +20,6 @@
 
 namespace {
 
-// Frame ids are base16 string of 128 bit numbers.
-const char kMainFrameId[] = "1effd8f52a067c8d3a01762d3c41dfd1";
-const char kFrame1Id[] = "1effd8f52a067c8d3a01762d3c41dfd2";
-const char kFrame2Id[] = "1effd8f52a067c8d3a01762d3c41dfd3";
-
 // A base64 encoded sample key.
 const char kFrameKey[] = "R7lsXtR74c6R9A9k691gUQ8JAd0be+w//Lntgcbjwrc=";
 
@@ -46,13 +41,13 @@ class WebFramesManagerImplTest : public PlatformTest,
         router_([[CRWWKScriptMessageRouter alloc]
             initWithUserContentController:user_content_controller_]),
         web_view_(OCMClassMock([WKWebView class])),
-        main_frame_(kMainFrameId,
+        main_frame_(kMainFakeFrameId,
                     /*is_main_frame=*/true,
                     GURL("https://www.main.test")),
-        frame_1_(kFrame1Id,
+        frame_1_(kChildFakeFrameId,
                  /*is_main_frame=*/false,
                  GURL("https://www.frame1.test")),
-        frame_2_(kFrame2Id,
+        frame_2_(kChildFakeFrameId2,
                  /*is_main_frame=*/false,
                  GURL("https://www.frame2.test")) {
     // Notify |frames_manager_| that its associated WKWebView has changed from
@@ -161,6 +156,16 @@ TEST_F(WebFramesManagerImplTest, MainWebFrame) {
   EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
   EXPECT_FALSE(frames_manager_.GetMainWebFrame());
   EXPECT_FALSE(frames_manager_.GetFrameWithId(main_frame_.GetFrameId()));
+}
+
+// Tests that a WebFrame can not be registered with a malformed frame id.
+TEST_F(WebFramesManagerImplTest, WebFrameWithInvalidId) {
+  FakeWebFrame frame_with_invalid_id(kInvalidFrameId,
+                                     /*is_main_frame=*/true,
+                                     GURL("https://www.main.test"));
+  SendFrameBecameAvailableMessage(frame_with_invalid_id);
+
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
 }
 
 // Tests multiple web frames construction/destruction.

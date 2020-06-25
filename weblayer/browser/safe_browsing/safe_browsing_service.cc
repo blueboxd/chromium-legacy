@@ -146,7 +146,7 @@ SafeBrowsingUIManager* SafeBrowsingService::GetSafeBrowsingUIManager() {
 
 void SafeBrowsingService::CreateSafeBrowsingUIManager() {
   DCHECK(!ui_manager_);
-  ui_manager_ = new SafeBrowsingUIManager();
+  ui_manager_ = new SafeBrowsingUIManager(this);
 }
 
 void SafeBrowsingService::CreateAndStartSafeBrowsingDBManager() {
@@ -236,6 +236,13 @@ void SafeBrowsingService::SetSafeBrowsingDisabledOnIOThread(bool disabled) {
       safe_browsing_url_checker_delegate_->SetSafeBrowsingDisabled(disabled);
     }
   }
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+SafeBrowsingService::GetURLLoaderFactory() {
+  if (!network_context_)
+    return nullptr;
+  return network_context_->GetURLLoaderFactory();
 }
 
 }  // namespace weblayer

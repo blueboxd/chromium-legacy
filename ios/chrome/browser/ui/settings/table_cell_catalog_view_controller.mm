@@ -72,8 +72,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountSignInItem,
   ItemTypeSettingsSwitch1,
   ItemTypeSettingsSwitch2,
-  ItemTypeTableViewInfoButton1,
-  ItemTypeTableViewInfoButton2,
+  ItemTypeTableViewInfoButton,
+  ItemTypeTableViewInfoButtonWithDetailText,
+  ItemTypeTableViewInfoButtonWithImage,
   ItemTypeSyncSwitch,
   ItemTypeSettingsSyncError,
   ItemTypeAutofillData,
@@ -343,23 +344,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:settingsSwitchItem2
       toSectionWithIdentifier:SectionIdentifierSettings];
 
-  TableViewInfoButtonItem* tableViewInfoButtonItem =
-      [[TableViewInfoButtonItem alloc]
-          initWithType:ItemTypeTableViewInfoButton1];
-  tableViewInfoButtonItem.text = @"Setting item with an info accessory";
-  tableViewInfoButtonItem.statusText = @"Status";
-  [model addItem:tableViewInfoButtonItem
-      toSectionWithIdentifier:SectionIdentifierSettings];
-
-  TableViewInfoButtonItem* tableViewInfoButtonItem2 =
-      [[TableViewInfoButtonItem alloc]
-          initWithType:ItemTypeTableViewInfoButton2];
-  tableViewInfoButtonItem.text = @"Setting item with an info accessory";
-  tableViewInfoButtonItem.detailText = @"Detail text";
-  tableViewInfoButtonItem.statusText = @"Status";
-  [model addItem:tableViewInfoButtonItem2
-      toSectionWithIdentifier:SectionIdentifierSettings];
-
   SyncSwitchItem* syncSwitchItem =
       [[SyncSwitchItem alloc] initWithType:ItemTypeSyncSwitch];
   syncSwitchItem.text = @"This is a sync switch item";
@@ -367,6 +351,33 @@ typedef NS_ENUM(NSInteger, ItemType) {
   syncSwitchItem.on = YES;
   syncSwitchItem.enabled = NO;
   [model addItem:syncSwitchItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  TableViewInfoButtonItem* tableViewInfoButtonItem =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeTableViewInfoButton];
+  tableViewInfoButtonItem.text = @"Info button item";
+  tableViewInfoButtonItem.statusText = @"Status";
+  [model addItem:tableViewInfoButtonItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  TableViewInfoButtonItem* tableViewInfoButtonItemWithDetailText =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeTableViewInfoButtonWithDetailText];
+  tableViewInfoButtonItemWithDetailText.text = @"Info button item";
+  tableViewInfoButtonItemWithDetailText.detailText = @"Detail text";
+  tableViewInfoButtonItemWithDetailText.statusText = @"Status";
+  [model addItem:tableViewInfoButtonItemWithDetailText
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  TableViewInfoButtonItem* tableViewInfoButtonItemWithLeadingImage =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeTableViewInfoButtonWithImage];
+  tableViewInfoButtonItemWithLeadingImage.text = @"Info button item";
+  tableViewInfoButtonItemWithLeadingImage.statusText = @"Status";
+  tableViewInfoButtonItemWithLeadingImage.iconImageName =
+      @"settings_article_suggestions";
+  [model addItem:tableViewInfoButtonItemWithLeadingImage
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   SettingsImageDetailTextItem* imageDetailTextItem =
@@ -538,8 +549,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                      cellForRowAtIndexPath:indexPath];
   ItemType itemType = static_cast<ItemType>(
       [self.tableViewModel itemTypeForIndexPath:indexPath]);
-  if (itemType == ItemTypeTableViewInfoButton1 ||
-      itemType == ItemTypeTableViewInfoButton2) {
+  if (itemType == ItemTypeTableViewInfoButton ||
+      itemType == ItemTypeTableViewInfoButtonWithDetailText ||
+      itemType == ItemTypeTableViewInfoButtonWithImage) {
     TableViewInfoButtonCell* managedCell =
         base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
     [managedCell.trailingButton addTarget:self

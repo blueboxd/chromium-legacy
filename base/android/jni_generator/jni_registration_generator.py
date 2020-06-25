@@ -659,11 +659,8 @@ def main(argv):
       namespace=args.namespace)
 
   if args.depfile:
-    build_utils.WriteDepfile(
-        args.depfile,
-        args.srcjar_path,
-        sources_files + java_file_paths,
-        add_pydeps=False)
+    build_utils.WriteDepfile(args.depfile, args.srcjar_path,
+                             sources_files + java_file_paths)
 
 
 if __name__ == '__main__':

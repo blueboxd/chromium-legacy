@@ -1725,13 +1725,19 @@ void DocumentLoader::InstallNewDocument(
     is_same_origin_navigation_ =
         initiator_origin->IsSameOriginWith(url_origin.get()) &&
         Url().ProtocolIsInHTTPFamily();
+  }
 
-    // If the load is from a document from the same origin then we enable
-    // deferred commits to avoid white flash on load. We only want to delay
-    // commits on same origin loads to avoid confusing users. We also require
-    // that this be an html document served via http.
-    document->SetDeferredCompositorCommitIsAllowed(is_same_origin_navigation_ &&
-                                                   IsA<HTMLDocument>(document));
+  // The PaintHolding feature defers compositor commits until content has
+  // been painted or 500ms have passed, whichever comes first. The additional
+  // PaintHoldingCrossOrigin feature allows PaintHolding even for cross-origin
+  // navigations, otherwise only same-origin navigations have deferred commits.
+  // We also require that this be an html document served via http.
+  if (base::FeatureList::IsEnabled(blink::features::kPaintHolding) &&
+      IsA<HTMLDocument>(document) && Url().ProtocolIsInHTTPFamily() &&
+      (is_same_origin_navigation_ ||
+       base::FeatureList::IsEnabled(
+           blink::features::kPaintHoldingCrossOrigin))) {
+    document->SetDeferredCompositorCommitIsAllowed(true);
   } else {
     document->SetDeferredCompositorCommitIsAllowed(false);
   }

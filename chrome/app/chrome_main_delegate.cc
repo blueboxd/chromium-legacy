@@ -1153,8 +1153,7 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 
 #if defined(OS_LINUX)
 void ChromeMainDelegate::ZygoteStarting(
-    std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-        delegates) {
+    std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
 #if defined(OS_CHROMEOS)
     chromeos::InitHugepagesAndMlockSelf();
 #endif

@@ -104,6 +104,13 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   sync_data->set_user_display_mode(
       ToWebAppSpecificsUserDisplayMode(web_app.user_display_mode()));
 
+  if (web_app.user_page_ordinal().IsValid())
+    sync_data->set_user_page_ordinal(
+        web_app.user_page_ordinal().ToInternalValue());
+  if (web_app.user_launch_ordinal().IsValid())
+    sync_data->set_user_launch_ordinal(
+        web_app.user_launch_ordinal().ToInternalValue());
+
   DCHECK(web_app.sources_.any());
   local_data->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
   local_data->mutable_sources()->set_policy(web_app.sources_[Source::kPolicy]);
@@ -250,6 +257,18 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetUserDisplayMode(
       ToMojomDisplayMode(sync_data.user_display_mode()));
+
+  // Ordinals used for chrome://apps page.
+  syncer::StringOrdinal page_ordinal =
+      syncer::StringOrdinal(sync_data.user_page_ordinal());
+  if (!page_ordinal.IsValid())
+    page_ordinal = syncer::StringOrdinal();
+  syncer::StringOrdinal launch_ordinal =
+      syncer::StringOrdinal(sync_data.user_launch_ordinal());
+  if (!launch_ordinal.IsValid())
+    launch_ordinal = syncer::StringOrdinal();
+  web_app->SetUserPageOrdinal(page_ordinal);
+  web_app->SetUserLaunchOrdinal(launch_ordinal);
 
   if (!local_data.has_is_locally_installed()) {
     DLOG(ERROR) << "WebApp proto parse error: no is_locally_installed field";

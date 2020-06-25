@@ -16,6 +16,7 @@
 #include "content/browser/conversions/conversion_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -198,6 +199,22 @@ TEST_F(ConversionReporterImplTest, ManyReportsAddedSeparately_SentInOrder) {
     EXPECT_EQ(static_cast<int64_t>(i), sender_->last_sent_report_id());
     EXPECT_EQ(static_cast<int64_t>(i), last_report_id);
   }
+}
+
+TEST_F(ConversionReporterImplTest, EmbedderDisallowsConversions_ReportNotSent) {
+  ConversionDisallowingContentBrowserClient disallowed_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&disallowed_browser_client);
+  reporter_->AddReportsToQueue({GetReport(clock().Now(), /*conversion_id=*/1)},
+                               base::BindRepeating([](int64_t conversion_id) {
+                                 EXPECT_EQ(1L, conversion_id);
+                               }));
+
+  // Fast forward by 0, as we yield the thread when a report is scheduled to be
+  // sent.
+  task_environment_.FastForwardBy(base::TimeDelta());
+  EXPECT_EQ(0u, sender_->num_reports_sent());
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 }  // namespace content

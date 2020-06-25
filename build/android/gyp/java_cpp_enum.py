@@ -417,7 +417,6 @@ ${ENUM_ENTRIES}
 def DoMain(argv):
   usage = 'usage: %prog [options] [output_dir] input_file(s)...'
   parser = optparse.OptionParser(usage=usage)
-  build_utils.AddDepfileOption(parser)
 
   parser.add_option('--srcjar',
                     help='When specified, a .srcjar at the given path is '
@@ -433,9 +432,6 @@ def DoMain(argv):
     with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
       for output_path, data in DoGenerate(input_paths):
         build_utils.AddToZipHermetic(srcjar, output_path, data=data)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.srcjar, add_pydeps=False)
 
 
 if __name__ == '__main__':

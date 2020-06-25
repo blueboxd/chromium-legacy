@@ -552,7 +552,7 @@ android_java_prebuilt("package_impl_fake_java") {
 }
 
 template("jar_src") {
-  action(target_name) {
+  action_with_pydeps(target_name) {
     _rebased_src_search_dirs =
         rebase_path(invoker.src_search_dirs, root_build_dir)
 
@@ -1300,7 +1300,7 @@ if (!is_component_build) {
     ]
   }
 
-  action("generate_javadoc") {
+  action_with_pydeps("generate_javadoc") {
     script = "//components/cronet/tools/generate_javadoc.py"
     depfile = "$target_gen_dir/$target_name.d"
     _zip_file = "$target_gen_dir/$target_name.zip"

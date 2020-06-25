@@ -462,6 +462,38 @@ TEST_F(TabStripUIHandlerTest, TabMoved) {
   EXPECT_EQ("tab-moved", call_data.arg1()->GetString());
   EXPECT_EQ(expected_tab_id, call_data.arg2()->GetInt());
   EXPECT_EQ(expected_to_index, call_data.arg3()->GetInt());
+  EXPECT_EQ(false, call_data.arg4()->GetBool());
+}
+
+TEST_F(TabStripUIHandlerTest, TabMovedAndPinned) {
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+  web_ui()->ClearTrackedCalls();
+
+  int from_index = 1;
+  int expected_to_index = 0;
+  int expected_tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(from_index));
+
+  browser()->tab_strip_model()->SetTabPinned(from_index, true);
+
+  const content::TestWebUI::CallData& moved_event =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", moved_event.function_name());
+  EXPECT_EQ("tab-moved", moved_event.arg1()->GetString());
+  EXPECT_EQ(expected_tab_id, moved_event.arg2()->GetInt());
+  EXPECT_EQ(expected_to_index, moved_event.arg3()->GetInt());
+  EXPECT_EQ(true, moved_event.arg4()->GetBool());
+
+  const content::TestWebUI::CallData& updated_event =
+      *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", updated_event.function_name());
+  EXPECT_EQ("tab-updated", updated_event.arg1()->GetString());
+  const base::DictionaryValue* updated_data;
+  ASSERT_TRUE(updated_event.arg2()->GetAsDictionary(&updated_data));
+  bool pinned;
+  ASSERT_TRUE(updated_data->GetBoolean("pinned", &pinned));
+  ASSERT_TRUE(pinned);
 }
 
 TEST_F(TabStripUIHandlerTest, TabReplaced) {

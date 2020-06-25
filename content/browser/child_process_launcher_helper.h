@@ -17,9 +17,9 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 
 #if !defined(OS_FUCHSIA)
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -44,7 +44,7 @@
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif
 
 namespace base {
@@ -88,7 +88,7 @@ class ChildProcessLauncherHelper :
     base::Process process;
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-    service_manager::ZygoteHandle zygote = nullptr;
+    ZygoteHandle zygote = nullptr;
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
   };
 

@@ -10,6 +10,9 @@
 #include "base/time/clock.h"
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_network_sender_impl.h"
+#include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -17,6 +20,7 @@ ConversionReporterImpl::ConversionReporterImpl(
     StoragePartition* storage_partition,
     const base::Clock* clock)
     : clock_(clock),
+      partition_(static_cast<StoragePartitionImpl*>(storage_partition)),
       network_sender_(
           std::make_unique<ConversionNetworkSenderImpl>(storage_partition)) {}
 
@@ -60,11 +64,20 @@ void ConversionReporterImpl::SendNextReport() {
   // Send the next report and remove it from the queue. Bind the conversion id
   // to the sent callback so we know which conversion report has finished
   // sending.
-  network_sender_->SendReport(
-      report_queue_.top().get(),
-      base::BindOnce(&ConversionReporterImpl::OnReportSent,
-                     base::Unretained(this),
-                     *report_queue_.top()->conversion_id));
+  if (GetContentClient()->browser()->AllowConversionMeasurement(
+          partition_->browser_context())) {
+    network_sender_->SendReport(
+        report_queue_.top().get(),
+        base::BindOnce(&ConversionReporterImpl::OnReportSent,
+                       base::Unretained(this),
+                       *report_queue_.top()->conversion_id));
+  } else {
+    // If measurement is disallowed, just drop the report on the floor. We need
+    // to make sure we forward that the report was "sent" to ensure it is
+    // deleted from storage, etc. This simulate sending the report through a
+    // null channel.
+    OnReportSent(*report_queue_.top()->conversion_id);
+  }
   report_queue_.pop();
   MaybeScheduleNextReport();
 }

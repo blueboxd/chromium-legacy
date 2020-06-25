@@ -142,36 +142,7 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Maximum number of NEL policies to store before evicting.
   static const size_t kMaxPolicies;
 
-  // Histograms.  These are mainly used in test cases to verify that interesting
-  // events occurred.
-
-  static const char kHeaderOutcomeHistogram[];
   static const char kSignedExchangeRequestOutcomeHistogram[];
-
-  enum class HeaderOutcome {
-    DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
-    DISCARDED_INVALID_SSL_INFO = 1,
-    DISCARDED_CERT_STATUS_ERROR = 2,
-
-    DISCARDED_INSECURE_ORIGIN = 3,
-
-    DISCARDED_JSON_TOO_BIG = 4,
-    DISCARDED_JSON_INVALID = 5,
-    DISCARDED_NOT_DICTIONARY = 6,
-    DISCARDED_TTL_MISSING = 7,
-    DISCARDED_TTL_NOT_INTEGER = 8,
-    DISCARDED_TTL_NEGATIVE = 9,
-    DISCARDED_REPORT_TO_MISSING = 10,
-    DISCARDED_REPORT_TO_NOT_STRING = 11,
-
-    REMOVED = 12,
-    SET = 13,
-
-    DISCARDED_MISSING_REMOTE_ENDPOINT = 14,
-    DISCARDED_INCLUDE_SUBDOMAINS_NOT_ALLOWED = 15,
-
-    MAX
-  };
 
   // Used for histogramming Signed Exchange request outcomes only. Previously,
   // the outcome of all requests would be histogrammed, but this was removed in
@@ -192,11 +163,6 @@ class NET_EXPORT NetworkErrorLoggingService {
 
     kMaxValue = kDiscardedIPAddressMismatch
   };
-
-  static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();
-  static void RecordHeaderDiscardedForInvalidSSLInfo();
-  static void RecordHeaderDiscardedForCertStatusError();
-  static void RecordHeaderDiscardedForMissingRemoteEndpoint();
 
   // NEL policies are persisted to disk if |store| is not null.
   // The store, if given, should outlive |*this|.

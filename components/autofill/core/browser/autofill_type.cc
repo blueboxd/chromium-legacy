@@ -10,9 +10,13 @@ namespace autofill {
 
 FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
   switch (field_type) {
+    case NAME_HONORIFIC_PREFIX:
     case NAME_FIRST:
     case NAME_MIDDLE:
     case NAME_LAST:
+    case NAME_LAST_FIRST:
+    case NAME_LAST_SECOND:
+    case NAME_LAST_CONJUNCTION:
     case NAME_MIDDLE_INITIAL:
     case NAME_FULL:
     case NAME_SUFFIX:
@@ -139,6 +143,7 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
                                         HtmlFieldMode field_mode) {
   switch (field_type) {
     case HTML_TYPE_NAME:
+    case HTML_TYPE_HONORIFIC_PREFIX:
     case HTML_TYPE_GIVEN_NAME:
     case HTML_TYPE_ADDITIONAL_NAME:
     case HTML_TYPE_ADDITIONAL_NAME_INITIAL:
@@ -318,6 +323,9 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_NAME:
       return NAME_FULL;
 
+    case HTML_TYPE_HONORIFIC_PREFIX:
+      return NAME_HONORIFIC_PREFIX;
+
     case HTML_TYPE_GIVEN_NAME:
       return NAME_FIRST;
 
@@ -456,6 +464,8 @@ std::string AutofillType::ToString() const {
       break;
     case HTML_TYPE_NAME:
       return "HTML_TYPE_NAME";
+    case HTML_TYPE_HONORIFIC_PREFIX:
+      return "HTML_TYPE_HONORIFIC_PREFIX";
     case HTML_TYPE_GIVEN_NAME:
       return "HTML_TYPE_GIVEN_NAME";
     case HTML_TYPE_ADDITIONAL_NAME:
@@ -558,12 +568,20 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "UNKNOWN_TYPE";
     case EMPTY_TYPE:
       return "EMPTY_TYPE";
+    case NAME_HONORIFIC_PREFIX:
+      return "NAME_HONORIFIC_PREFIX";
     case NAME_FIRST:
       return "NAME_FIRST";
     case NAME_MIDDLE:
       return "NAME_MIDDLE";
     case NAME_LAST:
       return "NAME_LAST";
+    case NAME_LAST_FIRST:
+      return "NAME_LAST_FIRST";
+    case NAME_LAST_CONJUNCTION:
+      return "NAME_LAST_CONJUNCTION";
+    case NAME_LAST_SECOND:
+      return "NAME_LAST_SECOND";
     case NAME_MIDDLE_INITIAL:
       return "NAME_MIDDLE_INITIAL";
     case NAME_FULL:

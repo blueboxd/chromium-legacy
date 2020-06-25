@@ -69,6 +69,18 @@ void QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
   g_testing_intent_generator_factory_callback = factory;
 }
 
+bool QuickAnswersClient::IsQuickAnswersAllowedForLocale(
+    const std::string& locale,
+    const std::string& runtime_locale) {
+  // String literals used in some cases in the array because their
+  // constant equivalents don't exist in:
+  // third_party/icu/source/common/unicode/uloc.h
+  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
+                                         "en_AU",     "en_IN", "en_NZ"};
+  return base::Contains(kAllowedLocales, locale) ||
+         base::Contains(kAllowedLocales, runtime_locale);
+}
+
 QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
                                        ash::AssistantState* assistant_state,
                                        QuickAnswersDelegate* delegate)
@@ -109,15 +121,8 @@ void QuickAnswersClient::OnAssistantQuickAnswersEnabled(bool enabled) {
 }
 
 void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
-  // String literals used in some cases in the array because their
-  // constant equivalents don't exist in:
-  // third_party/icu/source/common/unicode/uloc.h
-  const std::string kAllowedLocales[] = {ULOC_CANADA, ULOC_UK, ULOC_US,
-                                         "en_AU",     "en_IN", "en_NZ"};
-
-  const std::string kRuntimeLocale = icu::Locale::getDefault().getName();
-  locale_supported_ = (base::Contains(kAllowedLocales, locale) ||
-                       base::Contains(kAllowedLocales, kRuntimeLocale));
+  locale_supported_ = IsQuickAnswersAllowedForLocale(
+      locale, icu::Locale::getDefault().getName());
   NotifyEligibilityChanged();
 }
 

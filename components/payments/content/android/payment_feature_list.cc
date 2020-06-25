@@ -52,7 +52,7 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 
 // Android only features.
 const base::Feature kAndroidAppPaymentUpdateEvents{
-    "AndroidAppPaymentUpdateEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidAppPaymentUpdateEvents", base::FEATURE_ENABLED_BY_DEFAULT};
 // TODO(crbug.com/1094549): clean up after being stable.
 const base::Feature kScrollToExpandPaymentHandler{
     "ScrollToExpandPaymentHandler", base::FEATURE_ENABLED_BY_DEFAULT};

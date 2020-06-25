@@ -21,8 +21,6 @@ class FakeModelTypeConnector : public ModelTypeConnector {
       ModelType type,
       std::unique_ptr<DataTypeActivationResponse> activation_response) override;
   void DisconnectNonBlockingType(ModelType type) override;
-  void RegisterDirectoryType(ModelType type, ModelSafeGroup group) override;
-  void UnregisterDirectoryType(ModelType type) override;
   void ConnectProxyType(ModelType type) override;
   void DisconnectProxyType(ModelType type) override;
 };

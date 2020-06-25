@@ -490,6 +490,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   ThroughputTrackerMap throughput_tracker_map_;
 
   base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
+  base::WeakPtrFactory<Compositor> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

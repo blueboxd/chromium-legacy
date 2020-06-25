@@ -14,6 +14,9 @@ import zipfile
 
 from util import build_utils
 
+sys.path.insert(1, os.path.join(build_utils.DIR_SOURCE_ROOT, 'build'))
+import print_python_deps
+
 # When set and a difference is detected, a diff of what changed is printed.
 PRINT_EXPLANATIONS = int(os.environ.get('PRINT_BUILD_EXPLANATIONS', 0))
 
@@ -48,7 +51,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
   input_strings = list(input_strings or [])
   output_paths = list(output_paths or [])
 
-  input_paths += build_utils.ComputePythonDependencies()
+  input_paths += print_python_deps.ComputePythonDependencies()
 
   CallAndRecordIfStale(
       on_stale_md5,
@@ -64,8 +67,7 @@ def CallAndWriteDepfileIfStale(on_stale_md5,
   # on bots that build with & without patch, and the patch changes the depfile
   # location.
   if hasattr(options, 'depfile') and options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, output_paths[0], depfile_deps, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, output_paths[0], depfile_deps)
 
 
 def CallAndRecordIfStale(function,

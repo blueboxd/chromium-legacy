@@ -23,7 +23,8 @@ import org.chromium.chrome.browser.download.home.list.UiUtils;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
 import org.chromium.ui.modelutil.PropertyModel;
 
-/** A {@link RecyclerView.ViewHolder} specifically meant to display a generic {@code OfflineItem}.
+/**
+ *  A {@link RecyclerView.ViewHolder} specifically meant to display a generic {@code OfflineItem}.
  */
 public class GenericViewHolder extends OfflineItemViewHolder {
     private final TextView mTitle;

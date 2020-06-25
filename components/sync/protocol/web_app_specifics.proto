@@ -39,4 +39,11 @@ message WebAppSpecifics {
   optional uint32 theme_color = 4;
   optional string scope = 5;
   repeated WebAppIconInfo icon_infos = 6;
+
+  // Used to store the page number that the app is displayed on in
+  // chrome://apps.
+  optional string user_page_ordinal = 7;
+  // Used to store the in-page ranking for ordering apps in its given
+  // |user_page_ordinal| page.
+  optional string user_launch_ordinal = 8;
 }

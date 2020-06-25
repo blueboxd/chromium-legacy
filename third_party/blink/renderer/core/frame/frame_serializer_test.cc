@@ -70,7 +70,7 @@ class FrameSerializerTest : public testing::Test,
   }
 
   void TearDown() override {
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -99,7 +99,7 @@ class FrameSerializerTest : public testing::Test,
     response.SetMimeType("text/html");
     response.SetHttpStatusCode(status_code);
 
-    platform_->GetURLLoaderMockFactory()->RegisterErrorURL(
+    WebURLLoaderMockFactory::GetSingletonInstance()->RegisterErrorURL(
         KURL(base_url_, file), response, WebURLError(error));
   }
 

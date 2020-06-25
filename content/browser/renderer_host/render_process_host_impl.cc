@@ -177,6 +177,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "device/gamepad/gamepad_haptics_manager.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -214,7 +215,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/features.h"
@@ -289,7 +289,7 @@
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/public/common/zygote/zygote_handle.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
@@ -434,14 +434,14 @@ class RendererSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-  service_manager::ZygoteHandle GetZygote() override {
+  ZygoteHandle GetZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
     base::CommandLine::StringType renderer_prefix =
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     if (!renderer_prefix.empty())
       return nullptr;
-    return service_manager::GetGenericZygote();
+    return GetGenericZygote();
   }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
@@ -3193,18 +3193,19 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
   if (msaa_sample_count >= 0) {
-    command_line->AppendSwitchASCII(switches::kGpuRasterizationMSAASampleCount,
-                                    base::NumberToString(msaa_sample_count));
+    command_line->AppendSwitchASCII(
+        blink::switches::kGpuRasterizationMSAASampleCount,
+        base::NumberToString(msaa_sample_count));
   }
 
   if (IsZeroCopyUploadEnabled())
-    command_line->AppendSwitch(switches::kEnableZeroCopy);
+    command_line->AppendSwitch(blink::switches::kEnableZeroCopy);
   if (!IsPartialRasterEnabled())
-    command_line->AppendSwitch(switches::kDisablePartialRaster);
+    command_line->AppendSwitch(blink::switches::kDisablePartialRaster);
 
   if (IsGpuMemoryBufferCompositorResourcesEnabled()) {
     command_line->AppendSwitch(
-        switches::kEnableGpuMemoryBufferCompositorResources);
+        blink::switches::kEnableGpuMemoryBufferCompositorResources);
   }
 
   if (IsMainFrameBeforeActivationEnabled())
@@ -3281,9 +3282,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kAudioBufferSize,
     switches::kAutoplayPolicy,
     switches::kBlinkSettings,
-    switches::kDefaultTileWidth,
-    switches::kDefaultTileHeight,
-    switches::kMinHeightForGpuRasterTile,
     switches::kMojoCoreLibraryPath,
     switches::kDisable2dCanvasImageChromium,
     switches::kDisableYUVImageDecoding,
@@ -3296,8 +3294,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kDisableFrameRateLimit,
     switches::kDisableGpuMemoryBufferVideoFrames,
-    switches::kDisableImageAnimationResync,
-    switches::kDisableLowResTiling,
     switches::kDisableHistogramCustomizer,
     switches::kDisableLCDText,
     switches::kDisableLogging,
@@ -3309,7 +3305,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
     switches::kDisablePresentationAPI,
-    switches::kDisableRGBA4444Textures,
     switches::kDisableRTCSmoothnessAlgorithm,
     switches::kDisableScrollToTextFragment,
     switches::kDisableSharedWorkers,
@@ -3332,7 +3327,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGpuClientTracing,
     switches::kEnableGpuMemoryBufferVideoFrames,
     switches::kEnableGPUServiceLogging,
-    switches::kEnableLowResTiling,
     switches::kEnableLCDText,
     switches::kEnableLogging,
     switches::kEnableNetworkInformationDownlinkMax,
@@ -3340,7 +3334,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePreferCompositingToLCDText,
-    switches::kEnableRGBA4444Textures,
     switches::kEnableSkiaBenchmarking,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
@@ -3366,8 +3359,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kLogFile,
     switches::kLoggingLevel,
     switches::kMaxActiveWebGLContexts,
-    switches::kMaxUntiledLayerWidth,
-    switches::kMaxUntiledLayerHeight,
     switches::kMSEAudioBufferSizeLimitMb,
     switches::kMSEVideoBufferSizeLimitMb,
     switches::kNetworkQuietTimeout,
@@ -3384,8 +3375,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRemoteDebuggingPort,
     switches::kRendererStartupDialog,
     switches::kReportVp9AsAnUnsupportedMimeType,
-    switches::kShowLayoutShiftRegions,
-    switches::kShowPaintRects,
     switches::kStatsCollectionController,
     switches::kSkiaFontCacheLimitMb,
     switches::kSkiaResourceCacheLimitMb,
@@ -3405,6 +3394,18 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebglMSAASampleCount,
     // Please keep these in alphabetical order.
     blink::switches::kAllowPreCommitInput,
+    blink::switches::kDefaultTileWidth,
+    blink::switches::kDefaultTileHeight,
+    blink::switches::kDisableImageAnimationResync,
+    blink::switches::kDisableLowResTiling,
+    blink::switches::kDisableRGBA4444Textures,
+    blink::switches::kEnableLowResTiling,
+    blink::switches::kEnableRGBA4444Textures,
+    blink::switches::kMinHeightForGpuRasterTile,
+    blink::switches::kMaxUntiledLayerWidth,
+    blink::switches::kMaxUntiledLayerHeight,
+    blink::switches::kShowLayoutShiftRegions,
+    blink::switches::kShowPaintRects,
     // Please keep these in alphabetical order. Compositor switches here
     // should also be added to
     // chrome/browser/chromeos/login/chrome_restart_request.cc.

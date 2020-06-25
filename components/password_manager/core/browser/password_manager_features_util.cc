@@ -280,8 +280,8 @@ void OptOutOfAccountStorageAndClearSettingsForAccount(
       GetNumberOfOptedInAccounts(pref_service), 10);
 }
 
-bool ShouldShowPasswordStorePicker(const PrefService* pref_service,
-                                   const syncer::SyncService* sync_service) {
+bool ShouldShowAccountStorageBubbleUi(const PrefService* pref_service,
+                                      const syncer::SyncService* sync_service) {
   return !sync_service->IsSyncFeatureEnabled() &&
          (IsOptedInForAccountStorage(pref_service, sync_service) ||
           IsUserEligibleForAccountStorage(sync_service));

@@ -18,7 +18,6 @@ public:
 
 template<typename T>
 class Super : public GarbageCollected<Super<T> >, public Mixin {
-    USING_GARBAGE_COLLECTED_MIXIN(Super);
 public:
  virtual void Trace(Visitor*) const override;
  void clearWeakMembers(Visitor*);

@@ -3288,8 +3288,13 @@ static_library("browser") {
       "nearby_sharing/client/nearby_share_api_call_flow.h",
       "nearby_sharing/client/nearby_share_api_call_flow_impl.cc",
       "nearby_sharing/client/nearby_share_api_call_flow_impl.h",
+      "nearby_sharing/client/nearby_share_client.h",
+      "nearby_sharing/client/nearby_share_client_impl.cc",
+      "nearby_sharing/client/nearby_share_client_impl.h",
       "nearby_sharing/client/nearby_share_request_error.cc",
       "nearby_sharing/client/nearby_share_request_error.h",
+      "nearby_sharing/client/switches.cc",
+      "nearby_sharing/client/switches.h",
       "nearby_sharing/fast_initiation_manager.cc",
       "nearby_sharing/fast_initiation_manager.h",
       "nearby_sharing/file_attachment.cc",
@@ -4339,7 +4344,6 @@ static_library("browser") {
     if (use_x11) {
       deps += [ "//ui/gfx/x" ]
     }
-    deps += [ "//services/service_manager/zygote" ]
   }
 
   if (is_chromeos) {

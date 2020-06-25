@@ -209,6 +209,7 @@ mojom::SearchResultPtr Hierarchy::SubpageMetadata::ToSearchResult(
           unmodified_url_path_with_parameters_),
       icon_, relevance_score,
       hierarchy_->GenerateAncestorHierarchyStrings(subpage_), default_rank_,
+      /*was_generated_from_text_match=*/false,
       mojom::SearchResultType::kSubpage,
       mojom::SearchResultIdentifier::NewSubpage(subpage_));
 }

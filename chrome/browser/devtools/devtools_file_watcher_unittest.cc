@@ -71,7 +71,7 @@ TEST_F(DevToolsFileWatcherTest, BasicUsage) {
   }
 
   expected_removed_paths_.insert(added_path.AsUTF8Unsafe());
-  base::DeleteFile(added_path, false);
+  base::DeleteFile(added_path);
   while (!expected_removed_paths_.empty()) {
     task_environment_.RunUntilIdle();
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());

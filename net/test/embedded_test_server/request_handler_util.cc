@@ -60,6 +60,10 @@ std::string GetContentType(const base::FilePath& path) {
     return "audio/wav";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".webp")))
     return "image/webp";
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".mp4")))
+    return "video/mp4";
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".webm")))
+    return "video/webm";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".xml")))
     return "text/xml";
   if (path.MatchesExtension(FILE_PATH_LITERAL(".mhtml")))

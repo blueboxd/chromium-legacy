@@ -51,7 +51,7 @@ class FontSizeTabHelperTest : public PlatformTest {
 
     GURL url("https://example.com");
     web_state_.SetCurrentURL(url);
-    auto main_frame = std::make_unique<web::FakeWebFrame>("frameID", true, url);
+    auto main_frame = std::make_unique<web::FakeMainWebFrame>(url);
     fake_main_frame_ = main_frame.get();
     AddWebFrame(std::move(main_frame));
 
@@ -194,8 +194,7 @@ TEST_F(FontSizeTabHelperTest, ZoomInAllFrames) {
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
 
   std::unique_ptr<web::FakeWebFrame> other_frame =
-      std::make_unique<web::FakeWebFrame>("frameID2", false,
-                                          GURL("https://example.com"));
+      std::make_unique<web::FakeChildWebFrame>(GURL("https://example.com"));
   web::FakeWebFrame* fake_other_frame = other_frame.get();
   AddWebFrame(std::move(other_frame));
 

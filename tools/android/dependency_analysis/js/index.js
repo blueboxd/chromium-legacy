@@ -5,6 +5,7 @@
 import {Node, D3GraphData} from './graph_model.js';
 import {parseGraphModelFromJson} from './process_graph_json.js';
 import {GraphStore} from './graph_store.js';
+import {eventBus, eventBusEvents} from './event_bus.js';
 
 // For ease of development, we currently serve all our JSON and other assets
 // through a simple Python server at localhost:8888. This should be changed
@@ -78,7 +79,6 @@ function addArrowMarkerDef(defs, id, length, width) {
 function renderGraph(inputData) {
   // TODO(yjlong): Reorganize this function so that we can selectively rerender
   // (as opposed to removing all elements and rerendering on each call),
-
   const {nodes: inputNodes, edges: inputEdges} = inputData;
   const svg = d3.select('svg');
   svg.selectAll('*').remove();
@@ -125,6 +125,7 @@ function renderGraph(inputData) {
       .join(enter => enter.append('circle'))
       .attr('r', 5)
       .attr('fill', d => getNodeColor(d))
+      .on('mousedown', d => eventBus.$emit(eventBusEvents.D3_NODE_CLICKED, d))
       .call(d3.drag()
           .on('drag', (d, i, nodes) => {
             reheatSimulation();
@@ -186,12 +187,39 @@ document.addEventListener('DOMContentLoaded', () => {
   d3.json(`${LOCALHOST}/json_graph.txt`).then(data => {
     const graphStore = GraphStore.instance;
     const graphModel = parseGraphModelFromJson(data.package_graph);
+
     // TODO(yjlong): This is test data. Remove this when no longer needed.
     graphStore.addIncludedNode('org.chromium.base');
     graphStore.addIncludedNode('org.chromium.chrome.browser.gsa');
     graphStore.addIncludedNode('org.chromium.chrome.browser.omaha');
     graphStore.addIncludedNode('org.chromium.chrome.browser.media');
     graphStore.addIncludedNode('org.chromium.ui.base');
+
+    new Vue({
+      el: '#selected-node-details',
+      data: {
+        node: null,
+      },
+      methods: {
+        updateDataWithNode: function(node) {
+          this.node = node;
+        },
+        addSelectedToFilter: function() {
+          graphStore.addIncludedNode(this.node.id);
+          renderGraph(graphModel.getDataForD3(graphStore));
+        },
+        removeSelectedFromFilter: function() {
+          graphStore.removeIncludedNode(this.node.id);
+          renderGraph(graphModel.getDataForD3(graphStore));
+        },
+      },
+      mounted: function() {
+        eventBus.$on(eventBusEvents.D3_NODE_CLICKED, this.updateDataWithNode);
+      },
+      beforeDestroy: function() {
+        eventBus.$off(eventBusEvents.D3_NODE_CLICKED, this.updateDataWithNode);
+      },
+    });
 
     new Vue({
       el: '#filter-input-group',

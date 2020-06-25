@@ -39,6 +39,7 @@
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -48,6 +49,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/prefs/pref_service.h"
@@ -715,8 +717,8 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
                 test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
 
-  // Verify that warning indicator is invisible if ADB sideloading is not
-  // enabled.
+  // Verify that bottom status indicator is invisible if neither adb sideloading
+  // is enabled nor the device is enrolled.
   EXPECT_FALSE(test_api.bottom_status_indicator()->GetVisible());
 }
 
@@ -814,6 +816,45 @@ TEST_F(LockContentsViewUnitTest, ShowStatusIndicatorIfAdbSideloadingEnabled) {
   // sideloading warning.
   DataDispatcher()->NotifyOobeDialogState(OobeDialogState::EXTENSION_LOGIN);
   EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+}
+
+class LockContentsViewUnitTestWithDeviceDisclosureEnabled
+    : public LockContentsViewUnitTest {
+ public:
+  LockContentsViewUnitTestWithDeviceDisclosureEnabled()
+      : LockContentsViewUnitTest() {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kLoginDeviceManagementDisclosure}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Show bottom status indicator if device is enrolled
+TEST_F(LockContentsViewUnitTestWithDeviceDisclosureEnabled,
+       ShowStatusIndicatorIfEnrolledDevice) {
+  // If the device is enrolled, bottom_status_indicator should be visible.
+  Shell::Get()->system_tray_model()->SetEnterpriseDisplayDomain(
+      "BestCompanyEver", false);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+
+  EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
+
+  // bottom_status_indicator should not be visible when displaying enterprise
+  // domain and extension UI is visible.
+  DataDispatcher()->NotifyOobeDialogState(OobeDialogState::EXTENSION_LOGIN);
+  EXPECT_FALSE(test_api.bottom_status_indicator()->GetVisible());
   DataDispatcher()->NotifyOobeDialogState(OobeDialogState::HIDDEN);
   EXPECT_TRUE(test_api.bottom_status_indicator()->GetVisible());
 }

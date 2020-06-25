@@ -47,7 +47,7 @@ void WebViewPasswordFeatureManager::OptOutOfAccountStorageAndClearSettings() {
   NOTREACHED();
 }
 
-bool WebViewPasswordFeatureManager::ShouldShowPasswordStorePicker() const {
+bool WebViewPasswordFeatureManager::ShouldShowAccountStorageBubbleUi() const {
   return false;
 }
 

@@ -4,11 +4,11 @@
 
 #include "components/sync/engine_impl/get_updates_delegate.h"
 
-#include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/events/configure_get_updates_request_event.h"
 #include "components/sync/engine_impl/events/normal_get_updates_request_event.h"
 #include "components/sync/engine_impl/events/poll_get_updates_request_event.h"
 #include "components/sync/engine_impl/get_updates_processor.h"
+#include "components/sync/engine_impl/update_handler.h"
 
 namespace syncer {
 

@@ -512,8 +512,7 @@ def _MaybeWriteStampAndDepFile(options, inputs):
     build_utils.Touch(options.stamp)
     output = options.stamp
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, output, inputs=inputs, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, output, inputs=inputs)
 
 
 def main():

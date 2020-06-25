@@ -78,8 +78,6 @@ class MockSimpleIndexFile : public SimpleIndexFile,
                    SimpleIndex::IndexWriteToDiskReason reason,
                    const SimpleIndex::EntrySet& entry_set,
                    uint64_t cache_size,
-                   const base::TimeTicks& start,
-                   bool app_on_background,
                    base::OnceClosure callback) override {
     disk_writes_++;
     disk_write_entry_set_ = entry_set;

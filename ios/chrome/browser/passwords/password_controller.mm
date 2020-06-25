@@ -341,6 +341,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     uint32_t maxUniqueID = uniqueIDTabHelper->GetNextAvailableRendererID();
     [self didFinishPasswordFormExtraction:std::vector<FormData>()
                           withMaxUniqueID:maxUniqueID];
+    return;
   }
 
   [self findPasswordFormsAndSendThemToPasswordStore];
@@ -354,7 +355,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       UniqueIDTabHelper::FromWebState(_webState);
   uint32_t nextAvailableRendererID =
       uniqueIDTabHelper->GetNextAvailableRendererID();
-  [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID];
+  [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
+                                             inFrame:web_frame];
 }
 
 - (void)webStateDestroyed:(WebState*)webState {

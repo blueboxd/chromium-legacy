@@ -345,7 +345,9 @@ export class TabListElement extends CustomElement {
 
       this.addWebUIListener_('tab-created', tab => this.onTabCreated_(tab));
       this.addWebUIListener_(
-          'tab-moved', (tabId, newIndex) => this.onTabMoved_(tabId, newIndex));
+          'tab-moved',
+          (tabId, newIndex, pinned) =>
+              this.onTabMoved_(tabId, newIndex, pinned));
       this.addWebUIListener_('tab-removed', tabId => this.onTabRemoved_(tabId));
       this.addWebUIListener_(
           'tab-replaced', (oldId, newId) => this.onTabReplaced_(oldId, newId));
@@ -636,13 +638,13 @@ export class TabListElement extends CustomElement {
   /**
    * @param {number} tabId
    * @param {number} newIndex
+   * @param {boolean} pinned
    * @private
    */
-  onTabMoved_(tabId, newIndex) {
+  onTabMoved_(tabId, newIndex, pinned) {
     const movedTab = this.findTabElement_(tabId);
     if (movedTab) {
-      this.placeTabElement(
-          movedTab, newIndex, movedTab.tab.pinned, movedTab.tab.groupId);
+      this.placeTabElement(movedTab, newIndex, pinned, movedTab.tab.groupId);
       if (movedTab.tab.active) {
         this.scrollToTab_(movedTab);
       }
@@ -718,21 +720,13 @@ export class TabListElement extends CustomElement {
   placeTabElement(element, index, pinned, groupId) {
     const isInserting = !element.isConnected;
 
-    const shouldAnimate = !isInserting;
-    let previousIndex = -1;
-
-    // Cache the previous and next element siblings as these will be needed
-    // after the placement to determine which tabs to animate.
-    let initialDomPrevSibling = null, initialDomNextSibling = null;
-    if (shouldAnimate) {
-      previousIndex = this.getIndexOfTab(element);
-      initialDomPrevSibling = element.previousElementSibling;
-      initialDomNextSibling = element.nextElementSibling;
-    }
-
+    const previousIndex = isInserting ? -1 : this.getIndexOfTab(element);
+    const previousParent = element.parentElement;
     this.updateTabElementDomPosition_(element, index, pinned, groupId);
 
-    if (shouldAnimate) {
+    if (!isInserting && previousParent === element.parentElement) {
+      // Only animate if the tab is being moved within the same parent. Tab
+      // moves that change pinned state or grouped states do not animate.
       animateElementMoved(element, previousIndex, index);
     }
 

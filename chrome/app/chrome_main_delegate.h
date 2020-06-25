@@ -49,9 +49,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       const content::MainFunctionParams& main_function_params) override;
   void ProcessExiting(const std::string& process_type) override;
 #if defined(OS_LINUX)
-  void ZygoteStarting(
-      std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
-          delegates) override;
+  void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
+                          delegates) override;
   void ZygoteForked() override;
 #endif
   service_manager::ProcessType OverrideProcessType() override;

@@ -11,6 +11,7 @@
 #include "content/browser/conversions/conversion_manager.h"
 #include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
@@ -147,6 +148,40 @@ TEST_F(ConversionHostTest, ValidConversion_NoBadMessage) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(bad_message_observer.got_bad_message());
   EXPECT_EQ(1u, test_manager_.num_conversions());
+}
+
+TEST_F(ConversionHostTest, ValidConversionWithEmbedderDisable_NoConversion) {
+  ConversionDisallowingContentBrowserClient disallowed_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&disallowed_browser_client);
+
+  // Create a page with a secure origin.
+  contents()->NavigateAndCommit(GURL("https://www.example.com"));
+  conversion_host()->SetCurrentTargetFrameForTesting(main_rfh());
+
+  blink::mojom::ConversionPtr conversion = blink::mojom::Conversion::New();
+  conversion->reporting_origin =
+      url::Origin::Create(GURL("https://secure.com"));
+  conversion_host()->RegisterConversion(std::move(conversion));
+
+  EXPECT_EQ(0u, test_manager_.num_conversions());
+  SetBrowserClientForTesting(old_browser_client);
+}
+
+TEST_F(ConversionHostTest, ValidImpressionWithEmbedderDisable_NoImpression) {
+  ConversionDisallowingContentBrowserClient disallowed_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&disallowed_browser_client);
+
+  contents()->NavigateAndCommit(GURL("https://secure_impression.com"));
+  auto navigation = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL(kConversionUrl), main_rfh());
+  navigation->SetInitiatorFrame(main_rfh());
+  navigation->set_impression(CreateValidImpression());
+  navigation->Commit();
+
+  EXPECT_EQ(0u, test_manager_.num_impressions());
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 TEST_F(ConversionHostTest, PerPageConversionMetrics) {

@@ -255,7 +255,7 @@ ChromeVoxBackground = class {
   onTtsMessage(msg) {
     if (msg['action'] == 'speak') {
       // The only caller sending this message is a ChromeVox Classic api client.
-      // Disallow empty strings.
+      // Deny empty strings.
       if (msg['text'] == '') {
         return;
       }

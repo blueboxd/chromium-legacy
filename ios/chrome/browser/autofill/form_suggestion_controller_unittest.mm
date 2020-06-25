@@ -257,7 +257,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", /*is_main_frame=*/true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   // Trigger form activity, which should set up the suggestions view.
   autofill::FormActivityParams params;
@@ -280,7 +280,7 @@ TEST_F(FormSuggestionControllerTest, FormActivityBlurShouldBeIgnored) {
   SetUpController(@[ [TestSuggestionProvider providerWithSuggestions] ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -300,7 +300,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -329,7 +329,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -378,7 +378,7 @@ TEST_F(FormSuggestionControllerTest,
   SetUpController(@[ provider1, provider2 ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";
@@ -419,7 +419,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
   SetUpController(@[ provider ]);
   GURL url("http://foo.com");
   test_web_state_.SetCurrentURL(url);
-  web::FakeWebFrame main_frame("main_frame", true, url);
+  web::FakeMainWebFrame main_frame(url);
 
   autofill::FormActivityParams params;
   params.form_name = "form";

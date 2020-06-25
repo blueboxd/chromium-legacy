@@ -19,9 +19,12 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 
+namespace ui {
+class ThroughputTracker;
+}
+
 namespace ash {
 
-class FpsCounter;
 class HomeLauncherGestureHandler;
 class HomeScreenDelegate;
 
@@ -56,7 +59,7 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // True if home screen is visible.
   bool IsHomeScreenVisible() const;
 
-  // Responsible to starting or stopping |fps_counter_|.
+  // Responsible to starting or stopping |smoothness_tracker_|.
   void StartTrackingAnimationSmoothness(int64_t display_id);
   void RecordAnimationSmoothness();
 
@@ -134,7 +137,7 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
 
   // Responsible for recording smoothness related UMA stats for homescreen
   // animations.
-  std::unique_ptr<FpsCounter> fps_counter_;
+  base::Optional<ui::ThroughputTracker> smoothness_tracker_;
 
   ScopedObserver<SplitViewController, SplitViewObserver> split_view_observer_{
       this};

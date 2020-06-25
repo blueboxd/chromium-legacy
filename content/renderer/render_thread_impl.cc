@@ -125,6 +125,7 @@
 #include "services/viz/public/cpp/gpu/gpu.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
@@ -654,11 +655,12 @@ void RenderThreadImpl::Init() {
   is_threaded_animation_enabled_ =
       !command_line.HasSwitch(cc::switches::kDisableThreadedAnimation);
 
-  is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
+  is_zero_copy_enabled_ =
+      command_line.HasSwitch(blink::switches::kEnableZeroCopy);
   is_partial_raster_enabled_ =
-      !command_line.HasSwitch(switches::kDisablePartialRaster);
+      !command_line.HasSwitch(blink::switches::kDisablePartialRaster);
   is_gpu_memory_buffer_compositor_resources_enabled_ = command_line.HasSwitch(
-      switches::kEnableGpuMemoryBufferCompositorResources);
+      blink::switches::kEnableGpuMemoryBufferCompositorResources);
 
 // On macOS this value is adjusted in `UpdateScrollbarTheme()`,
 // but the system default is true.
@@ -693,9 +695,10 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     is_gpu_compositing_disabled_ = true;
 
-  if (command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount)) {
+  if (command_line.HasSwitch(
+          blink::switches::kGpuRasterizationMSAASampleCount)) {
     std::string string_value = command_line.GetSwitchValueASCII(
-        switches::kGpuRasterizationMSAASampleCount);
+        blink::switches::kGpuRasterizationMSAASampleCount);
     bool parsed_msaa_sample_count =
         base::StringToInt(string_value, &gpu_rasterization_msaa_sample_count_);
     DCHECK(parsed_msaa_sample_count) << string_value;

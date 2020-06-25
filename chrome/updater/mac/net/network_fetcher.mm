@@ -23,8 +23,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
-const NSString* kHeaderEtag = @"ETag";
-const NSString* kHeaderXRetryAfter = @"X-Retry-After";
+const NSString* kHeaderEtag =
+    base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderEtag);
+const NSString* kHeaderXRetryAfter =
+    base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderXRetryAfter);
 
 using ResponseStartedCallback =
     update_client::NetworkFetcher::ResponseStartedCallback;

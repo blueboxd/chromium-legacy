@@ -524,17 +524,12 @@ if (enable_java_templates) {
       # The sources aren't compiled so don't check their dependencies.
       check_includes = false
       script = "//build/android/gyp/java_cpp_enum.py"
-      depfile = "$target_gen_dir/$target_name.d"
 
       _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       _rebased_srcjar_path = rebase_path(_srcjar_path, root_build_dir)
       _rebased_sources = rebase_path(invoker.sources, root_build_dir)
 
-      args = [
-               "--depfile",
-               rebase_path(depfile, root_build_dir),
-               "--srcjar=$_rebased_srcjar_path",
-             ] + _rebased_sources
+      args = [ "--srcjar=$_rebased_srcjar_path" ] + _rebased_sources
       outputs = [ _srcjar_path ]
     }
   }
@@ -5112,17 +5107,11 @@ template("generate_ui_locale_resources") {
   _output_zip = "${root_out_dir}/resource_zips/${_rebased_output_zip_path}/" +
                 "${target_name}.zip"
 
-  _locales = invoker.ui_locales
-  _depfile = "$target_gen_dir/$target_name.d"
-
-  action(_generating_target_name) {
+  action_with_pydeps(_generating_target_name) {
     script = "//build/android/gyp/create_ui_locale_resources.py"
-    depfile = _depfile
     outputs = [ _output_zip ]
     args = [
-      "--locale-list=$_locales",
-      "--depfile",
-      rebase_path(_depfile, root_build_dir),
+      "--locale-list=${invoker.ui_locales}",
       "--output-zip",
       rebase_path(_output_zip, root_build_dir),
     ]

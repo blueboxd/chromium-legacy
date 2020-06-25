@@ -200,7 +200,7 @@ void V8TestConstants::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-void V8TestConstants::InstallFeatureName1(
+void V8TestConstants::InstallOriginTrialFeature1(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::Object> instance,
@@ -216,7 +216,7 @@ void V8TestConstants::InstallFeatureName1(
       isolate, interface, prototype, kFEATURE1ORIGINTRIALENABLEDCONST2Configuration);
 }
 
-void V8TestConstants::InstallFeatureName1(
+void V8TestConstants::InstallOriginTrialFeature1(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
@@ -224,14 +224,14 @@ void V8TestConstants::InstallFeatureName1(
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
       V8TestConstants::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
-  InstallFeatureName1(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
+  InstallOriginTrialFeature1(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestConstants::InstallFeatureName1(ScriptState* script_state) {
-  InstallFeatureName1(script_state, v8::Local<v8::Object>());
+void V8TestConstants::InstallOriginTrialFeature1(ScriptState* script_state) {
+  InstallOriginTrialFeature1(script_state, v8::Local<v8::Object>());
 }
 
-void V8TestConstants::InstallFeatureName2(
+void V8TestConstants::InstallOriginTrialFeature2(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::Object> instance,
@@ -247,7 +247,7 @@ void V8TestConstants::InstallFeatureName2(
       isolate, interface, prototype, kFEATURE2ORIGINTRIALENABLEDCONST2Configuration);
 }
 
-void V8TestConstants::InstallFeatureName2(
+void V8TestConstants::InstallOriginTrialFeature2(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
@@ -255,11 +255,11 @@ void V8TestConstants::InstallFeatureName2(
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
       V8TestConstants::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
-  InstallFeatureName2(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
+  InstallOriginTrialFeature2(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestConstants::InstallFeatureName2(ScriptState* script_state) {
-  InstallFeatureName2(script_state, v8::Local<v8::Object>());
+void V8TestConstants::InstallOriginTrialFeature2(ScriptState* script_state) {
+  InstallOriginTrialFeature2(script_state, v8::Local<v8::Object>());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestConstants::DomTemplate(

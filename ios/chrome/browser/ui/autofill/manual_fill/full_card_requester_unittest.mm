@@ -77,8 +77,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     web_state()->SetJSInjectionReceiver(injectionReceiver);
 
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
-    auto main_frame = std::make_unique<web::FakeWebFrame>(
-        /*frame_id=*/"main", /*is_main_frame=*/true,
+    auto main_frame = std::make_unique<web::FakeMainWebFrame>(
         /*security_origin=*/GURL());
     frames_manager->AddWebFrame(std::move(main_frame));
     web_state()->SetWebFramesManager(std::move(frames_manager));

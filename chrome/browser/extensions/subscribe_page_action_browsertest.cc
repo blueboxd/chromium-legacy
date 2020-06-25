@@ -21,6 +21,7 @@ namespace extensions {
 
 namespace {
 
+const char kSubscribePageAction[] = "subscribe_page_action/src";
 const char kSubscribePage[] = "/subscribe.html";
 const char kFeedPageMultiRel[] = "/feeds/feed_multi_rel.html";
 const char kValidFeedNoLinks[] = "/feeds/feed_nolinks.xml";
@@ -134,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
-    test_data_dir_.AppendASCII("subscribe_page_action")));
+    test_data_dir_.AppendASCII(kSubscribePageAction)));
 
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
@@ -150,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed1) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -164,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed2) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed3) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -192,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed4) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -207,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed0) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -223,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed5) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -239,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed6) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -253,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed1) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -268,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed2) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -283,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed3) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -298,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed4) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("subscribe_page_action"));
+      test_data_dir_.AppendASCII(kSubscribePageAction));
   ASSERT_TRUE(extension);
   std::string id = extension->id();
 

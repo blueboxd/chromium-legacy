@@ -86,7 +86,7 @@ void AppShimListener::InitOnBackgroundThread() {
   // process.
   base::FilePath version_path =
       user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
-  base::DeleteFile(version_path, false);
+  base::DeleteFile(version_path);
   base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                            version_path);
 }

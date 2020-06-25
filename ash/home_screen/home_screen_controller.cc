@@ -12,7 +12,7 @@
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
@@ -28,11 +28,13 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -302,16 +304,18 @@ void HomeScreenController::StartTrackingAnimationSmoothness(
     int64_t display_id) {
   auto* root_window = Shell::GetRootWindowForDisplayId(display_id);
   auto* compositor = root_window->layer()->GetCompositor();
-  fps_counter_ = std::make_unique<FpsCounter>(compositor);
+  smoothness_tracker_ = compositor->RequestNewThroughputTracker();
+  smoothness_tracker_->Start(
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        UMA_HISTOGRAM_PERCENTAGE(kHomescreenAnimationHistogram, smoothness);
+      })));
 }
 
 void HomeScreenController::RecordAnimationSmoothness() {
-  if (!fps_counter_)
+  if (!smoothness_tracker_)
     return;
-  int smoothness = fps_counter_->ComputeSmoothness();
-  if (smoothness >= 0)
-    UMA_HISTOGRAM_PERCENTAGE(kHomescreenAnimationHistogram, smoothness);
-  fps_counter_.reset();
+  smoothness_tracker_->Stop();
+  smoothness_tracker_.reset();
 }
 
 void HomeScreenController::OnAppListViewShown() {

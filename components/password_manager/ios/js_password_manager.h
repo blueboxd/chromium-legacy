@@ -7,7 +7,7 @@
 
 #include "base/ios/block_types.h"
 #include "components/autofill/core/common/renderer_id.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 
 namespace autofill {
 struct PasswordFormFillData;
@@ -17,13 +17,12 @@ namespace password_manager {
 
 struct FillData;
 
-// Serializes |fillData| into a JSON string that can be used by the JS side
-// of PasswordController.
-NSString* SerializeFillData(const password_manager::FillData& fillData);
+// Serializes |fillData| so it can be used by the JS side of PasswordController.
+std::unique_ptr<base::Value> SerializeFillData(
+    const password_manager::FillData& fillData);
 
-// Serializes |formData| into a JSON string that can be used by the JS side
-// of PasswordController.
-NSString* SerializePasswordFormFillData(
+// Serializes |formData| so it can be used by the JS side of PasswordController.
+std::unique_ptr<base::Value> SerializePasswordFormFillData(
     const autofill::PasswordFormFillData& formData);
 
 }  // namespace password_manager
@@ -42,8 +41,8 @@ NSString* SerializePasswordFormFillData(
 // For example the JSON string for a form with a single password field is:
 // [{"action":null,"method":null,"usernameElement":"","usernameValue":"","
 // passwords":[{"element":"","value":"asd"}]}]
-- (void)findPasswordFormsWithCompletionHandler:
-    (void (^)(NSString*))completionHandler;
+- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
+               completionHandler:(void (^)(NSString*))completionHandler;
 
 // Extracts the password form with the given name from a web page.
 // |completionHandler| is called with the JSON string containing the info about
@@ -53,6 +52,7 @@ NSString* SerializePasswordFormFillData(
 // {"action":null,"method":null,"usernameElement":"","usernameValue":"",
 // "passwords":[{"element":"","value":"asd"}]}
 - (void)extractForm:(autofill::FormRendererId)formIdentifier
+              inFrame:(web::WebFrame*)frame
     completionHandler:(void (^)(NSString*))completionHandler;
 
 // Fills in the password form specified by |JSONString| with the given
@@ -61,30 +61,27 @@ NSString* SerializePasswordFormFillData(
 // |extractSubmittedFormWithCompletionHandler|. Calls |completionHandler| with
 // YES if the filling of the password was successful, NO otherwise.
 // |completionHandler| cannot be nil.
-- (void)fillPasswordForm:(NSString*)JSONString
+- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
+                 inFrame:(web::WebFrame*)frame
             withUsername:(NSString*)username
                 password:(NSString*)password
-       completionHandler:(void (^)(BOOL))completionHandler;
+       completionHandler:(void (^)(NSString*))completionHandler;
 
 // Fills new password field for (optional) |newPasswordIdentifier| and for
 // (optional) confirm password field |confirmPasswordIdentifier| in the form
 // identified by |formData|. Invokes |completionHandler| with true if any fields
 // were filled, false otherwise.
 - (void)fillPasswordForm:(autofill::FormRendererId)formIdentifier
+                      inFrame:(web::WebFrame*)frame
         newPasswordIdentifier:(autofill::FieldRendererId)newPasswordIdentifier
     confirmPasswordIdentifier:
         (autofill::FieldRendererId)confirmPasswordIdentifier
             generatedPassword:(NSString*)generatedPassword
-            completionHandler:(void (^)(BOOL))completionHandler;
+            completionHandler:(void (^)(NSString*))completionHandler;
 
 // Sets up the next available unique ID value in a document.
-- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID;
-
-// Designated initializer. |receiver| should not be nil.
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
+                                  inFrame:(web::WebFrame*)frame;
 
 @end
 

@@ -138,29 +138,35 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
  private:
+  void Respond(const std::string& callback_id, const base::Value& response) {
+    AllowJavascript();
+    ResolveJavascriptCallback(base::Value(callback_id), response);
+  }
+
   void GetShillNetworkProperties(const base::ListValue* arg_list) {
-    std::string guid;
-    if (!arg_list->GetString(0, &guid)) {
-      NOTREACHED();
-      return;
-    }
+    CHECK_EQ(2u, arg_list->GetSize());
+    std::string callback_id, guid;
+    CHECK(arg_list->GetString(0, &callback_id));
+    CHECK(arg_list->GetString(1, &guid));
+
     std::string service_path;
     if (!GetServicePathFromGuid(guid, &service_path)) {
-      ErrorCallback(guid, kGetNetworkProperties, "Error.InvalidNetworkGuid",
-                    nullptr);
+      ErrorCallback(callback_id, guid, kGetNetworkProperties,
+                    "Error.InvalidNetworkGuid", nullptr);
       return;
     }
     NetworkHandler::Get()->network_configuration_handler()->GetShillProperties(
         service_path,
         base::BindOnce(
             &NetworkConfigMessageHandler::GetShillNetworkPropertiesSuccess,
-            weak_ptr_factory_.GetWeakPtr()),
+            weak_ptr_factory_.GetWeakPtr(), callback_id),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
-                   weak_ptr_factory_.GetWeakPtr(), guid,
+                   weak_ptr_factory_.GetWeakPtr(), callback_id, guid,
                    kGetNetworkProperties));
   }
 
   void GetShillNetworkPropertiesSuccess(
+      const std::string& callback_id,
       const std::string& service_path,
       const base::DictionaryValue& dictionary) {
     std::unique_ptr<base::DictionaryValue> dictionary_copy(
@@ -173,47 +179,46 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     base::ListValue return_arg_list;
     return_arg_list.Append(std::move(dictionary_copy));
-
-    AllowJavascript();
-    CallJavascriptFunction(
-        base::StringPrintf("network_ui.%sResult", kGetNetworkProperties),
-        return_arg_list);
+    Respond(callback_id, return_arg_list);
   }
 
   void GetShillDeviceProperties(const base::ListValue* arg_list) {
-    std::string type;
-    if (!arg_list->GetString(0, &type)) {
-      NOTREACHED();
-      return;
-    }
+    CHECK_EQ(2u, arg_list->GetSize());
+    std::string callback_id, type;
+    CHECK(arg_list->GetString(0, &callback_id));
+    CHECK(arg_list->GetString(1, &type));
+
     const DeviceState* device =
         NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
             onc::NetworkTypePatternFromOncType(type));
     if (!device) {
-      ErrorCallback(type, kGetDeviceProperties, "Error.InvalidDeviceType",
-                    nullptr);
+      ErrorCallback(callback_id, type, kGetDeviceProperties,
+                    "Error.InvalidDeviceType", nullptr);
       return;
     }
     NetworkHandler::Get()->network_device_handler()->GetDeviceProperties(
         device->path(),
         base::BindOnce(
             &NetworkConfigMessageHandler::GetShillDevicePropertiesSuccess,
-            weak_ptr_factory_.GetWeakPtr()),
+            weak_ptr_factory_.GetWeakPtr(), callback_id),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
-                   weak_ptr_factory_.GetWeakPtr(), type, kGetDeviceProperties));
+                   weak_ptr_factory_.GetWeakPtr(), callback_id, type,
+                   kGetDeviceProperties));
   }
 
   void GetShillEthernetEAP(const base::ListValue* arg_list) {
+    CHECK_EQ(1u, arg_list->GetSize());
+    std::string callback_id;
+    CHECK(arg_list->GetString(0, &callback_id));
+
     NetworkStateHandler::NetworkStateList list;
     NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
         NetworkTypePattern::Primitive(shill::kTypeEthernetEap),
         true /* configured_only */, false /* visible_only */, 1 /* limit */,
         &list);
 
-    AllowJavascript();
     if (list.empty()) {
-      CallJavascriptFunction(
-          base::StringPrintf("network_ui.%sResult", kGetEthernetEAP));
+      Respond(callback_id, base::Value(base::Value::Type::LIST));
       return;
     }
     const NetworkState* eap = list.front();
@@ -221,21 +226,25 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     properties.SetStringKey("guid", eap->guid());
     properties.SetStringKey("name", eap->name());
     properties.SetStringKey("type", eap->type());
-    CallJavascriptFunction(
-        base::StringPrintf("network_ui.%sResult", kGetEthernetEAP), properties);
+    base::Value response(base::Value::Type::LIST);
+    response.Append(std::move(properties));
+    Respond(callback_id, response);
   }
 
   void OpenCellularActivationUi(const base::ListValue* arg_list) {
+    CHECK_EQ(1u, arg_list->GetSize());
+    std::string callback_id;
+    CHECK(arg_list->GetString(0, &callback_id));
+
     const NetworkState* cellular_network =
         NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
             NetworkTypePattern::Cellular());
     if (cellular_network)
       cellular_setup::OpenCellularSetupDialog(cellular_network->guid());
 
-    AllowJavascript();
-    CallJavascriptFunction(
-        base::StringPrintf("network_ui.%sResult", kOpenCellularActivationUi),
-        base::Value(cellular_network != nullptr));
+    base::Value response(base::Value::Type::LIST);
+    response.Append(base::Value(cellular_network != nullptr));
+    Respond(callback_id, response);
   }
 
   void ShowNetworkDetails(const base::ListValue* arg_list) {
@@ -263,6 +272,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   }
 
   void GetShillDevicePropertiesSuccess(
+      const std::string& callback_id,
       const std::string& device_path,
       const base::DictionaryValue& dictionary) {
     std::unique_ptr<base::DictionaryValue> dictionary_copy(
@@ -273,14 +283,11 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     base::ListValue return_arg_list;
     return_arg_list.Append(std::move(dictionary_copy));
-
-    AllowJavascript();
-    CallJavascriptFunction(
-        base::StringPrintf("network_ui.%sResult", kGetDeviceProperties),
-        return_arg_list);
+    Respond(callback_id, return_arg_list);
   }
 
-  void ErrorCallback(const std::string& guid_or_type,
+  void ErrorCallback(const std::string& callback_id,
+                     const std::string& guid_or_type,
                      const std::string& function_name,
                      const std::string& error_name,
                      std::unique_ptr<base::DictionaryValue> /* error_data */) {
@@ -293,11 +300,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     dictionary.SetKey(key, base::Value(guid_or_type));
     dictionary.SetKey("ShillError", base::Value(error_name));
     return_arg_list.Append(std::move(dictionary));
-
-    AllowJavascript();
-    CallJavascriptFunction(
-        base::StringPrintf("network_ui.%sResult", function_name.c_str()),
-        return_arg_list);
+    Respond(callback_id, return_arg_list);
   }
 
   void AddNetwork(const base::ListValue* args) {
@@ -402,6 +405,10 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "importOncButtonText",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_IMPORT_ONC_BUTTON_TEXT));
 
+  localized_strings->SetString(
+      "addWiFiListItemName",
+      l10n_util::GetStringUTF16(IDS_NETWORK_ADD_WI_FI_LIST_ITEM_NAME));
+
   // Network logs
   localized_strings->SetString(
       "networkLogsDescription",
@@ -463,12 +470,17 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   network_element::AddOncLocalizedStrings(html);
   html->UseStringsJs();
 
+  html->AddResourcePath("network_ui_browser_proxy.html",
+                        IDR_NETWORK_UI_BROWSER_PROXY_HTML);
+  html->AddResourcePath("network_ui_browser_proxy.js",
+                        IDR_NETWORK_UI_BROWSER_PROXY_JS);
+  html->AddResourcePath("network_ui.html", IDR_NETWORK_UI_HTML);
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
   html->AddResourcePath("network_state_ui.html", IDR_NETWORK_STATE_UI_HTML);
   html->AddResourcePath("network_state_ui.js", IDR_NETWORK_STATE_UI_JS);
   html->AddResourcePath("network_logs_ui.html", IDR_NETWORK_LOGS_UI_HTML);
   html->AddResourcePath("network_logs_ui.js", IDR_NETWORK_LOGS_UI_JS);
-  html->SetDefaultResource(IDR_NETWORK_UI_HTML);
+  html->SetDefaultResource(IDR_NETWORK_UI_PAGE_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html);

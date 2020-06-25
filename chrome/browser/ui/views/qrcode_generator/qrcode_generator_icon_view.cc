@@ -57,7 +57,7 @@ void QRCodeGeneratorIconView::UpdateImpl() {
 
   bool feature_available =
       QRCodeGeneratorBubbleController::IsGeneratorAvailable(
-          web_contents->GetURL(),
+          web_contents->GetLastCommittedURL(),
           web_contents->GetBrowserContext()->IsOffTheRecord());
 
   bool visible = GetBubble() != nullptr ||
@@ -73,7 +73,10 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   // inkdrop or going through a hide/show cycle.
   visible |= bubble_requested_;
 
-  SetVisible(visible);
+  // The icon is cleared on navigations and similar in
+  // LocationVarView::Update().
+  if (visible)
+    SetVisible(true);
 }
 
 void QRCodeGeneratorIconView::OnExecuting(

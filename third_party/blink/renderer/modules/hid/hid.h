@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_H_
 
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/device/public/mojom/hid.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -24,7 +25,9 @@ class HIDDeviceRequestOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class HID : public EventTargetWithInlineData, public ExecutionContextClient {
+class HID : public EventTargetWithInlineData,
+            public ExecutionContextClient,
+            public device::mojom::blink::HidManagerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HID);
 
@@ -35,6 +38,11 @@ class HID : public EventTargetWithInlineData, public ExecutionContextClient {
   // EventTarget:
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
+
+  // device::mojom::HidManagerClient:
+  void DeviceAdded(device::mojom::blink::HidDeviceInfoPtr device_info) override;
+  void DeviceRemoved(
+      device::mojom::blink::HidDeviceInfoPtr device_info) override;
 
   // Web-exposed interfaces:
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
@@ -73,6 +81,8 @@ class HID : public EventTargetWithInlineData, public ExecutionContextClient {
   HeapMojoRemote<mojom::blink::HidService,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       service_;
+  mojo::AssociatedReceiver<device::mojom::blink::HidManagerClient> receiver_{
+      this};
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> request_device_promises_;
   HeapHashMap<String, WeakMember<HIDDevice>> device_cache_;

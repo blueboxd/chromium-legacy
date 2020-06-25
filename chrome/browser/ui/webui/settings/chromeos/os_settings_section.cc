@@ -61,6 +61,7 @@ mojom::SearchResultPtr OsSettingsSection::GenerateSectionSearchResult(
           l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS),
           l10n_util::GetStringUTF16(GetSectionNameMessageId())},
       mojom::SearchResultDefaultRank::kMedium,
+      /*was_generated_from_text_match=*/false,
       mojom::SearchResultType::kSection,
       mojom::SearchResultIdentifier::NewSection(GetSection()));
 }

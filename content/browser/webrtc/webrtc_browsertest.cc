@@ -61,7 +61,15 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupAudioAndVideoCall) {
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NetworkProcessCrashRecovery) {
+#if defined(OS_ANDROID)
+// Flaky on Android https://crbug.com/1099365
+#define MAYBE_NetworkProcessCrashRecovery DISABLED_NetworkProcessCrashRecovery
+#else
+#define MAYBE_NetworkProcessCrashRecovery NetworkProcessCrashRecovery
+#endif
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       MAYBE_NetworkProcessCrashRecovery) {
   if (!IsOutOfProcessNetworkService())
     return;
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");

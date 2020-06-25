@@ -102,8 +102,7 @@ def main():
     assert options.native_libraries_list
     build_utils.WriteDepfile(options.depfile,
                              options.output,
-                             inputs=[options.native_libraries_list],
-                             add_pydeps=False)
+                             inputs=[options.native_libraries_list])
 
 
 if __name__ == '__main__':

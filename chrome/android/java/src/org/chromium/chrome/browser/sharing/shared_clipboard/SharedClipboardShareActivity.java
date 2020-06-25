@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
-import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.ui.widget.ButtonCompat;
 

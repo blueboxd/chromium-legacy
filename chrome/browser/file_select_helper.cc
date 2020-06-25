@@ -72,7 +72,7 @@ constexpr char kContactsMimeType[] = "text/json+contacts";
 
 void DeleteFiles(std::vector<base::FilePath> paths) {
   for (auto& file_path : paths)
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
 }
 
 bool IsValidProfile(Profile* profile) {

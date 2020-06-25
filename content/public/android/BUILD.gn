@@ -56,16 +56,13 @@ android_resources("content_java_resources") {
   ]
 }
 
-action("generate_sandboxed_service_srcjar") {
+action_with_pydeps("generate_sandboxed_service_srcjar") {
   script = "//content/public/android/generate_child_service.py"
-  depfile = "$target_gen_dir/$target_name.d"
 
   _srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
   _rebased_srcjar_path = rebase_path(_srcjar_path, root_build_dir)
 
   args = [
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
     "40",
     _rebased_srcjar_path,
   ]

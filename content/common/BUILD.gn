@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//content/public/common/zygote/features.gni")
 import("//ipc/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -270,8 +271,8 @@ source_set("common") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
+    "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/zygote:zygote_buildflags",
     "//services/video_capture/public/mojom",
     "//services/viz/public/mojom",
     "//skia",
@@ -352,7 +353,21 @@ source_set("common") {
   }
 
   if (is_linux) {
+    sources += [
+      "zygote/sandbox_support_linux.cc",
+      "zygote/send_zygote_child_ping_linux.cc",
+      "zygote/zygote_commands_linux.h",
+      "zygote/zygote_communication_linux.cc",
+      "zygote/zygote_communication_linux.h",
+    ]
     deps += [ "//third_party/fontconfig" ]
+  }
+
+  if (use_zygote_handle) {
+    sources += [
+      "zygote/zygote_handle_impl_linux.h",
+      "zygote/zygote_handle_linux.cc",
+    ]
   }
 
   if (is_mac || is_win || is_android || is_fuchsia) {

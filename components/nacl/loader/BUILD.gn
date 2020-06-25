@@ -43,10 +43,6 @@ source_set("minimal") {
     "//sandbox",
     "//services/service_manager/public/cpp",
   ]
-
-  if (is_linux) {
-    deps += [ "//services/service_manager/zygote" ]
-  }
 }
 
 # This exists just to make 'gn check' happy with :minimal and
@@ -56,9 +52,9 @@ source_set("minimal") {
 source_set("minimal_content_dummy") {
   check_includes = false
   sources = [
-    "//content/public/common/common_sandbox_support_linux.h",
     "//content/public/common/main_function_params.h",
     "//content/public/common/sandbox_init.h",
+    "//content/public/common/zygote/sandbox_support_linux.h",
   ]
 
   # Deps required by the above headers.
@@ -128,7 +124,6 @@ if (is_linux) {
       "//mojo/core/embedder",
       "//sandbox/linux:sandbox_services",
       "//services/service_manager/sandbox",
-      "//services/service_manager/zygote",
       "//url/ipc:url_ipc",
     ]
 
@@ -241,7 +236,6 @@ if (is_nacl_nonsfi) {
       "//sandbox/linux:sandbox",
       "//services/service_manager/public/cpp",
       "//services/service_manager/sandbox",
-      "//services/service_manager/zygote:zygote_util",
     ]
   }
 

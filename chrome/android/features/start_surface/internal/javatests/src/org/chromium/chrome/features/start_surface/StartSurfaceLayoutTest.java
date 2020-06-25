@@ -32,6 +32,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.finishActivity;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.leaveTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
@@ -88,16 +89,21 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
@@ -108,6 +114,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -213,6 +220,8 @@ public class StartSurfaceLayoutTest {
     public void tearDown() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ChromeNightModeTestUtils::tearDownNightModeAfterChromeActivityDestroyed);
     }
 
     @Test
@@ -1627,6 +1636,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @FlakyTest(message = "crbug.com/1096997")
     public void testTabGroupManualSelection() throws InterruptedException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
@@ -1819,6 +1829,74 @@ public class StartSurfaceLayoutTest {
         // With the fix, StaticLayout guarantees to be shown. Otherwise, StartSurfaceLayout could be
         // shown, not guaranteed.
         assertTrue(newActivity.getLayoutManager().getActiveLayout() instanceof StaticLayout);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+    public void testTabGroupNotFormDuringRestore() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(mUrl);
+        Tab parentTab = cta.getTabModelSelector().getCurrentTab();
+
+        // Create a tab whose parent tab is parentTab.
+        TabCreatorManager.TabCreator tabCreator = cta.getTabCreator(false);
+        LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tabCreator.createNewTab(
+                                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, parentTab));
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Restart activity with tab group enabled, and the tabs should remain as single tabs.
+        finishActivity(cta);
+        CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, true);
+        mActivityTestRule.startMainActivityOnBlankPage();
+        cta = mActivityTestRule.getActivity();
+        assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
+                           instanceof TabGroupModelFilter);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void verifyTabGroupStateAfterReparenting() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        assertTrue(cta.getTabModelSelector().getTabModelFilterProvider().getCurrentTabModelFilter()
+                           instanceof TabGroupModelFilter);
+        mActivityTestRule.loadUrl(mUrl);
+        Tab parentTab = cta.getTabModelSelector().getCurrentTab();
+
+        // Create a tab whose parent tab is parentTab.
+        TabCreatorManager.TabCreator tabCreator = cta.getTabCreator(false);
+        LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> tabCreator.createNewTab(
+                                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, parentTab));
+        Tab childTab = cta.getTabModelSelector().getCurrentModel().getTabAt(1);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        TabGroupModelFilter filter = (TabGroupModelFilter) cta.getTabModelSelector()
+                                             .getTabModelFilterProvider()
+                                             .getCurrentTabModelFilter();
+        TestThreadUtils.runOnUiThreadBlocking(() -> filter.moveTabOutOfGroup(childTab.getId()));
+        verifyTabSwitcherCardCount(cta, 2);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeNightModeTestUtils.setUpNightModeForChromeActivity(true));
+        cta = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class);
+        assertTrue(cta.getNightModeStateProvider().isInNightMode());
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                cta.getTabModelSelector()
+                        .getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()::isTabModelRestored));
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
     }
 
     private void enterTabGroupManualSelection(ChromeTabbedActivity cta) {

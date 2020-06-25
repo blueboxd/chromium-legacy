@@ -1,9 +1,5 @@
 ==== BEGIN EDITS ====
-r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::1940:::13:::CheckedPtr<struct event> 
 include-user-header:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::-1:::-1:::base/memory/checked_ptr.h
-r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::2009:::14:::CheckedPtr<struct event *> 
-r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::1940:::13:::CheckedPtr<struct event> 
-r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::2009:::14:::CheckedPtr<struct event *> 
 r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::1940:::13:::CheckedPtr<struct event> 
 r:::/usr/local/google/home/lukasza/src/chromium4/src/tools/clang/rewrite_raw_ptr_fields/tests/gen-macros-actual.cc:::2009:::14:::CheckedPtr<struct event *> 
 ==== END EDITS ====

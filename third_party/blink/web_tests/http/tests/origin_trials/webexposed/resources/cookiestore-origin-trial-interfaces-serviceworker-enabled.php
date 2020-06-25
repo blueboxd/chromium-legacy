@@ -18,6 +18,7 @@ test(t => {
 
 test(t => {
   assert_true('cookieStore' in self, 'cookieStore property exists on global');
+  assert_not_equals(self.cookieStore, undefined, 'cookieStore property can be accessed on self');
   assert_true('oncookiechange' in self,
               'oncookiechange property exists on global');
 }, 'Cookie Store API entry points in Origin-Trial enabled serviceworker.');

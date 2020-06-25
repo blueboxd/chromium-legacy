@@ -224,6 +224,9 @@ void AmbientController::OnAutoShowTimeOut() {
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
+  if (!AmbientClient::Get()->IsAmbientModeAllowed())
+    return;
+
   if (locked) {
     // We have 3 options to manage the token for lock screen. Here use option 1.
     // 1. Request only one time after entering lock screen. We will use it once
@@ -293,7 +296,7 @@ void AmbientController::HideContainerView() {
 void AmbientController::ShowInSessionUI() {
   // TODO(meilinw): move the eligibility check to the idle entry point once
   // implemented: b/149246117.
-  if (!ambient::util::IsAmbientModeAllowed()) {
+  if (!AmbientClient::Get()->IsAmbientModeAllowed()) {
     LOG(WARNING) << "Ambient mode is not allowed.";
     return;
   }

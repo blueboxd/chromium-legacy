@@ -135,11 +135,8 @@ class WebstorePrivateExtensionInstallRequestBase : public ExtensionApiUnittest {
 
   void VerifyResponse(const ExtensionInstallStatus& expected_response,
                       const base::Value* actual_response) {
-    ASSERT_TRUE(actual_response->is_list());
-    const auto& actual_list = actual_response->GetList();
-    ASSERT_EQ(1u, actual_list.size());
-    ASSERT_TRUE(actual_list[0].is_string());
-    EXPECT_EQ(ToString(expected_response), actual_list[0].GetString());
+    ASSERT_TRUE(actual_response->is_string());
+    EXPECT_EQ(ToString(expected_response), actual_response->GetString());
   }
 
  private:

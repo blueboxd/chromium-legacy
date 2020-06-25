@@ -959,8 +959,7 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
   int reports = 0;
   base::TimeDelta frame_duration = base::TimeDelta::FromSecondsD(1.0 / fps);
   int frames_to_run =
-      (fps / 2) *
-      (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
+      fps * (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
   WTF::HashMap<uint32_t, viz::FrameTimingDetails> timing_details;
 
   MakeSubmitter(

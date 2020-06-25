@@ -65,6 +65,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW,
                 ChromeFeatureList.PAINT_PREVIEW_DEMO,
+                ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP,
                 ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
                 ChromeFeatureList.START_SURFACE_ANDROID,
                 ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,

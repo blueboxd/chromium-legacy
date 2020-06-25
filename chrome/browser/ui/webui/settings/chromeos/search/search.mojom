@@ -91,6 +91,10 @@ struct SearchResult {
   // Default ranking, which is used to break ties when searching for results.
   SearchResultDefaultRank default_rank;
 
+  // True if this result was generated due to a text match; this field can be
+  // false if it was constructed due to a ParentResultBehavior.
+  bool was_generated_from_text_match;
+
   // The type and identifier for this search result. The value of the |type|
   // field indicates the union member used by |id|.
   SearchResultType type;

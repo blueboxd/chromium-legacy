@@ -651,6 +651,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableOffersInDownstreamDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOffersInDownstream)},
+    {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
+     flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

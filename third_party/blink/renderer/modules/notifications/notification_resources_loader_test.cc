@@ -42,7 +42,7 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 
   ~NotificationResourcesLoaderTest() override {
     loader_->Stop();
-    platform_->GetURLLoaderMockFactory()
+    WebURLLoaderMockFactory::GetSingletonInstance()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -69,7 +69,8 @@ class NotificationResourcesLoaderTest : public PageTestBase {
     base::RunLoop run_loop;
     resources_loaded_closure_ = run_loop.QuitClosure();
     Loader()->Start(GetExecutionContext(), notification_data);
-    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    WebURLLoaderMockFactory::GetSingletonInstance()
+        ->ServeAsynchronousRequests();
     run_loop.Run();
   }
 
@@ -278,7 +279,7 @@ TEST_F(NotificationResourcesLoaderTest, StopYieldsNoResources) {
   // The loader would stop e.g. when the execution context is destroyed or
   // when the loader is about to be destroyed, as a pre-finalizer.
   Loader()->Stop();
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
 
   // Loading should have been cancelled when |stop| was called so no resources
   // should have been received by the test even though

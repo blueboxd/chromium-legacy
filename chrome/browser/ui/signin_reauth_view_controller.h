@@ -25,6 +25,7 @@ class WebContents;
 
 namespace signin {
 enum class ReauthResult;
+class ReauthTabHelper;
 }
 
 // A controller class for the Reauth UI flow.
@@ -141,6 +142,8 @@ class SigninReauthViewController
 
   void RecordClickOnce(UserAction click_action);
 
+  signin::ReauthTabHelper* GetReauthTabHelper();
+
   void ShowReauthConfirmationDialog();
   void ShowGaiaReauthPage();
   void ShowGaiaReauthPageInDialog();
@@ -153,8 +156,8 @@ class SigninReauthViewController
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
 
   // Dialog state useful for recording metrics.
-  UIState ui_state = UIState::kNone;
-  bool has_recorded_click = false;
+  UIState ui_state_ = UIState::kNone;
+  bool has_recorded_click_ = false;
 
   // Delegate displaying the dialog.
   SigninViewControllerDelegate* dialog_delegate_ = nullptr;

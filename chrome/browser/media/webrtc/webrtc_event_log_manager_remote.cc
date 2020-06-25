@@ -749,7 +749,7 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
       DCHECK(emplace_result.second);  // No pre-existing entry.
     } else {
       const base::FilePath log_file_path = it->second->path();
-      if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
+      if (!base::DeleteFile(log_file_path)) {
         LOG(ERROR) << "Failed to delete " << log_file_path << ".";
       }
     }
@@ -835,14 +835,14 @@ void WebRtcRemoteEventLogManager::LoadLogsDirectory(
     }
 
     // Remove the log file itself.
-    if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
+    if (!base::DeleteFile(log_file_path)) {
       LOG(ERROR) << "Failed to delete " << file_to_delete.first << ".";
     }
   }
 
   // Remove expired history files.
   for (const base::FilePath& history_file_path : history_files_to_delete) {
-    if (!base::DeleteFile(history_file_path, /*recursive=*/false)) {
+    if (!base::DeleteFile(history_file_path)) {
       LOG(ERROR) << "Failed to delete " << history_file_path << ".";
     }
   }

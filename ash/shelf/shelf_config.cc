@@ -114,7 +114,8 @@ ShelfConfig::ShelfConfig()
       shelf_button_spacing_(8),
       shelf_status_area_hit_region_padding_(4),
       shelf_status_area_hit_region_padding_dense_(2),
-      app_icon_group_margin_(16),
+      app_icon_group_margin_tablet_(16),
+      app_icon_group_margin_clamshell_(12),
       shelf_control_permanent_highlight_background_(
           SkColorSetA(SK_ColorWHITE, 26)),  // 10%
       shelf_focus_border_color_(gfx::kGoogleBlue300),
@@ -496,6 +497,11 @@ int ShelfConfig::GetShelfControlButtonBlurRadius() const {
 int ShelfConfig::GetAppIconEndPadding() const {
   return chromeos::switches::ShouldShowShelfHotseat() ? app_icon_end_padding_
                                                       : 0;
+}
+
+int ShelfConfig::GetAppIconGroupMargin() const {
+  return in_tablet_mode_ ? app_icon_group_margin_tablet_
+                         : app_icon_group_margin_clamshell_;
 }
 
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {

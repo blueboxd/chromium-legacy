@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -211,6 +212,11 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   web_app->SetIconInfos(bookmark_app_registrar_.GetAppIconInfos(app_id));
   web_app->SetDownloadedIconSizes(
       bookmark_app_registrar_.GetAppDownloadedIconSizes(app_id));
+
+  web_app->SetUserPageOrdinal(
+      bookmark_app_registrar_.GetUserPageOrdinal(app_id));
+  web_app->SetUserLaunchOrdinal(
+      bookmark_app_registrar_.GetUserLaunchOrdinal(app_id));
 
   if (IsChromeOs()) {
     auto chromeos_data = base::make_optional<WebAppChromeOsData>();

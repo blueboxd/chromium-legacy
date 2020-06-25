@@ -106,14 +106,14 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, HasTitleAndTwoButtons) {
 }
 
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldNotShowAccountPicker) {
-  ON_CALL(*feature_manager_mock(), ShouldShowPasswordStorePicker)
+  ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(false));
   CreateViewAndShow();
   EXPECT_FALSE(account_picker());
 }
 
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldShowAccountPicker) {
-  ON_CALL(*feature_manager_mock(), ShouldShowPasswordStorePicker)
+  ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   SimulateSignIn();
   CreateViewAndShow();
@@ -123,7 +123,7 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest, ShouldShowAccountPicker) {
 
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
        ShouldSelectAccountStoreByDefault) {
-  ON_CALL(*feature_manager_mock(), ShouldShowPasswordStorePicker)
+  ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager_mock(), GetDefaultPasswordStore)
       .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
@@ -142,7 +142,7 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
 
 TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
        ShouldSelectProfileStoreByDefault) {
-  ON_CALL(*feature_manager_mock(), ShouldShowPasswordStorePicker)
+  ON_CALL(*feature_manager_mock(), ShouldShowAccountStorageBubbleUi)
       .WillByDefault(Return(true));
   ON_CALL(*feature_manager_mock(), GetDefaultPasswordStore)
       .WillByDefault(Return(autofill::PasswordForm::Store::kProfileStore));

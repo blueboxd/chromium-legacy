@@ -62,7 +62,7 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
 // This flag will allow the browser process to adjust the tcmalloc tunables to
 // balance performance and memory utilization.
 const base::Feature kDynamicTcmallocTuning{"DynamicTcmallocTuning",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The time between attempting to update tcmalloc tunables.
 const base::FeatureParam<int> kDynamicTuningTimeSec = {

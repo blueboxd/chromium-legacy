@@ -25,7 +25,7 @@ class AmbientClientImpl : public ash::AmbientClient {
   ~AmbientClientImpl() override;
 
   // ash::AmbientClient:
-  bool IsAmbientModeAllowedForActiveUser() override;
+  bool IsAmbientModeAllowed() override;
   void RequestAccessToken(GetAccessTokenCallback callback) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   void RequestWakeLockProvider(

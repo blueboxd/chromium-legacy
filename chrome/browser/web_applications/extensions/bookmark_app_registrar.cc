@@ -28,6 +28,12 @@
 using web_app::DisplayMode;
 
 namespace extensions {
+namespace {
+// These need to match the keys in
+// chrome/browser/extensions/chrome_app_sorting.cc
+const char kPrefAppLaunchOrdinal[] = "app_launcher_ordinal";
+const char kPrefPageOrdinal[] = "page_ordinal";
+}  // namespace
 
 BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
     : AppRegistrar(profile) {
@@ -271,6 +277,28 @@ web_app::WebAppRegistrar* BookmarkAppRegistrar::AsWebAppRegistrar() {
 
 BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
   return this;
+}
+
+syncer::StringOrdinal BookmarkAppRegistrar::GetUserPageOrdinal(
+    const web_app::AppId& app_id) const {
+  std::string page_ordinal_raw_data;
+  // If the preference read fails then raw_data will still be unset and we
+  // will return an invalid StringOrdinal to signal that no page ordinal was
+  // found.
+  extensions::ExtensionPrefs::Get(profile())->ReadPrefAsString(
+      app_id, kPrefPageOrdinal, &page_ordinal_raw_data);
+  return syncer::StringOrdinal(page_ordinal_raw_data);
+}
+
+syncer::StringOrdinal BookmarkAppRegistrar::GetUserLaunchOrdinal(
+    const web_app::AppId& app_id) const {
+  std::string launch_ordinal_raw_data;
+  // If the preference read fails then raw_data will still be unset and we
+  // will return an invalid StringOrdinal to signal that no page ordinal was
+  // found.
+  extensions::ExtensionPrefs::Get(profile())->ReadPrefAsString(
+      app_id, kPrefAppLaunchOrdinal, &launch_ordinal_raw_data);
+  return syncer::StringOrdinal(launch_ordinal_raw_data);
 }
 
 const Extension* BookmarkAppRegistrar::FindExtension(

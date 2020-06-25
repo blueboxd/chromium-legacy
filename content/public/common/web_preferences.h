@@ -160,7 +160,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool dont_send_key_events_to_javascript;
   bool barrel_button_for_drag_enabled = false;
   bool sync_xhr_in_documents_enabled;
-  bool should_respect_image_orientation;
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;
   bool supports_multiple_windows;

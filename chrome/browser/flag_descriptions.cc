@@ -1729,6 +1729,12 @@ const char kPrintJobManagementAppDescription[] =
     "Enables the print management app that allows Chrome OS users to view "
     "and manage their native print jobs.";
 
+const char kPrivacyElevatedAndroidName[] =
+    "Elevate Privacy in Settings on Android";
+const char kPrivacyElevatedAndroidDescription[] =
+    "Moves the Privacy section up to Basics and moves the Homepage one to "
+    " Advanced.";
+
 const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
 const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "

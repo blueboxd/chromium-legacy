@@ -68,6 +68,7 @@ constexpr char kPolicyIndicator[] = "indicator";
 constexpr char kSource[] = "source";
 constexpr char kType[] = "type";
 constexpr char kIsEmbargoed[] = "isEmbargoed";
+constexpr char kIsDiscarded[] = "isDiscarded";
 
 enum class SiteSettingSource {
   kAdsFilterBlacklist,
@@ -129,7 +130,8 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito,
-    bool is_embargoed = false);
+    bool is_embargoed = false,
+    bool is_discarded = false);
 
 // Helper function to construct a dictionary for a hosted app exception.
 void AddExceptionForHostedApp(const std::string& url_pattern,

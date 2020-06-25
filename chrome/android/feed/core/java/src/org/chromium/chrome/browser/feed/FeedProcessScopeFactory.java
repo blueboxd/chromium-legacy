@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorageD
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorageDirect;
 import org.chromium.chrome.browser.feed.library.common.time.SystemClockImpl;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipSupportedApi;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -137,6 +138,7 @@ public class FeedProcessScopeFactory {
     }
 
     private static void initialize() {
+        assert !ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2);
         assert sProcessScope == null && sFeedScheduler == null && sFeedOfflineIndicator == null
                 && sFeedAppLifecycle == null && sFeedLoggingBridge == null;
         if (!isFeedProcessEnabled()) return;

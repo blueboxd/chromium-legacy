@@ -66,7 +66,8 @@ void SwitchToFullBrowserImageFetcher(PrefetchServiceImpl* prefetch_service,
   if (!prefetch_service->GetImageFetcher())
     return;
 
-  DCHECK(base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions));
+  DCHECK(base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions) ||
+         base::FeatureList::IsEnabled(feed::kInterestFeedV2));
   prefetch_service->ReplaceImageFetcher(
       GetImageFetcher(key, image_fetcher::ImageFetcherConfig::kDiskCacheOnly));
 }
@@ -116,7 +117,8 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
   ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
 
   const bool feed_enabled =
-      base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions);
+      base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions) ||
+      base::FeatureList::IsEnabled(feed::kInterestFeedV2);
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForKey(profile_key);
   DCHECK(offline_page_model);

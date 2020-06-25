@@ -98,30 +98,32 @@ static bool ShouldCreateContext(
 CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
+  // Create a copy of attrs so flags can be modified if needed before passing
+  // into the WebGLRenderingContext constructor.
+  CanvasContextCreationAttributesCore attribs = attrs;
+
   // The xr_compatible attribute needs to be handled before creating the context
   // because the GPU process may potentially be restarted in order to be XR
   // compatible. This scenario occurs if the GPU process is not using the GPU
   // that the VR headset is plugged into. If the GPU process is restarted, the
   // WebGraphicsContext3DProvider must be created using the new one.
-  if (attrs.xr_compatible &&
+  if (attribs.xr_compatible &&
       !WebGLRenderingContextBase::MakeXrCompatibleSync(host)) {
-    // If the xr_compatible attribute is requested and we're not able to be xr
-    // compatible, fail and don't create the context.
-    // TODO(http://crbug.com/1086697): Create a WebGL context with xrCompatible
-    // set to false
-    return nullptr;
+    // If xr compatibility is requested and we can't be xr compatible, return a
+    // context with the flag set to false.
+    attribs.xr_compatible = false;
   }
 
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
       CreateWebGraphicsContext3DProvider(
-          host, attrs, Platform::kWebGL1ContextType, &using_gpu_compositing));
+          host, attribs, Platform::kWebGL1ContextType, &using_gpu_compositing));
   if (!ShouldCreateContext(context_provider.get()))
     return nullptr;
 
   WebGLRenderingContext* rendering_context =
       MakeGarbageCollected<WebGLRenderingContext>(
-          host, std::move(context_provider), using_gpu_compositing, attrs);
+          host, std::move(context_provider), using_gpu_compositing, attribs);
   if (!rendering_context->GetDrawingBuffer()) {
     host->HostDispatchEvent(
         WebGLContextEvent::Create(event_type_names::kWebglcontextcreationerror,

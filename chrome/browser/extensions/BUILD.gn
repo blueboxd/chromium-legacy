@@ -755,7 +755,7 @@ static_library("extensions") {
     # Lots of APIs use headers from the list above.
     "//chrome/browser/extensions/api:api_registration",
 
-    # TODO(loyso): Remove this circular dependency. http://crbug.com/876576.
+    # TODO(crbug.com/1065748): Remove this circular dependency.
     "//chrome/browser/web_applications/extensions",
 
     # TODO(crbug/925153): Remove this circular dependency.
@@ -800,7 +800,10 @@ static_library("extensions") {
     "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/safe_browsing",
+    "//chrome/browser/web_applications",
     "//chrome/browser/web_applications/components",
+
+    # TODO(crbug.com/1065748): Remove this dependency:
     "//chrome/browser/web_applications/extensions",
     "//chrome/common/extensions/api:extensions_features",
     "//chrome/common/safe_browsing:proto",

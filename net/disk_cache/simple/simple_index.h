@@ -296,11 +296,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // enforces this.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Timestamp of the last time we wrote the index to disk.
-  // PostponeWritingToDisk() may give up postponing and allow the write if it
-  // has been a while since last time we wrote.
-  base::TimeTicks last_write_to_disk_;
-
   base::OneShotTimer write_to_disk_timer_;
   base::RepeatingClosure write_to_disk_cb_;
 

@@ -273,6 +273,14 @@ void AddChromecastArmGpuWhitelist(
 
   static const char kLdSoCache[] = "/etc/ld.so.cache";
   permissions->push_back(BrokerFilePermission::ReadOnly(kLdSoCache));
+
+  base::FileEnumerator enumerator(
+      base::FilePath(FILE_PATH_LITERAL("/dev/dri/")), false /* recursive */,
+      base::FileEnumerator::FILES, FILE_PATH_LITERAL("renderD*"));
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    permissions->push_back(BrokerFilePermission::ReadWrite(name.value()));
+  }
 }
 
 void AddStandardGpuWhiteList(std::vector<BrokerFilePermission>* permissions) {

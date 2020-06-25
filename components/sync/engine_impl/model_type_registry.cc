@@ -16,13 +16,11 @@
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_processor.h"
-#include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
-#include "components/sync/engine_impl/directory_commit_contributor.h"
-#include "components/sync/engine_impl/directory_update_handler.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
+#include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/syncable_base_transaction.h"
 
@@ -128,11 +126,6 @@ void ModelTypeRegistry::ConnectNonBlockingType(
                                         /*types_to_journal=*/ModelTypeSet(),
                                         /*types_to_unapply=*/ModelTypeSet());
   }
-
-  // We want to check that we haven't accidentally enabled both the non-blocking
-  // and directory implementations for a given model type.
-  DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
-             .Empty());
 }
 
 void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
@@ -158,60 +151,6 @@ void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
   }
 }
 
-void ModelTypeRegistry::RegisterDirectoryType(ModelType type,
-                                              ModelSafeGroup group) {
-  DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
-  DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
-  DCHECK(directory_update_handlers_.find(type) ==
-         directory_update_handlers_.end());
-  DCHECK(directory_commit_contributors_.find(type) ==
-         directory_commit_contributors_.end());
-  DCHECK(data_type_debug_info_emitter_map_.find(type) ==
-         data_type_debug_info_emitter_map_.end());
-  DCHECK_NE(GROUP_NON_BLOCKING, group);
-  DCHECK(workers_map_.find(group) != workers_map_.end())
-      << " for " << ModelTypeToString(type) << " group "
-      << ModelSafeGroupToString(group);
-
-  auto worker = workers_map_.find(group)->second;
-  DCHECK(GetEmitter(type) == nullptr);
-  auto owned_emitter = std::make_unique<DirectoryTypeDebugInfoEmitter>(
-      directory(), type, &type_debug_info_observers_);
-  DataTypeDebugInfoEmitter* emitter_ptr = owned_emitter.get();
-  data_type_debug_info_emitter_map_[type] = std::move(owned_emitter);
-
-  auto updater = std::make_unique<DirectoryUpdateHandler>(directory(), type,
-                                                          worker, emitter_ptr);
-  auto committer = std::make_unique<DirectoryCommitContributor>(
-      directory(), type, emitter_ptr);
-
-  update_handler_map_[type] = updater.get();
-  commit_contributor_map_[type] = committer.get();
-
-  directory_update_handlers_[type] = std::move(updater);
-  directory_commit_contributors_[type] = std::move(committer);
-
-  DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
-             .Empty());
-}
-
-void ModelTypeRegistry::UnregisterDirectoryType(ModelType type) {
-  DCHECK(update_handler_map_.find(type) != update_handler_map_.end());
-  DCHECK(commit_contributor_map_.find(type) != commit_contributor_map_.end());
-  DCHECK(directory_update_handlers_.find(type) !=
-         directory_update_handlers_.end());
-  DCHECK(directory_commit_contributors_.find(type) !=
-         directory_commit_contributors_.end());
-  DCHECK(data_type_debug_info_emitter_map_.find(type) !=
-         data_type_debug_info_emitter_map_.end());
-
-  update_handler_map_.erase(type);
-  commit_contributor_map_.erase(type);
-  directory_update_handlers_.erase(type);
-  directory_commit_contributors_.erase(type);
-  data_type_debug_info_emitter_map_.erase(type);
-}
-
 void ModelTypeRegistry::ConnectProxyType(ModelType type) {
   DCHECK(IsProxyType(type));
   enabled_proxy_types_.Put(type);
@@ -223,8 +162,7 @@ void ModelTypeRegistry::DisconnectProxyType(ModelType type) {
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
-  return Union(Union(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes()),
-               enabled_proxy_types_);
+  return Union(GetEnabledNonBlockingTypes(), enabled_proxy_types_);
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
@@ -368,13 +306,6 @@ DataTypeDebugInfoEmitter* ModelTypeRegistry::GetEmitter(ModelType type) {
     raw_emitter = it->second.get();
   }
   return raw_emitter;
-}
-
-ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
-  ModelTypeSet enabled_directory_types;
-  for (const auto& kv : directory_update_handlers_)
-    enabled_directory_types.Put(kv.first);
-  return enabled_directory_types;
 }
 
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {

@@ -438,6 +438,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            KeyboardObserverForFocusedNodeChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverForPenInput);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
+                           KeyboardObserverDetachDuringWindowDestroy);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DropFallbackWhenHidden);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
@@ -536,7 +538,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                               RenderWidgetHostViewBase* updated_view) override;
 
   // Detaches |this| from the input method object.
-  void DetachFromInputMethod();
+  // is_removed flag is true if this is called while the window is
+  // getting removed/destroyed, false, otherwise.
+  void DetachFromInputMethod(bool is_removed);
 
   // Dismisses a Web Popup on a mouse or touch press outside the popup and its
   // parent.

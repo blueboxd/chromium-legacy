@@ -57,6 +57,13 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   sync_data->set_name(app.sync_fallback_data().name);
   if (app.sync_fallback_data().theme_color.has_value())
     sync_data->set_theme_color(app.sync_fallback_data().theme_color.value());
+  if (app.user_page_ordinal().IsValid()) {
+    sync_data->set_user_page_ordinal(app.user_page_ordinal().ToInternalValue());
+  }
+  if (app.user_launch_ordinal().IsValid()) {
+    sync_data->set_user_launch_ordinal(
+        app.user_launch_ordinal().ToInternalValue());
+  }
   if (app.scope().is_valid())
     sync_data->set_scope(app.scope().spec());
   for (const WebApplicationIconInfo& icon : app.icon_infos()) {
@@ -94,6 +101,9 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
 
   // Always override user_display mode with a synced value.
   app->SetUserDisplayMode(ToMojomDisplayMode(sync_data.user_display_mode()));
+  app->SetUserPageOrdinal(syncer::StringOrdinal(sync_data.user_page_ordinal()));
+  app->SetUserLaunchOrdinal(
+      syncer::StringOrdinal(sync_data.user_launch_ordinal()));
 
   base::Optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
       ParseSyncFallbackDataStruct(sync_data);
@@ -251,6 +261,23 @@ void WebAppSyncBridge::SetAppInstallTime(const AppId& app_id,
 
 WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
   return this;
+}
+
+void WebAppSyncBridge::SetUserPageOrdinal(const AppId& app_id,
+                                          syncer::StringOrdinal page_ordinal) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetUserPageOrdinal(page_ordinal);
+}
+
+void WebAppSyncBridge::SetUserLaunchOrdinal(
+    const AppId& app_id,
+    syncer::StringOrdinal launch_ordinal) {
+  ScopedRegistryUpdate update(this);
+  WebApp* web_app = update->UpdateApp(app_id);
+  if (web_app)
+    web_app->SetUserLaunchOrdinal(launch_ordinal);
 }
 
 void WebAppSyncBridge::CheckRegistryUpdateData(

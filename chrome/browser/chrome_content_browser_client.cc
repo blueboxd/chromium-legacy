@@ -2746,6 +2746,16 @@ std::string ChromeContentBrowserClient::GetWebBluetoothBlocklist() {
                                             "blocklist_additions");
 }
 
+bool ChromeContentBrowserClient::AllowConversionMeasurement(
+    content::BrowserContext* browser_context) {
+  // For now, disable conversion measurement if third party cookie blocking is
+  // enabled.
+  // TODO(crbug.com/1058018): Add dedicated UI to this feature.
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+  return !cookie_settings->ShouldBlockThirdPartyCookies();
+}
+
 #if defined(OS_CHROMEOS)
 void ChromeContentBrowserClient::OnTrustAnchorUsed(
     content::BrowserContext* browser_context) {

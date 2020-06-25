@@ -79,6 +79,13 @@ class WebAppSyncBridge : public AppRegistryController,
   void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
+  // These methods are used by extensions::AppSorting, which manages the sorting
+  // of web apps on chrome://apps.
+  void SetUserPageOrdinal(const AppId& app_id,
+                          syncer::StringOrdinal user_page_ordinal);
+  void SetUserLaunchOrdinal(const AppId& app_id,
+                            syncer::StringOrdinal user_launch_ordinal);
+
   // An access to read-only registry. Does an upcast to read-only type.
   const WebAppRegistrar& registrar() const { return *registrar_; }
 

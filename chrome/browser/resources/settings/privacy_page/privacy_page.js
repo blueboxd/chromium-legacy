@@ -294,6 +294,16 @@ Polymer({
 
     /** @private */
     siteDataFilter_: String,
+
+    /**
+     * Boolean which keeps a track if any of the displayed lists has discarded
+     * content setting patterns and hides the warning message accordingly.
+     * @private
+     */
+    pluginsHasDiscardedExceptions_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [

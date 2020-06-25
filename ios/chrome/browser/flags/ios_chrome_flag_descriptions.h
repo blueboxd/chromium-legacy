@@ -358,6 +358,11 @@ extern const char kSendUmaOverAnyNetworkDescription[];
 extern const char kSettingsRefreshName[];
 extern const char kSettingsRefreshDescription[];
 
+// Title and description for the flag to enable Shared Highlighting (Link to
+// Text Edit Menu option and Text Fragments web behavior).
+extern const char kSharedHighlightingIOSName[];
+extern const char kSharedHighlightingIOSDescription[];
+
 // Title and description for the flag to enable annotating web forms with
 // Autofill field type predictions as placeholder.
 extern const char kShowAutofillTypePredictionsName[];

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/overlays/overlay_presentation_context_impl.h"
 
 #include "base/bind.h"
+#include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
@@ -288,6 +289,11 @@ TEST_F(OverlayPresentationContextImplTest, CanShowRequest) {
 
 // Tests the presentation flow for contained overlay UI.
 TEST_F(OverlayPresentationContextImplTest, ContainedOverlayUI) {
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    // TODO(crbug.com/1099287): Test is failing on iOS 12.4.
+    return;
+  }
+
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<TestContainedOverlay>();
   context_.PrepareToShowOverlayUI(request.get());

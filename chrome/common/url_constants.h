@@ -234,6 +234,9 @@ extern const char kUpgradeHelpCenterBaseURL[];
 // Help center URL for who the account administrator is.
 extern const char kWhoIsMyAdministratorHelpURL[];
 
+// Link to the flash roadmap
+extern const char kChromeFlashRoadmapURL[];
+
 #if defined(OS_ANDROID)
 extern const char kAndroidAppScheme[];
 #endif

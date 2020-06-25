@@ -110,6 +110,9 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   static void SetIntentGeneratorFactoryForTesting(
       IntentGeneratorFactoryCallback* factory);
 
+  static bool IsQuickAnswersAllowedForLocale(const std::string& locale,
+                                             const std::string& runtime_locale);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, SendRequest);
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest,

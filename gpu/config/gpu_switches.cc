@@ -14,7 +14,7 @@ const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 // Skia GPU backend. Only valid with GPU accelerated compositing.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
-// Select a different set of GPU blacklist entries with the specificed
+// Select a different set of GPU blacklist entries with the specified
 // test_group ID.
 const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
 

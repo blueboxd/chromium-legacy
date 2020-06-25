@@ -35,7 +35,6 @@ import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
-import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.PassphraseType;
 
 /**

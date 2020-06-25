@@ -218,8 +218,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
             item.Size().ConvertToLogical(writing_mode).block_size;
       }
 
-      items_.emplace_back(item_offset,
-                          std::move(const_cast<NGFragmentItem&>(item)));
+      items_.emplace_back(item_offset, item);
       const PhysicalRect line_box_bounds = item.RectInContainerBlock();
       line_converter.SetOuterSize(line_box_bounds.size);
       for (NGInlineCursor line = cursor.CursorForDescendants(); line;
@@ -230,7 +229,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
             line_converter.ToLogical(
                 line_child.OffsetInContainerBlock() - line_box_bounds.offset,
                 line_child.Size()),
-            std::move(const_cast<NGFragmentItem&>(line_child)));
+            line_child);
       }
       cursor.MoveToNextSkippingChildren();
       continue;
@@ -238,8 +237,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
 
     DCHECK_NE(item.Type(), NGFragmentItem::kLine);
     DCHECK(!end_item);
-    items_.emplace_back(item_offset,
-                        std::move(const_cast<NGFragmentItem&>(item)));
+    items_.emplace_back(item_offset, item);
     cursor.MoveToNext();
   }
   DCHECK_LE(items_.size(), estimated_size);

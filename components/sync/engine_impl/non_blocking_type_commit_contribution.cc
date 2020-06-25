@@ -155,7 +155,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         // TODO(vitaliii): avoid the default clause and list all values
         // explicitly (this will fail at compile time if enum is extended).
         default:
-          DLOG(ERROR) << "Bad return from ProcessSingleCommitResponse.";
+          DLOG(ERROR) << "Bad commit response.";
           unknown_error = true;
       }
     }

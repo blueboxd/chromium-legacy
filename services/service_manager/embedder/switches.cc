@@ -58,9 +58,6 @@ const char kServiceRequestChannelToken[] = "service-request-channel-token";
 // global descriptor table.
 const char kSharedFiles[] = "shared-files";
 
-// The prefix used when starting the zygote process. (i.e. 'gdb --args')
-const char kZygoteCmdPrefix[] = "zygote-cmd-prefix";
-
 // Causes the process to run as a zygote.
 const char kZygoteProcess[] = "zygote";
 

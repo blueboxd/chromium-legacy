@@ -2018,10 +2018,10 @@ static void OverloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
   exception_state.ThrowTypeError("No function was found that matched the signature provided.");
 }
 
-static void MethodWithExposedHavingRuntimeEnabldFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+static void MethodWithExposedHavingRuntimeEnabledFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
-  impl->methodWithExposedHavingRuntimeEnabldFlag();
+  impl->methodWithExposedHavingRuntimeEnabledFlag();
 }
 
 static void WindowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3849,11 +3849,11 @@ void V8TestInterface::OverloadMethodWithExposedAndRuntimeEnabledFlagMethodCallba
   test_interface_implementation_v8_internal::OverloadMethodWithExposedAndRuntimeEnabledFlagMethod(info);
 }
 
-void V8TestInterface::MethodWithExposedHavingRuntimeEnabldFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  BLINK_BINDINGS_TRACE_EVENT("TestInterface.methodWithExposedHavingRuntimeEnabldFlag");
-  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithExposedHavingRuntimeEnabldFlag");
+void V8TestInterface::MethodWithExposedHavingRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface.methodWithExposedHavingRuntimeEnabledFlag");
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithExposedHavingRuntimeEnabledFlag");
 
-  test_interface_implementation_v8_internal::MethodWithExposedHavingRuntimeEnabldFlagMethod(info);
+  test_interface_implementation_v8_internal::MethodWithExposedHavingRuntimeEnabledFlagMethod(info);
 }
 
 void V8TestInterface::WindowAndServiceWorkerExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -4555,7 +4555,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
   }
 }
 
-void V8TestInterface::InstallTestFeature(
+void V8TestInterface::InstallOriginTrialFeature(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
     v8::Local<v8::Object> instance,
@@ -4579,7 +4579,7 @@ void V8TestInterface::InstallTestFeature(
   }
 }
 
-void V8TestInterface::InstallTestFeature(
+void V8TestInterface::InstallOriginTrialFeature(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
@@ -4587,11 +4587,11 @@ void V8TestInterface::InstallTestFeature(
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
       V8TestInterface::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
-  InstallTestFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
+  InstallOriginTrialFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
 
-void V8TestInterface::InstallTestFeature(ScriptState* script_state) {
-  InstallTestFeature(script_state, v8::Local<v8::Object>());
+void V8TestInterface::InstallOriginTrialFeature(ScriptState* script_state) {
+  InstallOriginTrialFeature(script_state, v8::Local<v8::Object>());
 }
 
 v8::Local<v8::FunctionTemplate> V8TestInterface::DomTemplate(
@@ -4803,9 +4803,9 @@ void V8TestInterface::InstallConditionalFeatures(
     }
     if (execution_context && ((execution_context->IsDocument() && RuntimeEnabledFeatures::FeatureNameEnabled()) || (execution_context->IsWorkerGlobalScope() && RuntimeEnabledFeatures::FeatureName2Enabled()))) {
       {
-        // Install methodWithExposedHavingRuntimeEnabldFlag configuration
+        // Install methodWithExposedHavingRuntimeEnabledFlag configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
-            {"methodWithExposedHavingRuntimeEnabldFlag", V8TestInterface::MethodWithExposedHavingRuntimeEnabldFlagMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+            {"methodWithExposedHavingRuntimeEnabledFlag", V8TestInterface::MethodWithExposedHavingRuntimeEnabledFlagMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
         };
         for (const auto& config : kConfigurations) {
           V8DOMConfiguration::InstallMethod(

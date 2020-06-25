@@ -100,12 +100,6 @@ ClientSideDetectionService::ClientSideDetectionService(
     : enabled_(false),
       extended_reporting_(false),
       url_loader_factory_(url_loader) {
-  base::Closure update_renderers =
-      base::Bind(&ClientSideDetectionService::SendModelToRenderers,
-                 base::Unretained(this));
-
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 }
 
 ClientSideDetectionService::~ClientSideDetectionService() {
@@ -118,7 +112,6 @@ void ClientSideDetectionService::Shutdown() {
 
 void ClientSideDetectionService::OnPrefsUpdated() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SendModelToRenderers();  // always refresh the renderer state
   bool enabled = IsSafeBrowsingEnabled(*profile_->GetPrefs());
   bool extended_reporting =
       IsEnhancedProtectionEnabled(*profile_->GetPrefs()) ||
@@ -159,6 +152,8 @@ void ClientSideDetectionService::OnPrefsUpdated() {
     client_phishing_reports_.clear();
     cache_.clear();
   }
+
+  SendModelToRenderers();  // always refresh the renderer state
 }
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
@@ -214,32 +209,9 @@ void ClientSideDetectionService::OnURLLoaderComplete(
                         url_loader->NetError(), response_code, data);
 }
 
-void ClientSideDetectionService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  if (process->GetBrowserContext() == profile_) {
-    for (ClientSideDetectionHost* host : csd_hosts_) {
-      host->SendModelToRenderFrame(process, profile_, model_loader_.get());
-    }
-  }
-}
-
 void ClientSideDetectionService::SendModelToRenderers() {
-  for (content::RenderProcessHost::iterator i(
-           content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    content::RenderProcessHost* process = i.GetCurrentValue();
-    if (process->IsInitializedAndNotDead() &&
-        process->GetBrowserContext() == profile_) {
-      for (ClientSideDetectionHost* host : csd_hosts_) {
-        host->SendModelToRenderFrame(process, profile_, model_loader_.get());
-      }
-    }
+  for (ClientSideDetectionHost* host : csd_hosts_) {
+    host->SendModelToRenderFrame();
   }
 }
 
@@ -455,6 +427,10 @@ ClientSideDetectionService::GetLastModelStatus() {
   // |model_loader_| can be null in tests
   return model_loader_ ? model_loader_->last_client_model_status()
                        : ModelLoader::MODEL_NEVER_FETCHED;
+}
+
+std::string ClientSideDetectionService::GetModelStr() {
+  return model_loader_ ? model_loader_->model_str() : "";
 }
 
 void ClientSideDetectionService::SetModelLoaderFactoryForTesting(

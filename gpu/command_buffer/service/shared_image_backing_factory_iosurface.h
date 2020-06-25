@@ -9,9 +9,12 @@
 
 #include "base/macros.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_image.h"
 
 namespace gfx {
 class Size;
@@ -22,7 +25,6 @@ namespace gpu {
 class GpuDriverBugWorkarounds;
 struct GpuFeatureInfo;
 struct Mailbox;
-class SharedImageBacking;
 
 // Implementation of SharedImageBackingFactory that produce IOSurface backed
 // SharedImages. This is meant to be used on macOS only.
@@ -33,6 +35,24 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryIOSurface
                                      const GpuFeatureInfo& gpu_feature_info,
                                      bool use_gl);
   ~SharedImageBackingFactoryIOSurface() override;
+
+  // Helper functions used used by SharedImageRepresentationGLImage to do
+  // IOSurface-specific sharing.
+  static sk_sp<SkPromiseImageTexture> ProduceSkiaPromiseTextureMetal(
+      SharedImageBacking* backing,
+      scoped_refptr<SharedContextState> context_state,
+      scoped_refptr<gl::GLImage> image);
+  static std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gl::GLImage> image);
+  static std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device,
+      scoped_refptr<gl::GLImage> image);
 
   // SharedImageBackingFactory implementation.
   std::unique_ptr<SharedImageBacking> CreateSharedImage(

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list.mutator;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
@@ -48,36 +49,67 @@ public class DateLabelAdder implements ListConsumer {
     }
 
     private List<ListItem> addLabels(List<ListItem> sortedList) {
-        List<ListItem> listItems = new ArrayList<>();
+        List<ListItem> listWithHeaders = new ArrayList<>();
+
+        // Insert section headers to the list and output the new list with headers.
         OfflineItem previousItem = null;
         for (int i = 0; i < sortedList.size(); i++) {
             ListItem listItem = sortedList.get(i);
             if (!(listItem instanceof OfflineItemListItem)) continue;
 
-            OfflineItem offlineItem = ((OfflineItemListItem) listItem).item;
-            boolean startOfNewDay = startOfNewDay(offlineItem, previousItem);
-            boolean isJustNow =
-                    mJustNowProvider != null && mJustNowProvider.isJustNowItem(offlineItem);
-            if (isJustNow) startOfNewDay = false;
-            if (startOfNewDay || justNowSectionsDiffer(offlineItem, previousItem)) {
-                addSectionHeader(listItems, offlineItem, i);
-            }
-
-            listItems.add(listItem);
-            previousItem = offlineItem;
+            OfflineItem currentItem = ((OfflineItemListItem) listItem).item;
+            maybeAddSectionHeader(listWithHeaders, currentItem, previousItem);
+            listWithHeaders.add(listItem);
+            previousItem = currentItem;
         }
 
-        return listItems;
+        return listWithHeaders;
     }
 
-    private void addSectionHeader(List<ListItem> listItems, OfflineItem currentItem, int index) {
-        Date day = CalendarUtils.getStartOfDay(currentItem.creationTimeMs).getTime();
-        boolean isJustNow = mJustNowProvider != null && mJustNowProvider.isJustNowItem(currentItem);
+    private void maybeAddSectionHeader(List<ListItem> listWithHeaders,
+            @NonNull OfflineItem currentItem, @Nullable OfflineItem previousItem) {
         @SectionHeaderType
-        int type = isJustNow ? SectionHeaderType.JUST_NOW : SectionHeaderType.DATE;
-        ListItem.SectionHeaderListItem sectionHeaderItem =
-                new ListItem.SectionHeaderListItem(day.getTime(), type, index != 0);
-        listItems.add(sectionHeaderItem);
+        int currentHeaderType = getSectionHeaderType(currentItem);
+        @SectionHeaderType
+        int previousHeaderType = getSectionHeaderType(previousItem);
+
+        // Add a divider between sections after the first section header.
+        boolean showTopDivider = previousItem != null;
+
+        // Add a section header when starting a new section.
+        if (currentHeaderType != previousHeaderType) {
+            addSectionHeader(listWithHeaders, currentItem, showTopDivider);
+            return;
+        }
+
+        // For date time section, each day has a header.
+        if (currentHeaderType == SectionHeaderType.DATE
+                && startOfNewDay(currentItem, previousItem)) {
+            addSectionHeader(listWithHeaders, currentItem, showTopDivider);
+            return;
+        }
+    }
+
+    private void addSectionHeader(List<ListItem> listWithHeaders, @NonNull OfflineItem currentItem,
+            boolean showTopDivider) {
+        Date day = CalendarUtils.getStartOfDay(currentItem.creationTimeMs).getTime();
+        ListItem.SectionHeaderListItem sectionHeaderItem = new ListItem.SectionHeaderListItem(
+                day.getTime(), getSectionHeaderType(currentItem), showTopDivider);
+        listWithHeaders.add(sectionHeaderItem);
+    }
+
+    private @SectionHeaderType int getSectionHeaderType(@Nullable OfflineItem offlineItem) {
+        if (offlineItem == null) return SectionHeaderType.INVALID;
+
+        // Scheduled for later section shows at the top.
+        if (offlineItem.schedule != null) return SectionHeaderType.SCHEDULED_LATER;
+
+        // Just now section follows the scheduled for later section.
+        boolean isJustNow = mJustNowProvider != null && mJustNowProvider.isJustNowItem(offlineItem);
+        if (isJustNow) return SectionHeaderType.JUST_NOW;
+
+        // Regular section that shows date as the section header.
+        return SectionHeaderType.DATE;
     }
 
     private static boolean startOfNewDay(
@@ -87,13 +119,5 @@ public class DateLabelAdder implements ListConsumer {
                 ? null
                 : CalendarUtils.getStartOfDay(previousItem.creationTimeMs).getTime();
         return !currentDay.equals(previousDay);
-    }
-
-    private boolean justNowSectionsDiffer(
-            OfflineItem currentItem, @Nullable OfflineItem previousItem) {
-        if (mJustNowProvider == null) return false;
-        if (currentItem == null || previousItem == null) return true;
-        return mJustNowProvider.isJustNowItem(currentItem)
-                != mJustNowProvider.isJustNowItem(previousItem);
     }
 }

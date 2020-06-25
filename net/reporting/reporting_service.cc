@@ -82,18 +82,14 @@ class ReportingServiceImpl : public ReportingService {
 
   void ProcessHeader(const GURL& url,
                      const std::string& header_string) override {
-    if (header_string.size() > kMaxJsonSize) {
-      ReportingHeaderParser::RecordHeaderDiscardedForJsonTooBig();
+    if (header_string.size() > kMaxJsonSize)
       return;
-    }
 
     std::unique_ptr<base::Value> header_value =
         base::JSONReader::ReadDeprecated("[" + header_string + "]",
                                          base::JSON_PARSE_RFC, kMaxJsonDepth);
-    if (!header_value) {
-      ReportingHeaderParser::RecordHeaderDiscardedForJsonInvalid();
+    if (!header_value)
       return;
-    }
 
     DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
     // TODO(chlily): Get the proper NetworkIsolationKey from the caller.

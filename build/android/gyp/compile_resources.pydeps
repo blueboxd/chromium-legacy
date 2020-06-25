@@ -46,6 +46,7 @@
 ../../../third_party/protobuf/python/google/protobuf/text_format.py
 ../../../third_party/six/src/six.py
 ../../gn_helpers.py
+../../print_python_deps.py
 compile_resources.py
 proto/Configuration_pb2.py
 proto/Resources_pb2.py

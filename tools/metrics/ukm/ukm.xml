@@ -6359,6 +6359,29 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MediaRouter.SiteInitiatedMirroringStarted">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded whenever user starts a site-initiated mirroring session via Media
+    Router.
+  </summary>
+  <metric name="AllowAudioCapture" enum="BooleanAllowed">
+    <summary>
+      Whether audio capture is allowed in the cast session. If allowed, audio
+      playback will happen on the receiver side. If not allowed, audio playback
+      will happen on the sender side.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="MediaRouter.TabMirroringStarted">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>

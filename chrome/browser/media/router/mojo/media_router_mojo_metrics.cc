@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/version.h"
+#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
@@ -135,6 +136,20 @@ void MediaRouterMojoMetrics::RecordTabMirroringMetrics(
   ukm::builders::MediaRouter_TabMirroringStarted(source_id)
       .SetAudioState(static_cast<int>(audio_state))
       .Record(ukm::UkmRecorder::Get());
+}
+
+// static
+void MediaRouterMojoMetrics::RecordSiteInitiatedMirroringStarted(
+    content::WebContents* web_contents,
+    const MediaSource& media_source) {
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+  auto cast_source = CastMediaSource::FromMediaSource(media_source);
+  if (cast_source) {
+    ukm::builders::MediaRouter_SiteInitiatedMirroringStarted(source_id)
+        .SetAllowAudioCapture(cast_source->allow_audio_capture())
+        .Record(ukm::UkmRecorder::Get());
+  }
 }
 
 // static

@@ -99,7 +99,10 @@ class WebState;
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;
 
-- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID;
+// Sets up the next available numeric value for setting unique renderer ids
+// in |frame|.
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
+                                  inFrame:(web::WebFrame*)frame;
 
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState

@@ -31,8 +31,8 @@ void KaleidoscopeTabHelper::ReadyToCommitNavigation(
     return;
   }
 
-  if (handle->GetInitiatorOrigin().has_value() &&
-      handle->GetInitiatorOrigin() != KaleidoscopeOrigin()) {
+  if (!handle->GetInitiatorOrigin() ||
+      !handle->GetInitiatorOrigin()->IsSameOriginWith(KaleidoscopeOrigin())) {
     return;
   }
 

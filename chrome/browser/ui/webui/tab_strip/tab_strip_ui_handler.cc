@@ -275,7 +275,8 @@ void TabStripUIHandler::OnTabStripModelChanged(
       FireWebUIListener(
           "tab-moved",
           base::Value(extensions::ExtensionTabUtil::GetTabId(move->contents)),
-          base::Value(move->to_index));
+          base::Value(move->to_index),
+          base::Value(tab_strip_model->IsTabPinned(move->to_index)));
       break;
     }
     case TabStripModelChange::kReplaced: {

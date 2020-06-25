@@ -8,7 +8,7 @@
 -BackForwardCacheBrowserTest.VideoSuspendAndResume
 
 # crbug.com/1096612
--SitePerProcessBrowserTest.DetachedIframeUnloadHandlerABCB
+-SitePerProcessBrowserTest.DetachedIframeUnloadHandlerABCB*
 
 # crbug.com/1058447
 -SitePerProcessBrowserTest.FrameViewportOffsetTestSimple

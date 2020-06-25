@@ -22,15 +22,17 @@ namespace {
 
 // List of keys in the SystemLogsResponse map whose corresponding values will
 // not be anonymized.
-constexpr const char* const kWhitelistedKeysOfUUIDs[] = {
-    "CHROMEOS_BOARD_APPID", "CHROMEOS_CANARY_APPID", "CHROMEOS_RELEASE_APPID",
+constexpr const char* const kExemptKeysOfUUIDs[] = {
+    "CHROMEOS_BOARD_APPID",
+    "CHROMEOS_CANARY_APPID",
+    "CHROMEOS_RELEASE_APPID",
 };
 
-// Returns true if the given |key| is anonymizer-whitelisted and whose
-// corresponding value should not be anonymized.
-bool IsKeyWhitelisted(const std::string& key) {
-  for (auto* const whitelisted_key : kWhitelistedKeysOfUUIDs) {
-    if (key == whitelisted_key)
+// Returns true if the given |key| is anonymizer-exempt and whose corresponding
+// value should not be anonymized.
+bool IsKeyExempt(const std::string& key) {
+  for (auto* const exempt_key : kExemptKeysOfUUIDs) {
+    if (key == exempt_key)
       return true;
   }
   return false;
@@ -40,7 +42,7 @@ bool IsKeyWhitelisted(const std::string& key) {
 void Anonymize(feedback::AnonymizerTool* anonymizer,
                SystemLogsResponse* response) {
   for (auto& element : *response) {
-    if (!IsKeyWhitelisted(element.first))
+    if (!IsKeyExempt(element.first))
       element.second = anonymizer->Anonymize(element.second);
   }
 }

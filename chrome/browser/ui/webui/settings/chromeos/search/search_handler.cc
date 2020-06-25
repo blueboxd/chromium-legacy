@@ -274,7 +274,8 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
       /*canonical_result_text=*/
       l10n_util::GetStringUTF16(concept->canonical_message_id), url,
       concept->icon, result.score, hierarchy_strings, concept->default_rank,
-      concept->type, std::move(result_id));
+      /*was_generated_from_text_match=*/true, concept->type,
+      std::move(result_id));
 }
 
 std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,

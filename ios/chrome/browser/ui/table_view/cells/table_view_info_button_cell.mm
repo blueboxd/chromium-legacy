@@ -46,6 +46,10 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
 // Constraints that are used when the preferred content size is *not* an
 // "accessibility" category.
 @property(nonatomic, strong) NSArray* standardConstraints;
+// Constraints that are used to set the top padding.
+@property(nonatomic, strong) NSLayoutConstraint* topPaddingConstraint;
+// Constraints that are used to set the bottom padding.
+@property(nonatomic, strong) NSLayoutConstraint* bottomPaddingConstraint;
 
 @end
 
@@ -153,7 +157,6 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
                                     multiplier:kCellLabelsWidthProportion],
       widthConstraintStatus,
       widthConstraintLayoutGuide,
-
     ];
 
     _accessibilityConstraints = @[
@@ -180,6 +183,15 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
                                    constant:-kTableViewHorizontalSpacing],
     ];
 
+    _topPaddingConstraint = [textLayoutGuide.topAnchor
+        constraintGreaterThanOrEqualToAnchor:self.contentView.topAnchor
+                                    constant:
+                                        kTableViewOneLabelCellVerticalSpacing];
+    _bottomPaddingConstraint = [self.contentView.bottomAnchor
+        constraintGreaterThanOrEqualToAnchor:textLayoutGuide.bottomAnchor
+                                    constant:
+                                        kTableViewOneLabelCellVerticalSpacing];
+
     [NSLayoutConstraint activateConstraints:@[
       [_iconImageView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
@@ -205,6 +217,8 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
           constraintEqualToAnchor:_detailTextLabel.bottomAnchor],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:_detailTextLabel.topAnchor],
+      _topPaddingConstraint,
+      _bottomPaddingConstraint,
     ]];
 
     if (UIContentSizeCategoryIsAccessibilityCategory(
@@ -213,11 +227,20 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
     } else {
       [NSLayoutConstraint activateConstraints:_standardConstraints];
     }
-
-    AddOptionalVerticalPadding(self.contentView, textLayoutGuide,
-                               kTableViewTwoLabelsCellVerticalSpacing);
   }
   return self;
+}
+
+- (void)updatePaddingForDetailText:(BOOL)hasDetailText {
+  if (hasDetailText) {
+    self.topPaddingConstraint.constant = kTableViewTwoLabelsCellVerticalSpacing;
+    self.bottomPaddingConstraint.constant =
+        kTableViewTwoLabelsCellVerticalSpacing;
+  } else {
+    self.topPaddingConstraint.constant = kTableViewOneLabelCellVerticalSpacing;
+    self.bottomPaddingConstraint.constant =
+        kTableViewOneLabelCellVerticalSpacing;
+  }
 }
 
 - (void)setIconImage:(UIImage*)image withTintColor:(UIColor*)color {

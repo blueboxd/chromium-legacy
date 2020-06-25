@@ -1966,6 +1966,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the delete button of the PIN keyboard.">
         Delete
       </message>
+      <message name="IDS_ASH_LOGIN_MANAGED_DEVICE_INDICATOR" desc="Template for text shown as a bottom status on the login screen, informing the user that this device is managed.">
+        <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
+      </message>
       <message name="IDS_ASH_LOGIN_POD_MANAGED_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the user pod when the user is managed.">
         <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph> Managed user
       </message>

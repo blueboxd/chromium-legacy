@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -43,6 +45,9 @@ import java.util.List;
 /** Builds DropdownItemViewInfo list from AutocompleteResult for the Suggestions list. */
 class DropdownItemViewInfoListBuilder {
     private static final int MAX_IMAGE_CACHE_SIZE = 500 * ConversionUtils.BYTES_PER_KILOBYTE;
+    @Px
+    private static final int DROPDOWN_HEIGHT_UNKNOWN = -1;
+    private static final int DEFAULT_SIZE_OF_VISIBLE_GROUP = 5;
 
     private final List<SuggestionProcessor> mPriorityOrderedSuggestionProcessors;
 
@@ -51,10 +56,13 @@ class DropdownItemViewInfoListBuilder {
     private Supplier<ShareDelegate> mShareDelegateSupplier;
     private ImageFetcher mImageFetcher;
     private LargeIconBridge mIconBridge;
+    @Px
+    private int mDropdownHeight;
     private boolean mEnableAdaptiveSuggestionsCount;
 
     DropdownItemViewInfoListBuilder() {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
+        mDropdownHeight = DROPDOWN_HEIGHT_UNKNOWN;
     }
 
     /**
@@ -166,6 +174,27 @@ class DropdownItemViewInfoListBuilder {
     }
 
     /**
+     * Specify dropdown list height in pixels.
+     * The height is subsequentially used to determine number of visible suggestions and perform
+     * partial suggestion ordering based on their visibility.
+     *
+     * Note that this mechanism is effective as long as grouping is not in use in zero-prefix
+     * context. At the time this mechanism was created, zero-prefix context never presented mixed
+     * URL and (non-reactive) search suggestions, but instead presented either a list of specialized
+     * suggestions (eg. clipboard, query tiles) mixed with reactive suggestions, a plain list of
+     * search suggestions, or a plain list of recent URLs.
+     * This gives us the chance to measure the height of the dropdown list before the actual
+     * grouping takes effect.
+     * If the above situation changes, we may need to revisit the logic here, and possibly cache the
+     * heights in different states (eg. portrait mode, split screen etc) to get better results.
+     *
+     * @param dropdownHeight Updated height of the dropdown item list.
+     */
+    void setDropdownHeight(@Px int dropdownHeight) {
+        mDropdownHeight = dropdownHeight;
+    }
+
+    /**
      * Respond to URL bar focus change.
      *
      * @param hasFocus Indicates whether URL bar is now focused.
@@ -210,17 +239,31 @@ class DropdownItemViewInfoListBuilder {
         final int newSuggestionsCount = newSuggestions.size();
         final List<DropdownItemViewInfo> viewInfoList = new ArrayList<>();
 
+        // Match suggestions with their corresponding processors.
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> suggestionsPairedWithProcessors =
+                new ArrayList<>();
+        for (int index = 0; index < newSuggestionsCount; index++) {
+            final OmniboxSuggestion suggestion = newSuggestions.get(index);
+            final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index);
+            suggestionsPairedWithProcessors.add(new Pair<>(suggestion, processor));
+        }
+
+        // When Adaptive Suggestions are set, perform partial grouping by search vs url.
         if (mEnableAdaptiveSuggestionsCount) {
+            int numVisibleSuggestions = getVisibleSuggestionsCount(suggestionsPairedWithProcessors);
             // TODO(crbug.com/1073169): this should either infer the count from UI height or supply
             // the default value if height is not known. For the time being we group the entire list
             // to mimic the native behavior.
-            groupSuggestionsBySearchVsURL(newSuggestions, viewInfoList.size());
+            groupSuggestionsBySearchVsURL(suggestionsPairedWithProcessors, numVisibleSuggestions);
         }
 
+        // Build ViewInfo structures.
         int currentGroup = OmniboxSuggestion.INVALID_GROUP;
-
         for (int index = 0; index < newSuggestionsCount; index++) {
-            final OmniboxSuggestion suggestion = newSuggestions.get(index);
+            final Pair<OmniboxSuggestion, SuggestionProcessor> suggestionAndProcessorPair =
+                    suggestionsPairedWithProcessors.get(index);
+            final OmniboxSuggestion suggestion = suggestionAndProcessorPair.first;
+            final SuggestionProcessor processor = suggestionAndProcessorPair.second;
 
             if (suggestion.getGroupId() != currentGroup) {
                 currentGroup = suggestion.getGroupId();
@@ -230,12 +273,39 @@ class DropdownItemViewInfoListBuilder {
                 viewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
             }
 
-            final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index);
             final PropertyModel model = processor.createModel();
             processor.populateModel(suggestion, model, index);
             viewInfoList.add(new DropdownItemViewInfo(processor, model, currentGroup));
         }
         return viewInfoList;
+    }
+
+    /**
+     * @param suggestionsPairedWithProcessors List of suggestions and their matching processors.
+     * @return Number of suggestions immediately visible to the user upon presenting the list.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    int getVisibleSuggestionsCount(
+            List<Pair<OmniboxSuggestion, SuggestionProcessor>> suggestionsPairedWithProcessors) {
+        // For cases where we don't know how many suggestions can fit in the visile screen area,
+        // make an assumption regarding the group size.
+        if (mDropdownHeight == DROPDOWN_HEIGHT_UNKNOWN) {
+            return Math.min(suggestionsPairedWithProcessors.size(), DEFAULT_SIZE_OF_VISIBLE_GROUP);
+        }
+
+        @Px
+        int calculatedSuggestionsHeight = 0;
+        int lastVisibleIndex;
+        for (lastVisibleIndex = 0; lastVisibleIndex < suggestionsPairedWithProcessors.size();
+                lastVisibleIndex++) {
+            if (calculatedSuggestionsHeight >= mDropdownHeight) break;
+
+            final Pair<OmniboxSuggestion, SuggestionProcessor> pair =
+                    suggestionsPairedWithProcessors.get(lastVisibleIndex);
+            final SuggestionProcessor processor = pair.second;
+            calculatedSuggestionsHeight += processor.getMinimumViewHeight();
+        }
+        return lastVisibleIndex;
     }
 
     /**
@@ -245,20 +315,22 @@ class DropdownItemViewInfoListBuilder {
      * - Group 2 contains items that are not visible at the time user interacts with the suggestions
      *   list.
      *
-     * @param suggestionList List of Suggestions that will be rearranged.
+     * @param suggestionsPairedWithProcessors List of suggestions and their matching processors.
      * @param numVisibleSuggestions Number of suggestions that are visible to the user.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     void groupSuggestionsBySearchVsURL(
-            List<OmniboxSuggestion> suggestionList, int numVisibleSuggestions) {
+            List<Pair<OmniboxSuggestion, SuggestionProcessor>> suggestionsPairedWithProcessors,
+            int numVisibleSuggestions) {
         // Native counterpart ensures that suggestion with group headers always end up at the end of
         // the list. This guarantees that these suggestions are both grouped at the end of the list
         // and that there's nothing more we should do about them.
         // See AutocompleteController::UpdateHeaders().
         int firstIndexWithHeader;
-        for (firstIndexWithHeader = 0; firstIndexWithHeader < suggestionList.size();
+        for (firstIndexWithHeader = 0;
+                firstIndexWithHeader < suggestionsPairedWithProcessors.size();
                 firstIndexWithHeader++) {
-            if (suggestionList.get(firstIndexWithHeader).getGroupId()
+            if (suggestionsPairedWithProcessors.get(firstIndexWithHeader).first.getGroupId()
                     != OmniboxSuggestion.INVALID_GROUP) {
                 break;
             }
@@ -271,17 +343,20 @@ class DropdownItemViewInfoListBuilder {
 
         if (numVisibleSuggestions == 0) return;
 
-        final Comparator<OmniboxSuggestion> comparator = (suggestion1, suggestion2) -> {
-            if (suggestion1.isSearchSuggestion() != suggestion2.isSearchSuggestion()) {
-                return suggestion1.isSearchSuggestion() ? -1 : 1;
+        final Comparator<Pair<OmniboxSuggestion, SuggestionProcessor>> comparator =
+                (pair1, pair2) -> {
+            if (pair1.first.isSearchSuggestion() != pair2.first.isSearchSuggestion()) {
+                return pair1.first.isSearchSuggestion() ? -1 : 1;
             }
-            return suggestion2.getRelevance() - suggestion1.getRelevance();
+            return pair2.first.getRelevance() - pair1.first.getRelevance();
         };
 
         // Note: the first match is always the default match. We do not want to sort it.
-        Collections.sort(suggestionList.subList(1, numVisibleSuggestions), comparator);
         Collections.sort(
-                suggestionList.subList(numVisibleSuggestions, firstIndexWithHeader), comparator);
+                suggestionsPairedWithProcessors.subList(1, numVisibleSuggestions), comparator);
+        Collections.sort(suggestionsPairedWithProcessors.subList(
+                                 numVisibleSuggestions, firstIndexWithHeader),
+                comparator);
     }
 
     /**

@@ -95,7 +95,7 @@ Polymer({
       return item.showBeforeNetworksList === true;
     });
     const afterNetworks = this.customItems.filter(function(item) {
-      return item.showBeforeNetworksList === false;
+      return item.showBeforeNetworksList !== true;
     });
     this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
     this.restoreScroll(this.$.networkList);

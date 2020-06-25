@@ -75,9 +75,9 @@ class V8TestObject {
       v8::Local<v8::Function> interface_object,
       v8::Local<v8::FunctionTemplate> interface_template);
 
-  static void InstallFeatureName(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void InstallFeatureName(ScriptState*, v8::Local<v8::Object> instance);
-  static void InstallFeatureName(ScriptState*);
+  static void InstallOriginTrialFeature(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void InstallOriginTrialFeature(ScriptState*, v8::Local<v8::Object> instance);
+  static void InstallOriginTrialFeature(ScriptState*);
 
   // Callback functions
   CORE_EXPORT static void HighEntropyConstantConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>&);

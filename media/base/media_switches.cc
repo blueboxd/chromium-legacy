@@ -726,7 +726,7 @@ const base::Feature kInternalMediaSession {
 };
 
 const base::Feature kKaleidoscope{"Kaleidoscope",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseFakeDeviceForMediaStream{
     "use-fake-device-for-media-stream", base::FEATURE_DISABLED_BY_DEFAULT};

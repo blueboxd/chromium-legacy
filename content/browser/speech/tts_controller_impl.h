@@ -82,16 +82,12 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
   ~TtsControllerImpl() override;
 
  private:
+  friend class TtsControllerTestHelper;
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestTtsControllerShutdown);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
                            TestTtsControllerUtteranceDefaults);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestBrowserContextRemoved);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, StopsWhenWebContentsDestroyed);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
-                           StartsQueuedUtteranceWhenWebContentsDestroyed);
-  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
-                           StartsQueuedUtteranceWhenWebContentsDestroyed2);
 
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
 
@@ -144,6 +140,9 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
 
   // Used when the WebContents of the current utterance is destroyed/hidden.
   void StopCurrentUtteranceAndRemoveUtterancesMatching(WebContents* wc);
+
+  // Returns true if the utterance should be spoken.
+  bool ShouldSpeakUtterance(TtsUtterance* utterance);
 
   // WebContentsObserver methods
   void WebContentsDestroyed() override;

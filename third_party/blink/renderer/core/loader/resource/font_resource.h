@@ -42,6 +42,16 @@ class ResourceFetcher;
 class FontCustomPlatformData;
 class FontResourceClient;
 
+// An observer that will be notified when original data is cleared
+// from the resource. Inspector may collect this data and store it for
+// future inspection.
+class CORE_EXPORT FontResourceClearDataObserver : public GarbageCollectedMixin {
+ public:
+  // Called before the original data is cleared. Only called once,
+  // and observer is automatically removed.
+  virtual void FontResourceDataWillBeCleared() = 0;
+};
+
 class CORE_EXPORT FontResource final : public Resource {
  public:
   static FontResource* Fetch(FetchParameters&,
@@ -50,6 +60,7 @@ class CORE_EXPORT FontResource final : public Resource {
 
   FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
   ~FontResource() override;
+  void Trace(Visitor*) const override;
 
   void DidAddClient(ResourceClient*) override;
 
@@ -70,6 +81,8 @@ class CORE_EXPORT FontResource final : public Resource {
 
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
+
+  void AddClearDataObserver(FontResourceClearDataObserver* observer) const;
 
  private:
   class FontResourceFactory : public NonTextResourceFactory {
@@ -103,6 +116,8 @@ class CORE_EXPORT FontResource final : public Resource {
   bool cors_failed_;
   TaskHandle font_load_short_limit_;
   TaskHandle font_load_long_limit_;
+  mutable HeapHashSet<WeakMember<FontResourceClearDataObserver>>
+      clear_data_observers_;
 
   friend class MemoryCache;
   FRIEND_TEST_ALL_PREFIXES(CacheAwareFontResourceTest, CacheAwareFontLoading);

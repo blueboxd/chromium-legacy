@@ -1388,11 +1388,10 @@ test("content_browsertests") {
   if (is_linux) {
     sources += [
       "../browser/utility_process_sandbox_browsertest.cc",
-      "../zygote/zygote_browsertest.cc",
+      "../browser/zygote_host/zygote_browsertest.cc",
     ]
     deps += [
       "//services/service_manager/tests:interfaces",
-      "//services/service_manager/zygote",
       "//ui/gfx:test_support",
     ]
 

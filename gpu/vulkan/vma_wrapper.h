@@ -66,16 +66,16 @@ COMPONENT_EXPORT(VULKAN)
 void FreeMemory(VmaAllocator allocator, VmaAllocation allocation);
 
 COMPONENT_EXPORT(VULKAN)
-void FlushAllocation(VmaAllocator allocator,
-                     VmaAllocation allocation,
-                     VkDeviceSize offset,
-                     VkDeviceSize size);
+VkResult FlushAllocation(VmaAllocator allocator,
+                         VmaAllocation allocation,
+                         VkDeviceSize offset,
+                         VkDeviceSize size);
 
 COMPONENT_EXPORT(VULKAN)
-void InvalidateAllocation(VmaAllocator allocator,
-                          VmaAllocation allocation,
-                          VkDeviceSize offset,
-                          VkDeviceSize size);
+VkResult InvalidateAllocation(VmaAllocator allocator,
+                              VmaAllocation allocation,
+                              VkDeviceSize offset,
+                              VkDeviceSize size);
 
 COMPONENT_EXPORT(VULKAN)
 void GetAllocationInfo(VmaAllocator allocator,

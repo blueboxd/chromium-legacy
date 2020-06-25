@@ -52,10 +52,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Send the model to the given render frame host.
-  void SendModelToRenderFrame(content::RenderProcessHost* process,
-                              Profile* profile,
-                              ModelLoader* model_loader);
+  // Send the model to all the render frame hosts in this WebContents.
+  void SendModelToRenderFrame();
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
@@ -69,6 +67,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // From content::WebContentsObserver.
   void WebContentsDestroyed() override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   // Used for testing.
   void set_safe_browsing_managers(

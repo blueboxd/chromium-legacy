@@ -498,7 +498,7 @@ void HeadlessContentMainDelegate::PostEarlyInitialization(
         cc::switches::kDisableCheckerImaging,
         // Ensure that image animations don't resync their animation timestamps
         // when looping back around.
-        ::switches::kDisableImageAnimationResync,
+        blink::switches::kDisableImageAnimationResync,
     };
     for (const auto* flag : switches)
       base::CommandLine::ForCurrentProcess()->AppendSwitch(flag);

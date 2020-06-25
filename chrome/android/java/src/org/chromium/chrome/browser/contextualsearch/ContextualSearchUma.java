@@ -14,7 +14,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
-import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

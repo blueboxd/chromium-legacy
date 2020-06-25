@@ -369,8 +369,7 @@ void WebRtcEventLogUploaderImpl::ReportResult(bool upload_successful,
 
 void WebRtcEventLogUploaderImpl::DeleteLogFile() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  const bool deletion_successful =
-      base::DeleteFile(log_file_.path, /*recursive=*/false);
+  const bool deletion_successful = base::DeleteFile(log_file_.path);
   if (!deletion_successful) {
     // This is a somewhat serious (though unlikely) error, because now we'll
     // try to upload this file again next time Chrome launches.

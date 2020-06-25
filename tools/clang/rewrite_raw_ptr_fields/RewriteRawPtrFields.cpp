@@ -69,44 +69,57 @@ const char kIncludePath[] = "base/memory/checked_ptr.h";
 // that should not be rewritten to use CheckedPtr<T>.
 //
 // See also:
-// - FilterEmitterHelper
+// - OutputSectionHelper
 // - FieldDeclFilterFile
 const char kExcludeFieldsParamName[] = "exclude-fields";
 
-// Helper for an out-of-band output that
+// OutputSectionHelper helps gather and emit a section of output.
 //
-// 1. Is delimited in a way that makes it easy to extract it with sed like so:
+// The section of output is delimited in a way that makes it easy to extract it
+// with sed like so:
 //    $ DELIM = ...
 //    $ cat ~/scratch/rewriter.out \
 //        | sed '/^==== BEGIN $DELIM ====$/,/^==== END $DELIM ====$/{//!b};d' \
 //        | sort | uniq > ~/scratch/some-out-of-band-output.txt
+//    (For DELIM="EDITS", there is also tools/clang/scripts/extract_edits.py.)
 //
-// 2. Contains one filter-string per line of output, accompanied with a comment
-//    listing a set of tags that help describe why this line of output was
-//    emitted:
+// Each output line is deduped and may be followed by optional comment tags:
 //        Some filter # tag1, tag2
 //        Another filter # tag1, tag2, tag3
+//        An output line with no comment tags
+//
+// The output lines are sorted.  This helps provide deterministic output (even
+// if AST matchers start firing in a different order after benign clang
+// changes).
 //
 // See also:
 // - FieldDeclFilterFile
-class FilterEmitterHelper {
+// - OutputHelper
+class OutputSectionHelper {
  public:
-  explicit FilterEmitterHelper(llvm::StringRef output_delimiter)
+  explicit OutputSectionHelper(llvm::StringRef output_delimiter)
       : output_delimiter_(output_delimiter.str()) {}
 
-  void Add(llvm::StringRef filter, llvm::StringRef tag) {
-    filter_to_tags_[filter].insert(tag);
+  void Add(llvm::StringRef output_line, llvm::StringRef tag = "") {
+    // Look up |tags| associated with |output_line|.  As a side effect of the
+    // lookup, |output_line| will be inserted if it wasn't already present in
+    // the map.
+    llvm::StringSet<>& tags = output_line_to_tags_[output_line];
+
+    if (!tag.empty())
+      tags.insert(tag);
   }
 
   void Emit() {
-    if (filter_to_tags_.empty())
+    if (output_line_to_tags_.empty())
       return;
 
     llvm::outs() << "==== BEGIN " << output_delimiter_ << " ====\n";
-    for (const llvm::StringRef& filter : GetSortedKeys(filter_to_tags_)) {
-      llvm::outs() << filter;
+    for (const llvm::StringRef& output_line :
+         GetSortedKeys(output_line_to_tags_)) {
+      llvm::outs() << output_line;
 
-      const llvm::StringSet<>& tags = filter_to_tags_[filter];
+      const llvm::StringSet<>& tags = output_line_to_tags_[output_line];
       if (!tags.empty()) {
         std::vector<llvm::StringRef> sorted_tags = GetSortedKeys(tags);
         std::string tags_comment =
@@ -129,22 +142,20 @@ class FilterEmitterHelper {
   }
 
   std::string output_delimiter_;
-  llvm::StringMap<llvm::StringSet<>> filter_to_tags_;
+  llvm::StringMap<llvm::StringSet<>> output_line_to_tags_;
 };
 
 // Output format is documented in //docs/clang_tool_refactoring.md
 class OutputHelper : public clang::tooling::SourceFileCallbacks {
  public:
-  OutputHelper() : field_decl_filter_helper_("FIELD FILTERS") {}
+  OutputHelper()
+      : edits_helper_("EDITS"), field_decl_filter_helper_("FIELD FILTERS") {}
   ~OutputHelper() = default;
 
-  void PrintReplacement(const clang::SourceManager& source_manager,
-                        const clang::SourceRange& replacement_range,
-                        std::string replacement_text,
-                        bool should_add_include = false) {
-    if (ShouldSuppressOutput())
-      return;
-
+  void AddReplacement(const clang::SourceManager& source_manager,
+                      const clang::SourceRange& replacement_range,
+                      std::string replacement_text,
+                      bool should_add_include = false) {
     clang::tooling::Replacement replacement(
         source_manager, clang::CharSourceRange::getCharRange(replacement_range),
         replacement_text);
@@ -153,17 +164,15 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
       return;
 
     std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
-    llvm::outs() << "r:::" << file_path << ":::" << replacement.getOffset()
-                 << ":::" << replacement.getLength()
-                 << ":::" << replacement_text << "\n";
+    std::string replacement_directive = llvm::formatv(
+        "r:::{0}:::{1}:::{2}:::{3}", file_path, replacement.getOffset(),
+        replacement.getLength(), replacement_text);
+    edits_helper_.Add(replacement_directive);
 
     if (should_add_include) {
-      bool was_inserted = false;
-      std::tie(std::ignore, was_inserted) =
-          files_with_already_added_includes_.insert(file_path.str());
-      if (was_inserted)
-        llvm::outs() << "include-user-header:::" << file_path
-                     << ":::-1:::-1:::" << kIncludePath << "\n";
+      std::string include_directive = llvm::formatv(
+          "include-user-header:::{0}:::-1:::-1:::{1}", file_path, kIncludePath);
+      edits_helper_.Add(include_directive);
     }
   }
 
@@ -186,9 +195,6 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
 
     current_language_ = input_file.getKind().getLanguage();
 
-    if (!ShouldSuppressOutput())
-      llvm::outs() << "==== BEGIN EDITS ====\n";
-
     return true;  // Report that |handleBeginSource| succeeded.
   }
 
@@ -197,7 +203,7 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
     if (ShouldSuppressOutput())
       return;
 
-    llvm::outs() << "==== END EDITS ====\n";
+    edits_helper_.Emit();
     field_decl_filter_helper_.Emit();
   }
 
@@ -229,8 +235,8 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
     return true;
   }
 
-  llvm::StringSet<> files_with_already_added_includes_;
-  FilterEmitterHelper field_decl_filter_helper_;
+  OutputSectionHelper edits_helper_;
+  OutputSectionHelper field_decl_filter_helper_;
   clang::Language current_language_ = clang::Language::Unknown;
 };
 
@@ -281,7 +287,7 @@ AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
 //
 // See also:
 // - kExcludeFieldsParamName
-// - FilterEmitterHelper
+// - OutputSectionHelper
 class FieldDeclFilterFile {
  public:
   explicit FieldDeclFilterFile(const std::string& filepath) {
@@ -673,9 +679,9 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
       replacement_text.insert(0, "mutable ");
 
     // Generate and print a replacement.
-    output_helper_->PrintReplacement(source_manager, replacement_range,
-                                     replacement_text,
-                                     true /* should_add_include */);
+    output_helper_->AddReplacement(source_manager, replacement_range,
+                                   replacement_text,
+                                   true /* should_add_include */);
   }
 
  private:
@@ -728,8 +734,7 @@ class AffectedExprRewriter : public MatchFinder::MatchCallback {
 
     clang::SourceRange replacement_range(insertion_loc, insertion_loc);
 
-    output_helper_->PrintReplacement(source_manager, replacement_range,
-                                     ".get()");
+    output_helper_->AddReplacement(source_manager, replacement_range, ".get()");
   }
 
  private:

@@ -1017,13 +1017,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
-    if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions)) {
-      // Don't bridge through if the service isn't present, which means we're
-      // probably running in a native unit test.
-      if (feed::FeedHostServiceFactory::GetForBrowserContext(profile_)) {
-        feed::FeedLifecycleBridge::ClearCachedData();
-      }
-    }
     if (base::FeatureList::IsEnabled(feed::kInterestFeedV2)) {
       // Don't bridge through if the service isn't present, which means we're
       // probably running in a native unit test.
@@ -1031,6 +1024,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           feed::FeedServiceFactory::GetForBrowserContext(profile_);
       if (service) {
         service->ClearCachedData();
+      }
+    } else if (base::FeatureList::IsEnabled(
+                   feed::kInterestFeedContentSuggestions)) {
+      // Don't bridge through if the service isn't present, which means we're
+      // probably running in a native unit test.
+      if (feed::FeedHostServiceFactory::GetForBrowserContext(profile_)) {
+        feed::FeedLifecycleBridge::ClearCachedData();
       }
     }
 

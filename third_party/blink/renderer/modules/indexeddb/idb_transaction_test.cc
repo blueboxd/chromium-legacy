@@ -78,7 +78,7 @@ class IDBTransactionTest : public testing::Test,
                            public ScopedMockOverlayScrollbars {
  protected:
   void SetUp() override {
-    url_loader_mock_factory_ = platform_->GetURLLoaderMockFactory();
+    url_loader_mock_factory_ = WebURLLoaderMockFactory::GetSingletonInstance();
     WebURLResponse response;
     response.SetCurrentRequestUrl(KURL("blob:"));
     url_loader_mock_factory_->RegisterURLProtocol(WebString("blob"), response,

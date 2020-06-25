@@ -518,7 +518,7 @@ public class TabGroupModelFilter extends TabModelFilter {
             throw new IllegalStateException("Attempting to open tab in the wrong model");
         }
 
-        if (tab.getLaunchType() != TabLaunchType.FROM_RESTORE && !mIsResetting) {
+        if (isTabModelRestored() && !mIsResetting) {
             Tab parentTab = TabModelUtils.getTabById(getTabModel(), tab.getParentId());
             if (parentTab != null) {
                 setRootId(tab, getRootId(parentTab));

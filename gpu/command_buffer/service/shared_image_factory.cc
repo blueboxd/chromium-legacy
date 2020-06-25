@@ -86,7 +86,6 @@ SharedImageFactory::SharedImageFactory(
       shared_context_state_(context_state),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
       using_vulkan_(context_state && context_state->GrContextIsVulkan()),
-      using_metal_(context_state && context_state->GrContextIsMetal()),
       using_skia_dawn_(context_state && context_state->GrContextIsDawn()) {
   bool use_gl = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (use_gl) {
@@ -407,12 +406,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
-  bool share_between_gl_metal =
-      using_metal_ && (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
   bool using_interop_factory = share_between_gl_vulkan || using_dawn ||
-                               share_between_gl_metal ||
                                (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
                                (share_between_threads && vulkan_usage);
 

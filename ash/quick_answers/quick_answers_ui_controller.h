@@ -82,6 +82,12 @@ class ASH_EXPORT QuickAnswersUiController {
     return user_consent_view_ != nullptr;
   }
 
+  // Used by the controller to check if the QuickAnswers view is currently
+  // showing.
+  bool is_showing_quick_answers_view() const {
+    return quick_answers_view_ != nullptr;
+  }
+
   // Invoked when user clicks the Dogfood button on Quick-Answers related views.
   void OnDogfoodButtonPressed();
 

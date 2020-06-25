@@ -135,7 +135,6 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   SharedContextState* shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
   const bool using_vulkan_;
-  const bool using_metal_;
   const bool using_skia_dawn_;
 
   // The set of SharedImages which have been created (and are being kept alive)

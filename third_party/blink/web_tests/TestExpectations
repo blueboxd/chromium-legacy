@@ -1668,8 +1668,8 @@ crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calen
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
 
-crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Failure Pass Timeout ]
-crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Failure Pass Crash ]
+crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Skip ]
+crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Skip ]
 
 # `hyphens: auto` not supported on Win/Linux/ChromeOS
 crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
@@ -6101,7 +6101,7 @@ crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landin
 crbug.com/1015975 media/video-currentTime.html [ Pass Failure ]
 
 # Sheriff 2019-10-21
-crbug.com/1016456 external/wpt/dom/ranges/Range-mutations-dataChange.html [ Pass Timeout ]
+crbug.com/1016456 external/wpt/dom/ranges/Range-mutations-dataChange.html [ Pass Timeout Crash ]
 
 # Sheriff 2019-10-24
 crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]
@@ -6215,8 +6215,9 @@ crbug.com/1094669 http/tests/devtools/service-workers/service-worker-network-fet
 # Enable scroll-snap tests on impl thread
 # These are currently failing on Mac which needs more investigation, snap-scrolls-visual-viewport seems flaky
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
-crbug.com/878878 [ Win10 ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
+crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-keyboard-scrolling.html [ Pass Timeout ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
+crbug.com/878878 [ Win ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Timeout Failure ]
 crbug.com/878878 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Timeout ]
 
 crbug.com/878878 virtual/threaded/fast/scroll-snap/animate-fling-to-snap-points.html [ Failure Pass Timeout ]
@@ -6557,14 +6558,14 @@ crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/te
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
 
 # Sheriff 2020-02-18
-crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Timeout Pass ]
-crbug.com/1051014 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.html [ Timeout Pass ]
-crbug.com/1051370 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html [ Timeout Pass ]
-crbug.com/1051015 [ Fuchsia ] virtual/stable/fast/css3-text/css3-text-decoration/stable/getComputedStyle-text-decoration.html [ Timeout Pass ]
-crbug.com/1050995 [ Fuchsia ] http/tests/pointer-lock/iframe-sandboxed.html [ Timeout Pass ]
-crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Timeout Pass ]
-crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Crash Timeout Pass ]
-crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Timeout Pass ]
+crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Skip ]
+crbug.com/1051014 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.html [ Skip ]
+crbug.com/1051370 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html [ Skip ]
+crbug.com/1051015 [ Fuchsia ] virtual/stable/fast/css3-text/css3-text-decoration/stable/getComputedStyle-text-decoration.html [ Skip ]
+crbug.com/1050995 [ Fuchsia ] http/tests/pointer-lock/iframe-sandboxed.html [ Skip ]
+crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Skip ]
+crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Skip ]
+crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Skip ]
 crbug.com/848799 [ Win10 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
 
 # Sheriff 2020-02-19
@@ -6580,10 +6581,10 @@ crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.
 
 crbug.com/1048597 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Timeout ]
 
-crbug.com/1056022 [ Fuchsia ] http/tests/uri/escaped-entity.html [ Pass Timeout ]
-crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Pass Timeout ]
-crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Pass Timeout ]
-crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Pass Timeout ]
+crbug.com/1056022 [ Fuchsia ] http/tests/uri/escaped-entity.html [ Skip ]
+crbug.com/1056022 [ Fuchsia ] http/tests/uri/utf8-path.html [ Skip ]
+crbug.com/1056022 [ Fuchsia ] virtual/text-antialias/international/001.html [ Skip ]
+crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.html [ Skip ]
 
 # Sheriff 2020-02-28
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
@@ -6605,7 +6606,7 @@ crbug.com/1058403 external/wpt/webaudio/the-audio-api/the-audioworklet-interface
 # Ecosystem-Infra Sheriff 2020-04-15
 crbug.com/1070995 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/blob-data.https.html [ Pass Failure Timeout ]
 
-crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
+crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Skip ]
 
 # Sheriff 2020-03-05
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
@@ -6619,11 +6620,11 @@ crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scr
 crbug.com/1059645 external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 
 # Failing on Fuchsia due to dependency on FuchsiaMediaResourceProvider, which is not implemented in content_shell.
-crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Crash ]
-crbug.com/1061226 [ Fuchsia ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash ]
-crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Crash ]
-crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html [ Crash ]
-crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-equalpower-stereo.html [ Crash ]
+crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Skip ]
+crbug.com/1061226 [ Fuchsia ] fast/speech/scripted/speechrecognition-restart-onend.html [ Skip ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Skip ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html [ Skip ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-equalpower-stereo.html [ Skip ]
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]
@@ -6634,7 +6635,7 @@ crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-
 
 crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Timeout ]
 crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
+crbug.com/1091665 external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
 # [virtual/...]external/wpt/web-animation test flakes
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Failure ]
@@ -6894,5 +6895,8 @@ crbug.com/1098676 [ Win ] http/tests/devtools/console-xhr-logging.js [ Pass Fail
 crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
 
 # Tests blocking WPT importer
-crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry.html [ Pass Crash ]
-crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry-different-function-realm.html [ Pass Crash ]
+crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry.html [ Pass Crash Timeout ]
+crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry-different-function-realm.html [ Pass Crash Timeout ]
+
+#Sheriff 2020-06-25
+crbug.com/1099346 [ Win10 ] virtual/threaded/external/wpt/scroll-animations/element-based-offset-clamp.html [ Pass Failure ]

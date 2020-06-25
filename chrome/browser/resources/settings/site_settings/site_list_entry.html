@@ -7,13 +7,17 @@
         flex: 1
       }
 
+      .discarded-settings-row {
+        text-decoration: line-through;
+      }
+
       /* Tooltip is hidden since site-list will display a common tooltip. */
       cr-policy-pref-indicator::part(tooltip) {
         display: none;
       }
     </style>
     <div class="list-item" focus-row-container>
-      <div class="settings-row"
+      <div class$="settings-row [[getClassForSiteListEntry_(model)]]"
           actionable$="[[allowNavigateToSiteDetail_]]" on-click="onOriginTap_">
         <site-favicon url="[[model.origin]]"></site-favicon>
         <div class="middle no-min-width">

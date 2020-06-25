@@ -198,7 +198,10 @@ __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
  * @param {AutofillFormData} formData Form data.
  * @param {string} username The username to fill.
  * @param {string} password The password to fill.
- * @return {boolean} Whether a form field has been filled.
+ * @return {string} Whether a form field has been filled.
+ *
+ * TODO(crbug.com/1075444): Rewrite callback handler to accept various
+ * return types and return boolean.
  */
 __gCrWeb.passwords['fillPasswordForm'] = function(
     formData, username, password) {
@@ -206,9 +209,10 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
       __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
   const origin = /** @type {string} */ (formData['origin']);
   if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
-    return false;
+    return 'false';
   }
-  return fillPasswordFormWithData(formData, username, password, window);
+  return fillPasswordFormWithData(formData, username, password, window)
+      .toString();
 };
 
 /**
@@ -220,20 +224,23 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
  * @param {number} confirmPasswordIdentifier The id of confirm password element
  *   to fill.
  * @param {string} password The password to fill.
- * @return {boolean} Whether new password field has been filled.
+ * @return {string} Whether new password field has been filled.
+ *
+ * TODO(crbug.com/1075444): Rewrite callback handler to accept various
+ * return types and return boolean.
  */
 __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
     formIdentifier, newPasswordIdentifier, confirmPasswordIdentifier,
     password) {
   const form = __gCrWeb.form.getFormElementFromUniqueFormId(formIdentifier);
   if (!form) {
-    return false;
+    return 'false';
   }
   const inputs = getFormInputElements(form);
   const newPasswordField =
       findInputByUniqueFieldId(inputs, newPasswordIdentifier);
   if (!newPasswordField) {
-    return false;
+    return 'false';
   }
   // Avoid resetting if same value, as it moves cursor to the end.
   if (newPasswordField.value !== password) {
@@ -244,7 +251,7 @@ __gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
   if (confirmPasswordField && confirmPasswordField.value !== password) {
     __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
   }
-  return true;
+  return 'true';
 };
 
 /**

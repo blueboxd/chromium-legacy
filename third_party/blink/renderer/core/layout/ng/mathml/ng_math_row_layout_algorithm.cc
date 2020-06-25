@@ -38,7 +38,7 @@ NGMathRowLayoutAlgorithm::NGMathRowLayoutAlgorithm(
 }
 
 void NGMathRowLayoutAlgorithm::LayoutRowItems(
-    NGContainerFragmentBuilder::ChildrenVector* children,
+    ChildrenVector* children,
     LayoutUnit* max_row_block_baseline,
     LogicalSize* row_total_size) {
   LayoutUnit inline_offset, max_row_ascent, max_row_descent;
@@ -74,8 +74,9 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
     // TODO(rbuis): Operators can add lspace and rspace.
 
     children->emplace_back(
+        To<NGBlockNode>(child), margins,
         LogicalOffset{inline_offset, margins.block_start - ascent},
-        &physical_fragment);
+        std::move(&physical_fragment));
 
     inline_offset += fragment.InlineSize() + margins.inline_end;
 
@@ -99,7 +100,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
 
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
 
-  NGContainerFragmentBuilder::ChildrenVector children;
+  ChildrenVector children;
   LayoutRowItems(&children, &max_row_block_baseline, &max_row_size);
 
   // Add children taking into account centering, baseline and
@@ -110,10 +111,12 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
 
   LogicalOffset adjust_offset = BorderScrollbarPadding().StartOffset();
   adjust_offset += LogicalOffset{center_offset, max_row_block_baseline};
-  for (auto& child : children) {
-    child.offset += adjust_offset;
+  for (auto& child_data : children) {
+    child_data.offset += adjust_offset;
     container_builder_.AddChild(
-        To<NGPhysicalContainerFragment>(*child.fragment), child.offset);
+        To<NGPhysicalContainerFragment>(*child_data.fragment),
+        child_data.offset);
+    child_data.child.StoreMargins(ConstraintSpace(), child_data.margins);
   }
 
   container_builder_.SetBaseline(adjust_offset.block_offset);

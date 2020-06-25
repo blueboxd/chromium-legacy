@@ -165,6 +165,7 @@
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/leveldatabase/leveldb_features.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -2500,8 +2501,8 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
     {"enable-zero-copy", flag_descriptions::kZeroCopyName,
      flag_descriptions::kZeroCopyDescription, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableZeroCopy,
-                               switches::kDisableZeroCopy)},
+     ENABLE_DISABLE_VALUE_TYPE(blink::switches::kEnableZeroCopy,
+                               blink::switches::kDisableZeroCopy)},
     {"enable-vulkan", flag_descriptions::kEnableVulkanName,
      flag_descriptions::kEnableVulkanDescription,
      kOsWin | kOsLinux | kOsAndroid, FEATURE_VALUE_TYPE(features::kVulkan)},
@@ -4917,6 +4918,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSmartDimNewMlAgentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSmartDimNewMlAgent)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"privacy-elevated-android", flag_descriptions::kPrivacyElevatedAndroidName,
+     flag_descriptions::kPrivacyElevatedAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kPrivacyElevatedAndroid)},
+#endif
 
     {"privacy-settings-redesign",
      flag_descriptions::kPrivacySettingsRedesignName,

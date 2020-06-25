@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.paint_preview;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
@@ -23,19 +24,19 @@ public class PaintPreviewHelper {
      */
     public static void observeTabModelSelector(
             ChromeActivity activity, TabModelSelector tabModelSelector) {
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) return;
+
         // TODO(crbug/1074428): verify this doesn't cause a memory leak if the user exits Chrome
         // prior to onTabStateInitialized being called.
         tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabStateInitialized() {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) {
-                    // Avoid running the audit in multi-window mode as otherwise we will delete
-                    // data that is possibly in use by the other Activity's TabModelSelector.
-                    PaintPreviewTabServiceFactory.getServiceInstance().onRestoreCompleted(
-                            tabModelSelector, /*runAudit=*/
-                            !MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
-                                    activity));
-                }
+                // Avoid running the audit in multi-window mode as otherwise we will delete
+                // data that is possibly in use by the other Activity's TabModelSelector.
+                PaintPreviewTabServiceFactory.getServiceInstance().onRestoreCompleted(
+                        tabModelSelector, /*runAudit=*/
+                        !MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
+                                activity));
                 tabModelSelector.removeObserver(this);
             }
         });
@@ -50,7 +51,7 @@ public class PaintPreviewHelper {
      */
     public static boolean showPaintPreviewOnRestore(
             Tab tab, Runnable onShown, Runnable onDismissed) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) {
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) {
             return false;
         }
 

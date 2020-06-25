@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -84,8 +85,8 @@ bool PasswordManagerClientHelper::ShouldPromptToEnableAutoSignIn() const {
 
 bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
     const PasswordFormManagerForUI& submitted_manager) const {
-  return base::FeatureList::IsEnabled(
-             password_manager::features::kEnablePasswordsAccountStorage) &&
+  return delegate_->GetPasswordFeatureManager()
+             ->ShouldShowAccountStorageBubbleUi() &&
          submitted_manager.IsMovableToAccountStore() &&
          !delegate_->IsIncognito();
 }

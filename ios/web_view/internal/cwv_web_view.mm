@@ -646,10 +646,7 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]
       initWithPrefService:_configuration.browserState->GetPrefs()
                  webState:_webState.get()];
-  JsAutofillManager* JSAutofillManager =
-      base::mac::ObjCCastStrict<JsAutofillManager>(
-          [_webState->GetJSInjectionReceiver()
-              instanceOfClass:[JsAutofillManager class]]);
+  JsAutofillManager* JSAutofillManager = [[JsAutofillManager alloc] init];
   JsSuggestionManager* JSSuggestionManager =
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()

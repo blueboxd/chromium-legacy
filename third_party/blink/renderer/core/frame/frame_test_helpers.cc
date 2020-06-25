@@ -97,7 +97,7 @@ namespace {
 void RunServeAsyncRequestsTask(scoped_refptr<base::TaskRunner> task_runner) {
   // TODO(kinuko,toyoshim): Create a mock factory and use it instead of
   // getting the platform's one. (crbug.com/751425)
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
   if (TestWebFrameClient::IsLoading()) {
     task_runner->PostTask(FROM_HERE,
                           WTF::Bind(&RunServeAsyncRequestsTask, task_runner));
@@ -203,7 +203,7 @@ void FillNavigationParamsResponse(WebNavigationParams* params) {
   // Empty documents and srcdoc will be handled by DocumentLoader.
   if (DocumentLoader::WillLoadUrlAsEmpty(kurl) || kurl.IsAboutSrcdocURL())
     return;
-  Platform::Current()->GetURLLoaderMockFactory()->FillNavigationParamsResponse(
+  WebURLLoaderMockFactory::GetSingletonInstance()->FillNavigationParamsResponse(
       params);
 }
 

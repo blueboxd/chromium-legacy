@@ -52,6 +52,10 @@
 #include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -749,10 +753,27 @@ SharedImageBackingGLImage::ProduceGLTexturePassthrough(
       manager, this, this, tracker, passthrough_texture_);
 }
 
+std::unique_ptr<SharedImageRepresentationOverlay>
+SharedImageBackingGLImage::ProduceOverlay(SharedImageManager* manager,
+                                          MemoryTypeTracker* tracker) {
+#if defined(OS_MACOSX)
+  return SharedImageBackingFactoryIOSurface::ProduceOverlay(manager, this,
+                                                            tracker, image_);
+#else   // defined(OS_MACOSX)
+  return SharedImageBacking::ProduceOverlay(manager, tracker);
+#endif  // !defined(OS_MACOSX)
+}
+
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingGLImage::ProduceDawn(SharedImageManager* manager,
                                        MemoryTypeTracker* tracker,
                                        WGPUDevice device) {
+#if defined(OS_MACOSX)
+  auto result = SharedImageBackingFactoryIOSurface::ProduceDawn(
+      manager, this, tracker, device, image_);
+  if (result)
+    return result;
+#endif  // defined(OS_MACOSX)
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
     return nullptr;
@@ -767,13 +788,20 @@ SharedImageBackingGLImage::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
-  // Sub-classes will, in the future, produce non-GL-backed a
-  // SkPromiseImageTexture.
   if (!cached_promise_texture_) {
-    GrBackendTexture backend_texture;
-    GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
-                        GetGLServiceId(), format(), &backend_texture);
-    cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    if (context_state->GrContextIsMetal()) {
+#if defined(OS_MACOSX)
+      cached_promise_texture_ =
+          SharedImageBackingFactoryIOSurface::ProduceSkiaPromiseTextureMetal(
+              this, context_state, image_);
+      DCHECK(cached_promise_texture_);
+#endif
+    } else {
+      GrBackendTexture backend_texture;
+      GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
+                          GetGLServiceId(), format(), &backend_texture);
+      cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    }
   }
   return std::make_unique<SharedImageRepresentationSkiaImpl>(
       manager, this, this, std::move(context_state), cached_promise_texture_,

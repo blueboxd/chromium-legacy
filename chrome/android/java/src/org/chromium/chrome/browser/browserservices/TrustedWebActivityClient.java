@@ -67,6 +67,7 @@ public class TrustedWebActivityClient {
     private static final String CHECK_LOCATION_PERMISSION_COMMAND_NAME =
             "checkAndroidLocationPermission";
     private static final String LOCATION_PERMISSION_RESULT = "locationPermissionResult";
+    private static final String EXTRA_COMMAND_SUCCESS = "success";
 
     private static final String START_LOCATION_COMMAND_NAME = "startLocation";
     private static final String STOP_LOCATION_COMMAND_NAME = "stopLocation";
@@ -181,8 +182,7 @@ public class TrustedWebActivityClient {
                         CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
                 // Set permission to false if the service does not know how to handle the
                 // extraCommand or did not handle the command.
-                if (executionResult == null
-                        || !executionResult.getBoolean(CHECK_LOCATION_PERMISSION_COMMAND_NAME)) {
+                if (executionResult == null || !executionResult.getBoolean(EXTRA_COMMAND_SUCCESS)) {
                     callback.onPermissionCheck(service.getComponentName(), false);
                 }
             }
@@ -206,8 +206,7 @@ public class TrustedWebActivityClient {
                         START_LOCATION_COMMAND_NAME, args, locationCallback);
 
                 // Notify an error if the service does not know how to handle the extraCommand.
-                if (executionResult == null
-                        || !executionResult.getBoolean(START_LOCATION_COMMAND_NAME)) {
+                if (executionResult == null || !executionResult.getBoolean(EXTRA_COMMAND_SUCCESS)) {
                     notifyLocationUpdateError(
                             locationCallback, "Failed to request location updates");
                 }

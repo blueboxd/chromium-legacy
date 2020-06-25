@@ -1,11 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
+<link rel="import" href="chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html">
+<link rel="import" href="network_ui_browser_proxy.html">
 
 <dom-module id="network-state-ui">
   <template>
@@ -57,7 +58,7 @@
 
     <div>
       <cr-button class="action-button" id="refresh"
-          on-click="requestNetworks">
+          on-click="requestNetworks_">
         $i18n{networkRefreshText}
       </cr-button>
     </div>
@@ -67,7 +68,7 @@
       <div>$i18n{clickToExpandText}</div>
       <div>
         <span>$i18n{propertyFormatText}</span>
-        <select id="get-property-format" on-change="requestNetworks">
+        <select id="get-property-format" on-change="requestNetworks_">
           <option value="normal">$i18n{normalFormatOption}</option>
           <option value="managed">$i18n{managedFormatOption}</option>
           <option value="state">$i18n{stateFormatOption}</option>

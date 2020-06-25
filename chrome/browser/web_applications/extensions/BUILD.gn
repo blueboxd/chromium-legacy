@@ -36,6 +36,7 @@ source_set("extensions") {
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//components/pref_registry",
+    "//components/sync:rest_of_sync",
     "//content/public/browser",
     "//extensions/browser",
     "//skia",

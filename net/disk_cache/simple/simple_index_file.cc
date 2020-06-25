@@ -296,9 +296,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
                                       const base::FilePath& cache_directory,
                                       const base::FilePath& index_filename,
                                       const base::FilePath& temp_index_filename,
-                                      std::unique_ptr<base::Pickle> pickle,
-                                      const base::TimeTicks& start_time,
-                                      bool app_on_background) {
+                                      std::unique_ptr<base::Pickle> pickle) {
   DCHECK_EQ(index_filename.DirName().value(),
             temp_index_filename.DirName().value());
   base::FilePath index_file_directory = temp_index_filename.DirName();
@@ -327,16 +325,6 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   // Atomically rename the temporary index file to become the real one.
   if (!base::ReplaceFile(temp_index_filename, index_filename, nullptr))
     return;
-
-  if (app_on_background) {
-    SIMPLE_CACHE_UMA(TIMES,
-                     "IndexWriteToDiskTime.Background", cache_type,
-                     (base::TimeTicks::Now() - start_time));
-  } else {
-    SIMPLE_CACHE_UMA(TIMES,
-                     "IndexWriteToDiskTime.Foreground", cache_type,
-                     (base::TimeTicks::Now() - start_time));
-  }
 }
 
 bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
@@ -383,17 +371,14 @@ void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,
                                   SimpleIndex::IndexWriteToDiskReason reason,
                                   const SimpleIndex::EntrySet& entry_set,
                                   uint64_t cache_size,
-                                  const base::TimeTicks& start,
-                                  bool app_on_background,
                                   base::OnceClosure callback) {
   UmaRecordIndexWriteReason(reason, cache_type_);
   IndexMetadata index_metadata(reason, entry_set.size(), cache_size);
   std::unique_ptr<base::Pickle> pickle =
       Serialize(cache_type, index_metadata, entry_set);
-  base::OnceClosure task =
-      base::BindOnce(&SimpleIndexFile::SyncWriteToDisk, cache_type_,
-                     cache_directory_, index_file_, temp_index_file_,
-                     std::move(pickle), start, app_on_background);
+  base::OnceClosure task = base::BindOnce(
+      &SimpleIndexFile::SyncWriteToDisk, cache_type_, cache_directory_,
+      index_file_, temp_index_file_, std::move(pickle));
   if (callback.is_null())
     cache_runner_->PostTask(FROM_HERE, std::move(task));
   else
@@ -447,8 +432,6 @@ void SimpleIndexFile::SyncLoadIndexEntries(
   SyncRestoreFromDisk(cache_type, cache_directory, index_file_path, out_result);
   SIMPLE_CACHE_UMA(MEDIUM_TIMES, "IndexRestoreTime", cache_type,
                    base::TimeTicks::Now() - start);
-  SIMPLE_CACHE_UMA(COUNTS_1M, "IndexEntriesRestored", cache_type,
-                   out_result->entries.size());
   if (index_file_existed) {
     out_result->init_method = SimpleIndex::INITIALIZE_METHOD_RECOVERED;
 

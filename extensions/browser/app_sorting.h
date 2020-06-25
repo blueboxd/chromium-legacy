@@ -21,6 +21,11 @@ class AppSorting {
   AppSorting() {}
   virtual ~AppSorting() {}
 
+  // Signals that ordinals for the WebAppProvider system should (or can) be
+  // loaded now. Calls to the WebAppProvider system should not be done before
+  // this is called. Called from WebAppUiManagerImpl::Start().
+  virtual void InitializePageOrdinalMapFromWebApps() = 0;
+
   // Resolves any conflicts the might be created as a result of syncing that
   // results in two icons having the same page and app launch ordinal. After
   // this is called it is guaranteed that there are no collisions of NTP icons.

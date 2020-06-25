@@ -226,7 +226,7 @@ bool SaveUpdateWithAccountStoreBubbleController::RevealPasswords() {
 bool SaveUpdateWithAccountStoreBubbleController::ShouldShowPasswordStorePicker()
     const {
   return delegate_->GetPasswordFeatureManager()
-      ->ShouldShowPasswordStorePicker();
+      ->ShouldShowAccountStorageBubbleUi();
 }
 
 void SaveUpdateWithAccountStoreBubbleController::OnToggleAccountStore(

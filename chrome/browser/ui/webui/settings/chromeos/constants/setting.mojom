@@ -205,4 +205,9 @@ enum Setting {
   // About Chrome OS section.
   kChangeChromeChannel = 1700,
   kCopyDetailedBuildInfo = 1701,
+  kCheckForOsUpdate = 1702,
+  kSeeWhatsNew = 1703,
+  kGetHelpWithChromeOs = 1704,
+  kReportAnIssue = 1705,
+  kTermsOfService = 1706,
 };

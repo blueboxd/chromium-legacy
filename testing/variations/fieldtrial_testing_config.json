@@ -4766,6 +4766,26 @@
             ]
         }
     ],
+    "PaintHoldingCrossOrigin": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "PaintHoldingCrossOrigin"
+                    ]
+                }
+            ]
+        }
+    ],
     "ParallelDownloadWithQUICAndHTTP2": [
         {
             "platforms": [

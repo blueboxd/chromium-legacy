@@ -138,8 +138,24 @@ TEST_F(ShelfWidgetTest, TestAlignmentForMultipleDisplays) {
   }
 }
 
-// Makes sure the shelf is initially sized correctly.
-TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
+class ShelfWidgetLayoutBasicsTest : public ShelfWidgetTest,
+                                    public testing::WithParamInterface<bool> {
+ public:
+  ShelfWidgetLayoutBasicsTest() = default;
+  ~ShelfWidgetLayoutBasicsTest() override = default;
+
+  void SetUp() override {
+    ShelfWidgetTest::SetUp();
+
+    if (GetParam())
+      Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All, ShelfWidgetLayoutBasicsTest, testing::Bool());
+
+// Makes sure the shelf is initially sized correctly in clamshell/tablet.
+TEST_P(ShelfWidgetLayoutBasicsTest, LauncherInitiallySized) {
   ShelfWidget* shelf_widget = GetShelfWidget();
   ShelfLayoutManager* shelf_layout_manager = GetShelfLayoutManager();
   ASSERT_TRUE(shelf_layout_manager);
@@ -152,13 +168,18 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   const int total_width =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
           .width();
-  const int nav_width =
-      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width() -
-      ShelfConfig::Get()->control_button_edge_spacing(
-          true /* is_primary_axis_edge */);
+
+  int nav_width =
+      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+  ASSERT_GE(nav_width, 0);
+  if (nav_width) {
+    nav_width -= ShelfConfig::Get()->control_button_edge_spacing(
+        true /* is_primary_axis_edge */);
+  }
+
   const int hotseat_width =
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = 2 * ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->GetAppIconGroupMargin();
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 
@@ -205,7 +226,7 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
           true /* is_primary_axis_edge */);
   const int hotseat_width1 =
       shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = 2 * ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->GetAppIconGroupMargin();
 
   const int total_width2 =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget2->GetNativeWindow())

@@ -36,8 +36,10 @@ class ChromeHidDelegate
                            const device::mojom::HidDeviceInfo& device) override;
   device::mojom::HidManager* GetHidManager(
       content::WebContents* web_contents) override;
-  void AddObserver(content::HidDelegate::Observer* observer) override;
-  void RemoveObserver(content::HidDelegate::Observer* observer) override;
+  void AddObserver(content::RenderFrameHost* frame,
+                   content::HidDelegate::Observer* observer) override;
+  void RemoveObserver(content::RenderFrameHost* frame,
+                      content::HidDelegate::Observer* observer) override;
 
   // permissions::ChooserContextBase::PermissionObserver:
   void OnPermissionRevoked(const url::Origin& requesting_origin,

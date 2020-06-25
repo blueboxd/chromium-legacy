@@ -26,6 +26,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/switches.h"
 #include "url/url_util.h"
 
 namespace headless {
@@ -304,7 +305,7 @@ class HeadlessProtocolCompositorBrowserTest
 
         // Ensure that image animations don't resync their animation timestamps
         // when looping back around.
-        switches::kDisableImageAnimationResync,
+        blink::switches::kDisableImageAnimationResync,
     };
 
     for (auto* compositor_switch : compositor_switches) {

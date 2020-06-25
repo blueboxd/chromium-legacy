@@ -26,7 +26,12 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
-  cell.detailTextLabel.text = self.detailText;
+  if (self.detailText) {
+    cell.detailTextLabel.text = self.detailText;
+    [cell updatePaddingForDetailText:YES];
+  } else {
+    [cell updatePaddingForDetailText:NO];
+  }
   cell.statusTextLabel.text = self.statusText;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 

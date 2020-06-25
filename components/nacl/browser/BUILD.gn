@@ -44,7 +44,6 @@ static_library("browser") {
     "//ppapi/host",
     "//ppapi/proxy:ipc",
     "//ppapi/shared_impl",
-    "//services/service_manager/zygote:zygote_buildflags",
   ]
 
   public_deps = [
@@ -64,7 +63,6 @@ static_library("browser") {
       "//components/nacl/loader:nacl_helper_integration",
       "//sandbox/linux:sandbox_services",
       "//sandbox/linux:suid_sandbox_client",
-      "//services/service_manager/zygote",
     ]
 
     if (enable_nacl_nonsfi) {

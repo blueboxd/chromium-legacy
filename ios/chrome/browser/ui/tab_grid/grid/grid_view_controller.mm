@@ -532,7 +532,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self removeEmptyStateAnimated:YES];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
+  NSString* previouslySelectedItemID = self.selectedItemID;
   auto completion = ^(BOOL finished) {
+    [self.collectionView
+        deselectItemAtIndexPath:CreateIndexPath([self
+                                    indexOfItemWithID:previouslySelectedItemID])
+                       animated:YES];
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                      animated:YES

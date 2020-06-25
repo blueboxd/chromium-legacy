@@ -4925,7 +4925,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VirtualKeyboardFocusEnsureCaretInRect) {
   EXPECT_EQ(view_->GetNativeView()->bounds(), shifted_view_bounds);
 
   // Detach the RenderWidgetHostViewAura from the IME.
-  view_->DetachFromInputMethod();
+  view_->DetachFromInputMethod(false);
 
   // Window should be restored.
   EXPECT_EQ(view_->GetNativeView()->bounds(), orig_view_bounds);
@@ -6437,7 +6437,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   EXPECT_EQ(IsKeyboardVisible(), true);
   // Detach the RenderWidgetHostViewAura from the IME.
-  parent_view_->DetachFromInputMethod();
+  parent_view_->DetachFromInputMethod(true);
   EXPECT_EQ(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
@@ -6480,7 +6480,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   EXPECT_EQ(IsKeyboardVisible(), false);
   // Detaching the input method should destroy the keyboard observer.
-  parent_view_->DetachFromInputMethod();
+  parent_view_->DetachFromInputMethod(true);
   EXPECT_EQ(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
@@ -6491,6 +6491,26 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverForPenInput) {
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+}
+
+TEST_F(RenderWidgetHostViewAuraKeyboardTest,
+       KeyboardObserverDetachDuringWindowDestroy) {
+  parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+  EXPECT_EQ(IsKeyboardVisible(), true);
+  // Detach the RenderWidgetHostViewAura from the IME, but don't destroy the
+  // Vk controller as it might need to notify about VK hide so the sites can
+  // reflow their content.
+  parent_view_->DetachFromInputMethod(false);
+  EXPECT_EQ(IsKeyboardVisible(), false);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 1u);
+  // Detach the keyboard observer as the window is getting destroyed.
+  parent_view_->DetachFromInputMethod(true);
+  EXPECT_EQ(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
+  EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
 
 #endif  // defined(OS_WIN)

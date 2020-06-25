@@ -54,6 +54,7 @@
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -161,6 +162,8 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      blink::switches::kGpuRasterizationMSAASampleCount,
+      blink::switches::kMinHeightForGpuRasterTile,
       cc::switches::kEnableGpuBenchmarking,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
@@ -171,8 +174,6 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kForceGpuMemAvailableMb,
       switches::kForceGpuMemDiscardableLimitMb,
       switches::kForceMaxTextureSize,
-      switches::kGpuRasterizationMSAASampleCount,
-      switches::kMinHeightForGpuRasterTile,
       switches::kRendererProcessLimit,
       switches::kWebglAntialiasingMode,
       switches::kWebglMSAASampleCount,
@@ -202,7 +203,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     // which
     // we don't yet support.
     if (arg.first == switches::kEnableLowEndDeviceMode)
-      command_line->AppendSwitch(switches::kDisableRGBA4444Textures);
+      command_line->AppendSwitch(blink::switches::kDisableRGBA4444Textures);
   }
 
   return true;

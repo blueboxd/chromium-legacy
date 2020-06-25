@@ -821,6 +821,8 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       dawn_context_provider_(dependency_->GetDawnContextProvider()),
       renderer_settings_(renderer_settings),
       sequence_id_(sequence_id),
+      did_swap_buffer_complete_callback_(
+          std::move(did_swap_buffer_complete_callback)),
       context_lost_callback_(std::move(context_lost_callback)),
       gpu_vsync_callback_(std::move(gpu_vsync_callback)),
       gpu_preferences_(dependency_->GetGpuPreferences()),
@@ -829,8 +831,6 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-  did_swap_buffer_complete_callback_ = CreateSafeRepeatingCallback(
-      weak_ptr_, std::move(did_swap_buffer_complete_callback));
   buffer_presented_callback_ = CreateSafeRepeatingCallback(
       weak_ptr_, std::move(buffer_presented_callback));
 }
@@ -906,8 +906,12 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     return false;
   }
 
-  if (draw_rectangle)
-    output_device_->SetDrawRectangle(*draw_rectangle);
+  if (draw_rectangle) {
+    if (!output_device_->SetDrawRectangle(*draw_rectangle)) {
+      MarkContextLost(
+          ContextLostReason::CONTEXT_LOST_SET_DRAW_RECTANGLE_FAILED);
+    }
+  }
 
   // We do not reset scoped_output_device_paint_ after drawing the ddl until
   // SwapBuffers() is called, because we may need access to output_sk_surface()
@@ -1469,7 +1473,7 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
       context_state_, capabilities.output_surface_origin,
       renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
-      did_swap_buffer_complete_callback_);
+      GetDidSwapBuffersCompleteCallback());
 }
 
 bool SkiaOutputSurfaceImplOnGpu::Initialize() {
@@ -1530,7 +1534,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, gfx::SurfaceOrigin::kTopLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
-        did_swap_buffer_complete_callback_);
+        GetDidSwapBuffersCompleteCallback());
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
     gl_surface_ =
@@ -1546,7 +1550,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
                 std::make_unique<OutputPresenterGL>(gl_surface_, dependency_,
                                                     memory_tracker_.get()),
                 dependency_, memory_tracker_.get(),
-                did_swap_buffer_complete_callback_);
+                GetDidSwapBuffersCompleteCallback());
         supports_alpha_ = onscreen_device->supports_alpha();
         output_device_ = std::move(onscreen_device);
 
@@ -1555,21 +1559,15 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
           std::unique_ptr<SkiaOutputDeviceWebView> onscreen_device =
               std::make_unique<SkiaOutputDeviceWebView>(
                   context_state_.get(), gl_surface_, memory_tracker_.get(),
-                  did_swap_buffer_complete_callback_);
+                  GetDidSwapBuffersCompleteCallback());
           supports_alpha_ = onscreen_device->supports_alpha();
           output_device_ = std::move(onscreen_device);
         } else {
-          SkiaOutputDeviceGL::ContextLostOnGpuCallback
-              context_lost_on_gpu_callback =
-                  base::BindOnce(&SkiaOutputSurfaceImplOnGpu::MarkContextLost,
-                                 weak_ptr_factory_.GetWeakPtr());
-
           std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
               std::make_unique<SkiaOutputDeviceGL>(
                   dependency_->GetMailboxManager(), context_state_.get(),
                   gl_surface_, feature_info_, memory_tracker_.get(),
-                  did_swap_buffer_complete_callback_,
-                  std::move(context_lost_on_gpu_callback));
+                  GetDidSwapBuffersCompleteCallback());
           supports_alpha_ = onscreen_device->supports_alpha();
           output_device_ = std::move(onscreen_device);
         }
@@ -1593,7 +1591,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, gfx::SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
-        did_swap_buffer_complete_callback_);
+        GetDidSwapBuffersCompleteCallback());
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
 #if defined(USE_X11)
@@ -1602,12 +1600,12 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
       if (!gpu_preferences_.disable_vulkan_surface) {
         output_device_ = SkiaOutputDeviceVulkan::Create(
             vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-            memory_tracker_.get(), did_swap_buffer_complete_callback_);
+            memory_tracker_.get(), GetDidSwapBuffersCompleteCallback());
       }
       if (!output_device_) {
         output_device_ = std::make_unique<SkiaOutputDeviceX11>(
             context_state_, dependency_->GetSurfaceHandle(),
-            memory_tracker_.get(), did_swap_buffer_complete_callback_);
+            memory_tracker_.get(), GetDidSwapBuffersCompleteCallback());
       }
     }
 #endif
@@ -1619,11 +1617,11 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
         gl_surface_ = output_presenter->gl_surface();
         output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
             std::move(output_presenter), dependency_, memory_tracker_.get(),
-            did_swap_buffer_complete_callback_);
+            GetDidSwapBuffersCompleteCallback());
       } else {
         auto output_device = SkiaOutputDeviceVulkan::Create(
             vulkan_context_provider_, dependency_->GetSurfaceHandle(),
-            memory_tracker_.get(), did_swap_buffer_complete_callback_);
+            memory_tracker_.get(), GetDidSwapBuffersCompleteCallback());
 #if defined(OS_WIN)
         gpu::SurfaceHandle child_surface =
             output_device ? output_device->GetChildSurfaceHandle()
@@ -1649,7 +1647,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
         context_state_, gfx::SurfaceOrigin::kBottomLeft,
         renderer_settings_.requires_alpha_channel, memory_tracker_.get(),
-        did_swap_buffer_complete_callback_);
+        GetDidSwapBuffersCompleteCallback());
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   } else {
 #if defined(USE_X11)
@@ -1658,7 +1656,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
     if (!features::IsUsingOzonePlatform()) {
       output_device_ = std::make_unique<SkiaOutputDeviceX11>(
           context_state_, dependency_->GetSurfaceHandle(),
-          memory_tracker_.get(), did_swap_buffer_complete_callback_);
+          memory_tracker_.get(), GetDidSwapBuffersCompleteCallback());
     } else {
       return false;
     }
@@ -1667,7 +1665,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         std::make_unique<SkiaOutputDeviceDawn>(
             dawn_context_provider_, dependency_->GetSurfaceHandle(),
             gfx::SurfaceOrigin::kTopLeft, memory_tracker_.get(),
-            did_swap_buffer_complete_callback_);
+            GetDidSwapBuffersCompleteCallback());
     const gpu::SurfaceHandle child_surface_handle =
         output_device->GetChildSurfaceHandle();
     DidCreateAcceleratedSurfaceChildWindow(dependency_->GetSurfaceHandle(),
@@ -1778,6 +1776,28 @@ void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
 void SkiaOutputSurfaceImplOnGpu::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   // Handled by SkiaOutputDevice already.
+}
+
+void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(
+    gpu::SwapBuffersCompleteParams params,
+    const gfx::Size& pixel_size) {
+  if (params.swap_response.result == gfx::SwapResult::SWAP_FAILED) {
+    DLOG(ERROR) << "Context lost on SWAP_FAILED";
+    if (!context_state_->IsCurrent(nullptr) ||
+        !context_state_->CheckResetStatus(false)) {
+      // Mark the context lost if not already lost.
+      MarkContextLost(ContextLostReason::CONTEXT_LOST_SWAP_FAILED);
+    }
+  }
+
+  PostTaskToClientThread(
+      base::BindOnce(did_swap_buffer_complete_callback_, params, pixel_size));
+}
+
+SkiaOutputSurfaceImplOnGpu::DidSwapBufferCompleteCallback
+SkiaOutputSurfaceImplOnGpu::GetDidSwapBuffersCompleteCallback() {
+  return base::BindRepeating(
+      &SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal, weak_ptr_);
 }
 
 void SkiaOutputSurfaceImplOnGpu::MarkContextLost(ContextLostReason reason) {

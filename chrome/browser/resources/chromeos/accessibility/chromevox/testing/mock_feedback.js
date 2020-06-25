@@ -270,7 +270,7 @@ MockFeedback = class {
           }
           if (MockFeedback.matchAndConsume_(
                   text, {}, this.pendingUtterances_)) {
-            throw new Error('Got disallowed utterance "' + text + '".');
+            throw new Error('Got denied utterance "' + text + '".');
           }
           return true;
         }.bind(this),

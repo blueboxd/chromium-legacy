@@ -5,8 +5,6 @@
  * @fileoverview Data structures for representing a directed graph.
  */
 
-import {GraphStore} from './graph_store.js';
-
 /** Some aspects of the node's state, to help with node visualization. */
 class NodeVisualizationState {
   constructor() {

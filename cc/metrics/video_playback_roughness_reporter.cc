@@ -4,6 +4,8 @@
 
 #include "cc/metrics/video_playback_roughness_reporter.h"
 
+#include <algorithm>
+
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -28,6 +30,7 @@ constexpr int VideoPlaybackRoughnessReporter::kMaxWindowSize;
 constexpr int VideoPlaybackRoughnessReporter::kMaxWindowsBeforeSubmit;
 constexpr int VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit;
 constexpr int VideoPlaybackRoughnessReporter::kPercentileToSubmit;
+constexpr double VideoPlaybackRoughnessReporter::kDesiredWindowDuration;
 
 VideoPlaybackRoughnessReporter::VideoPlaybackRoughnessReporter(
     PlaybackRoughnessReportingCallback reporting_cb)
@@ -37,8 +40,7 @@ VideoPlaybackRoughnessReporter::~VideoPlaybackRoughnessReporter() = default;
 
 double VideoPlaybackRoughnessReporter::ConsecutiveFramesWindow::roughness()
     const {
-  return root_mean_square_error.InMicrosecondsF() /
-         intended_duration.InMicrosecondsF();
+  return root_mean_square_error.InMillisecondsF();
 }
 
 VideoPlaybackRoughnessReporter::FrameInfo::FrameInfo() = default;
@@ -67,9 +69,9 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
       info.intended_duration = render_interval;
     }
 
-    // Adjust frame window size to fit about 0.5 seconds of playback
-    double win_size =
-        std::round(0.5 / info.intended_duration.value().InSecondsF());
+    // Adjust frame window size to fit about 1 second of playback
+    double win_size = std::round(kDesiredWindowDuration /
+                                 info.intended_duration.value().InSecondsF());
     frames_window_size_ = std::max(kMinWindowSize, static_cast<int>(win_size));
     frames_window_size_ = std::min(frames_window_size_, kMaxWindowSize);
   }

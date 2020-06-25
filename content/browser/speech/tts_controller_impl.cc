@@ -19,6 +19,8 @@
 #include "build/build_config.h"
 #include "content/browser/speech/tts_utterance_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/visibility.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -49,6 +51,10 @@ bool VoiceIdMatches(
   return id->name == voice.name && id->id == voice.engine_id;
 }
 #endif  // defined(OS_CHROMEOS)
+
+TtsUtteranceImpl* AsUtteranceImpl(TtsUtterance* utterance) {
+  return static_cast<TtsUtteranceImpl*>(utterance);
+}
 
 }  // namespace
 
@@ -113,6 +119,11 @@ TtsControllerImpl::~TtsControllerImpl() {
 
 void TtsControllerImpl::SpeakOrEnqueue(
     std::unique_ptr<TtsUtterance> utterance) {
+  if (!ShouldSpeakUtterance(utterance.get())) {
+    utterance->Finish();
+    return;
+  }
+
   // If we're paused and we get an utterance that can't be queued,
   // flush the queue but stay in the paused state.
   if (paused_ && !utterance->GetCanEnqueue()) {
@@ -492,8 +503,10 @@ void TtsControllerImpl::SpeakNextUtterance() {
     std::unique_ptr<TtsUtterance> utterance =
         std::move(utterance_list_.front());
     utterance_list_.pop_front();
-    if (static_cast<TtsUtteranceImpl*>(utterance.get())->ShouldSpeak())
+    if (ShouldSpeakUtterance(utterance.get()))
       SpeakNow(std::move(utterance));
+    else
+      utterance->Finish();
   }
 }
 
@@ -687,8 +700,7 @@ void TtsControllerImpl::SetCurrentUtterance(
     std::unique_ptr<TtsUtterance> utterance) {
   current_utterance_ = std::move(utterance);
   Observe(current_utterance_
-              ? static_cast<TtsUtteranceImpl*>(current_utterance_.get())
-                    ->web_contents()
+              ? AsUtteranceImpl(current_utterance_.get())->web_contents()
               : nullptr);
 }
 
@@ -706,8 +718,7 @@ void TtsControllerImpl::StopCurrentUtteranceAndRemoveUtterancesMatching(
   // queued utterance has already received WebContentsDestroyed(), and we start
   // it, we won't get the corresponding WebContentsDestroyed()).
   auto eraser = [wc](const std::unique_ptr<TtsUtterance>& utterance) {
-    TtsUtteranceImpl* utterance_impl =
-        static_cast<TtsUtteranceImpl*>(utterance.get());
+    TtsUtteranceImpl* utterance_impl = AsUtteranceImpl(utterance.get());
     if (utterance_impl->web_contents() == wc) {
       utterance_impl->Finish();
       return true;
@@ -720,6 +731,22 @@ void TtsControllerImpl::StopCurrentUtteranceAndRemoveUtterancesMatching(
   const bool stopped = StopCurrentUtteranceIfMatches(GURL());
   DCHECK(stopped);
   SpeakNextUtterance();
+}
+
+bool TtsControllerImpl::ShouldSpeakUtterance(TtsUtterance* utterance) {
+  TtsUtteranceImpl* utterance_impl = AsUtteranceImpl(utterance);
+  if (!utterance_impl->was_created_with_web_contents())
+    return true;
+
+  // If the WebContents that created the utterance has been destroyed, don't
+  // speak it.
+  if (!utterance_impl->web_contents())
+    return false;
+
+  // Allow speaking if either the WebContents is visible, or the WebContents
+  // isn't required to be visible before speaking.
+  return !stop_speaking_when_hidden_ ||
+         utterance_impl->web_contents()->GetVisibility() != Visibility::HIDDEN;
 }
 
 //

@@ -29,6 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -37,7 +38,6 @@
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -53,7 +53,7 @@
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
+#include "content/common/zygote/zygote_handle_impl_linux.h"
 #endif
 
 namespace content {
@@ -224,7 +224,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-  service_manager::ZygoteHandle GetZygote() override {
+  ZygoteHandle GetZygote() override {
     // If the sandbox has been disabled for a given type, don't use a zygote.
     if (service_manager::IsUnsandboxedSandboxType(sandbox_type_))
       return nullptr;
@@ -239,11 +239,11 @@ class UtilitySandboxedProcessLauncherDelegate
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
         sandbox_type_ == service_manager::SandboxType::kSpeechRecognition) {
-      return service_manager::GetUnsandboxedZygote();
+      return GetUnsandboxedZygote();
     }
 
     // All other types use the pre-sandboxed zygote.
-    return service_manager::GetGenericZygote();
+    return GetGenericZygote();
   }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 

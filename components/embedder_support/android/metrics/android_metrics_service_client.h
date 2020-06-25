@@ -232,10 +232,9 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   void MaybeStartMetrics();
   void RegisterForNotifications();
 
-  std::unique_ptr<MetricsService> CreateMetricsService(
-      MetricsStateManager* state_manager,
-      AndroidMetricsServiceClient* client,
-      PrefService* prefs);
+  void CreateMetricsService(MetricsStateManager* state_manager,
+                            AndroidMetricsServiceClient* client,
+                            PrefService* prefs);
   void CreateUkmService();
 
   std::unique_ptr<MetricsStateManager> metrics_state_manager_;

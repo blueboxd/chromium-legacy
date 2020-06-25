@@ -132,11 +132,9 @@ def main():
     f.write(main_dex_list)
 
   if args.depfile:
-    build_utils.WriteDepfile(
-        args.depfile,
-        args.main_dex_list_path,
-        inputs=args.class_inputs_filearg,
-        add_pydeps=False)
+    build_utils.WriteDepfile(args.depfile,
+                             args.main_dex_list_path,
+                             inputs=args.class_inputs_filearg)
 
 
 if __name__ == '__main__':

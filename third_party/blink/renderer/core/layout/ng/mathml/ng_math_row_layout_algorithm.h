@@ -19,17 +19,34 @@ class CORE_EXPORT NGMathRowLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGMathRowLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
+  explicit NGMathRowLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
- protected:
-  void LayoutRowItems(NGContainerFragmentBuilder::ChildrenVector*,
-                      LayoutUnit* max_row_block_baseline,
-                      LogicalSize* row_total_size);
+  struct ChildWithOffsetAndMargins {
+    DISALLOW_NEW();
+    ChildWithOffsetAndMargins(const NGBlockNode& child,
+                              const NGBoxStrut& margins,
+                              LogicalOffset offset,
+                              scoped_refptr<const NGPhysicalFragment> fragment)
+        : child(child),
+          margins(margins),
+          offset(offset),
+          fragment(std::move(fragment)) {}
+
+    NGBlockNode child;
+    NGBoxStrut margins;
+    LogicalOffset offset;
+    scoped_refptr<const NGPhysicalFragment> fragment;
+  };
+  typedef Vector<ChildWithOffsetAndMargins, 4> ChildrenVector;
 
  private:
   scoped_refptr<const NGLayoutResult> Layout() final;
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
+
+  void LayoutRowItems(ChildrenVector*,
+                      LayoutUnit* max_row_block_baseline,
+                      LogicalSize* row_total_size);
 };
 
 }  // namespace blink

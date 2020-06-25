@@ -433,7 +433,7 @@ TEST_P(LogFileWriterTest, WriteDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.
@@ -446,7 +446,7 @@ TEST_P(LogFileWriterTest, CloseDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.
@@ -459,7 +459,7 @@ TEST_P(LogFileWriterTest, DeleteDoesNotCrashIfFileRemovedExternally) {
   auto writer = CreateWriter(kMaxRemoteLogFileSizeBytes);
   ASSERT_TRUE(writer);
 
-  ASSERT_TRUE(base::DeleteFile(path_, /*recursive=*/false));
+  ASSERT_TRUE(base::DeleteFile(path_));
   ASSERT_FALSE(base::PathExists(path_));  // Sanity on the test itself.
 
   // It's up to the OS whether this will succeed or fail, but it must not crash.

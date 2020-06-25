@@ -23,15 +23,11 @@ const char kWelcomeReturningUserUrl[] = "chrome://welcome/returning-user";
 
 WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
-      login_ui_service_(LoginUIServiceFactory::GetForProfile(profile_)),
       result_(WelcomeResult::DEFAULT),
       is_redirected_welcome_impression_(false) {
-  login_ui_service_->AddObserver(this);
 }
 
 WelcomeHandler::~WelcomeHandler() {
-  login_ui_service_->RemoveObserver(this);
-
   // If this instance is spawned due to being redirected back to welcome page
   // by the onboarding logic, there's no need to log sign-in metrics again.
   if (is_redirected_welcome_impression_) {
@@ -55,24 +51,9 @@ bool WelcomeHandler::isValidRedirectUrl() {
   return current_url == kWelcomeReturningUserUrl;
 }
 
-// Override from LoginUIService::Observer.
-void WelcomeHandler::OnSyncConfirmationUIClosed(
-    LoginUIService::SyncConfirmationUIClosedResult result) {
-  if (result != LoginUIService::ABORT_SIGNIN) {
-    result_ = WelcomeResult::SIGNED_IN;
-
-    // When signed in from welcome flow, it's possible to come back to
-    // chrome://welcome/... after closing sync-confirmation UI. If current URL
-    // matches such a case, do not navigate away.
-    if (!is_redirected_welcome_impression_) {
-      GoToNewTabPage();
-    }
-  }
-}
-
 // Handles backend events necessary when user clicks "Sign in."
 void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
-  result_ = WelcomeResult::ATTEMPTED;
+  result_ = WelcomeResult::STARTED_SIGN_IN;
   base::RecordAction(base::UserMetricsAction("WelcomePage_SignInClicked"));
 
   if (IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount()) {
@@ -97,14 +78,9 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
   }
 }
 
-// Handles backend events necessary when user clicks "No thanks."
+// Handles backend events necessary when user clicks "Get started."
 void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
-  // Set the appropriate decline result, based on whether or not the user
-  // attempted to sign in.
-  result_ = (result_ == WelcomeResult::ATTEMPTED)
-                ? WelcomeResult::ATTEMPTED_DECLINED
-                : WelcomeResult::DECLINED;
-
+  result_ = WelcomeResult::DECLINED_SIGN_IN;
   GoToNewTabPage();
 }
 

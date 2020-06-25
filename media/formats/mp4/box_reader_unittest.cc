@@ -213,7 +213,10 @@ TEST_F(BoxReaderTest, WrongFourCCTest) {
   buf[6] = 0x4c;
   buf[7] = 0x45;
 
-  EXPECT_MEDIA_LOG(HasSubstr("Unrecognized top-level box type DALE"));
+  // Also, tests that the offending FourCC is emitted only in a debug media log.
+  EXPECT_MEDIA_LOG(
+      AllOf(HasSubstr("error"),
+            HasSubstr("Invalid top-level ISO BMFF box type DALE")));
 
   std::unique_ptr<BoxReader> reader;
   ParseResult result =

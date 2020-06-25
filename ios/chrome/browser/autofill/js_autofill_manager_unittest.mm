@@ -72,8 +72,7 @@ class JsAutofillManagerTest : public ChromeWebTest {
   // Loads the given HTML and initializes the Autofill JS scripts.
   void LoadHtml(NSString* html) {
     ChromeWebTest::LoadHtml(html);
-    manager_ = [[JsAutofillManager alloc]
-        initWithReceiver:web_state()->GetJSInjectionReceiver()];
+    manager_ = [[JsAutofillManager alloc] init];
     ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   }
 

@@ -109,7 +109,6 @@ class WebPublicSuffixList;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
-class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
 class WebVideoCaptureImplManager;
@@ -436,11 +435,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
   // Testing -------------------------------------------------------------
-
-  // Gets a pointer to URLLoaderMockFactory for testing. Will not be available
-  // in production builds.
-  // TODO(kinuko,toyoshim): Deprecate this one. (crbug.com/751425)
-  virtual WebURLLoaderMockFactory* GetURLLoaderMockFactory() { return nullptr; }
 
   // Record a UMA sequence action.  The UserMetricsAction construction must
   // be on a single line for extract_actions.py to find it.  Please see

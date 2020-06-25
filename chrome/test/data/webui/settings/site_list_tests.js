@@ -107,6 +107,11 @@ let prefsChromeExtension;
 let prefsEmbargo;
 
 /**
+ * An example prefs with 1 discarded content setting.
+ */
+let prefsDiscarded;
+
+/**
  * Creates all the test |SiteSettingsPref|s that are needed for the tests in
  * this file. They are populated after test setup in order to access the
  * |settings| constants required.
@@ -290,9 +295,19 @@ function populateTestExceptions() {
           isEmbargoed: true,
         })]),
   ]);
+
+  prefsDiscarded = createSiteSettingsPrefs([], [
+    createContentSettingTypeToValuePair(
+        ContentSettingsTypes.PLUGINS,
+        [createRawSiteException('https://[*.]example.com:443', {
+          embeddingOrigin: '',
+          setting: ContentSetting.BLOCK,
+          isDiscarded: true,
+        })]),
+  ]);
 }
 
-suite('SiteListEmbargoedOrigin', function() {
+suite('SiteListProperties', function() {
   /**
    * A site list element created before each test.
    * @type {!SiteListElement}
@@ -371,6 +386,14 @@ suite('SiteListEmbargoedOrigin', function() {
             .querySelectorAll('site-list-entry')[0]
             .$$('#siteDescription')
             .innerHTML);
+  });
+
+  test('Discarded setting', async function() {
+    setUpCategory(
+        ContentSettingsTypes.PLUGINS, ContentSetting.BLOCK, prefsDiscarded);
+    const result = await browserProxy.whenCalled('getExceptionList');
+    flush();
+    assertTrue(testElement.hasDiscardedExceptions);
   });
 });
 
@@ -1081,6 +1104,7 @@ suite('EditExceptionDialog', function() {
       embeddingOrigin: SITE_EXCEPTION_WILDCARD,
       isEmbargoed: false,
       incognito: false,
+      isDiscarded: false,
       setting: ContentSetting.BLOCK,
       enforcement: null,
       controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,

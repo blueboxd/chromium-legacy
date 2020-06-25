@@ -4,6 +4,8 @@
 
 #import "ios/web/find_in_page/find_in_page_manager_impl.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -106,6 +108,7 @@ void FindInPageManagerImpl::Find(NSString* query, FindInPageOptions options) {
 }
 
 void FindInPageManagerImpl::StartSearch(NSString* query) {
+  base::RecordAction(base::UserMetricsAction(kFindActionName));
   std::set<WebFrame*> all_frames =
       web_state_->GetWebFramesManager()->GetAllWebFrames();
   last_find_request_.Reset(query, all_frames.size());
@@ -263,12 +266,14 @@ void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
 }
 
 void FindInPageManagerImpl::SelectNextMatch() {
+  base::RecordAction(base::UserMetricsAction(kFindNextActionName));
   if (last_find_request_.GoToNextMatch()) {
     SelectCurrentMatch();
   }
 }
 
 void FindInPageManagerImpl::SelectPreviousMatch() {
+  base::RecordAction(base::UserMetricsAction(kFindPreviousActionName));
   if (last_find_request_.GoToPreviousMatch()) {
     SelectCurrentMatch();
   }

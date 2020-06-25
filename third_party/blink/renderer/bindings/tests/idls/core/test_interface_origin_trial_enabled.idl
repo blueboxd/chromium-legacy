@@ -6,7 +6,7 @@
 // references an origin trial controlled feature.
 
 [
-    RuntimeEnabled=InterfaceFeatureName
+    RuntimeEnabled=OriginTrialInterfaceFeature
 ] interface TestInterfaceOriginTrialEnabled {
     const unsigned long UNSIGNED_LONG = 0;
     const short CONST_JAVASCRIPT = 1;

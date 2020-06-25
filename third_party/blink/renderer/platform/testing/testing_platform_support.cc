@@ -107,10 +107,6 @@ WebString TestingPlatformSupport::DefaultLocale() {
   return WebString::FromUTF8("en-US");
 }
 
-WebURLLoaderMockFactory* TestingPlatformSupport::GetURLLoaderMockFactory() {
-  return old_platform_ ? old_platform_->GetURLLoaderMockFactory() : nullptr;
-}
-
 std::unique_ptr<WebURLLoaderFactory>
 TestingPlatformSupport::CreateDefaultURLLoaderFactory() {
   return old_platform_ ? old_platform_->CreateDefaultURLLoaderFactory()

@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Bucket;
+using cast_channel::ReceiverAppType;
 using testing::ElementsAre;
 
 namespace media_router {
@@ -31,6 +32,40 @@ TEST(CastMediaRouteProviderMetricsTest, RecordAppAvailabilityResult) {
                               base::TimeDelta::FromMilliseconds(333));
   tester.ExpectTimeBucketCount(kHistogramAppAvailabilityFailure,
                                base::TimeDelta::FromMilliseconds(333), 1);
+}
+
+TEST(CastMediaRouteProviderMetricsTest, RecordSupportedAppTypesValue) {
+  base::HistogramTester tester;
+
+  RecordLaunchSessionRequestSupportedAppTypes(
+      {ReceiverAppType::kAndroidTv, ReceiverAppType::kWeb});
+  RecordLaunchSessionRequestSupportedAppTypes(
+      {ReceiverAppType::kAndroidTv, ReceiverAppType::kWeb});
+  RecordLaunchSessionRequestSupportedAppTypes({ReceiverAppType::kWeb});
+  tester.ExpectBucketCount(kHistogramCastSupportedAppTypes,
+                           ReceiverAppTypeSet::kWeb, 1);
+  tester.ExpectBucketCount(kHistogramCastSupportedAppTypes,
+                           ReceiverAppTypeSet::kAndroidTvAndWeb, 2);
+}
+
+TEST(CastMediaRouteProviderMetricsTest, RecordLaunchSessionResponseAppType) {
+  base::HistogramTester tester;
+
+  base::Value web_val("WEB");
+  base::Value atv_val("ANDROID_TV");
+  base::Value other_val("OTHER");
+  base::Value invalid_val("Invalid");
+
+  RecordLaunchSessionResponseAppType(&web_val);
+  RecordLaunchSessionResponseAppType(&web_val);
+  RecordLaunchSessionResponseAppType(&atv_val);
+  RecordLaunchSessionResponseAppType(&other_val);
+  RecordLaunchSessionResponseAppType(&invalid_val);
+
+  tester.ExpectBucketCount(kHistogramCastAppType, ReceiverAppType::kAndroidTv,
+                           1);
+  tester.ExpectBucketCount(kHistogramCastAppType, ReceiverAppType::kWeb, 2);
+  tester.ExpectBucketCount(kHistogramCastAppType, ReceiverAppType::kOther, 2);
 }
 
 }  // namespace media_router

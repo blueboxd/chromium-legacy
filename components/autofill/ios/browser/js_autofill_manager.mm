@@ -12,8 +12,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
-#include "base/json/json_writer.h"
-#include "base/json/string_escape.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -26,19 +24,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation JsAutofillManager {
-  // The injection receiver used to evaluate JavaScript.
-  __weak CRWJSInjectionReceiver* _receiver;
-}
-
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
-  DCHECK(receiver);
-  self = [super init];
-  if (self) {
-    _receiver = receiver;
-  }
-  return self;
-}
+@implementation JsAutofillManager
 
 - (void)addJSDelayInFrame:(web::WebFrame*)frame {
   const base::CommandLine* command_line =
@@ -52,7 +38,7 @@
       std::vector<base::Value> parameters;
       parameters.push_back(base::Value(commandLineDelay));
       autofill::ExecuteJavaScriptFunction(
-          "autofill.setDelay", parameters, frame, _receiver,
+          "autofill.setDelay", parameters, frame,
           base::OnceCallback<void(NSString*)>());
     }
   }
@@ -70,8 +56,7 @@
   parameters.push_back(base::Value(static_cast<int>(requiredFieldsCount)));
   parameters.push_back(base::Value(restrictUnownedFieldsToFormlessCheckout));
   autofill::ExecuteJavaScriptFunction("autofill.extractForms", parameters,
-                                      frame, _receiver,
-                                      base::BindOnce(completionHandler));
+                                      frame, base::BindOnce(completionHandler));
 }
 
 #pragma mark -
@@ -84,7 +69,7 @@
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*data));
   autofill::ExecuteJavaScriptFunction("autofill.fillActiveFormField",
-                                      parameters, frame, _receiver,
+                                      parameters, frame,
                                       base::BindOnce(^(NSString*) {
                                         completionHandler();
                                       }));
@@ -94,7 +79,7 @@
   std::vector<base::Value> parameters;
   parameters.push_back(base::Value(state ? 200 : 0));
   autofill::ExecuteJavaScriptFunction("formHandlers.trackFormMutations",
-                                      parameters, frame, _receiver,
+                                      parameters, frame,
                                       base::OnceCallback<void(NSString*)>());
 }
 
@@ -104,7 +89,7 @@
   parameters.push_back(base::Value(static_cast<bool>(state)));
   autofill::ExecuteJavaScriptFunction(
       "formHandlers.toggleTrackingUserEditedFields", parameters, frame,
-      _receiver, base::OnceCallback<void(NSString*)>());
+      base::OnceCallback<void(NSString*)>());
 }
 
 - (void)fillForm:(std::unique_ptr<base::Value>)data
@@ -121,7 +106,7 @@
   parameters.push_back(std::move(*data));
   parameters.push_back(base::Value(fieldIdentifier));
   autofill::ExecuteJavaScriptFunction("autofill.fillForm", parameters, frame,
-                                      _receiver, base::BindOnce(^(NSString*) {
+                                      base::BindOnce(^(NSString*) {
                                         completionHandler();
                                       }));
 }
@@ -135,7 +120,7 @@
   parameters.push_back(base::Value(base::SysNSStringToUTF8(formName)));
   parameters.push_back(base::Value(base::SysNSStringToUTF8(fieldIdentifier)));
   autofill::ExecuteJavaScriptFunction("autofill.clearAutofilledFields",
-                                      parameters, frame, _receiver,
+                                      parameters, frame,
                                       base::BindOnce(^(NSString*) {
                                         completionHandler();
                                       }));
@@ -147,7 +132,7 @@
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*data));
   autofill::ExecuteJavaScriptFunction("autofill.fillPredictionData", parameters,
-                                      frame, _receiver,
+                                      frame,
                                       base::OnceCallback<void(NSString*)>());
 }
 

@@ -251,7 +251,8 @@ ContentSuggestionsServiceFactory::~ContentSuggestionsServiceFactory() = default;
 KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions)) {
+  if (base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions) ||
+      base::FeatureList::IsEnabled(feed::kInterestFeedV2)) {
     return nullptr;
   }
 #endif  // defined(OS_ANDROID)

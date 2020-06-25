@@ -48,9 +48,9 @@ void IntersectionObservation::ComputeIntersection(
     return;
   DCHECK(observer_->root());
   unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
-  IntersectionGeometry geometry(root_geometry, *observer_->root(), *Target(),
-                                observer_->thresholds(), geometry_flags,
-                                cached_rects_.get());
+  IntersectionGeometry geometry(
+      root_geometry, *observer_->root(), *Target(), observer_->thresholds(),
+      observer_->TargetMargin(), geometry_flags, cached_rects_.get());
   ProcessIntersectionGeometry(geometry);
 }
 
@@ -58,9 +58,9 @@ void IntersectionObservation::ComputeIntersection(unsigned compute_flags) {
   if (!ShouldCompute(compute_flags))
     return;
   unsigned geometry_flags = GetIntersectionGeometryFlags(compute_flags);
-  IntersectionGeometry geometry(observer_->root(), *Target(),
-                                observer_->RootMargin(),
-                                observer_->thresholds(), geometry_flags);
+  IntersectionGeometry geometry(
+      observer_->root(), *Target(), observer_->RootMargin(),
+      observer_->thresholds(), observer_->TargetMargin(), geometry_flags);
   ProcessIntersectionGeometry(geometry);
 }
 

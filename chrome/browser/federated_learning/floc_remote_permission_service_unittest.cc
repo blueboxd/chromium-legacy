@@ -32,18 +32,14 @@ class TestingFlocRemotePermissionService : public FlocRemotePermissionService {
  public:
   explicit TestingFlocRemotePermissionService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-      // NOTE: Simply pass null object for IdentityManager.
-      // FlocRemotePermissionService's only usage of this object is to fetch
-      // access tokens via RequestImpl, and TestingFlocRemotePermissionService
-      // deliberately replaces this flow with TestRequest.
-      : FlocRemotePermissionService(nullptr, url_loader_factory),
+      : FlocRemotePermissionService(url_loader_factory),
         expected_url_(GURL()),
         expected_floc_permission_(false) {}
   ~TestingFlocRemotePermissionService() override = default;
 
   std::unique_ptr<FlocRemotePermissionService::Request> CreateRequest(
       const GURL& url,
-      CompletionCallback callback,
+      CreateRequestCallback callback,
       const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
       override;
 
@@ -81,7 +77,7 @@ class TestingFlocRemotePermissionService : public FlocRemotePermissionService {
 class TestRequest : public FlocRemotePermissionService::Request {
  public:
   TestRequest(const GURL& url,
-              FlocRemotePermissionService::CompletionCallback callback,
+              FlocRemotePermissionService::CreateRequestCallback callback,
               int response_code,
               const std::string& response_body)
       : url_(url),
@@ -104,7 +100,7 @@ class TestRequest : public FlocRemotePermissionService::Request {
   void MimicReturnFromFetch() {
     // Mimic a successful fetch and return. We don't actually send out a request
     // in unittests.
-    std::move(callback_).Run(this, true);
+    std::move(callback_).Run(this);
   }
 
   void SetResponseCode(int response_code) { response_code_ = response_code; }
@@ -115,7 +111,7 @@ class TestRequest : public FlocRemotePermissionService::Request {
 
  private:
   GURL url_;
-  FlocRemotePermissionService::CompletionCallback callback_;
+  FlocRemotePermissionService::CreateRequestCallback callback_;
   int response_code_;
   std::string response_body_;
 
@@ -125,7 +121,7 @@ class TestRequest : public FlocRemotePermissionService::Request {
 std::unique_ptr<FlocRemotePermissionService::Request>
 TestingFlocRemotePermissionService::CreateRequest(
     const GURL& url,
-    CompletionCallback callback,
+    CreateRequestCallback callback,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   EXPECT_EQ(expected_url_, url);
   auto request =

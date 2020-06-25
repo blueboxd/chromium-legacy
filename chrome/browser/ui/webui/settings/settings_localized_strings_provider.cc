@@ -1013,6 +1013,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("paymentMethodsLearnMoreURL",
                          chrome::kPaymentMethodsLearnMoreURL);
+  html_source->AddString(
+      "siteSettingsFlashWildcardsUnsupported",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_SITE_SETTINGS_FLASH_WILDCARD_UNSUPPORTED,
+          base::UTF8ToUTF16(chrome::kChromeFlashRoadmapURL)));
 
   bool is_guest_mode = false;
 #if defined(OS_CHROMEOS)
@@ -1921,6 +1926,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT},
     {"siteSettingsWindowPlacementAsk",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK},
+    {"siteSettingsWindowPlacementAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK_RECOMMENDED},
     {"siteSettingsWindowPlacementBlock",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCK},
   };

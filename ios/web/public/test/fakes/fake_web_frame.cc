@@ -16,6 +16,12 @@
 
 namespace web {
 
+// Frame ids are base16 string of 128 bit numbers.
+const char kMainFakeFrameId[] = "1effd8f52a067c8d3a01762d3c41dfd1";
+const char kInvalidFrameId[] = "1effd8f52a067c8d3a01762d3c4;dfd1";
+const char kChildFakeFrameId[] = "1effd8f52a067c8d3a01762d3c41dfd2";
+const char kChildFakeFrameId2[] = "1effd8f52a067c8d3a01762d3c41dfd3";
+
 FakeWebFrame::FakeWebFrame(const std::string& frame_id,
                            bool is_main_frame,
                            GURL security_origin)
@@ -80,5 +86,19 @@ void FakeWebFrame::AddJsResultForFunctionCall(
     const std::string& function_name) {
   result_map_[function_name] = std::move(js_result);
 }
+
+// FakeMainWebFrame
+FakeMainWebFrame::FakeMainWebFrame(GURL security_origin)
+    : FakeWebFrame(kMainFakeFrameId, /*is_main_frame=*/true, security_origin) {}
+
+FakeMainWebFrame::~FakeMainWebFrame() {}
+
+// FakeChildWebFrame
+FakeChildWebFrame::FakeChildWebFrame(GURL security_origin)
+    : FakeWebFrame(kChildFakeFrameId,
+                   /*is_main_frame=*/false,
+                   security_origin) {}
+
+FakeChildWebFrame::~FakeChildWebFrame() {}
 
 }  // namespace web

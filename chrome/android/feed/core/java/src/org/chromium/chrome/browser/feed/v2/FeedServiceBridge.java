@@ -34,8 +34,14 @@ public final class FeedServiceBridge {
         return result;
     }
 
+    /** Called at startup to trigger creation of |FeedService|. */
+    public static void startup() {
+        FeedServiceBridgeJni.get().startup();
+    }
+
     @NativeMethods
     interface Natives {
         boolean isEnabled();
+        void startup();
     }
 }

@@ -20,6 +20,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemSchedule;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -48,6 +49,8 @@ public class DownloadInfoBarControllerTest {
     private static final String MESSAGE_TWO_DOWNLOAD_FAILED = "2 downloads failed.";
     private static final String MESSAGE_DOWNLOAD_PENDING = "1 download pending.";
     private static final String MESSAGE_TWO_DOWNLOAD_PENDING = "2 downloads pending.";
+    private static final String MESSAGE_DOWNLOAD_SCHEDULED_WIFI = "Download will start on Wi-Fi.";
+    private static final String MESSAGE_TWO_DOWNLOAD_SCHEDULED = "2 downloads scheduled.";
 
     private static final String TEST_FILE_NAME = "TestFile";
     private static final String MESSAGE_SINGLE_DOWNLOAD_COMPLETE = "TestFile.";
@@ -262,6 +265,31 @@ public class DownloadInfoBarControllerTest {
         OfflineItem item2 = createOfflineItem(OfflineItemState.PENDING);
         mTestController.onItemUpdated(item2);
         mTestController.verify(MESSAGE_TWO_DOWNLOAD_PENDING);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testSingleOfflineItemScheduled() {
+        OfflineItem item = createOfflineItem(OfflineItemState.PENDING);
+        item.schedule = new OfflineItemSchedule(true, 0);
+        mTestController.onItemUpdated(item);
+        mTestController.verify(MESSAGE_DOWNLOAD_SCHEDULED_WIFI);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testMultipleOfflineItemScheduled() {
+        OfflineItem item1 = createOfflineItem(OfflineItemState.IN_PROGRESS);
+        item1.schedule = new OfflineItemSchedule(true, 0);
+        mTestController.onItemUpdated(item1);
+        mTestController.verify(MESSAGE_DOWNLOAD_SCHEDULED_WIFI);
+
+        OfflineItem item2 = createOfflineItem(OfflineItemState.PENDING);
+        item2.schedule = new OfflineItemSchedule(true, 0);
+        mTestController.onItemUpdated(item2);
+        mTestController.verify(MESSAGE_TWO_DOWNLOAD_SCHEDULED);
     }
 
     @Test

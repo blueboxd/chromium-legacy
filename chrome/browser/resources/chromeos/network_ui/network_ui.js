@@ -1,122 +1,157 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview Builds UI elements shown in chrome://networks debugging page.
+ * @fileoverview
+ * Polymer element network debugging UI.
  */
 
-/**
- * @typedef {!OncMojo.DeviceStateProperties|!OncMojo.NetworkStateProperties}
- */
-OncMojo.StateProperties;
+Polymer({
+  is: 'network-ui',
 
-cr.define('network_ui', function() {
-  'use strict';
+  behaviors: [I18nBehavior],
+
+  properties: {
+    /**
+     * Names of the top level page tabs.
+     * @type {!Array<String>}
+     * @private
+     */
+    tabNames_: {
+      type: Array,
+      value: function() {
+        return [
+          this.i18n('generalTab'),
+          this.i18n('networkHealthTab'),
+          this.i18n('networkLogsTab'),
+          this.i18n('networkStateTab'),
+          this.i18n('networkSelectTab'),
+        ];
+      },
+    },
+
+    /**
+     * Index of the selected top level page tab.
+     * @private
+     */
+    selectedTab_: {
+      type: Number,
+      value: 0,
+    },
+  },
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
-  let networkConfig = null;
+  networkConfig_: null,
 
-  /**
-   * Callback invoked by Chrome after a openCellularActivationUi call.
-   * @param {boolean} didOpenActivationUi Whether the activation UI was actually
-   *     opened. If this value is false, it means that no cellular network was
-   *     available to be activated.
-   */
-  const openCellularActivationUiResult = function(didOpenActivationUi) {
-    $('cellular-error-text').hidden = didOpenActivationUi;
-  };
+  /** @type {!network_ui.NetworkUIBrowserProxy} */
+  browserProxy_: network_ui.NetworkUIBrowserProxyImpl.getInstance(),
 
-  /**
-   * Requests that the cellular activation UI be displayed.
-   */
-  const openCellularActivationUi = function() {
-    chrome.send('openCellularActivationUi');
-  };
+  /** @override */
+  attached() {
+    this.networkConfig_ =
+        chromeos.networkConfig.mojom.CrosNetworkConfig.getRemote();
 
-  /**
-   * Requests that the "add Wi-Fi network" UI be displayed.
-   */
-  const showAddNewWifi = function() {
-    chrome.send('showAddNewWifi');
-  };
+    const select = this.$$('network-select');
+    select.customItems = [
+      {
+        customItemName: 'addWiFiListItemName',
+        polymerIcon: 'cr:add',
+        customData: 'WiFi'
+      },
+    ];
+
+    this.$$('#import-onc').value = '';
+
+    this.requestGlobalPolicy_();
+  },
+
+  /** @private */
+  openCellularActivationUi_() {
+    this.browserProxy_.openCellularActivationUi().then((response) => {
+      const didOpenActivationUi = response.shift();
+      this.$$('#cellular-error-text').hidden = didOpenActivationUi;
+    });
+  },
+
+  /** @private */
+  showAddNewWifi_() {
+    this.browserProxy_.showAddNewWifi();
+  },
 
   /**
    * Handles the ONC file input change event.
    * @param {!Event} event
+   * @private
    */
-  const onImportOncChange = function(event) {
+  onImportOncChange_(event) {
     const file = event.target.files[0];
     event.stopPropagation();
     if (!file)
       return;
     const reader = new FileReader();
-    reader.onloadend = function(e) {
+    reader.onloadend = (e) => {
       const content = reader.result;
-      if (!content) {
+      if (!content || typeof (content) != 'string') {
         console.error('File not read' + file);
         return;
       }
-      cr.sendWithPromise('importONC', content).then(importONCResponse);
+      this.browserProxy_.importONC(content).then((response) => {
+        this.importONCResponse_(response);
+      });
     };
     reader.readAsText(file);
-  };
+  },
 
   /**
    * Handles the chrome 'importONC' response.
    * @param {Array} args
+   * @private
    */
-  const importONCResponse = function(args) {
+  importONCResponse_(args) {
     const result = args.shift();
     const isError = args.shift();
-    $('onc-import-result').innerText = result;
-    if (isError) {
-      $('onc-import-result').classList.add('error');
-    } else {
-      $('onc-import-result').classList.remove('error');
-    }
-    $('import-onc').value = '';
-  };
+    const resultDiv = this.$$('#onc-import-result');
+    resultDiv.innerText = result;
+    resultDiv.classList.toggle('error', isError);
+    this.$$('#import-onc').value = '';
+  },
 
   /**
    * Requests the global policy dictionary and updates the page.
+   * @private
    */
-  const requestGlobalPolicy = function() {
-    networkConfig.getGlobalPolicy().then(result => {
-      document.querySelector('#global-policy').textContent =
+  requestGlobalPolicy_() {
+    this.networkConfig_.getGlobalPolicy().then(result => {
+      this.$$('#global-policy').textContent =
           JSON.stringify(result.result, null, '\t');
     });
-  };
-
-  /** Initialize NetworkUI state. */
-  const init = function() {
-    networkConfig = network_config.MojoInterfaceProviderImpl.getInstance()
-                        .getMojoServiceRemote();
-  };
+  },
 
   /**
    * Handles clicks on network items in the <network-select> element by
    * attempting a connection to the selected network or requesting a password
    * if the network requires a password.
    * @param {!Event<!OncMojo.NetworkStateProperties>} event
+   * @private
    */
-  const onNetworkItemSelected = function(event) {
+  onNetworkItemSelected_(event) {
     const networkState = event.detail;
 
     // If the network is already connected, show network details.
     if (OncMojo.connectionStateIsConnected(networkState.connectionState)) {
-      chrome.send('showNetworkDetails', [networkState.guid]);
+      this.browserProxy_.showNetworkDetails(networkState.guid);
       return;
     }
 
     // If the network is not connectable, show a configuration dialog.
     if (networkState.connectable === false || networkState.errorState) {
-      chrome.send('showNetworkConfig', [networkState.guid]);
+      this.browserProxy_.showNetworkConfig(networkState.guid);
       return;
     }
 
     // Otherwise, connect.
-    networkConfig.startConnect(networkState.guid).then(response => {
+    this.networkConfig_.startConnect(networkState.guid).then(response => {
       if (response.result ==
           chromeos.networkConfig.mojom.StartConnectResult.kSuccess) {
         return;
@@ -124,65 +159,15 @@ cr.define('network_ui', function() {
       console.error(
           'startConnect error for: ' + networkState.guid + ' Result: ' +
           response.result.toString() + ' Message: ' + response.message);
-      chrome.send('showNetworkConfig', [networkState.guid]);
+      this.browserProxy_.showNetworkConfig(networkState.guid);
     });
-  };
+  },
 
-  const selectTabFromHash = function() {
-    const selectedTab = window.location.hash.substring(1);
-    if (!selectedTab)
-      return;
-    const tabpanel = document.querySelector('tabpanels > #' + selectedTab);
-    if (tabpanel) {
-      tabpanel.selected = true;
-    }
-  };
-
-  const getShillNetworkPropertiesResult = function(args) {
-    document.querySelector('network-state-ui')
-        .getShillNetworkPropertiesResult(args);
-  };
-  const getShillDevicePropertiesResult = function(args) {
-    document.querySelector('network-state-ui')
-        .getShillDevicePropertiesResult(args);
-  };
-  const getShillEthernetEAPResult = function(args) {
-    document.querySelector('network-state-ui').getShillEthernetEAPResult(args);
-  };
-
-  function onLoad() {
-    cr.ui.decorate('tabbox', cr.ui.TabBox);
-    const select = document.querySelector('network-select');
-    select.customItems = [
-      {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
-      {customItemName: 'Add VPN', polymerIcon: 'cr:add', customData: 'VPN'}
-    ];
-    select.addEventListener('network-item-selected', onNetworkItemSelected);
-    $('cellular-activation-button').onclick = openCellularActivationUi;
-    $('add-new-wifi-button').onclick = showAddNewWifi;
-    $('import-onc').value = '';
-    $('import-onc').addEventListener('change', onImportOncChange);
-
-    document.addEventListener('custom-item-selected', function(event) {
-      chrome.send('addNetwork', [event.detail.customData]);
-    });
-
-    window.addEventListener('hashchange', function(event) {
-      selectTabFromHash();
-    });
-    selectTabFromHash();
-
-    init();
-    requestGlobalPolicy();
-  }
-
-  return {
-    getShillNetworkPropertiesResult: getShillNetworkPropertiesResult,
-    getShillDevicePropertiesResult: getShillDevicePropertiesResult,
-    getShillEthernetEAPResult: getShillEthernetEAPResult,
-    openCellularActivationUiResult: openCellularActivationUiResult,
-    onLoad: onLoad,
-  };
+  /**
+   * @param {!Event<!{detail:{customData: string}}>} event
+   * @private
+   */
+  onCustomItemSelected_(event) {
+    this.browserProxy_.addNetwork(event.detail.customData);
+  },
 });
-
-document.addEventListener('DOMContentLoaded', network_ui.onLoad);

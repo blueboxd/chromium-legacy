@@ -7,11 +7,15 @@ load('//lib/ci.star', 'ci')
 load('//project.star', 'settings')
 
 
+def main_console_if_on_branch():
+  return None if settings.is_master else settings.main_console_name
+
+
 ci.set_defaults(
     settings,
     add_to_console_view = True,
     bucketed_triggers = settings.is_master,
-    main_console_view = settings.main_console_name,
+    main_console_view = None if settings.is_master else settings.main_console_name,
     cq_mirrors_console_view = settings.cq_mirrors_console_name,
 )
 
@@ -465,6 +469,9 @@ ci.android_builder(
 
 ci.chromium_builder(
     name = 'android-official',
+    # TODO(https://crbug.com/1072012) Use the default console view and add
+    # main_console_view = settings.main_console_name once the build is green
+    console_view = 'chromium.fyi',
     console_view_entry = ci.console_view_entry(
         category = 'android',
         short_name = 'off',
@@ -473,6 +480,9 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = 'fuchsia-official',
+    # TODO(https://crbug.com/1072012) Use the default console view and add
+    # main_console_view = settings.main_console_name once the build is green
+    console_view = 'chromium.fyi',
     console_view_entry = ci.console_view_entry(
         category = 'fuchsia',
         short_name = 'off',
@@ -481,6 +491,9 @@ ci.chromium_builder(
 
 ci.chromium_builder(
     name = 'linux-official',
+    # TODO(https://crbug.com/1072012) Use the default console view and add
+    # main_console_view = settings.main_console_name once the build is green
+    console_view = 'chromium.fyi',
     console_view_entry = ci.console_view_entry(
         category = 'linux',
         short_name = 'off',
@@ -493,6 +506,7 @@ ci.chromiumos_builder(
         category = 'simple|debug|x64',
         short_name = 'dbg',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.chromiumos_builder(
@@ -501,6 +515,7 @@ ci.chromiumos_builder(
         category = 'simple|release|x64',
         short_name = 'rel',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.chromiumos_builder(
@@ -509,6 +524,7 @@ ci.chromiumos_builder(
         category = 'simple|release',
         short_name = 'arm',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.chromiumos_builder(
@@ -517,6 +533,7 @@ ci.chromiumos_builder(
         category = 'default',
         short_name = 'dbg',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.chromiumos_builder(
@@ -525,6 +542,7 @@ ci.chromiumos_builder(
         category = 'default',
         short_name = 'rel',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 
@@ -799,6 +817,7 @@ ci.linux_builder(
         short_name = 'vid',
     ),
     goma_jobs = goma.jobs.J50,
+    main_console_view = settings.main_console_name,
 )
 
 ci.linux_builder(
@@ -807,6 +826,7 @@ ci.linux_builder(
         category = 'fuchsia|a64',
         short_name = 'rel',
     ),
+    main_console_view = settings.main_console_name,
     notifies = ['cr-fuchsia'],
 )
 
@@ -816,6 +836,7 @@ ci.linux_builder(
         category = 'fuchsia|x64',
         short_name = 'rel',
     ),
+    main_console_view = settings.main_console_name,
     notifies = ['cr-fuchsia'],
 )
 
@@ -825,6 +846,7 @@ ci.linux_builder(
         category = 'release',
         short_name = 'bld',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.linux_builder(
@@ -833,6 +855,7 @@ ci.linux_builder(
         category = 'debug|builder',
         short_name = '64',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.linux_builder(
@@ -842,6 +865,7 @@ ci.linux_builder(
         short_name = 'tst',
     ),
     goma_backend = None,
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Linux Builder')],
 )
 
@@ -851,6 +875,7 @@ ci.linux_builder(
         category = 'debug|tester',
         short_name = '64',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Linux Builder (dbg)')],
 )
 
@@ -860,6 +885,7 @@ ci.linux_builder(
         category = 'fuchsia|cast',
         short_name = 'a64',
     ),
+    main_console_view = settings.main_console_name,
     notifies = ['cr-fuchsia'],
 )
 
@@ -869,6 +895,7 @@ ci.linux_builder(
         category = 'fuchsia|cast',
         short_name = 'x64',
     ),
+    main_console_view = settings.main_console_name,
     notifies = ['cr-fuchsia'],
 )
 
@@ -878,6 +905,7 @@ ci.linux_builder(
         category = 'release',
         short_name = 'ozo',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.linux_builder(
@@ -920,6 +948,7 @@ ci.mac_builder(
         category = 'release',
         short_name = 'bld',
     ),
+    main_console_view = settings.main_console_name,
     os = os.MAC_10_14,
 )
 
@@ -929,6 +958,7 @@ ci.mac_builder(
         category = 'debug',
         short_name = 'bld',
     ),
+    main_console_view = settings.main_console_name,
     os = os.MAC_ANY,
 )
 
@@ -939,6 +969,7 @@ ci.thin_tester(
         category = 'release',
         short_name = '10',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -949,6 +980,7 @@ ci.thin_tester(
         category = 'release',
         short_name = '11',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -959,6 +991,7 @@ ci.thin_tester(
         category = 'release',
         short_name = '12',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -969,6 +1002,7 @@ ci.thin_tester(
         category = 'release',
         short_name = '13',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -979,6 +1013,7 @@ ci.thin_tester(
         category = 'release',
         short_name = '14',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -989,6 +1024,7 @@ ci.thin_tester(
         category = 'debug',
         short_name = '13',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder (dbg)')],
 )
 
@@ -999,6 +1035,7 @@ ci.thin_tester(
         category = 'release',
         short_name = 'ret',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Mac Builder')],
 )
 
@@ -1008,7 +1045,8 @@ ci.mac_ios_builder(
     console_view_entry = ci.console_view_entry(
         category = 'ios|default',
         short_name = 'sim',
-    )
+    ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.mac_ios_builder(
@@ -1017,6 +1055,7 @@ ci.mac_ios_builder(
         category = 'ios|default',
         short_name = 'ful',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 
@@ -1026,6 +1065,7 @@ ci.memory_builder(
         category = 'linux|asan lsan',
         short_name = 'bld',
     ),
+    main_console_view = settings.main_console_name,
     ssd = True,
 )
 
@@ -1035,6 +1075,7 @@ ci.memory_builder(
         category = 'linux|asan lsan',
         short_name = 'tst',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Linux ASan LSan Builder')],
 )
 
@@ -1044,6 +1085,7 @@ ci.memory_builder(
         category = 'linux|asan lsan',
         short_name = 'sbx',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Linux ASan LSan Builder')],
 )
 
@@ -1053,6 +1095,7 @@ ci.memory_builder(
         category = 'linux|TSan v2',
         short_name = 'bld',
     ),
+    main_console_view = settings.main_console_name,
 )
 
 ci.memory_builder(
@@ -1062,6 +1105,7 @@ ci.memory_builder(
         short_name = 'tst',
     ),
     triggered_by = [builder_name('Linux TSan Builder')],
+    main_console_view = settings.main_console_name,
 )
 
 
@@ -1072,6 +1116,7 @@ ci.win_builder(
         short_name = '7',
     ),
     os = os.WINDOWS_7,
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Win Builder (dbg)')],
 )
 
@@ -1082,6 +1127,7 @@ ci.win_builder(
         short_name = '64',
     ),
     os = os.WINDOWS_7,
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Win x64 Builder')],
 )
 
@@ -1092,6 +1138,7 @@ ci.win_builder(
         short_name = '32',
     ),
     cores = 32,
+    main_console_view = settings.main_console_name,
     os = os.WINDOWS_ANY,
 )
 
@@ -1102,6 +1149,7 @@ ci.win_builder(
         short_name = '64',
     ),
     cores = 32,
+    main_console_view = settings.main_console_name,
     os = os.WINDOWS_ANY,
 )
 
@@ -1111,5 +1159,6 @@ ci.win_builder(
         category = 'release|tester',
         short_name = 'w10',
     ),
+    main_console_view = settings.main_console_name,
     triggered_by = [builder_name('Win x64 Builder')],
 )

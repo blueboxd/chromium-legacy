@@ -677,9 +677,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetEnableTouchAdjustment(prefs.touch_adjustment_enabled);
   settings->SetBarrelButtonForDragEnabled(prefs.barrel_button_for_drag_enabled);
 
-  settings->SetShouldRespectImageOrientation(
-      prefs.should_respect_image_orientation);
-
   settings->SetEditingBehavior(
       static_cast<WebSettings::EditingBehavior>(prefs.editing_behavior));
 

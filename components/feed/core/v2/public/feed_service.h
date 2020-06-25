@@ -97,6 +97,7 @@ class FeedService : public KeyedService {
   class StreamDelegateImpl;
   class NetworkDelegateImpl;
   class HistoryObserverImpl;
+  class IdentityManagerObserverImpl;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
 #endif
@@ -111,6 +112,7 @@ class FeedService : public KeyedService {
   std::unique_ptr<FeedStore> store_;
   std::unique_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
+  std::unique_ptr<IdentityManagerObserverImpl> identity_manager_observer_;
 #if defined(OS_ANDROID)
   bool foregrounded_ = true;
   std::unique_ptr<base::android::ApplicationStatusListener>

@@ -1023,7 +1023,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     }
   }
 
-  if (RuntimeEnabledFeatures::FeatureNameEnabled(executionContext)) {
+  if (RuntimeEnabledFeatures::OriginTrialFeatureEnabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_member_value;
     if (!v8Object->Get(context, keys[29].Get(isolate)).ToLocal(&origin_trial_member_value)) {
       exception_state.RethrowV8Exception(block.Exception());
@@ -1039,7 +1039,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     }
   }
 
-  if (RuntimeEnabledFeatures::FeatureName1Enabled(executionContext)) {
+  if (RuntimeEnabledFeatures::OriginTrialFeature1Enabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_second_member_value;
     if (!v8Object->Get(context, keys[30].Get(isolate)).ToLocal(&origin_trial_second_member_value)) {
       exception_state.RethrowV8Exception(block.Exception());
@@ -1797,7 +1797,7 @@ bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (RuntimeEnabledFeatures::FeatureNameEnabled(executionContext)) {
+  if (RuntimeEnabledFeatures::OriginTrialFeatureEnabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_member_value;
     bool origin_trial_member_has_value_or_default = false;
     if (impl->hasOriginTrialMember()) {
@@ -1810,7 +1810,7 @@ bool toV8TestDictionary(const TestDictionary* impl, v8::Local<v8::Object> dictio
     }
   }
 
-  if (RuntimeEnabledFeatures::FeatureName1Enabled(executionContext)) {
+  if (RuntimeEnabledFeatures::OriginTrialFeature1Enabled(executionContext)) {
     v8::Local<v8::Value> origin_trial_second_member_value;
     bool origin_trial_second_member_has_value_or_default = false;
     if (impl->hasOriginTrialSecondMember()) {

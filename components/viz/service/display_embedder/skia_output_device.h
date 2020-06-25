@@ -97,7 +97,7 @@ class SkiaOutputDevice {
                                    std::vector<ui::LatencyInfo> latency_info);
 
   // Set the rectangle that will be drawn into on the surface.
-  virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
+  virtual bool SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
   virtual void SetGpuVSyncEnabled(bool enabled);
 

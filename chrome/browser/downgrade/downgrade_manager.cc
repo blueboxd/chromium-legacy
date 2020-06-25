@@ -89,8 +89,7 @@ base::Optional<int> MoveUserData(const base::FilePath& source,
       *result += 1;
     // Attempt to delete Last Version if all else failed so that Chrome does not
     // continually attempt to perform a migration.
-    base::DeleteFile(source.Append(kDowngradeLastVersionFile),
-                     false /* recursive */);
+    base::DeleteFile(source.Append(kDowngradeLastVersionFile));
     // Inform system administrators that things have gone awry.
     SYSLOG(ERROR) << "Failed to perform User Data migration following a Chrome "
                      "version downgrade. Chrome will run with User Data from a "

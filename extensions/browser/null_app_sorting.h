@@ -20,6 +20,7 @@ class NullAppSorting : public AppSorting {
   ~NullAppSorting() override;
 
   // AppSorting overrides:
+  void InitializePageOrdinalMapFromWebApps() override;
   void FixNTPOrdinalCollisions() override;
   void EnsureValidOrdinals(
       const std::string& extension_id,

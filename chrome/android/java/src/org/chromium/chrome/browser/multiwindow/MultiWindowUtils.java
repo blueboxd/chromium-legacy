@@ -25,7 +25,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.IntentUtils;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
@@ -45,13 +44,15 @@ import java.util.List;
  */
 public class MultiWindowUtils implements ActivityStateListener {
     // getInstance() is called early in start-up, so there is not point in lazily initializing it.
-    private static final MultiWindowUtils sInstance = AppHooks.get().createMultiWindowUtils();
+    private static final MultiWindowUtils sInstance = new MultiWindowUtils();
 
     // Used to keep track of whether ChromeTabbedActivity2 is running. A tri-state Boolean is
     // used in case both activities die in the background and MultiWindowUtils is recreated.
     private Boolean mTabbedActivity2TaskRunning;
     private WeakReference<ChromeTabbedActivity> mLastResumedTabbedActivity;
     private boolean mIsInMultiWindowModeForTesting;
+
+    private MultiWindowUtils() {}
 
     /**
      * Returns the singleton instance of MultiWindowUtils.

@@ -177,6 +177,12 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
     return reauth_result_;
   }
 
+  // The test cannot depend on Views implementation so it simulates clicking on
+  // the close button through calling the close event.
+  void SimulateCloseButtonClick() {
+    signin_reauth_view_controller()->OnModalSigninClosed();
+  }
+
   void ResetAbortHandle() { abort_handle_.reset(); }
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
@@ -244,9 +250,7 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
                        CloseReauthConfirmationDialog) {
   ShowReauthPrompt();
-  // The test cannot depend on Views implementation so it simulates clicking on
-  // the close button through calling the close event.
-  signin_reauth_view_controller()->OnModalSigninClosed();
+  SimulateCloseButtonClick();
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
   histogram_tester()->ExpectUniqueSample(
       kReauthUserActionHistogramName,
@@ -265,9 +269,7 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
       browser(), kReauthDialogTimeout));
   reauth_observer.WaitUntilGaiaReauthPageIsShown();
 
-  // The test cannot depend on Views implementation so it simulates clicking on
-  // the close button through calling the close event.
-  signin_reauth_view_controller()->OnModalSigninClosed();
+  SimulateCloseButtonClick();
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
   EXPECT_THAT(
       histogram_tester()->GetAllSamples(kReauthUserActionHistogramName),
@@ -303,6 +305,17 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   target_content_observer.Wait();
   EXPECT_TRUE(browser()->signin_view_controller()->ShowsModalDialog());
   EXPECT_FALSE(target_content_observer.last_navigation_succeeded());
+
+  // Check that |kLoadFailed| is returned as the result.
+  SimulateCloseButtonClick();
+  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kLoadFailed);
+  EXPECT_THAT(
+      histogram_tester()->GetAllSamples(kReauthUserActionHistogramName),
+      ElementsAre(
+          OnceUserAction(
+              SigninReauthViewController::UserAction::kClickNextButton),
+          OnceUserAction(
+              SigninReauthViewController::UserAction::kCloseGaiaReauthDialog)));
 }
 
 // Tests clicking on the confirm button in the reauth dialog. Reauth completes

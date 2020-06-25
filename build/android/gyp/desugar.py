@@ -53,11 +53,9 @@ def main():
       stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        options.output_jar,
-        inputs=options.bootclasspath + options.classpath,
-        add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile,
+                             options.output_jar,
+                             inputs=options.bootclasspath + options.classpath)
 
 
 if __name__ == '__main__':

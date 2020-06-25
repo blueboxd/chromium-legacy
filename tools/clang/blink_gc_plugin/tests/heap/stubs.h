@@ -199,18 +199,6 @@ using namespace WTF;
 #define GC_PLUGIN_IGNORE(bug)                           \
     __attribute__((annotate("blink_gc_plugin_ignore")))
 
-#define USING_GARBAGE_COLLECTED_MIXIN(type)                             \
- public:                                                                \
-  virtual void AdjustAndMark(Visitor*) const override {}                \
-  virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
-  void* mixin_constructor_marker_
-
-#define USING_GARBAGE_COLLECTED_MIXIN_NEW(type)                         \
- public:                                                                \
-  virtual void AdjustAndMark(Visitor*) const override {}                \
-  virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
-  typedef int HasUsingGarbageCollectedMixinMacro
-
 template<typename T> class GarbageCollected { };
 
 template <typename T>

@@ -435,7 +435,8 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito,
-    bool is_embargoed) {
+    bool is_embargoed,
+    bool is_discarded) {
   auto exception = std::make_unique<base::DictionaryValue>();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
@@ -452,6 +453,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
   exception->SetBoolean(kIsEmbargoed, is_embargoed);
+  exception->SetBoolean(kIsDiscarded, is_discarded);
   return exception;
 }
 
@@ -519,6 +521,11 @@ void GetExceptionsForContentType(
       HostContentSettingsMapFactory::GetForProfile(profile);
 
   map->GetSettingsForOneType(type, std::string(), &all_settings);
+
+  // Will return only regular settings for a regular profile and only incognito
+  // settings for an incognito Profile.
+  ContentSettingsForOneType discarded_settings;
+  map->GetDiscardedSettingsForOneType(type, std::string(), &discarded_settings);
 
   // Group settings by primary_pattern.
   AllPatternsSettings all_patterns_settings;
@@ -637,6 +644,15 @@ void GetExceptionsForContentType(
   for (auto& one_provider_exceptions : all_provider_exceptions) {
     for (auto& exception : one_provider_exceptions)
       exceptions->Append(std::move(exception));
+  }
+
+  for (auto& discarded_rule : discarded_settings) {
+    exceptions->Append(GetExceptionForPage(
+        discarded_rule.primary_pattern, discarded_rule.secondary_pattern,
+        GetDisplayNameForPattern(discarded_rule.primary_pattern,
+                                 extension_registry),
+        discarded_rule.GetContentSetting(), discarded_rule.source, incognito,
+        false /*is_embargoed*/, true /*is_discarded*/));
   }
 }
 

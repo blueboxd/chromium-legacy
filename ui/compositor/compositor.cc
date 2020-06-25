@@ -605,7 +605,8 @@ void Compositor::IssueExternalBeginFrame(
 }
 
 ThroughputTracker Compositor::RequestNewThroughputTracker() {
-  return ThroughputTracker(next_throughput_tracker_id_++, this);
+  return ThroughputTracker(next_throughput_tracker_id_++,
+                           weak_ptr_factory_.GetWeakPtr());
 }
 
 void Compositor::DidUpdateLayers() {

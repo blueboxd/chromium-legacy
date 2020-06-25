@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/feed/v2/feed_service_bridge.h"
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -18,6 +20,16 @@ namespace feed {
 
 static jboolean JNI_FeedServiceBridge_IsEnabled(JNIEnv* env) {
   return FeedServiceBridge::IsEnabled();
+}
+
+static void JNI_FeedServiceBridge_Startup(JNIEnv* env) {
+  // Trigger creation FeedService, since we need to handle certain browser
+  // events, like sign-in/sign-out, even if the Feed isn't visible.
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return;
+
+  FeedServiceFactory::GetForBrowserContext(profile);
 }
 
 std::string FeedServiceBridge::GetLanguageTag() {

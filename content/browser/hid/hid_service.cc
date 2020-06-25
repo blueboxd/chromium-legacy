@@ -26,10 +26,17 @@ HidService::HidService(RenderFrameHost* render_frame_host,
     : FrameServiceBase(render_frame_host, std::move(receiver)) {
   watchers_.set_disconnect_handler(base::BindRepeating(
       &HidService::OnWatcherConnectionError, base::Unretained(this)));
-  delegate_observer_.Add(GetContentClient()->browser()->GetHidDelegate());
+
+  HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
+  if (delegate)
+    delegate->AddObserver(render_frame_host, this);
 }
 
 HidService::~HidService() {
+  HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
+  if (delegate)
+    delegate->RemoveObserver(render_frame_host(), this);
+
   // The remaining watchers will be closed from this end.
   if (!watchers_.empty())
     DecrementActiveFrameCount();
@@ -56,6 +63,11 @@ void HidService::Create(
   // occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
   new HidService(render_frame_host, std::move(receiver));
+}
+
+void HidService::RegisterClient(
+    device::mojom::HidManagerClientAssociatedPtrInfo client) {
+  clients_.Add(std::move(client));
 }
 
 void HidService::GetDevices(GetDevicesCallback callback) {
@@ -144,9 +156,6 @@ void HidService::OnDeviceRemoved(
 void HidService::OnHidManagerConnectionError() {
   // Close the connection with Blink.
   clients_.Clear();
-
-  // Remove self from HidDelegate's observer list.
-  delegate_observer_.RemoveAll();
 }
 
 void HidService::OnPermissionRevoked(const url::Origin& requesting_origin,

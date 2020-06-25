@@ -408,7 +408,7 @@
     },
     {
       // The main content-visibility feature.
-      // https://drafts.csswg.org/css-contain/#content-visibility 
+      // https://drafts.csswg.org/css-contain/#content-visibility
       name: "CSSContentVisibility",
       status: "stable",
     },
@@ -1806,6 +1806,7 @@
     {
       name: "TrustTokens",
       origin_trial_feature_name: "TrustTokens",
+      origin_trial_allows_third_party: true,
       status: "test",
     },
     {

@@ -2568,9 +2568,8 @@ class AssistantInteractionHelper
     CheckResponseIsValid(__FUNCTION__);
   }
 
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {
-    query_status_->SetKey("queryText", base::Value(final_result));
+  void OnOpenUrlResponse(const ::GURL& url, bool in_background) override {
+    result_.SetKey("openUrl", base::Value(url.possibly_invalid_spec()));
   }
 
   bool OnOpenAppResponse(
@@ -2578,6 +2577,11 @@ class AssistantInteractionHelper
     result_.SetKey("openAppResponse", base::Value(app_info.package_name));
     CheckResponseIsValid(__FUNCTION__);
     return true;
+  }
+
+  void OnSpeechRecognitionFinalResult(
+      const std::string& final_result) override {
+    query_status_->SetKey("queryText", base::Value(final_result));
   }
 
   void CheckResponseIsValid(const std::string& function_name) {

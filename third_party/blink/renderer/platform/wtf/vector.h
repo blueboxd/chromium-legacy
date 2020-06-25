@@ -74,6 +74,19 @@ class Deque;
 // If you want to change the behavior of your type, take a look at VectorTraits
 // (defined in VectorTraits.h), too.
 
+// Tracing assumes the entire backing store is safe to access. To guarantee
+// that, tracing a backing store starts by marking the whole backing store
+// capacity as accessible. With concurrent marking enabled, annotating size
+// changes could conflict with marking the whole store as accessible, causing
+// a race.
+#define MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, buffer, capacity,      \
+                                           old_size, new_size)               \
+  if (Allocator::kIsGarbageCollected && Allocator::IsIncrementalMarking()) { \
+    ANNOTATE_CHANGE_SIZE(buffer, capacity, 0, capacity);                     \
+  } else {                                                                   \
+    ANNOTATE_CHANGE_SIZE(buffer, capacity, old_size, new_size)               \
+  }
+
 template <bool needsDestruction, typename T>
 struct VectorDestructor;
 
@@ -848,8 +861,10 @@ class VectorBuffer : protected VectorBufferBase<T, Allocator> {
       DCHECK(other_source_begin);
       DCHECK_EQ(Buffer(), InlineBuffer());
       DCHECK_EQ(other.Buffer(), other.InlineBuffer());
-      ANNOTATE_CHANGE_SIZE(buffer_, inlineCapacity, size_, other.size_);
-      ANNOTATE_CHANGE_SIZE(other.buffer_, inlineCapacity, other.size_, size_);
+      MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, buffer_, inlineCapacity,
+                                         size_, other.size_);
+      MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, other.buffer_,
+                                         inlineCapacity, other.size_, size_);
       std::swap(size_, other.size_);
     }
 
@@ -1535,7 +1550,8 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, other.size());
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     other.size());
   TypeOperations::Copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
@@ -1564,7 +1580,8 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, other.size());
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     other.size());
   TypeOperations::Copy(other.begin(), other.begin() + size(), begin());
   TypeOperations::UninitializedCopy(other.begin() + size(), other.end(), end());
   size_ = other.size();
@@ -1608,7 +1625,8 @@ operator=(std::initializer_list<T> elements) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, input_size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     input_size);
   TypeOperations::Copy(elements.begin(), elements.begin() + size_, begin());
   TypeOperations::UninitializedCopy(elements.begin() + size_, elements.end(),
                                     end());
@@ -1661,7 +1679,8 @@ Vector<T, inlineCapacity, Allocator>::Fill(const T& val, wtf_size_t new_size) {
     DCHECK(begin());
   }
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     new_size);
   std::fill(begin(), end(), val);
   TypeOperations::UninitializedFill(end(), begin() + new_size, val);
   size_ = new_size;
@@ -1721,11 +1740,13 @@ inline void Vector<T, inlineCapacity, Allocator>::resize(wtf_size_t size) {
   if (size <= size_) {
     TypeOperations::Destruct(begin() + size, end());
     ClearUnusedSlots(begin() + size, end());
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size);
+    MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                       size);
   } else {
     if (size > capacity())
       ExpandCapacity(size);
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size);
+    MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                       size);
     TypeOperations::Initialize(end(), begin() + size);
   }
 
@@ -1737,7 +1758,8 @@ void Vector<T, inlineCapacity, Allocator>::Shrink(wtf_size_t size) {
   DCHECK_LE(size, size_);
   TypeOperations::Destruct(begin() + size, end());
   ClearUnusedSlots(begin() + size, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size);
   size_ = size;
 }
 
@@ -1746,7 +1768,8 @@ void Vector<T, inlineCapacity, Allocator>::Grow(wtf_size_t size) {
   DCHECK_GE(size, size_);
   if (size > capacity())
     ExpandCapacity(size);
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size);
   TypeOperations::Initialize(end(), begin() + size);
   size_ = size;
 }
@@ -1830,7 +1853,8 @@ template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
   DCHECK(Allocator::IsAllocationAllowed());
   if (LIKELY(size() != capacity())) {
-    ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
+    MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                       size_ + 1);
     ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
         end(), std::forward<U>(val));
     ++size_;
@@ -1848,7 +1872,8 @@ ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
   if (UNLIKELY(size() == capacity()))
     ExpandCapacity(size() + 1);
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size_ + 1);
   T* t =
       ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
           end(), std::forward<Args>(args)...);
@@ -1868,7 +1893,8 @@ void Vector<T, inlineCapacity, Allocator>::Append(const U* data,
   }
   CHECK_GE(new_size, size_);
   T* dest = end();
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     new_size);
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
                Allocator>::UninitializedCopy(data, &data[data_size], dest);
   size_ = new_size;
@@ -1883,7 +1909,8 @@ NOINLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(U&& val) {
   ptr = ExpandCapacity(size() + 1, ptr);
   DCHECK(begin());
 
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size_ + 1);
   ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       end(), std::forward<U>(*ptr));
   ++size_;
@@ -1932,7 +1959,8 @@ inline void Vector<T, inlineCapacity, Allocator>::insert(wtf_size_t position,
     data = ExpandCapacity(size() + 1, data);
     DCHECK(begin());
   }
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size_ + 1);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + 1);
   ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
@@ -1953,7 +1981,8 @@ void Vector<T, inlineCapacity, Allocator>::insert(wtf_size_t position,
     DCHECK(begin());
   }
   CHECK_GE(new_size, size_);
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, new_size);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     new_size);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + data_size);
   VectorCopier<VectorTraits<T>::kCanCopyWithMemcpy, T,
@@ -2010,7 +2039,8 @@ inline void Vector<T, inlineCapacity, Allocator>::EraseAt(wtf_size_t position) {
   spot->~T();
   TypeOperations::MoveOverlapping(spot + 1, end(), spot);
   ClearUnusedSlots(end() - 1, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ - 1);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size_ - 1);
   --size_;
 }
 
@@ -2045,7 +2075,8 @@ inline void Vector<T, inlineCapacity, Allocator>::EraseAt(wtf_size_t position,
   TypeOperations::Destruct(begin_spot, end_spot);
   TypeOperations::MoveOverlapping(end_spot, end(), begin_spot);
   ClearUnusedSlots(end() - length, end());
-  ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ - length);
+  MARKING_AWARE_ANNOTATE_CHANGE_SIZE(Allocator, begin(), capacity(), size_,
+                                     size_ - length);
   size_ -= length;
 }
 

@@ -453,7 +453,7 @@ void DynamicsCompressorKernel::Process(
         float post_warp_compressor_gain =
             sinf(kPiOverTwoFloat * compressor_gain);
 
-        // Calculate total gain using master gain and effect blend.
+        // Calculate total gain using the linear post-gain and effect blend.
         float total_gain =
             dry_mix + wet_mix * linear_post_gain * post_warp_compressor_gain;
 

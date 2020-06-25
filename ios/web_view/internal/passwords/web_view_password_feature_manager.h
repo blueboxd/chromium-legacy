@@ -31,7 +31,7 @@ class WebViewPasswordFeatureManager
   void OptInToAccountStorage() override;
   void OptOutOfAccountStorageAndClearSettings() override;
 
-  bool ShouldShowPasswordStorePicker() const override;
+  bool ShouldShowAccountStorageBubbleUi() const override;
 
   void SetDefaultPasswordStore(
       const autofill::PasswordForm::Store& store) override;

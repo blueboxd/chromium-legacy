@@ -63,7 +63,8 @@ WebURL RegisterMockedURLLoadFromBase(const WebString& base_url,
 
 void RegisterMockedURLLoad(const WebURL& full_url,
                            const WebString& file_path,
-                           const WebString& mime_type) {
+                           const WebString& mime_type,
+                           WebURLLoaderMockFactory* mock_factory) {
   network::mojom::LoadTimingInfoPtr timing =
       network::mojom::LoadTimingInfo::New();
 
@@ -73,10 +74,11 @@ void RegisterMockedURLLoad(const WebURL& full_url,
   response.SetHttpStatusCode(200);
   response.SetLoadTiming(*timing);
 
-  RegisterMockedURLLoadWithCustomResponse(full_url, file_path, response);
+  mock_factory->RegisterURL(full_url, response, file_path);
 }
 
-void RegisterMockedErrorURLLoad(const WebURL& full_url) {
+void RegisterMockedErrorURLLoad(const WebURL& full_url,
+                                WebURLLoaderMockFactory* mock_factory) {
   network::mojom::LoadTimingInfoPtr timing =
       network::mojom::LoadTimingInfo::New();
 
@@ -87,33 +89,31 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
   response.SetLoadTiming(*timing);
 
   ResourceError error = ResourceError::Failure(full_url);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      full_url, response, WebURLError(error));
+  mock_factory->RegisterErrorURL(full_url, response, WebURLError(error));
 }
 
 void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
                                              const WebString& file_path,
                                              WebURLResponse response) {
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
+  WebURLLoaderMockFactory::GetSingletonInstance()->RegisterURL(
       full_url, response, file_path);
 }
 
 void RegisterMockedURLUnregister(const WebURL& url) {
-  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
+  WebURLLoaderMockFactory::GetSingletonInstance()->UnregisterURL(url);
 }
 
 void UnregisterAllURLsAndClearMemoryCache() {
-  Platform::Current()
-      ->GetURLLoaderMockFactory()
+  WebURLLoaderMockFactory::GetSingletonInstance()
       ->UnregisterAllURLsAndClearMemoryCache();
 }
 
 void SetLoaderDelegate(WebURLLoaderTestDelegate* delegate) {
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(delegate);
+  WebURLLoaderMockFactory::GetSingletonInstance()->SetLoaderDelegate(delegate);
 }
 
 void ServeAsynchronousRequests() {
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
 }
 
 }  // namespace url_test_helpers

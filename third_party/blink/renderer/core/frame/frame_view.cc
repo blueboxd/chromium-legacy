@@ -79,9 +79,9 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     if (should_compute_occlusion)
       geometry_flags |= IntersectionGeometry::kShouldComputeVisibility;
 
-    IntersectionGeometry geometry(nullptr, *owner_element, {},
+    IntersectionGeometry geometry(nullptr, *owner_element, {} /* root_margin */,
                                   {IntersectionObserver::kMinimumThreshold},
-                                  geometry_flags);
+                                  {} /* target_margin */, geometry_flags);
     PhysicalRect new_rect_in_parent = geometry.IntersectionRect();
     if (new_rect_in_parent.size != rect_in_parent_.size ||
         ((new_rect_in_parent.X() - rect_in_parent_.X()).Abs() +

@@ -219,12 +219,17 @@ void ErrorPageHelper::SendCommand(
       interface->ReportPhishingError();
       break;
     case security_interstitials::CMD_DO_REPORT:
+      // Used when user opts in to extended safe browsing
+      interface->DoReport();
+      break;
     case security_interstitials::CMD_DONT_REPORT:
+      interface->DontReport();
+      break;
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
+      interface->OpenReportingPrivacy();
+      break;
     case security_interstitials::CMD_OPEN_WHITEPAPER:
-      // Commands not used by the generic SSL error pages.
-      // Also not currently used by the safebrowsing error pages.
-      NOTREACHED();
+      interface->OpenWhitepaper();
       break;
     case security_interstitials::CMD_ERROR:
     case security_interstitials::CMD_TEXT_FOUND:

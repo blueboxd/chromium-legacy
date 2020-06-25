@@ -222,8 +222,7 @@ void AndroidMetricsServiceClient::MaybeStartMetrics() {
   bool user_consent_or_flag = user_consent_ || IsMetricsReportingForceEnabled();
   if (IsConsentDetermined()) {
     if (app_consent_ && user_consent_or_flag) {
-      metrics_service_ = CreateMetricsService(metrics_state_manager_.get(),
-                                              this, pref_service_);
+      CreateMetricsService(metrics_state_manager_.get(), this, pref_service_);
       // Register for notifications so we can detect when the user or app are
       // interacting with the embedder. We use these as signals to wake up the
       // MetricsService.
@@ -245,38 +244,39 @@ void AndroidMetricsServiceClient::MaybeStartMetrics() {
   }
 }
 
-std::unique_ptr<MetricsService>
-AndroidMetricsServiceClient::CreateMetricsService(
+void AndroidMetricsServiceClient::CreateMetricsService(
     MetricsStateManager* state_manager,
     AndroidMetricsServiceClient* client,
     PrefService* prefs) {
-  auto service = std::make_unique<MetricsService>(state_manager, client, prefs);
-  service->RegisterMetricsProvider(
+  metrics_service_ =
+      std::make_unique<MetricsService>(state_manager, client, prefs);
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::SubprocessMetricsProvider>());
-  service->RegisterMetricsProvider(std::make_unique<NetworkMetricsProvider>(
-      content::CreateNetworkConnectionTrackerAsyncGetter()));
-  service->RegisterMetricsProvider(std::make_unique<CPUMetricsProvider>());
-  service->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<NetworkMetricsProvider>(
+          content::CreateNetworkConnectionTrackerAsyncGetter()));
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<CPUMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<ScreenInfoMetricsProvider>());
   if (client->EnablePersistentHistograms()) {
-    service->RegisterMetricsProvider(CreateFileMetricsProvider(
+    metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
         pref_service_, metrics_state_manager_->IsMetricsReportingEnabled()));
   }
-  service->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<CallStackProfileMetricsProvider>());
-  service->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::AndroidMetricsProvider>());
-  service->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::DriveMetricsProvider>(
           base::DIR_ANDROID_APP_DATA));
-  service->RegisterMetricsProvider(
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::GPUMetricsProvider>());
-  RegisterAdditionalMetricsProviders(service.get());
+  RegisterAdditionalMetricsProviders(metrics_service_.get());
 
   // The file metrics provider makes IO.
   base::ScopedAllowBlocking allow_io;
-  service->InitializeMetricsRecordingState();
-  return service;
+  metrics_service_->InitializeMetricsRecordingState();
 }
 
 void AndroidMetricsServiceClient::CreateUkmService() {

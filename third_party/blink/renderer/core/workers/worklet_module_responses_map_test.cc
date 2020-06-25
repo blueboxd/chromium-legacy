@@ -94,7 +94,8 @@ class WorkletModuleResponsesMapTest : public testing::Test {
 TEST_F(WorkletModuleResponsesMapTest, Basic) {
   const KURL kUrl("https://example.com/module.js");
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
@@ -124,7 +125,8 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
 
 TEST_F(WorkletModuleResponsesMapTest, Failure) {
   const KURL kUrl("https://example.com/module.js");
-  url_test_helpers::RegisterMockedErrorURLLoad(kUrl);
+  url_test_helpers::RegisterMockedErrorURLLoad(
+      kUrl, platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
@@ -155,9 +157,11 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
 TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   const KURL kUrl1("https://example.com/module?1.js");
   const KURL kUrl2("https://example.com/module?2.js");
-  url_test_helpers::RegisterMockedErrorURLLoad(kUrl1);
+  url_test_helpers::RegisterMockedErrorURLLoad(
+      kUrl1, platform_->GetURLLoaderMockFactory());
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| initiates a fetch request.
@@ -230,9 +234,11 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   const KURL kUrl1("https://example.com/module?1.js");
   const KURL kUrl2("https://example.com/module?2.js");
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   url_test_helpers::RegisterMockedURLLoad(
-      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript",
+      platform_->GetURLLoaderMockFactory());
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| creates a placeholder entry and asks the

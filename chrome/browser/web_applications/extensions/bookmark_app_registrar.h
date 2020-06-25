@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -62,6 +63,10 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   std::vector<web_app::AppId> GetAppIds() const override;
   web_app::WebAppRegistrar* AsWebAppRegistrar() override;
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
+
+  syncer::StringOrdinal GetUserPageOrdinal(const web_app::AppId& app_id) const;
+  syncer::StringOrdinal GetUserLaunchOrdinal(
+      const web_app::AppId& app_id) const;
 
   // ExtensionRegistryObserver:
   // OnExtensionInstalled is not handled here.

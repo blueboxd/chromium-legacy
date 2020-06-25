@@ -258,7 +258,8 @@ WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
   encoders_.push_back(encoder.get());
   if (encoder_created_callback_) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(encoder_created_callback_, type));
+        FROM_HERE,
+        base::BindOnce(encoder_created_callback_, type, format.parameters));
   }
   return encoder;
 }
@@ -296,7 +297,9 @@ WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
 }
 
 void WebrtcDummyVideoEncoderFactory::RegisterEncoderSelectedCallback(
-    const base::RepeatingCallback<void(webrtc::VideoCodecType)>& callback) {
+    const base::RepeatingCallback<
+        void(webrtc::VideoCodecType,
+             const webrtc::SdpVideoFormat::Parameters&)>& callback) {
   encoder_created_callback_ = callback;
 }
 

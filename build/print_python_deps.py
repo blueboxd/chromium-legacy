@@ -22,7 +22,7 @@ import sys
 _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
-def _ComputePythonDependencies():
+def ComputePythonDependencies():
   """Gets the paths of imported non-system python modules.
 
   A path is assumed to be a "system" import if it is outside of chromium's
@@ -179,7 +179,7 @@ def main():
     sys.stderr.write('python={}\n'.format(sys.executable))
     raise
 
-  paths_set = _ComputePythonDependencies()
+  paths_set = ComputePythonDependencies()
   for path in options.whitelists:
     paths_set.update(os.path.abspath(p) for p in _FindPythonInDirectory(path))
 

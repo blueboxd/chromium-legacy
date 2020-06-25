@@ -409,6 +409,12 @@ const char kSettingsRefreshDescription[] =
     "Change the UI appearance of the settings to have something in phase with "
     "UI Refresh.";
 
+const char kSharedHighlightingIOSName[] = "Enable Shared Highlighting features";
+const char kSharedHighlightingIOSDescription[] =
+    "Enables support for Text Fragments (scroll-to-text based on URL "
+    "directive) and a Link to Text option in the Edit Menu which generates "
+    "these URLs.";
+
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "

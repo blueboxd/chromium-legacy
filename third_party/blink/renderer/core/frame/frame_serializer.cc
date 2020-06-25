@@ -192,7 +192,7 @@ void SerializerMarkupAccumulator::AppendExtraForHeadElement(
   AppendStylesheets(document_, true /*style_element_only*/);
 
   // The stylesheets defined in imported documents are not incorporated into
-  // master document. So we need to scan all of them.
+  // the tree-root document. So we need to scan all of them.
   if (HTMLImportsController* controller = document_->ImportsController()) {
     for (wtf_size_t i = 0; i < controller->LoaderCount(); ++i) {
       if (Document* imported_document =

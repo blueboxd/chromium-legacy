@@ -213,9 +213,10 @@ def check_compound_references(other_test_suites=None,
   """Ensure comound reference's don't target other compounds"""
   del kwargs
   if sub_suite in other_test_suites or sub_suite in target_test_suites:
-      raise BBGenErr('%s may not refer to other composition type test '
-                     'suites (error found while processing %s)'
-                     % (test_type, suite))
+    raise BBGenErr('%s may not refer to other composition type test '
+                   'suites (error found while processing %s)' %
+                   (test_type, suite))
+
 
 def check_basic_references(basic_suites=None,
                            sub_suite=None,
@@ -224,8 +225,9 @@ def check_basic_references(basic_suites=None,
   """Ensure test has a basic suite reference"""
   del kwargs
   if sub_suite not in basic_suites:
-      raise BBGenErr('Unable to find reference to %s while processing %s'
-                     % (sub_suite, suite))
+    raise BBGenErr('Unable to find reference to %s while processing %s' %
+                   (sub_suite, suite))
+
 
 def check_conflicting_definitions(basic_suites=None,
                                   seen_tests=None,
@@ -268,9 +270,9 @@ def check_matrix_identifier(sub_suite=None,
 
 
 class BBJSONGenerator(object):
-  def __init__(self):
+  def __init__(self, args):
     self.this_dir = THIS_DIR
-    self.args = None
+    self.args = args
     self.waterfalls = None
     self.test_suites = None
     self.exceptions = None
@@ -278,22 +280,99 @@ class BBJSONGenerator(object):
     self.gn_isolate_map = None
     self.variants = None
 
+  @staticmethod
+  def parse_args(argv):
+
+    # RawTextHelpFormatter allows for styling of help statement
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        '-c',
+        '--check',
+        action='store_true',
+        help=
+        'Do consistency checks of configuration and generated files and then '
+        'exit. Used during presubmit. '
+        'Causes the tool to not generate any files.')
+    group.add_argument(
+        '--query',
+        type=str,
+        help=(
+            "Returns raw JSON information of buildbots and tests.\n" +
+            "Examples:\n" + "  List all bots (all info):\n" +
+            "    --query bots\n\n" +
+            "  List all bots and only their associated tests:\n" +
+            "    --query bots/tests\n\n" +
+            "  List all information about 'bot1' " +
+            "(make sure you have quotes):\n" + "    --query bot/'bot1'\n\n" +
+            "  List tests running for 'bot1' (make sure you have quotes):\n" +
+            "    --query bot/'bot1'/tests\n\n" + "  List all tests:\n" +
+            "    --query tests\n\n" +
+            "  List all tests and the bots running them:\n" +
+            "    --query tests/bots\n\n" +
+            "  List all tests that satisfy multiple parameters\n" +
+            "  (separation of parameters by '&' symbol):\n" +
+            "    --query tests/'device_os:Android&device_type:hammerhead'\n\n" +
+            "  List all tests that run with a specific flag:\n" +
+            "    --query bots/'--test-launcher-print-test-studio=always'\n\n" +
+            "  List specific test (make sure you have quotes):\n"
+            "    --query test/'test1'\n\n"
+            "  List all bots running 'test1' " +
+            "(make sure you have quotes):\n" + "    --query test/'test1'/bots"))
+    parser.add_argument(
+        '-n',
+        '--new-files',
+        action='store_true',
+        help=
+        'Write output files as .new.json. Useful during development so old and '
+        'new files can be looked at side-by-side.')
+    parser.add_argument('-v',
+                        '--verbose',
+                        action='store_true',
+                        help='Increases verbosity. Affects consistency checks.')
+    parser.add_argument('waterfall_filters',
+                        metavar='waterfalls',
+                        type=str,
+                        nargs='*',
+                        help='Optional list of waterfalls to generate.')
+    parser.add_argument(
+        '--pyl-files-dir',
+        type=os.path.realpath,
+        help='Path to the directory containing the input .pyl files.')
+    parser.add_argument(
+        '--json',
+        metavar='JSON_FILE_PATH',
+        help='Outputs results into a json file. Only works with query function.'
+    )
+    parser.add_argument(
+        '--infra-config-dir',
+        help='Path to the LUCI services configuration directory',
+        default=os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '..', '..', 'infra',
+                         'config')))
+    args = parser.parse_args(argv)
+    if args.json and not args.query:
+      parser.error(
+          "The --json flag can only be used with --query.")  # pragma: no cover
+    args.infra_config_dir = os.path.abspath(args.infra_config_dir)
+    return args
+
   def generate_abs_file_path(self, relative_path):
-    return os.path.join(self.this_dir, relative_path) # pragma: no cover
+    return os.path.join(self.this_dir, relative_path)
 
   def print_line(self, line):
     # Exists so that tests can mock
     print line # pragma: no cover
 
   def read_file(self, relative_path):
-    with open(self.generate_abs_file_path(
-        relative_path)) as fp: # pragma: no cover
-      return fp.read() # pragma: no cover
+    with open(self.generate_abs_file_path(relative_path)) as fp:
+      return fp.read()
 
   def write_file(self, relative_path, contents):
-    with open(self.generate_abs_file_path(
-        relative_path), 'wb') as fp: # pragma: no cover
-      fp.write(contents) # pragma: no cover
+    with open(self.generate_abs_file_path(relative_path), 'wb') as fp:
+      fp.write(contents)
 
   def pyl_file_path(self, filename):
     if self.args and self.args.pyl_files_dir:
@@ -1318,16 +1397,18 @@ class BBJSONGenerator(object):
     # references to configs outside of this directory are added, please change
     # their presubmit to run `generate_buildbot_json.py -c`, so that the tree
     # never ends up in an invalid state.
-    project_star = glob.glob(
-        os.path.join(self.args.infra_config_dir, 'project.star'))
-    if project_star:
-      is_master_pattern = re.compile('is_master\s*=\s*(True|False)')
-      for l in self.read_file(project_star[0]).splitlines():
-        match = is_master_pattern.search(l)
-        if match:
-          if match.group(1) == 'False':
-            return None
-          break
+
+    # Get the generated project.pyl so we can check if we should be enforcing
+    # that the specs are for builders that actually exist
+    # If not, return None to indicate that we won't enforce that builders in
+    # waterfalls.pyl are defined in LUCI
+    project_pyl_path = os.path.join(self.args.infra_config_dir, 'generated',
+                                    'project.pyl')
+    if os.path.exists(project_pyl_path):
+      settings = ast.literal_eval(self.read_file(project_pyl_path))
+      if not settings.get('validate_source_side_specs_have_builder', True):
+        return None
+
     bot_names = set()
     milo_configs = glob.glob(
         os.path.join(self.args.infra_config_dir, 'generated', 'luci-milo*.cfg'))
@@ -1801,74 +1882,6 @@ class BBJSONGenerator(object):
     self.check_input_file_consistency(verbose) # pragma: no cover
     self.check_output_file_consistency(verbose) # pragma: no cover
 
-  def parse_args(self, argv): # pragma: no cover
-
-    # RawTextHelpFormatter allows for styling of help statement
-    parser = argparse.ArgumentParser(formatter_class=
-                                     argparse.RawTextHelpFormatter)
-
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-      '-c', '--check', action='store_true', help=
-      'Do consistency checks of configuration and generated files and then '
-      'exit. Used during presubmit. Causes the tool to not generate any files.')
-    group.add_argument(
-      '--query', type=str, help=
-        ("Returns raw JSON information of buildbots and tests.\n" +
-        "Examples:\n" +
-          "  List all bots (all info):\n" +
-          "    --query bots\n\n" +
-          "  List all bots and only their associated tests:\n" +
-          "    --query bots/tests\n\n" +
-          "  List all information about 'bot1' " +
-               "(make sure you have quotes):\n" +
-          "    --query bot/'bot1'\n\n" +
-          "  List tests running for 'bot1' (make sure you have quotes):\n" +
-          "    --query bot/'bot1'/tests\n\n" +
-          "  List all tests:\n" +
-          "    --query tests\n\n" +
-          "  List all tests and the bots running them:\n" +
-          "    --query tests/bots\n\n"+
-          "  List all tests that satisfy multiple parameters\n" +
-          "  (separation of parameters by '&' symbol):\n" +
-          "    --query tests/'device_os:Android&device_type:hammerhead'\n\n" +
-          "  List all tests that run with a specific flag:\n" +
-          "    --query bots/'--test-launcher-print-test-studio=always'\n\n" +
-          "  List specific test (make sure you have quotes):\n"
-          "    --query test/'test1'\n\n"
-          "  List all bots running 'test1' " +
-               "(make sure you have quotes):\n" +
-          "    --query test/'test1'/bots" ))
-    parser.add_argument(
-      '-n', '--new-files', action='store_true', help=
-      'Write output files as .new.json. Useful during development so old and '
-      'new files can be looked at side-by-side.')
-    parser.add_argument(
-      '-v', '--verbose', action='store_true', help=
-      'Increases verbosity. Affects consistency checks.')
-    parser.add_argument(
-      'waterfall_filters', metavar='waterfalls', type=str, nargs='*',
-      help='Optional list of waterfalls to generate.')
-    parser.add_argument(
-      '--pyl-files-dir', type=os.path.realpath,
-      help='Path to the directory containing the input .pyl files.')
-    parser.add_argument(
-      '--json', help=
-      ("Outputs results into a json file. Only works with query function.\n" +
-      "Examples:\n" +
-      "  Outputs file into specified json file: \n" +
-      "    --json <file-name-here.json>"))
-    parser.add_argument(
-      '--infra-config-dir',
-      help='Path to the LUCI services configuration directory',
-      default=os.path.abspath(
-          os.path.join(os.path.dirname(__file__),
-                       '..', '..', 'infra', 'config')))
-    self.args = parser.parse_args(argv)
-    if self.args.json and not self.args.query:
-      parser.error("The --json flag can only be used with --query.")
-    self.args.infra_config_dir = os.path.abspath(self.args.infra_config_dir)
-
   def does_test_match(self, test_info, params_dict):
     """Checks to see if the test matches the parameters given.
 
@@ -2142,8 +2155,7 @@ class BBJSONGenerator(object):
       self.error_msg("Your command did not match any valid commands." +
                      "Try starting with 'bots', 'bot', 'tests', or 'test'.")
 
-  def main(self, argv): # pragma: no cover
-    self.parse_args(argv)
+  def main(self):  # pragma: no cover
     if self.args.check:
       self.check_consistency(verbose=self.args.verbose)
     elif self.args.query:
@@ -2153,5 +2165,5 @@ class BBJSONGenerator(object):
     return 0
 
 if __name__ == "__main__": # pragma: no cover
-  generator = BBJSONGenerator()
-  sys.exit(generator.main(sys.argv[1:]))
+  generator = BBJSONGenerator(BBJSONGenerator.parse_args(sys.argv[1:]))
+  sys.exit(generator.main())

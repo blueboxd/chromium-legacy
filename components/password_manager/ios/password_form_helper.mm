@@ -18,6 +18,8 @@
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/js_password_manager.h"
 #import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -123,8 +125,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
     _webState->AddObserver(_webStateObserverBridge.get());
     _formActivityObserverBridge =
         std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
-    _jsPasswordManager = [[JsPasswordManager alloc]
-        initWithReceiver:_webState->GetJSInjectionReceiver()];
+    _jsPasswordManager = [[JsPasswordManager alloc] init];
 
     __weak PasswordFormHelper* weakSelf = self;
     auto callback = base::BindRepeating(
@@ -248,11 +249,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
   // Send JSON over to the web view.
   [self.jsPasswordManager
        fillPasswordForm:SerializePasswordFormFillData(formData)
+                inFrame:GetMainFrame(_webState)
            withUsername:base::SysUTF16ToNSString(username)
                password:base::SysUTF16ToNSString(password)
-      completionHandler:^(BOOL result) {
+      completionHandler:^(NSString* result) {
         if (completionHandler) {
-          completionHandler(result);
+          completionHandler([result isEqual:@"true"]);
         }
       }];
 }
@@ -278,23 +280,24 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
   __weak PasswordFormHelper* weakSelf = self;
   [self.jsPasswordManager
-      findPasswordFormsWithCompletionHandler:^(NSString* jsonString) {
-        std::vector<FormData> forms;
-        [weakSelf getPasswordFormsFromJSON:jsonString
-                                   pageURL:pageURL
-                                     forms:&forms];
-        // Find the maximum extracted value.
-        uint32_t maxID = 0;
-        for (const auto& form : forms) {
-          if (form.unique_renderer_id)
-            maxID = std::max(maxID, form.unique_renderer_id.value());
-          for (const auto& field : form.fields) {
-            if (field.unique_renderer_id)
-              maxID = std::max(maxID, field.unique_renderer_id.value());
-          }
-        }
-        completionHandler(forms, maxID);
-      }];
+      findPasswordFormsInFrame:GetMainFrame(_webState)
+             completionHandler:^(NSString* jsonString) {
+               std::vector<FormData> forms;
+               [weakSelf getPasswordFormsFromJSON:jsonString
+                                          pageURL:pageURL
+                                            forms:&forms];
+               // Find the maximum extracted value.
+               uint32_t maxID = 0;
+               for (const auto& form : forms) {
+                 if (form.unique_renderer_id)
+                   maxID = std::max(maxID, form.unique_renderer_id.value());
+                 for (const auto& field : form.fields) {
+                   if (field.unique_renderer_id)
+                     maxID = std::max(maxID, field.unique_renderer_id.value());
+                 }
+               }
+               completionHandler(forms, maxID);
+             }];
 }
 
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
@@ -320,12 +323,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
             completionHandler:(nullable void (^)(BOOL))completionHandler {
   // Send JSON over to the web view.
   [self.jsPasswordManager fillPasswordForm:formIdentifier
+                                   inFrame:GetMainFrame(_webState)
                      newPasswordIdentifier:newPasswordIdentifier
                  confirmPasswordIdentifier:confirmPasswordIdentifier
                          generatedPassword:generatedPassword
-                         completionHandler:^(BOOL result) {
+                         completionHandler:^(NSString* result) {
                            if (completionHandler) {
-                             completionHandler(result);
+                             completionHandler([result isEqual:@"true"]);
                            }
                          }];
 }
@@ -335,11 +339,12 @@ constexpr char kCommandPrefix[] = "passwordForm";
                        (nullable void (^)(BOOL))completionHandler {
   [self.jsPasswordManager
        fillPasswordForm:SerializeFillData(fillData)
+                inFrame:GetMainFrame(_webState)
            withUsername:base::SysUTF16ToNSString(fillData.username_value)
                password:base::SysUTF16ToNSString(fillData.password_value)
-      completionHandler:^(BOOL result) {
+      completionHandler:^(NSString* result) {
         if (completionHandler) {
-          completionHandler(result);
+          completionHandler([result isEqual:@"true"]);
         }
       }];
 }
@@ -410,11 +415,14 @@ constexpr char kCommandPrefix[] = "passwordForm";
   };
 
   [self.jsPasswordManager extractForm:formIdentifier
+                              inFrame:GetMainFrame(_webState)
                     completionHandler:extractFormDataCompletionHandler];
 }
 
-- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID {
-  [self.jsPasswordManager setUpForUniqueIDsWithInitialState:nextAvailableID];
+- (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
+                                  inFrame:(web::WebFrame*)frame {
+  [self.jsPasswordManager setUpForUniqueIDsWithInitialState:nextAvailableID
+                                                    inFrame:frame];
 }
 
 @end

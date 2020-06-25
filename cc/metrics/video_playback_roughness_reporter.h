@@ -25,7 +25,7 @@ using PlaybackRoughnessReportingCallback = base::RepeatingCallback<
 
 // This class tracks moments when each frame was submitted
 // and when it was displayed. Then series of frames split into groups
-// of consecutive frames, where each group takes about 1/2 second of playback.
+// of consecutive frames, where each group takes about one second of playback.
 // Such groups also called 'frame windows'. Each windows is assigned a roughness
 // score that measures how far playback smoothness was from the ideal playback.
 // Information about several windows and their roughness score is aggregated
@@ -56,13 +56,13 @@ class CC_EXPORT VideoPlaybackRoughnessReporter {
   static constexpr int kMinWindowSize = 6;
 
   // An upper bund on how many frames can be in ConsecutiveFramesWindow
-  static constexpr int kMaxWindowSize = 40;
+  static constexpr int kMaxWindowSize = 60;
 
   // How many frame windows should be observed before reporting smoothness
   // due to playback time.
-  // 1/2 a second per window, 200 windows. It means smoothness will be reported
+  // 1 second per window, 100 windows. It means smoothness will be reported
   // for every 100 seconds of playback.
-  static constexpr int kMaxWindowsBeforeSubmit = 200;
+  static constexpr int kMaxWindowsBeforeSubmit = 100;
 
   // How many frame windows should be observed to report soothness on last
   // time before the destruction of the reporter.
@@ -73,6 +73,13 @@ class CC_EXPORT VideoPlaybackRoughnessReporter {
   static constexpr int kPercentileToSubmit = 95;
   static_assert(kPercentileToSubmit > 0 && kPercentileToSubmit < 100,
                 "invalid percentile value");
+
+  // Desired duration of ConsecutiveFramesWindow in seconds.
+  // This value and the video FPS are being used when calculating actual
+  // number of frames in the ConsecutiveFramesWindow.
+  // kMinWindowSize and kMaxWindowSize put bounds to the window length
+  // and superseed this value.
+  static constexpr double kDesiredWindowDuration = 1.0;
 
  private:
   friend class VideoPlaybackRoughnessReporterTest;

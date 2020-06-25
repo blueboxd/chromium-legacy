@@ -29,7 +29,6 @@ public:
 };
 
 class HeapObjectMixin : public GarbageCollected<HeapObjectMixin>, public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(HeapObjectMixin);
 };
 
 class Mixin2 : public Mixin {
@@ -39,7 +38,6 @@ public:
 
 class HeapObjectMixin2
     : public GarbageCollected<HeapObjectMixin2>, public Mixin2 {
-  USING_GARBAGE_COLLECTED_MIXIN(HeapObjectMixin2);
 };
 
 class Mixin3 : public Mixin {
@@ -49,7 +47,6 @@ public:
 
 class HeapObjectMixin3
     : public GarbageCollected<HeapObjectMixin3>, public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(HeapObjectMixin2);
 public:
  virtual void Trace(Visitor*) const override;
 };

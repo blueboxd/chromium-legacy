@@ -22,7 +22,7 @@ class ASH_PUBLIC_EXPORT TestAmbientClient : public AmbientClient {
   ~TestAmbientClient() override;
 
   // AmbientClient:
-  bool IsAmbientModeAllowedForActiveUser() override;
+  bool IsAmbientModeAllowed() override;
   void RequestAccessToken(GetAccessTokenCallback callback) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   void RequestWakeLockProvider(

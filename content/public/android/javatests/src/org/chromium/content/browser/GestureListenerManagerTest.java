@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -48,11 +47,15 @@ public class GestureListenerManagerTest {
 
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
+            org.chromium.base.Log.e("chrome", "!!!onScrollStarted " + scrollOffsetY);
             mGotStarted = true;
             mLastScrollOffsetY = null;
         }
         @Override
         public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
+            org.chromium.base.Log.e("chrome",
+                    "!!!onScrollOffsetOrExtentChanged started=" + mGotStarted
+                            + " scroll=" + scrollOffsetY + " last=" + mLastScrollOffsetY);
             if (mGotStarted
                     && (mLastScrollOffsetY == null || !mLastScrollOffsetY.equals(scrollOffsetY))) {
                 if (mLastScrollOffsetY != null) mDidScrollOffsetChangeWhileScrolling = true;
@@ -61,6 +64,7 @@ public class GestureListenerManagerTest {
         }
         @Override
         public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
+            org.chromium.base.Log.e("chrome", "!!!onScrollEnded, offset=" + scrollOffsetY);
             // onScrollEnded() should be preceded by onScrollStarted().
             Assert.assertTrue(mGotStarted);
             // onScrollOffsetOrExtentChanged() should be called at least twice. Once with an initial
@@ -78,7 +82,6 @@ public class GestureListenerManagerTest {
      * Assertions for GestureStateListener.onScrollOffsetOrExtentChanged.
      */
     @Test
-    @DisabledTest(message = "crbug.com/1091129")
     @LargeTest
     @Feature({"Browser"})
     public void testOnScrollOffsetOrExtentChanged() throws Throwable {
@@ -105,6 +108,7 @@ public class GestureListenerManagerTest {
             View webContentsView = webContents.getViewAndroidDelegate().getContainerView();
             mCurrentX = webContentsView.getWidth() / 2;
             mCurrentY = webContentsView.getHeight() / 2;
+            Assert.assertTrue(mCurrentY > 0);
         });
 
         // Perform a scroll.

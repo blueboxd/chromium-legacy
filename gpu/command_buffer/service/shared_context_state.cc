@@ -671,16 +671,38 @@ bool SharedContextState::CheckResetStatus(bool needs_gl) {
   if (device_needs_reset_)
     return true;
 
-  // Maybe Skia detected VK_ERROR_DEVICE_LOST.
-  if (gr_context_ && gr_context_->abandoned()) {
-    LOG(ERROR) << "SharedContextState context lost via Skia.";
-    device_needs_reset_ = true;
-    MarkContextLost(error::kUnknown);
-    return true;
+  if (gr_context_) {
+    // Maybe Skia detected VK_ERROR_DEVICE_LOST.
+    if (gr_context_->abandoned()) {
+      LOG(ERROR) << "SharedContextState context lost via Skia.";
+      device_needs_reset_ = true;
+      MarkContextLost(error::kUnknown);
+      return true;
+    }
+
+    if (gr_context_->oomed()) {
+      LOG(ERROR) << "SharedContextState context lost via Skia OOM.";
+      device_needs_reset_ = true;
+      MarkContextLost(error::kOutOfMemory);
+      return true;
+    }
   }
 
+  // Not using GL.
   if (!GrContextIsGL() && !needs_gl)
     return false;
+
+  // GL is not initialized.
+  if (!context_state_)
+    return false;
+
+  GLenum error = context_state_->api()->glGetErrorFn();
+  if (error == GL_OUT_OF_MEMORY) {
+    LOG(ERROR) << "SharedContextState lost due to GL_OUT_OF_MEMORY";
+    MarkContextLost(error::kOutOfMemory);
+    device_needs_reset_ = true;
+    return true;
+  }
 
   // Checking the reset status is expensive on some OS/drivers
   // (https://crbug.com/1090232). Rate limit it.
@@ -715,7 +737,7 @@ bool SharedContextState::CheckResetStatus(bool needs_gl) {
       break;
   }
   device_needs_reset_ = true;
-  return false;
+  return true;
 }
 
 }  // namespace gpu

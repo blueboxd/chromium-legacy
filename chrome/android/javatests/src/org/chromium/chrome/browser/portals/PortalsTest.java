@@ -31,6 +31,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
@@ -354,6 +355,7 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
+    @DisabledTest(message = "https://crbug.com/1024850")
     public void testTouchTransferAfterReactivation() throws Exception {
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
                 "/chrome/test/data/android/portals/touch-transfer-after-reactivation.html"));

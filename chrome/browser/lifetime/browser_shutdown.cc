@@ -347,7 +347,7 @@ void ReadLastShutdownFile(ShutdownType type,
   int64_t shutdown_ms = 0;
   if (base::ReadFileToString(shutdown_ms_file, &shutdown_ms_str))
     base::StringToInt64(shutdown_ms_str, &shutdown_ms);
-  base::DeleteFile(shutdown_ms_file, false);
+  base::DeleteFile(shutdown_ms_file);
 
   if (shutdown_ms == 0 || num_procs == 0)
     return;

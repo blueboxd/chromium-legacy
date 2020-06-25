@@ -35,7 +35,7 @@ void CleanupOnWorker(const base::FilePath& sth_directory) {
   }
 
   if (base::IsDirectoryEmpty(base_dir)) {
-    if (!base::DeleteFile(base_dir, false)) {
+    if (!base::DeleteFile(base_dir)) {
       DLOG(ERROR) << "Couldn't delete " << base_dir.value();
     }
   }

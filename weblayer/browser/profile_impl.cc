@@ -41,6 +41,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/java/jni/ProfileImpl_jni.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
@@ -515,6 +516,13 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
       WebLayerMetricsServiceClient::GetInstance()->EnableUkm(ukm_enabled_);
 #endif
       break;
+    case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
+#if defined(OS_ANDROID)
+      static_cast<BrowserContextImpl*>(GetBrowserContext())
+          ->pref_service()
+          ->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
+#endif
+      break;
   }
 }
 
@@ -524,6 +532,13 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
       return basic_safe_browsing_enabled_;
     case SettingType::UKM_ENABLED:
       return ukm_enabled_;
+    case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
+#if defined(OS_ANDROID)
+      return static_cast<BrowserContextImpl*>(GetBrowserContext())
+          ->pref_service()
+          ->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled);
+#endif
+      return false;
   }
   NOTREACHED();
 }

@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.VariationsSession;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.offlinepages.CCTRequestStatus;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmark;
@@ -47,7 +46,6 @@ import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
-import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
@@ -194,13 +192,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * @return An instance of MultiWindowUtils to be installed as a singleton.
-     */
-    public MultiWindowUtils createMultiWindowUtils() {
-        return new MultiWindowUtils();
-    }
-
-    /**
      * @return An instance of RequestGenerator to be used for Omaha XML creation.  Will be null if
      *         a generator is unavailable.
      */
@@ -296,14 +287,6 @@ public abstract class AppHooks {
      */
     public FeedbackSourceProvider getAdditionalFeedbackSources() {
         return new FeedbackSourceProvider() {};
-    }
-
-    /**
-     * @return a new {@link Fido2ApiHandler} instance.
-     */
-    public Fido2ApiHandler createFido2ApiHandler() {
-        // TODO(nsatragno): remove after cleaning up Fido2ApiHandlerInternal.
-        return new Fido2ApiHandler();
     }
 
     /**

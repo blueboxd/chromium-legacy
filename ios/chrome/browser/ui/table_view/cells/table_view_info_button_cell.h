@@ -39,6 +39,10 @@
 // remaining content will expand to fill the full width of the cell.
 - (void)setIconImage:(UIImage*)image withTintColor:(UIColor*)color;
 
+// Updates the padding constraints based on how many vertical text labels are
+// shown. The padding will be updated only if |hasDetailText| is YES.
+- (void)updatePaddingForDetailText:(BOOL)hasDetailText;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_INFO_BUTTON_CELL_H_

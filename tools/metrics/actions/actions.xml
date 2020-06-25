@@ -25918,6 +25918,7 @@ should be able to be added at any place in this file.
 
 <action-suffix separator="." ordering="suffix">
   <suffix name="Cancel" label="User canceled downloading an offline item."/>
+  <suffix name="MenuChange" label="User changed a specific offline item."/>
   <suffix name="MenuDelete" label="User deleted a specific offline item."/>
   <suffix name="MenuRename" label="User renamed a specific offline item."/>
   <suffix name="MenuShare" label="User shared a specific offline item."/>

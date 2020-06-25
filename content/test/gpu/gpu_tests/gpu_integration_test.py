@@ -399,18 +399,6 @@ class GpuIntegrationTest(
     return config
 
   @classmethod
-  def GenerateTags(cls, finder_options, possible_browser):
-    # If no expectations file paths are returned from cls.ExpectationsFiles()
-    # then an empty list will be returned from this function. If tags are
-    # returned and there are no expectations files, then Typ will raise
-    # an exception.
-    if not cls.ExpectationsFiles():
-      return []
-    with possible_browser.BrowserSession(
-        finder_options.browser_options) as browser:
-      return cls.GetPlatformTags(browser)
-
-  @classmethod
   def GetPlatformTags(cls, browser):
     """This function will take a Browser instance as an argument.
     It will call the super classes implementation of GetPlatformTags() to get

@@ -1,13 +1,6 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// This test generate synthetic data. For audio it's a sinusoid waveform with
-// frequency kSoundFrequency and different amplitudes. For video it's a pattern
-// that is shifting by one pixel per frame, each pixels neighbors right and down
-// is this pixels value +1, since the pixel value is 8 bit it will wrap
-// frequently within the image. Visually this will create diagonally color bands
-// that moves across the screen
 
 #include <math.h>
 #include <stddef.h>
@@ -55,6 +48,12 @@ namespace cast {
 
 namespace {
 
+// This test suite generates synthetic data. For audio, it's a sinusoid waveform
+// with frequency kSoundFrequency and different amplitudes. For video, it's a
+// pattern that is shifting by one pixel per frame. Each pixels' neighbors right
+// and down is incremented by one; since the pixel value is 8 bit it will wrap
+// frequently within the image. Visually, this creates diagonal color bands that
+// move across the screen.
 static const int64_t kStartMillisecond = INT64_C(1245);
 static const int kAudioChannels = 2;
 static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
@@ -901,6 +900,14 @@ class TransportClient : public CastTransport::Client {
   DISALLOW_COPY_AND_ASSIGN(TransportClient);
 };
 
+// Cast E2E tests are not designed to run on official builds, primarily due
+// to using fake codecs that cause official failures.
+#ifdef OFFICIAL_BUILD
+#define CAST_E2E_TEST(name) DISABLED_##name
+#else
+#define CAST_E2E_TEST(name) name
+#endif
+
 }  // namespace
 
 void End2EndTest::Create() {
@@ -947,13 +954,7 @@ void End2EndTest::Create() {
       kSoundFrequency, kSoundVolume));
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_LoopWithLosslessEncoding DISABLED_LoopWithLosslessEncoding
-#else
-#define MAYBE_LoopWithLosslessEncoding LoopWithLosslessEncoding
-#endif
-TEST_F(End2EndTest, MAYBE_LoopWithLosslessEncoding) {
+TEST_F(End2EndTest, CAST_E2E_TEST(LoopWithLosslessEncoding)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
 
@@ -1067,13 +1068,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
   EXPECT_EQ(10, test_receiver_video_callback_->number_times_called());
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_BasicFakeSoftwareVideo DISABLED_BasicFakeSoftwareVideo
-#else
-#define MAYBE_BasicFakeSoftwareVideo BasicFakeSoftwareVideo
-#endif
-TEST_F(End2EndTest, MAYBE_BasicFakeSoftwareVideo) {
+TEST_F(End2EndTest, CAST_E2E_TEST(BasicFakeSoftwareVideo)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1108,13 +1103,7 @@ const int kLongTestIterations = 10000;
 const int kLongTestIterations = 1000;
 #endif
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_ReceiverClockFast DISABLED_ReceiverClockFast
-#else
-#define MAYBE_ReceiverClockFast ReceiverClockFast
-#endif
-TEST_F(End2EndTest, MAYBE_ReceiverClockFast) {
+TEST_F(End2EndTest, CAST_E2E_TEST(ReceiverClockFast)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1129,13 +1118,7 @@ TEST_F(End2EndTest, MAYBE_ReceiverClockFast) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_ReceiverClockSlow DISABLED_ReceiverClockSlow
-#else
-#define MAYBE_ReceiverClockSlow ReceiverClockSlow
-#endif
-TEST_F(End2EndTest, MAYBE_ReceiverClockSlow) {
+TEST_F(End2EndTest, CAST_E2E_TEST(ReceiverClockSlow)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1150,15 +1133,7 @@ TEST_F(End2EndTest, MAYBE_ReceiverClockSlow) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_SmoothPlayoutWithFivePercentClockRateSkew \
-  DISABLED_SmoothPlayoutWithFivePercentClockRateSkew
-#else
-#define MAYBE_SmoothPlayoutWithFivePercentClockRateSkew \
-  SmoothPlayoutWithFivePercentClockRateSkew
-#endif
-TEST_F(End2EndTest, MAYBE_SmoothPlayoutWithFivePercentClockRateSkew) {
+TEST_F(End2EndTest, CAST_E2E_TEST(SmoothPlayoutWithFivePercentClockRateSkew)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   Create();
   StartBasicPlayer();
@@ -1179,13 +1154,7 @@ TEST_F(End2EndTest, MAYBE_SmoothPlayoutWithFivePercentClockRateSkew) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_EvilNetwork DISABLED_EvilNetwork
-#else
-#define MAYBE_EvilNetwork EvilNetwork
-#endif
-TEST_F(End2EndTest, MAYBE_EvilNetwork) {
+TEST_F(End2EndTest, CAST_E2E_TEST(EvilNetwork)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   receiver_to_sender_->SetPacketPipe(test::EvilNetwork());
   sender_to_receiver_->SetPacketPipe(test::EvilNetwork());
@@ -1207,16 +1176,7 @@ TEST_F(End2EndTest, MAYBE_EvilNetwork) {
 
 // Tests that a system configured for 30 FPS drops frames when input is provided
 // at a much higher frame rate.
-// Fails consistently on official builds: crbug.com/612496
-// crbug.com/997944. Flaky on multiple platforms.
-#if defined(OFFICIAL_BUILD) || defined(OS_LINUX) || defined(OS_MACOSX) || \
-    defined(OS_WIN)
-#define MAYBE_ShoveHighFrameRateDownYerThroat \
-  DISABLED_ShoveHighFrameRateDownYerThroat
-#else
-#define MAYBE_ShoveHighFrameRateDownYerThroat ShoveHighFrameRateDownYerThroat
-#endif
-TEST_F(End2EndTest, MAYBE_ShoveHighFrameRateDownYerThroat) {
+TEST_F(End2EndTest, CAST_E2E_TEST(ShoveHighFrameRateDownYerThroat)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   receiver_to_sender_->SetPacketPipe(test::EvilNetwork());
   sender_to_receiver_->SetPacketPipe(test::EvilNetwork());
@@ -1232,18 +1192,22 @@ TEST_F(End2EndTest, MAYBE_ShoveHighFrameRateDownYerThroat) {
   RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
   EXPECT_LT(static_cast<size_t>(kLongTestIterations / 100),
             video_ticks_.size());
-  EXPECT_GE(static_cast<size_t>(kLongTestIterations / 3), video_ticks_.size());
+
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
+    defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
+    defined(UNDEFINED_SANITIZER)
+  // We want to ensure that at least one frame is dropped on ASAN builds.
+  const size_t max_iterations = kLongTestIterations - 1;
+#else
+  const size_t max_iterations = kLongTestIterations / 3;
+#endif
+  EXPECT_GE(max_iterations, video_ticks_.size());
+
   VLOG(1) << "Fully transmitted " << video_ticks_.size() << " frames.";
   EXPECT_LT((video_ticks_.back().second - test_end).InMilliseconds(), 1000);
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_OldPacketNetwork DISABLED_OldPacketNetwork
-#else
-#define MAYBE_OldPacketNetwork OldPacketNetwork
-#endif
-TEST_F(End2EndTest, MAYBE_OldPacketNetwork) {
+TEST_F(End2EndTest, CAST_E2E_TEST(OldPacketNetwork)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   sender_to_receiver_->SetPacketPipe(test::NewRandomDrop(0.01));
   std::unique_ptr<test::PacketPipe> echo_chamber(
@@ -1273,13 +1237,7 @@ TEST_F(End2EndTest, MAYBE_OldPacketNetwork) {
   EXPECT_EQ(static_cast<size_t>(kLongTestIterations), video_ticks_.size());
 }
 
-// Fails consistently on official builds: crbug.com/612496
-#ifdef OFFICIAL_BUILD
-#define MAYBE_TestSetPlayoutDelay DISABLED_TestSetPlayoutDelay
-#else
-#define MAYBE_TestSetPlayoutDelay TestSetPlayoutDelay
-#endif
-TEST_F(End2EndTest, MAYBE_TestSetPlayoutDelay) {
+TEST_F(End2EndTest, CAST_E2E_TEST(TestSetPlayoutDelay)) {
   Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16);
   video_sender_config_.min_playout_delay =
       video_sender_config_.max_playout_delay;
@@ -1319,3 +1277,5 @@ TEST_F(End2EndTest, MAYBE_TestSetPlayoutDelay) {
 
 }  // namespace cast
 }  // namespace media
+
+#undef CAST_E2E_TEST

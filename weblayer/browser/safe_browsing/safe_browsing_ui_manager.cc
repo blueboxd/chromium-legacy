@@ -4,15 +4,28 @@
 
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
+#include "components/safe_browsing/core/ping_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_blocking_page.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_subresource_helper.h"
 
 using content::BrowserThread;
 
+namespace {
+
+std::string GetProtocolConfigClientName() {
+  // Return a weblayer specific client name.
+  return "weblayer";
+}
+
+}  // namespace
+
 namespace weblayer {
 
-SafeBrowsingUIManager::SafeBrowsingUIManager() {
+SafeBrowsingUIManager::SafeBrowsingUIManager(
+    SafeBrowsingService* safe_browsing_service)
+    : safe_browsing_service_(safe_browsing_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -21,8 +34,19 @@ SafeBrowsingUIManager::~SafeBrowsingUIManager() = default;
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(timvolodine): figure out if we want to send any threat reporting here.
-  // Note the base implementation does not send anything.
+
+  if (!ping_manager_) {
+    ping_manager_ = ::safe_browsing::PingManager::Create(
+        safe_browsing_service_->GetURLLoaderFactory(),
+        safe_browsing::GetV4ProtocolConfig(GetProtocolConfigClientName(),
+                                           false /* auto_update */));
+  }
+
+  if (serialized.empty())
+    return;
+
+  DVLOG(1) << "Sending serialized threat details";
+  ping_manager_->ReportThreatDetails(serialized);
 }
 
 safe_browsing::BaseBlockingPage*

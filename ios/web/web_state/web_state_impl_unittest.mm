@@ -312,7 +312,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that WebFrameDidBecomeAvailable() is called.
   ASSERT_FALSE(observer->web_frame_available_info());
-  web::FakeWebFrame main_frame("main", true, GURL());
+  web::FakeMainWebFrame main_frame(GURL::EmptyGURL());
   web_state_->OnWebFrameAvailable(&main_frame);
   ASSERT_TRUE(observer->web_frame_available_info());
   EXPECT_EQ(web_state_.get(), observer->web_frame_available_info()->web_state);
@@ -815,7 +815,7 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   value_1.SetString("a", "b");
   const GURL kUrl1("http://foo");
   bool is_called_1 = false;
-  web::FakeWebFrame main_frame("main", true, GURL());
+  web::FakeMainWebFrame main_frame(GURL::EmptyGURL());
   auto subscription_1 = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_1, &value_1, kUrl1,
                           /*expected_user_is_interacting*/ false, &main_frame),
@@ -838,7 +838,7 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   value_3.SetString("e", "f");
   const GURL kUrl3("http://iframe");
   bool is_called_3 = false;
-  web::FakeWebFrame subframe("subframe", false, GURL());
+  web::FakeChildWebFrame subframe(GURL::EmptyGURL());
   auto subscription_3 = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_3, &value_3, kUrl3,
                           /*expected_user_is_interacting*/ false, &subframe),

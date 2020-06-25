@@ -61,6 +61,7 @@ const EnumTable<CastDeviceCapability> EnumTable<CastDeviceCapability>::instance(
 template <>
 const EnumTable<ReceiverAppType> EnumTable<ReceiverAppType>::instance(
     {
+        {ReceiverAppType::kOther, "OTHER"},
         {ReceiverAppType::kWeb, "WEB"},
         {ReceiverAppType::kAndroidTv, "ANDROID_TV"},
     },

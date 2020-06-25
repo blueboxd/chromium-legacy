@@ -70,6 +70,9 @@ Polymer({
 
   observers: ['onShillDebuggingChanged_(shillDebugging_)'],
 
+  /** @type {!network_ui.NetworkUIBrowserProxy} */
+  browserProxy_: network_ui.NetworkUIBrowserProxyImpl.getInstance(),
+
   /** @override */
   attached() {},
 
@@ -83,7 +86,7 @@ Polymer({
     const shillDebugging = this.shillDebugging_;
     if (!shillDebugging || shillDebugging == 'unknown')
       return;
-    cr.sendWithPromise('setShillDebugging', shillDebugging).then((response) => {
+    this.browserProxy_.setShillDebugging(shillDebugging).then((response) => {
       /*const result =*/ response.shift();
       const isError = response.shift();
       if (isError) {
@@ -103,7 +106,7 @@ Polymer({
     };
     this.$.storeResult.innerText = this.i18n('networkLogsStatus');
     this.$.storeResult.classList.toggle('error', false);
-    cr.sendWithPromise('storeLogs', options).then((response) => {
+    this.browserProxy_.storeLogs(options).then((response) => {
       const result = response.shift();
       const isError = response.shift();
       this.$.storeResult.innerText = result;

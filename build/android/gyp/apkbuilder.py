@@ -359,8 +359,7 @@ def _MaybeWriteDepAndStampFiles(options, depfile_deps):
       output = options.stamp
     else:
       output = options.output_apk
-    build_utils.WriteDepfile(
-        options.depfile, output, inputs=depfile_deps, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, output, inputs=depfile_deps)
 
 
 def main(args):

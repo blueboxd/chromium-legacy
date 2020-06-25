@@ -373,23 +373,17 @@ void ClientSideDetectionHost::DidFinishNavigation(
   classification_request_->Start();
 }
 
-void ClientSideDetectionHost::SendModelToRenderFrame(
-    content::RenderProcessHost* process,
-    Profile* profile,
-    ModelLoader* model_loader) {
+void ClientSideDetectionHost::SendModelToRenderFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!web_contents() || web_contents() != tab_)
     return;
 
   for (content::RenderFrameHost* frame : web_contents()->GetAllFrames()) {
-    if (frame->GetProcess() != process)
-      continue;
-
     if (phishing_detector_)
       phishing_detector_.reset();
     frame->GetRemoteInterfaces()->GetInterface(
         phishing_detector_.BindNewPipeAndPassReceiver());
-    phishing_detector_->SetPhishingModel(model_loader->model_str());
+    phishing_detector_->SetPhishingModel(csd_service_->GetModelStr());
   }
 }
 
@@ -429,6 +423,15 @@ void ClientSideDetectionHost::WebContentsDestroyed() {
   feature_extractor_.reset();
 
   csd_service_->RemoveClientSideDetectionHost(this);
+}
+
+void ClientSideDetectionHost::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (phishing_detector_)
+    phishing_detector_.reset();
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      phishing_detector_.BindNewPipeAndPassReceiver());
+  phishing_detector_->SetPhishingModel(csd_service_->GetModelStr());
 }
 
 void ClientSideDetectionHost::OnPhishingPreClassificationDone(

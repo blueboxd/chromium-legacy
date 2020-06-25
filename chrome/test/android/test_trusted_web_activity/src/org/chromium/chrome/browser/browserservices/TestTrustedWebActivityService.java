@@ -31,6 +31,7 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     private static final String LOCATION_ARG_ENABLE_HIGH_ACCURACY = "enableHighAccuracy";
     private static final String EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK = "onNewLocationAvailable";
     private static final String EXTRA_NEW_LOCATION_ERROR_CALLBACK = "onNewLocationError";
+    private static final String EXTRA_COMMAND_SUCCESS = "success";
 
     private final TokenStore mTokenStore = new InMemoryStore();
 
@@ -82,7 +83,7 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
                 } catch (RemoteException e) {
                 }
 
-                executionResult.putBoolean(commandName, true);
+                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
                 break;
             }
             case START_LOCATION_COMMAND_NAME: {
@@ -99,15 +100,15 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
                 } catch (RemoteException e) {
                 }
 
-                executionResult.putBoolean(commandName, true);
+                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
                 break;
             }
             case STOP_LOCATION_COMMAND_NAME: {
-                executionResult.putBoolean(commandName, true);
+                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, true);
                 break;
             }
             default:
-                executionResult.putBoolean(commandName, false);
+                executionResult.putBoolean(EXTRA_COMMAND_SUCCESS, false);
         }
         return executionResult;
     }

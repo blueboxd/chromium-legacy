@@ -256,11 +256,6 @@
       initial: false,
     },
 
-    {
-      name: "shouldRespectImageOrientation",
-      initial: false,
-    },
-
     // This value indicates the number of simultaneous multi-touch points supported
     // by the currently connected screen/digitizer that supports the most points.
     // From Pointer Events spec:

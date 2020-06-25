@@ -12,7 +12,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @hide
  */
-@IntDef({SettingType.BASIC_SAFE_BROWSING_ENABLED, SettingType.UKM_ENABLED})
+@IntDef({SettingType.BASIC_SAFE_BROWSING_ENABLED, SettingType.UKM_ENABLED,
+        SettingType.EXTENDED_REPORTING_SAFE_BROWSING_ENABLED})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SettingType {
     /**
@@ -25,4 +26,18 @@ public @interface SettingType {
      * Allows the embedder to enable URL-Keyed Metrics. Disabled by default.
      */
     int UKM_ENABLED = org.chromium.weblayer_private.interfaces.SettingType.UKM_ENABLED;
+
+    /**
+     * Allows the embedder to set whether it wants to enable/disable the Extended Reporting
+     * functionality for Safe Browsing (SBER). This functionality helps improve security on the web
+     * for everyone. It sends URLs of some pages you visit, limited system information, and some
+     * page content to Google, to help discover new threats and protect everyone on the web.
+     *
+     * This setting is disabled by default, but can also be enabled by the user by checking a
+     * checkbox in the Safe Browsing interstitial which is displayed when the user encounters a
+     * dangerous web page. The setting persists on disk.
+     */
+    int EXTENDED_REPORTING_SAFE_BROWSING_ENABLED =
+            org.chromium.weblayer_private.interfaces.SettingType
+                    .EXTENDED_REPORTING_SAFE_BROWSING_ENABLED;
 }

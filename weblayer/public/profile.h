@@ -29,6 +29,7 @@ enum class BrowsingDataType {
 enum class SettingType {
   BASIC_SAFE_BROWSING_ENABLED = 0,
   UKM_ENABLED = 1,
+  EXTENDED_REPORTING_SAFE_BROWSING_ENABLED = 2,
 };
 
 class Profile {

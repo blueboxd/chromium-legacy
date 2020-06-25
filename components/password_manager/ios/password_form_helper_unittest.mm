@@ -51,12 +51,6 @@ using test_helpers::SetFillData;
 // Mocks JsPasswordManager to simluate javascript execution failure.
 @interface MockJsPasswordManager : JsPasswordManager
 
-// Designated initializer.
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
 // For the first |targetFailureCount| calls to
 // |fillPasswordForm:withUserName:password:completionHandler:|, skips the
 // invocation of the real JavaScript manager, giving the effect that password
@@ -70,26 +64,24 @@ using test_helpers::SetFillData;
   NSUInteger _fillPasswordFormFailureCountRemaining;
 }
 
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
-  return [super initWithReceiver:receiver];
-}
-
 - (void)setFillPasswordFormTargetFailureCount:(NSUInteger)targetFailureCount {
   _fillPasswordFormFailureCountRemaining = targetFailureCount;
 }
 
-- (void)fillPasswordForm:(NSString*)JSONString
+- (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
+                 inFrame:(web::WebFrame*)frame
             withUsername:(NSString*)username
                 password:(NSString*)password
-       completionHandler:(void (^)(BOOL))completionHandler {
+       completionHandler:(void (^)(NSString*))completionHandler {
   if (_fillPasswordFormFailureCountRemaining > 0) {
     --_fillPasswordFormFailureCountRemaining;
     if (completionHandler) {
-      completionHandler(NO);
+      completionHandler(@"false");
     }
     return;
   }
-  [super fillPasswordForm:JSONString
+  [super fillPasswordForm:std::move(form)
+                  inFrame:frame
              withUsername:username
                  password:password
         completionHandler:completionHandler];
@@ -331,8 +323,8 @@ TEST_F(PasswordFormHelperTest, FindAndFillOnePasswordForm) {
 // that completion handler is called with the proper values.
 TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
   // Fails the first call to fill password form.
-  MockJsPasswordManager* mockJsPasswordManager = [[MockJsPasswordManager alloc]
-      initWithReceiver:web_state()->GetJSInjectionReceiver()];
+  MockJsPasswordManager* mockJsPasswordManager =
+      [[MockJsPasswordManager alloc] init];
   [mockJsPasswordManager setFillPasswordFormTargetFailureCount:1];
   [helper_ setJsPasswordManager:mockJsPasswordManager];
   LoadHtml(
@@ -370,8 +362,8 @@ TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
 // Tests that extractPasswordFormData extracts wanted form on page with mutiple
 // forms.
 TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
-  MockJsPasswordManager* mockJsPasswordManager = [[MockJsPasswordManager alloc]
-      initWithReceiver:web_state()->GetJSInjectionReceiver()];
+  MockJsPasswordManager* mockJsPasswordManager =
+      [[MockJsPasswordManager alloc] init];
   [helper_ setJsPasswordManager:mockJsPasswordManager];
   LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
             "<input id='p1' type='password' name='pw1'></form>"

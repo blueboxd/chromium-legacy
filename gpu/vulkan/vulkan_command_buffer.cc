@@ -8,6 +8,7 @@
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 
 namespace gpu {
 
@@ -174,7 +175,7 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
   }
 
   result =
-      vkQueueSubmit(device_queue_->GetVulkanQueue(), 1, &submit_info, fence);
+      QueueSubmitHook(device_queue_->GetVulkanQueue(), 1, &submit_info, fence);
 
   if (VK_SUCCESS != result) {
     vkDestroyFence(device_queue_->GetVulkanDevice(), fence, nullptr);

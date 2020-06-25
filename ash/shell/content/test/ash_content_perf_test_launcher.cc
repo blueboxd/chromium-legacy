@@ -31,10 +31,8 @@ class AshContentTestSuite : public content::ContentTestSuiteBase {
  protected:
   // content::ContentTestSuiteBase:
   void Initialize() override {
-    // Browser tests are expected not to tear-down various globals and may
-    // complete with the thread priority being above NORMAL.
+    // Browser tests are expected not to tear-down various globals.
     base::TestSuite::DisableCheckForLeakedGlobals();
-    base::TestSuite::DisableCheckForThreadPriorityAtTestEnd();
     ContentTestSuiteBase::Initialize();
     ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
   }

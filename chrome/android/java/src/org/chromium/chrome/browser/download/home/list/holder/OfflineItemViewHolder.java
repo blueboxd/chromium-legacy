@@ -48,13 +48,15 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     private Runnable mShareCallback;
     private Runnable mDeleteCallback;
     private Runnable mRenameCallback;
+    private Runnable mChangeCallback;
 
     // flag to hide rename list menu option for offline pages
     private boolean mCanRename;
     private boolean mCanShare;
+    private boolean mIsScheduled;
 
     /**
-     * Creates a new instance of a {@link MoreButtonViewHolder}.
+     * Creates a new instance of a {@link OfflineItemViewHolder}.
      */
     public OfflineItemViewHolder(View view) {
         super(view);
@@ -70,34 +72,15 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     @Override
     public void bind(PropertyModel properties, ListItem item) {
         OfflineItem offlineItem = ((ListItem.OfflineItemListItem) item).item;
+        mCanRename = offlineItem.canRename;
+        mCanShare = UiUtils.canShare(offlineItem);
+        mIsScheduled = offlineItem.schedule != null;
 
-        // Push 'interaction' state.
-        itemView.setOnClickListener(v -> {
-            if (mSelectionView != null && mSelectionView.isInSelectionMode()) {
-                properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
-            } else {
-                properties.get(ListProperties.CALLBACK_OPEN).onResult(offlineItem);
-            }
-        });
-
-        itemView.setOnLongClickListener(v -> {
-            properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
-            return true;
-        });
+        // Push 'interaction' state
+        bindOnClick(properties, item, offlineItem);
 
         // Push 'More' state.
-        if (mMore != null) {
-            mShareCallback =
-                    () -> properties.get(ListProperties.CALLBACK_SHARE).onResult(offlineItem);
-            mDeleteCallback =
-                    () -> properties.get(ListProperties.CALLBACK_REMOVE).onResult(offlineItem);
-
-            if (properties.get(ListProperties.CALLBACK_RENAME) != null) {
-                mRenameCallback =
-                        () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
-            }
-            mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
-        }
+        bindMenuButtonCallbacks(properties, offlineItem);
 
         // Push 'selection' state.
         if (shouldPushSelection(properties, item)) {
@@ -123,9 +106,50 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                 }, offlineItem.id);
             }
         }
+    }
 
-        mCanRename = mRenameCallback != null && offlineItem.canRename;
-        mCanShare = UiUtils.canShare(offlineItem);
+    private void bindOnClick(PropertyModel properties, ListItem item, OfflineItem offlineItem) {
+        // For scheduled items, click doesn't do anything.
+        if (mIsScheduled) {
+            return;
+        }
+
+        itemView.setOnClickListener(v -> {
+            if (mSelectionView != null && mSelectionView.isInSelectionMode()) {
+                properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
+            } else {
+                properties.get(ListProperties.CALLBACK_OPEN).onResult(offlineItem);
+            }
+        });
+
+        itemView.setOnLongClickListener(v -> {
+            properties.get(ListProperties.CALLBACK_SELECTION).onResult(item);
+            return true;
+        });
+    }
+
+    private void bindMenuButtonCallbacks(PropertyModel properties, OfflineItem offlineItem) {
+        if (mMore == null) return;
+
+        if (mCanShare) {
+            mShareCallback =
+                    () -> properties.get(ListProperties.CALLBACK_SHARE).onResult(offlineItem);
+        }
+
+        if (mCanRename) {
+            mRenameCallback =
+                    () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
+        }
+
+        mDeleteCallback =
+                () -> properties.get(ListProperties.CALLBACK_REMOVE).onResult(offlineItem);
+
+        if (mIsScheduled) {
+            mChangeCallback =
+                    () -> properties.get(ListProperties.CALLBACK_CHANGE).onResult(offlineItem);
+        }
+
+        mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
     }
 
     @Override
@@ -138,8 +162,11 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     @Override
     public ListMenu getListMenu() {
         ModelList listItems = new ModelList();
+
         if (mCanShare) listItems.add(buildMenuListItem(R.string.share, 0, 0));
         if (mCanRename) listItems.add(buildMenuListItem(R.string.rename, 0, 0));
+        if (mIsScheduled) listItems.add(buildMenuListItem(R.string.change, 0, 0));
+
         listItems.add(buildMenuListItem(R.string.delete, 0, 0));
         ListMenu.Delegate delegate = (model) -> {
             int textId = model.get(ListMenuItemProperties.TITLE_ID);
@@ -149,6 +176,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                 if (mDeleteCallback != null) mDeleteCallback.run();
             } else if (textId == R.string.rename) {
                 if (mRenameCallback != null) mRenameCallback.run();
+            } else if (textId == R.string.change) {
+                if (mChangeCallback != null) mChangeCallback.run();
             }
         };
         return new BasicListMenu(mMore.getContext(), listItems, delegate);
@@ -161,7 +190,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
      * this builds a simple {@link BitmapDrawable} around {@code visuals.icon}.
      *
      * @param visuals The {@link OfflineItemVisuals} from the async request.
-     * @return        A {@link Drawable} to use for the thumbnail.
+     * @return A {@link Drawable} to use for the thumbnail.
      */
     protected Drawable onThumbnailRetrieved(OfflineItemVisuals visuals) {
         if (visuals == null || visuals.icon == null) return null;

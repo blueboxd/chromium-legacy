@@ -257,8 +257,7 @@ ParseResult MP4StreamParser::ParseBox() {
   } else {
     // TODO(wolenetz,chcunningham): Enforce more strict adherence to MSE byte
     // stream spec for ftyp and styp. See http://crbug.com/504514.
-    DVLOG(2) << "Skipping unrecognized top-level box: "
-             << FourCCToString(reader->type());
+    DVLOG(2) << "Skipping top-level box: " << FourCCToString(reader->type());
   }
 
   queue_.Pop(reader->box_size());

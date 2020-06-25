@@ -175,7 +175,6 @@ ci.android_builder(
         category = 'tester|webview',
         short_name = 'L',
     ),
-    main_console_view = 'main',
     triggered_by = ['ci/Android arm Builder (dbg)'],
 )
 
@@ -208,7 +207,6 @@ ci.android_builder(
     # We have limited phone capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 6 * time.hour,
-    main_console_view = 'main',
     triggered_by = ['ci/Android arm Builder (dbg)'],
 )
 
@@ -221,7 +219,6 @@ ci.android_builder(
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 20 * time.hour,
-    main_console_view = 'main',
     triggered_by = ['ci/Android arm Builder (dbg)'],
 )
 
@@ -234,7 +231,6 @@ ci.android_builder(
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 12 * time.hour,
-    main_console_view = 'main',
     triggered_by = ['ci/Android arm Builder (dbg)'],
 )
 
@@ -525,6 +521,7 @@ ci.chromiumos_builder(
         category = 'default',
         short_name = 'ful',
     ),
+    main_console_view = 'main',
 )
 
 ci.chromiumos_builder(
@@ -533,6 +530,7 @@ ci.chromiumos_builder(
         category = 'simple|release|x64',
         short_name = 'asn',
     ),
+    main_console_view = 'main',
 )
 
 ci.chromiumos_builder(
@@ -541,6 +539,7 @@ ci.chromiumos_builder(
         category = 'simple|release|x64',
         short_name = 'cfi',
     ),
+    main_console_view = 'main',
 )
 
 ci.chromiumos_builder(
@@ -549,6 +548,7 @@ ci.chromiumos_builder(
         category = 'simple|debug',
         short_name = 'arm',
     ),
+    main_console_view = 'main',
 )
 
 ci.chromiumos_builder(
@@ -2722,6 +2722,7 @@ ci.linux_builder(
         category = 'cast',
         short_name = 'aud',
     ),
+    main_console_view = 'main',
     ssd = True,
 )
 
@@ -2734,6 +2735,7 @@ ci.linux_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     goma_jobs = None,
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2744,6 +2746,7 @@ ci.linux_builder(
     ),
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2755,6 +2758,7 @@ ci.linux_builder(
     cores = 32,
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2772,6 +2776,7 @@ ci.linux_builder(
         category = 'debug|builder',
         short_name = '32',
     ),
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2780,6 +2785,7 @@ ci.linux_builder(
         category = 'release',
         short_name = 'nsl',
     ),
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2788,6 +2794,7 @@ ci.linux_builder(
         category = 'fuchsia|x64',
         short_name = 'dbg',
     ),
+    main_console_view = 'main',
     notifies = ['cr-fuchsia'],
 )
 
@@ -2798,6 +2805,7 @@ ci.linux_builder(
         short_name = 'crs',
     ),
     goma_jobs = None,
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2807,6 +2815,7 @@ ci.linux_builder(
         short_name = 'gcc',
     ),
     goma_backend = None,
+    main_console_view = 'main',
 )
 
 ci.linux_builder(
@@ -2815,6 +2824,7 @@ ci.linux_builder(
         category = 'release',
         short_name = 'tru',
     ),
+    main_console_view = 'main',
     os = os.LINUX_TRUSTY,
 )
 
@@ -2864,7 +2874,6 @@ ci.memory_builder(
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
-    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -3148,6 +3157,7 @@ ci.win_builder(
         category = 'misc',
         short_name = 'wbk',
     ),
+    main_console_view = 'main',
     triggered_by = ['Win Builder'],
 )
 
@@ -3158,6 +3168,7 @@ ci.win_builder(
         short_name = '32',
     ),
     cores = 32,
+    main_console_view = 'main',
     os = os.WINDOWS_ANY,
 )
 
@@ -3169,6 +3180,7 @@ ci.win_builder(
     ),
     cores = 32,
     builderless = True,
+    main_console_view = 'main',
     os = os.WINDOWS_ANY,
 )
 
@@ -3178,6 +3190,7 @@ ci.win_builder(
         category = 'debug|tester',
         short_name = '10',
     ),
+    main_console_view = 'main',
     triggered_by = ['Win x64 Builder (dbg)'],
 )
 
@@ -3187,6 +3200,7 @@ ci.win_builder(
         category = 'release|tester',
         short_name = '32',
     ),
+    main_console_view = 'main',
     os = os.WINDOWS_7,
     triggered_by = ['Win Builder'],
 )
@@ -3197,6 +3211,7 @@ ci.win_builder(
         category = 'release|tester',
         short_name = '32',
     ),
+    main_console_view = 'main',
     os = os.WINDOWS_7,
     triggered_by = ['Win Builder'],
 )
@@ -3210,4 +3225,5 @@ ci.win_builder(
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
     goma_jobs = goma.jobs.J150,
+    main_console_view = 'main',
 )

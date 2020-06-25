@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/sync/model/string_ordinal.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -49,6 +50,11 @@ class WebApp {
   DisplayMode display_mode() const { return display_mode_; }
 
   DisplayMode user_display_mode() const { return user_display_mode_; }
+
+  syncer::StringOrdinal user_page_ordinal() const { return user_page_ordinal_; }
+  syncer::StringOrdinal user_launch_ordinal() const {
+    return user_launch_ordinal_;
+  }
 
   const base::Optional<WebAppChromeOsData>& chromeos_data() const {
     return chromeos_data_;
@@ -146,6 +152,8 @@ class WebApp {
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
+  void SetUserPageOrdinal(syncer::StringOrdinal page_ordinal);
+  void SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal);
   void SetWebAppChromeOsData(base::Optional<WebAppChromeOsData> chromeos_data);
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsInSyncInstall(bool is_in_sync_install);
@@ -185,6 +193,8 @@ class WebApp {
   base::Optional<SkColor> theme_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
+  syncer::StringOrdinal user_page_ordinal_;
+  syncer::StringOrdinal user_launch_ordinal_;
   base::Optional<WebAppChromeOsData> chromeos_data_;
   bool is_locally_installed_ = true;
   bool is_in_sync_install_ = false;

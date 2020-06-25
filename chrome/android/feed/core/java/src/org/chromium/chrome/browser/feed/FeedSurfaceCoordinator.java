@@ -26,6 +26,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
@@ -70,7 +71,6 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final SnackbarManager mSnackbarManager;
     @Nullable
     private final View mNtpHeader;
-    private final ActionApi mActionApi;
     private final boolean mShowDarkBackground;
     private final boolean mIsPlaceholderShown;
     private final FeedSurfaceDelegate mDelegate;
@@ -78,6 +78,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final int mWideMargin;
     private final FeedSurfaceMediator mMediator;
     private final BottomSheetController mBottomSheetController;
+    private final FeedActionHandler.Options mActionOptions;
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
@@ -96,6 +97,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private @Nullable PersonalizedSigninPromoView mSigninPromoView;
     private @Nullable ViewResizer mStreamViewResizer;
     private @Nullable NativePageNavigationDelegate mPageNavigationDelegate;
+    private @Nullable Profile mProfile;
 
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
@@ -193,7 +195,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
      * @param snapScrollHelper The {@link SnapScrollHelper} for the New Tab Page.
      * @param ntpHeader The extra header on top of the feeds for the New Tab Page.
      * @param sectionHeaderView The {@link SectionHeaderView} for the feed.
-     * @param actionApi The {@link ActionApi} implementation to handle actions.
+     * @param actionOptions Configures feed actions.
      * @param showDarkBackground Whether is shown on dark background.
      * @param delegate The constructing {@link FeedSurfaceDelegate}.
      * @param pageNavigationDelegate The {@link NativePageNavigationDelegate}
@@ -204,7 +206,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
             TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
-            @Nullable SectionHeaderView sectionHeaderView, ActionApi actionApi,
+            @Nullable SectionHeaderView sectionHeaderView, FeedActionHandler.Options actionOptions,
             boolean showDarkBackground, FeedSurfaceDelegate delegate,
             @Nullable NativePageNavigationDelegate pageNavigationDelegate, Profile profile,
             boolean isPlaceholderShown, BottomSheetController bottomSheetController) {
@@ -212,12 +214,13 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
         mSectionHeaderView = sectionHeaderView;
-        mActionApi = actionApi;
         mShowDarkBackground = showDarkBackground;
         mIsPlaceholderShown = isPlaceholderShown;
         mDelegate = delegate;
         mPageNavigationDelegate = pageNavigationDelegate;
         mBottomSheetController = bottomSheetController;
+        mProfile = profile;
+        mActionOptions = actionOptions;
 
         Resources resources = mActivity.getResources();
         mDefaultMargin =
@@ -311,8 +314,9 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mScrollViewResizer = null;
         }
 
-        if (FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+        boolean v2Enabled = FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2);
+        if (v2Enabled) {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
                     mPageNavigationDelegate, mBottomSheetController);
         } else {
@@ -322,7 +326,10 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mImageLoader = new FeedImageLoader(
                     mActivity, GlobalDiscardableReferencePool.getReferencePool());
 
-            mStream = FeedV1StreamCreator.createStream(mActivity, mImageLoader, mActionApi,
+            ActionApi actionApi = new FeedActionHandler(mActionOptions, mPageNavigationDelegate,
+                    FeedProcessScopeFactory.getFeedConsumptionObserver(),
+                    FeedProcessScopeFactory.getFeedLoggingBridge(), mActivity, mProfile);
+            mStream = FeedV1StreamCreator.createStream(mActivity, mImageLoader, actionApi,
                     mUiConfig, mSnackbarManager, mShowDarkBackground, mIsPlaceholderShown);
         }
 
@@ -350,8 +357,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         } else if (mSectionHeaderView != null) {
             mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mSectionHeaderView)));
         }
-        mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(
-                FeedProcessScopeFactory.getFeedLoggingBridge()));
+
+        if (!v2Enabled) {
+            mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(
+                    FeedProcessScopeFactory.getFeedLoggingBridge()));
+        }
 
         // Work around https://crbug.com/943873 where default focus highlight shows up after
         // toggling dark mode.

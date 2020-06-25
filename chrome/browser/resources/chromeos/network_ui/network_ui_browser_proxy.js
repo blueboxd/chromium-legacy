@@ -1,0 +1,127 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+cr.define('network_ui', function() {
+  /** @interface */
+  /* #export */ class NetworkUIBrowserProxy {
+    /** @param {string} type */
+    addNetwork(type) {}
+
+    /**
+     * @param {string} type
+     * @return {Promise<!Array>}
+     */
+    getShillDeviceProperties(type) {}
+
+    /**
+     * @return {Promise<!Array>}
+     */
+    getShillEthernetEAP() {}
+
+    /**
+     * @param {string} guid
+     * @return {Promise<!Array>}
+     */
+    getShillNetworkProperties(guid) {}
+
+    /**
+     * @param {string} content
+     * @return {Promise<!Array>}
+     */
+    importONC(content) {}
+
+    /**
+     * @return {Promise<!Array>}
+     */
+    openCellularActivationUi() {}
+
+    /**
+     * @param {string} debugging
+     * @return {Promise<!Array>}
+     */
+    setShillDebugging(debugging) {}
+
+    showAddNewWifi() {}
+
+    /** @param {string} guid */
+    showNetworkConfig(guid) {}
+
+    /** @param {string} guid */
+    showNetworkDetails(guid) {}
+
+    /**
+     * @param {Object<string>} options
+     * @return {Promise<!Array>}
+     */
+    storeLogs(options) {}
+  }
+
+  /**
+   * @implements {network_ui.NetworkUIBrowserProxy}
+   */
+  /* #export */ class NetworkUIBrowserProxyImpl {
+    /** @override */
+    addNetwork(type) {
+      chrome.send('addNetwork', [type]);
+    }
+
+    /** @override */
+    getShillDeviceProperties(type) {
+      return cr.sendWithPromise('getShillDeviceProperties', type);
+    }
+
+    /** @override */
+    getShillEthernetEAP() {
+      return cr.sendWithPromise('getShillEthernetEAP');
+    }
+
+    /** @override */
+    getShillNetworkProperties(guid) {
+      return cr.sendWithPromise('getShillNetworkProperties', guid);
+    }
+
+    /** @override */
+    importONC(content) {
+      return cr.sendWithPromise('importONC', content);
+    }
+
+    /** @override */
+    openCellularActivationUi() {
+      return cr.sendWithPromise('openCellularActivationUi');
+    }
+
+    /** @override */
+    setShillDebugging(debugging) {
+      return cr.sendWithPromise('setShillDebugging', debugging);
+    }
+
+    /** @override */
+    showAddNewWifi() {
+      chrome.send('showAddNewWifi');
+    }
+
+    /** @override */
+    showNetworkConfig(guid) {
+      chrome.send('showNetworkConfig', [guid]);
+    }
+
+    /** @override */
+    showNetworkDetails(guid) {
+      chrome.send('showNetworkDetails', [guid]);
+    }
+
+    /** @override */
+    storeLogs(options) {
+      return cr.sendWithPromise('storeLogs', options);
+    }
+  }
+
+  cr.addSingletonGetter(NetworkUIBrowserProxyImpl);
+
+  // #cr_define_end
+  return {
+    NetworkUIBrowserProxy: NetworkUIBrowserProxy,
+    NetworkUIBrowserProxyImpl: NetworkUIBrowserProxyImpl
+  };
+});

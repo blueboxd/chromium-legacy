@@ -92,6 +92,8 @@ component("chromeos") {
 
   if (is_printing_ppd_provider_v3) {
     sources += [
+      "printing/ppd_metadata_parser.cc",
+      "printing/ppd_metadata_parser.h",
       "printing/ppd_provider_v3.cc",
       "printing/printer_config_cache.cc",
       "printing/printer_config_cache.h",
@@ -214,7 +216,12 @@ test("chromeos_unittests") {
   ]
 
   if (is_printing_ppd_provider_v3) {
-    sources += [ "printing/printer_config_cache_unittest.cc" ]
+    sources += [
+      "printing/fake_printer_config_cache.cc",
+      "printing/fake_printer_config_cache.h",
+      "printing/ppd_metadata_parser_unittest.cc",
+      "printing/printer_config_cache_unittest.cc",
+    ]
   } else {
     sources += [ "printing/ppd_provider_unittest.cc" ]
   }

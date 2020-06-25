@@ -49,8 +49,7 @@ class ClientSideDetectionHost;
 
 // Main service which pushes models to the renderers, responds to classification
 // requests. This owns two ModelLoader objects.
-class ClientSideDetectionService : public content::NotificationObserver,
-                                   public KeyedService {
+class ClientSideDetectionService : public KeyedService {
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
@@ -74,11 +73,6 @@ class ClientSideDetectionService : public content::NotificationObserver,
 
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
                            std::unique_ptr<std::string> response_body);
-
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.
   // The URL scheme of the |url()| in the request should be HTTP.  This method
@@ -124,6 +118,10 @@ class ClientSideDetectionService : public content::NotificationObserver,
 
   // Get the model status for the given client-side model.
   ModelLoader::ClientModelStatus GetLastModelStatus();
+
+  // Returns the model string. Virtual so that mock implementation can override
+  // it.
+  virtual std::string GetModelStr();
 
   // Makes ModelLoaders be constructed by calling |factory| rather than the
   // default constructor.
@@ -234,8 +232,6 @@ class ClientSideDetectionService : public content::NotificationObserver,
 
   // The URLLoaderFactory we use to issue network requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  content::NotificationRegistrar registrar_;
 
   // PrefChangeRegistrar used to track when the Safe Browsing pref changes.
   PrefChangeRegistrar pref_change_registrar_;

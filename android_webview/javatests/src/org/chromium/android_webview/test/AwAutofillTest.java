@@ -1900,7 +1900,6 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @FlakyTest
     public void testDatalistPopup() throws Throwable {
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
                 + "<input type='text' id='text1' name='username'>"
@@ -1949,7 +1948,9 @@ public class AwAutofillTest {
     private void pollDatalistPopupShown() {
         AwActivityTestRule.pollInstrumentationThread(() -> {
             AutofillPopup popup = mAutofillProvider.getDatalistPopupForTesting();
-            return popup != null && popup.getListView().getChildCount() > 0;
+            return popup != null && popup.getListView().getChildCount() > 0
+                    && popup.getListView().getChildAt(0).getWidth() > 0
+                    && popup.getListView().getChildAt(0).isAttachedToWindow();
         });
     }
 

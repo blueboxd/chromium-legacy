@@ -630,8 +630,15 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
 }
 
 // Navigate from back and forward repeatedly.
+// Flaky on linux and chromeOs asan bot.
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && defined(ADDRESS_SANITIZER)
+#define MAYBE_NavigateBackForwardRepeatedly \
+  DISABLED_NavigateBackForwardRepeatedly
+#else
+#define MAYBE_NavigateBackForwardRepeatedly NavigateBackForwardRepeatedly
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       NavigateBackForwardRepeatedly) {
+                       MAYBE_NavigateBackForwardRepeatedly) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));

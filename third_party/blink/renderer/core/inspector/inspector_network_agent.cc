@@ -1102,7 +1102,7 @@ void InspectorNetworkAgent::DidReceiveData(uint64_t identifier,
   if (data) {
     NetworkResourcesData::ResourceData const* resource_data =
         resources_data_->Data(request_id);
-    if (resource_data &&
+    if (resource_data && !resource_data->HasContent() &&
         (!resource_data->CachedResource() ||
          resource_data->CachedResource()->GetDataBufferingPolicy() ==
              kDoNotBufferData ||
@@ -1151,7 +1151,7 @@ void InspectorNetworkAgent::DidFinishLoading(
         pending_encoded_data_length);
   }
 
-  if (resource_data &&
+  if (resource_data && !resource_data->HasContent() &&
       (!resource_data->CachedResource() ||
        resource_data->CachedResource()->GetDataBufferingPolicy() ==
            kDoNotBufferData ||

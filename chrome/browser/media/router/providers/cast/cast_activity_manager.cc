@@ -166,6 +166,8 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
     base::UmaHistogramBoolean(kHistogramAudioSender,
                               cast_source.allow_audio_capture());
   }
+  RecordLaunchSessionRequestSupportedAppTypes(
+      cast_source.supported_app_types());
   std::string app_id = ChooseAppId(cast_source, params.sink);
 
   DVLOG(2) << "Launching session with route ID = " << route_id
@@ -719,6 +721,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
+  RecordLaunchSessionResponseAppType(session->value().FindKey("appType"));
 
   const std::string& client_id = cast_source.client_id();
   if (!client_id.empty()) {

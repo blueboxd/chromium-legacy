@@ -36,7 +36,7 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-const std::vector<SearchConcept>& GetCrostiniSearchConcepts() {
+const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniDetailsSubpagePath,
@@ -45,12 +45,6 @@ const std::vector<SearchConcept>& GetCrostiniSearchConcepts() {
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDetails},
        {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_CROSTINI_USB_PREFERENCES,
        mojom::kCrostiniUsbPreferencesSubpagePath,
        mojom::SearchResultIcon::kPenguin,
@@ -88,6 +82,13 @@ const std::vector<SearchConcept>& GetCrostiniOptedInSearchConcepts() {
 
 const std::vector<SearchConcept>& GetCrostiniOptedOutSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CROSTINI,
+       mojom::kCrostiniSectionPath,
+       mojom::SearchResultIcon::kPenguin,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kCrostini},
+       {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_CROSTINI_SETUP,
        mojom::kCrostiniSectionPath,
        mojom::SearchResultIcon::kPenguin,
@@ -550,7 +551,6 @@ bool CrostiniSection::IsPortForwardingAllowed() {
 }
 
 void CrostiniSection::UpdateSearchTags() {
-  registry()->RemoveSearchTags(GetCrostiniSearchConcepts());
   registry()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
   registry()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
   registry()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
@@ -562,8 +562,6 @@ void CrostiniSection::UpdateSearchTags() {
 
   if (!IsCrostiniAllowed())
     return;
-
-  registry()->AddSearchTags(GetCrostiniSearchConcepts());
 
   if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
     registry()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());

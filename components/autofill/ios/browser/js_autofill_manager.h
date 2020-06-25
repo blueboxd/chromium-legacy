@@ -8,7 +8,6 @@
 #include "base/ios/block_types.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 
 namespace web {
 class WebFrame;
@@ -71,12 +70,6 @@ class WebFrame;
 // Toggles tracking the source of the input events in the frame.
 - (void)toggleTrackingUserEditedFields:(BOOL)state
                                inFrame:(web::WebFrame*)frame;
-
-// Designated initializer. |receiver| should not be nil.
-- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

@@ -187,8 +187,7 @@ void GetFormField(autofill::FormFieldData* field,
     _prefObserverBridge->ObserveChangesForPreference(
         autofill::prefs::kAutofillProfileEnabled, &_prefChangeRegistrar);
 
-    _jsAutofillManager = [[JsAutofillManager alloc]
-        initWithReceiver:_webState->GetJSInjectionReceiver()];
+    _jsAutofillManager = [[JsAutofillManager alloc] init];
   }
   return self;
 }

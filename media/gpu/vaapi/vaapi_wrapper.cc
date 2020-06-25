@@ -718,6 +718,18 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) const {
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
+  // VAProfiles supported by VaapiWrapper.
+  constexpr VAProfile kSupportedVaProfiles[] = {
+      VAProfileH264ConstrainedBaseline,
+      VAProfileH264Main,
+      VAProfileH264High,
+      VAProfileJPEGBaseline,
+      VAProfileVP8Version0_3,
+      VAProfileVP9Profile0,
+      // Chrome does not support VP9 Profile 1, see b/153680337.
+      // VAProfileVP9Profile1,
+      VAProfileVP9Profile2,
+      VAProfileVP9Profile3};
 
   if (!GetSupportedVAProfiles(&va_profiles))
     return supported_profile_infos;
@@ -727,6 +739,10 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
       VADisplayState::Get()->va_vendor_string();
 
   for (const auto& va_profile : va_profiles) {
+    if ((mode != VaapiWrapper::CodecMode::kVideoProcess) &&
+        !base::Contains(kSupportedVaProfiles, va_profile)) {
+      continue;
+    }
     const std::vector<VAEntrypoint> supported_entrypoints =
         GetEntryPointsForProfile(va_lock_, va_display_, mode, va_profile);
     if (supported_entrypoints.empty())
@@ -1121,13 +1137,16 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
 }
 
 bool IsLowPowerEncSupported(VAProfile va_profile) {
-  // Enabled only for H264/AVC & VP9 Encoders
-  if (va_profile != VAProfileH264ConstrainedBaseline &&
-      va_profile != VAProfileH264Main && va_profile != VAProfileH264High &&
-      va_profile != VAProfileVP9Profile0 &&
-      va_profile != VAProfileVP9Profile1) {
+  constexpr VAProfile kSupportedLowPowerEncodeProfiles[] = {
+      VAProfileH264ConstrainedBaseline,
+      VAProfileH264Main,
+      VAProfileH264High,
+      VAProfileVP9Profile0,
+      VAProfileVP9Profile1,
+      VAProfileVP9Profile2,
+      VAProfileVP9Profile3};
+  if (!base::Contains(kSupportedLowPowerEncodeProfiles, va_profile))
     return false;
-  }
 
   if ((IsGen95Gpu() || IsGen9Gpu()) &&
       !base::FeatureList::IsEnabled(kVaapiLowPowerEncoderGen9x)) {

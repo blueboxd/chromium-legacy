@@ -93,7 +93,10 @@ IntersectionObserver& DisplayLockDocumentState::EnsureIntersectionObserver() {
         WTF::BindRepeating(
             &DisplayLockDocumentState::ProcessDisplayLockActivationObservation,
             WrapWeakPersistent(this)),
-        IntersectionObserver::kDeliverDuringPostLifecycleSteps);
+        IntersectionObserver::kDeliverDuringPostLifecycleSteps,
+        IntersectionObserver::kFractionOfTarget, 0 /* delay */,
+        false /* track_visibility */, false /* always report_root_bounds */,
+        IntersectionObserver::kApplyMarginToTarget);
   }
   return *intersection_observer_;
 }

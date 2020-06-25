@@ -249,6 +249,7 @@ class BrightnessSetting : public SettingWithDeviceAction {
            client_op::ModifySettingArgs request, bool success,
            double current_value) {
           if (!success || !this_) {
+            LOG(WARNING) << "Failed to get brightness level";
             return;
           }
           HandleSliderChange(
@@ -294,6 +295,8 @@ bool AssistantDeviceSettingsDelegate::IsSettingSupported(
 
 void AssistantDeviceSettingsDelegate::HandleModifyDeviceSetting(
     const client_op::ModifySettingArgs& modify_setting_args) {
+  VLOG(1) << "Assistant: Modifying Device Setting '"
+          << modify_setting_args.setting_id() << "'";
   DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
 
   for (const auto& setting : settings_) {

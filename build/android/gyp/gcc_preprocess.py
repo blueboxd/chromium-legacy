@@ -47,7 +47,7 @@ def main(args):
   DoGcc(options)
 
   if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile, options.output)
 
 
 if __name__ == '__main__':

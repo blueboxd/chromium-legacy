@@ -26,11 +26,14 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
-std::unique_ptr<WebURLLoaderMockFactory> WebURLLoaderMockFactory::Create() {
-  return base::WrapUnique(new WebURLLoaderMockFactoryImpl(nullptr));
+// static
+WebURLLoaderMockFactory* WebURLLoaderMockFactory::GetSingletonInstance() {
+  DEFINE_STATIC_LOCAL(WebURLLoaderMockFactoryImpl, s_singleton, (nullptr));
+  return &s_singleton;
 }
 
 WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl(

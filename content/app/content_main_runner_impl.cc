@@ -76,6 +76,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/zygote/zygote_buildflags.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -94,7 +95,6 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
@@ -122,11 +122,11 @@
 #include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)
-#include "services/service_manager/zygote/common/zygote_fork_delegate_linux.h"
+#include "content/public/common/zygote/zygote_fork_delegate_linux.h"
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#include "content/zygote/zygote_main.h"
 #include "sandbox/linux/services/libc_interceptor.h"
-#include "services/service_manager/zygote/zygote_main.h"
 #endif
 
 #endif  // OS_POSIX || OS_FUCHSIA
@@ -134,7 +134,7 @@
 #if defined(OS_LINUX)
 #include "base/native_library.h"
 #include "base/rand_util.h"
-#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
+#include "content/public/common/zygote/sandbox_support_linux.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -155,11 +155,12 @@
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/browser/sandbox_host_linux.h"
+#include "content/browser/zygote_host/zygote_host_impl_linux.h"
+#include "content/common/zygote/zygote_communication_linux.h"
+#include "content/common/zygote/zygote_handle_impl_linux.h"
+#include "content/public/common/zygote/sandbox_support_linux.h"
+#include "content/public/common/zygote/zygote_handle.h"
 #include "media/base/media_switches.h"
-#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
-#include "services/service_manager/zygote/common/zygote_handle.h"
-#include "services/service_manager/zygote/host/zygote_communication_linux.h"
-#include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -262,10 +263,9 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // sandboxed processes to talk to it.
   base::FileHandleMappingVector additional_remapped_fds;
   additional_remapped_fds.emplace_back(
-      SandboxHostLinux::GetInstance()->GetChildSocket(),
-      service_manager::GetSandboxFD());
+      SandboxHostLinux::GetInstance()->GetChildSocket(), GetSandboxFD());
 
-  return service_manager::ZygoteHostImpl::GetInstance()->LaunchZygote(
+  return ZygoteHostImpl::GetInstance()->LaunchZygote(
       cmd_line, control_fd, std::move(additional_remapped_fds));
 }
 
@@ -287,15 +287,15 @@ void InitializeZygoteSandboxForBrowserProcess(
   }
 
   // Tickle the zygote host so it forks now.
-  service_manager::ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
-  service_manager::CreateUnsandboxedZygote(base::BindOnce(LaunchZygoteHelper));
-  service_manager::ZygoteHandle generic_zygote =
-      service_manager::CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
+  ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
+  CreateUnsandboxedZygote(base::BindOnce(LaunchZygoteHelper));
+  ZygoteHandle generic_zygote =
+      CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
 
   // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
   // proxy. It is currently done this way due to concerns about race
   // conditions.
-  service_manager::ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
+  ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
       generic_zygote->GetSandboxStatus());
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -468,8 +468,7 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif
   };
 
-  std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>
-      zygote_fork_delegates;
+  std::vector<std::unique_ptr<ZygoteForkDelegate>> zygote_fork_delegates;
   delegate->ZygoteStarting(&zygote_fork_delegates);
   media::InitializeMediaLibrary();
 
@@ -478,7 +477,7 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif
 
   // This function call can return multiple times, once per fork().
-  if (!service_manager::ZygoteMain(std::move(zygote_fork_delegates))) {
+  if (!ZygoteMain(std::move(zygote_fork_delegates))) {
     return 1;
   }
 

@@ -131,6 +131,7 @@
 ../../tools/swarming_client/libs/logdog/streamname.py
 ../../tools/swarming_client/libs/logdog/varint.py
 ../gn_helpers.py
+../print_python_deps.py
 ../skia_gold_common/__init__.py
 ../skia_gold_common/skia_gold_properties.py
 ../skia_gold_common/skia_gold_session.py

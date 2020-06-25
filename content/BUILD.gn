@@ -97,6 +97,7 @@ if (is_component_build) {
     sources = [
       "//services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.cc",
       "common/sandbox_init_linux.cc",
+      "common/zygote/send_zygote_child_ping_linux.cc",
       "public/common/content_switches.cc",
       "public/common/content_switches.h",
     ]

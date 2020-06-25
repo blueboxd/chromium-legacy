@@ -213,10 +213,14 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
             gpu::ContextResult::kSuccess);
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   if (context_->HasRobustness()) {
     EXPECT_CALL(*gl_, GetGraphicsResetStatusARB())
         .WillOnce(Return(GL_NO_ERROR));
   }
+
   decoder_->MakeCurrent();
   decoder_->BeginDecoding();
 

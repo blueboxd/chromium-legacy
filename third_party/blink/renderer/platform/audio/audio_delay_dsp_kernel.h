@@ -50,6 +50,18 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
   void ProcessARate(const float* source,
                     float* destination,
                     uint32_t frames_to_process);
+  // Main processing loop for ProcessARate using scalar operations.  Returns the
+  // new write_index.
+  int ProcessARateScalar(unsigned start,
+                         int w_index,
+                         float* destination,
+                         uint32_t frames_to_process) const;
+
+  // Vector version of ProcessARateScalar.  Returns the number of samples
+  // process by this function and the updated wirte_index_.
+  std::tuple<unsigned, int> ProcessARateVector(
+      float* destination,
+      uint32_t frames_to_process) const;
 
   void Reset() override;
 

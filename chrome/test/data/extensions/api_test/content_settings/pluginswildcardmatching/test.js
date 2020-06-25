@@ -17,16 +17,37 @@ chrome.test.runTests([function setAndCheckContentSettings() {
     'setting': 'allow'
   });
   cs['plugins'].set({
+    'primaryPattern': '*://drive.google.com:443/*',
+    'secondaryPattern': '<all_urls>',
+    'setting': 'allow'
+  });
+  cs['plugins'].set({
+    'primaryPattern': '*://*.google.com:443/*',
+    'secondaryPattern': '<all_urls>',
+    'setting': 'allow'
+  });
+  cs['plugins'].set({
     'primaryPattern': 'http://*.google.com:443/*',
     'secondaryPattern': '<all_urls>',
     'setting': 'allow'
   });
+  cs['plugins'].set({
+    'primaryPattern': '<all_urls>',
+    'secondaryPattern': '<all_urls>',
+    'setting': 'allow'
+  })
   cs['plugins'].get(
       {'primaryUrl': 'http://drive.google.com:443/'},
-      expect(
-          {'setting': 'allow'},
-          'Flash should be allowed on this ' +
-              'page'));
+      expect({'setting': 'allow'}, 'Flash should be allowed on this page'));
+  cs['plugins'].get(
+      {'primaryUrl': 'https://drive.google.com:443/'},
+      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
+  cs['plugins'].get(
+      {'primaryUrl': 'http://maps.google.com:443/'},
+      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
+  cs['plugins'].get(
+      {'primaryUrl': 'http://example.com:443/'},
+      expect({'setting': 'block'}, 'Flash should be allowed on this page'));
   cs['plugins'].get(
       {'primaryUrl': 'http://mail.google.com:443/'},
       expect(

@@ -3724,6 +3724,15 @@
     "expiry_milestone": 85
   },
   {
+    "name": "privacy-elevated-android",
+    "owners": [
+      "andzaytsev",
+      "msramek",
+      "chrome-friendly-settings@google.com"
+    ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "privacy-settings-redesign",
     "owners": [
       "harrisonsean",
@@ -3989,6 +3998,11 @@
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "shared-highlighting-ios",
+    "owners": ["tmartino"],
+    "expiry_milestone": 90
   },
   {
     "name": "sharing-device-expiration",

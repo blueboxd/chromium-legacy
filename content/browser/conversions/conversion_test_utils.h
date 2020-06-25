@@ -18,10 +18,21 @@
 #include "content/browser/conversions/conversion_storage.h"
 #include "content/browser/conversions/storable_conversion.h"
 #include "content/browser/conversions/storable_impression.h"
+#include "content/test/test_content_browser_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
 namespace content {
+
+class ConversionDisallowingContentBrowserClient
+    : public TestContentBrowserClient {
+ public:
+  ConversionDisallowingContentBrowserClient() = default;
+  ~ConversionDisallowingContentBrowserClient() override = default;
+
+  // ContentBrowserClient:
+  bool AllowConversionMeasurement(BrowserContext* context) override;
+};
 
 class ConfigurableStorageDelegate : public ConversionStorage::Delegate {
  public:

@@ -239,7 +239,7 @@ bool BaseLogFileWriter::Init() {
   file_.Initialize(path_, file_flags);
   if (!file_.IsValid() || !file_.created()) {
     LOG(WARNING) << "Couldn't create remote-bound WebRTC event log file.";
-    if (!base::DeleteFile(path_, /*recursive=*/false)) {
+    if (!base::DeleteFile(path_)) {
       LOG(ERROR) << "Failed to delete " << path_ << ".";
     }
     SetState(State::ERRORED);
@@ -312,7 +312,7 @@ void BaseLogFileWriter::Delete() {
     file_.Close();
   }
 
-  if (!base::DeleteFile(path_, /*recursive=*/false)) {
+  if (!base::DeleteFile(path_)) {
     LOG(ERROR) << "Failed to delete " << path_ << ".";
   }
 

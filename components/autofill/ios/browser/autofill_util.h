@@ -72,7 +72,6 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               CRWJSInjectionReceiver* js_injection_receiver,
                                base::OnceCallback<void(NSString*)> callback);
 
 }  // namespace autofill

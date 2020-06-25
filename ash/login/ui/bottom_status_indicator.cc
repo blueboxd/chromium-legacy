@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "ash/login/ui/bottom_status_indicator.h"
 
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -20,6 +22,8 @@ BottomStatusIndicator::BottomStatusIndicator() {
   label_->SetSubpixelRenderingEnabled(false);
   AddChildView(label_);
 
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+
   SetVisible(false);
 }
 
@@ -33,6 +37,11 @@ void BottomStatusIndicator::SetIcon(const gfx::VectorIcon& vector_icon,
   icon_->SetImage(gfx::CreateVectorIcon(
       vector_icon, AshColorProvider::Get()->GetContentLayerColor(
                        type, AshColorProvider::AshColorMode::kDark)));
+}
+
+void BottomStatusIndicator::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kTooltip;
+  node_data->SetName(label_->GetText());
 }
 
 }  // namespace ash

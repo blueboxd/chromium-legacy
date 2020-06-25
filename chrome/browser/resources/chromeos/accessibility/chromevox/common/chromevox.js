@@ -15,6 +15,9 @@ goog.addDependency('tts_interface.js', ['TtsInterface'], []);
 
 goog.provide('ChromeVox');
 
+goog.require('AbstractEarcons');
+goog.require('BrailleInterface');
+goog.require('TtsInterface');
 goog.require('constants');
 
 ChromeVox = class {

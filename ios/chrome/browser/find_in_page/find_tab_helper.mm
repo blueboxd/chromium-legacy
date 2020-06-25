@@ -14,10 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-const char kFindActionName[] = "Find";
-const char kFindNextActionName[] = "FindNext";
-const char kFindPreviousActionName[] = "FindPrevious";
-
 FindTabHelper::FindTabHelper(web::WebState* web_state) {
   web_state->AddObserver(this);
   controller_ = [[FindInPageController alloc] initWithWebState:web_state];
@@ -31,17 +27,14 @@ void FindTabHelper::SetResponseDelegate(
 }
 
 void FindTabHelper::StartFinding(NSString* search_term) {
-  base::RecordAction(base::UserMetricsAction(kFindActionName));
   [controller_ findStringInPage:search_term];
 }
 
 void FindTabHelper::ContinueFinding(FindDirection direction) {
   if (direction == FORWARD) {
-    base::RecordAction(base::UserMetricsAction(kFindNextActionName));
     [controller_ findNextStringInPage];
 
   } else if (direction == REVERSE) {
-    base::RecordAction(base::UserMetricsAction(kFindPreviousActionName));
     [controller_ findPreviousStringInPage];
 
   } else {

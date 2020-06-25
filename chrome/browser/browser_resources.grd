@@ -332,6 +332,9 @@
         <include name="IDR_IDENTITY_INTERNALS_JS" file="resources\identity_internals\identity_internals.js" type="BINDATA" />
       </if>
       <if expr="chromeos">
+        <include name="IDR_NETWORK_UI_PAGE_HTML" file="resources\chromeos\network_ui\network.html" type="BINDATA" />
+        <include name="IDR_NETWORK_UI_BROWSER_PROXY_HTML" file="resources\chromeos\network_ui\network_ui_browser_proxy.html" type="BINDATA" />
+        <include name="IDR_NETWORK_UI_BROWSER_PROXY_JS" file="resources\chromeos\network_ui\network_ui_browser_proxy.js" type="BINDATA" />
         <include name="IDR_NETWORK_UI_HTML" file="resources\chromeos\network_ui\network_ui.html" type="BINDATA" />
         <include name="IDR_NETWORK_UI_JS" file="resources\chromeos\network_ui\network_ui.js" type="BINDATA" />
         <include name="IDR_NETWORK_STATE_UI_HTML" file="resources\chromeos\network_ui\network_state_ui.html" type="BINDATA" />

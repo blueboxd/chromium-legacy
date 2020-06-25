@@ -63,8 +63,9 @@ def main(args):
 
   # Depfile used only by dist_jar().
   if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, options.output, inputs=depfile_deps, add_pydeps=False)
+    build_utils.WriteDepfile(options.depfile,
+                             options.output,
+                             inputs=depfile_deps)
 
 
 if __name__ == '__main__':

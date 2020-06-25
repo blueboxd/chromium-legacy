@@ -19,6 +19,7 @@ goog.require('CommandStore');
 goog.require('KeyMap');
 goog.require('KeyUtil');
 goog.require('LibLouis');
+goog.require('NavBraille');
 
 /**
  * Class to manage the keyboard explorer.
@@ -238,7 +239,8 @@ KbExplorer = class {
    */
   static output(text, opt_braille) {
     ChromeVox.tts.speak(text, window.backgroundWindow.QueueMode.QUEUE);
-    ChromeVox.braille.write({text: new Spannable(opt_braille || text)});
+    ChromeVox.braille.write(
+        new NavBraille({text: new Spannable(opt_braille || text)}));
   }
 
   /** Clears ChromeVox range. */

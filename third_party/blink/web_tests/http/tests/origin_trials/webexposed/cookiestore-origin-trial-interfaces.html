@@ -21,6 +21,7 @@ test(t => {
 
 test(t => {
   assert_true('cookieStore' in self, 'cookieStore property exists on global scope');
+  assert_not_equals(window.cookieStore, undefined, 'cookieStore property can be accessed on window');
 }, 'Cookie Store API entry point in Origin-Trial enabled document.');
 
 service_worker_test('resources/cookiestore-origin-trial-interfaces-serviceworker-enabled.php');

@@ -195,7 +195,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
       UniqueIDTabHelper::FromWebState(_webState);
   uint32_t nextAvailableRendererID =
       uniqueIDTabHelper->GetNextAvailableRendererID();
-  [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID];
+  [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
+                                             inFrame:web_frame];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {

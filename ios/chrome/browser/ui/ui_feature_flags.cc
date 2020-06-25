@@ -59,3 +59,6 @@ const base::Feature kSafetyCheckIOS{"SafetyCheckIOS",
 
 const base::Feature kIllustratedEmptyStates{"IllustratedEmptyStates",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSharedHighlightingIOS{"SharedHighlightingIOS",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};

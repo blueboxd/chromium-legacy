@@ -128,8 +128,7 @@ void MoveFolderForLaterDeletion(const base::FilePath& source,
     return;
   auto failure_count =
       MoveContents(source, base::GetUniquePath(target), ExclusionPredicate());
-  if (failure_count.has_value() &&
-      !base::DeleteFile(source, /*recursive=*/false)) {
+  if (failure_count.has_value() && !base::DeleteFile(source)) {
     failure_count = failure_count.value() + 1;
     // Report precise values rather than an exponentially bucketed
     // histogram. Bucket 0 means that the target directory could not be
@@ -314,7 +313,7 @@ void SnapshotManager::RestoreSnapshot(const base::Version& version) {
 
     auto last_version_file_path =
         snapshot_dir.Append(kDowngradeLastVersionFile);
-    base::DeleteFile(last_version_file_path, /*recursive=*/false);
+    base::DeleteFile(last_version_file_path);
 
     base::UmaHistogramBoolean(
         "Downgrade.RestoreSnapshot.CleanupAfterFailure.Result",
@@ -417,7 +416,7 @@ void SnapshotManager::DeleteSnapshotDataForProfile(
       }
       // Non recursive deletion will fail if the directory is not empty. In this
       // case we only want to delete the directory if it is empty.
-      base::DeleteFile(profile_absolute_path, /*recursive=*/false);
+      base::DeleteFile(profile_absolute_path);
     }
   }
 }

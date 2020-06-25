@@ -14,6 +14,7 @@
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
@@ -135,6 +136,13 @@ void PosixSystemProducer::ConnectToSystemService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(IsTracingInitialized());
   DCHECK(state_ == State::kDisconnected);
+
+  // Some Telemetry tests use sideloaded Perfetto library on pre-Pie devices.
+  // We allow those tests to use system tracing by setting the
+  // EnablePerfettoSystemTracing feature.
+  disallow_pre_android_pie_ =
+      !base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing);
+
   Connect();
 }
 

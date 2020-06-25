@@ -220,6 +220,12 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   bool InitializeForVulkan();
   bool InitializeForDawn();
 
+  // Provided as a callback to |device_|.
+  void DidSwapBuffersCompleteInternal(gpu::SwapBuffersCompleteParams params,
+                                      const gfx::Size& pixel_size);
+
+  DidSwapBufferCompleteCallback GetDidSwapBuffersCompleteCallback();
+
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_fbo0);
@@ -286,6 +292,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   // readback using GLRendererCopier.
   // TODO(samans): Remove |sequence_id| once readback always uses Skia.
   const gpu::SequenceId sequence_id_;
+  // Should only be run on the client thread with PostTaskToClientThread().
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;

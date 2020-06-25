@@ -1011,6 +1011,9 @@ extern const char kPreviewsAllowedDescription[];
 extern const char kPrintJobManagementAppName[];
 extern const char kPrintJobManagementAppDescription[];
 
+extern const char kPrivacyElevatedAndroidName[];
+extern const char kPrivacyElevatedAndroidDescription[];
+
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
 

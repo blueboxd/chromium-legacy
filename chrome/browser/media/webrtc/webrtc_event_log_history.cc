@@ -130,12 +130,11 @@ bool WebRtcEventLogHistoryFileWriter::Init() {
   DCHECK(!valid_);
 
   if (base::PathExists(path_)) {
-    if (!base::DeleteFile(path_, /*recursive=*/false)) {
+    if (!base::DeleteFile(path_)) {
       LOG(ERROR) << "History file already exists, and could not be deleted.";
       return false;
-    } else {
-      LOG(WARNING) << "History file already existed; deleted.";
     }
+    LOG(WARNING) << "History file already existed; deleted.";
   }
 
   // Attempt to create the file.
@@ -144,7 +143,7 @@ bool WebRtcEventLogHistoryFileWriter::Init() {
   file_.Initialize(path_, file_flags);
   if (!file_.IsValid() || !file_.created()) {
     LOG(WARNING) << "Couldn't create history file.";
-    if (!base::DeleteFile(path_, /*recursive=*/false)) {
+    if (!base::DeleteFile(path_)) {
       LOG(ERROR) << "Failed to delete " << path_ << ".";
     }
     return false;
@@ -218,7 +217,7 @@ bool WebRtcEventLogHistoryFileWriter::WriteUploadId(
 }
 
 void WebRtcEventLogHistoryFileWriter::Delete() {
-  if (!base::DeleteFile(path_, /*recursive=*/false)) {
+  if (!base::DeleteFile(path_)) {
     LOG(ERROR) << "History file could not be deleted.";
   }
 
@@ -301,7 +300,7 @@ bool WebRtcEventLogHistoryFileReader::Init() {
   base::File file(path_, file_flags);
   if (!file.IsValid()) {
     LOG(WARNING) << "Couldn't read history file.";
-    if (!base::DeleteFile(path_, /*recursive=*/false)) {
+    if (!base::DeleteFile(path_)) {
       LOG(ERROR) << "Failed to delete " << path_ << ".";
     }
     return false;

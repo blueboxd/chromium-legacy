@@ -1199,17 +1199,13 @@ void XRSystem::MakeXrCompatibleAsync(
   if (service_.is_bound()) {
     service_->MakeXrCompatible(std::move(callback));
   } else {
-    // If the service cannot be created, any sessions that can be supported will
-    // be managed entirely in Blink and thus cannot have an incompatible context
-    std::move(callback).Run(
-        device::mojom::XrCompatibleResult::kAlreadyCompatible);
+    std::move(callback).Run(device::mojom::XrCompatibleResult::kNotCompatible);
   }
 }
 
 void XRSystem::MakeXrCompatibleSync(
     device::mojom::XrCompatibleResult* xr_compatible_result) {
-  // See the comment in MakeXrCompatibleAsync().
-  *xr_compatible_result = device::mojom::XrCompatibleResult::kAlreadyCompatible;
+  *xr_compatible_result = device::mojom::XrCompatibleResult::kNotCompatible;
 
   TryEnsureService();
   if (service_.is_bound())

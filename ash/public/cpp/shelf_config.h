@@ -124,7 +124,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // if the shelf visibility should change during a drag.
   float drag_hide_ratio_threshold() const;
 
-  int app_icon_group_margin() const { return app_icon_group_margin_; }
   SkColor shelf_control_permanent_highlight_background() const {
     return shelf_control_permanent_highlight_background_;
   }
@@ -201,6 +200,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The padding between the app icon and the end of the scrollable shelf.
   int GetAppIconEndPadding() const;
 
+  // Returns the margin on either side of the group of app icons.
+  int GetAppIconGroupMargin() const;
+
   // The animation time for dimming shelf icons, widgets, and buttons.
   base::TimeDelta DimAnimationDuration() const;
 
@@ -267,8 +269,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   const int shelf_status_area_hit_region_padding_;
   const int shelf_status_area_hit_region_padding_dense_;
 
-  // The margin on either side of the group of app icons.
-  const int app_icon_group_margin_;
+  // The margin on either side of the group of app icons in tablet/clamshell.
+  const int app_icon_group_margin_tablet_;
+  const int app_icon_group_margin_clamshell_;
 
   const SkColor shelf_control_permanent_highlight_background_;
 

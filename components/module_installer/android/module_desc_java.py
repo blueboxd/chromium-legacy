@@ -94,8 +94,7 @@ def main():
     if options.depfile:
         build_utils.WriteDepfile(options.depfile,
                                  options.output,
-                                 inputs=[options.libraries_file],
-                                 add_pydeps=False)
+                                 inputs=[options.libraries_file])
 
 
 if __name__ == '__main__':

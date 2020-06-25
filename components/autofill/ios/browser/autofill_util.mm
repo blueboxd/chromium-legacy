@@ -19,7 +19,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
@@ -231,7 +230,6 @@ bool ExtractFormFieldData(const base::DictionaryValue& field,
 void ExecuteJavaScriptFunction(const std::string& name,
                                const std::vector<base::Value>& parameters,
                                web::WebFrame* frame,
-                               CRWJSInjectionReceiver* js_injection_receiver,
                                base::OnceCallback<void(NSString*)> callback) {
   __block base::OnceCallback<void(NSString*)> cb = std::move(callback);
 

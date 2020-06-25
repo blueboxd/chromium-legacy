@@ -182,7 +182,6 @@ test("weblayer_browsertests") {
       "//ui/android:android",
       "//ui/touch_selection:touch_selection",
       "//weblayer:locale_pak_assets",
-      "//weblayer/browser/safe_browsing:safe_browsing",
 
       # Needed for WebLayerImpl.
       "//weblayer/browser/java",

@@ -14,10 +14,8 @@ namespace weblayer {
 
 int TestLauncherDelegateImpl::RunTestSuite(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
-  // Browser tests are expected not to tear-down various globals and may
-  // complete with the thread priority being above NORMAL.
+  // Browser tests are expected not to tear-down various globals.
   test_suite.DisableCheckForLeakedGlobals();
-  test_suite.DisableCheckForThreadPriorityAtTestEnd();
   return test_suite.Run();
 }
 

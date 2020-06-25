@@ -2761,6 +2761,38 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*target));
 }
 
+TEST_F(DisplayLockContextRenderingTest, InnerScrollerAutoVisibilityMargin) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .auto { content-visibility: auto; }
+      #scroller { height: 300px; overflow: scroll }
+      #target { height: 10px; width: 10px; }
+      .spacer { height: 3000px }
+    </style>
+    <div id=scroller>
+      <div class=spacer></div>
+      <div id=target class=auto></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target->GetDisplayLockContext());
+  EXPECT_TRUE(target->GetDisplayLockContext()->IsLocked());
+
+  auto* scroller = GetDocument().getElementById("scroller");
+  // 2600 is spacer (3000) minus scroller height (300) minus 100 for some extra
+  // padding.
+  scroller->setScrollTop(2600);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Since the intersection observation is delivered on the next frame, run
+  // another lifecycle.
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(target->GetDisplayLockContext()->IsLocked());
+}
+
 TEST_F(DisplayLockContextRenderingTest,
        AutoReachesStableStateOnContentSmallerThanLockedSize) {
   SetHtmlInnerHTML(R"HTML(

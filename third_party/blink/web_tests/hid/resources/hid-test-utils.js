@@ -153,6 +153,7 @@ class FakeHidService {
     this.devices_ = new Map();
     this.fakeConnections_ = new Map();
     this.selectedDevices_ = [];
+    this.client_ = null;
   }
 
   // Creates and returns a HidDeviceInfo with the specified device IDs.
@@ -173,7 +174,7 @@ class FakeHidService {
 
   // Simulates a connected device. Returns the key used to store the device in
   // the map. The key is either the physical device ID, or the device GUID if it
-  // has no physical device ID. A device connection event is not generated.
+  // has no physical device ID.
   addDevice(deviceInfo) {
     let key = deviceInfo.physicalDeviceId;
     if (key.length === 0)
@@ -183,13 +184,20 @@ class FakeHidService {
       devices = [];
     devices.push(deviceInfo);
     this.devices_.set(key, devices);
+    if (this.client_)
+      this.client_.deviceAdded(deviceInfo);
     return key;
   }
 
-  // Simulates disconnecting a connected device. A device disconnection event is
-  // not generated.
+  // Simulates disconnecting a connected device.
   removeDevice(key) {
+    let devices = this.devices_.get(key);
     this.devices_.delete(key);
+    if (this.client_ && devices) {
+      devices.forEach(deviceInfo => {
+        this.client_.deviceRemoved(deviceInfo);
+      });
+    }
   }
 
   // Sets the key of the device that will be returned as the selected item the
@@ -207,6 +215,10 @@ class FakeHidService {
 
   bind(handle) {
     this.bindingSet_.addBinding(this, handle);
+  }
+
+  registerClient(client) {
+    this.client_ = new device.mojom.HidManagerClientAssociatedPtr(client);
   }
 
   // Returns an array of connected devices. Normally this would only include

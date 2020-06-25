@@ -153,6 +153,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               AutofillHttpAuth,
               (const PasswordForm&, const PasswordFormManagerForUI*),
               (override));
+  MOCK_METHOD(SyncState, GetPasswordSyncState, (), (const, override));
   MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
   MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
@@ -401,6 +402,9 @@ class PasswordFormManagerTest : public testing::Test,
         .WillRepeatedly(Return(&mock_autofill_download_manager_));
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(&pref_service_));
     ON_CALL(client_, IsCommittedMainFrameSecure()).WillByDefault(Return(true));
+    ON_CALL(*client_.GetPasswordFeatureManager(),
+            ShouldShowAccountStorageBubbleUi)
+        .WillByDefault(Return(true));
     ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
         .WillByDefault(Return(true));
@@ -2263,7 +2267,7 @@ TEST_P(PasswordFormManagerTest, ProvisinallySavedOnSingleUsernameForm) {
                                                 &driver_, nullptr));
 }
 
-TEST_P(PasswordFormManagerTest, NotMovableToAccountStore) {
+TEST_P(PasswordFormManagerTest, NotMovableToAccountStoreWhenBlocked) {
   const std::string kEmail = "email@gmail.com";
   const std::string kGaiaId = signin::GetTestGaiaIdForEmail(kEmail);
 
@@ -2283,12 +2287,9 @@ TEST_P(PasswordFormManagerTest, NotMovableToAccountStore) {
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
 
+  // Even with |kEmail| is signed in, credentials should NOT be movable.
   ON_CALL(client_, GetIdentityManager())
       .WillByDefault(Return(identity_test_env_.identity_manager()));
-  // If not user is signed in, the credentials should NOT be movable.
-  EXPECT_FALSE(form_manager_->IsMovableToAccountStore());
-
-  // When |kEmail| is signed in, credentials should NOT be movable.
   identity_test_env_.SetPrimaryAccount(kEmail);
   EXPECT_FALSE(form_manager_->IsMovableToAccountStore());
 }

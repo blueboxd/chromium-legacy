@@ -203,7 +203,7 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   // Get a temporary filename. We don't want the file to exist to begin with
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
-  EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
+  EXPECT_TRUE(base::DeleteFile(test_list_path_));
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
       new WebRtcLogUploader());
 
@@ -241,7 +241,7 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   // Get a temporary filename. We don't want the file to exist to begin with
   // since that's the normal use case, hence the delete.
   ASSERT_TRUE(base::CreateTemporaryFile(&test_list_path_));
-  EXPECT_TRUE(base::DeleteFile(test_list_path_, false));
+  EXPECT_TRUE(base::DeleteFile(test_list_path_));
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader(
       new WebRtcLogUploader());
 

@@ -15,7 +15,7 @@
         </div>
         <ul id="filter-items">
           <li @click="removeFilter" v-for="node in sharedState.includedNodes">
-            {{ node }}
+            {{node}}
           </li>
         </ul>
         <div id="filter-inbound-group" class="user-input-group">
@@ -29,8 +29,22 @@
           <button @click="submitOutbound" type="button">Update Outbound</button>
         </div>
       </div>
-      <div id="graph-container">
-        <svg id="graph-svg" width="960" height="600"></svg>
+      <div id="graph-and-node-details-container">
+        <div id="graph-container">
+          <svg id="graph-svg" width="960" height="600"></svg>
+        </div>
+        <div id="selected-node-details">
+          <template v-if="node !== null">
+            <ul>
+              <li>Name: {{node.id}}</li>
+              <li>Display Name: {{node.displayName}}</li>
+              <li v-for="(value, key) in node.visualizationState">{{key}}: {{value}}</li>
+            </ul>
+            <button @click="removeSelectedFromFilter" v-if="node.visualizationState.selectedByFilter">Remove from filter</button>
+            <button @click="addSelectedToFilter" v-else>Add to filter</button>
+          </template>
+          <div v-else>Click a node for more details.</div>
+        </div>
       </div>
     </div>
     <script type="module" src="./index.js"></script>

@@ -82,6 +82,7 @@ source_set("content_main_runner_app") {
            "//content/public/utility:utility_sources",
            "//content/renderer",
            "//content/utility",
+           "//content/zygote",
          ]
 }
 

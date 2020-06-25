@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/media_source.h"
+#include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -294,6 +295,11 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
     connector->ResetRemotingPermission();
 
     MediaRouterMojoMetrics::RecordTabMirroringMetrics(web_contents);
+  }
+
+  if (IsSiteInitiatedMirroringSource(source_id)) {
+    MediaRouterMojoMetrics::RecordSiteInitiatedMirroringStarted(web_contents,
+                                                                source);
   }
 
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());

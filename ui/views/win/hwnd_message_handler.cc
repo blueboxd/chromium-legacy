@@ -2419,23 +2419,28 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
       // flicker opaque black. http://crbug.com/586454
 
       FillRect(ps.hdc, &ps.rcPaint, brush);
-    } else if (exposed_pixels_.height() > 0 || exposed_pixels_.width() > 0) {
+    } else if (exposed_pixels_ != gfx::Size()) {
       // Fill in newly exposed window client area with black to ensure Windows
       // doesn't put something else there (eg. copying existing pixels). This
       // isn't needed if we've just cleared the whole client area outside the
       // child window above.
       RECT cr;
       if (GetClientRect(hwnd(), &cr)) {
+        // GetClientRect() always returns a rect with top/left at 0.
+        const gfx::Size client_area = gfx::Rect(cr).size();
+
+        // It's possible that |exposed_pixels_| height and/or width is larger
+        // than the client area if the window frame size changed. This isn't an
+        // issue since FillRect() is clipped by |ps.rcPaint|.
         if (exposed_pixels_.height() > 0) {
-          DCHECK_GE(cr.bottom, exposed_pixels_.height());
-          RECT rect = {cr.left, cr.bottom - exposed_pixels_.height(), cr.right,
-                       cr.bottom};
+          RECT rect = {0, client_area.height() - exposed_pixels_.height(),
+                       client_area.width(), client_area.height()};
           FillRect(ps.hdc, &rect, brush);
         }
         if (exposed_pixels_.width() > 0) {
-          DCHECK_GE(cr.right, exposed_pixels_.width());
-          RECT rect = {cr.right - exposed_pixels_.width(), cr.top, cr.right,
-                       cr.bottom - exposed_pixels_.height()};
+          RECT rect = {client_area.width() - exposed_pixels_.width(), 0,
+                       client_area.width(),
+                       client_area.height() - exposed_pixels_.height()};
           FillRect(ps.hdc, &rect, brush);
         }
       }

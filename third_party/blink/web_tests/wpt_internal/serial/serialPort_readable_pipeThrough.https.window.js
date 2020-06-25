@@ -6,20 +6,20 @@
 // META: script=resources/serial-test-utils.js
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size larger than the amount of data transferred.
-  await port.open({ baudrate: 9600, buffersize: 64 });
+  await port.open({baudrate: 9600, buffersize: 64});
 
   const decoder = new TextDecoderStream();
   const streamClosed = port.readable.pipeTo(decoder.writable);
   const reader = decoder.readable.getReader();
 
   await fakePort.writable();
-  fakePort.write(new TextEncoder().encode("Hello world!"));
+  fakePort.write(new TextEncoder().encode('Hello world!'));
 
-  const { value, done } = await reader.read();
+  const {value, done} = await reader.read();
   assert_false(done);
-  assert_equals("Hello world!", value);
+  assert_equals('Hello world!', value);
   await reader.cancel();
   await streamClosed.catch(reason => {
     assert_equals(undefined, reason);

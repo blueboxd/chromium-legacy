@@ -6,15 +6,15 @@
 // META: script=resources/serial-test-utils.js
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
   await promise_rejects_dom(t, 'InvalidStateError', port.getSignals());
 }, 'getSignals() rejects if the port is not open');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
-  await port.open({ baudrate: 9600 });
+  const {port, fakePort} = await getFakeSerialPort(fake);
+  await port.open({baudrate: 9600});
 
-  let expectedSignals = { dcd: false, cts: false, ri: false, dsr: false };
+  let expectedSignals = {dcd: false, cts: false, ri: false, dsr: false};
   fakePort.simulateInputSignals(expectedSignals);
   let signals = await port.getSignals();
   assert_object_equals(signals, expectedSignals);

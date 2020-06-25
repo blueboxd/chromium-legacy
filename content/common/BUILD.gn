@@ -93,7 +93,6 @@ source_set("common") {
     "cursors/webcursor_android.cc",
     "cursors/webcursor_aura.cc",
     "cursors/webcursor_aurawin.cc",
-    "cursors/webcursor_aurax11.cc",
     "cursors/webcursor_mac.mm",
     "cursors/webcursor_ozone.cc",
     "drag_event_source_info.h",
@@ -342,7 +341,7 @@ source_set("common") {
     deps += [ "//ppapi/proxy:ipc_sources" ]
   }
 
-  if (!use_ozone) {
+  if (!use_x11 && !use_ozone) {
     sources -= [ "cursors/webcursor_ozone.cc" ]
   }
 
@@ -350,12 +349,6 @@ source_set("common") {
     deps += [ "//ui/base/cursor" ]
   } else {
     sources -= [ "cursors/webcursor_aura.cc" ]
-  }
-
-  if (!use_aura || !use_x11) {
-    sources -= [ "cursors/webcursor_aurax11.cc" ]
-  } else {
-    deps += [ "//ui/gfx/x" ]
   }
 
   if (is_linux) {

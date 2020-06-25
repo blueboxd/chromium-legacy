@@ -3215,10 +3215,10 @@ void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
   if (!GetExecutionContext())
     return;
   LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
-  ukm::SourceId source_id = window->document()->UkmSourceID();
+  ukm::SourceId source_id = window->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
-      .Record(window->document()->UkmRecorder());
+      .Record(window->UkmRecorder());
 }
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {

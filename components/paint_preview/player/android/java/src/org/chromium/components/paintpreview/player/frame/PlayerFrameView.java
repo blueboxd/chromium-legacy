@@ -93,8 +93,8 @@ class PlayerFrameView extends FrameLayout {
         layoutSubframes();
     }
 
-    void updateDelegateScaleMatrix(Matrix matrix) {
-        mDelegate.setBitmapScaleMatrix(matrix);
+    void updateDelegateScaleMatrix(Matrix matrix, float scaleFactor) {
+        mDelegate.setBitmapScaleMatrix(matrix, scaleFactor);
     }
 
     void forceRedraw() {

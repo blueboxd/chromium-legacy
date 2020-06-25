@@ -170,7 +170,6 @@ class NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout
 IN_PROC_BROWSER_TEST_F(
     NavigationPredictorPreconnectClientBrowserTestWithUnusedIdleSocketTimeout,
     ActionAccuracy_timeout) {
-
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -304,8 +303,13 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
   base::test::ScopedFeatureList feature_list_;
 };
 
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_PreconnectSearchWithFeature DISABLED_PreconnectSearchWithFeature
+#else
+#define MAYBE_PreconnectSearchWithFeature PreconnectSearchWithFeature
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
-                       PreconnectSearchWithFeature) {
+                       MAYBE_PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";

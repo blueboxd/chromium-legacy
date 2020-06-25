@@ -162,20 +162,20 @@ class HeapMojoAssociatedRemoteDestroyContextWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedRemoteDestroyContextWithoutContextObserverTest
     : public HeapMojoAssociatedRemoteDestroyContextBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoAssociatedRemoteDisconnectWithReasonHandlerWithContextObserverTest
     : public HeapMojoAssociatedRemoteDisconnectWithReasonHandlerBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class
     HeapMojoAssociatedRemoteDisconnectWithReasonHandlerWithoutContextObserverTest
     : public HeapMojoAssociatedRemoteDisconnectWithReasonHandlerBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoAssociatedRemoteMoveWithContextObserverTest
     : public HeapMojoAssociatedRemoteMoveBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedRemoteMoveWithoutContextObserverTest
     : public HeapMojoAssociatedRemoteMoveBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 // Destroy the context with context observer and check that the connection is
 // disconnected.

@@ -340,7 +340,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize browserInitializationStage = _browserInitializationStage;
 // - StartupInformation
 @synthesize isColdStart = _isColdStart;
-@synthesize startupParameters = _startupParameters;
 @synthesize appLaunchTime = _appLaunchTime;
 
 #pragma mark - Application lifecycle
@@ -595,20 +594,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
               object:nil];
 
   [self markEulaAsAccepted];
-
-  if (self.startupParameters) {
-    UrlLoadParams params =
-        UrlLoadParams::InNewTab(self.startupParameters.externalURL);
-    [self.sceneController
-        dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
-                                                  NORMAL
-                            withUrlLoadParams:params
-                               dismissOmnibox:YES
-                                   completion:^{
-                                     [self setStartupParameters:nil];
-                                   }];
-  }
-
   self.appState.sceneShowingBlockingUI = nil;
 }
 
@@ -1288,8 +1273,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @implementation MainController (TestingOnly)
 
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
+  DCHECK(!IsSceneStartupSupported());
   NSString* sourceApplication = @"Fake App";
-  self.startupParameters = [ChromeAppStartupParameters
+  self.sceneController.startupParameters = [ChromeAppStartupParameters
       newChromeAppStartupParametersWithURL:net::NSURLWithGURL(launchURL)
                      fromSourceApplication:sourceApplication];
 }

@@ -167,6 +167,7 @@ import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.page_info.PageInfoController;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -187,7 +188,6 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
 import org.chromium.url.Origin;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
 import java.util.List;

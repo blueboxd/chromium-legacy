@@ -241,6 +241,13 @@ void GbmSurfaceless::SubmitFrame() {
   DCHECK(!unsubmitted_frames_.empty());
 
   if (unsubmitted_frames_.front()->ready && !submitted_frame_) {
+    for (auto& overlay : unsubmitted_frames_.front()->overlays) {
+      if (overlay.z_order() == 0 && overlay.gpu_fence()) {
+        submitted_frame_gpu_fence_ = std::make_unique<gfx::GpuFence>(
+            gfx::CloneHandleForIPC(overlay.gpu_fence()->GetGpuFenceHandle()));
+        break;
+      }
+    }
     submitted_frame_ = std::move(unsubmitted_frames_.front());
     unsubmitted_frames_.erase(unsubmitted_frames_.begin());
 
@@ -281,13 +288,19 @@ void GbmSurfaceless::OnSubmission(gfx::SwapResult result,
 }
 
 void GbmSurfaceless::OnPresentation(const gfx::PresentationFeedback& feedback) {
-  // Explicitly destroy overlays to free resources (e.g., fences) early.
+  gfx::PresentationFeedback feedback_copy = feedback;
+
+  if (submitted_frame_gpu_fence_) {
+    feedback_copy.ready_timestamp =
+        submitted_frame_gpu_fence_->GetMaxTimestamp();
+  }
+  submitted_frame_gpu_fence_.reset();
   submitted_frame_->overlays.clear();
 
   gfx::SwapResult result = submitted_frame_->swap_result;
   std::move(submitted_frame_->completion_callback)
       .Run(gfx::SwapCompletionResult(result));
-  std::move(submitted_frame_->presentation_callback).Run(feedback);
+  std::move(submitted_frame_->presentation_callback).Run(feedback_copy);
   submitted_frame_.reset();
 
   if (result == gfx::SwapResult::SWAP_FAILED) {

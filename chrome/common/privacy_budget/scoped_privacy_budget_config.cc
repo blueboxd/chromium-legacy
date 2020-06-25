@@ -6,6 +6,7 @@
 
 #include "chrome/common/privacy_budget/field_trial_param_conversions.h"
 #include "chrome/common/privacy_budget/privacy_budget_features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 namespace test {
@@ -39,6 +40,8 @@ ScopedPrivacyBudgetConfig::ScopedPrivacyBudgetConfig(Presets presets) {
 }
 
 void ScopedPrivacyBudgetConfig::Apply(const Parameters& parameters) {
+  blink::IdentifiabilityStudySettings::ResetStateForTesting();
+
   if (!parameters.enabled) {
     scoped_feature_list_.InitAndDisableFeature(features::kIdentifiabilityStudy);
     return;

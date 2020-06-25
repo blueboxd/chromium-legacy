@@ -17,6 +17,10 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
+
 namespace ui {
 
 class DrmWindowProxy;
@@ -108,6 +112,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<std::unique_ptr<PendingFrame>> unsubmitted_frames_;
   std::unique_ptr<PendingFrame> submitted_frame_;
+  std::unique_ptr<gfx::GpuFence> submitted_frame_gpu_fence_;
   const bool has_implicit_external_sync_;
   const bool has_image_flush_external_;
   bool last_swap_buffers_result_ = true;

@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -77,41 +78,8 @@ base::TimeTicks GLFenceAndroidNativeFenceSync::GetStatusChangeTime() {
 
   base::ScopedFD scoped_fd(sync_fd);
   base::TimeTicks time;
-  GetStatusChangeTimeForFence(sync_fd, &time);
+  gfx::GpuFence::GetStatusChangeTime(sync_fd, &time);
   return time;
-}
-
-// static
-GLFenceAndroidNativeFenceSync::Status
-GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
-    int fd,
-    base::TimeTicks* time) {
-  DCHECK_NE(fd, -1);
-
-  auto info =
-      std::unique_ptr<sync_fence_info_data, void (*)(sync_fence_info_data*)>{
-          sync_fence_info(fd), sync_fence_info_free};
-  if (!info) {
-    LOG(ERROR) << "sync_fence_info returned null for fd : " << fd;
-    return Status::kInvalid;
-  }
-
-  const bool signaled = info->status == 1;
-  if (!signaled)
-    return Status::kNotSignaled;
-
-  struct sync_pt_info* pt_info = nullptr;
-  uint64_t timestamp_ns = 0u;
-  while ((pt_info = sync_pt_info(info.get(), pt_info)))
-    timestamp_ns = std::max(timestamp_ns, pt_info->timestamp_ns);
-
-  if (timestamp_ns == 0u) {
-    LOG(ERROR) << "No timestamp provided from sync_pt_info for fd : " << fd;
-    return Status::kInvalid;
-  }
-
-  *time = base::TimeTicks() + base::TimeDelta::FromNanoseconds(timestamp_ns);
-  return Status::kSignaled;
 }
 
 }  // namespace gl

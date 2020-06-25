@@ -252,7 +252,7 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestricted) {
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
-                                             kEventName, NULL, url));
+                                             kEventName, nullptr, url));
   EXPECT_CALL(*event_router, CallEventRouter(profile2_, _, _, _, _, _))
       .Times(0);
   DispatchEventToRenderers(event_router.get(), kHistogramValue, kEventName,
@@ -266,7 +266,7 @@ TEST_F(EventRouterForwarderTest, UnicastRendererUIUnrestrictedIncognito) {
   using ::testing::_;
   GURL url;
   EXPECT_CALL(*event_router, CallEventRouter(profile1_, "", kHistogramValue,
-                                             kEventName, NULL, url));
+                                             kEventName, nullptr, url));
   EXPECT_CALL(*event_router, CallEventRouter(incognito, _, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*event_router, CallEventRouter(profile2_, _, _, _, _, _))

@@ -20,7 +20,7 @@ import android.view.ViewTreeObserver;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;

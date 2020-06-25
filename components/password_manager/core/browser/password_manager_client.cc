@@ -145,4 +145,8 @@ bool PasswordManagerClient::IsUnderAdvancedProtection() const {
   return false;
 }
 
+AutofillAssistantMode PasswordManagerClient::GetAutofillAssistantMode() const {
+  return GetPasswordManager()->GetAutofillAssistantMode();
+}
+
 }  // namespace password_manager

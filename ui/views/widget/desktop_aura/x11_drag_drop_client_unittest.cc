@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_move_loop.h"
 #include "ui/base/x/x11_move_loop_delegate.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
@@ -317,11 +318,16 @@ int SimpleTestDragDropClient::StartDragAndDrop(
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
   auto cursor_manager_ = std::make_unique<DesktopNativeCursorManager>();
+  auto* last_cursor = static_cast<ui::X11Cursor*>(
+      source_window->GetHost()->last_cursor().platform());
   loop_->RunMoveLoop(
       !source_window->HasCapture(),
-      source_window->GetHost()->last_cursor().platform(),
-      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
-          .platform());
+      last_cursor ? last_cursor->xcursor() : x11::None,
+      static_cast<ui::X11Cursor*>(
+          cursor_manager_
+              ->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
+              .platform())
+          ->xcursor());
 
   auto resulting_operation = negotiated_operation();
   CleanupDrag();

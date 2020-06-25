@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {PageStatus, SyncBrowserProxy, SyncStatus} from 'chrome://settings/settings.js';
+// #import {PageStatus, StoredAccount, SyncBrowserProxy, SyncStatus} from 'chrome://settings/settings.js';
 // #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // clang-format on
@@ -36,21 +36,27 @@
     /** @private {number} */
     this.impressionCount_ = 0;
 
+    // Settable fake data.
     /** @type {!settings.PageStatus} */
     this.encryptionResponse = settings.PageStatus.CONFIGURE;
+    /** @type {!Array<!settings.StoredAccount>} */
+    this.storedAccounts = [];
+    /** @type {!settings.SyncStatus} */
+    this.syncStatus = /** @type {!settings.SyncStatus} */ (
+        {signedIn: true, signedInUsername: 'fakeUsername'});
   }
+
 
   /** @override */
   getSyncStatus() {
     this.methodCalled('getSyncStatus');
-    return Promise.resolve(/** @type {!settings.SyncStatus} */ (
-        {signedIn: true, signedInUsername: 'fakeUsername'}));
+    return Promise.resolve(this.syncStatus);
   }
 
   /** @override */
   getStoredAccounts() {
     this.methodCalled('getStoredAccounts');
-    return Promise.resolve([]);
+    return Promise.resolve(this.storedAccounts);
   }
 
   /** @override */

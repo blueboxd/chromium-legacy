@@ -25,6 +25,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   return platform_cursor_;
 }
 
+#if defined(USE_OZONE)
 void WebCursor::SetDisplayInfo(const display::Display& display) {
   if (rotation_ == display.panel_rotation() &&
       device_scale_factor_ == display.device_scale_factor() &&
@@ -53,6 +54,7 @@ float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
        static_cast<float>(maximum_cursor_size_.width()) / bitmap->width(),
        static_cast<float>(maximum_cursor_size_.height()) / bitmap->height()});
 }
+#endif
 
 void WebCursor::CleanupPlatformData() {
   if (platform_cursor_) {
@@ -70,7 +72,9 @@ void WebCursor::CopyPlatformData(const WebCursor& other) {
     ui::CursorFactory::GetInstance()->RefImageCursor(platform_cursor_);
 
   device_scale_factor_ = other.device_scale_factor_;
+#if defined(USE_OZONE)
   maximum_cursor_size_ = other.maximum_cursor_size_;
+#endif
 }
 
 }  // namespace content

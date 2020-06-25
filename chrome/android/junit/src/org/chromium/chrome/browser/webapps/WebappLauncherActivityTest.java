@@ -15,8 +15,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
 
 /** JUnit test for WebappLauncherActivity. */

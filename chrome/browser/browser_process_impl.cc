@@ -92,6 +92,8 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/federated_learning/floc_blocklist_service.h"
+#include "components/federated_learning/floc_constants.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -1004,6 +1006,14 @@ BrowserProcessImpl::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
 }
 
+federated_learning::FlocBlocklistService*
+BrowserProcessImpl::floc_blocklist_service() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!floc_blocklist_service_)
+    CreateFlocBlocklistService();
+  return floc_blocklist_service_.get();
+}
+
 optimization_guide::OptimizationGuideService*
 BrowserProcessImpl::optimization_guide_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1304,6 +1314,12 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
       std::make_unique<subresource_filter::RulesetService>(
           local_state(), background_task_runner, indexed_ruleset_base_dir,
           blocking_task_runner);
+}
+
+void BrowserProcessImpl::CreateFlocBlocklistService() {
+  DCHECK(!floc_blocklist_service_);
+  floc_blocklist_service_ =
+      std::make_unique<federated_learning::FlocBlocklistService>();
 }
 
 void BrowserProcessImpl::CreateOptimizationGuideService() {

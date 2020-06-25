@@ -29,6 +29,7 @@ include_rules = [
   "+chromeos",
   "+components/about_ui",
   "+components/account_id",
+  "+components/federated_learning",
   "+components/arc",
   "+components/assist_ranker",
   "+components/autofill_assistant/browser",

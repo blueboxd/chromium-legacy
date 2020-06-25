@@ -45,9 +45,8 @@ base::TimeTicks GetSignalTime(const base::ScopedFD& fence) {
     return base::TimeTicks();
 
   base::TimeTicks signal_time;
-  auto status = GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
-      fence.get(), &signal_time);
-  if (status != GLFenceAndroidNativeFenceSync::kSignaled)
+  auto status = gfx::GpuFence::GetStatusChangeTime(fence.get(), &signal_time);
+  if (status != gfx::GpuFence::kSignaled)
     return base::TimeTicks();
 
   return signal_time;
@@ -511,17 +510,16 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
     auto& pending_cb = pending_presentation_callback_queue_.front();
 
     base::TimeTicks signal_time;
-    auto status =
-        pending_cb.present_fence.is_valid()
-            ? GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
-                  pending_cb.present_fence.get(), &signal_time)
-            : GLFenceAndroidNativeFenceSync::kInvalid;
-    if (status == GLFenceAndroidNativeFenceSync::kNotSignaled)
+    auto status = pending_cb.present_fence.is_valid()
+                      ? gfx::GpuFence::GetStatusChangeTime(
+                            pending_cb.present_fence.get(), &signal_time)
+                      : gfx::GpuFence::kInvalid;
+    if (status == gfx::GpuFence::kNotSignaled)
       break;
 
     auto flags = gfx::PresentationFeedback::kHWCompletion |
                  gfx::PresentationFeedback::kVSync;
-    if (status == GLFenceAndroidNativeFenceSync::kInvalid) {
+    if (status == gfx::GpuFence::kInvalid) {
       signal_time = pending_cb.latch_time;
       flags = 0u;
     }

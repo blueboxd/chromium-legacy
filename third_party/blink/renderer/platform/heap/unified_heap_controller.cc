@@ -138,16 +138,14 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     // progress. Oilpan will additionally schedule marking steps.
     ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
     ScriptForbiddenScope script_forbidden_scope;
-    base::TimeTicks deadline =
-        base::TimeTicks() + base::TimeDelta::FromMillisecondsD(deadline_in_ms);
-    is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);
+    is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarkingBasedOnSchedule(
+        base::TimeDelta::FromMillisecondsD(deadline_in_ms));
     if (!is_tracing_done_) {
+      if (base::FeatureList::IsEnabled(
+              blink::features::kBlinkHeapConcurrentMarking)) {
+        thread_state_->ConcurrentMarkingStep();
+      }
       thread_state_->RestartIncrementalMarkingIfPaused();
-    }
-    if (base::FeatureList::IsEnabled(
-            blink::features::kBlinkHeapConcurrentMarking)) {
-      is_tracing_done_ =
-          thread_state_->ConcurrentMarkingStep() && is_tracing_done_;
     }
     return is_tracing_done_;
   }

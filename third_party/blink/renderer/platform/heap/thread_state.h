@@ -65,6 +65,7 @@ class IncrementalMarkingScope;
 
 class CancelableTaskScheduler;
 class MarkingVisitor;
+class MarkingSchedulingOracle;
 class PersistentNode;
 class PersistentRegion;
 class ThreadHeap;
@@ -371,6 +372,10 @@ class PLATFORM_EXPORT ThreadState final {
   // Returns true if the marking verifier is enabled, false otherwise.
   bool IsVerifyMarkingEnabled() const;
 
+  void SkipIncrementalMarkingForTesting() {
+    skip_incremental_marking_for_testing_ = true;
+  }
+
   // Performs stand-alone garbage collections considering only C++ objects for
   // testing.
   //
@@ -409,11 +414,6 @@ class PLATFORM_EXPORT ThreadState final {
 
  private:
   class IncrementalMarkingScheduler;
-
-  // Duration of one incremental marking step. Should be short enough that it
-  // doesn't cause jank even though it is scheduled as a normal task.
-  static constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
-      base::TimeDelta::FromMilliseconds(2);
 
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
@@ -507,6 +507,7 @@ class PLATFORM_EXPORT ThreadState final {
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   void MarkPhaseVisitNotFullyConstructedObjects();
+  bool MarkPhaseAdvanceMarkingBasedOnSchedule(base::TimeDelta max_deadline);
   bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
 
@@ -542,9 +543,7 @@ class PLATFORM_EXPORT ThreadState final {
   // Incremental marking step advance marking on the mutator thread. This method
   // also reschedules concurrent marking tasks if needed. The duration parameter
   // applies only to incremental marking steps on the mutator thread.
-  void IncrementalMarkingStep(
-      BlinkGC::StackState,
-      base::TimeDelta duration = kDefaultIncrementalMarkingStepDuration);
+  void IncrementalMarkingStep(BlinkGC::StackState);
   void IncrementalMarkingFinalize();
 
   // Returns true if concurrent marking is finished (i.e. all current threads
@@ -657,17 +656,19 @@ class PLATFORM_EXPORT ThreadState final {
   GCData current_gc_data_;
 
   std::unique_ptr<IncrementalMarkingScheduler> incremental_marking_scheduler_;
+  std::unique_ptr<MarkingSchedulingOracle> marking_scheduling_;
 
   std::unique_ptr<CancelableTaskScheduler> marker_scheduler_;
   Vector<uint8_t> available_concurrent_marking_task_ids_;
   uint8_t active_markers_ = 0;
   base::Lock concurrent_marker_bootstrapping_lock_;
-  size_t concurrently_marked_bytes_ = 0;
 
   base::JobHandle sweeper_handle_;
   std::atomic_bool has_unswept_pages_{false};
 
   size_t disable_heap_verification_scope_ = 0;
+
+  bool skip_incremental_marking_for_testing_ = false;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;

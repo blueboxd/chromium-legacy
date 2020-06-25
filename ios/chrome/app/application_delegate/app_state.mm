@@ -375,21 +375,26 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 }
 
 - (void)resumeSessionWithTabOpener:(id<TabOpening>)tabOpener
-                       tabSwitcher:(id<TabSwitching>)tabSwitcher {
+                       tabSwitcher:(id<TabSwitching>)tabSwitcher
+             connectionInformation:
+                 (id<ConnectionInformation>)connectionInformation {
+  DCHECK(!IsSceneStartupSupported());
   [_incognitoBlocker removeFromSuperview];
   _incognitoBlocker = nil;
 
   DCHECK([_browserLauncher browserInitializationStage] ==
          INITIALIZATION_STAGE_FOREGROUND);
+
   _sessionStartTime = base::TimeTicks::Now();
 
   id<BrowserInterface> currentInterface =
       _browserLauncher.interfaceProvider.currentInterface;
   CommandDispatcher* dispatcher =
       currentInterface.browser->GetCommandDispatcher();
-  if ([_startupInformation startupParameters]) {
+  if ([connectionInformation startupParameters]) {
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
+                       connectionInformation:connectionInformation
                           startupInformation:_startupInformation
                                 browserState:currentInterface.browserState];
   } else if ([tabOpener shouldOpenNTPTabOnActivationOfBrowser:currentInterface
@@ -414,7 +419,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   if (psdService)
     psdService->OnSessionStarted(_sessionStartTime);
 
-  [MetricsMediator logStartupDuration:_startupInformation];
+  [MetricsMediator logStartupDuration:_startupInformation
+                connectionInformation:connectionInformation];
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {

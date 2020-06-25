@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util_enums.h"
+#include "components/prefs/pref_service.h"
 
 namespace base {
 class Value;
@@ -61,6 +62,12 @@ class GeneratedPref {
 
   // Call this when the pref value changes.
   void NotifyObservers(const std::string& pref_name);
+
+  // Sets controlled_by for |pref_object| based on provided |pref| for a limited
+  // subset of controlled_by sources relevant to generated pref use cases.
+  static void ApplyControlledByFromPref(
+      api::settings_private::PrefObject* pref_object,
+      const PrefService::Preference* pref);
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

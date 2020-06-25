@@ -364,7 +364,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
   }
 
   // Traverse child fragments.
-  const bool children_inline = IsInlineFormattingContext();
+  const bool add_inline_children = !items && IsInlineFormattingContext();
   // Only add overflow for fragments NG has not reflected into Legacy.
   // These fragments are:
   // - inline fragments,
@@ -374,7 +374,7 @@ PhysicalRect NGPhysicalBoxFragment::ScrollableOverflowFromChildren() const {
   for (const auto& child : Children()) {
     if (child->IsFloatingOrOutOfFlowPositioned()) {
       context.AddFloatingOrOutOfFlowPositionedChild(*child, child.Offset());
-    } else if (children_inline && child->IsLineBox()) {
+    } else if (add_inline_children && child->IsLineBox()) {
       context.AddLineBoxChild(To<NGPhysicalLineBoxFragment>(*child),
                               child.Offset());
     }

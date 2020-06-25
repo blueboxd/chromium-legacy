@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
+#include "ui/base/x/x11_cursor_factory.h"
 #include "ui/base/x/x11_error_handler.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -26,16 +27,15 @@
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
 #include "ui/ozone/platform/x11/x11_clipboard_ozone.h"
-#include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
-#include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/x11/x11_window.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
@@ -107,8 +107,7 @@ class OzonePlatformX11 : public OzonePlatform,
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    std::unique_ptr<X11WindowOzone> window =
-        std::make_unique<X11WindowOzone>(delegate);
+    auto window = std::make_unique<X11Window>(delegate);
     window->Initialize(std::move(properties));
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
@@ -167,7 +166,7 @@ class OzonePlatformX11 : public OzonePlatform,
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     clipboard_ = std::make_unique<X11ClipboardOzone>();
-    cursor_factory_ = std::make_unique<X11CursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<X11CursorFactory>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
 #if BUILDFLAG(USE_XKBCOMMON)

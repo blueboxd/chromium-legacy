@@ -12,7 +12,9 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
+#include "chrome/browser/notifications/win/notification_launch_id.h"
 
 namespace base {
 class CommandLine;
@@ -49,6 +51,18 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   // Checks if native notification is enabled.
   static bool NativeNotificationEnabled();
 
+  // Struct used to build the key to identify the notifications.
+  struct NotificationKeyType {
+    std::string profile_id;
+    std::string notification_id;
+
+    bool operator<(const NotificationKeyType& key) const {
+      return profile_id < key.profile_id ||
+             (profile_id == key.profile_id &&
+              notification_id < key.notification_id);
+    }
+  };
+
  private:
   friend class NotificationPlatformBridgeWinImpl;
   friend class NotificationPlatformBridgeWinTest;
@@ -58,6 +72,10 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest,
                            DisplayWithFakeAC);
+  FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest,
+                           SynchronizeNotifications);
+
+  void SynchronizeNotificationsForTesting();
 
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.
@@ -67,6 +85,11 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
       ABI::Windows::UI::Notifications::IToastActivatedEventArgs* args,
       const base::Optional<bool>& by_user);
 
+  // Initializes the expected displayed notification map. For testing use only.
+  void SetExpectedDisplayedNotificationsForTesting(
+      std::map<NotificationKeyType, NotificationLaunchId>*
+          expected_displayed_notification);
+
   // Initializes the displayed notification vector. Only for use in testing.
   void SetDisplayedNotificationsForTesting(
       std::vector<Microsoft::WRL::ComPtr<
@@ -75,6 +98,11 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   // Sets a Toast Notifier to use to display notifications, when run in a test.
   void SetNotifierForTesting(
       ABI::Windows::UI::Notifications::IToastNotifier* notifier);
+
+  // Returns the map of notifications which should be currently displayed. For
+  // testing use only.
+  std::map<NotificationKeyType, NotificationLaunchId>
+  GetExpectedDisplayedNotificationForTesting() const;
 
   // Obtain an IToastNotification interface from a given XML (provided by the
   // NotificationTemplateBuilder). For testing use only.

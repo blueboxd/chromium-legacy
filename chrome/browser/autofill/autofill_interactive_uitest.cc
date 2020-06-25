@@ -3299,9 +3299,9 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone", "15125551234");
 }
 
-// Test that credit card fields are never re-filled.
+// Test that credit card fields are re-filled.
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       DynamicChangingFormFill_NotForCreditCard) {
+                       DynamicChangingFormFill_AlsoForCreditCard) {
   CreateTestCreditCart();
 
   // Navigate to the page.
@@ -3321,13 +3321,13 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   bool has_refilled = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetWebContents(), "hasRefilled()", &has_refilled));
-  ASSERT_FALSE(has_refilled);
+  ASSERT_TRUE(has_refilled);
 
   // There should be no values in the fields.
-  ExpectFieldValue("cc-name", "");
-  ExpectFieldValue("cc-num", "");
-  ExpectFieldValue("cc-exp-month", "01");   // Default value.
-  ExpectFieldValue("cc-exp-year", "2010");  // Default value.
+  ExpectFieldValue("cc-name", "Milton Waddams");
+  ExpectFieldValue("cc-num", "4111111111111111");
+  ExpectFieldValue("cc-exp-month", "09");
+  ExpectFieldValue("cc-exp-year", "2999");
   ExpectFieldValue("cc-csc", "");
 }
 

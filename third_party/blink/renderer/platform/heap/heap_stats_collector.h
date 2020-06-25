@@ -232,6 +232,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // Time spent incrementally marking the heap.
     base::TimeDelta incremental_marking_time() const;
 
+    // Time spent processing worklist in the foreground thread.
+    base::TimeDelta worklist_processing_time_foreground() const;
+
     // Time spent in foreground tasks marking the heap.
     base::TimeDelta foreground_marking_time() const;
 
@@ -315,14 +318,10 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // and newly allocated bytes since the previous cycle.
   size_t object_size_in_bytes() const;
 
-  // Estimated marking time in seconds. Based on marked bytes and mark speed in
-  // the previous cycle assuming that the collection rate of the current cycle
-  // is similar to the rate of the last GC.
-  double estimated_marking_time_in_seconds() const;
-  base::TimeDelta estimated_marking_time() const;
-
   size_t marked_bytes() const;
   base::TimeDelta marking_time_so_far() const;
+
+  base::TimeDelta worklist_processing_time_foreground() const;
 
   int64_t allocated_bytes_since_prev_gc() const;
 

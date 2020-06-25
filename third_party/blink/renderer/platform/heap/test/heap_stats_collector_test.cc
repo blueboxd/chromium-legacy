@@ -156,7 +156,6 @@ TEST(ThreadHeapStatsCollectorTest, PreInitializedEstimatedMarkingTime) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::CollectionType::kMajor,
                                        BlinkGC::GCReason::kForcedGCForTesting);
-  EXPECT_LT(0u, stats_collector.estimated_marking_time_in_seconds());
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
 }
@@ -172,7 +171,6 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime1) {
   stats_collector.NotifySweepingCompleted();
   stats_collector.NotifyMarkingStarted(BlinkGC::CollectionType::kMajor,
                                        BlinkGC::GCReason::kForcedGCForTesting);
-  EXPECT_DOUBLE_EQ(1.0, stats_collector.estimated_marking_time_in_seconds());
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
 }
@@ -189,7 +187,6 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime2) {
   stats_collector.NotifyMarkingStarted(BlinkGC::CollectionType::kMajor,
                                        BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
-  EXPECT_DOUBLE_EQ(1.5, stats_collector.estimated_marking_time_in_seconds());
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
 }
@@ -202,8 +199,6 @@ TEST(ThreadHeapStatsCollectorTest, SubMilliSecondMarkingTime) {
       ThreadHeapStatsCollector::kIncrementalMarkingStartMarking,
       base::TimeDelta::FromMillisecondsD(.5));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
-  EXPECT_DOUBLE_EQ(0.5,
-                   stats_collector.marking_time_so_far().InMillisecondsF());
   stats_collector.NotifySweepingCompleted();
 }
 

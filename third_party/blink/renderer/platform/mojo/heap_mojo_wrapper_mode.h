@@ -18,6 +18,10 @@ enum class HeapMojoWrapperMode {
   // But, it will not reset the mojo connection when the associated
   // ExecutionContext is detached.
   kWithoutContextObserver,
+  // We are now experimenting with deprecating kWithoutContextObserver.
+  // kWithoutContextObserver is ignored in the Finch experiment. To enforce
+  // kWithoutContextObserver, use kForceWithoutContextObserver.
+  kForceWithoutContextObserver,
 };
 
 }  // namespace blink

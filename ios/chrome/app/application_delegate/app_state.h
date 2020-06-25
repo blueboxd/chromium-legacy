@@ -10,6 +10,7 @@
 @class AppState;
 @protocol BrowserLauncher;
 @class CommandDispatcher;
+@protocol ConnectionInformation;
 @class SceneState;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
@@ -85,7 +86,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // session boundaries include things like turning the screen off or getting a
 // phone call, not just switching apps.
 - (void)resumeSessionWithTabOpener:(id<TabOpening>)tabOpener
-                       tabSwitcher:(id<TabSwitching>)tabSwitcher;
+                       tabSwitcher:(id<TabSwitching>)tabSwitcher
+             connectionInformation:
+                 (id<ConnectionInformation>)connectionInformation;
 
 // Called when going into the background. iOS already broadcasts, so
 // stakeholders can register for it directly.

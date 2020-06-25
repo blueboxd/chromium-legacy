@@ -35,7 +35,7 @@ def main():
   parser = argparse.ArgumentParser(description='Download hermetic Xcode.')
   parser.add_argument('platform')
   parser.add_argument('--xcode-version',
-                      choices=('default', '12-beta'),
+                      choices=('default', 'xcode_12_beta'),
                       default='default')
   args = parser.parse_args()
 

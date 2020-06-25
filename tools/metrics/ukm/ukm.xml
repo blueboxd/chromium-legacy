@@ -7267,6 +7267,74 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationTiming" singular="True">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    Metrics associated with main frame navigation.
+  </summary>
+  <metric name="EarlyHintsForFinalRequest">
+    <owner>nhiroki@chromium.org</owner>
+    <owner>chrome-loading@google.com</owner>
+    <summary>
+      The time relative to navigation start that the headers of the 103 Early
+      Hints response are received in reply to the final HTTP request for the
+      main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="EarlyHintsForFirstRequest">
+    <owner>nhiroki@chromium.org</owner>
+    <owner>chrome-loading@google.com</owner>
+    <summary>
+      The time relative to navigation start that the headers of the 103 Early
+      Hints response are received in reply to the first HTTP request for the
+      main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FinalLoaderCallback">
+    <summary>
+      The time relative to navigation start that a callback for the navigation
+      loader is last invoked for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FinalRequestStart">
+    <summary>
+      The time relative to navigation start that the final HTTP request is sent
+      for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FinalResponseStart">
+    <summary>
+      The time relative to navigation start that the headers of the final HTTP
+      response are received for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FirstLoaderCallback">
+    <summary>
+      The time relative to navigation start that a callback for the navigation
+      loader is first invoked for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FirstRequestStart">
+    <summary>
+      The time relative to navigation start that the first HTTP request is sent
+      for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="FirstResponseStart">
+    <summary>
+      The time relative to navigation start that the headers of the first HTTP
+      response are received for the main resource of a main frame navigation.
+    </summary>
+  </metric>
+  <metric name="NavigationCommitSent">
+    <summary>
+      The time relative to navigation start that navigation commit message for a
+      main frame navigation is sent to a renderer process.
+    </summary>
+  </metric>
+</event>
+
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>

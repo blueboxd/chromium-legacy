@@ -54,6 +54,10 @@ namespace subresource_filter {
 class RulesetService;
 }
 
+namespace federated_learning {
+class FlocBlocklistService;
+}
+
 namespace variations {
 class VariationsService;
 }
@@ -214,6 +218,10 @@ class BrowserProcess {
   // Browsing subresource filter.
   virtual subresource_filter::RulesetService*
   subresource_filter_ruleset_service() = 0;
+
+  // Returns the service providing versioned storage for a blocklist of flocs.
+  virtual federated_learning::FlocBlocklistService*
+  floc_blocklist_service() = 0;
 
   // Returns the service used to provide hints for what optimizations can be
   // performed on slow page loads.

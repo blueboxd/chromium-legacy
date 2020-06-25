@@ -81,6 +81,7 @@ class WebRenderWidgetSchedulingState;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public ThreadSchedulerImpl,
+      public AgentSchedulingStrategy::Delegate,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -645,6 +646,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   };
 
+  // AgentSchedulingStrategy::Delegate implementation:
+  void OnSetTimer(const FrameSchedulerImpl& frame_scheduler,
+                  base::TimeDelta delay) override;
+
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
@@ -731,6 +736,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // Notifies the per-agent scheduling strategy that an input event occurred.
   void NotifyAgentSchedulerOnInputEvent();
+  void OnAgentStrategyDelayPassed(const FrameSchedulerImpl*);
 
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.
@@ -866,12 +872,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
   base::RepeatingClosure notify_agent_strategy_on_input_event_closure_;
+  base::RepeatingCallback<void(const FrameSchedulerImpl*)>
+      agent_strategy_delay_callback_;
 
   QueueingTimeEstimator queueing_time_estimator_;
   AgentInterferenceRecorder agent_interference_recorder_;
 
   std::unique_ptr<AgentSchedulingStrategy> agent_scheduling_strategy_ =
-      AgentSchedulingStrategy::Create();
+      AgentSchedulingStrategy::Create(*this);
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.

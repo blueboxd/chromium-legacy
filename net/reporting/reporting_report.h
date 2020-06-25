@@ -109,10 +109,6 @@ struct NET_EXPORT ReportingReport {
   // relative to the time of the delivery attempt.)
   base::TimeTicks queued;
 
-  // Time when report was delivered, if it was delivered successfully.
-  // The destructor assumes that this has a value if the outcome is DELIVERED.
-  base::Optional<base::TimeTicks> delivered = base::nullopt;
-
   // The number of delivery attempts made so far, not including an active
   // attempt. (Not included in the delivered report.)
   int attempts = 0;

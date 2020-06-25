@@ -6,14 +6,14 @@
 // META: script=resources/serial-test-utils.js
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size smaller than the amount of data transferred.
-  await port.open({ baudrate: 9600, buffersize: 64 });
+  await port.open({baudrate: 9600, buffersize: 64});
 
   const reader = port.readable.getReader();
   const readPromise = reader.read();
   await reader.cancel();
-  const { value, done } = await readPromise;
+  const {value, done} = await readPromise;
   assert_true(done);
   assert_equals(undefined, value);
 

@@ -111,17 +111,6 @@ public final class SigninTestUtil {
     }
 
     /**
-     * Remove an account with a given name.
-     */
-    public static void removeTestAccount(String name) {
-        Account account = AccountUtils.createAccountFromName(name);
-        AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
-        sAccountManager.removeAccountHolderBlocking(accountHolder);
-        sAddedAccounts.remove(accountHolder);
-        seedAccounts();
-    }
-
-    /**
      * Add and sign in an account with the default name.
      */
     public static Account addAndSignInTestAccount() {
@@ -132,7 +121,7 @@ public final class SigninTestUtil {
     /**
      * Sign into an account. Account should be added by {@link #addTestAccount} first.
      */
-    public static void signIn(Account account) {
+    static void signIn(Account account) {
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
@@ -169,7 +158,7 @@ public final class SigninTestUtil {
     /**
      * Waits for the AccountTrackerService to seed system accounts.
      */
-    public static void seedAccounts() {
+    static void seedAccounts() {
         ThreadUtils.assertOnBackgroundThread();
         CallbackHelper ch = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

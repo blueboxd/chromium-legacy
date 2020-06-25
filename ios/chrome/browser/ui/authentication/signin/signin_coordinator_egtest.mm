@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -494,7 +493,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // onscreen.
 - (void)assertFakeSSOScreenIsVisible {
   // Check for the fake SSO screen.
-  WaitForMatcher(grey_accessibilityID(kFakeAddAccountViewIdentifier));
+  [SigninEarlGreyUtils
+      waitForMatcher:grey_accessibilityID(kFakeAddAccountViewIdentifier)];
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
       grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
@@ -540,7 +540,8 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // Open the identity chooser.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  WaitForMatcher(identityChooserButtonMatcherWithEmail(fakeIdentity.userEmail));
+  [SigninEarlGreyUtils waitForMatcher:identityChooserButtonMatcherWithEmail(
+                                          fakeIdentity.userEmail)];
 
   // Remove the fake identity.
   [SigninEarlGreyUtils removeFakeIdentity:fakeIdentity];

@@ -764,6 +764,7 @@ if (is_android) {
       "//components/query_tiles:query_tiles_junit_tests",
       "//components/signin/core/browser/android:components_signin_junit_tests",
       "//components/variations/android:components_variations_junit_tests",
+      "//components/webapk/android/libs/client:junit",
     ]
   }
 }

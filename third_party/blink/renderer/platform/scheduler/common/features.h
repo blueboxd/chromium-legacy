@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -262,17 +263,27 @@ constexpr base::FeatureParam<PerAgentSlowDownMethod> kPerAgentMethod{
     &kPerAgentSchedulingExperiments, "method", PerAgentSlowDownMethod::kDisable,
     &kPerAgentMethodOptions};
 
+// Delay to wait after the signal is reached, before "stopping" the strategy.
+constexpr base::FeatureParam<int> kPerAgentDelayMs{
+    &kPerAgentSchedulingExperiments, "delay_ms", 0};
+
 // Signal the per-agent scheduling strategy should wait for.
 enum class PerAgentSignal {
-  // Strategy will be active until all main frames reach First Meaningful Paint.
+  // Strategy will be active until all main frames reach First Meaningful Paint
+  // (+delay, if set).
   kFirstMeaningfulPaint,
-  // Strategy will be active until all main frames finish loading.
+  // Strategy will be active until all main frames finish loading (+delay, if
+  // set).
   kOnLoad,
+  // Strategy will be active until the delay has passed since all main frames
+  // were created (or navigated).
+  kDelayOnly,
 };
 
 constexpr base::FeatureParam<PerAgentSignal>::Option kPerAgentSignalOptions[] =
     {{PerAgentSignal::kFirstMeaningfulPaint, "fmp"},
-     {PerAgentSignal::kOnLoad, "onload"}};
+     {PerAgentSignal::kOnLoad, "onload"},
+     {PerAgentSignal::kDelayOnly, "delay"}};
 
 constexpr base::FeatureParam<PerAgentSignal> kPerAgentSignal{
     &kPerAgentSchedulingExperiments, "signal",

@@ -735,7 +735,7 @@ XRInputSourceArray* XRSession::inputSources(ScriptState* script_state) const {
   if (!did_log_getInputSources_ && script_state->ContextIsValid()) {
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidGetXRInputSources(1)
-        .Record(LocalDOMWindow::From(script_state)->document()->UkmRecorder());
+        .Record(LocalDOMWindow::From(script_state)->UkmRecorder());
     did_log_getInputSources_ = true;
   }
 
@@ -1637,7 +1637,7 @@ void XRSession::LogGetPose() const {
 
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidRequestPose(1)
-        .Record(window->document()->UkmRecorder());
+        .Record(window->UkmRecorder());
   }
 }
 

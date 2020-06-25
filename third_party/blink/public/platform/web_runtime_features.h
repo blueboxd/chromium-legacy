@@ -90,6 +90,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableBlockingFocusWithoutUserActivation(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableCacheInlineScriptCode(bool);
+  BLINK_PLATFORM_EXPORT static void EnableClickPointerEvent(bool enable);
   BLINK_PLATFORM_EXPORT static void EnableCookieDeprecationMessages(bool);
   BLINK_PLATFORM_EXPORT static void EnableCookiesWithoutSameSiteMustBeSecure(
       bool);

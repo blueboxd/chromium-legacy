@@ -4,7 +4,8 @@
 # found in the LICENSE file.
 
 from __future__ import print_function
-import argparse, io, os, sys, json, subprocess, pickle
+from StringIO import StringIO
+import argparse, os, sys, json, subprocess, pickle
 
 parser = argparse.ArgumentParser(
   description =
@@ -317,7 +318,7 @@ def report_cycle(root_edge):
   for p in path:
     if len(p.loc) > max_loc:
       max_loc = len(p.loc)
-  out = io.StringIO()
+  out = StringIO()
   for p in path[:-1]:
     print((p.loc + ':').ljust(max_loc + 1), p, file=out)
   sout = out.getvalue()

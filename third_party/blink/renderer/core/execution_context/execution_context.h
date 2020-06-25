@@ -117,7 +117,6 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
                                      public ConsoleLogger,
                                      public UseCounter,
                                      public FeaturePolicyParserDelegate {
-  MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
   void Trace(Visitor*) const override;

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager/account_migration_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -343,8 +343,8 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
 
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
   AllowJavascript();
-  InlineLoginHandlerDialogChromeOS::Show(
-      InlineLoginHandlerDialogChromeOS::Source::kSettingsAddAccountButton);
+  InlineLoginDialogChromeOS::Show(
+      InlineLoginDialogChromeOS::Source::kSettingsAddAccountButton);
 }
 
 void AccountManagerUIHandler::HandleReauthenticateAccount(
@@ -354,9 +354,9 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
   CHECK(!args->GetList().empty());
   const std::string& account_email = args->GetList()[0].GetString();
 
-  InlineLoginHandlerDialogChromeOS::Show(
+  InlineLoginDialogChromeOS::Show(
       account_email,
-      InlineLoginHandlerDialogChromeOS::Source::kSettingsReauthAccountButton);
+      InlineLoginDialogChromeOS::Source::kSettingsReauthAccountButton);
 }
 
 void AccountManagerUIHandler::HandleMigrateAccount(

@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -33,10 +37,9 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.webapps.WebApkExtras.ShortcutItem;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkCommonUtils;
-import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
@@ -90,7 +93,7 @@ public class WebApkIntentDataProviderFactory {
         ShareData shareData = null;
 
         String shareDataActivityClassName = IntentUtils.safeGetStringExtra(
-                intent, WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                intent, EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
 
         // Presence of {@link shareDataActivityClassName} indicates that this is a share.
         if (!TextUtils.isEmpty(shareDataActivityClassName)) {
@@ -110,8 +113,8 @@ public class WebApkIntentDataProviderFactory {
         String url = WebappIntentUtils.getUrl(intent);
         int source = computeSource(intent, shareData);
 
-        boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(
-                intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
+        boolean canUseSplashFromContentProvider =
+                IntentUtils.safeGetBooleanExtra(intent, EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
 
         return create(intent, webApkPackageName, url, source, forceNavigation,
                 canUseSplashFromContentProvider, shareData, shareDataActivityClassName);
@@ -140,9 +143,8 @@ public class WebApkIntentDataProviderFactory {
             }
             return WebApkDistributor.OTHER;
         }
-        return packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX)
-                ? WebApkDistributor.BROWSER
-                : WebApkDistributor.OTHER;
+        return packageName.startsWith(WEBAPK_PACKAGE_PREFIX) ? WebApkDistributor.BROWSER
+                                                             : WebApkDistributor.OTHER;
     }
 
     /**

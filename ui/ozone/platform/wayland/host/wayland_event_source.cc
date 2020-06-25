@@ -323,17 +323,15 @@ void WaylandEventSource::HandleKeyboardFocusChange(WaylandWindow* window,
 }
 
 void WaylandEventSource::HandlePointerFocusChange(WaylandWindow* window) {
-  if (window) {
-    DCHECK(!window_with_pointer_focus_);
-    window_with_pointer_focus_ = window;
+  // Focused window might have been destroyed at this point (eg: context menus),
+  // in this case, |window| is null.
+  if (window_with_pointer_focus_)
+    window_with_pointer_focus_->SetPointerFocus(false);
+
+  window_with_pointer_focus_ = window;
+
+  if (window_with_pointer_focus_)
     window_with_pointer_focus_->SetPointerFocus(true);
-  } else {
-    // Focused window might have been destroyed at this point (eg: context
-    // menus), in this case, |window| is null.
-    if (window_with_pointer_focus_)
-      window_with_pointer_focus_->SetPointerFocus(false);
-    window_with_pointer_focus_ = nullptr;
-  }
 }
 
 void WaylandEventSource::HandleTouchFocusChange(WaylandWindow* window,

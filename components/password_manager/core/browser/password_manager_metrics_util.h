@@ -164,7 +164,9 @@ enum class CredentialManagerGetResult {
   kAutoSignIn,
   // No credentials are returned in incognito mode.
   kNoneIncognito,
-  kMaxValue = kNoneIncognito,
+  // No credentials are returned while autofill_assistant is running.
+  kNoneAutofillAssistant,
+  kMaxValue = kNoneAutofillAssistant,
 };
 
 enum PasswordReusePasswordFieldDetected {

@@ -32,6 +32,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -58,6 +59,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 @interface UserActivityHandler ()
 // Handles the 3D touch application static items. Does nothing if in first run.
 + (BOOL)handleShortcutItem:(UIApplicationShortcutItem*)shortcutItem
+     connectionInformation:(id<ConnectionInformation>)connectionInformation
         startupInformation:(id<StartupInformation>)startupInformation;
 // Routes Universal 2nd Factor (U2F) callback to the correct Tab.
 + (void)routeU2FURL:(const GURL&)URL
@@ -71,6 +73,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 + (BOOL)continueUserActivity:(NSUserActivity*)userActivity
          applicationIsActive:(BOOL)applicationIsActive
                    tabOpener:(id<TabOpening>)tabOpener
+       connectionInformation:(id<ConnectionInformation>)connectionInformation
           startupInformation:(id<StartupInformation>)startupInformation {
   NSURL* webpageURL = userActivity.webpageURL;
 
@@ -88,7 +91,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     GURL gurl = net::GURLWithNSURL(webpageURL);
     AppStartupParameters* startupParams =
         [[AppStartupParameters alloc] initWithUniversalLink:gurl];
-    [startupInformation setStartupParameters:startupParams];
+    [connectionInformation setStartupParameters:startupParams];
     base::RecordAction(base::UserMetricsAction("IOSLaunchedByUniversalLink"));
 
     if (startupParams)
@@ -118,7 +121,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       if (!startupParamsSet) {
         return NO;
       }
-      [startupInformation setStartupParameters:startupParams];
+      [connectionInformation setStartupParameters:startupParams];
     } else if (!webpageURL) {
       spotlight::GetURLForSpotlightItemID(itemID, ^(NSURL* contentURL) {
         if (!contentURL) {
@@ -132,6 +135,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
           [self continueUserActivityURL:contentURL
                     applicationIsActive:isActive
                               tabOpener:tabOpener
+                  connectionInformation:connectionInformation
                      startupInformation:startupInformation];
         });
       });
@@ -144,7 +148,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         initWithExternalURL:GURL(kChromeUINewTabURL)
                 completeURL:GURL(kChromeUINewTabURL)];
     [startupParams setPostOpeningAction:FOCUS_OMNIBOX];
-    [startupInformation setStartupParameters:startupParams];
+    [connectionInformation setStartupParameters:startupParams];
     webpageURL =
         [NSURL URLWithString:base::SysUTF8ToNSString(kChromeUINewTabURL)];
   } else if ([userActivity.activityType
@@ -162,7 +166,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     AppStartupParameters* startupParams =
         [[AppStartupParameters alloc] initWithExternalURL:webpageGURL
                                               completeURL:webpageGURL];
-    [startupInformation setStartupParameters:startupParams];
+    [connectionInformation setStartupParameters:startupParams];
     webpageURL = intent.url;
   } else {
     // Do nothing for unknown activity type.
@@ -172,12 +176,14 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   return [self continueUserActivityURL:webpageURL
                    applicationIsActive:applicationIsActive
                              tabOpener:tabOpener
+                 connectionInformation:connectionInformation
                     startupInformation:startupInformation];
 }
 
 + (BOOL)continueUserActivityURL:(NSURL*)webpageURL
             applicationIsActive:(BOOL)applicationIsActive
                       tabOpener:(id<TabOpening>)tabOpener
+          connectionInformation:(id<ConnectionInformation>)connectionInformation
              startupInformation:(id<StartupInformation>)startupInformation {
   if (!webpageURL)
     return NO;
@@ -190,11 +196,11 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // The app is already active so the applicationDidBecomeActive: method will
     // never be called. Open the requested URL immediately.
     ApplicationModeForTabOpening targetMode =
-        [[startupInformation startupParameters] launchInIncognito]
+        [[connectionInformation startupParameters] launchInIncognito]
             ? ApplicationModeForTabOpening::INCOGNITO
             : ApplicationModeForTabOpening::NORMAL;
     UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
-    if (![[startupInformation startupParameters] launchInIncognito] &&
+    if (![[connectionInformation startupParameters] launchInIncognito] &&
         [tabOpener URLIsOpenedInRegularMode:webpageGURL]) {
       // Record metric.
     }
@@ -202,7 +208,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                                    withUrlLoadParams:params
                                       dismissOmnibox:YES
                                           completion:^{
-                                            [startupInformation
+                                            [connectionInformation
                                                 setStartupParameters:nil];
                                           }];
     return YES;
@@ -212,11 +218,11 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   // initiated by the user.
   [startupInformation resetFirstUserActionRecorder];
 
-  if (![startupInformation startupParameters]) {
+  if (![connectionInformation startupParameters]) {
     AppStartupParameters* startupParams =
         [[AppStartupParameters alloc] initWithExternalURL:webpageGURL
                                               completeURL:webpageGURL];
-    [startupInformation setStartupParameters:startupParams];
+    [connectionInformation setStartupParameters:startupParams];
   }
   return YES;
 }
@@ -224,17 +230,21 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 + (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
                            tabOpener:(id<TabOpening>)tabOpener
+               connectionInformation:
+                   (id<ConnectionInformation>)connectionInformation
                   startupInformation:(id<StartupInformation>)startupInformation
                    interfaceProvider:
                        (id<BrowserInterfaceProvider>)interfaceProvider {
   BOOL handledShortcutItem =
       [UserActivityHandler handleShortcutItem:shortcutItem
+                        connectionInformation:connectionInformation
                            startupInformation:startupInformation];
   BOOL isActive = [[UIApplication sharedApplication] applicationState] ==
                   UIApplicationStateActive;
   if (handledShortcutItem && isActive) {
     [UserActivityHandler
         handleStartupParametersWithTabOpener:tabOpener
+                       connectionInformation:connectionInformation
                           startupInformation:startupInformation
                                 browserState:interfaceProvider.currentInterface
                                                  .browserState];
@@ -252,24 +262,25 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 }
 
 + (void)handleStartupParametersWithTabOpener:(id<TabOpening>)tabOpener
+                       connectionInformation:
+                           (id<ConnectionInformation>)connectionInformation
                           startupInformation:
                               (id<StartupInformation>)startupInformation
                                 browserState:(ChromeBrowserState*)browserState {
-  DCHECK([startupInformation startupParameters]);
   // Do not load the external URL if the user has not accepted the terms of
   // service. This corresponds to the case when the user installed Chrome,
   // has never launched it and attempts to open an external URL in Chrome.
   if ([startupInformation isPresentingFirstRunUI])
     return;
 
-  GURL externalURL = startupInformation.startupParameters.externalURL;
+  GURL externalURL = connectionInformation.startupParameters.externalURL;
   // Check if it's an U2F call. If so, route it to correct tab.
   // If not, open or reuse tab in main BVC.
   if (U2FTabHelper::IsU2FUrl(externalURL)) {
     [UserActivityHandler routeU2FURL:externalURL browserState:browserState];
     // It's OK to clear startup parameters here because routeU2FURL works
     // synchronously.
-    [startupInformation setStartupParameters:nil];
+    [connectionInformation setStartupParameters:nil];
   } else {
     // TODO(crbug.com/935019): Exacly the same copy of this code is present in
     // +[URLOpener
@@ -280,12 +291,12 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // been dismissed. |_startupParameters| must be retained until all deferred
     // modal UIs are dismissed and tab opened with requested URL.
     ApplicationModeForTabOpening targetMode =
-        [[startupInformation startupParameters] launchInIncognito]
+        [[connectionInformation startupParameters] launchInIncognito]
             ? ApplicationModeForTabOpening::INCOGNITO
             : ApplicationModeForTabOpening::NORMAL;
     GURL URL;
     GURL virtualURL;
-    GURL completeURL = startupInformation.startupParameters.completeURL;
+    GURL completeURL = connectionInformation.startupParameters.completeURL;
     if (completeURL.SchemeIsFile()) {
       // External URL will be loaded by WebState, which expects |completeURL|.
       // Omnibox however suppose to display |externalURL|, which is used as
@@ -297,18 +308,19 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     }
     UrlLoadParams params = UrlLoadParams::InNewTab(URL, virtualURL);
 
-    if (startupInformation.startupParameters.imageSearchData) {
+    if (connectionInformation.startupParameters.imageSearchData) {
       TemplateURLService* templateURLService =
           ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
 
-      NSData* imageData = startupInformation.startupParameters.imageSearchData;
+      NSData* imageData =
+          connectionInformation.startupParameters.imageSearchData;
       web::NavigationManager::WebLoadParams webLoadParams =
           ImageSearchParamGenerator::LoadParamsForImageData(imageData, GURL(),
                                                             templateURLService);
 
       params.web_params = webLoadParams;
-    } else if (startupInformation.startupParameters.textQuery) {
-      NSString* query = startupInformation.startupParameters.textQuery;
+    } else if (connectionInformation.startupParameters.textQuery) {
+      NSString* query = connectionInformation.startupParameters.textQuery;
 
       TemplateURLService* templateURLService =
           ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
@@ -326,19 +338,19 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       params.web_params.url = result;
     }
 
-    if (![[startupInformation startupParameters] launchInIncognito] &&
+    if (![[connectionInformation startupParameters] launchInIncognito] &&
         [tabOpener URLIsOpenedInRegularMode:params.web_params.url]) {
       // Record metric.
     }
 
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                    withUrlLoadParams:params
-                                      dismissOmnibox:[[startupInformation
+                                      dismissOmnibox:[[connectionInformation
                                                          startupParameters]
                                                          postOpeningAction] !=
                                                      FOCUS_OMNIBOX
                                           completion:^{
-                                            [startupInformation
+                                            [connectionInformation
                                                 setStartupParameters:nil];
                                           }];
   }
@@ -347,6 +359,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 #pragma mark - Internal methods.
 
 + (BOOL)handleShortcutItem:(UIApplicationShortcutItem*)shortcutItem
+     connectionInformation:(id<ConnectionInformation>)connectionInformation
         startupInformation:(id<StartupInformation>)startupInformation {
   if ([startupInformation isPresentingFirstRunUI])
     return NO;
@@ -359,7 +372,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     base::RecordAction(
         UserMetricsAction("ApplicationShortcut.NewSearchPressed"));
     startupParams.postOpeningAction = FOCUS_OMNIBOX;
-    startupInformation.startupParameters = startupParams;
+    connectionInformation.startupParameters = startupParams;
     return YES;
 
   } else if ([shortcutItem.type isEqualToString:kShortcutNewIncognitoSearch]) {
@@ -367,21 +380,21 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
         UserMetricsAction("ApplicationShortcut.NewIncognitoSearchPressed"));
     startupParams.launchInIncognito = YES;
     startupParams.postOpeningAction = FOCUS_OMNIBOX;
-    startupInformation.startupParameters = startupParams;
+    connectionInformation.startupParameters = startupParams;
     return YES;
 
   } else if ([shortcutItem.type isEqualToString:kShortcutVoiceSearch]) {
     base::RecordAction(
         UserMetricsAction("ApplicationShortcut.VoiceSearchPressed"));
     startupParams.postOpeningAction = START_VOICE_SEARCH;
-    startupInformation.startupParameters = startupParams;
+    connectionInformation.startupParameters = startupParams;
     return YES;
 
   } else if ([shortcutItem.type isEqualToString:kShortcutQRScanner]) {
     base::RecordAction(
         UserMetricsAction("ApplicationShortcut.ScanQRCodePressed"));
     startupParams.postOpeningAction = START_QR_CODE_SCANNER;
-    startupInformation.startupParameters = startupParams;
+    connectionInformation.startupParameters = startupParams;
     return YES;
   }
 

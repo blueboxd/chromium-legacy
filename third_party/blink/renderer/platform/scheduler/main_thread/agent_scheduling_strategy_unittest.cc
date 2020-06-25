@@ -5,6 +5,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,11 +28,20 @@ using PrioritisationType =
 using ::base::FieldTrialParams;
 using ::base::sequence_manager::TaskQueue;
 using ::base::test::ScopedFeatureList;
+using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::ReturnRef;
 using ::testing::Test;
 
 namespace {
+
+class MockDelegate : public AgentSchedulingStrategy::Delegate {
+ public:
+  MOCK_METHOD(void,
+              OnSetTimer,
+              (const FrameSchedulerImpl& frame_scheduler,
+               base::TimeDelta delay));
+};
 
 class MockFrameDelegate : public FrameScheduler::Delegate {
  public:
@@ -70,13 +80,14 @@ class PerAgentSchedulingBaseTest : public Test {
       const FieldTrialParams experiment_params) {
     feature_list_.InitWithFeaturesAndParameters(
         {{kPerAgentSchedulingExperiments, experiment_params}}, {});
-    strategy_ = AgentSchedulingStrategy::Create();
+    strategy_ = AgentSchedulingStrategy::Create(delegate_);
     timer_queue_->SetFrameSchedulerForTest(&subframe_);
     non_timer_queue_->SetFrameSchedulerForTest(&subframe_);
   }
 
  protected:
   ScopedFeatureList feature_list_;
+  NiceMock<MockDelegate> delegate_{};
   std::unique_ptr<AgentSchedulingStrategy> strategy_;
   NiceMock<MockFrameScheduler> main_frame_{
       FrameScheduler::FrameType::kMainFrame};
@@ -86,6 +97,51 @@ class PerAgentSchedulingBaseTest : public Test {
   scoped_refptr<MainThreadTaskQueueForTest> non_timer_queue_{
       new MainThreadTaskQueueForTest(PrioritisationType::kRegular)};
 };
+
+class PerAgentDisableTimersUntilTimeoutStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentDisableTimersUntilTimeoutStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "delay"},
+                                    {"delay_ms", "50"}}) {}
+};
+
+TEST_F(PerAgentDisableTimersUntilTimeoutStrategyTest, RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnDelayPassed(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+}
+
+TEST_F(PerAgentDisableTimersUntilTimeoutStrategyTest, InitiatesTimer) {
+  EXPECT_CALL(delegate_, OnSetTimer(_, base::TimeDelta::FromMilliseconds(50)))
+      .Times(1);
+
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+}
+
+TEST_F(PerAgentDisableTimersUntilTimeoutStrategyTest,
+       DisablesTimerQueueUntilTimeout) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_));
+
+  EXPECT_THAT(strategy_->QueueEnabledState(*timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnDelayPassed(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
 
 class PerAgentDisableTimersUntilFMPStrategyTest
     : public PerAgentSchedulingBaseTest {
@@ -406,12 +462,13 @@ TEST_F(PerAgentBestEffortPriorityAllUntilLoadStrategyTest,
 class PerAgentDefaultIsNoOpStrategyTest : public Test {
  public:
   PerAgentDefaultIsNoOpStrategyTest() {
-    strategy_ = AgentSchedulingStrategy::Create();
     timer_queue_->SetFrameSchedulerForTest(&subframe_);
   }
 
  protected:
-  std::unique_ptr<AgentSchedulingStrategy> strategy_;
+  NiceMock<MockDelegate> delegate_{};
+  std::unique_ptr<AgentSchedulingStrategy> strategy_ =
+      AgentSchedulingStrategy::Create(delegate_);
   MockFrameScheduler main_frame_{FrameScheduler::FrameType::kMainFrame};
   NiceMock<MockFrameScheduler> subframe_{FrameScheduler::FrameType::kSubframe};
   scoped_refptr<MainThreadTaskQueueForTest> timer_queue_{

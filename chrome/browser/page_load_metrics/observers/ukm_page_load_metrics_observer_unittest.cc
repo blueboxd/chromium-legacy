@@ -1795,3 +1795,36 @@ TEST_F(OfflinePreviewsUKMPageLoadMetricsObserverTest, OfflinePreviewReported) {
         page_load_metrics::END_CLOSE);
   }
 }
+
+TEST_F(UkmPageLoadMetricsObserverTest, NavigationTiming) {
+  GURL url(kTestUrl1);
+  NavigateAndCommit(url);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  using ukm::builders::NavigationTiming;
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          NavigationTiming::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  const std::vector<const char*> metrics = {
+      NavigationTiming::kFirstRequestStartName,
+      NavigationTiming::kFirstResponseStartName,
+      NavigationTiming::kFirstLoaderCallbackName,
+      NavigationTiming::kFinalRequestStartName,
+      NavigationTiming::kFinalResponseStartName,
+      NavigationTiming::kFinalLoaderCallbackName,
+      NavigationTiming::kNavigationCommitSentName};
+
+  for (const auto& kv : merged_entries) {
+    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(), url);
+
+    // Verify if the elapsed times from the navigation start are recorded.
+    for (const char* metric : metrics) {
+      EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(kv.second.get(),
+                                                               metric));
+    }
+  }
+}

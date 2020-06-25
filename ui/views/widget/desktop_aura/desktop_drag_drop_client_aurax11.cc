@@ -23,6 +23,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #include "ui/base/layout.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_drag_context.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_whole_screen_move_loop.h"
@@ -167,11 +168,16 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   // Windows has a specific method, DoDragDrop(), which performs the entire
   // drag. We have to emulate this, so we spin off a nested runloop which will
   // track all cursor movement and reroute events to a specific handler.
+  auto* last_cursor = static_cast<ui::X11Cursor*>(
+      source_window->GetHost()->last_cursor().platform());
   move_loop_->RunMoveLoop(
       !source_window->HasCapture(),
-      source_window->GetHost()->last_cursor().platform(),
-      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
-          .platform());
+      last_cursor ? last_cursor->xcursor() : x11::None,
+      static_cast<ui::X11Cursor*>(
+          cursor_manager_
+              ->GetInitializedCursor(ui::mojom::CursorType::kGrabbing)
+              .platform())
+          ->xcursor());
 
   if (alive) {
     auto resulting_operation = negotiated_operation();
@@ -349,7 +355,9 @@ void DesktopDragDropClientAuraX11::UpdateCursor(
       break;
   }
   move_loop_->UpdateCursor(
-      cursor_manager_->GetInitializedCursor(cursor_type).platform());
+      static_cast<ui::X11Cursor*>(
+          cursor_manager_->GetInitializedCursor(cursor_type).platform())
+          ->xcursor());
 }
 
 void DesktopDragDropClientAuraX11::OnBeginForeignDrag(x11::Window window) {

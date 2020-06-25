@@ -192,7 +192,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'ca2f986fb2d16524b6067686dcc765f9836a02db',
+  'v8_revision': 'a7f8bc434b35c3122a859f094fa541febd74ec7c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6ef0387d581d9178177ee125777d025b16dcee85',
+  'angle_revision': '259221d526e2e5ecea5ccedf5085ede903759842',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -251,7 +251,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'e0658a4adf1247bd20ab047b7dc95fa9b9efb96b',
+  'catapult_revision': '1522811c8f8f3b7febb31e3956dbb809dd9d07f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -259,7 +259,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'bc1518ebc0026573bc15c694d1869cceb5ebed57',
+  'devtools_frontend_revision': 'ec199476f417461a8946482a19ae73c0c5d40e26',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -534,7 +534,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'f8465c8fb3e68bc950c9991d803c223cdc82b60c',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '39de3e3efbabda3e20aabf14485f872979b8d230',
       'condition': 'checkout_ios',
   },
 
@@ -1230,7 +1230,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '44e38c4643cebae45fe9c4d32fd8a2b4dd708262',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '23756b9354c005dce4289ec1bb0278b268eb7eda',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1308,7 +1308,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'mPIKuyY6C5YuzfE31WqsFEOncAVh2qfVWD_ebTBhmhMC'
+              'version': 'YFi4RbbToiNVSl0eKxjhhhAElSEXx2Y9i-5Q4eBGkUwC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1458,7 +1458,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'afdbf8e6f881bda6cfe8c8c8c46f2167db8b0b05',
+    Var('webrtc_git') + '/src.git' + '@' + '980cadd02c7384397a41c0e334e9f329f3cc5c65',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1530,7 +1530,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@93573cb61553eed7f8552617cceadaaa2752694e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@66d980fdfe3dbc8345b5c8b88529caaa727d3840',
     'condition': 'checkout_src_internal',
   },
 
@@ -1549,7 +1549,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'IR-OJ3ZwC6C7nqSR16G79ylY3bxr70y953OohEsGlxoC',
+        'version': '3EzGZoGGfIYTWVJTUdaxr2EHM87BdcXF9X31MEvAkh4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

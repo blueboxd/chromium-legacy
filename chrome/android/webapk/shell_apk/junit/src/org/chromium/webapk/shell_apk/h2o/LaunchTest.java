@@ -29,9 +29,9 @@ import org.robolectric.shadows.ShadowActivityManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowPackageManager;
 
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.shell_apk.CustomAndroidOsShadowAsyncTask;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserUtils;

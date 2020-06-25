@@ -214,7 +214,12 @@ class PasswordManager : public FormSubmissionObserver {
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();
 
+  // Sets the autofill-assistant mode. Certain prompts will be disabled while
+  // autofill-assistant is running. See |AutofillAssistantMode|.
   void SetAutofillAssistantMode(AutofillAssistantMode mode);
+
+  // Returns the currently set autofill-assistant mode.
+  AutofillAssistantMode GetAutofillAssistantMode() const;
 
 #if defined(OS_IOS)
   // TODO(https://crbug.com/866444): Use these methods instead olds ones when

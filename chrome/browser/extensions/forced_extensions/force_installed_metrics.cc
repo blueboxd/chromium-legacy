@@ -86,6 +86,22 @@ ForceInstalledMetrics::ForceInstalledMetrics(
 
 ForceInstalledMetrics::~ForceInstalledMetrics() = default;
 
+bool ForceInstalledMetrics::IsStatusGood(ExtensionStatus status) {
+  switch (status) {
+    case ExtensionStatus::PENDING:
+      return false;
+    case ExtensionStatus::LOADED:
+      return true;
+    case ExtensionStatus::READY:
+      return true;
+    case ExtensionStatus::FAILED:
+      return false;
+    default:
+      NOTREACHED();
+  }
+  return false;
+}
+
 bool ForceInstalledMetrics::IsMisconfiguration(
     const InstallStageTracker::InstallationData& installation_data,
     const ExtensionId& id) {
@@ -149,7 +165,7 @@ void ForceInstalledMetrics::ReportMetrics() {
                               tracker_->extensions().size());
   std::set<ExtensionId> missing_forced_extensions;
   for (const auto& extension : tracker_->extensions()) {
-    if (extension.second.status != ExtensionStatus::LOADED)
+    if (!IsStatusGood(extension.second.status))
       missing_forced_extensions.insert(extension.first);
   }
   if (missing_forced_extensions.empty()) {

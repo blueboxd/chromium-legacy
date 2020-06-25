@@ -529,7 +529,7 @@ jumbo_component("views") {
 
   if (is_linux && !is_chromeos) {
     sources -= [ "window/window_button_order_provider.cc" ]
-    public_deps += [ "//ui/base/cursor" ]
+    public_deps += [ "//ui/base/cursor:theme_manager" ]
     deps += [
       "//ui/base/ime/linux",
       "//ui/shell_dialogs",

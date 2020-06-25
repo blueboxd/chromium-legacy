@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/ui/main/test/fake_scene_state.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
@@ -67,10 +68,12 @@ namespace {
 typedef BOOL (^DecisionBlock)(id self);
 // A block that takes the arguments of UserActivityHandler's
 // +handleStartupParametersWithTabOpener.
-typedef void (^HandleStartupParam)(id self,
-                                   id<TabOpening> tabOpener,
-                                   id<StartupInformation> startupInformation,
-                                   ChromeBrowserState* browserState);
+typedef void (^HandleStartupParam)(
+    id self,
+    id<TabOpening> tabOpener,
+    id<ConnectionInformation> connectionInformation,
+    id<StartupInformation> startupInformation,
+    ChromeBrowserState* browserState);
 
 class FakeAppDistributionProvider : public AppDistributionProvider {
  public:
@@ -158,6 +161,8 @@ class AppStateTest : public BlockCleanupTest {
         [OCMockObject mockForProtocol:@protocol(BrowserLauncher)];
     startup_information_mock_ =
         [OCMockObject mockForProtocol:@protocol(StartupInformation)];
+    connection_information_mock_ =
+        [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
     main_application_delegate_ =
         [OCMockObject mockForClass:[MainApplicationDelegate class]];
     window_ = [OCMockObject mockForClass:[UIWindow class]];
@@ -226,18 +231,22 @@ class AppStateTest : public BlockCleanupTest {
   void swizzleHandleStartupParameters(
       id<TabOpening> expectedTabOpener,
       ChromeBrowserState* expectedBrowserState) {
-    handle_startup_swizzle_block_ = ^(id self, id<TabOpening> tabOpener,
-                                      id<StartupInformation> startupInformation,
-                                      ChromeBrowserState* browserState) {
-      ASSERT_EQ(startup_information_mock_, startupInformation);
-      ASSERT_EQ(expectedTabOpener, tabOpener);
-      ASSERT_EQ(expectedBrowserState, browserState);
-    };
+    handle_startup_swizzle_block_ =
+        ^(id self, id<TabOpening> tabOpener,
+          id<ConnectionInformation> connectionInformation,
+          id<StartupInformation> startupInformation,
+          ChromeBrowserState* browserState) {
+          ASSERT_EQ(connection_information_mock_, connectionInformation);
+          ASSERT_EQ(startup_information_mock_, startupInformation);
+          ASSERT_EQ(expectedTabOpener, tabOpener);
+          ASSERT_EQ(expectedBrowserState, browserState);
+        };
 
     handle_startup_swizzler_.reset(new ScopedBlockSwizzler(
         [UserActivityHandler class],
-        @selector(handleStartupParametersWithTabOpener:
-                                    startupInformation:browserState:),
+        @selector
+        (handleStartupParametersWithTabOpener:
+                        connectionInformation:startupInformation:browserState:),
         handle_startup_swizzle_block_));
   }
 
@@ -306,6 +315,7 @@ class AppStateTest : public BlockCleanupTest {
 
   id getBrowserLauncherMock() { return browser_launcher_mock_; }
   id getStartupInformationMock() { return startup_information_mock_; }
+  id getConnectionInformationMock() { return connection_information_mock_; }
   id getApplicationDelegateMock() { return main_application_delegate_; }
   id getWindowMock() { return window_; }
   StubBrowserInterfaceProvider* getInterfaceProvider() {
@@ -325,6 +335,7 @@ class AppStateTest : public BlockCleanupTest {
   web::WebTaskEnvironment task_environment_;
   AppState* app_state_;
   id browser_launcher_mock_;
+  id connection_information_mock_;
   id startup_information_mock_;
   id main_application_delegate_;
   id window_;
@@ -547,7 +558,7 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   // StartupInformation.
   id appStartupParameters =
       [OCMockObject mockForClass:[AppStartupParameters class]];
-  [[[getStartupInformationMock() stub] andReturn:appStartupParameters]
+  [[[getConnectionInformationMock() stub] andReturn:appStartupParameters]
       startupParameters];
   [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
 
@@ -571,7 +582,9 @@ TEST_F(AppStateTest, resumeSessionWithStartupParameters) {
   ASSERT_EQ(NSUInteger(1), [window subviews].count);
 
   // Action.
-  [appState resumeSessionWithTabOpener:tabOpener tabSwitcher:tabSwitcher];
+  [appState resumeSessionWithTabOpener:tabOpener
+                           tabSwitcher:tabSwitcher
+                 connectionInformation:getConnectionInformationMock()];
 
   // Test.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
@@ -593,7 +606,7 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
       interfaceProvider];
 
   // StartupInformation.
-  [[[getStartupInformationMock() stub] andReturn:nil] startupParameters];
+  [[[getConnectionInformationMock() stub] andReturn:nil] startupParameters];
   [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
 
   // BrowserViewInformation.
@@ -618,7 +631,9 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPTabSwitcher) {
   ASSERT_EQ(NSUInteger(1), [window subviews].count);
 
   // Action.
-  [appState resumeSessionWithTabOpener:tabOpener tabSwitcher:tabSwitcher];
+  [appState resumeSessionWithTabOpener:tabOpener
+                           tabSwitcher:tabSwitcher
+                 connectionInformation:getConnectionInformationMock()];
 
   // Test.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);
@@ -637,7 +652,7 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
       interfaceProvider];
 
   // StartupInformation.
-  [[[getStartupInformationMock() stub] andReturn:nil] startupParameters];
+  [[[getConnectionInformationMock() stub] andReturn:nil] startupParameters];
   [[[getStartupInformationMock() stub] andReturnValue:@NO] isColdStart];
 
   // BrowserViewInformation.
@@ -677,7 +692,9 @@ TEST_F(AppStateTest, resumeSessionShouldOpenNTPNoTabSwitcher) {
   ASSERT_EQ(NSUInteger(1), [window subviews].count);
 
   // Action.
-  [appState resumeSessionWithTabOpener:tabOpener tabSwitcher:tabSwitcher];
+  [appState resumeSessionWithTabOpener:tabOpener
+                           tabSwitcher:tabSwitcher
+                 connectionInformation:getConnectionInformationMock()];
 
   // Test.
   EXPECT_EQ(NSUInteger(0), [window subviews].count);

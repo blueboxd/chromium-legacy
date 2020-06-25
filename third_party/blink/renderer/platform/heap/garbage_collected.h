@@ -96,10 +96,6 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
  private:                                         \
   friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
-#define MERGE_GARBAGE_COLLECTED_MIXINS()                   \
- private:                                                  \
-  using merge_garbage_collected_mixins_requires_semicolon = void
-
 // Base class for objects allocated in the Blink garbage-collected heap.
 //
 // Instances of GarbageCollected will be finalized if they are non-trivially

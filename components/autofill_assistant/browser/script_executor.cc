@@ -859,9 +859,6 @@ ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
 
 void ScriptExecutor::WaitForDomOperation::Run() {
   delegate_->AddListener(this);
-  if (delegate_->IsNavigatingToNewDocument())
-    return;  // start paused
-
   Start();
 }
 

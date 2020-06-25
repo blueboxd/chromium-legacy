@@ -128,6 +128,15 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
         metrics_util::CredentialManagerGetResult::kNoneIncognito, mediation);
     return;
   }
+  // Return an empty credential while autofill-assistant is running.
+  if (client_->GetAutofillAssistantMode() == AutofillAssistantMode::kRunning) {
+    // Callback with empty credential info.
+    std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNoneAutofillAssistant,
+        mediation);
+    return;
+  }
   // Return an empty credential if zero-click is required but disabled.
   if (mediation == CredentialMediationRequirement::kSilent &&
       !IsZeroClickAllowed()) {

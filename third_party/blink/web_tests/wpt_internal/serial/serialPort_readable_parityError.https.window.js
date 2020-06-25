@@ -8,18 +8,20 @@
 // ParityError is not (as of 2020/03/23) a valid DOMException, so cannot use
 // promise_rejects_dom for it.
 async function promise_rejects_with_parity_error(t, promise) {
-  return promise.then(() => {
-    assert_false('Should have rejected');
-  }).catch(e => {
-    assert_equals(e.constructor, DOMException);
-    assert_equals(e.name, "ParityError");
-  });
+  return promise
+      .then(() => {
+        assert_false('Should have rejected');
+      })
+      .catch(e => {
+        assert_equals(e.constructor, DOMException);
+        assert_equals(e.name, 'ParityError');
+      });
 }
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size smaller than the amount of data transferred.
-  await port.open({ baudrate: 9600, buffersize: 64 });
+  await port.open({baudrate: 9600, buffersize: 64});
 
   let readable = port.readable;
   let reader = readable.getReader();
@@ -29,7 +31,7 @@ serial_test(async (t, fake) => {
   fakePort.write(data);
   fakePort.simulateParityError();
 
-  let { value, done } = await reader.read();
+  let {value, done} = await reader.read();
   assert_false(done);
   compareArrays(data, value);
 
@@ -43,7 +45,7 @@ serial_test(async (t, fake) => {
   await fakePort.writable();
   fakePort.write(data);
 
-  ({ value, done } = await reader.read());
+  ({value, done} = await reader.read());
   assert_false(done);
   compareArrays(data, value);
   reader.releaseLock();

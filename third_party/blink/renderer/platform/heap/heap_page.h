@@ -759,6 +759,8 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // Uses the object_start_bit_map_ to find an object for a given address. The
   // returned header is either nullptr, indicating that no object could be
   // found, or it is pointing to valid object or free list entry.
+  // This method is called only during stack scanning when there are no
+  // concurrent markers, thus no atomics required.
   HeapObjectHeader* ConservativelyFindHeaderFromAddress(ConstAddress) const;
 
   // Uses the object_start_bit_map_ to find an object for a given address. It is
@@ -1546,7 +1548,8 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(
   HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
       object_start_bit_map()->FindHeader<mode>(address));
   DCHECK_LT(0u, header->GcInfoIndex<mode>());
-  DCHECK_GT(header->PayloadEnd<mode>(), address);
+  DCHECK_GT(header->PayloadEnd<HeapObjectHeader::AccessMode::kAtomic>(),
+            address);
   return header;
 }
 

@@ -27,7 +27,7 @@ export {AccountManagerBrowserProxyImpl} from './people_page/account_manager_brow
 // </if>
 export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.m.js';
 export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
-export {PageStatus, StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './people_page/sync_browser_proxy.m.js';
+export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './people_page/sync_browser_proxy.m.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol ConnectionInformation;
 @class SceneState;
 @protocol StartupInformation;
 
@@ -32,7 +33,8 @@ extern NSString* const kAppEnteredBackgroundDateKey;
 - (void)updateMetricsStateBasedOnPrefsUserTriggered:(BOOL)isUserTriggered;
 // Logs the duration of the cold start startup. Does nothing if there isn't a
 // cold start.
-+ (void)logStartupDuration:(id<StartupInformation>)startupInformation;
++ (void)logStartupDuration:(id<StartupInformation>)startupInformation
+     connectionInformation:(id<ConnectionInformation>)connectionInformation;
 // Logs the number of tabs open and the start type.
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation

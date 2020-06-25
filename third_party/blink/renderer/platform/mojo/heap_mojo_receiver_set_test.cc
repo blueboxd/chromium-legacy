@@ -126,7 +126,7 @@ class HeapMojoReceiverSetStringContextGCWithContextObserverTest
           std::string> {};
 class HeapMojoReceiverSetGCWithoutContextObserverTest
     : public HeapMojoReceiverSetGCBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver,
+          HeapMojoWrapperMode::kForceWithoutContextObserver,
           void> {};
 
 // GC the HeapMojoReceiverSet with context observer and verify that the receiver

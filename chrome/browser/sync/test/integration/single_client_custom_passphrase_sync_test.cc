@@ -6,11 +6,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
+#include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
@@ -228,6 +231,33 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
 
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
+}
+
+// Populates custom passphrase Nigori without keystore keys to the client.
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       PRE_CanDecryptWithKeystoreKeys) {
+  const KeyParamsForTesting key_params = {
+      KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
+  SetNigoriInFakeServer(CreateCustomPassphraseNigori(key_params),
+                        GetFakeServer());
+  SetDecryptionPassphraseForClient(/*index=*/0, key_params.password);
+  ASSERT_TRUE(SetupSync());
+}
+
+// Client should be able to decrypt with keystore keys, regardless whether they
+// were stored in NigoriSpecifics. It's not a normal state, when the server
+// stores some data encrypted with keystore keys, but client is able to
+// reencrypt the data and recover from this state.
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       CanDecryptWithKeystoreKeys) {
+  const autofill::PasswordForm password_form =
+      passwords_helper::CreateTestPasswordForm(0);
+  passwords_helper::InjectKeystoreEncryptedServerPassword(password_form,
+                                                          GetFakeServer());
+  ASSERT_TRUE(SetupClients());
+  EXPECT_TRUE(
+      PasswordFormsChecker(/*index=*/0, /*expected_forms=*/{password_form})
+          .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,

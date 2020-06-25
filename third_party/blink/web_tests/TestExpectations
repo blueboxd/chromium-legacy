@@ -3650,6 +3650,7 @@ crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-008.tentative.html 
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-009.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-011.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
+crbug.com/1060007 external/wpt/css/css-pseudo/marker-text-combine-upright.html [ Failure ]
 
 # iframe tests time out if the request is blocked as mixed content.
 crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
@@ -6740,6 +6741,10 @@ crbug.com/1097765 external/wpt/wasm/webapi/instantiateStreaming.any.worker.html 
 # Disabled for enabling Wasm multi-value support
 crbug.com/1097717 external/wpt/wasm/jsapi/constructor/multi-value.any.html [ Failure Pass ]
 crbug.com/1097717 external/wpt/wasm/jsapi/constructor/multi-value.any.worker.html [ Failure Pass ]
+
+# Disabled to prepare fixing the tests in V8
+crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.html [ Failure Pass ]
+crbug.com/v8/10556 external/wpt/wasm/jsapi/instance/constructor-caching.any.worker.html [ Failure Pass ]
 
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]

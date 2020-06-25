@@ -1228,6 +1228,10 @@ void PasswordManager::SetAutofillAssistantMode(AutofillAssistantMode mode) {
   }
 }
 
+AutofillAssistantMode PasswordManager::GetAutofillAssistantMode() const {
+  return autofill_assistant_mode_;
+}
+
 void PasswordManager::ResetAutofillAssistantMode() {
   // The timeout is 0 only in the dedicated test. Otherwise, the call can happen
   // only due to a bug.

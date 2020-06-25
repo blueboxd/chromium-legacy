@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -54,9 +54,9 @@ class MigrationMessageHandler : public content::WebUIMessageHandler {
     CHECK(!args->GetList().empty());
     const std::string& account_email = args->GetList()[0].GetString();
 
-    InlineLoginHandlerDialogChromeOS::Show(
-        account_email, InlineLoginHandlerDialogChromeOS::Source::
-                           kAccountManagerMigrationWelcomeScreen);
+    InlineLoginDialogChromeOS::Show(account_email,
+                                    InlineLoginDialogChromeOS::Source::
+                                        kAccountManagerMigrationWelcomeScreen);
     HandleCloseDialog(args);
   }
 

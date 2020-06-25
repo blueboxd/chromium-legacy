@@ -245,6 +245,13 @@ var CrSettingsPasswordsDeviceSectionV3Test =
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/passwords_device_section_test.js';
   }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: ['password_manager::features::kEnablePasswordsAccountStorage']
+    };
+  }
 };
 
 TEST_F('CrSettingsPasswordsDeviceSectionV3Test', 'All', function() {

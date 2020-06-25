@@ -208,15 +208,11 @@ class SharedImageRepresentationVideoSkiaVk
       SharedImageManager* manager,
       SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state,
-      MemoryTypeTracker* tracker,
-      std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
-          scoped_hardware_buffer)
+      MemoryTypeTracker* tracker)
       : SharedImageRepresentationSkia(manager, backing, tracker),
-        context_state_(std::move(context_state)),
-        scoped_hardware_buffer_(std::move(scoped_hardware_buffer)) {
+        context_state_(std::move(context_state)) {
     DCHECK(context_state_);
     DCHECK(context_state_->vk_context_provider());
-    DCHECK(scoped_hardware_buffer_);
   }
 
   ~SharedImageRepresentationVideoSkiaVk() override {
@@ -247,6 +243,18 @@ class SharedImageRepresentationVideoSkiaVk
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override {
+    DCHECK(!scoped_hardware_buffer_);
+    auto* video_backing = static_cast<SharedImageVideo*>(backing());
+    DCHECK(video_backing);
+    auto* stream_texture_sii = video_backing->stream_texture_sii_.get();
+
+    // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
+    // from it.
+    scoped_hardware_buffer_ = stream_texture_sii->GetAHardwareBuffer();
+    if (!scoped_hardware_buffer_) {
+      LOG(ERROR) << "Failed to get the hardware buffer.";
+      return nullptr;
+    }
     DCHECK(scoped_hardware_buffer_->buffer());
 
     // Wait on the sync fd attached to the buffer to make sure buffer is
@@ -303,6 +311,7 @@ class SharedImageRepresentationVideoSkiaVk
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
         end_access_semaphore_);
     end_access_semaphore_ = VK_NULL_HANDLE;
+    scoped_hardware_buffer_ = nullptr;
   }
 
  private:
@@ -429,16 +438,8 @@ std::unique_ptr<SharedImageRepresentationSkia> SharedImageVideo::ProduceSkia(
     return nullptr;
 
   if (context_state->GrContextIsVulkan()) {
-    // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
-    // from it.
-    auto scoped_hardware_buffer = stream_texture_sii_->GetAHardwareBuffer();
-    if (!scoped_hardware_buffer) {
-      LOG(ERROR) << "Failed to get the hardware buffer.";
-      return nullptr;
-    }
     return std::make_unique<SharedImageRepresentationVideoSkiaVk>(
-        manager, this, std::move(context_state), tracker,
-        std::move(scoped_hardware_buffer));
+        manager, this, std::move(context_state), tracker);
   }
 
   DCHECK(context_state->GrContextIsGL());

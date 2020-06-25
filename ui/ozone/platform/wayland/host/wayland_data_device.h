@@ -63,6 +63,10 @@ class WaylandDataDevice : public WaylandDataDeviceBase {
                  wl_surface* icon_surface,
                  DragDelegate* delegate);
 
+  // Reset the drag delegate, assuming there is one set. Any wl_data_device
+  // event received after this will be ignored until a new delegate is set.
+  void ResetDragDelegate();
+
   // Requests data for an |offer| in a format specified by |mime_type|. The
   // transfer happens asynchronously and |callback| is called when it is done.
   void RequestData(WaylandDataOffer* offer,

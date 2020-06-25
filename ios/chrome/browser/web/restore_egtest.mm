@@ -294,8 +294,10 @@ bool WaitForOmniboxContaining(std::string text) {
   // Confirm page1 is still in the history.
   [[EarlGrey selectElementWithMatcher:BackButton()]
       performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
-                                          kPageOneTitle))]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_text(base::SysUTF8ToNSString(
+                                              kPageOneTitle)),
+                                          grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
 
@@ -333,8 +335,10 @@ bool WaitForOmniboxContaining(std::string text) {
     [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_longPress()];
-    [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
-                                            kPageTwoTitle))]
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_text(base::SysUTF8ToNSString(
+                                                kPageTwoTitle)),
+                                            grey_sufficientlyVisible(), nil)]
         assertWithMatcher:grey_notNil()];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_tap()];
@@ -346,8 +350,10 @@ bool WaitForOmniboxContaining(std::string text) {
     [ChromeEarlGrey waitForWebStateContainingText:kPageOneContent];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_longPress()];
-    [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
-                                            kPageTwoTitle))]
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_text(base::SysUTF8ToNSString(
+                                                kPageTwoTitle)),
+                                            grey_sufficientlyVisible(), nil)]
         assertWithMatcher:grey_notNil()];
     [[EarlGrey selectElementWithMatcher:ForwardButton()]
         performAction:grey_tap()];

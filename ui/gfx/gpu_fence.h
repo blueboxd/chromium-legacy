@@ -12,6 +12,10 @@
 
 extern "C" typedef struct _ClientGpuFence* ClientGpuFence;
 
+namespace base {
+class TimeTicks;
+}  // namespace base
+
 namespace gfx {
 
 // GpuFence objects own a GpuFenceHandle and release the resources in it when
@@ -34,6 +38,11 @@ class GFX_EXPORT GpuFence {
 
   // Wait for the GpuFence to become ready.
   void Wait();
+
+  enum FenceStatus { kSignaled, kNotSignaled, kInvalid };
+  static FenceStatus GetStatusChangeTime(int fd, base::TimeTicks* time);
+
+  base::TimeTicks GetMaxTimestamp() const;
 
  private:
   gfx::GpuFenceHandleType type_;

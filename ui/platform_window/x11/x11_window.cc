@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/x/x11_cursor.h"
 #include "ui/base/x/x11_desktop_window_move_client.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -389,11 +390,7 @@ bool X11Window::ShouldUseNativeFrame() const {
 }
 
 void X11Window::SetCursor(PlatformCursor cursor) {
-  // X11PlatformWindowOzone has different type of PlatformCursor. Thus, use this
-  // only for X11 and Ozone will manage this by itself.
-#if defined(USE_X11)
-  XWindow::SetCursor(cursor);
-#endif
+  XWindow::SetCursor(static_cast<X11Cursor*>(cursor)->xcursor());
 }
 
 void X11Window::MoveCursorTo(const gfx::Point& location) {

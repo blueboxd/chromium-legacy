@@ -27,6 +27,7 @@
 #include "chrome/browser/notifications/win/fake_itoastnotification.h"
 #include "chrome/browser/notifications/win/fake_itoastnotifier.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "chrome/browser/notifications/win/notification_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -445,6 +446,72 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   }
 
   bridge->SetDisplayedNotificationsForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest,
+                       SynchronizeNotifications) {
+  if (base::win::GetVersion() < kMinimumWindowsVersion)
+    return;
+
+  NotificationPlatformBridgeWin* bridge = GetBridge();
+  ASSERT_TRUE(bridge);
+
+  std::map<NotificationPlatformBridgeWin::NotificationKeyType,
+           NotificationLaunchId>
+      expected_displayed_notifications;
+  bridge->SetExpectedDisplayedNotificationsForTesting(
+      &expected_displayed_notifications);
+
+  std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
+      notifications;
+  bridge->SetDisplayedNotificationsForTesting(&notifications);
+
+  bool incognito = true;
+
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
+      GetToastString(L"P1i", L"Default", true), L"tag"));
+  expected_displayed_notifications[{/*profile_id=*/"Default",
+                                    /*notification_id=*/"P1i"}] =
+      GetNotificationLaunchId(notifications.back().Get());
+
+  incognito = false;
+
+  expected_displayed_notifications[{/*profile_id=*/"Default",
+                                    /*notification_id=*/"P2i"}] =
+      GetNotificationLaunchId(
+          Microsoft::WRL::Make<FakeIToastNotification>(
+              GetToastString(L"P2i", L"Default", false), L"tag")
+              .Get());
+
+  base::RunLoop run_loop;
+  display_service_tester_->SetProcessNotificationOperationDelegate(
+      base::BindRepeating(&NotificationPlatformBridgeWinUITest::HandleOperation,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  // Simulate notifications synchronization.
+  bridge->SynchronizeNotificationsForTesting();
+  run_loop.Run();
+
+  std::map<NotificationPlatformBridgeWin::NotificationKeyType,
+           NotificationLaunchId>
+      actual_expected_displayed_notification =
+          bridge->GetExpectedDisplayedNotificationForTesting();
+
+  // Only one notification is displayed (P1i). As result, the synchronization
+  // will close the notification P2i.
+  ASSERT_EQ(1u, actual_expected_displayed_notification.size());
+  EXPECT_TRUE(actual_expected_displayed_notification.count(
+      {/*profile_id=*/"Default",
+       /*notification_id=*/"P1i"}));
+
+  // Validate the close event values.
+  EXPECT_EQ(NotificationCommon::OPERATION_CLOSE, last_operation_);
+  EXPECT_EQ("P2i", last_notification_id_);
+  EXPECT_EQ(base::nullopt, last_action_index_);
+  EXPECT_EQ(base::nullopt, last_reply_);
+  EXPECT_EQ(true, last_by_user_);
+
+  bridge->SetDisplayedNotificationsForTesting(nullptr);
+  bridge->SetExpectedDisplayedNotificationsForTesting(nullptr);
 }
 
 // Test calling Display with a fake implementation of the Action Center

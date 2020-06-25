@@ -46,9 +46,9 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 import org.chromium.webapk.test.WebApkTestHelper;
 

@@ -13,7 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.text.TextUtils;
 
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -45,13 +45,6 @@ ReportingReport::ReportingReport(
       attempts(attempts) {}
 
 ReportingReport::~ReportingReport() {
-  if (outcome == Outcome::DELIVERED) {
-    // |delivered| should always have a value here, since the ReportingCache
-    // records the delivery time for any successful delivery.
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.Reporting.ReportDeliveredLatency",
-                                 delivered.value() - queued);
-    UMA_HISTOGRAM_COUNTS_100("Net.Reporting.ReportDeliveredAttempts", attempts);
-  }
   RecordReportOutcome(outcome);
 }
 

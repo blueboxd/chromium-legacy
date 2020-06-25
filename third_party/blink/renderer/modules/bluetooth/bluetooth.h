@@ -100,7 +100,7 @@ class Bluetooth final : public EventTargetWithInlineData,
       client_receivers_;
 
   HeapMojoRemote<mojom::blink::WebBluetoothService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       service_;
 };
 

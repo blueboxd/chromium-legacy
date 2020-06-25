@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -384,6 +386,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   SpellChecker& GetSpellChecker() const { return *spell_checker_; }
 
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
+
+  // These delegate to the document_.
+  ukm::UkmRecorder* UkmRecorder();
+  ukm::SourceId UkmSourceID() const;
 
  protected:
   // EventTarget overrides.

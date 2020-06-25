@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
@@ -26,12 +27,23 @@ class PLATFORM_EXPORT AgentSchedulingStrategy {
     kYes,
   };
 
+  class Delegate {
+   public:
+    Delegate() = default;
+    virtual ~Delegate() = default;
+
+    // Delegate should call OnDelayPassed after |delay| has passed, and pass
+    // |frame_scheduler| as a parameter.
+    virtual void OnSetTimer(const FrameSchedulerImpl& frame_scheduler,
+                            base::TimeDelta delay) = 0;
+  };
+
   AgentSchedulingStrategy(const AgentSchedulingStrategy&) = delete;
   AgentSchedulingStrategy(AgentSchedulingStrategy&&) = delete;
 
   virtual ~AgentSchedulingStrategy();
 
-  static std::unique_ptr<AgentSchedulingStrategy> Create();
+  static std::unique_ptr<AgentSchedulingStrategy> Create(Delegate& delegate);
 
   // The following functions need to be called as appropriate to manage the
   // strategy's internal state. Will return |kYes| when a policy update should
@@ -49,6 +61,9 @@ class PLATFORM_EXPORT AgentSchedulingStrategy {
   virtual ShouldUpdatePolicy OnDocumentChangedInMainFrame(
       const FrameSchedulerImpl& frame_scheduler) WARN_UNUSED_RESULT = 0;
   virtual ShouldUpdatePolicy OnMainFrameLoad(
+      const FrameSchedulerImpl& frame_scheduler) WARN_UNUSED_RESULT = 0;
+  // OnDelayPassed should be called by Delegate after the appropriate delay.
+  virtual ShouldUpdatePolicy OnDelayPassed(
       const FrameSchedulerImpl& frame_scheduler) WARN_UNUSED_RESULT = 0;
 
   // The following functions should be consulted when making scheduling

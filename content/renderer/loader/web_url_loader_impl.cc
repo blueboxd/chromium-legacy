@@ -1116,7 +1116,7 @@ void WebURLLoaderImpl::LoadSynchronously(
         WebString::FromLatin1(sync_load_response.downloaded_blob->uuid),
         WebString::FromLatin1(sync_load_response.downloaded_blob->content_type),
         sync_load_response.downloaded_blob->size,
-        sync_load_response.downloaded_blob->blob.PassPipe());
+        std::move(sync_load_response.downloaded_blob->blob));
   }
 
   data.Assign(sync_load_response.data.data(), sync_load_response.data.size());

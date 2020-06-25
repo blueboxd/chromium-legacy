@@ -39,6 +39,7 @@ void WaylandDataDevice::StartDrag(const WaylandDataSource& data_source,
                                   wl_surface* icon_surface,
                                   DragDelegate* delegate) {
   DCHECK(delegate);
+  DCHECK(!drag_delegate_);
   drag_delegate_ = delegate;
 
   wl_data_device_start_drag(data_device_.get(), data_source.data_source(),
@@ -46,6 +47,11 @@ void WaylandDataDevice::StartDrag(const WaylandDataSource& data_source,
                             connection()->serial());
   drag_delegate_->DrawIcon();
   connection()->ScheduleFlush();
+}
+
+void WaylandDataDevice::ResetDragDelegate() {
+  DCHECK(drag_delegate_);
+  drag_delegate_ = nullptr;
 }
 
 void WaylandDataDevice::RequestData(WaylandDataOffer* offer,

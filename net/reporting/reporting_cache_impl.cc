@@ -176,15 +176,11 @@ void ReportingCacheImpl::IncrementEndpointDeliveries(
 void ReportingCacheImpl::RemoveReports(
     const std::vector<const ReportingReport*>& reports,
     ReportingReport::Outcome outcome) {
-  base::Optional<base::TimeTicks> delivered = base::nullopt;
-  if (outcome == ReportingReport::Outcome::DELIVERED)
-    delivered = tick_clock().NowTicks();
   for (const ReportingReport* report : reports) {
     auto it = reports_.find(report);
     DCHECK(it != reports_.end());
 
     it->get()->outcome = outcome;
-    it->get()->delivered = delivered;
 
     if (it->get()->IsUploadPending()) {
       it->get()->status = ReportingReport::Status::DOOMED;

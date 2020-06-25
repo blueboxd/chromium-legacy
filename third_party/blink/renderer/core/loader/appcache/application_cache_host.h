@@ -115,7 +115,7 @@ class CORE_EXPORT ApplicationCacheHost
 
  protected:
   HeapMojoRemote<mojom::blink::AppCacheHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       backend_host_;
   mojom::blink::AppCacheStatus status_ =
       mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
@@ -136,10 +136,10 @@ class CORE_EXPORT ApplicationCacheHost
 
   HeapMojoReceiver<mojom::blink::AppCacheFrontend,
                    ApplicationCacheHost,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
   HeapMojoRemote<mojom::blink::AppCacheBackend,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       backend_remote_;
 
   base::UnguessableToken host_id_;

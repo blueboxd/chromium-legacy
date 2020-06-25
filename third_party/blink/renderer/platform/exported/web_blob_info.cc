@@ -13,36 +13,32 @@ namespace blink {
 WebBlobInfo::WebBlobInfo(const WebString& uuid,
                          const WebString& type,
                          uint64_t size,
-                         mojo::ScopedMessagePipeHandle handle)
-    : WebBlobInfo(
-          BlobDataHandle::Create(uuid,
-                                 type,
-                                 size,
-                                 mojo::PendingRemote<mojom::blink::Blob>(
-                                     std::move(handle),
-                                     mojom::blink::Blob::Version_))) {}
+                         CrossVariantMojoRemote<mojom::BlobInterfaceBase> blob)
+    : WebBlobInfo(BlobDataHandle::Create(
+          uuid,
+          type,
+          size,
+          mojo::PendingRemote<mojom::blink::Blob>(std::move(blob)))) {}
 
 WebBlobInfo::WebBlobInfo(const WebString& uuid,
                          const WebString& file_name,
                          const WebString& type,
                          const base::Optional<base::Time>& last_modified,
                          uint64_t size,
-                         mojo::ScopedMessagePipeHandle handle)
-    : WebBlobInfo(
-          BlobDataHandle::Create(uuid,
-                                 type,
-                                 size,
-                                 mojo::PendingRemote<mojom::blink::Blob>(
-                                     std::move(handle),
-                                     mojom::blink::Blob::Version_)),
-          file_name,
-          last_modified) {}
+                         CrossVariantMojoRemote<mojom::BlobInterfaceBase> blob)
+    : WebBlobInfo(BlobDataHandle::Create(
+                      uuid,
+                      type,
+                      size,
+                      mojo::PendingRemote<mojom::blink::Blob>(std::move(blob))),
+                  file_name,
+                  last_modified) {}
 
 // static
 WebBlobInfo WebBlobInfo::BlobForTesting(const WebString& uuid,
                                         const WebString& type,
                                         uint64_t size) {
-  return WebBlobInfo(uuid, type, size, mojo::MessagePipe().handle0);
+  return WebBlobInfo(uuid, type, size, mojo::NullRemote());
 }
 
 // static
@@ -50,8 +46,7 @@ WebBlobInfo WebBlobInfo::FileForTesting(const WebString& uuid,
                                         const WebString& file_name,
                                         const WebString& type) {
   return WebBlobInfo(uuid, file_name, type, base::nullopt,
-                     std::numeric_limits<uint64_t>::max(),
-                     mojo::MessagePipe().handle0);
+                     std::numeric_limits<uint64_t>::max(), mojo::NullRemote());
 }
 
 WebBlobInfo::~WebBlobInfo() {
@@ -64,10 +59,11 @@ WebBlobInfo::WebBlobInfo(const WebBlobInfo& other) {
 
 WebBlobInfo& WebBlobInfo::operator=(const WebBlobInfo& other) = default;
 
-mojo::ScopedMessagePipeHandle WebBlobInfo::CloneBlobHandle() const {
+CrossVariantMojoRemote<mojom::BlobInterfaceBase> WebBlobInfo::CloneBlobRemote()
+    const {
   if (!blob_handle_)
-    return mojo::ScopedMessagePipeHandle();
-  return blob_handle_->CloneBlobRemote().PassPipe();
+    return mojo::NullRemote();
+  return blob_handle_->CloneBlobRemote();
 }
 
 WebBlobInfo::WebBlobInfo(scoped_refptr<BlobDataHandle> handle)

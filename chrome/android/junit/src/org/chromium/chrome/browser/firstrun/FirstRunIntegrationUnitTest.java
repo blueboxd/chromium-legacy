@@ -40,9 +40,9 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.webapps.WebApkIntentDataProviderFactory;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
-import org.chromium.webapk.lib.client.WebApkValidator;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.test.WebApkTestHelper;
 
 /** JUnit tests for first run triggering code. */

@@ -24,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -4100,12 +4101,54 @@ TEST_F(BestEffortNonMainQueuesUntilOnLoadTest, DeprioritizesAllNonMainQueues) {
   scoped_refptr<TaskQueue> non_timer_tq =
       QueueForTaskType(frame_scheduler.get(), TaskType::kNetworking);
   ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_EQ(non_timer_tq->kBestEffortPriority,
+  EXPECT_EQ(non_timer_tq->GetQueuePriority(),
             TaskQueue::QueuePriority::kBestEffortPriority);
 
   ignore_result(scheduler_->agent_scheduling_strategy().OnMainFrameLoad(
       *main_frame_scheduler_));
   ForceUpdatePolicyAndGetCurrentUseCase();
+
+  EXPECT_EQ(non_timer_tq->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+}
+
+class BestEffortNonMainQueuesUntilOnFMPTimeoutTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  BestEffortNonMainQueuesUntilOnFMPTimeoutTest()
+      : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
+                                      {{"queues", "all-queues"},
+                                       {"method", "best-effort"},
+                                       {"signal", "fmp"},
+                                       {"delay_ms", "1000"}}}}) {}
+};
+
+TEST_F(BestEffortNonMainQueuesUntilOnFMPTimeoutTest,
+       DeprioritizesNonMainQueues) {
+  auto page_scheduler = CreatePageScheduler(
+      /* page_scheduler_delegate= */ nullptr, scheduler_.get());
+
+  NiceMock<MockFrameDelegate> frame_delegate{};
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler = CreateFrameScheduler(
+      page_scheduler.get(), &frame_delegate, /* blame_context= */ nullptr,
+      FrameScheduler::FrameType::kSubframe);
+
+  scoped_refptr<TaskQueue> non_timer_tq =
+      QueueForTaskType(frame_scheduler.get(), TaskType::kNetworking);
+  ForceUpdatePolicyAndGetCurrentUseCase();
+  EXPECT_EQ(non_timer_tq->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+
+  ignore_result(
+      scheduler_->agent_scheduling_strategy().OnMainFrameFirstMeaningfulPaint(
+          *main_frame_scheduler_));
+
+  // Queue should still have lower priority, since we just started counting
+  // towards the timeout.
+  EXPECT_EQ(non_timer_tq->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+
+  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
 
   EXPECT_EQ(non_timer_tq->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);

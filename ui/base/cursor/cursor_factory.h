@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 
 class SkBitmap;
@@ -18,6 +17,7 @@ class Point;
 }
 
 namespace ui {
+using PlatformCursor = void*;
 
 class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
  public:

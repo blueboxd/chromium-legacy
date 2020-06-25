@@ -208,8 +208,7 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     if (mime_type.IsNull())
       mime_type = g_empty_string;
     blob_info->mime_type = mime_type;
-    blob_info->blob = mojo::PendingRemote<blink::mojom::blink::Blob>(
-        info.CloneBlobHandle(), blink::mojom::blink::Blob::Version_);
+    blob_info->blob = info.CloneBlobRemote();
     external_objects.push_back(
         blink::mojom::blink::IDBExternalObject::NewBlobOrFile(
             std::move(blob_info)));
@@ -257,10 +256,10 @@ bool StructTraits<blink::mojom::IDBValueDataView,
           value_blob_info.emplace_back(
               info->uuid, info->file->name, info->mime_type,
               blink::NullableTimeToOptionalTime(info->file->last_modified),
-              info->size, info->blob.PassPipe());
+              info->size, std::move(info->blob));
         } else {
           value_blob_info.emplace_back(info->uuid, info->mime_type, info->size,
-                                       info->blob.PassPipe());
+                                       std::move(info->blob));
         }
         break;
       }

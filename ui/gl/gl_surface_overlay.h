@@ -42,6 +42,9 @@ class GL_EXPORT GLSurfaceOverlay {
 
   void Flush() const;
 
+  gfx::GpuFence* gpu_fence() const { return gpu_fence_.get(); }
+  int z_order() const { return z_order_; }
+
  private:
   int z_order_;
   gfx::OverlayTransform transform_;

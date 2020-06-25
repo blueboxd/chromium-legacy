@@ -83,7 +83,7 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #endif
@@ -802,9 +802,8 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
     // account management flows will go through native UIs and not through a
     // tabbed browser window.
     if (add_account) {
-      chromeos::InlineLoginHandlerDialogChromeOS::Show(
-          chromeos::InlineLoginHandlerDialogChromeOS::Source::
-              kPrintPreviewDialog);
+      chromeos::InlineLoginDialogChromeOS::Show(
+          chromeos::InlineLoginDialogChromeOS::Source::kPrintPreviewDialog);
     } else {
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
           profile, chromeos::settings::mojom::kMyAccountsSubpagePath);

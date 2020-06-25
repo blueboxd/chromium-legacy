@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
 
+@protocol GREYMatcher;
 @class FakeChromeIdentity;
 
 #define SigninEarlGreyUtils \
@@ -44,6 +45,9 @@
 
 // Removes |fakeIdentity| from the fake identity service.
 - (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
+
+// Wait until |matcher| is accessible (not nil).
+- (void)waitForMatcher:(id<GREYMatcher>)matcher;
 
 @end
 

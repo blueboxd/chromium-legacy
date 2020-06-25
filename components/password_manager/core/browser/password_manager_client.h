@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -70,7 +71,6 @@ class FieldInfoManager;
 class PasswordFeatureManager;
 class BiometricAuthenticator;
 class PasswordFormManagerForUI;
-class PasswordManager;
 class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
@@ -410,6 +410,9 @@ class PasswordManagerClient {
 
   // Returns a FieldInfoManager associated with the current profile.
   virtual FieldInfoManager* GetFieldInfoManager() const = 0;
+
+  // Returns the currently set autofill-assistant mode.
+  virtual AutofillAssistantMode GetAutofillAssistantMode() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

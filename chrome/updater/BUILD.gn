@@ -235,6 +235,7 @@ if (is_win || is_mac) {
       "test/integration_tests.h",
       "unittest_util.cc",
       "unittest_util.h",
+      "unittest_util_unittest.cc",
       "updater_unittest.cc",
     ]
 

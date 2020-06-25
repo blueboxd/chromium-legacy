@@ -73,10 +73,10 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
 
   HeapMojoReceiver<mojom::blink::RemoteObjectGateway,
                    RemoteObjectGatewayImpl,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
   HeapMojoRemote<mojom::blink::RemoteObjectHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       object_host_;
 };
 

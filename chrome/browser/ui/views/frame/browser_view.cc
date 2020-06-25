@@ -1282,6 +1282,13 @@ void BrowserView::FullscreenStateChanged() {
           : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
       display::kInvalidDisplayId);
   frame_->GetFrameView()->OnFullscreenStateChanged();
+
+#if defined(OS_MACOSX)
+  if (!fullscreen && restore_pre_fullscreen_bounds_callback_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(restore_pre_fullscreen_bounds_callback_));
+  }
+#endif  // OS_MACOSX
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
@@ -2019,7 +2026,7 @@ bool BrowserView::CanActivate() const {
   // from each other on Windows. http://crbug.com/141650.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
-                                activate_modal_dialog_factory_.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr()));
 #endif
   return false;
 }
@@ -3065,16 +3072,25 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display;
     if (screen && screen->GetDisplayWithDisplayId(display_id, &display)) {
-      pre_fullscreen_bounds_ = frame_->GetWindowBoundsInScreen();
-      frame_->SetBounds(
-          {display.work_area().origin(), pre_fullscreen_bounds_->size()});
+      const gfx::Rect& current_bounds = frame_->GetWindowBoundsInScreen();
+      restore_pre_fullscreen_bounds_callback_ = base::BindOnce(
+          [](base::WeakPtr<BrowserView> view, const gfx::Rect& bounds) {
+            if (view && view->frame())
+              view->frame()->SetBounds(bounds);
+          },
+          weak_ptr_factory_.GetWeakPtr(), current_bounds);
+      frame_->SetBounds({display.work_area().origin(), current_bounds.size()});
     }
   }
+
   frame_->SetFullscreen(fullscreen);
-  if (!fullscreen && pre_fullscreen_bounds_) {
-    frame_->SetBounds(*pre_fullscreen_bounds_);
-    pre_fullscreen_bounds_.reset();
-  }
+
+#if !defined(OS_MACOSX)
+  // On Mac, the pre-fullscreen bounds must be restored after an asynchronous
+  // transition out of the fullscreen workspace; see http://crbug.com/1039874
+  if (!fullscreen && restore_pre_fullscreen_bounds_callback_)
+    std::move(restore_pre_fullscreen_bounds_callback_).Run();
+#endif  // !OS_MACOSX
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   const bool should_stay_in_immersive =

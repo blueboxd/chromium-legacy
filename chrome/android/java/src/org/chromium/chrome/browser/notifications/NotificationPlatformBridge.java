@@ -53,9 +53,9 @@ import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.url.URI;
 import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URISyntaxException;
 

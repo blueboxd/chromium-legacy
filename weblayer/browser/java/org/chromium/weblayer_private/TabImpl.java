@@ -389,6 +389,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
      * Called when this TabImpl is no longer the active TabImpl.
      */
     public void onDidLoseActive() {
+        if (mAutofillProvider != null) {
+            mAutofillProvider.hidePopup();
+        }
+
         hideFindInPageUiAndNotifyClient();
         updateWebContentsVisibility();
 

@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
@@ -193,11 +193,11 @@ void EduAccountLoginHandler::HandleUpdateEduCoexistenceFlowResult(
   const base::Value::ConstListView& args_list = args->GetList();
   CHECK_EQ(args_list.size(), 1u);
   int result = args_list[0].GetInt();
-  DCHECK(result <= static_cast<int>(InlineLoginHandlerDialogChromeOS::
-                                        EduCoexistenceFlowResult::kMaxValue));
-  InlineLoginHandlerDialogChromeOS::UpdateEduCoexistenceFlowResult(
-      static_cast<InlineLoginHandlerDialogChromeOS::EduCoexistenceFlowResult>(
-          result));
+  DCHECK(result <=
+         static_cast<int>(
+             InlineLoginDialogChromeOS::EduCoexistenceFlowResult::kMaxValue));
+  InlineLoginDialogChromeOS::UpdateEduCoexistenceFlowResult(
+      static_cast<InlineLoginDialogChromeOS::EduCoexistenceFlowResult>(result));
 }
 
 void EduAccountLoginHandler::FetchFamilyMembers() {

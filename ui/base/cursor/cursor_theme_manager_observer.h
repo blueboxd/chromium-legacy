@@ -7,13 +7,11 @@
 
 #include <string>
 
-#include "base/component_export.h"
 #include "base/observer_list_types.h"
 
 namespace ui {
 
-class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorThemeManagerObserver
-    : public base::CheckedObserver {
+class CursorThemeManagerObserver : public base::CheckedObserver {
  public:
   // |cursor_theme_name| will be nonempty.
   virtual void OnCursorThemeNameChanged(

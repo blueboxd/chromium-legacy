@@ -79,7 +79,7 @@ class CORE_EXPORT SystemClipboard final
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
   HeapMojoRemote<mojom::blink::ClipboardHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       clipboard_;
   // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
   // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.

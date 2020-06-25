@@ -29,9 +29,9 @@ import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.concurrent.TimeoutException;
 

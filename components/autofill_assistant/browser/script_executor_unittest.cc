@@ -1132,19 +1132,19 @@ TEST_F(ScriptExecutorTest, StartWaitForDomWhileNavigating) {
       .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
                       RunOnceCallback<4>(true, "")));
 
-  // Navigation starts before WaitForDom even starts, so the operation starts in
-  // a paused state.
+  // Navigation starts before WaitForDom starts. WaitForDom does not wait and
+  // completes successfully.
   delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
-
+  EXPECT_CALL(executor_callback_, Run(_));
   executor_->Run(&user_data_, executor_callback_.Get());
 
-  // The end of navigation un-pauses WaitForDom, which then succeeds
-  // immediately.
-  EXPECT_CALL(executor_callback_, Run(_));
+  // Navigation finishes after the WaitForDom has finished.
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
   ASSERT_EQ(1u, processed_actions_capture.size());
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
+  EXPECT_FALSE(processed_actions_capture[0].navigation_info().started());
+  EXPECT_FALSE(processed_actions_capture[0].navigation_info().ended());
 }
 
 TEST_F(ScriptExecutorTest, ReportErrorAsNavigationError) {
@@ -1241,20 +1241,19 @@ TEST_F(ScriptExecutorTest, ReportNavigationEnd) {
       .WillOnce(DoAll(SaveArg<3>(&processed_actions_capture),
                       RunOnceCallback<4>(true, "")));
 
-  // Navigation starts, before the script is run.
-  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
-  EXPECT_CALL(executor_callback_, Run(_));
-  executor_->Run(&user_data_, executor_callback_.Get());
-
-  // WaitForDom waits for navigation to end, then checks for the element, which
-  // fails.
+  // WaitForDom does NOT wait for navigation to end, it immediately checks for
+  // the element, which fails.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus()));
+
+  // Navigation starts before the script is run.
+  delegate_.UpdateNavigationState(/* navigating= */ true, /* error= */ false);
+  EXPECT_CALL(executor_callback_, Run(_));
+  executor_->Run(&user_data_, executor_callback_.Get());
   delegate_.UpdateNavigationState(/* navigating= */ false, /* error= */ false);
 
-  // Checking for the element succeeds on the second try. Waiting avoids
-  // depending on the order at which the listeners are called.
+  // Checking for the element succeeds on the second try.
   EXPECT_CALL(mock_web_controller_,
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));

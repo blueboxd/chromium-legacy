@@ -124,7 +124,7 @@ class HeapMojoAssociatedReceiverSetGCWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedReceiverSetGCWithoutContextObserverTest
     : public HeapMojoAssociatedReceiverSetGCBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 // Remove() a PendingAssociatedReceiver from HeapMojoAssociatedReceiverSet and
 // verify that the receiver is no longer part of the set.

@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
 #include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -125,6 +126,11 @@ void RecordProfileMenuClick(Profile* profile);
 void RecordTransactionalReauthResult(
     signin_metrics::ReauthAccessPoint access_point,
     signin::ReauthResult result);
+
+// Records user action performed in a transactional reauth dialog/tab.
+void RecordTransactionalReauthUserAction(
+    signin_metrics::ReauthAccessPoint access_point,
+    SigninReauthViewController::UserAction user_action);
 
 }  // namespace signin_ui_util
 

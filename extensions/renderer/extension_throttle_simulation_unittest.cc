@@ -458,7 +458,7 @@ class Requester : public DiscreteTimeSimulation::Actor {
   bool last_attempt_was_failure_;
   TimeDelta last_downtime_duration_;
   Server* const server_;
-  RequesterResults* const results_;  // May be NULL.
+  RequesterResults* const results_;  // May be nullptr.
 
   DISALLOW_COPY_AND_ASSIGN(Requester);
 };
@@ -571,7 +571,7 @@ double SimulateDowntime(const TimeDelta& duration,
     throttler_entry->DisableBackoffThrottling();
 
   Requester requester(std::move(throttler_entry), average_client_interval,
-                      &server, NULL);
+                      &server, nullptr);
   requester.SetStartupJitter(duration / 3);
   requester.SetRequestJitter(average_client_interval);
 

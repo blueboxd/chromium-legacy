@@ -88,14 +88,41 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
+     * Waits for the AccountTrackerService to seed system accounts.
+     */
+    public void waitForSeeding() {
+        SigninTestUtil.seedAccounts();
+    }
+
+    /**
+     * Adds an account and seed it in native code.
+     *
+     * This method invokes native code. It shouldn't be called in a Robolectric test.
+     */
+    public Account addAccountAndWaitForSeeding(String accountName) {
+        Account account = addAccount(accountName);
+        waitForSeeding();
+        return account;
+    }
+
+    /**
+     * Removes an account and seed it in native code.
+     *
+     * This method invokes native code. It shouldn't be called in a Robolectric test.
+     */
+    public void removeAccountAndWaitForSeeding(String accountName) {
+        mFakeAccountManagerFacade.removeAccount(AccountUtils.createAccountFromName(accountName));
+        waitForSeeding();
+    }
+
+    /**
      * Add and sign in an account with the default name.
      *
      * This method invokes native code. It shouldn't be called in a Robolectric test.
      */
     public Account addAndSignInTestAccount() {
         assert !mIsSignedIn : "An account is already signed in!";
-        Account account = addAccount(TEST_ACCOUNT_EMAIL);
-        SigninTestUtil.seedAccounts();
+        Account account = addAccountAndWaitForSeeding(TEST_ACCOUNT_EMAIL);
         SigninTestUtil.signIn(account);
         mIsSignedIn = true;
         return account;

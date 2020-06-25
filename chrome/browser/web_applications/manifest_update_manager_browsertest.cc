@@ -1155,8 +1155,66 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithShortcutsMenu,
             http_server_.GetURL(kAnotherShortcutsItemUrl));
 }
 
-// TODO(https://crbug.com/1069298): Once BookmarkApp::ReadAllShortcutsMenuIcons
-// is implemented, add a CheckFindsShortcutIconContentChange test here.
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithShortcutsMenu,
+                       CheckFindsShortcutIconContentChange) {
+  constexpr char kManifest[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1,
+      "shortcuts": [
+        {
+          "name": "Home",
+          "short_name": "HM",
+          "description": "Go home",
+          "url": "/",
+          "icons": [
+            {
+              "src": "/web_apps/basic-192.png?ignore",
+              "sizes": "192x192",
+              "type": "image/png"
+            }
+          ]
+        }
+      ]
+    }
+  )";
+  OverrideManifest(kManifest, {kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // Replace the contents of basic-192.png with blue-192.png without changing
+  // the URL.
+  content::URLLoaderInterceptor url_interceptor(base::BindLambdaForTesting(
+      [this](content::URLLoaderInterceptor::RequestParams* params)
+          -> bool /*intercepted*/ {
+        if (params->url_request.url ==
+            http_server_.GetURL("/web_apps/basic-192.png?ignore")) {
+          content::URLLoaderInterceptor::WriteResponse(
+              "chrome/test/data/web_apps/blue-192.png", params->client.get());
+          return true;
+        }
+        return false;
+      }));
+
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+
+  // Check that the installed icon is now blue.
+  base::RunLoop run_loop;
+  GetProvider().icon_manager().ReadAllShortcutsMenuIcons(
+      app_id,
+      base::BindLambdaForTesting(
+          [&run_loop](ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
+            run_loop.Quit();
+            EXPECT_EQ(shortcuts_menu_icons_bitmaps[0].at(192).getColor(0, 0),
+                      SK_ColorBLUE);
+          }));
+  run_loop.Run();
+}
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTestWithShortcutsMenu,
                        CheckFindsShortcutIconSrcUpdated) {

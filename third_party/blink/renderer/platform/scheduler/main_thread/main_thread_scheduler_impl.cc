@@ -268,6 +268,9 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   notify_agent_strategy_on_input_event_closure_ = base::BindRepeating(
       &MainThreadSchedulerImpl::NotifyAgentSchedulerOnInputEvent,
       weak_factory_.GetWeakPtr());
+  agent_strategy_delay_callback_ =
+      base::BindRepeating(&MainThreadSchedulerImpl::OnAgentStrategyDelayPassed,
+                          weak_factory_.GetWeakPtr());
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "MainThreadScheduler",
@@ -2272,6 +2275,24 @@ void MainThreadSchedulerImpl::OnMainFrameLoad(
       AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
     ForceUpdatePolicy();
   };
+}
+
+void MainThreadSchedulerImpl::OnSetTimer(
+    const FrameSchedulerImpl& frame_scheduler,
+    base::TimeDelta delay) {
+  helper_.CheckOnValidThread();
+  control_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(agent_strategy_delay_callback_, &frame_scheduler), delay);
+}
+
+void MainThreadSchedulerImpl::OnAgentStrategyDelayPassed(
+    const FrameSchedulerImpl* frame_scheduler) {
+  helper_.CheckOnValidThread();
+  if (agent_scheduling_strategy_->OnDelayPassed(*frame_scheduler) ==
+      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+    ForceUpdatePolicy();
+  }
 }
 
 void MainThreadSchedulerImpl::ResetForNavigationLocked() {

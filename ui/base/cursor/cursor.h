@@ -21,8 +21,6 @@ namespace ui {
 
 #if defined(OS_WIN)
 typedef ::HCURSOR PlatformCursor;
-#elif defined(USE_X11)
-typedef unsigned long PlatformCursor;
 #else
 typedef void* PlatformCursor;
 #endif

@@ -840,8 +840,9 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms() {
       timing.final_request_start_time.is_null() ||
       timing.final_response_start_time.is_null() ||
       timing.final_loader_callback_time.is_null() ||
-      timing.navigation_commit_sent_time.is_null())
+      timing.navigation_commit_sent_time.is_null()) {
     return;
+  }
   // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
   // after the issue 1076710 is fixed.
   if (navigation_start_time > timing.first_request_start_time ||

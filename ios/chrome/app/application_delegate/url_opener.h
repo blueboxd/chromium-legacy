@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class AppState;
+@protocol ConnectionInformation;
 @protocol StartupInformation;
 @protocol TabOpening;
 @class URLOpenerParams;
@@ -19,14 +20,16 @@
 - (instancetype)init NS_UNAVAILABLE;
 
 + (BOOL)openURL:(URLOpenerParams*)options
-     applicationActive:(BOOL)applicationActive
-             tabOpener:(id<TabOpening>)tabOpener
-    startupInformation:(id<StartupInformation>)startupInformation;
+        applicationActive:(BOOL)applicationActive
+                tabOpener:(id<TabOpening>)tabOpener
+    connectionInformation:(id<ConnectionInformation>)connectionInformation
+       startupInformation:(id<StartupInformation>)startupInformation;
 
 // Handles open URL at application startup.
 + (void)handleLaunchOptions:(URLOpenerParams*)options
           applicationActive:(BOOL)applicationActive
                   tabOpener:(id<TabOpening>)tabOpener
+      connectionInformation:(id<ConnectionInformation>)connectionInformation
          startupInformation:(id<StartupInformation>)startupInformation
                    appState:(AppState*)appState;
 @end

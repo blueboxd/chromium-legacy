@@ -97,6 +97,8 @@ class UkmPageLoadMetricsObserver
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
+  void RecordNavigationTimingMetrics();
+
   // Records page load timing related metrics available in PageLoadTiming, such
   // as first contentful paint.
   void RecordTimingMetrics(
@@ -180,6 +182,7 @@ class UkmPageLoadMetricsObserver
   base::TimeDelta total_foreground_cpu_time_;
 
   // Load timing metrics of the main frame resource request.
+  content::NavigationHandleTiming navigation_handle_timing_;
   base::Optional<net::LoadTimingInfo> main_frame_timing_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.

@@ -33,8 +33,8 @@ class MODULES_EXPORT NavigatorShare final
  public:
   static const char kSupplementName[];
 
-  NavigatorShare();
-  ~NavigatorShare();
+  NavigatorShare() = default;
+  ~NavigatorShare() = default;
 
   // Gets, or creates, NavigatorShare supplement on Navigator.
   // See platform/Supplementable.h
@@ -56,9 +56,10 @@ class MODULES_EXPORT NavigatorShare final
 
   void OnConnectionError();
 
+  // |NavigatorShare| is not ExecutionContext-associated.
   HeapMojoRemote<blink::mojom::blink::ShareService,
                  HeapMojoWrapperMode::kWithoutContextObserver>
-      service_remote_;
+      service_remote_{nullptr};
 
   HeapHashSet<Member<ShareClientImpl>> clients_;
 };

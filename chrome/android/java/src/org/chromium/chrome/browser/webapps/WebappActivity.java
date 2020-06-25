@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.webapk.lib.common.WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -16,7 +19,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
@@ -51,11 +53,10 @@ public class WebappActivity extends BaseCustomTabActivity {
         // We cannot get WebAPK package name from BrowserServicesIntentDataProvider because
         // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
         String webApkPackageName =
-                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
+                IntentUtils.safeGetStringExtra(intent, EXTRA_WEBAPK_PACKAGE_NAME);
 
         // Use the lightweight FRE for unbound WebAPKs.
-        return webApkPackageName != null
-                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
+        return webApkPackageName != null && !webApkPackageName.startsWith(WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override

@@ -76,11 +76,11 @@ class SensorProxyImpl final : public SensorProxy,
   device::mojom::blink::ReportingMode mode_ =
       device::mojom::blink::ReportingMode::CONTINUOUS;
   HeapMojoRemote<device::mojom::blink::Sensor,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       sensor_remote_;
   HeapMojoReceiver<device::mojom::blink::SensorClient,
                    SensorProxyImpl,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
       client_receiver_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

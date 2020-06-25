@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol BrowserInterfaceProvider;
+@protocol ConnectionInformation;
 class ChromeBrowserState;
 @protocol StartupInformation;
 @protocol TabOpening;
@@ -24,6 +25,7 @@ class ChromeBrowserState;
 + (BOOL)continueUserActivity:(NSUserActivity*)userActivity
          applicationIsActive:(BOOL)applicationIsActive
                    tabOpener:(id<TabOpening>)tabOpener
+       connectionInformation:(id<ConnectionInformation>)connectionInformation
           startupInformation:(id<StartupInformation>)startupInformation;
 
 // Handles the 3D touch application static items. If the First Run UI is active,
@@ -31,6 +33,8 @@ class ChromeBrowserState;
 + (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
                            tabOpener:(id<TabOpening>)tabOpener
+               connectionInformation:
+                   (id<ConnectionInformation>)connectionInformation
                   startupInformation:(id<StartupInformation>)startupInformation
                    interfaceProvider:
                        (id<BrowserInterfaceProvider>)interfaceProvider;
@@ -41,6 +45,8 @@ class ChromeBrowserState;
 
 // Opens a new Tab or routes to correct Tab.
 + (void)handleStartupParametersWithTabOpener:(id<TabOpening>)tabOpener
+                       connectionInformation:
+                           (id<ConnectionInformation>)connectionInformation
                           startupInformation:
                               (id<StartupInformation>)startupInformation
                                 browserState:(ChromeBrowserState*)browserState;

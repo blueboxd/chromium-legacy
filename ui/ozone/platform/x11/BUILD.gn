@@ -24,21 +24,10 @@ source_set("x11") {
     "x11_canvas_surface.h",
     "x11_clipboard_ozone.cc",
     "x11_clipboard_ozone.h",
-    "x11_cursor_factory_ozone.cc",
-    "x11_cursor_factory_ozone.h",
-    "x11_cursor_ozone.cc",
-    "x11_cursor_ozone.h",
     "x11_screen_ozone.cc",
     "x11_screen_ozone.h",
     "x11_surface_factory.cc",
     "x11_surface_factory.h",
-  ]
-
-  public_deps = [
-    "//ui/base/cursor",
-    "//ui/base/cursor:cursor_base",
-    "//ui/base/cursor/mojom:cursor_type",
-    "//ui/base/x",
   ]
 
   deps = [
@@ -50,8 +39,9 @@ source_set("x11") {
     "//ui/base:buildflags",
     "//ui/base:data_exchange",
     "//ui/base/clipboard:clipboard_types",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/ime",
+    "//ui/base/x",
     "//ui/base/x:gl",
     "//ui/display/fake",
     "//ui/events",
@@ -73,17 +63,11 @@ source_set("x11") {
   ]
 
   if (is_chromeos) {
-    sources += [
-      "x11_window_ozone_chromeos.cc",
-      "x11_window_ozone_chromeos.h",
-    ]
     deps += [ "//ui/base/ime/chromeos" ]
   } else {
     sources += [
       "x11_os_exchange_data_provider_ozone.cc",
       "x11_os_exchange_data_provider_ozone.h",
-      "x11_window_ozone.cc",
-      "x11_window_ozone.h",
     ]
     deps += [ "//ui/base/ime/linux" ]
   }
@@ -106,7 +90,6 @@ source_set("x11") {
 source_set("x11_unittests") {
   testonly = true
   sources = [
-    "x11_cursor_factory_ozone_unittest.cc",
     "x11_screen_ozone_unittest.cc",
     "x11_window_ozone_unittest.cc",
   ]

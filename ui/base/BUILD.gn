@@ -1079,6 +1079,7 @@ test("ui_base_unittests") {
 
   if (use_x11) {
     deps += [
+      "//ui/base/x:unittests",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
     ]

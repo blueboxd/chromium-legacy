@@ -44,12 +44,12 @@ import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.components.external_intents.RedirectHandler;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.Origin;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.List;
 

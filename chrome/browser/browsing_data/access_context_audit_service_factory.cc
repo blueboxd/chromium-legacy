@@ -35,7 +35,7 @@ KeyedService* AccessContextAuditServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   std::unique_ptr<AccessContextAuditService> context_audit_service(
-      new AccessContextAuditService());
+      new AccessContextAuditService(static_cast<Profile*>(context)));
   if (!context_audit_service->Init(
           context->GetPath(),
           content::BrowserContext::GetDefaultStoragePartition(context)

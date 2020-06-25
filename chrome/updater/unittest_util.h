@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "chrome/updater/tag.h"
+#include "chrome/updater/update_service.h"
 
 // Externally-defined printers for base types.
 namespace base {
@@ -29,14 +30,20 @@ std::ostream& operator<<(std::ostream& os, const base::Optional<T>& opt) {
 namespace updater {
 
 namespace tagging {
-
 std::ostream& operator<<(std::ostream&, const ErrorCode&);
-
 std::ostream& operator<<(std::ostream&, const AppArgs::NeedsAdmin&);
-
 std::ostream& operator<<(std::ostream&, const TagArgs::BrowserType&);
-
 }  // namespace tagging
+
+bool operator==(const UpdateService::UpdateState& lhs,
+                const UpdateService::UpdateState& rhs);
+inline bool operator!=(const UpdateService::UpdateState& lhs,
+                       const UpdateService::UpdateState& rhs) {
+  return !(lhs == rhs);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const UpdateService::UpdateState& update_state);
 
 }  // namespace updater
 

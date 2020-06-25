@@ -16,7 +16,6 @@
 @synthesize appLaunchTime = _appLaunchTime;
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
-@synthesize startupParameters = _startupParameters;
 
 - (FirstUserActionRecorder*)firstUserActionRecorder {
   // Stub.

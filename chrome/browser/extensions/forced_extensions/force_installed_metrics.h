@@ -69,6 +69,10 @@ class ForceInstalledMetrics : public ForceInstalledTracker::Observer {
       ExtensionDownloaderDelegate::CacheStatus cache_status) override;
 
  private:
+  // Returns false if the extension status corresponds to a missing extension
+  // which is not yet installed or loaded.
+  bool IsStatusGood(ForceInstalledTracker::ExtensionStatus status);
+
   // Returns true only in case of some well-known misconfigurations which are
   // easy to detect. Can return false for misconfigurations which are hard to
   // distinguish with other errors.

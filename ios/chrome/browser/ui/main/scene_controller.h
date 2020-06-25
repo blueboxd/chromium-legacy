@@ -10,6 +10,7 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/ui/main/scene_controller_guts.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
@@ -23,6 +24,7 @@
                                        TabSwitcherDelegate,
                                        TabSwitching,
                                        SceneControllerGuts,
+                                       ConnectionInformation,
                                        TabOpening,
                                        WebStateListObserving>
 

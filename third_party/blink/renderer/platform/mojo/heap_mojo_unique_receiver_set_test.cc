@@ -100,7 +100,7 @@ class HeapMojoUniqueReceiverSetWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoUniqueReceiverSetWithoutContextObserverTest
     : public HeapMojoUniqueReceiverSetBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 }  // namespace
 

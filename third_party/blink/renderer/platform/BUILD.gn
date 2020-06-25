@@ -1235,6 +1235,8 @@ jumbo_component("platform") {
     "mojo/big_string_mojom_traits.h",
     "mojo/bluetooth_mojom_traits.cc",
     "mojo/bluetooth_mojom_traits.h",
+    "mojo/features.cc",
+    "mojo/features.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
     "mojo/heap_mojo_associated_receiver.h",
     "mojo/heap_mojo_associated_receiver_set.h",

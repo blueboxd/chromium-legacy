@@ -36,6 +36,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
 namespace ui {
@@ -198,6 +199,10 @@ void WaylandConnection::CreateDataObjectsIfReady() {
     DCHECK(!data_drag_controller_);
     data_drag_controller_ = std::make_unique<WaylandDataDragController>(
         this, data_device_manager_.get());
+
+    DCHECK(!window_drag_controller_);
+    window_drag_controller_ = std::make_unique<WaylandWindowDragController>(
+        this, data_device_manager_.get(), event_source());
 
     DCHECK(!clipboard_);
     clipboard_ =

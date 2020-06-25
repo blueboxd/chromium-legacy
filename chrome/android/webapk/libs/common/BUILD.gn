@@ -8,9 +8,9 @@ android_library("common_java") {
   sources = [
     "src/org/chromium/webapk/lib/common/WebApkCommonUtils.java",
     "src/org/chromium/webapk/lib/common/WebApkConstants.java",
-    "src/org/chromium/webapk/lib/common/WebApkMetaDataKeys.java",
     "src/org/chromium/webapk/lib/common/WebApkMetaDataUtils.java",
   ]
+  deps = [ "//components/webapk/android/libs/common:java" ]
   srcjar_deps = [ "//chrome/android/webapk/libs/common:identity_service_aidl" ]
 }
 

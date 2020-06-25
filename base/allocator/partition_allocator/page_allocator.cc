@@ -11,11 +11,11 @@
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
-#include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/bits.h"
 #include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -37,14 +37,14 @@ namespace base {
 namespace {
 
 // We may reserve/release address space on different threads.
-subtle::SpinLock& GetReserveLock() {
-  static NoDestructor<subtle::SpinLock> s_reserveLock;
-  return *s_reserveLock;
+Lock& GetReserveLock() {
+  static NoDestructor<Lock> lock;
+  return *lock;
 }
 
 // We only support a single block of reserved address space.
-void* s_reservation_address = nullptr;
-size_t s_reservation_size = 0;
+void* s_reservation_address GUARDED_BY(GetReserveLock()) = nullptr;
+size_t s_reservation_size GUARDED_BY(GetReserveLock()) = 0;
 
 void* AllocPagesIncludingReserved(void* address,
                                   size_t length,
@@ -224,7 +224,7 @@ void DiscardSystemPages(void* address, size_t length) {
 
 bool ReserveAddressSpace(size_t size) {
   // To avoid deadlock, call only SystemAllocPages.
-  subtle::SpinLock::Guard guard(GetReserveLock());
+  AutoLock guard(GetReserveLock());
   if (s_reservation_address == nullptr) {
     void* mem = SystemAllocPages(nullptr, size, PageInaccessible,
                                  PageTag::kChromium, false);
@@ -242,7 +242,7 @@ bool ReserveAddressSpace(size_t size) {
 
 bool ReleaseReservation() {
   // To avoid deadlock, call only FreePages.
-  subtle::SpinLock::Guard guard(GetReserveLock());
+  AutoLock guard(GetReserveLock());
   if (!s_reservation_address)
     return false;
 
@@ -253,7 +253,7 @@ bool ReleaseReservation() {
 }
 
 bool HasReservationForTesting() {
-  subtle::SpinLock::Guard guard(GetReserveLock());
+  AutoLock guard(GetReserveLock());
   return s_reservation_address != nullptr;
 }
 

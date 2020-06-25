@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "net/cookies/canonical_cookie.h"
 #include "sql/database.h"
 #include "sql/init_status.h"
@@ -84,6 +85,12 @@ class AccessContextAuditDatabase
   // Remove all records of access to |origin|'s storage API of |type|.
   void RemoveAllRecordsForOriginStorage(const GURL& origin,
                                         StorageAPIType type);
+
+  // Removes all records for cookie domains and API origins that match session
+  // only entries in |settings|
+  void RemoveSessionOnlyRecords(
+      scoped_refptr<content_settings::CookieSettings> cookie_settings,
+      const ContentSettingsForOneType& content_settings);
 
  protected:
   virtual ~AccessContextAuditDatabase() = default;

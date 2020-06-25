@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -77,7 +78,9 @@ class HeapMojoUniqueReceiverSet {
 
     // ContextLifecycleObserver methods
     void ContextDestroyed() override {
-      if (Mode == HeapMojoWrapperMode::kWithContextObserver)
+      if (Mode == HeapMojoWrapperMode::kWithContextObserver ||
+          (Mode == HeapMojoWrapperMode::kWithoutContextObserver &&
+           base::FeatureList::IsEnabled(kHeapMojoUseContextObserver)))
         receiver_set_.Clear();
     }
 

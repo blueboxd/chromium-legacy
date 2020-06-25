@@ -158,8 +158,6 @@ void NavigatorShare::ShareClientImpl::OnConnectionError() {
       "Internal error: could not connect to Web Share interface."));
 }
 
-NavigatorShare::~NavigatorShare() = default;
-
 NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   NavigatorShare* supplement =
       Supplement<Navigator>::From<NavigatorShare>(navigator);
@@ -175,10 +173,6 @@ void NavigatorShare::Trace(Visitor* visitor) const {
   visitor->Trace(clients_);
   Supplement<Navigator>::Trace(visitor);
 }
-
-NavigatorShare::NavigatorShare()
-    :  // |NavigatorShare| is not ExecutionContext-associated.
-      service_remote_(nullptr) {}
 
 const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 

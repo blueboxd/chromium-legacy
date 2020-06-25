@@ -36,7 +36,7 @@ MAC_BINARIES_TAG = {
     'default': 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC',
     # This contains binaries from Xcode (Universal) 12 beta, along with the
     # 11 SDK (aka 12A8158a).
-    '12-beta': '_tvvMQXaruqACKkcaZmqHR_7S-S2pHrXgcjTWfbI1qoC',
+    'xcode_12_beta': '_tvvMQXaruqACKkcaZmqHR_7S-S2pHrXgcjTWfbI1qoC',
 }
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
@@ -44,7 +44,7 @@ MAC_BINARIES_TAG = {
 # 9E145 (Xcode 9.3) only runs on 10.13.2 and newer.
 MAC_MINIMUM_OS_VERSION = {
     'default': [17],  # macOS 10.13+
-    '12-beta': [19, 4],  # macOS 10.15.4+
+    'xcode_12_beta': [19, 4],  # macOS 10.15.4+
 }
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -186,7 +186,7 @@ def main():
 
   parser = argparse.ArgumentParser(description='Download hermetic Xcode.')
   parser.add_argument('--xcode-version',
-                      choices=('default', '12-beta'),
+                      choices=('default', 'xcode_12_beta'),
                       default='default')
   args = parser.parse_args()
 

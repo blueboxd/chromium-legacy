@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -76,7 +75,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   ScopedSynchronizationDisabler disabler;
   id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
-  WaitForMatcher(acceptButton);
+  [SigninEarlGreyUtils waitForMatcher:acceptButton];
   [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
 }
 

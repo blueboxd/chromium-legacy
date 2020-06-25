@@ -42,22 +42,26 @@ class TabOpenerTest : public PlatformTest {
 
   void swizzleHandleLaunchOptions(
       URLOpenerParams* expectedParams,
+      id<ConnectionInformation> expectedConnectionInformation,
       id<StartupInformation> expectedStartupInformation,
       AppState* expectedAppState) {
     swizzle_block_executed_ = NO;
     swizzle_block_ =
         [^(id self, URLOpenerParams* params, BOOL applicationActive,
-           id<TabOpening> tabOpener, id<StartupInformation> startupInformation,
-           AppState* appState) {
+           id<TabOpening> tabOpener,
+           id<ConnectionInformation> connectionInformation,
+           id<StartupInformation> startupInformation, AppState* appState) {
           swizzle_block_executed_ = YES;
           EXPECT_EQ(expectedParams, params);
+          EXPECT_EQ(expectedConnectionInformation, connectionInformation);
           EXPECT_EQ(expectedStartupInformation, startupInformation);
           EXPECT_EQ(scene_controller_, tabOpener);
           EXPECT_EQ(expectedAppState, appState);
         } copy];
     URL_opening_handle_launch_swizzler_.reset(new ScopedBlockSwizzler(
         [URLOpener class],
-        @selector(handleLaunchOptions:applicationActive:tabOpener
+        @selector(handleLaunchOptions:
+                    applicationActive:tabOpener:connectionInformation
                                      :startupInformation:appState:),
         swizzle_block_));
   }
@@ -94,9 +98,11 @@ TEST_F(TabOpenerTest, openTabFromLaunchWithParamsWithOptions) {
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
 
-  swizzleHandleLaunchOptions(params, startupInformationMock, appStateMock);
-
   id<TabOpening> tabOpener = GetSceneController();
+  id<ConnectionInformation> connectionInformation = GetSceneController();
+
+  swizzleHandleLaunchOptions(params, connectionInformation,
+                             startupInformationMock, appStateMock);
 
   // Action.
   [tabOpener openTabFromLaunchWithParams:params
@@ -114,9 +120,10 @@ TEST_F(TabOpenerTest, openTabFromLaunchWithParamsWithNil) {
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
 
-  swizzleHandleLaunchOptions(nil, startupInformationMock, appStateMock);
-
   id<TabOpening> tabOpener = GetSceneController();
+  id<ConnectionInformation> connectionInformation = GetSceneController();
+  swizzleHandleLaunchOptions(nil, connectionInformation, startupInformationMock,
+                             appStateMock);
 
   // Action.
   [tabOpener openTabFromLaunchWithParams:nil

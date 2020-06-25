@@ -61,13 +61,13 @@ class MODULES_EXPORT CredentialManagerProxy
 
  private:
   HeapMojoRemote<mojom::blink::Authenticator,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       authenticator_;
   HeapMojoRemote<mojom::blink::CredentialManager,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       credential_manager_;
   HeapMojoRemote<mojom::blink::SmsReceiver,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       sms_receiver_;
 };
 

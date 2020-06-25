@@ -288,6 +288,10 @@ bool DefinitelyNewFormattingContext(const Node& node,
   auto display = style.Display();
   if (display == EDisplay::kInline || display == EDisplay::kContents)
     return false;
+  // ::marker may establish a formatting context but still have some dependency
+  // on the originating list item, so return false.
+  if (node.IsMarkerPseudoElement())
+    return false;
   // The only block-container display types that potentially don't establish a
   // new formatting context, are 'block' and 'list-item'.
   if (display != EDisplay::kBlock && display != EDisplay::kListItem) {

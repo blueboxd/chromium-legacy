@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -114,6 +115,7 @@ public class InfoBarTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/1098625")
     /**
      * Tests that infobars respond to scrolling.
      *

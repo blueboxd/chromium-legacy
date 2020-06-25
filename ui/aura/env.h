@@ -19,6 +19,10 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 
+#if defined(USE_X11)
+#include "ui/base/x/x11_cursor_factory.h"  // nogncheck
+#endif
+
 namespace ui {
 class ContextFactory;
 class EventObserver;
@@ -170,6 +174,10 @@ class AURA_EXPORT Env : public ui::EventTarget,
   bool is_touch_down_ = false;
 
   std::unique_ptr<ui::GestureRecognizer> gesture_recognizer_;
+
+#if defined(USE_X11)
+  std::unique_ptr<ui::X11CursorFactory> cursor_factory_;
+#endif
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;

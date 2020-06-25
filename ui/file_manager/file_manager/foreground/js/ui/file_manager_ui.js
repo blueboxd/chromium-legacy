@@ -272,24 +272,24 @@ class FileManagerUI {
         queryRequiredElement('#format-panel > .error', this.element);
 
     /**
-     * @type {!cr.ui.Menu}
+     * @type {!cr.ui.MultiMenu}
      * @const
      */
     this.fileContextMenu =
-        util.queryDecoratedElement('#file-context-menu', cr.ui.Menu);
+        util.queryDecoratedElement('#file-context-menu', cr.ui.MultiMenu);
 
     /**
-     * @type {!HTMLMenuItemElement}
+     * @public {!HTMLMenuItemElement}
      * @const
      */
-    this.fileContextMenu.defaultTaskMenuItem =
+    this.defaultTaskMenuItem =
         /** @type {!HTMLMenuItemElement} */
         (queryRequiredElement('#default-task-menu-item', this.fileContextMenu));
 
     /**
-     * @const {!cr.ui.MenuItem}
+     * @public @const {!cr.ui.MenuItem}
      */
-    this.fileContextMenu.tasksSeparator = /** @type {!cr.ui.MenuItem} */
+    this.tasksSeparator = /** @type {!cr.ui.MenuItem} */
         (queryRequiredElement('#tasks-separator', this.fileContextMenu));
 
     /**

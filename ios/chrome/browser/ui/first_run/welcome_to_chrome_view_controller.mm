@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
-#import "ios/chrome/browser/ui/first_run/first_run_chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
 #include "ios/chrome/browser/ui/first_run/static_file_view_controller.h"

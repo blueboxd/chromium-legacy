@@ -6,6 +6,8 @@ source_set("test") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "fake_connection_information.h",
+    "fake_connection_information.mm",
     "fake_scene_state.h",
     "fake_scene_state.mm",
     "stub_browser_interface.h",

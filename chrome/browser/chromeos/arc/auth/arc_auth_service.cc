@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
@@ -581,8 +581,8 @@ void ArcAuthService::IsAccountManagerAvailable(
 void ArcAuthService::HandleAddAccountRequest() {
   DCHECK(chromeos::IsAccountManagerAvailable(profile_));
 
-  chromeos::InlineLoginHandlerDialogChromeOS::Show(
-      chromeos::InlineLoginHandlerDialogChromeOS::Source::kArc);
+  chromeos::InlineLoginDialogChromeOS::Show(
+      chromeos::InlineLoginDialogChromeOS::Source::kArc);
 }
 
 void ArcAuthService::HandleRemoveAccountRequest(const std::string& email) {
@@ -595,8 +595,8 @@ void ArcAuthService::HandleRemoveAccountRequest(const std::string& email) {
 void ArcAuthService::HandleUpdateCredentialsRequest(const std::string& email) {
   DCHECK(chromeos::IsAccountManagerAvailable(profile_));
 
-  chromeos::InlineLoginHandlerDialogChromeOS::Show(
-      email, chromeos::InlineLoginHandlerDialogChromeOS::Source::kArc);
+  chromeos::InlineLoginDialogChromeOS::Show(
+      email, chromeos::InlineLoginDialogChromeOS::Source::kArc);
 }
 
 void ArcAuthService::OnRefreshTokenUpdatedForAccount(

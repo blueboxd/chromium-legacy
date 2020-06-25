@@ -253,12 +253,12 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     // Some other flag caused the wait prior to this.
     return nullptr;
   }
-  WebContents* web_contents = NULL;
+  WebContents* web_contents = nullptr;
   if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     // We've opened up a new tab, but not selected it.
     TabStripModel* tab_strip = browser->tab_strip_model();
     web_contents = tab_strip->GetWebContentsAt(tab_strip->active_index() + 1);
-    EXPECT_TRUE(web_contents != NULL)
+    EXPECT_TRUE(web_contents)
         << " Unable to wait for navigation to \"" << url.spec()
         << "\" because the new tab is not available yet";
     if (!web_contents)
@@ -279,9 +279,9 @@ NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     observer.Wait();
     return web_contents->GetMainFrame()->GetProcess();
   }
-  EXPECT_TRUE(NULL != web_contents) << " Unable to wait for navigation to \""
-                                    << url.spec() << "\""
-                                    << " because we can't get the tab contents";
+  EXPECT_TRUE(web_contents)
+      << " Unable to wait for navigation to \"" << url.spec() << "\""
+      << " because we can't get the tab contents";
   return nullptr;
 }
 

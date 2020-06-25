@@ -494,8 +494,8 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
   AssertSecurityRequirementsBeforeResponse(
       resolver, RequiredOriginType::kSecureAndSameWithAncestors);
   auto& window = *LocalDOMWindow::From(resolver->GetScriptState());
-  ukm::SourceId source_id = window.document()->UkmSourceID();
-  ukm::UkmRecorder* recorder = window.document()->UkmRecorder();
+  ukm::SourceId source_id = window.UkmSourceID();
+  ukm::UkmRecorder* recorder = window.UkmRecorder();
 
   if (status == mojom::blink::SmsStatus::kTimeout) {
     RecordSmsOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);

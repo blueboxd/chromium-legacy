@@ -56,10 +56,6 @@ namespace incremental_marking_test {
 class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
-namespace weakness_marking_test {
-class EphemeronCallbacksCounter;
-}  // namespace weakness_marking_test
-
 class ConcurrentMarkingVisitor;
 class ThreadHeapStatsCollector;
 class PageBloomFilter;
@@ -69,7 +65,12 @@ class RegionTree;
 
 using MarkingItem = TraceDescriptor;
 using NotFullyConstructedItem = const void*;
-using WeakTableItem = MarkingItem;
+
+struct EphemeronPairItem {
+  const void* key;
+  const void* value;
+  TraceCallback value_trace_callback;
+};
 
 struct BackingStoreCallbackItem {
   const void* backing;
@@ -95,7 +96,8 @@ using WeakCallbackWorklist =
 // regressions.
 using MovableReferenceWorklist =
     Worklist<const MovableReference*, 256 /* local entries */>;
-using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
+using EphemeronPairsWorklist =
+    Worklist<EphemeronPairItem, 64 /* local entries */>;
 using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
 using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
@@ -219,8 +221,12 @@ class PLATFORM_EXPORT ThreadHeap {
     return movable_reference_worklist_.get();
   }
 
-  WeakTableWorklist* GetWeakTableWorklist() const {
-    return weak_table_worklist_.get();
+  EphemeronPairsWorklist* GetDiscoveredEphemeronPairsWorklist() const {
+    return discovered_ephemeron_pairs_worklist_.get();
+  }
+
+  EphemeronPairsWorklist* GetEphemeronPairsToProcessWorklist() const {
+    return ephemeron_pairs_to_process_worklist_.get();
   }
 
   BackingStoreCallbackWorklist* GetBackingStoreCallbackWorklist() const {
@@ -270,6 +276,10 @@ class PLATFORM_EXPORT ThreadHeap {
   // objects. Such objects can be iterated using the Trace() method and do
   // not need to rely on conservative handling.
   void FlushNotFullyConstructedObjects();
+
+  // Moves ephemeron pairs from |discovered_ephemeron_pairs_worklist_| to
+  // |ephemeron_pairs_to_process_worklist_|
+  void FlushEphemeronPairs();
 
   // Marks not fully constructed objects.
   void MarkNotFullyConstructedObjects(MarkingVisitor*);
@@ -418,7 +428,8 @@ class PLATFORM_EXPORT ThreadHeap {
 
   // Worklist of ephemeron callbacks. Used to pass new callbacks from
   // MarkingVisitor to ThreadHeap.
-  std::unique_ptr<WeakTableWorklist> weak_table_worklist_;
+  std::unique_ptr<EphemeronPairsWorklist> discovered_ephemeron_pairs_worklist_;
+  std::unique_ptr<EphemeronPairsWorklist> ephemeron_pairs_to_process_worklist_;
 
   // This worklist is used to passing backing store callback to HeapCompact.
   std::unique_ptr<BackingStoreCallbackWorklist>
@@ -430,10 +441,6 @@ class PLATFORM_EXPORT ThreadHeap {
 
   std::unique_ptr<NotSafeToConcurrentlyTraceWorklist>
       not_safe_to_concurrently_trace_worklist_;
-
-  // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
-  // with the key being the HashTable.
-  WTF::HashMap<const void*, EphemeronCallback> ephemeron_callbacks_;
 
   std::unique_ptr<HeapCompact> compaction_;
 
@@ -447,7 +454,6 @@ class PLATFORM_EXPORT ThreadHeap {
   template <typename T>
   friend class Member;
   friend class ThreadState;
-  friend class weakness_marking_test::EphemeronCallbacksCounter;
 };
 
 template <typename T>

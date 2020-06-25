@@ -2087,7 +2087,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
   // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
-  int64_t ukm_source_id_;
+  const int64_t ukm_source_id_;
   bool needs_to_record_ukm_outlive_time_;
 
   // Tracks and reports UKM metrics of the number of attempted font family match

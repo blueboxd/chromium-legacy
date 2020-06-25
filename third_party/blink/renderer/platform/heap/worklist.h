@@ -202,6 +202,14 @@ class Worklist {
     global_pool_.Merge(&other->global_pool_);
   }
 
+  size_t SizeForTesting() {
+    size_t size = global_pool_.SizeForTesting();
+    for (int i = 0; i < kNumTasks; i++) {
+      size += private_pop_segment(i)->Size() + private_push_segment(i)->Size();
+    }
+    return size;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WorklistTest, SegmentCreate);
   FRIEND_TEST_ALL_PREFIXES(WorklistTest, SegmentPush);
@@ -381,6 +389,14 @@ class Worklist {
         end->set_next(top_);
         set_top(top);
       }
+    }
+
+    size_t SizeForTesting() {
+      size_t size = 0;
+      base::AutoLock guard(lock_);
+      for (Segment* current = top_; current; current = current->next())
+        size += current->Size();
+      return size;
     }
 
    private:

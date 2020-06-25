@@ -83,4 +83,16 @@
   [SigninEarlGreyUtilsAppInterface removeFakeIdentity:fakeIdentity];
 }
 
+- (void)waitForMatcher:(id<GREYMatcher>)matcher {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
+                                                             error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             @"Waiting for matcher %@ failed.", matcher);
+}
+
 @end

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_TASK_H_
 
+#include <map>
+
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -102,6 +104,10 @@ class ManifestUpdateTask final
                       std::map<SquareSizePx, SkBitmap> disk_icon_bitmaps);
   bool IsUpdateNeededForIconContents(
       const std::map<SquareSizePx, SkBitmap>& disk_icon_bitmaps) const;
+  void OnAllShortcutsMenuIconsRead(
+      ShortcutsMenuIconsBitmaps disk_shortcuts_menu_icons);
+  bool IsUpdateNeededForShortcutsMenuIconsContents(
+      const ShortcutsMenuIconsBitmaps& disk_shortcuts_menu_icons) const;
   void UpdateAfterWindowsClose();
   void OnAllAppWindowsClosed();
   void OnInstallationComplete(

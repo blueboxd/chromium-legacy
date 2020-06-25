@@ -30,8 +30,8 @@ import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
 import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 /**
  * Test the Maps Go First Run Experience.

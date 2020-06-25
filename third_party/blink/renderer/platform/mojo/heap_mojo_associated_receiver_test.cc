@@ -159,13 +159,13 @@ class HeapMojoAssociatedReceiverGCWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedReceiverGCWithoutContextObserverTest
     : public HeapMojoAssociatedReceiverGCBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoAssociatedReceiverDestroyContextWithContextObserverTest
     : public HeapMojoAssociatedReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoAssociatedReceiverDestroyContextWithoutContextObserverTest
     : public HeapMojoAssociatedReceiverDestroyContextBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 // Make HeapMojoAssociatedReceiver with context observer garbage collected and
 // check that the connection is disconnected right after the marking phase.

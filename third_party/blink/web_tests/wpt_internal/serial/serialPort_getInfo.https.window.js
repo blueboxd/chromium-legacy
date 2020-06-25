@@ -11,11 +11,10 @@ serial_test(async (t, fake) => {
   let ports = await navigator.serial.getPorts();
   assert_equals(ports.length, 0);
 
-  [
-    {},
-    {usbVendorId: 1},
-    {usbProductId: 2},
-    {usbVendorId: 1, usbProductId: 2},
+  [{},
+   {usbVendorId: 1},
+   {usbProductId: 2},
+   {usbVendorId: 1, usbProductId: 2},
   ].forEach((expectedInfo) => {
     serial_test(async (t, fake) => {
       let watcher = new EventWatcher(t, navigator.serial, ['connect']);
@@ -26,4 +25,3 @@ serial_test(async (t, fake) => {
     }, `getInfo() returns ${JSON.stringify(expectedInfo)}`);
   });
 }, 'getInfo() meta test');
-

@@ -961,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_Disposition_Incognito) {
 
   // |source_contents| should be set to NULL because the profile for the new
   // page is different from the originating page.
-  EXPECT_EQ(NULL, params.source_contents);
+  EXPECT_FALSE(params.source_contents);
 
   // We should now have two windows, the browser() provided by the framework and
   // the new incognito window.

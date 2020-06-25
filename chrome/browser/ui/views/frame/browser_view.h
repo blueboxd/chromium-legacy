@@ -864,9 +864,9 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
 
   // If the Window Placement experiment is enabled and fullscreen is requested
-  // on a particular display, these are the original bounds before the window
-  // was moved to the requested display; they are restored on fullscreen exit.
-  base::Optional<gfx::Rect> pre_fullscreen_bounds_;
+  // on a particular display, this closure will be called after fullscreen is
+  // exited to restore the original pre-fullscreen bounds of the window.
+  base::OnceClosure restore_pre_fullscreen_bounds_callback_;
 
   ReopenTabPromoController reopen_tab_promo_controller_{this};
 
@@ -881,8 +881,7 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<TabGroupsIPHController> tab_groups_iph_controller_;
 
-  mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
-      this};
+  mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

@@ -5,9 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
-
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
+#include "ui/platform_window/platform_window_handler/wm_move_loop_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 
 namespace ui {
@@ -16,7 +17,8 @@ class ShellSurfaceWrapper;
 
 class WaylandToplevelWindow : public WaylandWindow,
                               public WmMoveResizeHandler,
-                              public WmDragHandler {
+                              public WmDragHandler,
+                              public WmMoveLoopHandler {
  public:
   WaylandToplevelWindow(PlatformWindowDelegate* delegate,
                         WaylandConnection* connection);
@@ -68,6 +70,10 @@ class WaylandToplevelWindow : public WaylandWindow,
   void OnDragLeave() override;
   void OnDragSessionClose(uint32_t dnd_action) override;
   bool OnInitialize(PlatformWindowInitProperties properties) override;
+
+  // WmMoveLoopHandler:
+  bool RunMoveLoop(const gfx::Vector2d& drag_offset) override;
+  void EndMoveLoop() override;
 
   void TriggerStateChanges();
   void SetWindowState(PlatformWindowState state);

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sync/sync.h>
@@ -72,6 +73,51 @@ void GpuFence::Wait() {
 #endif
       break;
   }
+}
+
+// static
+GpuFence::FenceStatus GpuFence::GetStatusChangeTime(int fd,
+                                                    base::TimeTicks* time) {
+  DCHECK_NE(fd, -1);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  auto info =
+      std::unique_ptr<sync_fence_info_data, void (*)(sync_fence_info_data*)>{
+          sync_fence_info(fd), sync_fence_info_free};
+  if (!info) {
+    LOG(ERROR) << "sync_fence_info returned null for fd : " << fd;
+    return FenceStatus::kInvalid;
+  }
+
+  // Not signalled yet.
+  if (info->status != 1) {
+    return FenceStatus::kNotSignaled;
+  }
+
+  uint64_t timestamp_ns = 0u;
+  struct sync_pt_info* pt_info = nullptr;
+  while ((pt_info = sync_pt_info(info.get(), pt_info)))
+    timestamp_ns = std::max(timestamp_ns, pt_info->timestamp_ns);
+
+  if (timestamp_ns == 0u) {
+    LOG(ERROR) << "No timestamp provided from sync_pt_info for fd : " << fd;
+    return FenceStatus::kInvalid;
+  }
+  *time = base::TimeTicks() + base::TimeDelta::FromNanoseconds(timestamp_ns);
+  return FenceStatus::kSignaled;
+#endif
+  NOTREACHED();
+  return FenceStatus::kInvalid;
+}
+
+base::TimeTicks GpuFence::GetMaxTimestamp() const {
+  base::TimeTicks timestamp;
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  FenceStatus status = GetStatusChangeTime(owned_fd_.get(), &timestamp);
+  DCHECK_EQ(status, FenceStatus::kSignaled);
+  return timestamp;
+#endif
+  NOTREACHED();
+  return timestamp;
 }
 
 }  // namespace gfx

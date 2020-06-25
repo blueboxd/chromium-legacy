@@ -32,7 +32,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -6,8 +6,13 @@
 
 #include <wayland-server-core.h>
 
+#include <cstdint>
+
 #include "base/notreached.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_data_offer.h"
+#include "ui/ozone/platform/wayland/test/test_data_source.h"
 
 namespace wl {
 
@@ -19,7 +24,11 @@ void DataDeviceStartDrag(wl_client* client,
                          wl_resource* origin,
                          wl_resource* icon,
                          uint32_t serial) {
-  NOTIMPLEMENTED();
+  auto* data_source = GetUserDataAs<TestDataSource>(source);
+  auto* origin_surface = GetUserDataAs<MockSurface>(origin);
+
+  GetUserDataAs<TestDataDevice>(resource)->StartDrag(data_source,
+                                                     origin_surface, serial);
 }
 
 void DataDeviceSetSelection(wl_client* client,
@@ -48,6 +57,16 @@ TestDataDevice::~TestDataDevice() {}
 void TestDataDevice::SetSelection(TestDataSource* data_source,
                                   uint32_t serial) {
   NOTIMPLEMENTED();
+}
+
+void TestDataDevice::StartDrag(TestDataSource* source,
+                               MockSurface* origin,
+                               uint32_t serial) {
+  DCHECK(source);
+  DCHECK(origin);
+  if (delegate_)
+    delegate_->StartDrag(source, origin, serial);
+  wl_client_flush(client_);
 }
 
 TestDataOffer* TestDataDevice::OnDataOffer() {

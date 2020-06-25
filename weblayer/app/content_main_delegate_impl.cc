@@ -33,11 +33,13 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
+#include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
 #include "base/android/java_exception_reporter.h"
 #include "base/android/locale_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -72,9 +74,11 @@ void InitLogging(MainParams* params) {
                        true /* Timestamp */, false /* Tick count */);
 }
 
-// Disables each feature in |features_to_disable| unless it is already set in
-// the command line.
-void DisableFeaturesIfNotSet(
+// Enables each feature in |features_to_enable| unless it is already set in the
+// command line, and similarly disables each feature in |features_to_disable|
+// unless it is already set in the command line.
+void ConfigureFeaturesIfNotSet(
+    const std::vector<base::Feature>& features_to_enable,
     const std::vector<base::Feature>& features_to_disable) {
   auto* cl = base::CommandLine::ForCurrentProcess();
   std::vector<std::string> enabled_features;
@@ -93,13 +97,21 @@ void DisableFeaturesIfNotSet(
     disabled_features.emplace_back(f);
   }
 
+  for (const auto& feature : features_to_enable) {
+    if (!base::Contains(disabled_features, feature.name) &&
+        !base::Contains(enabled_features, feature.name)) {
+      enabled_features.push_back(feature.name);
+    }
+  }
+  cl->AppendSwitchASCII(::switches::kEnableFeatures,
+                        base::JoinString(enabled_features, ","));
+
   for (const auto& feature : features_to_disable) {
     if (!base::Contains(disabled_features, feature.name) &&
         !base::Contains(enabled_features, feature.name)) {
       disabled_features.push_back(feature.name);
     }
   }
-
   cl->AppendSwitchASCII(::switches::kDisableFeatures,
                         base::JoinString(disabled_features, ","));
 }
@@ -136,27 +148,48 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(::switches::kDisablePresentationAPI);
   // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.
   cl->AppendSwitch(::switches::kDisableRemotePlaybackAPI);
-  DisableFeaturesIfNotSet({
+
+  std::vector<base::Feature> enabled_features = {};
+  std::vector<base::Feature> disabled_features = {
     // TODO(crbug.com/1025619): make web-payments work with WebLayer.
     ::features::kWebPayments,
-        // TODO(crbug.com/1025627): make webauth work with WebLayer.
-        ::features::kWebAuth, ::features::kSmsReceiver,
-        // TODO(crbug.com/1057106): make web-xr work with WebLayer.
-        ::features::kWebXr, ::features::kWebXrArModule,
-        ::features::kWebXrHitTest,
-        // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
-        ::features::kBackgroundFetch, ::features::kInstalledApp,
-        // TODO(crbug.com/1091212): make Notification triggers work with
-        // WebLayer.
-        ::features::kNotificationTriggers,
-        // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
-        ::features::kPeriodicBackgroundSync, ::features::kSmsReceiver,
-        media::kOverlayFullscreenVideo,
+    // TODO(crbug.com/1025627): make webauth work with WebLayer.
+    ::features::kWebAuth,
+    ::features::kSmsReceiver,
+    // TODO(crbug.com/1057106): make web-xr work with WebLayer.
+    ::features::kWebXr,
+    ::features::kWebXrArModule,
+    ::features::kWebXrHitTest,
+    // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
+    ::features::kBackgroundFetch,
+    ::features::kInstalledApp,
+    // TODO(crbug.com/1091212): make Notification triggers work with
+    // WebLayer.
+    ::features::kNotificationTriggers,
+    // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
+    ::features::kPeriodicBackgroundSync,
+    ::features::kSmsReceiver,
+    media::kOverlayFullscreenVideo,
 #if defined(OS_ANDROID)
-        media::kPictureInPictureAPI, ::features::kDisableDeJelly,
-        ::features::kDynamicColorGamut,
+    media::kPictureInPictureAPI,
+    ::features::kDisableDeJelly,
+    ::features::kDynamicColorGamut,
 #endif
-  });
+  };
+
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_OREO) {
+    enabled_features.push_back(
+        autofill::features::kAutofillExtractAllDatalists);
+    enabled_features.push_back(
+        autofill::features::kAutofillSkipComparingInferredLabels);
+    disabled_features.push_back(
+        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+  }
+#endif
+
+  ConfigureFeaturesIfNotSet(enabled_features, disabled_features);
 
   // TODO(crbug.com/1097105): Support Web GPU on WebLayer.
   blink::WebRuntimeFeatures::EnableWebGPU(false);

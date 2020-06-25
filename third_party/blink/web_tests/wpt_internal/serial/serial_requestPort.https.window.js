@@ -8,7 +8,8 @@
 // META: script=resources/serial-test-utils.js
 
 promise_test((t) => {
-  return promise_rejects_dom(t, 'SecurityError', navigator.serial.requestPort());
+  return promise_rejects_dom(
+      t, 'SecurityError', navigator.serial.requestPort());
 }, 'requestPort() rejects without a user gesture');
 
 promise_test(async (t) => {
@@ -19,7 +20,8 @@ promise_test(async (t) => {
 
   await trustedClick();
   try {
-    await promise_rejects_dom(t, 'NotFoundError', navigator.serial.requestPort());
+    await promise_rejects_dom(
+        t, 'NotFoundError', navigator.serial.requestPort());
   } finally {
     interceptor.stop();
   }
@@ -27,7 +29,8 @@ promise_test(async (t) => {
 
 serial_test(async (t, fake) => {
   await trustedClick();
-  return promise_rejects_dom(t, 'NotFoundError', navigator.serial.requestPort());
+  return promise_rejects_dom(
+      t, 'NotFoundError', navigator.serial.requestPort());
 }, 'requestPort() rejects if no port has been selected');
 
 serial_test(async (t, fake) => {
@@ -56,7 +59,7 @@ serial_test(async (t, fake) => {
   fake.setSelectedPort(guid);
 
   await trustedClick();
-  let port = await navigator.serial.requestPort({ filters: [] });
+  let port = await navigator.serial.requestPort({filters: []});
   assert_true(port instanceof SerialPort);
 }, 'An empty list of filters is valid');
 
@@ -76,6 +79,6 @@ serial_test(async (t, fake) => {
 
   await trustedClick();
   return promise_rejects_js(t, TypeError, navigator.serial.requestPort({
-    filters: [{ usbProductId: 0x0001 }],
+    filters: [{usbProductId: 0x0001}],
   }));
 }, 'requestPort() requires a USB vendor ID if a product ID specified');

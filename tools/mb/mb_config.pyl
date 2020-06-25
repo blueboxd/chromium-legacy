@@ -2051,7 +2051,7 @@
     ],
 
     'mac_arm64_release_bot': [
-      'release_bot', 'arm64',
+      'release_bot', 'arm64', 'mac_xcode_11',
     ],
 
 
@@ -2732,6 +2732,10 @@
 
     'mac_strip': {
       'gn_args': 'enable_stripping=true',
+    },
+
+    'mac_xcode_11': {
+      'gn_args': 'mac_sdk_official_version="11.0"',
     },
 
     'minimal_symbols': {

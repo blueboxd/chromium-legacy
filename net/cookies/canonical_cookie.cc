@@ -574,7 +574,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     const GURL& url,
     const CookieOptions& options,
     CookieAccessSemantics access_semantics) const {
-  base::TimeDelta cookie_age = base::Time::Now() - CreationDate();
   CookieInclusionStatus status;
   // Filter out HttpOnly cookies, per options.
   if (options.exclude_httponly() && IsHttpOnly())
@@ -616,17 +615,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     case CookieEffectiveSameSite::LAX_MODE:
       if (options.same_site_cookie_context().GetContextForCookieInclusion() <
           CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX) {
-        // Log metrics for a cookie that would have been included under the
-        // "Lax-allow-unsafe" intervention, had it been new enough.
-        if (SameSite() == CookieSameSite::UNSPECIFIED &&
-            options.same_site_cookie_context().GetContextForCookieInclusion() ==
-                CookieOptions::SameSiteCookieContext::ContextType::
-                    SAME_SITE_LAX_METHOD_UNSAFE) {
-          UMA_HISTOGRAM_CUSTOM_TIMES(
-              "Cookie.SameSiteUnspecifiedTooOldToAllowUnsafe", cookie_age,
-              base::TimeDelta::FromMinutes(1), base::TimeDelta::FromDays(5),
-              100);
-        }
         status.AddExclusionReason(
             (SameSite() == CookieSameSite::UNSPECIFIED)
                 ? CookieInclusionStatus::
@@ -643,15 +631,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
         // TODO(chlily): Do we need a separate CookieInclusionStatus for this?
         status.AddExclusionReason(
             CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
-      } else if (options.same_site_cookie_context()
-                     .GetContextForCookieInclusion() ==
-                 CookieOptions::SameSiteCookieContext::ContextType::
-                     SAME_SITE_LAX_METHOD_UNSAFE) {
-        // Log metrics for cookies that activate the "Lax-allow-unsafe"
-        // intervention. This histogram macro allows up to 3 minutes, which is
-        // enough for the current threshold of 2 minutes.
-        UMA_HISTOGRAM_MEDIUM_TIMES("Cookie.LaxAllowUnsafeCookieIncludedAge",
-                                   cookie_age);
       }
       break;
     default:

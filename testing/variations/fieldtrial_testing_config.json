@@ -740,8 +740,7 @@
     "AutofillKeyboardAccessory": [
         {
             "platforms": [
-                "android",
-                "android_weblayer"
+                "android"
             ],
             "experiments": [
                 {

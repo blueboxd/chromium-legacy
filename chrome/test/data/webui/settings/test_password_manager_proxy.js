@@ -53,6 +53,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       'removeCompromisedCredential',
       'recordPasswordCheckInteraction',
       'recordPasswordCheckReferrer',
+      'isOptedInForAccountStorage',
       'removeSavedPassword',
       'removeSavedPasswords',
       'movePasswordToAccount',
@@ -187,6 +188,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
 
   /** @override */
   isOptedInForAccountStorage() {
+    this.methodCalled('isOptedInForAccountStorage');
     this.actual_.requested.accountStorageOptInState++;
     return Promise.resolve(this.isOptedInForAccountStorage_);
   }

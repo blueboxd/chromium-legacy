@@ -13,23 +13,23 @@ namespace enterprise_reporting {
 ExtensionRequestObserverFactory::ExtensionRequestObserverFactory(
     Profile* profile)
     : profile_(profile) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  profile_manager->AddObserver(this);
 
   if (profile) {
     OnProfileAdded(profile);
   } else {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    profile_manager->AddObserver(this);
     for (Profile* profile : profile_manager->GetLoadedProfiles())
       OnProfileAdded(profile);
   }
 }
 
 ExtensionRequestObserverFactory::~ExtensionRequestObserverFactory() {
-  if (g_browser_process->profile_manager())
-    g_browser_process->profile_manager()->RemoveObserver(this);
-
-  if (profile_)
+  if (profile_) {
     profile_->RemoveObserver(this);
+  } else if (g_browser_process->profile_manager()) {
+    g_browser_process->profile_manager()->RemoveObserver(this);
+  }
 }
 
 void ExtensionRequestObserverFactory::OnProfileAdded(Profile* profile) {

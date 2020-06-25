@@ -75,7 +75,7 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   auto receiver = prerender_handle_client.InitWithNewPipeAndPassReceiver();
 
   HeapMojoRemote<mojom::blink::PrerenderHandle,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       remote_handle(context);
   prerender_processor->AddPrerender(
       std::move(attributes), std::move(prerender_handle_client),
@@ -93,7 +93,8 @@ PrerenderHandle::PrerenderHandle(
     PrerenderClient* client,
     const KURL& url,
     HeapMojoRemote<mojom::blink::PrerenderHandle,
-                   HeapMojoWrapperMode::kWithoutContextObserver> remote_handle,
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
+        remote_handle,
     mojo::PendingReceiver<mojom::blink::PrerenderHandleClient> receiver)
     : ExecutionContextLifecycleObserver(context),
       url_(url),

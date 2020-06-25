@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "base/test/null_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/mojo/features.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
@@ -178,19 +180,22 @@ class HeapMojoReceiverGCWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoReceiverGCWithoutContextObserverTest
     : public HeapMojoReceiverGCBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoReceiverDestroyContextWithContextObserverTest
     : public HeapMojoReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoReceiverDestroyContextWithoutContextObserverTest
     : public HeapMojoReceiverDestroyContextBaseTest<
           HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoReceiverDestroyContextForceWithoutContextObserverTest
+    : public HeapMojoReceiverDestroyContextBaseTest<
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 class HeapMojoReceiverDisconnectWithReasonHandlerWithContextObserverTest
     : public HeapMojoReceiverDisconnectWithReasonHandlerBaseTest<
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoReceiverDisconnectWithReasonHandlerWithoutContextObserverTest
     : public HeapMojoReceiverDisconnectWithReasonHandlerBaseTest<
-          HeapMojoWrapperMode::kWithoutContextObserver> {};
+          HeapMojoWrapperMode::kForceWithoutContextObserver> {};
 
 // Make HeapMojoReceiver with context observer garbage collected and check that
 // the connection is disconnected right after the marking phase.
@@ -235,9 +240,32 @@ TEST_F(HeapMojoReceiverDestroyContextWithContextObserverTest,
   EXPECT_FALSE(owner_->receiver().is_bound());
 }
 
+// Destroy the context with context observer and check that the connection is
+// disconnected.
+TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
+       ResetsOnContextDestroyedWhenFinchEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{kHeapMojoUseContextObserver, {}}}, {});
+  EXPECT_TRUE(owner_->receiver().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_FALSE(owner_->receiver().is_bound());
+}
+
 // Destroy the context without context observer and check that the connection is
 // still connected.
 TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
+       ResetsOnContextDestroyedWhenFinchDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters({}, {kHeapMojoUseContextObserver});
+  EXPECT_TRUE(owner_->receiver().is_bound());
+  context_->NotifyContextDestroyed();
+  EXPECT_TRUE(owner_->receiver().is_bound());
+}
+
+// Destroy the context without context observer and check that the connection is
+// still connected.
+TEST_F(HeapMojoReceiverDestroyContextForceWithoutContextObserverTest,
        ResetsOnContextDestroyed) {
   EXPECT_TRUE(owner_->receiver().is_bound());
   context_->NotifyContextDestroyed();

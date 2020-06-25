@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 
+#include "chrome/common/extensions/api/settings_private.h"
+
+namespace settings_api = extensions::api::settings_private;
+
 namespace extensions {
 namespace settings_private {
 
@@ -24,6 +28,31 @@ void GeneratedPref::RemoveObserver(Observer* observer) {
 void GeneratedPref::NotifyObservers(const std::string& pref_name) {
   for (Observer& observer : observers_)
     observer.OnGeneratedPrefChanged(pref_name);
+}
+
+/* static */
+void GeneratedPref::ApplyControlledByFromPref(
+    api::settings_private::PrefObject* pref_object,
+    const PrefService::Preference* pref) {
+  if (pref->IsManaged()) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+    return;
+  }
+
+  if (pref->IsExtensionControlled()) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
+    return;
+  }
+
+  if (pref->IsManagedByCustodian()) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
+    return;
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace settings_private

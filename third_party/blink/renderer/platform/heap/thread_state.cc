@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
+#include "third_party/blink/renderer/platform/heap/marking_scheduling_oracle.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -132,8 +133,6 @@ class WorkerPoolTaskRunner : public base::TaskRunner {
 
 }  // namespace
 
-constexpr base::TimeDelta ThreadState::kDefaultIncrementalMarkingStepDuration;
-
 class ThreadState::IncrementalMarkingScheduler {
  public:
   explicit IncrementalMarkingScheduler(ThreadState* thread_state)
@@ -158,9 +157,6 @@ class ThreadState::IncrementalMarkingScheduler {
   void Init(BlinkGC::GCReason reason) {
     DCHECK(!task_.IsActive());
     reason_ = reason;
-    next_incremental_marking_step_duration_ =
-        kDefaultIncrementalMarkingStepDuration;
-    previous_incremental_marking_time_left_ = base::TimeDelta::Max();
   }
 
   void ScheduleTask() {
@@ -174,10 +170,7 @@ class ThreadState::IncrementalMarkingScheduler {
   void Dispatch() {
     switch (thread_state_->GetGCState()) {
       case ThreadState::kIncrementalMarkingStepScheduled:
-        thread_state_->IncrementalMarkingStep(
-            BlinkGC::kNoHeapPointersOnStack,
-            next_incremental_marking_step_duration_);
-        UpdateIncrementalMarkingStepDuration();
+        thread_state_->IncrementalMarkingStep(BlinkGC::kNoHeapPointersOnStack);
         if (thread_state_->GetGCState() !=
             ThreadState::kIncrementalMarkingStepPaused) {
           ScheduleTask();
@@ -191,25 +184,8 @@ class ThreadState::IncrementalMarkingScheduler {
     }
   }
 
-  void UpdateIncrementalMarkingStepDuration() {
-    const ThreadHeap& heap = thread_state_->Heap();
-    base::TimeDelta time_left =
-        heap.stats_collector()->estimated_marking_time() -
-        heap.stats_collector()->marking_time_so_far();
-    // Increase step size if estimated time left is increasing.
-    if (previous_incremental_marking_time_left_ < time_left) {
-      constexpr double ratio = 2.0;
-      next_incremental_marking_step_duration_ *= ratio;
-    }
-    previous_incremental_marking_time_left_ = time_left;
-  }
-
   ThreadState* thread_state_;
   BlinkGC::GCReason reason_;
-  base::TimeDelta next_incremental_marking_step_duration_ =
-      kDefaultIncrementalMarkingStepDuration;
-  base::TimeDelta previous_incremental_marking_time_left_ =
-      base::TimeDelta::Max();
   TaskHandle task_;
 };
 
@@ -1157,9 +1133,6 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
     EnableIncrementalMarkingBarrier();
     if (base::FeatureList::IsEnabled(
             blink::features::kBlinkHeapConcurrentMarking)) {
-      // No active concurrent markers yet, so it is safe to write to
-      // concurrently_marked_bytes_ without a lock.
-      concurrently_marked_bytes_ = 0;
       current_gc_data_.visitor->FlushMarkingWorklists();
       // Check that the marking worklist has enough private segments for all
       // concurrent marking tasks.
@@ -1185,8 +1158,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   }
 }
 
-void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
-                                         base::TimeDelta duration) {
+void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
   DCHECK(IsMarkingInProgress());
   DCHECK_EQ(kIncrementalMarkingStepScheduled, GetGCState());
 
@@ -1202,11 +1174,15 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
     Heap().FlushNotFullyConstructedObjects();
   }
 
-  bool complete = true;
-  // If duration is 0, should skip incremental marking.
-  if (!duration.is_zero()) {
-    complete =
-        complete && MarkPhaseAdvanceMarking(base::TimeTicks::Now() + duration);
+  bool complete;
+  if (skip_incremental_marking_for_testing_) {
+    complete = true;
+    skip_incremental_marking_for_testing_ = false;
+  } else {
+    complete = MarkPhaseAdvanceMarking(
+        base::TimeTicks::Now() +
+        marking_scheduling_->GetNextIncrementalStepDurationForTask(
+            Heap().stats_collector()->object_size_in_bytes()));
   }
 
   if (base::FeatureList::IsEnabled(
@@ -1582,6 +1558,8 @@ void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
                 this, GetMarkingMode(compaction_enabled));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
+
+  marking_scheduling_ = std::make_unique<MarkingSchedulingOracle>();
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
@@ -1604,10 +1582,27 @@ void ThreadState::MarkPhaseVisitRoots() {
   }
 }
 
+bool ThreadState::MarkPhaseAdvanceMarkingBasedOnSchedule(
+    base::TimeDelta max_deadline) {
+  return MarkPhaseAdvanceMarking(
+      base::TimeTicks::Now() +
+      std::min(max_deadline,
+               marking_scheduling_->GetNextIncrementalStepDurationForTask(
+                   Heap().stats_collector()->object_size_in_bytes())));
+}
+
 bool ThreadState::MarkPhaseAdvanceMarking(base::TimeTicks deadline) {
-  return Heap().AdvanceMarking(
-      reinterpret_cast<MarkingVisitor*>(current_gc_data_.visitor.get()),
-      deadline);
+  MarkingVisitor* visitor = current_gc_data_.visitor.get();
+  const bool finished = Heap().AdvanceMarking(
+      reinterpret_cast<MarkingVisitor*>(visitor), deadline);
+  // visitor->marked_bytes() can also include bytes marked during roots
+  // visitation which is not counted in worklist_processing_time_foreground.
+  // Since the size of the roots is usually small relative to the size of
+  // the object graph, this is fine.
+  marking_scheduling_->UpdateIncrementalMarkingStats(
+      visitor->marked_bytes(),
+      Heap().stats_collector()->worklist_processing_time_foreground());
+  return finished;
 }
 
 bool ThreadState::IsVerifyMarkingEnabled() const {
@@ -1635,13 +1630,13 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 
   incremental_marking_scheduler_->Cancel();
 
-  size_t marked_bytes = concurrently_marked_bytes_;
 
   current_gc_data_.visitor->FlushCompactionWorklists();
-  marked_bytes += current_gc_data_.visitor->marked_bytes();
   current_gc_data_.visitor.reset();
 
-  Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
+  Heap().stats_collector()->NotifyMarkingCompleted(
+      marking_scheduling_->GetOverallMarkedBytes());
+  marking_scheduling_.reset();
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_object_space_histogram,
@@ -1738,12 +1733,14 @@ void ThreadState::PerformConcurrentMark() {
       concurrent_visitor.get(),
       base::TimeTicks::Now() + kConcurrentMarkingStepDuration);
 
+  marking_scheduling_->AddConcurrentlyMarkedBytes(
+      concurrent_visitor->marked_bytes());
+
   concurrent_visitor->FlushWorklists();
   {
     base::AutoLock lock(concurrent_marker_bootstrapping_lock_);
     // When marking is done, flush visitor worklists and decrement number of
     // active markers so we know how many markers are left
-    concurrently_marked_bytes_ += concurrent_visitor->marked_bytes();
     available_concurrent_marking_task_ids_.push_back(task_id);
     if (finished) {
       --active_markers_;

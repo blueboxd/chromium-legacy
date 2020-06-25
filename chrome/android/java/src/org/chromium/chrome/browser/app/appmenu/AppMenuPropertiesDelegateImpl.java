@@ -56,8 +56,8 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
 import java.util.List;

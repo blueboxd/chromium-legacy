@@ -10,10 +10,10 @@ serial_test(async (t, fake) => {
   let chunkReceived;
   await (async () => {
     let port;
-    ({ port, fakePort } = await getFakeSerialPort(fake));
+    ({port, fakePort} = await getFakeSerialPort(fake));
 
     // Select a buffer size larger than the amount of data transferred.
-    await port.open({ baudrate: 9600, buffersize: 64 });
+    await port.open({baudrate: 9600, buffersize: 64});
 
     let writable;
     chunkReceived = new Promise(resolve => {

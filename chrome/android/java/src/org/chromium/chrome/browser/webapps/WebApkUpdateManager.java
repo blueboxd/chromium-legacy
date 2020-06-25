@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
 
 import android.graphics.Bitmap;
 import android.os.Handler;

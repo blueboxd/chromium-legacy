@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'passwords-device-section' represents the page containing
- * the list of passwords which have at least one copy on the user device.
+ * @fileoverview 'passwords-device-section' represents the page containing the
+ * list of passwords which have at least one copy on the user device. The page
+ * is only displayed for users of the account-scoped passwords storage. If other
+ * users try to access it, they will be redirected to PasswordsSection.
  *
  * This page is *not* displayed on ChromeOS.
  */
@@ -28,8 +30,9 @@ import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js'
 import {loadTimeData} from '../i18n_setup.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.m.js';
-import {StoredAccount, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.m.js';
+import {StoredAccount, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import {routes} from '../route.js';
+import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
@@ -60,6 +63,7 @@ Polymer({
     IronA11yKeysBehavior,
     GlobalScrollTargetBehavior,
     WebUIListenerBehavior,
+    RouteObserverBehavior,
   ],
 
   properties: {
@@ -123,10 +127,66 @@ Polymer({
     /** @private */
     accountEmail_: String,
 
+    isUserAllowedToAccessPage_: {
+      type: Boolean,
+      computed: 'computeIsUserAllowedToAccessPage_(signedIn_, syncDisabled_,' +
+          'optedInForAccountStorage_)',
+    },
+
+    /**
+     * Whether the user is signed in, one of the requirements to view this page.
+     * @private
+     * @type {boolean?}
+     */
+    signedIn_: {
+      type: Boolean,
+      value: null,
+    },
+
+    /**
+     * Whether Sync is disabled, one of the requirements to view this page.
+     * @private
+     * @type {boolean?}
+     */
+    syncDisabled_: {
+      type: Boolean,
+      value: null,
+    },
+
+    /**
+     * Whether the user has opted in to the account-scoped password storage, one
+     * of the requirements to view this page.
+     * @private
+     * @type {boolean?}
+     */
+    optedInForAccountStorage_: {
+      type: Boolean,
+      value: null,
+    },
+
+    /**
+     * @private
+     * @type {Route?}
+     */
+    currentRoute_: {
+      type: Object,
+      value: null,
+    },
+
   },
+
+  observers:
+      ['maybeRedirectToPasswordsPage_(isUserAllowedToAccessPage_, ' +
+       'currentRoute_)'],
+
+  /** @type {!function(boolean): void} */
+  accountStorageOptInStateListener_: Function,
 
   /** @override */
   attached() {
+    this.addListenersForAccountStorageRequirements_();
+    this.currentRoute_ = Router.getInstance().currentRoute;
+
     /** @type {!function(!ProfileInfo):void} */
     const extractIconFromProfileInfo = profileInfo => {
       this.profileIcon_ = getImage(profileInfo.iconUrl);
@@ -143,6 +203,47 @@ Polymer({
         extractFirstStoredAccountEmail);
     this.addWebUIListener(
         'stored-accounts-updated', extractFirstStoredAccountEmail);
+  },
+
+  /** @override */
+  detached() {
+    PasswordManagerImpl.getInstance().removeAccountStorageOptInStateListener(
+        this.accountStorageOptInStateListener_);
+  },
+
+  /**
+   * @private
+   */
+  addListenersForAccountStorageRequirements_() {
+    const setSyncDisabled = syncStatus => {
+      this.syncDisabled_ = !syncStatus.signedIn;
+    };
+    SyncBrowserProxyImpl.getInstance().getSyncStatus().then(setSyncDisabled);
+    this.addWebUIListener('sync-status-changed', setSyncDisabled);
+
+    const setSignedIn = storedAccounts => {
+      this.signedIn_ = storedAccounts.length > 0;
+    };
+    SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(setSignedIn);
+    this.addWebUIListener('stored-accounts-updated', setSignedIn);
+
+    const setOptedIn = optedInForAccountStorage => {
+      this.optedInForAccountStorage_ = optedInForAccountStorage;
+    };
+    PasswordManagerImpl.getInstance().isOptedInForAccountStorage().then(
+        setOptedIn);
+    PasswordManagerImpl.getInstance().addAccountStorageOptInStateListener(
+        setOptedIn);
+    this.accountStorageOptInStateListener_ = setOptedIn;
+  },
+
+  /**
+   * From RouteObserverBehavior.
+   * @param {!Route|undefined} route
+   * @protected
+   */
+  currentRouteChanged(route) {
+    this.currentRoute_ = route || null;
   },
 
   /**
@@ -182,6 +283,19 @@ Polymer({
   },
 
   /**
+   * @private
+   * @return {boolean}
+   */
+  computeIsUserAllowedToAccessPage_() {
+    // Only deny access when one of the requirements has already been computed
+    // and is not satisfied.
+    return (this.signedIn_ === null || !!this.signedIn_) &&
+        (this.syncDisabled_ === null || !!this.syncDisabled_) &&
+        (this.optedInForAccountStorage_ === null ||
+         !!this.optedInForAccountStorage_);
+  },
+
+  /**
    * @param {!Array<!MultiStorePasswordUiEntry>} passwords
    * @param {string} filter
    * @return {!Array<!MultiStorePasswordUiEntry>}
@@ -215,9 +329,21 @@ Polymer({
     }
   },
 
+  /** @private */
   onManageAccountPasswordsClicked_() {
     OpenWindowProxyImpl.getInstance().openURL(
         loadTimeData.getString('googlePasswordManagerUrl'));
+  },
+
+  /** @private */
+  maybeRedirectToPasswordsPage_() {
+    // The component can be attached even if the route is no longer
+    // DEVICE_PASSWORDS, so check to avoid navigating when the user is viewing
+    // other non-related pages.
+    if (!this.isUserAllowedToAccessPage_ &&
+        this.currentRoute_ === routes.DEVICE_PASSWORDS) {
+      Router.getInstance().navigateTo(routes.PASSWORDS);
+    }
   },
 
 });

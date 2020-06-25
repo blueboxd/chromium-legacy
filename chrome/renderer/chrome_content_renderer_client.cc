@@ -35,6 +35,7 @@
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
+#include "chrome/common/privacy_budget/privacy_budget_settings_provider.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_allowlist.h"
@@ -127,6 +128,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -339,6 +341,9 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   for (const char* origin : kPredefinedAllowedCameraDeviceOrigins)
     allowed_camera_device_origins_.insert(origin);
 #endif
+
+  blink::IdentifiabilityStudySettings::SetGlobalProvider(
+      std::make_unique<PrivacyBudgetSettingsProvider>());
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {}

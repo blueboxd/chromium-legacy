@@ -108,17 +108,17 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
       appId, 'cr-menu-item[command="#open-with"]:not([hidden])');
 
   // Wait for app picker.
-  await remoteCall.waitForElement(appId, '#default-tasks-list:not([hidden])');
+  await remoteCall.waitForElement(appId, '#tasks-menu:not([hidden])');
 
   // Ensure app picker shows Plugin VM option.
   const appOptions = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['#default-tasks-list [tabindex]']);
+      'queryAllElements', appId, ['#tasks-menu [tabindex]']);
   chrome.test.assertEq(
       1, appOptions.filter(el => el.text == 'Open with Plugin VM App').length);
 
   // Click on the Plugin VM app, and wait for error dialog.
   await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [
-    `#default-tasks-list [tabindex]:nth-of-type(${
+    `#tasks-menu [tabindex]:nth-of-type(${
         appOptions.map(el => el.text).indexOf('Open with Plugin VM App') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(
@@ -176,17 +176,17 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
       appId, 'cr-menu-item[command="#open-with"]:not([hidden])');
 
   // Wait for app picker.
-  await remoteCall.waitForElement(appId, '#default-tasks-list:not([hidden])');
+  await remoteCall.waitForElement(appId, '#tasks-menu:not([hidden])');
 
   // Ensure app picker shows Plugin VM option.
   const appOptions = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['#default-tasks-list [tabindex]']);
+      'queryAllElements', appId, ['#tasks-menu [tabindex]']);
   chrome.test.assertEq(
       1, appOptions.filter(el => el.text == 'Open with Plugin VM App').length);
 
   // Click on the Plugin VM app, and wait for error dialog.
   await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [
-    `#default-tasks-list [tabindex]:nth-of-type(${
+    `#tasks-menu [tabindex]:nth-of-type(${
         appOptions.map(el => el.text).indexOf('Open with Plugin VM App') + 1})`
   ]);
   await remoteCall.waitUntilTaskExecutes(

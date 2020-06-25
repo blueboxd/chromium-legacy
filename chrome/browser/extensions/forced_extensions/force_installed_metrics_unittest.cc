@@ -543,6 +543,26 @@ TEST_F(ForceInstalledMetricsTest,
   histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
 }
 
+// Regression test to check if the metrics are collected properly for the
+// extensions which are in state READY.
+TEST_F(ForceInstalledMetricsTest, ExtensionsReady) {
+  SetupForceList();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, ext1.get());
+  tracker_->OnExtensionReady(profile_, ext1.get());
+  install_stage_tracker_->ReportFailure(
+      kExtensionId1, InstallStageTracker::FailureReason::ALREADY_INSTALLED);
+  auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
+  tracker_->OnExtensionLoaded(profile_, ext2.get());
+  tracker_->OnExtensionReady(profile_, ext2.get());
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kLoadTimeStats, 1);
+  histogram_tester_.ExpectTotalCount(kTimedOutStats, 0);
+  histogram_tester_.ExpectTotalCount(kTimedOutNotInstalledStats, 0);
+}
+
 TEST_F(ForceInstalledMetricsTest, ExtensionsStuck) {
   SetupForceList();
   install_stage_tracker_->ReportInstallationStage(

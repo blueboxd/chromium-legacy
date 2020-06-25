@@ -17,6 +17,7 @@
 @class AppState;
 @class MetricsMediator;
 @protocol BrowsingDataCommands;
+@protocol ConnectionInformation;
 @protocol SceneControllerGuts;
 @protocol TabOpening;
 @protocol TabSwitcherDelegate;
@@ -47,6 +48,7 @@
 // For temporary plumbing only.
 @property(nonatomic, weak) id<ApplicationCommands,
                               TabSwitcherDelegate,
+                              ConnectionInformation,
                               SceneControllerGuts,
                               TabOpening>
     sceneController;

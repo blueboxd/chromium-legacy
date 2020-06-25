@@ -14,8 +14,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.components.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
 import java.util.Locale;

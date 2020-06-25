@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
+import static org.chromium.components.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
 
 import android.app.Activity;
 import android.app.KeyguardManager;

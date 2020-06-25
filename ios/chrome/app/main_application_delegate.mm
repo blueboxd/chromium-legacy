@@ -159,7 +159,8 @@
     return;
 
   [_appState resumeSessionWithTabOpener:_tabOpener
-                            tabSwitcher:_tabSwitcherProtocol];
+                            tabSwitcher:_tabSwitcherProtocol
+                  connectionInformation:self.sceneController];
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application {
@@ -323,6 +324,7 @@
   return [UserActivityHandler continueUserActivity:userActivity
                                applicationIsActive:applicationIsActive
                                          tabOpener:_tabOpener
+                             connectionInformation:self.sceneController
                                 startupInformation:_startupInformation];
 }
 
@@ -340,6 +342,7 @@
       performActionForShortcutItem:shortcutItem
                  completionHandler:completionHandler
                          tabOpener:_tabOpener
+             connectionInformation:self.sceneController
                 startupInformation:_startupInformation
                  interfaceProvider:_mainController.interfaceProvider];
 }
@@ -376,6 +379,7 @@
                                                              options:options]
           applicationActive:applicationActive
                   tabOpener:_tabOpener
+      connectionInformation:self.sceneController
          startupInformation:_startupInformation];
 }
 

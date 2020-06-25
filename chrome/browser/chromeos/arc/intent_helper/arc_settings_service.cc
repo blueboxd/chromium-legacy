@@ -228,6 +228,8 @@ class ArcSettingsServiceImpl
   // Name of the default network. Used to keep track of whether the default
   // network has changed.
   std::string default_network_name_;
+  // Proxy configuration of the default network.
+  base::Optional<base::Value> default_proxy_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSettingsServiceImpl);
 };
@@ -292,20 +294,34 @@ void ArcSettingsServiceImpl::TimezoneChanged(const icu::TimeZone& timezone) {
   SyncTimeZone();
 }
 
+// This function is called when the default network changes or when any of its
+// properties change.
 void ArcSettingsServiceImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
+  bool sync_proxy = false;
   // kProxy pref has more priority than the default network update.
   // If a default network is changed to the network with ONC policy with proxy
   // settings, it should be translated here.
   if (!network || IsPrefProxyConfigApplied())
     return;
-
-  // This function is called when the default network changes or when any of its
-  // properties change. Only trigger a proxy settings sync to ARC when the
-  // default network changes.
-  if (default_network_name_ == network->name())
+  // Trigger a proxy settings sync to ARC if the default network changes.
+  if (default_network_name_ != network->name()) {
+    default_network_name_ = network->name();
+    default_proxy_config_.reset();
+    sync_proxy = true;
+  }
+  // Trigger a proxy settings sync to ARC if the proxy configuration of the
+  // default network changes. Note: this code is only called if kProxy pref is
+  // not set.
+  if (network->proxy_config()) {
+    if (!default_proxy_config_ ||
+        (*default_proxy_config_ != *network->proxy_config())) {
+      default_proxy_config_ = network->proxy_config()->Clone();
+      sync_proxy = true;
+    }
+  }
+  if (!sync_proxy)
     return;
-  default_network_name_ = network->name();
 
   SyncProxySettings();
 }
@@ -458,6 +474,9 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
       "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
 }
 
+// TODO(b/159871128, hugobenichi, acostinas) The current implementation only
+// syncs the global proxy from Chrome's default network settings. ARC has
+// multi-network support so we should sync per-network proxy configuration.
 void ArcSettingsServiceImpl::SyncProxySettings() const {
   std::unique_ptr<ProxyConfigDictionary> proxy_config_dict =
       chromeos::ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(

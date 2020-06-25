@@ -33,6 +33,7 @@ class WaylandTouch;
 class WaylandZwpLinuxDmabuf;
 class WaylandDataDeviceManager;
 class WaylandCursorPosition;
+class WaylandWindowDragController;
 class GtkPrimarySelectionDeviceManager;
 
 class WaylandConnection {
@@ -113,6 +114,10 @@ class WaylandConnection {
     return data_drag_controller_.get();
   }
 
+  WaylandWindowDragController* window_drag_controller() const {
+    return window_drag_controller_.get();
+  }
+
   // Returns true when dragging is entered or started.
   bool IsDragInProgress() const;
 
@@ -181,6 +186,7 @@ class WaylandConnection {
       primary_selection_device_manager_;
 
   std::unique_ptr<WaylandDataDragController> data_drag_controller_;
+  std::unique_ptr<WaylandWindowDragController> window_drag_controller_;
 
   // Manages Wayland windows.
   WaylandWindowManager wayland_window_manager_;

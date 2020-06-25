@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.PermissionUpdater;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.components.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
 import java.util.HashSet;

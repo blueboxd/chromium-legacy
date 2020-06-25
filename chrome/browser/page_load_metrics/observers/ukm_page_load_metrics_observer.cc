@@ -219,6 +219,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
+  navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
   RecordNoStatePrefetchMetrics(navigation_handle, source_id);
   RecordGeneratedNavigationUKM(source_id, navigation_handle->GetURL());
   navigation_is_cross_process_ = !navigation_handle->IsSameProcess();
@@ -237,6 +238,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     return STOP_OBSERVING;
 
   if (!was_hidden_) {
+    RecordNavigationTimingMetrics();
     RecordPageLoadMetrics(base::TimeTicks::Now(), true /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
@@ -251,6 +253,7 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     return CONTINUE_OBSERVING;
 
   if (!was_hidden_) {
+    RecordNavigationTimingMetrics();
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
                           true /* became_hidden */);
     RecordTimingMetrics(timing);
@@ -288,6 +291,7 @@ void UkmPageLoadMetricsObserver::OnComplete(
     return;
 
   if (!was_hidden_) {
+    RecordNavigationTimingMetrics();
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
                           false /* became_hidden */);
     RecordTimingMetrics(timing);
@@ -342,6 +346,87 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
     DCHECK(!main_frame_timing_.has_value());
     main_frame_timing_ = *extra_request_complete_info.load_timing_info;
   }
+}
+
+void UkmPageLoadMetricsObserver::RecordNavigationTimingMetrics() {
+  const base::TimeTicks navigation_start_time =
+      GetDelegate().GetNavigationStart();
+  const content::NavigationHandleTiming& timing = navigation_handle_timing_;
+
+  // Record metrics for navigation only when all relevant milestones are
+  // recorded and in the expected order. It is allowed that they have the same
+  // value for some cases (e.g., internal redirection for HSTS).
+  if (navigation_start_time.is_null() ||
+      timing.first_request_start_time.is_null() ||
+      timing.first_response_start_time.is_null() ||
+      timing.first_loader_callback_time.is_null() ||
+      timing.final_request_start_time.is_null() ||
+      timing.final_response_start_time.is_null() ||
+      timing.final_loader_callback_time.is_null() ||
+      timing.navigation_commit_sent_time.is_null()) {
+    return;
+  }
+  // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
+  // after the issue 1076710 is fixed.
+  if (navigation_start_time > timing.first_request_start_time ||
+      timing.first_request_start_time > timing.first_response_start_time ||
+      timing.first_response_start_time > timing.first_loader_callback_time ||
+      timing.first_loader_callback_time > timing.navigation_commit_sent_time) {
+    return;
+  }
+  if (navigation_start_time > timing.final_request_start_time ||
+      timing.final_request_start_time > timing.final_response_start_time ||
+      timing.final_response_start_time > timing.final_loader_callback_time ||
+      timing.final_loader_callback_time > timing.navigation_commit_sent_time) {
+    return;
+  }
+  DCHECK_LE(timing.first_request_start_time, timing.final_request_start_time);
+  DCHECK_LE(timing.first_response_start_time, timing.final_response_start_time);
+  DCHECK_LE(timing.first_loader_callback_time,
+            timing.final_loader_callback_time);
+
+  ukm::builders::NavigationTiming builder(GetDelegate().GetSourceId());
+
+  // Record the elapsed time from the navigation start milestone.
+  builder
+      .SetFirstRequestStart(
+          (timing.first_request_start_time - navigation_start_time)
+              .InMilliseconds())
+      .SetFirstResponseStart(
+          (timing.first_response_start_time - navigation_start_time)
+              .InMilliseconds())
+      .SetFirstLoaderCallback(
+          (timing.first_loader_callback_time - navigation_start_time)
+              .InMilliseconds())
+      .SetFinalRequestStart(
+          (timing.final_request_start_time - navigation_start_time)
+              .InMilliseconds())
+      .SetFinalResponseStart(
+          (timing.final_response_start_time - navigation_start_time)
+              .InMilliseconds())
+      .SetFinalLoaderCallback(
+          (timing.final_loader_callback_time - navigation_start_time)
+              .InMilliseconds())
+      .SetNavigationCommitSent(
+          (timing.navigation_commit_sent_time - navigation_start_time)
+              .InMilliseconds());
+
+  // Record the elapsed time from the navigation start milestone for the 103
+  // Early Hints experiment (https://crbug.com/1093693). Note that multiple 103
+  // responses can be served per request. These metrics use the first 103
+  // response as the timing.
+  if (!timing.early_hints_for_first_request_time.is_null()) {
+    builder.SetEarlyHintsForFirstRequest(
+        (timing.early_hints_for_first_request_time - navigation_start_time)
+            .InMilliseconds());
+  }
+  if (!timing.early_hints_for_final_request_time.is_null()) {
+    builder.SetEarlyHintsForFinalRequest(
+        (timing.early_hints_for_final_request_time - navigation_start_time)
+            .InMilliseconds());
+  }
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordTimingMetrics(

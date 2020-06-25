@@ -289,6 +289,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableSkipTouchEventFilter, blink::features::kSkipTouchEventFilter,
      kUseFeatureState},
     {wf::EnableSmsReceiver, features::kSmsReceiver, kDisableOnly},
+    {wf::EnableClickPointerEvent, features::kClickPointerEvent, kEnableOnly},
     {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY,
      kUseFeatureState},
     {wf::EnableCooperativeScheduling, features::kCooperativeScheduling,

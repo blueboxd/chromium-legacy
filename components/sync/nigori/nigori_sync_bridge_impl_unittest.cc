@@ -1780,6 +1780,62 @@ TEST(NigoriSyncBridgeImplPersistenceTest, ShouldCompleteKeystoreMigration) {
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }
 
+// Tests that upon startup bridge adds keystore keys into cryptographer, so it
+// can later decrypt the data using them.
+TEST(NigoriSyncBridgeImplPersistenceTest,
+     ShouldDecryptWithKeystoreKeysAfterRestart) {
+  // Emulate storing on disc.
+  auto storage1 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  sync_pb::NigoriLocalData nigori_local_data;
+  ON_CALL(*storage1, StoreData(_))
+      .WillByDefault(testing::SaveArg<0>(&nigori_local_data));
+
+  const FakeEncryptor kEncryptor;
+  auto bridge1 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>(),
+      std::move(storage1), &kEncryptor,
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
+
+  // Perform initial sync with custom passphrase Nigori without keystore keys.
+  const std::vector<uint8_t> kRawKeystoreKey = {0, 1, 2, 3, 4};
+  const std::string kPassphrase = "passphrase";
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams(kPassphrase));
+  ASSERT_TRUE(bridge1->SetKeystoreKeys({kRawKeystoreKey}));
+  ASSERT_THAT(bridge1->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  bridge1->SetDecryptionPassphrase(kPassphrase);
+
+  // Mimic the browser restart.
+  auto storage2 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  ON_CALL(*storage2, RestoreData()).WillByDefault(Return(nigori_local_data));
+
+  auto processor2 =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  ON_CALL(*processor2, IsTrackingMetadata()).WillByDefault(Return(true));
+  // No commits should be issued.
+  EXPECT_CALL(*processor2, Put(_)).Times(0);
+
+  auto bridge2 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor2), std::move(storage2), &kEncryptor,
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
+
+  // Ensure that |cryptographer| can decrypt with keystore keys, but still
+  // has default key derived from custom passphrase.
+  const KeyParams kPassphraseKeyParams = {
+      bridge2->GetCustomPassphraseKeyDerivationParamsForTesting(), kPassphrase};
+  const Cryptographer& cryptographer = bridge2->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer,
+              CanDecryptWith(KeystoreKeyParams(kRawKeystoreKey)));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+}
+
 }  // namespace
 
 }  // namespace syncer

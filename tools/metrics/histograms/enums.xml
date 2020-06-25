@@ -13220,6 +13220,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="Account chooser credential"/>
   <int value="8" label="Auto sign-in"/>
   <int value="9" label="Empty credential, called in incognito mode"/>
+  <int value="10" label="Empty credential, called in autofill-assistant mode"/>
 </enum>
 
 <enum name="CreditCardUploadDisallowedNetwork">
@@ -63459,6 +63460,16 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Reauth Shown"/>
 </enum>
 
+<enum name="SigninReauthUserAction">
+  <int value="0" label="Click confirm button"/>
+  <int value="1" label="Click next button"/>
+  <int value="2" label="Click cancel button"/>
+  <int value="3" label="Close confirmation dialog"/>
+  <int value="4" label="Close Gaia dialog"/>
+  <int value="5" label="Close Gaia tab"/>
+  <int value="6" label="Pass Gaia reauth"/>
+</enum>
+
 <enum name="SigninRefreshTokenRevocationRequestProgress">
   <int value="0" label="Request Created"/>
   <int value="1" label="Request Started"/>
@@ -73744,7 +73755,7 @@ Called by update_scheduler_enums.py.-->
   <int value="10" label="GET_GROUP_FAILED"/>
   <int value="11" label="GET_TAG_FAILED"/>
   <int value="12" label="SUPPRESS_POPUP_FAILED"/>
-  <int value="13" label="ADD_TOAST_DISMISS_HANDLER_FAILED"/>
+  <int value="13" label="ADD_TOAST_DISMISS_HANDLER_FAILED (deprecated)"/>
   <int value="14" label="ADD_TOAST_ERROR_HANDLER_FAILED"/>
   <int value="15" label="SHOWING_TOAST_FAILED"/>
   <int value="16" label="CREATE_TOAST_NOTIFICATION_MANAGER_FAILED"/>

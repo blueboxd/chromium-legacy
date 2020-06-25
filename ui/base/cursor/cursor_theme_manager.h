@@ -7,13 +7,12 @@
 
 #include <string>
 
-#include "base/component_export.h"
 #include "base/observer_list.h"
 #include "ui/base/cursor/cursor_theme_manager_observer.h"
 
 namespace ui {
 
-class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorThemeManager {
+class CursorThemeManager {
  public:
   CursorThemeManager(const CursorThemeManager&) = delete;
   CursorThemeManager& operator=(const CursorThemeManager&) = delete;

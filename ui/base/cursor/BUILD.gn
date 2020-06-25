@@ -24,18 +24,22 @@ component("cursor_base") {
   ]
   deps = [ "//ui/gfx:geometry_skia" ]
 
-  if (use_x11) {
-    sources += [ "cursor_x11.cc" ]
-    deps += [ "//ui/base/x" ]
-  }
-
-  if (use_ozone) {
-    sources += [ "cursor_ozone.cc" ]
-  }
-
   if (is_win) {
     sources += [ "cursor_win.cc" ]
   }
+
+  if (use_x11 || use_ozone) {
+    sources += [ "cursor_ozone.cc" ]
+  }
+}
+
+source_set("theme_manager") {
+  sources = [
+    "cursor_theme_manager.cc",
+    "cursor_theme_manager.h",
+    "cursor_theme_manager_observer.h",
+  ]
+  deps = [ "//base" ]
 }
 
 if (use_aura) {
@@ -45,9 +49,6 @@ if (use_aura) {
       "cursor_loader.h",
       "cursor_lookup.cc",
       "cursor_lookup.h",
-      "cursor_theme_manager.cc",
-      "cursor_theme_manager.h",
-      "cursor_theme_manager_observer.h",
       "cursor_util.cc",
       "cursor_util.h",
       "cursors_aura.cc",
@@ -80,27 +81,21 @@ if (use_aura) {
       deps += [ "//ui/resources:ui_unscaled_resources_grd" ]
     }
 
-    if (use_x11) {
-      sources += [
-        "cursor_loader_x11.cc",
-        "cursor_loader_x11.h",
-      ]
-      public_deps += [
-        "//ui/base/x",
-        "//ui/gfx/x",
-      ]
-    }
-
     if (use_ozone) {
       sources += [
-        "cursor_loader_ozone.cc",
-        "cursor_loader_ozone.h",
         "ozone/bitmap_cursor_factory_ozone.cc",
         "ozone/bitmap_cursor_factory_ozone.h",
       ]
       public_deps += [
         "//skia",
         "//ui/gfx/geometry",
+      ]
+    }
+
+    if (use_x11 || use_ozone) {
+      sources += [
+        "cursor_loader_ozone.cc",
+        "cursor_loader_ozone.h",
       ]
     }
   }

@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
+#include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
@@ -59,7 +60,6 @@
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
-#import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -203,6 +203,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 @end
 
 @implementation SceneController
+@synthesize startupParameters = _startupParameters;
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -308,6 +309,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                                .shortcutItem
                          completionHandler:nil
                                  tabOpener:self
+                     connectionInformation:self
                         startupInformation:self.mainController
                          interfaceProvider:self.interfaceProvider];
         }
@@ -332,6 +334,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
           [UserActivityHandler continueUserActivity:activityWithCompletion
                                 applicationIsActive:YES
                                           tabOpener:self
+                              connectionInformation:self
                                  startupInformation:self.mainController];
         }
         self.sceneState.connectionOptions = nil;
@@ -466,6 +469,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   [UserActivityHandler performActionForShortcutItem:shortcutItem
                                   completionHandler:completionHandler
                                           tabOpener:self
+                              connectionInformation:self
                                  startupInformation:self.mainController
                                   interfaceProvider:self.interfaceProvider];
 }
@@ -480,6 +484,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   [UserActivityHandler continueUserActivity:userActivity
                         applicationIsActive:sceneIsActive
                                   tabOpener:self
+                      connectionInformation:self
                          startupInformation:self.mainController];
   // It is necessary to reset the pendingUserActivity after handling it.
   // Handle the reset asynchronously to avoid interfering with other observers.
@@ -563,7 +568,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   [self createInitialUI:(startInIncognito ? ApplicationMode::INCOGNITO
                                           : ApplicationMode::NORMAL)];
 
-  if (!self.mainController.startupParameters) {
+  if (!self.startupParameters) {
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user
     // will never be able to restore the session.
@@ -729,6 +734,17 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       removeObserver:self
                 name:kChromeFirstRunUIWillFinishNotification
               object:nil];
+  if (self.startupParameters) {
+    UrlLoadParams params =
+        UrlLoadParams::InNewTab(self.startupParameters.externalURL);
+    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
+                                                    NORMAL
+                              withUrlLoadParams:params
+                                 dismissOmnibox:YES
+                                     completion:^{
+                                       [self setStartupParameters:nil];
+                                     }];
+  }
 }
 
 #pragma mark - Promo support
@@ -744,7 +760,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (self.currentInterface == self.incognitoInterface)
     return;
   // Don't show promos if the app was launched from a URL.
-  if (self.mainController.startupParameters)
+  if (self.startupParameters)
     return;
 
   // Show the sign-in promo if needed
@@ -1385,6 +1401,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [URLOpener handleLaunchOptions:params
                  applicationActive:sceneIsActive
                          tabOpener:self
+             connectionInformation:self
                 startupInformation:startupInformation
                           appState:appState];
   }
@@ -1551,9 +1568,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
           ? self.interfaceProvider.mainInterface
           : self.interfaceProvider.incognitoInterface;
   NSUInteger tabIndex = NSNotFound;
-  ProceduralBlock startupCompletion = [self
-      completionBlockForTriggeringAction:[self.mainController.startupParameters
-                                                 postOpeningAction]];
+  ProceduralBlock startupCompletion =
+      [self completionBlockForTriggeringAction:[self.startupParameters
+                                                       postOpeningAction]];
 
   // Commands are only allowed on NTP.
   DCHECK(IsURLNtp(urlLoadParams.web_params.url) || !startupCompletion);
@@ -1590,8 +1607,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
       self.NTPActionAfterTabSwitcherDismissal =
-          [self.mainController.startupParameters postOpeningAction];
-      [self.mainController setStartupParameters:nil];
+          [self.startupParameters postOpeningAction];
+      [self setStartupParameters:nil];
       [self.tabSwitcher
           dismissWithNewTabAnimationToBrowser:targetInterface.browser
                             withUrlLoadParams:urlLoadParams
@@ -1963,9 +1980,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       _sceneState.activationLevel >= SceneActivationLevelForegroundActive;
   for (URLOpenerParams* options : URLsToOpen) {
     [URLOpener openURL:options
-         applicationActive:active
-                 tabOpener:self
-        startupInformation:self.mainController];
+            applicationActive:active
+                    tabOpener:self
+        connectionInformation:self
+           startupInformation:self.mainController];
   }
 }
 

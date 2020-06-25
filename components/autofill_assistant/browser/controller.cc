@@ -1640,6 +1640,8 @@ void Controller::DidStartNavigation(
 
 void Controller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // TODO(b/159871774): Rethink how we handle navigation events. The early
+  // return here may prevent us from updating |navigating_to_new_document_|.
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {

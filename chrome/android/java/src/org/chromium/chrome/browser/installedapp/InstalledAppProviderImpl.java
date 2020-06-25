@@ -28,13 +28,13 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.url.GURL;
 import org.chromium.url.mojom.Url;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;

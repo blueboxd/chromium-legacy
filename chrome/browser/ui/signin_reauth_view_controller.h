@@ -51,9 +51,46 @@ class SigninReauthViewController
   };
 
   enum class GaiaReauthPageState {
-    kStarted = 0,    // The Gaia Reauth page is loading in background.
-    kNavigated = 1,  // The first navigation has been committed.
-    kDone = 2  // The reauth has been completed and the result is available.
+    // The Gaia Reauth page is loading in background.
+    kStarted = 0,
+    // The first navigation has been committed in background.
+    kNavigated = 1,
+    // The reauth has been completed and the result is available.
+    kDone = 2
+  };
+
+  enum class UIState {
+    // Nothing is being displayed.
+    kNone = 0,
+    // The Reauth confirmation webUI page is being displayed in a modal dialog.
+    kConfirmationDialog = 1,
+    // The Gaia Reauth page is being displayed in a modal dialog.
+    kGaiaReauthDialog = 2,
+    // The Gaia Reauth page is being displayed in a tab.
+    kGaiaReauthTab = 3
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class UserAction {
+    // The user clicked on the confirm button in the Reauth confirmation dialog.
+    // The Gaia Reauth was auto-approved and did not show up as a next step.
+    kClickConfirmButton = 0,
+    // The user clicked on the next button in the Reauth confirmation dialog.
+    // The Gaia Reauth showed up as a next step.
+    kClickNextButton = 1,
+    // The user clicked on the cancel button in the Reauth confirmation dialog.
+    kClickCancelButton = 2,
+    // The user closed the Reauth confirmation dialog without clicking on the
+    // cancel button.
+    kCloseConfirmationDialog = 3,
+    // The user closed the Gaia Reauth page displayed in a dialog.
+    kCloseGaiaReauthDialog = 4,
+    // The user closed the Gaia Reauth page displayed in a tab.
+    kCloseGaiaReauthTab = 5,
+    // The user successfully authenticated on the Gaia Reauth page.
+    kPassGaiaReauth = 6,
+    kMaxValue = kPassGaiaReauth
   };
 
   SigninReauthViewController(
@@ -98,18 +135,26 @@ class SigninReauthViewController
   // Calls |reauth_callback_| with |result| and closes all Reauth UIs.
   void CompleteReauth(signin::ReauthResult result);
 
-  // Notifies about a change in the reauth flow state.
+  // Notifies about a change in the reauth flow state. Must be called whenever
+  // |user_confirmed_reauth_| or |gaia_reauth_page_state_| has changed.
   void OnStateChanged();
+
+  void RecordClickOnce(UserAction click_action);
 
   void ShowReauthConfirmationDialog();
   void ShowGaiaReauthPage();
   void ShowGaiaReauthPageInDialog();
   void ShowGaiaReauthPageInNewTab();
 
+  // Controller inputs.
   Browser* const browser_;
   const CoreAccountId account_id_;
   const signin_metrics::ReauthAccessPoint access_point_;
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
+
+  // Dialog state useful for recording metrics.
+  UIState ui_state = UIState::kNone;
+  bool has_recorded_click = false;
 
   // Delegate displaying the dialog.
   SigninViewControllerDelegate* dialog_delegate_ = nullptr;

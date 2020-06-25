@@ -150,7 +150,15 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     }
 
     @Override
-    public void setBitmapScaleMatrix(Matrix matrix) {
+    public void setBitmapScaleMatrix(Matrix matrix, float scaleFactor) {
+        // Don't update the subframes if the matrix is identity as it will be forcibly recalculated.
+        if (!matrix.isIdentity()) {
+            updateSubFrames(mViewportRect, scaleFactor);
+        }
+        setBitmapScaleMatrixInternal(matrix, scaleFactor);
+    }
+
+    private void setBitmapScaleMatrixInternal(Matrix matrix, float scaleFactor) {
         float[] matrixValues = new float[9];
         matrix.getValues(matrixValues);
         mBitmapScaleMatrix.setValues(matrixValues);
@@ -158,7 +166,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         childBitmapScaleMatrix.setScale(
                 matrixValues[Matrix.MSCALE_X], matrixValues[Matrix.MSCALE_Y]);
         for (View subFrameView : mVisibleSubFrameViews) {
-            ((PlayerFrameView) subFrameView).updateDelegateScaleMatrix(childBitmapScaleMatrix);
+            ((PlayerFrameView) subFrameView)
+                    .updateDelegateScaleMatrix(childBitmapScaleMatrix, scaleFactor);
         }
         mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
     }
@@ -167,6 +176,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     public void forceRedraw() {
         mInitialScaleFactor = ((float) mViewportRect.width()) / ((float) mContentWidth);
         moveViewport(0, 0, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
+        for (View subFrameView : mVisibleSubFrameViews) {
+            ((PlayerFrameView) subFrameView).forceRedraw();
+        }
     }
 
     void updateViewportSize(int width, int height, float scaleFactor) {
@@ -519,7 +531,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             bitmapScaleMatrixValues[Matrix.MTRANS_Y] += deltaY;
             mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
         }
-        setBitmapScaleMatrix(mBitmapScaleMatrix);
+        setBitmapScaleMatrixInternal(mBitmapScaleMatrix, mUncommittedScaleFactor);
 
         return true;
     }
@@ -529,7 +541,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         // Remove the bitmap scaling to avoid issues when new bitmaps are requested.
         // TODO(crbug/1090804): Defer clearing this so that double buffering can occur.
         mBitmapScaleMatrix.reset();
-        setBitmapScaleMatrix(mBitmapScaleMatrix);
+        setBitmapScaleMatrixInternal(mBitmapScaleMatrix, 1f);
 
         final float finalScaleFactor =
                 Math.max(mInitialScaleFactor, Math.min(mUncommittedScaleFactor, MAX_SCALE_FACTOR));
@@ -552,6 +564,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         final int newYRounded = Math.round(newY);
         mViewportRect.set(newXRounded, newYRounded, newXRounded + mViewportRect.width(),
                 newYRounded + mViewportRect.height());
+
         moveViewport(0, 0, finalScaleFactor);
         for (View subFrameView : mVisibleSubFrameViews) {
             ((PlayerFrameView) subFrameView).forceRedraw();
@@ -622,6 +635,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
          */
         @Override
         public void onResult(Bitmap result) {
+            if (result == null) {
+                run();
+                return;
+            }
             Bitmap[][] bitmapMatrix = mBitmapMatrix.get(mRequestScaleFactor);
             boolean[][] requiredBitmaps = mRequiredBitmaps.get(mRequestScaleFactor);
             if (bitmapMatrix == null || requiredBitmaps == null) {

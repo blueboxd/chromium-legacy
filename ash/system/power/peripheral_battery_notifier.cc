@@ -306,8 +306,7 @@ void PeripheralBatteryNotifier::ShowOrUpdateNotification(
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  params.notifier_name),
       message_center::RichNotificationData(), nullptr, *params.icon,
-      message_center::SystemNotificationWarningLevel::CRITICAL_WARNING);
-  notification->SetSystemPriority();
+      message_center::SystemNotificationWarningLevel::WARNING);
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));

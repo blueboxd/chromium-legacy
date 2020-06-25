@@ -11,6 +11,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -135,6 +138,26 @@ void CreateDiceTurnSyncOnHelper(
                            signin_aborted_mode);
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+std::string GetReauthAccessPointHistogramSuffix(
+    signin_metrics::ReauthAccessPoint access_point) {
+  switch (access_point) {
+    case signin_metrics::ReauthAccessPoint::kUnknown:
+      NOTREACHED();
+      return std::string();
+    case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
+      return "ToFillPassword";
+    case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
+      return "ToSaveOrUpdatePassword";
+    case signin_metrics::ReauthAccessPoint::kPasswordSettings:
+      return "ToManageInSettings";
+    case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
+    case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
+      return "ToGeneratePassword";
+    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
+      return "ToMovePassword";
+  }
+}
 
 }  // namespace
 
@@ -421,31 +444,30 @@ void RecordProfileMenuClick(Profile* profile) {
 void RecordTransactionalReauthResult(
     signin_metrics::ReauthAccessPoint access_point,
     signin::ReauthResult result) {
-  base::UmaHistogramEnumeration("Signin.TransactionalReauthResult", result);
-  switch (access_point) {
-    case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
-      base::UmaHistogramEnumeration(
-          "Signin.TransactionalReauthResult.ToFillPassword", result);
-      break;
-    case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
-      base::UmaHistogramEnumeration(
-          "Signin.TransactionalReauthResult.ToSaveOrUpdatePassword", result);
-      break;
-    case signin_metrics::ReauthAccessPoint::kPasswordSettings:
-      base::UmaHistogramEnumeration(
-          "Signin.TransactionalReauthResult.ToManageInSettings", result);
-      break;
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
-      base::UmaHistogramEnumeration(
-          "Signin.TransactionalReauthResult.ToGeneratePassword", result);
-      break;
-    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
-      base::UmaHistogramEnumeration(
-          "Signin.TransactionalReauthResult.ToMovePassword", result);
-      break;
-    default:
-      NOTREACHED();
+  const char kHistogramName[] = "Signin.TransactionalReauthResult";
+  base::UmaHistogramEnumeration(kHistogramName, result);
+
+  std::string access_point_suffix =
+      GetReauthAccessPointHistogramSuffix(access_point);
+  if (!access_point_suffix.empty()) {
+    std::string suffixed_histogram_name =
+        base::StrCat({kHistogramName, ".", access_point_suffix});
+    base::UmaHistogramEnumeration(suffixed_histogram_name, result);
+  }
+}
+
+void RecordTransactionalReauthUserAction(
+    signin_metrics::ReauthAccessPoint access_point,
+    SigninReauthViewController::UserAction user_action) {
+  const char kHistogramName[] = "Signin.TransactionalReauthUserAction";
+  base::UmaHistogramEnumeration(kHistogramName, user_action);
+
+  std::string access_point_suffix =
+      GetReauthAccessPointHistogramSuffix(access_point);
+  if (!access_point_suffix.empty()) {
+    std::string suffixed_histogram_name =
+        base::StrCat({kHistogramName, ".", access_point_suffix});
+    base::UmaHistogramEnumeration(suffixed_histogram_name, user_action);
   }
 }
 

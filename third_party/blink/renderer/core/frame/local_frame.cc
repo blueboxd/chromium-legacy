@@ -2296,6 +2296,8 @@ mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
 void LocalFrame::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
   embedding_token_ = embedding_token;
+  if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(Owner()))
+    owner->SetEmbeddingToken(embedding_token);
 }
 
 const base::Optional<base::UnguessableToken>& LocalFrame::GetEmbeddingToken()

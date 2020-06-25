@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.components.webapk.lib.common.WebApkConstants;
 
 import javax.inject.Inject;
 

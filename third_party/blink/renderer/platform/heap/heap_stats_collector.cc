@@ -146,21 +146,6 @@ size_t ThreadHeapStatsCollector::object_size_in_bytes() const {
                              allocated_bytes_since_prev_gc_);
 }
 
-double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
-  // Assume 8ms time for an initial heap. 8 ms is long enough for low-end mobile
-  // devices to mark common real-world object graphs.
-  constexpr double kInitialMarkingTimeInSeconds = 0.008;
-
-  const double prev_marking_speed =
-      previous().marking_time_in_bytes_per_second();
-  return prev_marking_speed ? prev_marking_speed * object_size_in_bytes()
-                            : kInitialMarkingTimeInSeconds;
-}
-
-base::TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
-  return base::TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
-}
-
 base::TimeDelta ThreadHeapStatsCollector::Event::roots_marking_time() const {
   return scope_data[kVisitRoots];
 }
@@ -169,6 +154,11 @@ base::TimeDelta ThreadHeapStatsCollector::Event::incremental_marking_time()
     const {
   return scope_data[kIncrementalMarkingStartMarking] +
          scope_data[kIncrementalMarkingStep] + scope_data[kUnifiedMarkingStep];
+}
+
+base::TimeDelta
+ThreadHeapStatsCollector::Event::worklist_processing_time_foreground() const {
+  return scope_data[kMarkProcessWorklist];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {
@@ -241,6 +231,11 @@ size_t ThreadHeapStatsCollector::marked_bytes() const {
 
 base::TimeDelta ThreadHeapStatsCollector::marking_time_so_far() const {
   return current_.marking_time();
+}
+
+base::TimeDelta ThreadHeapStatsCollector::worklist_processing_time_foreground()
+    const {
+  return current_.worklist_processing_time_foreground();
 }
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {

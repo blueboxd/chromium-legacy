@@ -61,11 +61,12 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         int NONE = 0;
         int DEFAULT_CONTENT = 1;
         int PERSONALIZED_SIGNIN_PROMO = 2;
-        int SYNC_PROMO = 3;
+        int PERSONALIZED_SYNC_PROMO = 3;
+        int SYNC_PROMO = 4;
         /**
          * Number of entries.
          */
-        int NUM_ENTRIES = 4;
+        int NUM_ENTRIES = 5;
     }
 
     @IntDef({GroupType.CONTENT, GroupType.VISIBLE_SEPARATOR, GroupType.INVISIBLE_SEPARATOR})
@@ -443,6 +444,30 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                         R.layout.personalized_signin_promo_view_recent_tabs, parent, false);
             }
             mRecentTabsManager.setupPersonalizedSigninPromo(
+                    convertView.findViewById(R.id.signin_promo_view_container));
+            return convertView;
+        }
+    }
+
+    /**
+     * A group containing the personalized sync promo.
+     */
+    class PersonalizedSyncPromoGroup extends PromoGroup {
+        @Override
+        @ChildType
+        int getChildType() {
+            return ChildType.PERSONALIZED_SYNC_PROMO;
+        }
+
+        @Override
+        View getChildView(
+                int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+                convertView = layoutInflater.inflate(
+                        R.layout.personalized_signin_promo_view_recent_tabs, parent, false);
+            }
+            mRecentTabsManager.setupPersonalizedSyncPromo(
                     convertView.findViewById(R.id.signin_promo_view_container));
             return convertView;
         }
@@ -839,6 +864,9 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 break;
             case RecentTabsManager.PromoState.PROMO_SIGNIN_PERSONALIZED:
                 addGroup(new PersonalizedSigninPromoGroup());
+                break;
+            case RecentTabsManager.PromoState.PROMO_SYNC_PERSONALIZED:
+                addGroup(new PersonalizedSyncPromoGroup());
                 break;
             case RecentTabsManager.PromoState.PROMO_SYNC:
                 addGroup(new SyncPromoGroup());

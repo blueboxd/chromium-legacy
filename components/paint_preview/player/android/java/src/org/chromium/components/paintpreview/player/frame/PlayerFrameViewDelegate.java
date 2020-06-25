@@ -18,7 +18,7 @@ interface PlayerFrameViewDelegate {
     /**
      * Called to set the bitmap scale matrix for this frame.
      */
-    void setBitmapScaleMatrix(Matrix matrix);
+    void setBitmapScaleMatrix(Matrix matrix, float scaleFactor);
 
     /**
      * Triggers a redraw if one is needed.

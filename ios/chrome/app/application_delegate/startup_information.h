@@ -11,8 +11,6 @@ namespace base {
 class TimeTicks;
 }
 
-@class AppStartupParameters;
-
 // Contains information about the startup.
 @protocol StartupInformation<NSObject>
 
@@ -22,9 +20,6 @@ class TimeTicks;
 // Whether the current session began from a cold start. NO if the app has
 // entered the background at least once since start up.
 @property(nonatomic) BOOL isColdStart;
-// Parameters received at startup time when the app is launched from another
-// app.
-@property(nonatomic, retain) AppStartupParameters* startupParameters;
 // Start of the application, used for UMA.
 @property(nonatomic, assign) base::TimeTicks appLaunchTime;
 // An object to record metrics related to the user's first action.

@@ -50,7 +50,8 @@ ScopedJavaLocalRef<jobjectArray> ToJavaUnguessableTokenArray(
 }
 
 ScopedJavaGlobalRef<jobject> ConvertToJavaBitmap(const SkBitmap& sk_bitmap) {
-  return ScopedJavaGlobalRef<jobject>(gfx::ConvertToJavaBitmap(&sk_bitmap));
+  return ScopedJavaGlobalRef<jobject>(
+      gfx::ConvertToJavaBitmap(&sk_bitmap, gfx::OomBehavior::kReturnNullOnOom));
 }
 
 }  // namespace
@@ -222,12 +223,23 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
       TRACE_ID_LOCAL(request_id), "status", static_cast<int>(status), "bytes",
       sk_bitmap.computeByteSize());
 
-  if (status == mojom::PaintPreviewCompositor::Status::kSuccess) {
+  if (status == mojom::PaintPreviewCompositor::Status::kSuccess &&
+      !sk_bitmap.isNull()) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&ConvertToJavaBitmap, sk_bitmap),
-        base::BindOnce(&base::android::RunObjectCallbackAndroid,
-                       j_bitmap_callback));
+        base::BindOnce(base::BindOnce(
+            [](const ScopedJavaGlobalRef<jobject>& j_bitmap_callback,
+               const ScopedJavaGlobalRef<jobject>& j_error_callback,
+               const ScopedJavaGlobalRef<jobject>& j_bitmap) {
+              if (!j_bitmap) {
+                base::android::RunRunnableAndroid(j_error_callback);
+                return;
+              }
+              base::android::RunObjectCallbackAndroid(j_bitmap_callback,
+                                                      j_bitmap);
+            },
+            j_bitmap_callback, j_error_callback)));
   } else {
     base::android::RunRunnableAndroid(j_error_callback);
   }

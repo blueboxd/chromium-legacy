@@ -1129,11 +1129,13 @@ Element* LocalDOMWindow::frameElement() const {
 void LocalDOMWindow::blur() {}
 
 void LocalDOMWindow::print(ScriptState* script_state) {
-  // Don't print after detach begins, even if GetFrame() hasn't been nulled out yet.
-  // TODO(crbug.com/1063150): When a frame is being detached for a swap, the document has already
-  // been Shutdown() and is no longer in a consistent state, even though GetFrame() is not yet
-  // nulled out. This is an ordering violation, and checking whether we're in the middle of detach
-  // here is probably not the right long-term fix.
+  // Don't print after detach begins, even if GetFrame() hasn't been nulled out
+  // yet.
+  // TODO(crbug.com/1063150): When a frame is being detached for a swap, the
+  // document has already been Shutdown() and is no longer in a consistent
+  // state, even though GetFrame() is not yet nulled out. This is an ordering
+  // violation, and checking whether we're in the middle of detach here is
+  // probably not the right long-term fix.
   if (!GetFrame() || !GetFrame()->IsAttached())
     return;
 
@@ -2085,6 +2087,16 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   DOMWindow::Trace(visitor);
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);
+}
+
+ukm::UkmRecorder* LocalDOMWindow::UkmRecorder() {
+  DCHECK(document_);
+  return document_->UkmRecorder();
+}
+
+ukm::SourceId LocalDOMWindow::UkmSourceID() const {
+  DCHECK(document_);
+  return document_->UkmSourceID();
 }
 
 }  // namespace blink

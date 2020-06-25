@@ -11,8 +11,8 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
+#include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {

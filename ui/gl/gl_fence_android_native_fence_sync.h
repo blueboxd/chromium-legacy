@@ -28,9 +28,6 @@ class GL_EXPORT GLFenceAndroidNativeFenceSync : public GLFenceEGL {
   // TimeTicks will be returned in that case.
   base::TimeTicks GetStatusChangeTime();
 
-  enum Status { kSignaled, kNotSignaled, kInvalid };
-  static Status GetStatusChangeTimeForFence(int fd, base::TimeTicks* time);
-
  private:
   GLFenceAndroidNativeFenceSync();
   static std::unique_ptr<GLFenceAndroidNativeFenceSync> CreateInternal(

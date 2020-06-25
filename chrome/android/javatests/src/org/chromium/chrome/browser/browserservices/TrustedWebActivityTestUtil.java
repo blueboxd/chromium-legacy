@@ -60,6 +60,18 @@ public class TrustedWebActivityTestUtil {
         return intent;
     }
 
+    /**
+     * Creates an Intent that will launch a Custom Tab to the given |url|, caches a successful
+     * verification and creates the Custom Tabs Session from the intent.
+     */
+    public static Intent createTrustedWebActivityIntentAndVerifiedSession(
+            String url, String packageName) throws TimeoutException {
+        Intent intent = createTrustedWebActivityIntent(url);
+        spoofVerification(packageName, url);
+        createSession(intent, packageName);
+        return intent;
+    }
+
     /** Caches a successful verification for the given |packageName| and |url|. */
     public static void spoofVerification(String packageName, String url) {
         TestThreadUtils.runOnUiThreadBlocking(

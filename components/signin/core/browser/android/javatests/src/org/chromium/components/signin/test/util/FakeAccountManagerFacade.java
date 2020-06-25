@@ -158,6 +158,19 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     /**
+     * Removes an account from the fake AccountManagerFacade.
+     */
+    public void removeAccount(Account account) {
+        AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
+        synchronized (mLock) {
+            if (!mAccountHolders.remove(accountHolder)) {
+                throw new IllegalArgumentException("Cannot find account:" + accountHolder);
+            }
+        }
+        ThreadUtils.runOnUiThreadBlocking(this::fireOnAccountsChangedNotification);
+    }
+
+    /**
      * Sets profile data in the fake ProfileDataSource.
      */
     public void setProfileData(

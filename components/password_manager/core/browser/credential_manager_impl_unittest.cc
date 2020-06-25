@@ -76,6 +76,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                void(const std::vector<const autofill::PasswordForm*>&,
                     const url::Origin&,
                     const std::vector<const autofill::PasswordForm*>*));
+  MOCK_CONST_METHOD0(GetAutofillAssistantMode, AutofillAssistantMode());
 
   explicit MockPasswordManagerClient(PasswordStore* profile_store,
                                      PasswordStore* account_store)
@@ -1348,6 +1349,21 @@ TEST_F(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
 
   ExpectCredentialType(CredentialMediationRequirement::kSilent, true,
+                       federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
+}
+
+TEST_F(CredentialManagerImplTest, AutofillAssistantZeroClickRequestCredential) {
+  store_->AddLogin(form_);
+
+  std::vector<GURL> federations;
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr)
+      .Times(testing::Exactly(0));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
+  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(*client_, GetAutofillAssistantMode())
+      .WillRepeatedly(testing::Return(AutofillAssistantMode::kRunning));
+
+  ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
                        federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 

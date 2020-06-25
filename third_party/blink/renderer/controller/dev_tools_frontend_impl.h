@@ -87,11 +87,11 @@ class DevToolsFrontendImpl final
   Member<DevToolsHost> devtools_host_;
   String api_script_;
   HeapMojoAssociatedRemote<mojom::blink::DevToolsFrontendHost,
-                           HeapMojoWrapperMode::kWithoutContextObserver>
+                           HeapMojoWrapperMode::kForceWithoutContextObserver>
       host_;
   HeapMojoAssociatedReceiver<mojom::blink::DevToolsFrontend,
                              DevToolsFrontendImpl,
-                             HeapMojoWrapperMode::kWithoutContextObserver>
+                             HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendImpl);

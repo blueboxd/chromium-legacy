@@ -63,7 +63,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
-#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #endif
 
 namespace signin {
@@ -282,9 +282,9 @@ void ProcessMirrorHeader(
     }
 
     // Display a re-authentication dialog.
-    chromeos::InlineLoginHandlerDialogChromeOS::Show(
+    chromeos::InlineLoginDialogChromeOS::Show(
         manage_accounts_params.email,
-        chromeos::InlineLoginHandlerDialogChromeOS::Source::kContentArea);
+        chromeos::InlineLoginDialogChromeOS::Source::kContentArea);
     return;
   }
 

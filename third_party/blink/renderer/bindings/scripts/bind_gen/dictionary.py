@@ -170,9 +170,10 @@ def _make_include_headers(cg_context):
             source_includes.add(PathManager(type_def_obj).api_path(ext="h"))
         elif idl_type.type_definition_object:
             type_def_obj = idl_type.type_definition_object
-            header_includes.add(
-                "third_party/blink/renderer/platform/heap/handle.h")
-            source_includes.add(PathManager(type_def_obj).api_path(ext="h"))
+            header_includes.update([
+                PathManager(type_def_obj).api_path(ext="h"),
+                "third_party/blink/renderer/platform/heap/handle.h",
+            ])
         elif (idl_type.is_sequence or idl_type.is_frozen_array
               or idl_type.is_variadic or idl_type.is_record):
             header_includes.update([

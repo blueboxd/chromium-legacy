@@ -23,8 +23,8 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.components.webapk.lib.common.WebApkConstants;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 

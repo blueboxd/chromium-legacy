@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
@@ -120,7 +121,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 #pragma mark - Public methods.
 
-+ (void)logStartupDuration:(id<StartupInformation>)startupInformation {
++ (void)logStartupDuration:(id<StartupInformation>)startupInformation
+     connectionInformation:(id<ConnectionInformation>)connectionInformation {
   if (![startupInformation isColdStart])
     return;
 
@@ -133,7 +135,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   UMA_HISTOGRAM_TIMES("Startup.ColdStartFromProcessCreationTime",
                       startDurationFromProcess);
 
-  if ([startupInformation startupParameters]) {
+  if ([connectionInformation startupParameters]) {
     UMA_HISTOGRAM_TIMES("Startup.ColdStartWithExternalURLTime", startDuration);
   } else {
     UMA_HISTOGRAM_TIMES("Startup.ColdStartWithoutExternalURLTime",

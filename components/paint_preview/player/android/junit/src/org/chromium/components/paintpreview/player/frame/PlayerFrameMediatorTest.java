@@ -4,6 +4,10 @@
 
 package org.chromium.components.paintpreview.player.frame;
 
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -18,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
@@ -158,6 +163,19 @@ public class PlayerFrameMediatorTest {
         @Override
         public void onClick(UnguessableToken frameGuid, int x, int y) {
             mClickedPoints.add(new ClickedPoint(frameGuid, x, y));
+        }
+    }
+
+    private class MatrixMatcher implements ArgumentMatcher<Matrix> {
+        private Matrix mLeft;
+
+        MatrixMatcher(Matrix left) {
+            mLeft = left;
+        }
+
+        @Override
+        public boolean matches(Matrix right) {
+            return mLeft.equals(right);
         }
     }
 
@@ -1074,14 +1092,14 @@ public class PlayerFrameMediatorTest {
     }
 
     /**
-     * Tests that {@link PlayerFrameMediator} works correctly when scrolling.
+     * Tests that {@link PlayerFrameMediator} works correctly when subframes are present.
      */
     @Test
     public void testViewPortOnScaleByWithSubFrames() {
-        Pair<View, Rect> subFrame1 =
-                new Pair<>(Mockito.mock(PlayerFrameView.class), new Rect(10, 20, 60, 40));
-        Pair<View, Rect> subFrame2 =
-                new Pair<>(Mockito.mock(PlayerFrameView.class), new Rect(30, 50, 70, 160));
+        PlayerFrameView subFrame1View = Mockito.mock(PlayerFrameView.class);
+        Pair<View, Rect> subFrame1 = new Pair<>(subFrame1View, new Rect(10, 20, 60, 40));
+        PlayerFrameView subFrame2View = Mockito.mock(PlayerFrameView.class);
+        Pair<View, Rect> subFrame2 = new Pair<>(subFrame2View, new Rect(30, 50, 70, 160));
 
         mMediator.addSubFrame(subFrame1.first, subFrame1.second);
         mMediator.addSubFrame(subFrame2.first, subFrame2.second);
@@ -1106,10 +1124,18 @@ public class PlayerFrameMediatorTest {
         Assert.assertTrue(mMediator.scaleBy(2f, 0f, 0f));
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        Matrix expectedMatrix = new Matrix();
+        expectedMatrix.setScale(2f, 2f);
+        verify(subFrame1View)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(2f));
 
         Assert.assertTrue(mMediator.scaleFinished(1f, 0f, 0f));
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedMatrix.reset();
+        verify(subFrame1View)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1f));
+        verify(subFrame1View).forceRedraw();
 
         // Scroll so the second subframe is back in the viewport..
         mMediator.scrollBy(20, 40);
@@ -1127,6 +1153,11 @@ public class PlayerFrameMediatorTest {
         expectedVisibleRects.add(new Rect(36, 58, 96, 223));
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        expectedMatrix.setScale(0.75f, 0.75f);
+        verify(subFrame1View)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
+        verify(subFrame2View)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(expectedMatrix)), eq(1.5f));
     }
 
     /**
@@ -1198,5 +1229,57 @@ public class PlayerFrameMediatorTest {
         Assert.assertTrue(
                 Arrays.deepEquals(expectedRequiredBitmaps, mMediator.mRequiredBitmaps.get(1f)));
         Assert.assertNull(mMediator.mRequiredBitmaps.get(2f));
+    }
+
+    /**
+     * Tests that {@link PlayerFrameMediator} works correctly with nested subframes. This test
+     * pretends that mMediator is for a subframe. The calls made to this mediator are verified
+     * to occur in {@link testViewPortOnScaleByWithSubFrames}.
+     */
+    @Test
+    public void testViewPortOnScaleByWithNestedSubFrames() {
+        PlayerFrameView subFrameView = Mockito.mock(PlayerFrameView.class);
+        Pair<View, Rect> subFrame = new Pair<>(subFrameView, new Rect(10, 20, 60, 40));
+        mMediator.addSubFrame(subFrame.first, subFrame.second);
+
+        // The subframe should be visible.
+        mMediator.updateViewportSize(50, 100, 1f);
+        List<View> expectedVisibleViews = new ArrayList<>();
+        List<Rect> expectedVisibleRects = new ArrayList<>();
+        expectedVisibleViews.add(subFrame.first);
+        expectedVisibleRects.add(subFrame.second);
+        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+
+        expectedVisibleViews.clear();
+        expectedVisibleRects.clear();
+        expectedVisibleViews.add(subFrame.first);
+        expectedVisibleRects.add(new Rect(20, 40, 120, 80));
+
+        // Scale by a factor of two via the parent.
+        Matrix scaleMatrix = new Matrix();
+        scaleMatrix.setScale(2f, 2f);
+        mMediator.setBitmapScaleMatrix(scaleMatrix, 2f);
+        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        verify(subFrameView)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(scaleMatrix)), eq(2f));
+
+        expectedVisibleViews.clear();
+        expectedVisibleRects.clear();
+        expectedVisibleViews.add(subFrame.first);
+        expectedVisibleRects.add(new Rect(15, 30, 90, 60));
+
+        // Zoom out by a factor of 0.75, note the scale factor argument is compounded.
+        scaleMatrix.setScale(0.75f, 0.75f);
+        mMediator.setBitmapScaleMatrix(scaleMatrix, 1.5f);
+        Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        verify(subFrameView)
+                .updateDelegateScaleMatrix(argThat(new MatrixMatcher(scaleMatrix)), eq(1.5f));
+
+        // Force a redraw and ensure it is recursive.
+        mMediator.forceRedraw();
+        verify(subFrameView).forceRedraw();
     }
 }

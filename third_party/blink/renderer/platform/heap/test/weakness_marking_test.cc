@@ -162,7 +162,10 @@ class EphemeronCallbacksCounter
   }
 
   void Callback(const LivenessBroker& info) {
-    *count_holder_ = ThreadState::Current()->Heap().ephemeron_callbacks_.size();
+    *count_holder_ = ThreadState::Current()
+                         ->Heap()
+                         .GetDiscoveredEphemeronPairsWorklist()
+                         ->SizeForTesting();
   }
 
  private:

@@ -127,6 +127,7 @@ jumbo_component("aura") {
     "//ui/events:events_base",
     "//ui/events/platform",
     "//ui/gfx",
+    "//ui/gfx:gfx_switches",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/platform_window",
@@ -140,6 +141,7 @@ jumbo_component("aura") {
   ]
 
   if (use_x11) {
+    public_deps += [ "//ui/base/x" ]
     deps += [
       "//ui/events/platform/x11",
       "//ui/platform_window/x11",

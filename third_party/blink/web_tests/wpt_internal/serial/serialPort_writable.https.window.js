@@ -6,11 +6,11 @@
 // META: script=resources/serial-test-utils.js
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
 
   assert_equals(port.writable, null);
 
-  await port.open({ baudrate: 9600 });
+  await port.open({baudrate: 9600});
   const writable = port.writable;
   assert_true(writable instanceof WritableStream);
 
@@ -23,9 +23,9 @@ serial_test(async (t, fake) => {
 }, 'open() and close() set and unset SerialPort.writable');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({ baudrate: 9600 });
+  await port.open({baudrate: 9600});
   assert_true(port.writable instanceof WritableStream);
 
   const writer = port.writable.getWriter();
@@ -37,9 +37,9 @@ serial_test(async (t, fake) => {
 }, 'Port cannot be closed while writable is locked');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({ baudrate: 9600 });
+  await port.open({baudrate: 9600});
   assert_true(port.writable instanceof WritableStream);
 
   const writer = port.writable.getWriter();
@@ -48,7 +48,7 @@ serial_test(async (t, fake) => {
   writer.close();
 
   await fakePort.readable();
-  let { value, done } = await fakePort.read();
+  let {value, done} = await fakePort.read();
   await writePromise;
   compareArrays(value, data);
 
@@ -57,9 +57,9 @@ serial_test(async (t, fake) => {
 }, 'Can write a small amount of data');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
   // Select a buffer size smaller than the amount of data transferred.
-  await port.open({ baudrate: 9600, buffersize: 64 });
+  await port.open({baudrate: 9600, buffersize: 64});
 
   const writer = port.writable.getWriter();
   const data = new Uint8Array(1024);  // Much larger than buffersize above.
@@ -78,8 +78,8 @@ serial_test(async (t, fake) => {
 }, 'Can read a large amount of data');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
-  await port.open({ baudrate: 9600 });
+  const {port, fakePort} = await getFakeSerialPort(fake);
+  await port.open({baudrate: 9600});
 
   const writable = port.writable;
   assert_true(writable instanceof WritableStream);
@@ -97,7 +97,7 @@ serial_test(async (t, fake) => {
   let writePromise = writer.write(data);
   writer.close();
   await fakePort.readable();
-  let { value, done } = await fakePort.read();
+  let {value, done} = await fakePort.read();
   await writePromise;
   compareArrays(value, data);
 
@@ -106,8 +106,8 @@ serial_test(async (t, fake) => {
 }, 'System error closes writable and replaces it with a new stream');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
-  await port.open({ baudrate: 9600 });
+  const {port, fakePort} = await getFakeSerialPort(fake);
+  await port.open({baudrate: 9600});
 
   assert_true(port.writable instanceof WritableStream);
   const writer = port.writable.getWriter();
@@ -122,20 +122,20 @@ serial_test(async (t, fake) => {
 }, 'Disconnect error closes writable and sets it to null');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({ baudrate: 9600 });
+  await port.open({baudrate: 9600});
   assert_true(port.writable instanceof WritableStream);
 
   const encoder = new TextEncoderStream();
   const streamClosed = encoder.readable.pipeTo(port.writable);
   const writer = encoder.writable.getWriter();
-  const writePromise = writer.write("Hello world!");
+  const writePromise = writer.write('Hello world!');
 
   await fakePort.readable();
-  const { value, done } = await fakePort.read();
+  const {value, done} = await fakePort.read();
   await writePromise;
-  assert_equals("Hello world!", new TextDecoder().decode(value));
+  assert_equals('Hello world!', new TextDecoder().decode(value));
   await writer.close();
   await streamClosed;
 
@@ -144,24 +144,24 @@ serial_test(async (t, fake) => {
 }, 'Can pipe a stream to writable');
 
 serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
+  const {port, fakePort} = await getFakeSerialPort(fake);
 
-  await port.open({ baudrate: 9600 });
+  await port.open({baudrate: 9600});
   assert_true(port.writable instanceof WritableStream);
 
   const transform = new TransformStream();
   const readable = transform.readable.pipeThrough(new TextEncoderStream())
-                                     .pipeThrough(new TransformStream())
-                                     .pipeThrough(new TransformStream())
-                                     .pipeThrough(new TransformStream());
+                       .pipeThrough(new TransformStream())
+                       .pipeThrough(new TransformStream())
+                       .pipeThrough(new TransformStream());
   const streamClosed = readable.pipeTo(port.writable);
   const writer = transform.writable.getWriter();
-  const writePromise = writer.write("Hello world!");
+  const writePromise = writer.write('Hello world!');
 
   await fakePort.readable();
-  const { value, done } = await fakePort.read();
+  const {value, done} = await fakePort.read();
   await writePromise;
-  assert_equals("Hello world!", new TextDecoder().decode(value));
+  assert_equals('Hello world!', new TextDecoder().decode(value));
   await writer.close();
   await streamClosed;
 

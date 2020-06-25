@@ -11,7 +11,7 @@ cr.define('cr.ui', () => {
    * to a top level menu item, add a 'sub-menu' attribute which has as
    * its value an id selector for another <cr-menu> element.
    * (e.g. <cr-menu-item sub-menu="other-menu">).
-   * @extends {HTMLElement}
+   * @extends {cr.ui.Menu}
    * @implements {EventListener}
    */
   class MultiMenu {
@@ -105,9 +105,23 @@ cr.define('cr.ui', () => {
     handleEvent(e) {
       switch (e.type) {
         case 'activate':
-          // If the event was fired by the sub-menu, send an activate event to
-          // the top level menu.
-          if (e.currentTarget !== this) {
+          if (e.currentTarget === this) {
+            // Don't activate if there's a sub-menu to show
+            const item = this.findMenuItem(e.target);
+            if (item) {
+              const subMenuId = item.getAttribute('sub-menu');
+              if (subMenuId) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Show the sub menu if needed.
+                if (!item.getAttribute('sub-menu-shown')) {
+                  this.showSubMenu();
+                }
+              }
+            }
+          } else {
+            // If the event was fired by the sub-menu, send an activate event to
+            // the top level menu.
             const activationEvent = document.createEvent('Event');
             activationEvent.initEvent('activate', true, true);
             activationEvent.originalEvent = e.originalEvent;
@@ -277,6 +291,7 @@ cr.define('cr.ui', () => {
       }
       this.subMenu = subMenu;
       switch (e.type) {
+        case 'activate':
         case 'mouseover':
           item.setAttribute('sub-menu-shown', 'shown');
           this.positionSubMenu_(item, subMenu);
@@ -355,6 +370,7 @@ cr.define('cr.ui', () => {
       if (doc) {
         this.showingEvents_.add(doc, 'keydown', this, true);
       }
+      this.showingEvents_.add(this, 'activate', this, true);
       // Handle mouse-over to trigger sub menu opening on hover.
       this.showingEvents_.add(this, 'mouseover', this);
       this.showingEvents_.add(this, 'mouseout', this);

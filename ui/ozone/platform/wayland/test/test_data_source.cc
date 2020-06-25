@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/wayland/test/test_data_source.h"
 
 #include <wayland-server-core.h>
+
+#include <cstdint>
 #include <utility>
 
 #include "base/bind.h"
@@ -51,16 +53,16 @@ void DataSourceDestroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
-void SetActions(wl_client* client,
-                wl_resource* resource,
-                uint32_t dnd_actions) {
-  NOTIMPLEMENTED();
+void DataSourceSetActions(wl_client* client,
+                          wl_resource* resource,
+                          uint32_t dnd_actions) {
+  GetUserDataAs<TestDataSource>(resource)->SetActions(dnd_actions);
 }
 
 }  // namespace
 
 const struct wl_data_source_interface kTestDataSourceImpl = {
-    DataSourceOffer, DataSourceDestroy, SetActions};
+    DataSourceOffer, DataSourceDestroy, DataSourceSetActions};
 
 TestDataSource::TestDataSource(wl_resource* resource)
     : ServerObject(resource),
@@ -70,7 +72,11 @@ TestDataSource::TestDataSource(wl_resource* resource)
 TestDataSource::~TestDataSource() {}
 
 void TestDataSource::Offer(const std::string& mime_type) {
-  NOTIMPLEMENTED();
+  mime_types_.push_back(mime_type);
+}
+
+void TestDataSource::SetActions(uint32_t dnd_actions) {
+  actions_ |= dnd_actions;
 }
 
 void TestDataSource::ReadData(const std::string& mime_type,

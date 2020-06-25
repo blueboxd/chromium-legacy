@@ -59,6 +59,10 @@ class NoOpStrategy final : public AgentSchedulingStrategy {
     VerifyValidSequence();
     return ShouldUpdatePolicy::kNo;
   }
+  ShouldUpdatePolicy OnDelayPassed(const FrameSchedulerImpl&) override {
+    VerifyValidSequence();
+    return ShouldUpdatePolicy::kNo;
+  }
 
   base::Optional<bool> QueueEnabledState(
       const MainThreadTaskQueue& task_queue) const override {
@@ -79,13 +83,20 @@ class NoOpStrategy final : public AgentSchedulingStrategy {
 // values.
 class TrackMainFrameSignal final : public AgentSchedulingStrategy {
  public:
-  TrackMainFrameSignal(PerAgentAffectedQueues affected_queue_types,
+  TrackMainFrameSignal(Delegate& delegate,
+                       PerAgentAffectedQueues affected_queue_types,
                        PerAgentSlowDownMethod method,
-                       PerAgentSignal signal)
-      : affected_queue_types_(affected_queue_types),
+                       PerAgentSignal signal,
+                       base::TimeDelta delay)
+      : delegate_(delegate),
+        affected_queue_types_(affected_queue_types),
         method_(method),
         signal_(signal),
-        waiting_for_input_(&waiting_for_input_lock_) {}
+        delay_(delay),
+        waiting_for_input_(&waiting_for_input_lock_) {
+    DCHECK(signal != PerAgentSignal::kDelayOnly || !delay.is_zero())
+        << "Delay duration can not be zero when using |kDelayOnly|.";
+  }
 
   ShouldUpdatePolicy OnFrameAdded(
       const FrameSchedulerImpl& frame_scheduler) override {
@@ -157,6 +168,12 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
     return OnSignal(frame_scheduler, PerAgentSignal::kOnLoad);
   }
 
+  ShouldUpdatePolicy OnDelayPassed(
+      const FrameSchedulerImpl& frame_scheduler) override {
+    VerifyValidSequence();
+    return SignalReached(frame_scheduler);
+  }
+
   base::Optional<bool> QueueEnabledState(
       const MainThreadTaskQueue& task_queue) const override {
     VerifyValidSequence();
@@ -203,6 +220,10 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
       return ShouldUpdatePolicy::kYes;
     }
 
+    if (signal_ == PerAgentSignal::kDelayOnly) {
+      delegate_.OnSetTimer(frame_scheduler, delay_);
+    }
+
     main_frames_.insert(&frame_scheduler);
     main_frames_waiting_for_signal_.insert(&frame_scheduler);
 
@@ -237,6 +258,17 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
     if (signal != signal_)
       return ShouldUpdatePolicy::kNo;
 
+    // If there is no delay, then we have reached the awaited signal.
+    if (delay_.is_zero()) {
+      return SignalReached(frame_scheduler);
+    }
+
+    // No need to update policy if we have to wait for a delay.
+    delegate_.OnSetTimer(frame_scheduler, delay_);
+    return ShouldUpdatePolicy::kNo;
+  }
+
+  ShouldUpdatePolicy SignalReached(const FrameSchedulerImpl& frame_scheduler) {
     main_frames_waiting_for_signal_.erase(&frame_scheduler);
     if (main_frames_waiting_for_signal_.IsEmpty())
       SetWaitingForInput(false);
@@ -247,9 +279,11 @@ class TrackMainFrameSignal final : public AgentSchedulingStrategy {
     return ShouldUpdatePolicy::kYes;
   }
 
+  Delegate& delegate_;
   const PerAgentAffectedQueues affected_queue_types_;
   const PerAgentSlowDownMethod method_;
   const PerAgentSignal signal_;
+  const base::TimeDelta delay_;
 
   WTF::HashSet<const FrameSchedulerImpl*> main_frames_;
   WTF::HashSet<const FrameSchedulerImpl*> main_frames_waiting_for_signal_;
@@ -269,12 +303,15 @@ AgentSchedulingStrategy::~AgentSchedulingStrategy() {
   VerifyValidSequence();
 }
 
-std::unique_ptr<AgentSchedulingStrategy> AgentSchedulingStrategy::Create() {
+std::unique_ptr<AgentSchedulingStrategy> AgentSchedulingStrategy::Create(
+    Delegate& delegate) {
   if (!base::FeatureList::IsEnabled(kPerAgentSchedulingExperiments))
     return std::make_unique<NoOpStrategy>();
 
   return std::make_unique<TrackMainFrameSignal>(
-      kPerAgentQueues.Get(), kPerAgentMethod.Get(), kPerAgentSignal.Get());
+      delegate, kPerAgentQueues.Get(), kPerAgentMethod.Get(),
+      kPerAgentSignal.Get(),
+      base::TimeDelta::FromMilliseconds(kPerAgentDelayMs.Get()));
 }
 
 void AgentSchedulingStrategy::VerifyValidSequence() const {

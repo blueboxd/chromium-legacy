@@ -7,11 +7,16 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/storage_partition.h"
 
-AccessContextAuditService::AccessContextAuditService() = default;
+AccessContextAuditService::AccessContextAuditService(Profile* profile)
+    : profile_(profile) {}
 AccessContextAuditService::~AccessContextAuditService() = default;
 
 bool AccessContextAuditService::Init(
@@ -38,21 +43,36 @@ bool AccessContextAuditService::Init(
   return true;
 }
 
-void AccessContextAuditService::RecordAccess(
-    const browsing_data::LocalSharedObjectsContainer& container,
+void AccessContextAuditService::RecordCookieAccess(
+    const net::CookieList& accessed_cookies,
     const GURL& top_frame_origin) {
+  auto now = base::Time::Now();
   std::vector<AccessContextAuditDatabase::AccessRecord> access_records;
+  for (const auto& cookie : accessed_cookies) {
+    // Do not record access for already expired or non-persistent cookies. This
+    // is more than an optimisation, deletion events will not be fired for them.
+    if (cookie.ExpiryDate() < now || !cookie.IsPersistent())
+      continue;
 
-  auto cookies_list = container.cookies()->GetCookieList();
-  for (const auto& cookie : cookies_list) {
     access_records.emplace_back(top_frame_origin, cookie.Name(),
                                 cookie.Domain(), cookie.Path(),
                                 cookie.LastAccessDate());
   }
-
   database_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::AddRecords,
                                 database_, std::move(access_records)));
+}
+
+void AccessContextAuditService::RecordStorageAPIAccess(
+    const GURL& storage_origin,
+    AccessContextAuditDatabase::StorageAPIType type,
+    const GURL& top_frame_origin) {
+  std::vector<AccessContextAuditDatabase::AccessRecord> access_record = {
+      AccessContextAuditDatabase::AccessRecord(
+          top_frame_origin, type, storage_origin, base::Time::Now())};
+  database_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::AddRecords,
+                                database_, std::move(access_record)));
 }
 
 void AccessContextAuditService::GetAllAccessRecords(
@@ -61,6 +81,10 @@ void AccessContextAuditService::GetAllAccessRecords(
       FROM_HERE,
       base::BindOnce(&AccessContextAuditDatabase::GetAllRecords, database_),
       std::move(callback));
+}
+
+void AccessContextAuditService::Shutdown() {
+  ClearSessionOnlyRecords();
 }
 
 void AccessContextAuditService::OnCookieChange(
@@ -89,4 +113,16 @@ void AccessContextAuditService::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(!database_task_runner_);
   database_task_runner_ = std::move(task_runner);
+}
+
+void AccessContextAuditService::ClearSessionOnlyRecords() {
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
+      ContentSettingsType::COOKIES, std::string(), &settings);
+
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AccessContextAuditDatabase::RemoveSessionOnlyRecords,
+                     database_, CookieSettingsFactory::GetForProfile(profile_),
+                     std::move(settings)));
 }

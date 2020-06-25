@@ -13,10 +13,10 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 using ::testing::_;
@@ -95,14 +95,14 @@ class X11ScreenOzoneTest : public testing::Test {
                                                     manager->displays_);
   }
 
-  std::unique_ptr<X11WindowOzone> CreatePlatformWindow(
+  std::unique_ptr<X11Window> CreatePlatformWindow(
       MockPlatformWindowDelegate* delegate,
       const gfx::Rect& bounds,
       gfx::AcceleratedWidget* widget = nullptr) {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window = std::make_unique<X11WindowOzone>(delegate);
+    auto window = std::make_unique<X11Window>(delegate);
     window->Initialize(std::move(init_params));
     return window;
   }

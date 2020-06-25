@@ -4,6 +4,8 @@
 
 #include "ui/base/cursor/cursor_factory.h"
 
+#include <ostream>
+
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/notreached.h"

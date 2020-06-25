@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.components.webapk.lib.common.WebApkConstants;
 
 /**
  * Tests for WebappDisclosureSnackbarController

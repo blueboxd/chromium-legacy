@@ -31,6 +31,8 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/ui/main/connection_information.h"
+#import "ios/chrome/browser/ui/main/test/fake_connection_information.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -95,8 +97,9 @@ class UserActivityHandlerTest : public PlatformTest {
     } copy];
     user_activity_handler_swizzler_.reset(new ScopedBlockSwizzler(
         [UserActivityHandler class],
-        @selector(handleStartupParametersWithTabOpener:
-                                    startupInformation:browserState:),
+        @selector
+        (handleStartupParametersWithTabOpener:
+                        connectionInformation:startupInformation:browserState:),
         swizzle_block_));
   }
 
@@ -190,12 +193,15 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityFromGarbage) {
     id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
     id startupInformationMock =
         [OCMockObject mockForProtocol:@protocol(StartupInformation)];
+    id connectionInformation =
+        [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
 
     // Action.
     BOOL result =
         [UserActivityHandler continueUserActivity:userActivity
                               applicationIsActive:NO
                                         tabOpener:tabOpenerMock
+                            connectionInformation:connectionInformation
                                startupInformation:startupInformationMock];
 
     // Tests.
@@ -212,6 +218,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityNoWebpage) {
 
   // The test will fail is a method of those objects is called.
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
 
@@ -220,6 +228,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityNoWebpage) {
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:NO
                                       tabOpener:tabOpenerMock
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Tests.
@@ -253,12 +262,14 @@ TEST_F(UserActivityHandlerTest,
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
-
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
   // Action.
   BOOL result =
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:NO
                                       tabOpener:tabOpenerMock
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Tests.
@@ -276,7 +287,9 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBackground) {
 
   id startupInformationMock =
       [OCMockObject niceMockForProtocol:@protocol(StartupInformation)];
-  [[startupInformationMock expect]
+  id connectionInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(ConnectionInformation)];
+  [[connectionInformationMock expect]
       setStartupParameters:[OCMArg checkWithBlock:^BOOL(id value) {
         EXPECT_TRUE([value isKindOfClass:[AppStartupParameters class]]);
 
@@ -293,6 +306,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBackground) {
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:NO
                                       tabOpener:tabOpenerMock
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Test.
@@ -315,15 +329,19 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityForeground) {
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
 
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
   AppStartupParameters* startupParams =
       [[AppStartupParameters alloc] initWithExternalURL:gurl completeURL:gurl];
-  [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
 
   // Action.
   BOOL result =
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:YES
                                       tabOpener:tabOpener
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Test.
@@ -347,11 +365,14 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
   // Use an object to capture the startup paramters set by UserActivityHandler.
   FakeStartupInformation* fakeStartupInformation =
       [[FakeStartupInformation alloc] init];
+  FakeConnectionInformation* connectionInformationMock =
+      [[FakeConnectionInformation alloc] init];
 
   BOOL result =
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:YES
                                       tabOpener:tabOpener
+                          connectionInformation:connectionInformationMock
                              startupInformation:fakeStartupInformation];
 
   GURL newTabURL(kChromeUINewTabURL);
@@ -361,7 +382,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
   EXPECT_TRUE(result);
   // Verifies that a new tab is being requested.
   EXPECT_EQ(newTabURL,
-            [[fakeStartupInformation startupParameters] externalURL]);
+            [[connectionInformationMock startupParameters] externalURL]);
 }
 
 // Tests that continueUserActivity sets startupParameters accordingly to the
@@ -375,6 +396,8 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
   GURL gurlNewTab(kChromeUINewTabURL);
   FakeStartupInformation* fakeStartupInformation =
       [[FakeStartupInformation alloc] init];
+  FakeConnectionInformation* connectionInformationMock =
+      [[FakeConnectionInformation alloc] init];
 
   NSArray* parametersToTest = @[
     @[
@@ -416,14 +439,15 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
         [UserActivityHandler continueUserActivity:userActivity
                               applicationIsActive:NO
                                         tabOpener:tabOpenerMock
+                            connectionInformation:connectionInformationMock
                                startupInformation:fakeStartupInformation];
 
     // Tests.
     EXPECT_TRUE(result);
     EXPECT_EQ(gurlNewTab,
-              [fakeStartupInformation startupParameters].externalURL);
+              [connectionInformationMock startupParameters].externalURL);
     EXPECT_EQ([parameters[1] intValue],
-              [fakeStartupInformation startupParameters].postOpeningAction);
+              [connectionInformationMock startupParameters].postOpeningAction);
   }
 }
 
@@ -440,7 +464,9 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentBackground) {
 
   id startupInformationMock =
       [OCMockObject niceMockForProtocol:@protocol(StartupInformation)];
-  [[startupInformationMock expect]
+  id connectionInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(ConnectionInformation)];
+  [[connectionInformationMock expect]
       setStartupParameters:[OCMArg checkWithBlock:^BOOL(id value) {
         EXPECT_TRUE([value isKindOfClass:[AppStartupParameters class]]);
 
@@ -457,6 +483,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentBackground) {
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:NO
                                       tabOpener:tabOpenerMock
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Test.
@@ -477,7 +504,11 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentForeground) {
 
   id startupInformationMock =
       [OCMockObject niceMockForProtocol:@protocol(StartupInformation)];
-  [[startupInformationMock expect]
+  [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
+
+  id connectionInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(ConnectionInformation)];
+  [[connectionInformationMock expect]
       setStartupParameters:[OCMArg checkWithBlock:^BOOL(id value) {
         EXPECT_TRUE([value isKindOfClass:[AppStartupParameters class]]);
 
@@ -485,19 +516,20 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentForeground) {
         const GURL calledURL = startupParameters.externalURL;
         return calledURL == net::GURLWithNSURL(intent.url);
       }]];
-  [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
 
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
   AppStartupParameters* startupParams =
       [[AppStartupParameters alloc] initWithExternalURL:gurl completeURL:gurl];
-  [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
 
   // Action.
   BOOL result =
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:YES
                                       tabOpener:tabOpener
+                          connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 
   // Test.
@@ -521,8 +553,12 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
-  [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
-  [[startupInformationMock expect] setStartupParameters:nil];
+
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
+  [[connectionInformationMock expect] setStartupParameters:nil];
 
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
@@ -535,6 +571,7 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
   // Action.
   [UserActivityHandler
       handleStartupParametersWithTabOpener:tabOpener
+                     connectionInformation:connectionInformationMock
                         startupInformation:startupInformationMock
                               browserState:interfaceProvider.currentInterface
                                                .browserState];
@@ -563,8 +600,12 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
-  [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
-  [[startupInformationMock expect] setStartupParameters:nil];
+
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
+  [[connectionInformationMock expect] setStartupParameters:nil];
 
   MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
 
@@ -577,6 +618,7 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
   // Action.
   [UserActivityHandler
       handleStartupParametersWithTabOpener:tabOpener
+                     connectionInformation:connectionInformationMock
                         startupInformation:startupInformationMock
                               browserState:interfaceProvider.currentInterface
                                                .browserState];
@@ -632,8 +674,11 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
-  [[[startupInformationMock stub] andReturn:startupParams] startupParameters];
-  [[startupInformationMock expect] setStartupParameters:nil];
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
+  [[[connectionInformationMock stub] andReturn:startupParams]
+      startupParameters];
+  [[connectionInformationMock expect] setStartupParameters:nil];
 
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];
@@ -646,6 +691,7 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
   // Action.
   [UserActivityHandler
       handleStartupParametersWithTabOpener:tabOpener
+                     connectionInformation:connectionInformationMock
                         startupInformation:startupInformationMock
                               browserState:interfaceProvider.currentInterface
                                                .browserState];
@@ -665,6 +711,9 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
 
   FakeStartupInformation* fakeStartupInformation =
       [[FakeStartupInformation alloc] init];
+
+  FakeConnectionInformation* fakeConnectionInformation =
+      [[FakeConnectionInformation alloc] init];
 
   NSArray* parametersToTest = @[
     @[ @"OpenNewSearch", @NO, @(FOCUS_OMNIBOX) ],
@@ -691,16 +740,17 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
     [UserActivityHandler performActionForShortcutItem:shortcut
                                     completionHandler:getCompletionHandler()
                                             tabOpener:tabOpenerMock
+                                connectionInformation:fakeConnectionInformation
                                    startupInformation:fakeStartupInformation
                                     interfaceProvider:interfaceProvider];
 
     // Tests.
     EXPECT_EQ(gurlNewTab,
-              [fakeStartupInformation startupParameters].externalURL);
+              [fakeConnectionInformation startupParameters].externalURL);
     EXPECT_EQ([[parameters objectAtIndex:1] boolValue],
-              [fakeStartupInformation startupParameters].launchInIncognito);
+              [fakeConnectionInformation startupParameters].launchInIncognito);
     EXPECT_EQ([[parameters objectAtIndex:2] intValue],
-              [fakeStartupInformation startupParameters].postOpeningAction);
+              [fakeConnectionInformation startupParameters].postOpeningAction);
     EXPECT_TRUE(completionHandlerExecuted());
     EXPECT_TRUE(completionHandlerArgument());
     EXPECT_TRUE(getHandleStartupParametersHasBeenCalled());
@@ -714,6 +764,9 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
   [[[startupInformationMock stub] andReturnValue:@YES] isPresentingFirstRunUI];
+
+  id connectionInformationMock =
+      [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
 
   UIApplicationShortcutItem* shortcut =
       [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewSearch"
@@ -730,6 +783,7 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   [UserActivityHandler performActionForShortcutItem:shortcut
                                   completionHandler:getCompletionHandler()
                                           tabOpener:tabOpenerMock
+                              connectionInformation:connectionInformationMock
                                  startupInformation:startupInformationMock
                                   interfaceProvider:interfaceProviderMock];
 

@@ -5862,6 +5862,7 @@ Unknown properties are collapsed to zero. -->
   <int value="22" label="Periodic Background Sync wake up task"/>
   <int value="23" label="Query Tile task"/>
   <int value="24" label="Feedv2 refresh task"/>
+  <int value="25" label="Download later task"/>
 </enum>
 
 <enum name="BackgroundTracingState">
@@ -10386,6 +10387,28 @@ histogram as enum -->
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
   <int value="2" label="Read Text"/>
+</enum>
+
+<enum name="ClipboardFormatRead">
+  <int value="0" label="Text"/>
+  <int value="1" label="Html"/>
+  <int value="2" label="Rtf"/>
+  <int value="3" label="Image"/>
+  <int value="4" label="Bookmark"/>
+  <int value="5" label="Data"/>
+  <int value="6" label="CustomData"/>
+  <int value="7" label="WebSmartPaste"/>
+</enum>
+
+<enum name="ClipboardFormatWrite">
+  <int value="0" label="Text"/>
+  <int value="1" label="Html"/>
+  <int value="2" label="Rtf"/>
+  <int value="3" label="Image"/>
+  <int value="4" label="Bookmark"/>
+  <int value="5" label="Data"/>
+  <int value="6" label="CustomData"/>
+  <int value="7" label="WebSmartPaste"/>
 </enum>
 
 <enum name="ClockdriftLevel">
@@ -40905,6 +40928,7 @@ from previous Chrome versions.
   <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
   <int value="-279920685" label="affiliation-based-matching:enabled"/>
   <int value="-279493876" label="WebVRExperimentalRendering:enabled"/>
+  <int value="-279208712" label="isolated-prerender-nsp-enabled"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
   <int value="-277118813" label="InterestFeedNotifications:disabled"/>
@@ -41741,6 +41765,7 @@ from previous Chrome versions.
   <int value="667643314" label="LitePageServerPreviews:enabled"/>
   <int value="669097106" label="NtpRealboxMatchOmniboxTheme:disabled"/>
   <int value="673588373" label="OmniboxPedalSuggestions:disabled"/>
+  <int value="674788251" label="EnableNewBadgeOnMenuItems:enabled"/>
   <int value="677866592" label="ClickToCallUI:disabled"/>
   <int value="679251577" label="AccessibilityExposeARIAAnnotations:disabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
@@ -42777,6 +42802,7 @@ from previous Chrome versions.
   <int value="1823337908" label="SmartDim20190221:enabled"/>
   <int value="1824931483"
       label="EnableHistoryFaviconsGoogleServerQuery:disabled"/>
+  <int value="1825369164" label="EnableNewBadgeOnMenuItems:disabled"/>
   <int value="1825940786" label="ChromeHomePromo:disabled"/>
   <int value="1827369558" label="AndroidPayIntegrationV1:disabled"/>
   <int value="1828660283" label="enable-webfonts-intervention-trigger"/>
@@ -57832,6 +57858,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="269" label="H3_REQUEST_INCOMPLETE"/>
   <int value="271" label="H3_CONNECT_ERROR"/>
   <int value="272" label="H3_VERSION_FALLBACK"/>
+  <int value="512" label="QPACK_DECOMPRESSION_FAILED"/>
+  <int value="513" label="QPACK_ENCODER_STREAM_ERROR"/>
+  <int value="514" label="QPACK_DECODER_STREAM_ERROR"/>
 </enum>
 
 <enum name="QuicInternalErrorLocation">
@@ -58117,7 +58146,36 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9" label="CONNECTION_ID_LIMIT_ERROR"/>
   <int value="10" label="PROTOCOL_VIOLATION"/>
   <int value="11" label="INVALID_TOKEN"/>
+  <int value="12" label="APPLICATION_ERROR"/>
   <int value="13" label="CRYPTO_BUFFER_EXCEEDED"/>
+  <int value="14" label="KEY_UPDATE_ERROR"/>
+  <int value="256" label="CRYPTO_ERROR_close_notify"/>
+  <int value="266" label="CRYPTO_ERROR_unexpected_message"/>
+  <int value="276" label="CRYPTO_ERROR_bad_record_mac"/>
+  <int value="278" label="CRYPTO_ERROR_record_overflow"/>
+  <int value="296" label="CRYPTO_ERROR_handshake_failure"/>
+  <int value="298" label="CRYPTO_ERROR_bad_certificate"/>
+  <int value="299" label="CRYPTO_ERROR_unsupported_certificate"/>
+  <int value="300" label="CRYPTO_ERROR_certificate_revoked"/>
+  <int value="301" label="CRYPTO_ERROR_certificate_expired"/>
+  <int value="302" label="CRYPTO_ERROR_certificate_unknown"/>
+  <int value="303" label="CRYPTO_ERROR_illegal_parameter"/>
+  <int value="304" label="CRYPTO_ERROR_unknown_ca"/>
+  <int value="305" label="CRYPTO_ERROR_access_denied"/>
+  <int value="306" label="CRYPTO_ERROR_decode_error"/>
+  <int value="307" label="CRYPTO_ERROR_decrypt_error"/>
+  <int value="326" label="CRYPTO_ERROR_protocol_version"/>
+  <int value="327" label="CRYPTO_ERROR_insufficient_security"/>
+  <int value="336" label="CRYPTO_ERROR_internal_error"/>
+  <int value="342" label="CRYPTO_ERROR_inappropriate_fallback"/>
+  <int value="346" label="CRYPTO_ERROR_user_canceled"/>
+  <int value="365" label="CRYPTO_ERROR_missing_extension"/>
+  <int value="366" label="CRYPTO_ERROR_unsupported_extension"/>
+  <int value="368" label="CRYPTO_ERROR_unrecognized_name"/>
+  <int value="369" label="CRYPTO_ERROR_bad_certificate_status_response"/>
+  <int value="371" label="CRYPTO_ERROR_unknown_psk_identity"/>
+  <int value="372" label="CRYPTO_ERROR_certificate_required"/>
+  <int value="376" label="CRYPTO_ERROR_no_application_protocol"/>
 </enum>
 
 <enum name="QuicWriteStatus">

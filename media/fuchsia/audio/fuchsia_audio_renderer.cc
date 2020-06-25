@@ -234,6 +234,8 @@ void FuchsiaAudioRenderer::SetLatencyHint(
   // shape and usefulness outside of fuchsia.
 }
 
+void FuchsiaAudioRenderer::SetPreservesPitch(bool preserves_pitch) {}
+
 void FuchsiaAudioRenderer::StartTicking() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

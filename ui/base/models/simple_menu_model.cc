@@ -317,6 +317,10 @@ void SimpleMenuModel::SetVisibleAt(int index, bool visible) {
   MenuItemsChanged();
 }
 
+void SimpleMenuModel::SetIsNewFeatureAt(int index, bool is_new_feature) {
+  items_[ValidateItemIndex(index)].is_new_feature = is_new_feature;
+}
+
 void SimpleMenuModel::Clear() {
   items_.clear();
   MenuItemsChanged();
@@ -430,6 +434,10 @@ bool SimpleMenuModel::IsVisibleAt(int index) const {
 
   return delegate_->IsCommandIdVisible(command_id) &&
          items_[ValidateItemIndex(index)].visible;
+}
+
+bool SimpleMenuModel::IsNewFeatureAt(int index) const {
+  return items_[ValidateItemIndex(index)].is_new_feature;
 }
 
 void SimpleMenuModel::ActivatedAt(int index) {

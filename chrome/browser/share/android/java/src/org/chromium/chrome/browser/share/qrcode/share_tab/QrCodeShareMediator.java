@@ -34,15 +34,17 @@ class QrCodeShareMediator {
     private long mDownloadStartTime;
     private boolean mIsDownloadInProgress;
     private String mUrl;
+    private Runnable mCloseDialog;
 
     /**
      * The QrCodeScanMediator constructor.
      * @param context The context to use.
      * @param propertyModel The property modelto use to communicate with views.
      */
-    QrCodeShareMediator(Context context, PropertyModel propertyModel) {
+    QrCodeShareMediator(Context context, PropertyModel propertyModel, Runnable closeDialog) {
         mContext = context;
         mPropertyModel = propertyModel;
+        mCloseDialog = closeDialog;
 
         // TODO(crbug.com/1083351): Get URL from Sharing Hub.
         if (context instanceof ChromeActivity) {
@@ -82,6 +84,7 @@ class QrCodeShareMediator {
             BitmapDownloadRequest.downloadBitmap(fileName, addUrlToBitmap(qrcodeBitmap, mUrl));
         }
         logDownload();
+        mCloseDialog.run();
     }
 
     /** Logs user actions when attempting to download a QR code. */

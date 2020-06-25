@@ -130,6 +130,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
   void SetLatencyHint(double seconds) override;
+  void SetPreservesPitch(bool preserves_pitch) override;
   void OnRequestPictureInPicture() override;
   void OnTimeUpdate() override;
   void SetSinkId(

@@ -143,7 +143,7 @@ void DynamicsCompressor::Process(const AudioBus* source_bus,
   float release_time = ParameterValue(kParamRelease);
   float pre_delay_time = ParameterValue(kParamPreDelay);
 
-  // This is effectively a master volume on the compressed signal
+  // This is effectively a make-up gain on the compressed signal
   // (pre-blending).
   float db_post_gain = ParameterValue(kParamPostGain);
 

@@ -113,6 +113,11 @@ class COMPONENT_EXPORT(UI_BASE) MenuModel
   // Returns true if the menu item is visible.
   virtual bool IsVisibleAt(int index) const;
 
+  // Returns true if the menu item grants access to a new feature that we want
+  // to show off to users (items marked as new will receive a "New" badge when
+  // the appropriate flag is enabled).
+  virtual bool IsNewFeatureAt(int index) const;
+
   // Returns the model for the submenu at the specified index.
   virtual MenuModel* GetSubmenuModelAt(int index) const = 0;
 

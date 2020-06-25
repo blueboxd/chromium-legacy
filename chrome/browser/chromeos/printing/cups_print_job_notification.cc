@@ -142,10 +142,12 @@ void CupsPrintJobNotification::Click(
 
   switch (button_commands_[*button_index]) {
     case ButtonCommand::CANCEL_PRINTING:
-      DCHECK(print_job_);
       cancelled_by_user_ = true;
 
-      print_job_manager->CancelPrintJob(print_job_.get());
+      if (print_job_) {
+        print_job_manager->CancelPrintJob(print_job_.get());
+      }
+
       // print_job_ was deleted in CancelPrintJob.  Forget the pointer.
       print_job_ = nullptr;
 
@@ -171,6 +173,15 @@ void CupsPrintJobNotification::CleanUpNotification() {
 void CupsPrintJobNotification::UpdateNotification() {
   if (!print_job_)
     return;
+
+  if (print_job_->state() == CupsPrintJob::State::STATE_CANCELLED) {
+    // Handles the state in which print job was cancelled by the print
+    // management app.
+    print_job_ = nullptr;
+    CleanUpNotification();
+    return;
+  }
+
   UpdateNotificationTitle();
   UpdateNotificationIcon();
   UpdateNotificationBodyMessage();

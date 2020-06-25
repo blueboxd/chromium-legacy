@@ -15,11 +15,19 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "net/base/network_isolation_key.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "url/gurl.h"
 
 class Profile;
 
+namespace blink {
+class ThrottlingURLLoader;
+}
+
 namespace network {
+namespace mojom {
+class URLLoaderClient;
+}
 class SharedURLLoaderFactory;
 }
 
@@ -125,9 +133,11 @@ class PrefetchManager {
   friend class PrefetchManagerTest;
 
   void PrefetchUrl(std::unique_ptr<PrefetchJob> job,
-                   network::SharedURLLoaderFactory& factory);
-  void OnPrefetchFinished(std::unique_ptr<PrefetchJob> job);
-
+                   scoped_refptr<network::SharedURLLoaderFactory> factory);
+  void OnPrefetchFinished(
+      std::unique_ptr<PrefetchJob> job,
+      std::unique_ptr<blink::ThrottlingURLLoader> loader,
+      std::unique_ptr<network::mojom::URLLoaderClient> client);
   void TryToLaunchPrefetchJobs();
 
   base::WeakPtr<Delegate> delegate_;

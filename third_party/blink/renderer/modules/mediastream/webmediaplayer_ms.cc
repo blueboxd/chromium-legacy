@@ -766,6 +766,12 @@ void WebMediaPlayerMS::SetLatencyHint(double seconds) {
   // https://henbos.github.io/webrtc-timing/#dom-rtcrtpreceiver-playoutdelayhint
 }
 
+void WebMediaPlayerMS::SetPreservesPitch(bool preserves_pitch) {
+  // Since WebMediaPlayerMS::SetRate() is a no-op, it doesn't make sense to
+  // handle pitch preservation flags. The playback rate should always be 1.0,
+  // and thus there should be no pitch-shifting.
+}
+
 void WebMediaPlayerMS::OnRequestPictureInPicture() {
   if (!bridge_)
     ActivateSurfaceLayerForVideo();

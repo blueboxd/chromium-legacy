@@ -29,12 +29,14 @@ class ExtensionsMenuButton : public views::LabelButton,
  public:
   ExtensionsMenuButton(Browser* browser,
                        ExtensionsMenuItemView* parent,
-                       ToolbarActionViewController* controller);
+                       ToolbarActionViewController* controller,
+                       bool allow_pinning);
   ~ExtensionsMenuButton() override;
 
   static const char kClassName[];
 
   SkColor GetInkDropBaseColor() const override;
+  bool CanShowIconInToolbar() const override;
 
   const base::string16& label_text_for_testing() const {
     return label()->GetText();
@@ -60,6 +62,8 @@ class ExtensionsMenuButton : public views::LabelButton,
 
   // Responsible for executing the extension's actions.
   ToolbarActionViewController* const controller_;
+
+  bool allow_pinning_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuButton);
 };

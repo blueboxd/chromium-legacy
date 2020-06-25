@@ -205,6 +205,8 @@ class CORE_EXPORT HTMLMediaElement
   void pause();
   double latencyHint() const;
   void setLatencyHint(double);
+  bool preservesPitch() const;
+  void setPreservesPitch(bool);
   void FlingingStarted();
   void FlingingStopped();
 
@@ -661,6 +663,10 @@ class CORE_EXPORT HTMLMediaElement
   bool processing_preference_change_ : 1;
 
   bool was_always_muted_ : 1;
+
+  // Whether or not |web_media_player_| should apply pitch adjustments at
+  // playback raters other than 1.0.
+  bool preserves_pitch_ = true;
 
   Member<AudioTrackList> audio_tracks_;
   Member<VideoTrackList> video_tracks_;

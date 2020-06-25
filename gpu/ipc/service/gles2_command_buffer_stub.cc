@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
+#include "gpu/command_buffer/service/gl_surface_task_scheduler.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -430,6 +431,11 @@ viz::GpuVSyncCallback GLES2CommandBufferStub::GetGpuVSyncCallback() {
 
 base::TimeDelta GLES2CommandBufferStub::GetGpuBlockedTimeSinceLastSwap() {
   return channel_->scheduler()->TakeTotalBlockingTime();
+}
+
+scoped_refptr<GLSurfaceTaskScheduler>
+GLES2CommandBufferStub::CreateGLSurfaceTaskScheduler() {
+  return base::MakeRefCounted<GLSurfaceTaskScheduler>(channel_->scheduler());
 }
 
 MemoryTracker* GLES2CommandBufferStub::GetMemoryTracker() const {

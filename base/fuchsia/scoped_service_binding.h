@@ -13,6 +13,7 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/fuchsia/scoped_service_publisher.h"
+#include "base/optional.h"
 
 namespace sys {
 class OutgoingDirectory;
@@ -41,30 +42,29 @@ class BASE_EXPORT ScopedServiceBinding {
 
   ~ScopedServiceBinding() = default;
 
-  void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
-    on_last_client_callback_ = std::move(on_last_client_callback);
+  // |on_last_client_callback| will be called every time the number of connected
+  // clients drops to 0.
+  void SetOnLastClientCallback(base::RepeatingClosure on_last_client_callback) {
     bindings_.set_empty_set_handler(
-        fit::bind_member(this, &ScopedServiceBinding::OnBindingSetEmpty));
+        [callback = std::move(on_last_client_callback)] { callback.Run(); });
   }
 
   bool has_clients() const { return bindings_.size() != 0; }
 
  private:
-  void OnBindingSetEmpty() {
-    bindings_.set_empty_set_handler(nullptr);
-    std::move(on_last_client_callback_).Run();
-  }
-
   fidl::BindingSet<Interface> bindings_;
   ScopedServicePublisher<Interface> publisher_;
-  base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedServiceBinding);
 };
 
 // Scoped service binding which allows only a single client to be connected
 // at any time. By default a new connection will disconnect an existing client.
-enum class ScopedServiceBindingPolicy { kPreferNew, kPreferExisting };
+enum class ScopedServiceBindingPolicy {
+  kPreferNew,
+  kPreferExisting,
+  kConnectOnce
+};
 
 template <typename Interface,
           ScopedServiceBindingPolicy Policy =
@@ -74,20 +74,23 @@ class BASE_EXPORT ScopedSingleClientServiceBinding {
   // |outgoing_directory| and |impl| must outlive the binding.
   ScopedSingleClientServiceBinding(sys::OutgoingDirectory* outgoing_directory,
                                    Interface* impl)
-      : binding_(impl),
-        publisher_(
-            outgoing_directory,
-            fit::bind_member(this,
-                             &ScopedSingleClientServiceBinding::BindClient)) {}
+      : binding_(impl) {
+    publisher_.emplace(
+        outgoing_directory,
+        fit::bind_member(this, &ScopedSingleClientServiceBinding::BindClient));
+    binding_.set_error_handler(fit::bind_member(
+        this, &ScopedSingleClientServiceBinding::OnBindingEmpty));
+  }
 
   ~ScopedSingleClientServiceBinding() = default;
 
   typename Interface::EventSender_& events() { return binding_.events(); }
 
+  // |on_last_client_callback| will be called the first time a client
+  // disconnects. It is still  possible for a client to connect after that point
+  // if Policy is kPreferNew of kPreferExisting.
   void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
     on_last_client_callback_ = std::move(on_last_client_callback);
-    binding_.set_error_handler(fit::bind_member(
-        this, &ScopedSingleClientServiceBinding::OnBindingEmpty));
   }
 
   bool has_clients() const { return binding_.is_bound(); }
@@ -99,15 +102,19 @@ class BASE_EXPORT ScopedSingleClientServiceBinding {
       return;
     }
     binding_.Bind(std::move(request));
+    if (Policy == ScopedServiceBindingPolicy::kConnectOnce) {
+      publisher_.reset();
+    }
   }
 
   void OnBindingEmpty(zx_status_t status) {
-    binding_.set_error_handler(nullptr);
-    std::move(on_last_client_callback_).Run();
+    if (on_last_client_callback_) {
+      std::move(on_last_client_callback_).Run();
+    }
   }
 
   fidl::Binding<Interface> binding_;
-  ScopedServicePublisher<Interface> publisher_;
+  base::Optional<ScopedServicePublisher<Interface>> publisher_;
   base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSingleClientServiceBinding);

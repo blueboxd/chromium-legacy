@@ -6,42 +6,39 @@ import("//third_party/inspector_protocol/inspector_protocol.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
-group("resources") {
-  if (!is_android) {
-    public_deps = [ ":devtools_resources" ]
+# Android and Fuchsia do not support DevTools front-end.
+if (!is_android && !is_fuchsia) {
+  grit("devtools_resources") {
+    source = "$root_gen_dir/devtools/devtools_resources.grd"
+
+    # Required because the .grd is generated.
+    enable_input_discovery_for_gn_analyze = false
+    use_brotli = true
+
+    outputs = [
+      "grit/devtools_resources.h",
+      "devtools_resources.pak",
+      "grit/devtools_resources_map.cc",
+      "grit/devtools_resources_map.h",
+    ]
+
+    grit_flags = [
+      "-E",
+      "protocol_file=" + rebase_path(
+              "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
+              root_build_dir),
+    ]
+
+    defines = [ "SHARED_INTERMEDIATE_DIR=" +
+                rebase_path(root_gen_dir, root_build_dir) ]
+
+    deps = [
+      "//third_party/blink/public/devtools_protocol:protocol_version",
+
+      # This is the action that generates out .grd input file.
+      "//third_party/blink/public:blink_generate_devtools_grd",
+    ]
   }
-}
-
-grit("devtools_resources") {
-  source = "$root_gen_dir/devtools/devtools_resources.grd"
-
-  # Required because the .grd is generated.
-  enable_input_discovery_for_gn_analyze = false
-  use_brotli = true
-
-  outputs = [
-    "grit/devtools_resources.h",
-    "devtools_resources.pak",
-    "grit/devtools_resources_map.cc",
-    "grit/devtools_resources_map.h",
-  ]
-
-  grit_flags = [
-    "-E",
-    "protocol_file=" + rebase_path(
-            "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
-            root_build_dir),
-  ]
-
-  defines =
-      [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_gen_dir, root_build_dir) ]
-
-  deps = [
-    "//third_party/blink/public/devtools_protocol:protocol_version",
-
-    # This is the action that generates out .grd input file.
-    "//third_party/blink/public:blink_generate_devtools_grd",
-  ]
 }
 
 inspector_protocol_generate("protocol_sources") {

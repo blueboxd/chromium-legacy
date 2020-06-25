@@ -161,10 +161,20 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
     histogram += "IetfTransport";
     RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
                                        is_google_host, handshake_confirmed);
+    if (frame.quic_error_code == quic::QUIC_IETF_GQUIC_ERROR_MISSING) {
+      histogram += "GQuicErrorMissing";
+      RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
+                                         is_google_host, handshake_confirmed);
+    }
   } else if (frame.close_type == quic::IETF_QUIC_APPLICATION_CONNECTION_CLOSE) {
     histogram += "IetfApplication";
     RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
                                        is_google_host, handshake_confirmed);
+    if (frame.quic_error_code == quic::QUIC_IETF_GQUIC_ERROR_MISSING) {
+      histogram += "GQuicErrorMissing";
+      RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
+                                         is_google_host, handshake_confirmed);
+    }
   }
 }
 

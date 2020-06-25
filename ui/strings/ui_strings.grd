@@ -367,6 +367,10 @@ need to be translated for each locale.-->
         (empty)
       </message>
 
+      <message name="IDS_MENU_ITEM_NEW_BADGE" desc="Appears as a badge on menu items denoting new features">
+        New
+      </message>
+
       <!-- General application strings -->
       <message name="IDS_SENTENCE_END" desc="The symbol that is used to end a sentence.">
         .

@@ -192,7 +192,8 @@ void ExtensionsToolbarContainer::UpdateIconVisibility(
     action_view->ClearProperty(views::kFlexBehaviorKey);
   }
 
-  if (must_show || model_->IsActionPinned(extension_id))
+  if (must_show ||
+      (CanShowIconInToolbar() && model_->IsActionPinned(extension_id)))
     animating_layout_manager()->FadeIn(action_view);
   else
     animating_layout_manager()->FadeOut(action_view);
@@ -469,7 +470,7 @@ void ExtensionsToolbarContainer::CreateActionForId(
       model_->CreateActionForId(browser_, this, false, action_id));
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
   // Set visibility before adding to prevent extraneous animation.
-  icon->SetVisible(model_->IsActionPinned(action_id));
+  icon->SetVisible(CanShowIconInToolbar() && model_->IsActionPinned(action_id));
   icon->AddButtonObserver(this);
   icon->AddObserver(this);
   icons_.insert({action_id, AddChildView(std::move(icon))});
@@ -481,6 +482,11 @@ content::WebContents* ExtensionsToolbarContainer::GetCurrentWebContents() {
 
 bool ExtensionsToolbarContainer::ShownInsideMenu() const {
   return false;
+}
+
+bool ExtensionsToolbarContainer::CanShowIconInToolbar() const {
+  // Pinning extensions is not available in PWAs.
+  return !browser_->app_controller();
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionViewDragDone() {}
@@ -531,6 +537,9 @@ int ExtensionsToolbarContainer::GetDragOperationsForView(View* sender,
 bool ExtensionsToolbarContainer::CanStartDragForView(View* sender,
                                                      const gfx::Point& press_pt,
                                                      const gfx::Point& p) {
+  if (!CanShowIconInToolbar())
+    return false;
+
   // Only pinned extensions should be draggable.
   auto it = std::find_if(model_->pinned_action_ids().cbegin(),
                          model_->pinned_action_ids().cend(),

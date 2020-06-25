@@ -52,30 +52,22 @@ SerialPortImpl::~SerialPortImpl() {
 }
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
-                          mojo::ScopedDataPipeConsumerHandle in_stream,
-                          mojo::ScopedDataPipeProducerHandle out_stream,
                           mojo::PendingRemote<mojom::SerialPortClient> client,
                           OpenCallback callback) {
-  DCHECK(in_stream);
-  DCHECK(out_stream);
-  in_stream_ = std::move(in_stream);
-  out_stream_ = std::move(out_stream);
   if (client)
     client_.Bind(std::move(client));
-  io_handler_->Open(*options, base::BindOnce(&SerialPortImpl::OnOpenCompleted,
-                                             weak_factory_.GetWeakPtr(),
-                                             std::move(callback)));
+
+  io_handler_->Open(*options, std::move(callback));
 }
 
-void SerialPortImpl::ClearSendError(
-    mojo::ScopedDataPipeConsumerHandle consumer) {
-  // Make sure |io_handler_| is still open and the |in_stream_| has been
-  // closed.
-  if (!io_handler_ || in_stream_) {
+void SerialPortImpl::StartWriting(mojo::ScopedDataPipeConsumerHandle consumer) {
+  if (in_stream_) {
+    mojo::ReportBadMessage("Data pipe consumer still open.");
     return;
   }
+
   in_stream_watcher_.Cancel();
-  in_stream_.swap(consumer);
+  in_stream_ = std::move(consumer);
   in_stream_watcher_.Watch(
       in_stream_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -85,15 +77,14 @@ void SerialPortImpl::ClearSendError(
   in_stream_watcher_.ArmOrNotify();
 }
 
-void SerialPortImpl::ClearReadError(
-    mojo::ScopedDataPipeProducerHandle producer) {
-  // Make sure |io_handler_| is still open and the |out_stream_| has been
-  // closed.
-  if (!io_handler_ || out_stream_) {
+void SerialPortImpl::StartReading(mojo::ScopedDataPipeProducerHandle producer) {
+  if (out_stream_) {
+    mojo::ReportBadMessage("Data pipe producer still open.");
     return;
   }
+
   out_stream_watcher_.Cancel();
-  out_stream_.swap(producer);
+  out_stream_ = std::move(producer);
   out_stream_watcher_.Watch(
       out_stream_.get(),
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -130,27 +121,6 @@ void SerialPortImpl::GetPortInfo(GetPortInfoCallback callback) {
 
 void SerialPortImpl::Close(CloseCallback callback) {
   io_handler_->Close(std::move(callback));
-}
-
-void SerialPortImpl::OnOpenCompleted(OpenCallback callback, bool success) {
-  if (success) {
-    in_stream_watcher_.Watch(
-        in_stream_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&SerialPortImpl::WriteToPort,
-                            weak_factory_.GetWeakPtr()));
-    in_stream_watcher_.ArmOrNotify();
-
-    out_stream_watcher_.Watch(
-        out_stream_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&SerialPortImpl::ReadFromPortAndWriteOut,
-                            weak_factory_.GetWeakPtr()));
-    out_stream_watcher_.ArmOrNotify();
-  }
-  std::move(callback).Run(success);
 }
 
 void SerialPortImpl::WriteToPort(MojoResult result,

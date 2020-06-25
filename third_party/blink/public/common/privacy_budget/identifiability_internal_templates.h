@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PRIVACY_BUDGET_IDENTIFIABILITY_INTERNAL_TEMPLATES_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PRIVACY_BUDGET_IDENTIFIABILITY_INTERNAL_TEMPLATES_H_
 
+#include <cstdint>
+#include <cstring>
 #include <type_traits>
-
-#include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ constexpr int64_t DigestOfObjectRepresentation(T in) {
     return in;
 
   int64_t result = 0;
-  memcpy(&result, &in, sizeof(in));
+  std::memcpy(&result, &in, sizeof(in));
   return result;
 }
 

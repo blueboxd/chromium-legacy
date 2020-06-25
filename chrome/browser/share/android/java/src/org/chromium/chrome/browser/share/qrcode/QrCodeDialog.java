@@ -42,7 +42,8 @@ public class QrCodeDialog extends DialogFragment {
         super.onAttach(context);
         mContext = context;
 
-        QrCodeShareCoordinator shareCoordinator = new QrCodeShareCoordinator(context);
+        QrCodeShareCoordinator shareCoordinator =
+                new QrCodeShareCoordinator(context, this::dismiss);
         QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context, this::dismiss);
 
         mTabs.add(shareCoordinator);

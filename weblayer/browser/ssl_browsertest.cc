@@ -7,12 +7,15 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
+#include "weblayer/public/browser.h"
+#include "weblayer/public/browser_observer.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
 #include "weblayer/test/load_completion_observer.h"
@@ -20,6 +23,37 @@
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
 namespace weblayer {
+namespace {
+
+#if defined(OS_ANDROID)
+// Waits for a new tab to be created, and then load |url|.
+class NewTabWaiter : public BrowserObserver {
+ public:
+  NewTabWaiter(Browser* browser, const GURL& url) : url_(url) {
+    observer_.Add(browser);
+  }
+
+  void OnTabAdded(Tab* tab) override {
+    navigation_observer_ = std::make_unique<TestNavigationObserver>(
+        url_, TestNavigationObserver::NavigationEvent::kStart, tab);
+    run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (!navigation_observer_)
+      run_loop_.Run();
+    navigation_observer_->Wait();
+  }
+
+ private:
+  GURL url_;
+  std::unique_ptr<TestNavigationObserver> navigation_observer_;
+  base::RunLoop run_loop_;
+  ScopedObserver<Browser, BrowserObserver> observer_{this};
+};
+#endif
+
+}  // namespace
 
 class SSLBrowserTest : public WebLayerBrowserTest {
  public:
@@ -166,13 +200,12 @@ class SSLBrowserTest : public WebLayerBrowserTest {
 
     // Note: The embedded test server cannot actually load the captive portal
     // login URL, so simply detect the start of the navigation to the page.
-    TestNavigationObserver navigation_observer(
-        WebLayerSecurityBlockingPageFactory::
-            GetCaptivePortalLoginPageUrlForTesting(),
-        TestNavigationObserver::NavigationEvent::kStart, shell());
+    NewTabWaiter waiter(shell()->browser(),
+                        WebLayerSecurityBlockingPageFactory::
+                            GetCaptivePortalLoginPageUrlForTesting());
     ExecuteScript(shell(), "window.certificateErrorPageController.openLogin();",
                   false /*use_separate_isolate*/);
-    navigation_observer.Wait();
+    waiter.Wait();
   }
 #endif
 

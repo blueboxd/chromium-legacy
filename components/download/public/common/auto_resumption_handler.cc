@@ -4,15 +4,21 @@
 
 #include "components/download/public/common/auto_resumption_handler.h"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "components/download/public/common/download_item.h"
 #include "components/download/public/task/task_scheduler.h"
 #include "url/gurl.h"
 
+namespace download {
 namespace {
 
 static download::AutoResumptionHandler* g_auto_resumption_handler = nullptr;
@@ -72,8 +78,6 @@ bool IsConnected(network::mojom::ConnectionType type) {
 
 }  // namespace
 
-namespace download {
-
 AutoResumptionHandler::Config::Config()
     : auto_resumption_size_limit(0),
       is_auto_resumption_enabled_in_native(false) {}
@@ -82,10 +86,12 @@ AutoResumptionHandler::Config::Config()
 void AutoResumptionHandler::Create(
     std::unique_ptr<download::NetworkStatusListener> network_listener,
     std::unique_ptr<download::TaskManager> task_manager,
-    std::unique_ptr<Config> config) {
+    std::unique_ptr<Config> config,
+    base::Clock* clock) {
   DCHECK(!g_auto_resumption_handler);
   g_auto_resumption_handler = new AutoResumptionHandler(
-      std::move(network_listener), std::move(task_manager), std::move(config));
+      std::move(network_listener), std::move(task_manager), std::move(config),
+      clock);
 }
 
 // static
@@ -96,10 +102,12 @@ AutoResumptionHandler* AutoResumptionHandler::Get() {
 AutoResumptionHandler::AutoResumptionHandler(
     std::unique_ptr<download::NetworkStatusListener> network_listener,
     std::unique_ptr<download::TaskManager> task_manager,
-    std::unique_ptr<Config> config)
+    std::unique_ptr<Config> config,
+    base::Clock* clock)
     : network_listener_(std::move(network_listener)),
       task_manager_(std::move(task_manager)),
-      config_(std::move(config)) {
+      config_(std::move(config)),
+      clock_(clock) {
   network_listener_->Start(this);
 }
 
@@ -187,13 +195,14 @@ void AutoResumptionHandler::ResumeDownloadImmediately() {
 }
 
 void AutoResumptionHandler::OnStartScheduledTask(
+    DownloadTaskType type,
     download::TaskFinishedCallback callback) {
-  task_manager_->OnStartScheduledTask(kResumptionTaskType, std::move(callback));
+  task_manager_->OnStartScheduledTask(type, std::move(callback));
   ResumePendingDownloads();
 }
 
-bool AutoResumptionHandler::OnStopScheduledTask() {
-  task_manager_->OnStopScheduledTask(kResumptionTaskType);
+bool AutoResumptionHandler::OnStopScheduledTask(DownloadTaskType type) {
+  task_manager_->OnStopScheduledTask(type);
   RescheduleTaskIfNecessary();
   return false;
 }
@@ -267,10 +276,10 @@ bool AutoResumptionHandler::ShouldResumeNow(
   if (!IsConnected(network_listener_->GetConnectionType()))
     return false;
 
-  // If the user select a time to start in the future, don't resume now.
+  // If the user selects a time to start in the future, don't resume now.
   const auto& download_schedule = download->GetDownloadSchedule();
-  if (download_schedule.has_value() && download_schedule->start_time().value_or(
-                                           base::Time()) > base::Time::Now()) {
+  if (download_schedule &&
+      download_schedule->start_time().value_or(base::Time()) >= clock_->Now()) {
     return false;
   }
 

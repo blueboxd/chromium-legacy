@@ -15,7 +15,7 @@ import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {CustomElement} from './custom_element.js';
 import {DragManager, DragManagerDelegate} from './drag_manager.js';
-import {TabElement} from './tab.js';
+import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
 import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
@@ -54,55 +54,77 @@ const LayoutVariable = {
  * @param {number} newIndex
  */
 function animateElementMoved(movedElement, prevIndex, newIndex) {
-  // Direction is -1 for moving the movedElement towards the start of the tab
-  // strip, and +1 for moving towards the end of the tab strip.
-  const direction = Math.sign(prevIndex - newIndex);
-
-  // The horizontal direction is flipped depending on RTL vs. LTR.
-  const horizontalDirection = (isRTL() ? -1 : 1) * direction;
+  // Direction is -1 for moving towards a lower index, +1 for moving
+  // towards a higher index. If moving towards a lower index, the TabList needs
+  // to animate everything from the movedElement's current index to its prev
+  // index by traversing the nextElementSibling of each element because the
+  // movedElement is now at a preceding position from all the elements it has
+  // slid across. If moving towards a higher index, the TabList needs to
+  // traverse the previousElementSiblings.
+  const direction = Math.sign(newIndex - prevIndex);
 
   /**
    * @param {!Element} element
    * @return {?Element}
    */
   function getSiblingToAnimate(element) {
-    return direction > -1 ? element.nextElementSibling :
-                            element.previousElementSibling;
+    return direction === -1 ? element.nextElementSibling :
+                              element.previousElementSibling;
   }
   let elementToAnimate = getSiblingToAnimate(movedElement);
-  for (let i = prevIndex; i !== newIndex && elementToAnimate; i -= direction) {
-    slideElement(elementToAnimate, -1 * horizontalDirection);
+  for (let i = newIndex; i !== prevIndex && elementToAnimate; i -= direction) {
+    const elementToAnimatePrevIndex = i;
+    const elementToAnimateNewIndex = i - direction;
+    slideElement(
+        elementToAnimate, elementToAnimatePrevIndex, elementToAnimateNewIndex);
     elementToAnimate = getSiblingToAnimate(elementToAnimate);
   }
 
-  // Animate the moved TabElement itself the total number of tabs that it
-  // has been moved across.
-  slideElement(
-      movedElement, horizontalDirection * Math.abs(newIndex - prevIndex));
+  slideElement(movedElement, prevIndex, newIndex);
 }
 
 /**
- * Animates the slide of an element across the tab strip.
+ * Animates the slide of an element across the tab strip (both vertically and
+ * horizontally for pinned tabs, and horizontally for other tabs and groups).
  * @param {!Element} element
- * @param {number} horizontalScale
+ * @param {number} prevIndex
+ * @param {number} newIndex
  */
-function slideElement(element, horizontalScale) {
+function slideElement(element, prevIndex, newIndex) {
+  let horizontalMovement = newIndex - prevIndex;
+  let verticalMovement = 0;
+
+  if (isTabElement(element) && element.tab.pinned) {
+    const pinnedTabsPerColumn = 3;
+    const columnChange = Math.floor(newIndex / pinnedTabsPerColumn) -
+        Math.floor(prevIndex / pinnedTabsPerColumn);
+    horizontalMovement = columnChange;
+    verticalMovement =
+        (newIndex - prevIndex) - (columnChange * pinnedTabsPerColumn);
+  }
+
+  horizontalMovement *= isRTL() ? -1 : 1;
+
+  const translateX = `calc(${horizontalMovement * -1} * ` +
+      '(var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing)))';
+  const translateY = `calc(${verticalMovement * -1} * ` +
+      '(var(--tabstrip-tab-height) + var(--tabstrip-tab-spacing)))';
+
   element.isValidDragOverTarget = false;
   const animation = element.animate(
       [
-        {
-          transform: 'translateX(calc(' + horizontalScale + ' ' +
-              '* (var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing))))',
-        },
-        {transform: 'translateX(0)'},
+        {transform: `translate(${translateX}, ${translateY})`},
+        {transform: 'translate(0, 0)'},
       ],
       {
         duration: 120,
         easing: 'ease-out',
       });
-  animation.onfinish = () => {
+  function onComplete() {
     element.isValidDragOverTarget = true;
-  };
+  }
+  animation.oncancel = onComplete;
+  animation.onfinish = onComplete;
 }
 
 /** @implements {DragManagerDelegate} */

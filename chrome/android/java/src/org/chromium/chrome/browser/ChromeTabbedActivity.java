@@ -795,12 +795,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity."
                      + "maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver")) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+                FeedStreamSurface.startup();
+            } else if (ChromeFeatureList.isEnabled(
+                               ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
                 // We call getFeedAppLifecycle() here to ensure the app lifecycle is created so
                 // that it can start listening for state changes.
                 FeedProcessScopeFactory.getFeedAppLifecycle();
-            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
-                FeedStreamSurface.xSurfaceProcessScope();
             }
 
             if (UsageStatsService.isEnabled()) {

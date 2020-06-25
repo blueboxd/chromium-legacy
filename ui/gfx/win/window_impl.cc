@@ -217,6 +217,8 @@ void WindowImpl::Init(HWND parent, const Rect& bounds) {
                              reinterpret_cast<wchar_t*>(atom), NULL,
                              window_style_, x, y, width, height,
                              parent, NULL, NULL, this);
+  const DWORD create_window_error = ::GetLastError();
+
   // First nccalcszie (during CreateWindow) for captioned windows is
   // deliberately ignored so force a second one here to get the right
   // non-client set up.
@@ -226,7 +228,7 @@ void WindowImpl::Init(HWND parent, const Rect& bounds) {
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
   }
 
-  if (!hwnd_ && GetLastError() == 0) {
+  if (!hwnd_ && create_window_error == 0) {
     base::debug::Alias(&destroyed);
     base::debug::Alias(&hwnd);
     bool got_create = got_create_;
@@ -248,7 +250,7 @@ void WindowImpl::Init(HWND parent, const Rect& bounds) {
   if (!destroyed)
     destroyed_ = NULL;
 
-  CheckWindowCreated(hwnd_);
+  CheckWindowCreated(hwnd_, create_window_error);
 
   // The window procedure should have set the data for us.
   CHECK_EQ(this, GetWindowUserData(hwnd));

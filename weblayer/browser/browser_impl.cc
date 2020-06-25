@@ -9,12 +9,12 @@
 #include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "components/base32/base32.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/web_preferences.h"
+#include "weblayer/browser/browser_list.h"
 #include "weblayer/browser/feature_list_creator.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/persistence/browser_persister_file_utils.h"
@@ -46,22 +46,11 @@ namespace weblayer {
 
 namespace {
 
-std::vector<BrowserImpl*>& GetBrowsers() {
-  static base::NoDestructor<std::vector<BrowserImpl*>> browsers;
-  return *browsers;
-}
-
 #if defined(OS_ANDROID)
 void UpdateMetricsService() {
   static bool s_foreground = false;
-  bool foreground = false;
-  for (auto* browser : GetBrowsers()) {
-    if (browser->fragment_resumed()) {
-      // We need at least one browser to be foreground.
-      foreground = true;
-      break;
-    }
-  }
+  // TODO(sky): convert this to observer.
+  bool foreground = BrowserList::GetInstance()->HasAtLeastOneResumedBrowser();
 
   if (foreground == s_foreground)
     return;
@@ -114,17 +103,12 @@ BrowserImpl::~BrowserImpl() {
   while (!tabs_.empty())
     DestroyTab(tabs_.back().get());
 #endif
-  base::Erase(GetBrowsers(), this);
+  BrowserList::GetInstance()->RemoveBrowser(this);
 
 #if defined(OS_ANDROID)
-  if (GetBrowsers().empty())
+  if (BrowserList::GetInstance()->browsers().empty())
     BrowserProcess::GetInstance()->StopSafeBrowsingService();
 #endif
-}
-
-// static
-const std::vector<BrowserImpl*>& BrowserImpl::GetAllBrowsers() {
-  return GetBrowsers();
 }
 
 TabImpl* BrowserImpl::CreateTabForSessionRestore(
@@ -254,13 +238,11 @@ void BrowserImpl::OnFragmentStart(JNIEnv* env) {
 }
 
 void BrowserImpl::OnFragmentResume(JNIEnv* env) {
-  fragment_resumed_ = true;
-  UpdateMetricsService();
+  UpdateFragmentResumedState(true);
 }
 
 void BrowserImpl::OnFragmentPause(JNIEnv* env) {
-  fragment_resumed_ = false;
-  UpdateMetricsService();
+  UpdateFragmentResumedState(false);
 }
 
 #endif
@@ -365,7 +347,7 @@ void BrowserImpl::VisibleSecurityStateOfActiveTabChanged() {
 }
 
 BrowserImpl::BrowserImpl(ProfileImpl* profile) : profile_(profile) {
-  GetBrowsers().push_back(this);
+  BrowserList::GetInstance()->AddBrowser(this);
 }
 
 void BrowserImpl::RestoreStateIfNecessary(
@@ -421,6 +403,17 @@ base::FilePath BrowserImpl::GetBrowserPersisterDataPath() {
 }
 
 #if defined(OS_ANDROID)
+void BrowserImpl::UpdateFragmentResumedState(bool state) {
+  const bool old_has_at_least_one_active_browser =
+      BrowserList::GetInstance()->HasAtLeastOneResumedBrowser();
+  fragment_resumed_ = state;
+  UpdateMetricsService();
+  if (old_has_at_least_one_active_browser !=
+      BrowserList::GetInstance()->HasAtLeastOneResumedBrowser()) {
+    BrowserList::GetInstance()->NotifyHasAtLeastOneResumedBrowserChanged();
+  }
+}
+
 // This function is friended. JNI_BrowserImpl_CreateBrowser can not be
 // friended, as it requires browser_impl.h to include BrowserImpl_jni.h, which
 // is problematic (meaning not really supported and generates compile errors).

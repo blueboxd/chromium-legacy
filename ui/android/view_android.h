@@ -161,6 +161,11 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_controls_min_height_offset);
   void OnBrowserControlsHeightChanged();
+  // |current_scroll_ratio| is the ratio of vertical scroll in [0, 1] range.
+  // Scroll at top of page is 0, and bottom of page is 1. It is defined as 0
+  // if page is not scrollable, though this should not be called in that case.
+  void OnVerticalScrollDirectionChanged(bool direction_up,
+                                        float current_scroll_ratio);
 
   // Gets the Visual Viewport inset to apply in physical pixels.
   int GetViewportInsetBottom();

@@ -652,77 +652,65 @@ ci.clang_builder(
     ),
 )
 
-ci.clang_builder(
+def clang_tot_linux_builder(short_name, category='ToT Linux', **kwargs):
+  ci.clang_builder(
+      console_view_entry = ci.console_view_entry(
+          category = category,
+          short_name = short_name,
+      ),
+      notifies = [luci.notifier(
+          name = 'ToT Linux notifier',
+          on_new_status = ['FAILURE'],
+          notify_emails = ['thomasanderson@chromium.org'],
+      )],
+      **kwargs,
+  )
+
+clang_tot_linux_builder(
     name = 'ToTLinux',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'rel',
-    ),
+    short_name = 'rel',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinux (dbg)',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'dbg',
-    ),
+    short_name = 'dbg',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxASan',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'asn',
-    ),
+    short_name = 'asn',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxASanLibfuzzer',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'fuz',
-    ),
+    short_name = 'fuz',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxCoverage',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Code Coverage',
-        short_name = 'linux',
-    ),
+    category = 'ToT Code Coverage',
+    short_name = 'linux',
     executable = 'recipe:chromium_clang_coverage_tot',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxMSan',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'msn',
-    ),
+    short_name = 'msn',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxTSan',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'tsn',
-    ),
+    short_name = 'tsn',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxThinLTO',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'lto',
-    ),
+    short_name = 'lto',
 )
 
-ci.clang_builder(
+clang_tot_linux_builder(
     name = 'ToTLinuxUBSanVptr',
-    console_view_entry = ci.console_view_entry(
-        category = 'ToT Linux',
-        short_name = 'usn',
-    ),
+    short_name = 'usn',
 )
 
 ci.clang_builder(
@@ -3220,4 +3208,5 @@ ci.win_builder(
     ),
     executable = 'recipe:swarming/deterministic_build',
     execution_timeout = 6 * time.hour,
+    goma_jobs = goma.jobs.J150,
 )

@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "build/build_config.h"
 
 namespace net {
@@ -50,35 +48,9 @@ const base::Feature kAvoidH2Reprioritization{"AvoidH2Reprioritization",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace dns_httpssvc_experiment {
-namespace {
-bool ListContainsDomain(const std::string& domain_list,
-                        base::StringPiece domain) {
-  std::vector<base::StringPiece> parsed_list = base::SplitStringPiece(
-      domain_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return std::find(parsed_list.begin(), parsed_list.end(), domain) !=
-         parsed_list.end();
-}
-}  // namespace
-
 base::TimeDelta GetExtraTimeAbsolute() {
   DCHECK(base::FeatureList::IsEnabled(features::kDnsHttpssvc));
   return base::TimeDelta::FromMilliseconds(kDnsHttpssvcExtraTimeMs.Get());
-}
-
-bool IsExperimentDomain(base::StringPiece domain) {
-  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
-    return false;
-  // TODO(dmcardle): Can we cache the results to avoid reparsing the
-  // comma-separated lists once per DnsTask?
-  return ListContainsDomain(kDnsHttpssvcExperimentDomains.Get(), domain);
-}
-
-bool IsControlDomain(base::StringPiece domain) {
-  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
-    return false;
-  if (kDnsHttpssvcControlDomainWildcard.Get())
-    return !IsExperimentDomain(domain);
-  return ListContainsDomain(kDnsHttpssvcControlDomains.Get(), domain);
 }
 }  // namespace dns_httpssvc_experiment
 

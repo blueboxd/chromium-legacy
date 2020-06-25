@@ -9,7 +9,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
@@ -42,19 +41,19 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * for display in the UI.
      */
     static class DohEntry {
-        public final @NonNull String name; // Display name
-        public final @NonNull String template; // URI template, or "" for the custom entry.
-        public final @NonNull String privacy; // Privacy policy link
+        final String mName; // Display name
+        final String mTemplate; // URI template, or "" for the custom entry.
+        final String mPrivacy; // Privacy policy link
 
         DohEntry(String name, String template, String privacy) {
-            this.name = name;
-            this.template = template;
-            this.privacy = privacy;
+            mName = name;
+            mTemplate = template;
+            mPrivacy = privacy;
         }
 
         @Override
         public String toString() {
-            return name;
+            return mName;
         }
     }
 
@@ -369,7 +368,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      *
      * @param mode The desired new Secure DNS mode.
      */
-    public void setSecureDnsMode(@SecureDnsMode int mode) {
+    public void setSecureDnsModeMode(@SecureDnsMode int mode) {
         PrivacyPreferencesManagerJni.get().setSecureDnsMode(mode);
     }
 
@@ -393,10 +392,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Get the raw preference value, which can represent multiple templates separated
-     * by whitespace.  The raw value is needed in order to allow direct editing while
-     * preserving whitespace.
-     *
      * @return The templates (separated by spaces) of the DoH server
      *     currently selected for use in "secure" mode, or "" if there is none.
      */
@@ -430,7 +425,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     public void updateDohDropdownHistograms(DohEntry oldEntry, DohEntry newEntry) {
         PrivacyPreferencesManagerJni.get().updateDohDropdownHistograms(
-                oldEntry.template, newEntry.template);
+                oldEntry.mTemplate, newEntry.mTemplate);
     }
 
     /**

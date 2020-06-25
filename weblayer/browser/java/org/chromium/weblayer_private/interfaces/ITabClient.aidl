@@ -39,4 +39,8 @@ interface ITabClient {
 
   // Added in M85.
   void onBackgroundColorChanged(in int color) = 9;
+
+  // Added in M85
+  void onScrollNotification(
+          in int notificationType, in float currentScrollRatio) = 10;
 }

@@ -47,7 +47,7 @@ bool LinkResource::ShouldLoadResource() const {
 }
 
 LocalFrame* LinkResource::LoadingFrame() const {
-  return owner_->GetDocument().MasterDocument().GetFrame();
+  return owner_->GetDocument().TreeRootDocument().GetFrame();
 }
 
 Document& LinkResource::GetDocument() {

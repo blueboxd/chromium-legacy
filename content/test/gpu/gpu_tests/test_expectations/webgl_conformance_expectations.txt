@@ -152,6 +152,7 @@ crbug.com/1096746 [ fuchsia ] conformance/context/context-size-change.html [ Ski
 crbug.com/1096746 [ fuchsia ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/extensions/oes-vertex-array-object.html [ Skip ]
+crbug.com/1096746 [ fuchsia ] conformance/extensions/webgl-compressed-texture-size-limit.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/extensions/webgl-draw-buffers.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Skip ]

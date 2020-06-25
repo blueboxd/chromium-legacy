@@ -206,6 +206,14 @@ void RendererImpl::SetLatencyHint(
     audio_renderer_->SetLatencyHint(latency_hint);
 }
 
+void RendererImpl::SetPreservesPitch(bool preserves_pitch) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (audio_renderer_)
+    audio_renderer_->SetPreservesPitch(preserves_pitch);
+}
+
 void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());

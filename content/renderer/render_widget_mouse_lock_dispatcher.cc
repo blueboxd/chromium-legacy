@@ -25,14 +25,15 @@ void RenderWidgetMouseLockDispatcher::SendLockMouseRequest(
       requester_frame ? requester_frame->HasTransientUserActivation() : false;
   auto* host = render_widget_->GetInputHandlerHost();
   if (host) {
-    host->RequestMouseLock(has_transient_user_activation, /*privileged=*/false,
-                           request_unadjusted_movement,
-                           base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
-                                          this->AsWeakPtr()));
+    host->RequestMouseLock(
+        has_transient_user_activation, /*privileged=*/false,
+        request_unadjusted_movement,
+        base::BindOnce(&RenderWidgetMouseLockDispatcher::OnMouseLocked,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void RenderWidgetMouseLockDispatcher::OnLockMouseACK(
+void RenderWidgetMouseLockDispatcher::OnMouseLocked(
     blink::mojom::PointerLockResult result,
     mojo::PendingRemote<blink::mojom::PointerLockContext> context) {
   // Notify the base class.

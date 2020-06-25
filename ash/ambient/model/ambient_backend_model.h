@@ -31,7 +31,7 @@ class ASH_EXPORT AmbientBackendModel {
   void AddObserver(AmbientBackendModelObserver* observer);
   void RemoveObserver(AmbientBackendModelObserver* observer);
 
-  void SetTopics(const std::vector<AmbientModeTopic>& topics);
+  void AppendTopics(const std::vector<AmbientModeTopic>& topics);
   const std::vector<AmbientModeTopic>& topics() const { return topics_; }
 
   // Prefetch one more image for ShowNextImage animations.

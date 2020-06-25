@@ -4,6 +4,8 @@
 
 #include "content/browser/speech/speech_synthesis_impl.h"
 
+#include "content/browser/speech/tts_utterance_impl.h"
+
 namespace content {
 namespace {
 
@@ -85,9 +87,11 @@ void SendVoiceListToObserver(
 
 }  // namespace
 
-SpeechSynthesisImpl::SpeechSynthesisImpl(BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+SpeechSynthesisImpl::SpeechSynthesisImpl(BrowserContext* browser_context,
+                                         WebContents* web_contents)
+    : browser_context_(browser_context), web_contents_(web_contents) {
   DCHECK(browser_context_);
+  DCHECK(web_contents_);
   TtsController::GetInstance()->AddVoicesChangedDelegate(this);
 }
 
@@ -120,8 +124,8 @@ void SpeechSynthesisImpl::AddVoiceListObserver(
 void SpeechSynthesisImpl::Speak(
     blink::mojom::SpeechSynthesisUtterancePtr utterance,
     mojo::PendingRemote<blink::mojom::SpeechSynthesisClient> client) {
-  std::unique_ptr<TtsUtterance> tts_utterance(
-      TtsUtterance::Create((browser_context_)));
+  std::unique_ptr<TtsUtterance> tts_utterance =
+      std::make_unique<TtsUtteranceImpl>(browser_context_, web_contents_);
   tts_utterance->SetText(utterance->text);
   tts_utterance->SetLang(utterance->lang);
   tts_utterance->SetVoiceName(utterance->voice);

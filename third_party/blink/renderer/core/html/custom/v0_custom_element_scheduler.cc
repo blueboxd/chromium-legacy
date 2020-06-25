@@ -149,11 +149,11 @@ void V0CustomElementScheduler::EnqueueMicrotaskStep(
     Document& document,
     V0CustomElementMicrotaskStep* step,
     bool import_is_sync) {
-  Document& master = document.ImportsController()
-                         ? *(document.ImportsController()->Master())
-                         : document;
-  master.CustomElementMicrotaskRunQueue()->Enqueue(document.ImportLoader(),
-                                                   step, import_is_sync);
+  Document& tree_root = document.ImportsController()
+                            ? *(document.ImportsController()->TreeRoot())
+                            : document;
+  tree_root.CustomElementMicrotaskRunQueue()->Enqueue(document.ImportLoader(),
+                                                      step, import_is_sync);
 }
 
 void V0CustomElementScheduler::CallbackDispatcherDidFinish() {

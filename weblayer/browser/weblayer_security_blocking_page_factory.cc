@@ -38,14 +38,10 @@ void OpenLoginPage(content::WebContents* web_contents) {
   // ChromeSecurityBlockingPageFactory::OpenLoginPage(), from which this is
   // adapted.
 #if defined(OS_ANDROID)
-  // In Chrome this opens in a new tab, but WebLayer's TabImpl has no support
-  // for opening new tabs (its OpenURLFromTab() method DCHECKs if the
-  // disposition is not |CURRENT_TAB|).
-  // TODO(crbug.com/1047130): Revisit if TabImpl gets support for opening URLs
-  // in new tabs.
-  content::OpenURLParams params(
-      GetCaptivePortalLoginPageUrlInternal(), content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK, false);
+  content::OpenURLParams params(GetCaptivePortalLoginPageUrlInternal(),
+                                content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
   web_contents->OpenURL(params);
 #else
   NOTIMPLEMENTED();

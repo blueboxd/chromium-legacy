@@ -360,7 +360,6 @@ TEST_F(DisplayLockContextTest, FindInPageContinuesAfterRelock) {
   EXPECT_EQ(1, client.Count());
 
   auto* container = GetDocument().getElementById("container");
-  // container->classList().Add("auto");
   GetDocument().scrollingElement()->setScrollTop(0);
 
   UpdateAllLifecyclePhasesForTest();
@@ -378,6 +377,41 @@ TEST_F(DisplayLockContextTest, FindInPageContinuesAfterRelock) {
   Find(search_text, client, false);
 
   EXPECT_EQ(1, client.Count());
+}
+
+TEST_F(DisplayLockContextTest, FindInPageTargetBelowLockedSize) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .spacer { height: 1000px; }
+    #container { contain-intrinsic-size: 1px; }
+    .auto { content-visibility: auto }
+    </style>
+    <body>
+      <div class=spacer></div>
+      <div id=container class=auto>
+        <div class=spacer></div>
+        <div id=target>testing</div>
+      </div>
+      <div class=spacer></div>
+      <div class=spacer></div>
+    </body>
+  )HTML");
+
+  const String search_text = "testing";
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  Find(search_text, client);
+  EXPECT_EQ(1, client.Count());
+
+  auto* container = GetDocument().getElementById("container");
+  // The container should be unlocked.
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+
+  EXPECT_FLOAT_EQ(GetDocument().scrollingElement()->scrollTop(), 1768.5);
 }
 
 TEST_F(DisplayLockContextTest,

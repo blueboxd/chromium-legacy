@@ -86,8 +86,7 @@ AtomicString StringTraits<AtomicString>::FromV8String(
 }
 
 template <typename StringType>
-StringType ToBlinkString(v8::Local<v8::String> v8_string,
-                         ExternalMode external) {
+StringType ToBlinkString(v8::Local<v8::String> v8_string, ExternalMode mode) {
   {
     // This portion of this function is very hot in certain Dromeao benchmarks.
     v8::String::Encoding encoding;
@@ -132,7 +131,7 @@ StringType ToBlinkString(v8::Local<v8::String> v8_string,
                : StringTraits<StringType>::template FromV8String<
                      V8StringTwoBytesTrait>(isolate, v8_string, length));
 
-  if (external != kExternalize || !v8_string->CanMakeExternal())
+  if (mode != kExternalize || !v8_string->CanMakeExternal())
     return result;
 
   if (result.Is8Bit()) {
@@ -153,6 +152,33 @@ StringType ToBlinkString(v8::Local<v8::String> v8_string,
 template String ToBlinkString<String>(v8::Local<v8::String>, ExternalMode);
 template AtomicString ToBlinkString<AtomicString>(v8::Local<v8::String>,
                                                   ExternalMode);
+
+StringView ToBlinkStringView(v8::Local<v8::String> v8_string,
+                             StringView::StackBackingStore& backing_store,
+                             ExternalMode mode) {
+  AtomicString result = ToBlinkString<AtomicString>(v8_string, mode);
+  // IsExternal() only checks for 2-byte external.
+  if (v8_string->IsExternal() || v8_string->IsExternalOneByte()) {
+    // The string has been externalized so v8_string will keep the StringImpl
+    // underlying |result| allow making it safe to just return it as the
+    // StringView.
+    return result;
+  }
+
+  // Externalization has failed meaning |result| cannot be counted on to exist
+  // after this function exits. Copy data in |backing_store| so the returned
+  // StringView can have a well defined lifetime.
+  int length = v8_string->Length();
+  if (result.Is8Bit()) {
+    LChar* lchar = backing_store.Realloc<LChar>(length);
+    memcpy(lchar, result.Characters8(), result.CharactersSizeInBytes());
+    return StringView(lchar, length);
+  } else {
+    UChar* uchar = backing_store.Realloc<UChar>(length);
+    memcpy(uchar, result.Characters16(), result.CharactersSizeInBytes());
+    return StringView(uchar, length);
+  }
+}
 
 // Fast but non thread-safe version.
 static String ToBlinkStringFast(int value) {

@@ -215,6 +215,9 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  // Bubbles that use transparent colors should not paint their ClientViews to a
+  // layer as doing so could result in visual artifacts.
+  SetPaintClientToLayer(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   DCHECK(delegate_);
   DCHECK(params_.parent_window);

@@ -4,6 +4,7 @@
 
 #include "ui/gl/dc_layer_tree.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/direct_composition_surface_win.h"
@@ -100,6 +101,8 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
   HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
       &desc, &video_processor_enumerator_);
+  base::UmaHistogramSparse(
+      "GPU.DirectComposition.CreateVideoProcessorEnumerator", hr);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error 0x"
                 << std::hex << hr;
@@ -111,6 +114,8 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
 
   hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
                                            &video_processor_);
+  base::UmaHistogramSparse(
+      "GPU.DirectComposition.VideoDeviceCreateVideoProcessor", hr);
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessor failed with error 0x" << std::hex
                 << hr;

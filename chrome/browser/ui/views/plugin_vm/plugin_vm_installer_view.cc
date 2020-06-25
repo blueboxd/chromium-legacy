@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,9 +17,12 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
@@ -30,6 +34,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
@@ -108,6 +113,7 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   constexpr int kProgressBarHeight = 5;
   constexpr int kProgressBarTopMargin = 32;
 
+  SetDefaultButton(ui::DIALOG_BUTTON_OK);
   SetCanMinimize(true);
   // Removed margins so dialog insets specify it instead.
   set_margins(gfx::Insets());
@@ -152,6 +158,12 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_container_view->AddChildView(message_label_);
+
+  learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link_->set_callback(base::BindRepeating(
+      &PluginVmInstallerView::OnLinkClicked, base::Unretained(this)));
+  learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message_container_view->AddChildView(learn_more_link_);
 
   progress_bar_ = new views::ProgressBar(kProgressBarHeight);
   progress_bar_->SetProperty(
@@ -198,6 +210,8 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 
 bool PluginVmInstallerView::Accept() {
   if (state_ == State::kConfirmInstall) {
+    delete learn_more_link_;
+    learn_more_link_ = nullptr;
     StartInstallation();
     return false;
   }
@@ -246,6 +260,14 @@ void PluginVmInstallerView::OnStateUpdated(InstallingState new_state) {
   DCHECK_NE(new_state, InstallingState::kInactive);
   installing_state_ = new_state;
   OnStateUpdated();
+}
+
+void PluginVmInstallerView::OnLinkClicked() {
+  NavigateParams params(
+      profile_, GURL("https://support.google.com/chromebook/?p=pluginvm"),
+      ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  Navigate(&params);
 }
 
 void PluginVmInstallerView::OnProgressUpdated(double fraction_complete) {

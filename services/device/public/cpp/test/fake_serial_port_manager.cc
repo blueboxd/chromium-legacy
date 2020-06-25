@@ -33,22 +33,18 @@ class FakeSerialPort : public mojom::SerialPort {
 
   // mojom::SerialPort
   void Open(mojom::SerialConnectionOptionsPtr options,
-            mojo::ScopedDataPipeConsumerHandle in_stream,
-            mojo::ScopedDataPipeProducerHandle out_stream,
             mojo::PendingRemote<mojom::SerialPortClient> client,
             OpenCallback callback) override {
-    in_stream_ = std::move(in_stream);
-    out_stream_ = std::move(out_stream);
     client_.Bind(std::move(client));
     std::move(callback).Run(true);
   }
 
-  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override {
-    NOTREACHED();
+  void StartWriting(mojo::ScopedDataPipeConsumerHandle consumer) override {
+    in_stream_ = std::move(consumer);
   }
 
-  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override {
-    NOTREACHED();
+  void StartReading(mojo::ScopedDataPipeProducerHandle producer) override {
+    out_stream_ = std::move(producer);
   }
 
   void Flush(FlushCallback callback) override { NOTREACHED(); }

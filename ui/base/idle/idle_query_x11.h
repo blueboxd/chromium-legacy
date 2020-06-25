@@ -9,9 +9,11 @@
 
 #include "base/macros.h"
 
-namespace ui {
+namespace x11 {
+class Connection;
+}
 
-class IdleData;
+namespace ui {
 
 class IdleQueryX11 {
  public:
@@ -21,7 +23,7 @@ class IdleQueryX11 {
   int IdleTime();
 
  private:
-  std::unique_ptr<IdleData> idle_data_;
+  x11::Connection* connection_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleQueryX11);
 };

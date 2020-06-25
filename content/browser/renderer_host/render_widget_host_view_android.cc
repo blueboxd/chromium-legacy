@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 
+#include <limits>
 #include <utility>
 
 #include "base/android/build_info.h"
@@ -492,6 +493,23 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   // change. We must still call UpdateWebViewBackgroundColorIfNecessary to
   // maintain the associated background color changes.
   UpdateWebViewBackgroundColorIfNecessary();
+
+  if (metadata.new_vertical_scroll_direction !=
+      viz::VerticalScrollDirection::kNull) {
+    bool can_scroll = metadata.root_layer_size.height() -
+                          metadata.viewport_size_in_pixels.height() >
+                      std::numeric_limits<float>::epsilon();
+    float scroll_ratio = 0.f;
+    if (can_scroll && metadata.root_scroll_offset) {
+      scroll_ratio = metadata.root_scroll_offset.value().y() /
+                     (metadata.root_layer_size.height() -
+                      metadata.viewport_size_in_pixels.height());
+    }
+    view_.OnVerticalScrollDirectionChanged(
+        metadata.new_vertical_scroll_direction ==
+            viz::VerticalScrollDirection::kUp,
+        scroll_ratio);
+  }
 }
 
 base::android::ScopedJavaLocalRef<jobject>

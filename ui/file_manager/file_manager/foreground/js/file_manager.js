@@ -29,6 +29,9 @@ class FileManager extends cr.EventTarget {
     /** @private {?Crostini} */
     this.crostini_ = null;
 
+    /** @private {?CrostiniController} */
+    this.crostiniController_ = null;
+
     /**
      * ImportHistory. Non-null only once history observer is added in
      * {@code addHistoryObserver}.
@@ -1161,81 +1164,13 @@ class FileManager extends cr.EventTarget {
     // multiple VMs.
     chrome.fileManagerPrivate.onCrostiniChanged.addListener(
         this.onCrostiniChanged_.bind(this));
-    return this.setupCrostini_();
-  }
-
-  /**
-   * Sets up Crostini 'Linux files'.
-   * @return {!Promise<void>}
-   * @private
-   */
-  async setupCrostini_() {
-    // Setup Linux files fake root.
-    this.directoryTree.dataModel.linuxFilesItem =
-        this.crostini_.isEnabled(constants.DEFAULT_CROSTINI_VM) ?
-        new NavigationModelFakeItem(
-            str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
-            new FakeEntry(
-                str('LINUX_FILES_ROOT_LABEL'),
-                VolumeManagerCommon.RootType.CROSTINI)) :
-        null;
-    // Redraw the tree to ensure 'Linux files' is added/removed.
-    this.directoryTree.redraw(false);
-
-    // Load any existing shared paths.
-    // Only observe firstForSession when using full-page FilesApp.
-    // I.e., don't show toast in a dialog.
-    let showToast = false;
-    const getSharedPaths = async (vmName) => {
-      if (!this.crostini_.isEnabled(vmName)) {
-        return 0;
-      }
-
-      return new Promise(resolve => {
-        chrome.fileManagerPrivate.getCrostiniSharedPaths(
-            this.dialogType === DialogType.FULL_PAGE, vmName,
-            (entries, firstForSession) => {
-              showToast = showToast || firstForSession;
-              for (const entry of entries) {
-                this.crostini_.registerSharedPath(vmName, assert(entry));
-              }
-              resolve(entries.length);
-            });
-      });
-    };
-
-    const toast = (count, msgSingle, msgPlural, action, subPage, umaItem) => {
-      if (!showToast || count == 0) {
-        return;
-      }
-      this.ui_.toast.show(
-          count == 1 ? str(msgSingle) : strf(msgPlural, count), {
-            text: str(action),
-            callback: () => {
-              chrome.fileManagerPrivate.openSettingsSubpage(subPage);
-              CommandHandler.recordMenuItemSelected(umaItem);
-            }
-          });
-    };
-
-    const [crostiniShareCount, pluginVmShareCount] = await Promise.all([
-      getSharedPaths(constants.DEFAULT_CROSTINI_VM),
-      getSharedPaths(constants.PLUGIN_VM)
-    ]);
-
-    toast(
-        crostiniShareCount, 'FOLDER_SHARED_WITH_CROSTINI',
-        'FOLDER_SHARED_WITH_CROSTINI_PLURAL', 'MANAGE_TOAST_BUTTON_LABEL',
-        'crostini/sharedPaths',
-        CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST_STARTUP);
-    // TODO(crbug.com/949356): UX to provide guidance for what to do
-    // when we have shared paths with both Linux and Plugin VM.
-    toast(
-        pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
-        'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL', 'MANAGE_TOAST_BUTTON_LABEL',
-        'app-management/pluginVm/sharedPaths',
-        CommandHandler.MenuCommandsForUMA
-            .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
+    this.crostiniController_ = new CrostiniController(
+        assert(this.crostini_), assert(this.directoryTree));
+    await this.crostiniController_.redraw();
+    // Never show toast in an open-file dialog.
+    const maybeShowToast = this.dialogType === DialogType.FULL_PAGE;
+    return this.crostiniController_.loadSharedPaths(
+        maybeShowToast, this.ui_.toast);
   }
 
   /**
@@ -1255,11 +1190,11 @@ class FileManager extends cr.EventTarget {
     switch (event.eventType) {
       case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
         this.crostini_.setEnabled(event.vmName, true);
-        return this.setupCrostini_();
+        return this.crostiniController_.redraw();
 
       case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
         this.crostini_.setEnabled(event.vmName, false);
-        return this.setupCrostini_();
+        return this.crostiniController_.redraw();
     }
   }
 

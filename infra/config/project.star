@@ -22,6 +22,18 @@ settings = struct(
     tree_status_host = 'chromium-status.appspot.com/',
 )
 
+
 def master_only_exec(f):
   if settings.is_master:
     exec(f)
+
+
+# The branch numbers of branches that we have builders running for (including
+# milestone-specific projects)
+# Branch numbers for milestones can be viewed in the chromium column at
+# https://chromiumdash.appspot.com/branches
+# The 2 highest milestones will be the ones with active branches
+ACTIVE_BRANCH_NUMBERS = [
+    4103,
+    4147,
+]

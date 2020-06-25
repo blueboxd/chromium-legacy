@@ -1118,9 +1118,9 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
       // Queue up an INTEGRITY query if we are allowed to.
       const bool is_httpssvc_experiment_domain =
-          features::dns_httpssvc_experiment::IsExperimentDomain(hostname);
+          httpssvc_domain_cache_.IsExperimental(hostname);
       const bool is_httpssvc_control_domain =
-          features::dns_httpssvc_experiment::IsControlDomain(hostname);
+          httpssvc_domain_cache_.IsControl(hostname);
       if (base::FeatureList::IsEnabled(features::kDnsHttpssvc) &&
           features::kDnsHttpssvcUseIntegrity.Get() &&
           (secure_ || features::kDnsHttpssvcEnableQueryOverInsecure.Get()) &&
@@ -1768,6 +1768,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   const base::TickClock* tick_clock_;
   base::TimeTicks task_start_time_;
 
+  HttpssvcExperimentDomainCache httpssvc_domain_cache_;
   base::Optional<HttpssvcMetrics> httpssvc_metrics_;
 
   // Timer for early abort of experimental queries. See comments describing the

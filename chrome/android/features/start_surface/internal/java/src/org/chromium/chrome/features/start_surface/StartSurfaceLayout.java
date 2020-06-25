@@ -300,14 +300,23 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         Collection<Animator> animationList = new ArrayList<>(5);
 
         // Step 1: zoom out the source tab
+        Supplier<Float> scaleStartValueSupplier = () -> 1.0f;
+        Supplier<Float> scaleEndValueSupplier = () -> target.get().width() / (getWidth() * mDpToPx);
+
+        Supplier<Float> xStartValueSupplier = () -> 0f;
+        Supplier<Float> xEndValueSupplier = () -> target.get().left / mDpToPx;
+
+        Supplier<Float> yStartValueSupplier = () -> 0f;
+        Supplier<Float> yEndValueSupplier = () -> target.get().top / mDpToPx;
+
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
-                LayoutTab.SCALE, 1.0f, target.get().width() / (getWidth() * mDpToPx),
-                ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
-                LayoutTab.X, 0f, target.get().left / mDpToPx, ZOOMING_DURATION,
+                LayoutTab.SCALE, scaleStartValueSupplier, scaleEndValueSupplier, ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
-                LayoutTab.Y, 0f, target.get().top / mDpToPx, ZOOMING_DURATION,
+                LayoutTab.X, xStartValueSupplier, xEndValueSupplier, ZOOMING_DURATION,
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.Y, yStartValueSupplier, yEndValueSupplier, ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.

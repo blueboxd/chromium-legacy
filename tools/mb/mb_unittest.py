@@ -11,9 +11,13 @@ from __future__ import absolute_import
 import json
 import os
 import re
-import StringIO
 import sys
 import unittest
+
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+else:
+  from io import StringIO
 
 sys.path.insert(
     0,
@@ -385,7 +389,7 @@ class UnitTest(unittest.TestCase):
     self.assertEqual(['all', 'foo_unittests'], out['compile_targets'])
 
   def test_analyze_handles_way_too_many_results(self):
-    too_many_files = ', '.join(['"//foo:foo%d"' % i for i in xrange(40 * 1024)])
+    too_many_files = ', '.join(['"//foo:foo%d"' % i for i in range(40 * 1024)])
     files = {'/tmp/in.json': '''{\
                "files": ["foo/foo_unittest.cc"],
                "test_targets": ["foo_unittests"],
@@ -765,7 +769,7 @@ class UnitTest(unittest.TestCase):
   def test_help(self):
     orig_stdout = sys.stdout
     try:
-      sys.stdout = StringIO.StringIO()
+      sys.stdout = StringIO()
       self.assertRaises(SystemExit, self.check, ['-h'])
       self.assertRaises(SystemExit, self.check, ['help'])
       self.assertRaises(SystemExit, self.check, ['help', 'gen'])

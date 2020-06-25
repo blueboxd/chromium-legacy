@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -443,11 +444,105 @@ const clang::FieldDecl* GetExplicitDecl(const clang::FieldDecl* field_decl) {
 }
 
 AST_MATCHER_P(clang::FieldDecl,
-              hasExplicitDecl,
+              hasExplicitFieldDecl,
               clang::ast_matchers::internal::Matcher<clang::FieldDecl>,
               InnerMatcher) {
   const clang::FieldDecl* explicit_field_decl = GetExplicitDecl(&Node);
   return InnerMatcher.matches(*explicit_field_decl, Finder, Builder);
+}
+
+// If |original_param| declares a parameter in an implicit template
+// specialization of a function or method, then finds and returns the
+// corresponding ParmVarDecl from the template definition.  Otherwise, just
+// returns the |original_param| argument.
+//
+// Note: nullptr may be returned in rare, unimplemented cases.
+const clang::ParmVarDecl* GetExplicitDecl(
+    const clang::ParmVarDecl* original_param) {
+  const clang::FunctionDecl* original_func =
+      clang::dyn_cast<clang::FunctionDecl>(original_param->getDeclContext());
+  if (!original_func) {
+    // |!original_func| may happen when the ParmVarDecl is part of a
+    // FunctionType, but not part of a FunctionDecl:
+    //     base::Callback<void(int parm_var_decl_here)>
+    //
+    // In theory, |parm_var_decl_here| can also represent an implicit template
+    // specialization in this scenario.  OTOH, it should be rare + shouldn't
+    // matter for this rewriter, so for now let's just return the
+    // |original_param|.
+    //
+    // TODO: Implement support for this scenario.
+    return nullptr;
+  }
+
+  const clang::FunctionDecl* pattern_func =
+      original_func->getTemplateInstantiationPattern();
+  if (!pattern_func) {
+    // |original_func| is not a template instantiation - return the
+    // |original_param|.
+    return original_param;
+  }
+
+  // See if |pattern_func| has a parameter that is a template parameter pack.
+  bool has_param_pack = false;
+  unsigned int index_of_param_pack = std::numeric_limits<unsigned int>::max();
+  for (unsigned int i = 0; i < pattern_func->getNumParams(); i++) {
+    const clang::ParmVarDecl* pattern_param = pattern_func->getParamDecl(i);
+    if (!pattern_param->isParameterPack())
+      continue;
+
+    if (has_param_pack) {
+      // TODO: Implement support for multiple parameter packs.
+      return nullptr;
+    }
+
+    has_param_pack = true;
+    index_of_param_pack = i;
+  }
+
+  // Find and return the corresponding ParmVarDecl from |pattern_func|.
+  unsigned int original_index = original_param->getFunctionScopeIndex();
+  unsigned int pattern_index = std::numeric_limits<unsigned int>::max();
+  if (!has_param_pack) {
+    pattern_index = original_index;
+  } else {
+    // |original_func| has parameters that look like this:
+    //     l1, l2, l3, p1, p2, p3, t1, t2, t3
+    // where
+    //     lN is a leading, non-pack parameter
+    //     pN is an expansion of a template parameter pack
+    //     tN is a trailing, non-pack parameter
+    // Using the knowledge above, let's adjust |pattern_index| as needed.
+    unsigned int leading_param_num = index_of_param_pack;  // How many |lN|.
+    unsigned int pack_expansion_num =  // How many |pN| above.
+        original_func->getNumParams() - pattern_func->getNumParams() + 1;
+    if (original_index < leading_param_num) {
+      // |original_param| is a leading, non-pack parameter.
+      pattern_index = original_index;
+    } else if (leading_param_num <= original_index &&
+               original_index < (leading_param_num + pack_expansion_num)) {
+      // |original_param| is an expansion of a template pack parameter.
+      pattern_index = index_of_param_pack;
+    } else if ((leading_param_num + pack_expansion_num) <= original_index) {
+      // |original_param| is a trailing, non-pack parameter.
+      pattern_index = original_index - pack_expansion_num + 1;
+    }
+  }
+  assert(pattern_index < pattern_func->getNumParams());
+  return pattern_func->getParamDecl(pattern_index);
+}
+
+AST_MATCHER_P(clang::ParmVarDecl,
+              hasExplicitParmVarDecl,
+              clang::ast_matchers::internal::Matcher<clang::ParmVarDecl>,
+              InnerMatcher) {
+  const clang::ParmVarDecl* explicit_param = GetExplicitDecl(&Node);
+  if (!explicit_param) {
+    // Rare, unimplemented case - fall back to returning "no match".
+    return false;
+  }
+
+  return InnerMatcher.matches(*explicit_param, Finder, Builder);
 }
 
 // Returns |true| if and only if:
@@ -747,7 +842,7 @@ int main(int argc, const char* argv[]) {
   //   additional work and should cause related fields to be emitted as
   //   candidates for the --field-filter-file parameter.
   auto affected_member_expr_matcher =
-      memberExpr(member(fieldDecl(hasExplicitDecl(field_decl_matcher))))
+      memberExpr(member(fieldDecl(hasExplicitFieldDecl(field_decl_matcher))))
           .bind("affectedMemberExpr");
   auto affected_implicit_expr_matcher = implicitCastExpr(has(expr(anyOf(
       // Only single implicitCastExpr is present in case of:
@@ -847,19 +942,23 @@ int main(int argc, const char* argv[]) {
   // in-out reference arg =========
   // Given
   //   struct S { SomeClass* ptr_field; };
-  //   void foo(SomeClass*& in_out_arg) { ... }
+  //   void f(SomeClass*& in_out_arg) { ... }
+  //   template <typename T> void f2(T&& rvalue_ref_arg) { ... }
+  //   template <typename... Ts> void f3(Ts&&... rvalue_ref_args) { ... }
   //   void bar() {
   //     S s;
   //     foo(s.ptr_field)
   //   }
   // matches the |s.ptr_field| expr if it matches the
   // |affected_member_expr_matcher| and is passed as a function argument that
-  // has |FooBar*&| type.
+  // has |FooBar*&| type (like |f|, but unlike |f2| and |f3|).
   //
   // See also the testcases in tests/gen-in-out-arg-test.cc.
   auto affected_in_out_ref_arg_matcher = callExpr(forEachArgumentWithParam(
       affected_expr_matcher.bind("expr"),
-      parmVarDecl(hasType(referenceType(pointee(pointerType()))))));
+      hasExplicitParmVarDecl(
+          hasType(qualType(allOf(referenceType(pointee(pointerType())),
+                                 unless(rValueReferenceType())))))));
   FilteredExprWriter filtered_in_out_ref_arg_writer(&output_helper,
                                                     "in-out-param-ref");
   match_finder.addMatcher(affected_in_out_ref_arg_matcher,

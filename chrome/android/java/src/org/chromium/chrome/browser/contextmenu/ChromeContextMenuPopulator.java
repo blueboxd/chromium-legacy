@@ -1019,7 +1019,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // In Lens Shopping Menu Item experiment, fallback to search image with google lens
         // When the url is not in domain allowlist.
         if (LensUtils.enableGoogleLensShoppingFeature()) {
-            if (LensUtils.isInDomainAllowlist(pageUrl)) {
+            if (LensUtils.isInShoppingAllowlist(pageUrl)) {
                 // Hide Search With Google Lens menu item when experiment only with Lens Shopping
                 // menu items.
                 if (!LensUtils.showBothSearchAndShopImageWithLens()) {

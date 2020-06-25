@@ -23,7 +23,14 @@ ci.declare_bucket(settings)
 ci.console_view(
     name = 'chromium',
     include_experimental_builds = True,
-    ordering = {},
+    ordering = {
+        '*type*': ci.ordering(short_names=['dbg', 'rel', 'off']),
+        'android':'*type*',
+        'fuchsia':'*type*',
+        'linux':'*type*',
+        'mac':'*type*',
+        'win':'*type*',
+    },
 )
 
 ci.console_view(
@@ -456,6 +463,29 @@ ci.android_builder(
     ),
 )
 
+ci.chromium_builder(
+    name = 'android-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'android',
+        short_name = 'off',
+    ),
+)
+
+ci.chromium_builder(
+    name = 'fuchsia-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia',
+        short_name = 'off',
+    ),
+)
+
+ci.chromium_builder(
+    name = 'linux-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'linux',
+        short_name = 'off',
+    ),
+)
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',

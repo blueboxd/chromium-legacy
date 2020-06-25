@@ -209,6 +209,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool ShouldReportUsers() const override;
   bool ShouldReportHardwareStatus() const override;
   bool ShouldReportCrashReportInfo() const override;
+  bool ShouldReportAppInfoAndActivity() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

@@ -1009,7 +1009,7 @@ SecureContextMode Document::GetSecureContextMode() const {
 }
 
 OriginTrialContext* Document::GetOriginTrialContext() const {
-  return MasterDocument().GetSecurityContext().GetOriginTrialContext();
+  return TreeRootDocument().GetSecurityContext().GetOriginTrialContext();
 }
 
 void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
@@ -1365,16 +1365,16 @@ HTMLImportLoader* Document::ImportLoader() const {
 }
 
 bool Document::IsHTMLImport() const {
-  return imports_controller_ && imports_controller_->Master() != this;
+  return imports_controller_ && imports_controller_->TreeRoot() != this;
 }
 
-Document& Document::MasterDocument() const {
+Document& Document::TreeRootDocument() const {
   if (!imports_controller_)
     return *const_cast<Document*>(this);
 
-  Document* master = imports_controller_->Master();
-  DCHECK(master);
-  return *master;
+  Document* tree_root = imports_controller_->TreeRoot();
+  DCHECK(tree_root);
+  return *tree_root;
 }
 
 bool Document::HaveImportsLoaded() const {
@@ -1387,7 +1387,7 @@ LocalDOMWindow* Document::ExecutingWindow() const {
   if (LocalDOMWindow* owning_window = domWindow())
     return owning_window;
   if (HTMLImportsController* import = ImportsController())
-    return import->Master()->domWindow();
+    return import->TreeRoot()->domWindow();
   return nullptr;
 }
 
@@ -1994,11 +1994,11 @@ Page* Document::GetPage() const {
   return GetFrame() ? GetFrame()->GetPage() : nullptr;
 }
 
-LocalFrame* Document::GetFrameOfMasterDocument() const {
+LocalFrame* Document::GetFrameOfTreeRootDocument() const {
   if (GetFrame())
     return GetFrame();
   if (imports_controller_)
-    return imports_controller_->Master()->GetFrame();
+    return imports_controller_->TreeRoot()->GetFrame();
   return nullptr;
 }
 
@@ -3222,7 +3222,7 @@ void Document::Shutdown() {
 
   cookie_jar_ = nullptr;  // Not accessible after navigated away.
   fetcher_->ClearContext();
-  // If this document is the master for an HTMLImportsController, sever that
+  // If this document is the tree_root for an HTMLImportsController, sever that
   // relationship. This ensures that we don't leave import loads in flight,
   // thinking they should have access to a valid frame when they don't.
   if (imports_controller_) {
@@ -4595,7 +4595,7 @@ void Document::DidAddPendingParserBlockingStylesheet() {
 }
 
 void Document::DidRemoveAllPendingStylesheets() {
-  // Only imports on master documents can trigger rendering.
+  // Only imports on tree_root documents can trigger rendering.
   if (HTMLImportLoader* import = ImportLoader())
     import->DidRemoveAllPendingStylesheets();
   if (!HaveImportsLoaded())
@@ -5987,9 +5987,9 @@ scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
 net::SiteForCookies Document::SiteForCookies() const {
   // TODO(mkwst): This doesn't properly handle HTML Import documents.
 
-  // If this is an imported document, grab its master document's first-party:
+  // If this is an imported document, grab its tree_root document's first-party:
   if (IsHTMLImport())
-    return ImportsController()->Master()->SiteForCookies();
+    return ImportsController()->TreeRoot()->SiteForCookies();
 
   if (!GetFrame())
     return net::SiteForCookies();
@@ -7134,7 +7134,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   DCHECK(GetSecurityOrigin());
   // If the CSP was provided by the DocumentLoader or is from ImportsController
   // it doesn't need to be bound right now. ImportsController takes a reference
-  // to a master document's CSP which is already bound. Document construction
+  // to a tree_root document's CSP which is already bound. Document construction
   // occurs in the DocumentLoader occurs before the frame reference is bound so
   // callbacks from binding the CSP delegate immediately would not get called
   // if it was bound immediately. eg. Callbacks back to browser or console

@@ -86,8 +86,6 @@ class FakeSerialPort : public device::mojom::SerialPort {
  private:
   // device::mojom::SerialPort methods:
   void Open(device::mojom::SerialConnectionOptionsPtr options,
-            mojo::ScopedDataPipeConsumerHandle in_stream,
-            mojo::ScopedDataPipeProducerHandle out_stream,
             mojo::PendingRemote<device::mojom::SerialPortClient> client,
             OpenCallback callback) override {
     if (client_) {
@@ -99,22 +97,35 @@ class FakeSerialPort : public device::mojom::SerialPort {
     DoConfigurePort(*options);
     DCHECK(client);
     client_.Bind(std::move(client));
-    SetUpInStreamPipe(std::move(in_stream));
-    SetUpOutStreamPipe(std::move(out_stream));
     std::move(callback).Run(true);
   }
-  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override {
-    if (in_stream_) {
+
+  void StartWriting(mojo::ScopedDataPipeConsumerHandle consumer) override {
+    if (in_stream_)
       return;
-    }
-    SetUpInStreamPipe(std::move(consumer));
+
+    in_stream_ = std::move(consumer);
+    in_stream_watcher_.Watch(
+        in_stream_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&FakeSerialPort::DoWrite, base::Unretained(this)));
+    in_stream_watcher_.ArmOrNotify();
   }
-  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override {
-    if (out_stream_) {
+
+  void StartReading(mojo::ScopedDataPipeProducerHandle producer) override {
+    if (out_stream_)
       return;
-    }
-    SetUpOutStreamPipe(std::move(producer));
+
+    out_stream_ = std::move(producer);
+    out_stream_watcher_.Watch(
+        out_stream_.get(),
+        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&FakeSerialPort::DoRead, base::Unretained(this)));
+    out_stream_watcher_.ArmOrNotify();
   }
+
   void Flush(FlushCallback callback) override { std::move(callback).Run(true); }
   void GetControlSignals(GetControlSignalsCallback callback) override {
     auto signals = device::mojom::SerialPortControlSignals::New();
@@ -150,16 +161,6 @@ class FakeSerialPort : public device::mojom::SerialPort {
     out_stream_.reset();
     client_.reset();
     std::move(callback).Run();
-  }
-
-  void SetUpInStreamPipe(mojo::ScopedDataPipeConsumerHandle consumer) {
-    in_stream_.swap(consumer);
-    in_stream_watcher_.Watch(
-        in_stream_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&FakeSerialPort::DoWrite, base::Unretained(this)));
-    in_stream_watcher_.ArmOrNotify();
   }
 
   void DoWrite(MojoResult result, const mojo::HandleSignalsState& state) {
@@ -199,16 +200,6 @@ class FakeSerialPort : public device::mojom::SerialPort {
     }
     // The code should not reach other cases.
     NOTREACHED();
-  }
-
-  void SetUpOutStreamPipe(mojo::ScopedDataPipeProducerHandle producer) {
-    out_stream_.swap(producer);
-    out_stream_watcher_.Watch(
-        out_stream_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
-        base::BindRepeating(&FakeSerialPort::DoRead, base::Unretained(this)));
-    out_stream_watcher_.ArmOrNotify();
   }
 
   void DoRead(MojoResult result, const mojo::HandleSignalsState& state) {

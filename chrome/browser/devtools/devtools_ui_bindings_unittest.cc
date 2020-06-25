@@ -19,12 +19,15 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "devtools://devtools/bundled/devtools.html#hash"},
       {"devtools://devtools/some/random/path",
        "devtools://devtools/some/random/path"},
+      {"devtools://devtools/bundled/devtools.html?debugFrontend=true",
+       "devtools://devtools/bundled/devtools.html?debugFrontend=true"},
       {"devtools://devtools/bundled/devtools.html"
-       "?some-flag=flag&v8only=true"
+       "?some-flag=flag&v8only=true&debugFrontend=a"
        "&another-flag=another-flag&can_dock=false&isSharedWorker=notreally"
        "&remoteFrontend=sure",
        "devtools://devtools/bundled/devtools.html"
-       "?v8only=true&can_dock=true&isSharedWorker=true&remoteFrontend=true"},
+       "?v8only=true&debugFrontend=true"
+       "&can_dock=true&isSharedWorker=true&remoteFrontend=true"},
       {"devtools://devtools/?ws=any-value-is-fine",
        "devtools://devtools/?ws=any-value-is-fine"},
       {"devtools://devtools/"
@@ -51,7 +54,7 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "https://chrome-devtools-frontend.appspot.com/serve_file/path/"},
       {"devtools://devtools/?remoteBase="
        "https://chrome-devtools-frontend.appspot.com/serve_file/"
-       "@123719741873/inspector.html",
+       "@123719741873/inspector.html%3FdebugFrontend%3Dfalse",
        "devtools://devtools/?remoteBase="
        "https://chrome-devtools-frontend.appspot.com/serve_file/"
        "@123719741873/"},
@@ -63,10 +66,10 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "@b4907cc5d602ff470740b2eb6344b517edecb7b9/&can_dock=true"},
       {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"
-       "@12345/inspector.html",
+       "@12345/inspector.html%3FdebugFrontend%3Dfalse",
        "devtools://devtools/?remoteFrontendUrl="
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
-       "%2F%4012345%2Finspector.html"},
+       "%2F%4012345%2Finspector.html%3FdebugFrontend%3Dtrue"},
       {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"
        "@12345/inspector.html%22></iframe>something",
@@ -81,10 +84,11 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
       {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"
        "@12345/devtools.html%3Fws%3Danyvalue"
-       "&unencoded=value",
+       "&unencoded=value&debugFrontend=true",
        "devtools://devtools/?remoteFrontendUrl="
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
-       "%2F%4012345%2Fdevtools.html%3Fws%3Danyvalue"},
+       "%2F%4012345%2Fdevtools.html%3Fws%3Danyvalue"
+       "&debugFrontend=true"},
       {"devtools://devtools/?remoteFrontendUrl="
        "https://chrome-devtools-frontend.appspot.com/serve_rev/"
        "@12345/inspector.html%23%27",

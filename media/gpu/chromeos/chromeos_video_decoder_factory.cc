@@ -19,7 +19,7 @@
 #endif
 
 #if BUILDFLAG(USE_V4L2_CODEC)
-#include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
+#include "media/gpu/v4l2/v4l2_video_decoder.h"
 #endif
 
 namespace media {
@@ -34,7 +34,7 @@ VideoDecoderPipeline::CreateDecoderFunctions GetCreateDecoderFunctions() {
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if BUILDFLAG(USE_V4L2_CODEC)
-    &V4L2SliceVideoDecoder::Create,
+    &V4L2VideoDecoder::Create,
 #endif  // BUILDFLAG(USE_V4L2_CODEC)
   };
 
@@ -57,7 +57,7 @@ ChromeosVideoDecoderFactory::GetSupportedConfigs() {
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if BUILDFLAG(USE_V4L2_CODEC)
-  configs = V4L2SliceVideoDecoder::GetSupportedConfigs();
+  configs = V4L2VideoDecoder::GetSupportedConfigs();
   supported_configs.insert(supported_configs.end(), configs.begin(),
                            configs.end());
 #endif  // BUILDFLAG(USE_V4L2_CODEC)

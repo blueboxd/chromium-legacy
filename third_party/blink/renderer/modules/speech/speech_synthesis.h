@@ -36,23 +36,29 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
+
+class LocalDOMWindow;
 
 class MODULES_EXPORT SpeechSynthesis final
     : public EventTargetWithInlineData,
       public ExecutionContextClient,
+      public Supplement<LocalDOMWindow>,
       public mojom::blink::SpeechSynthesisVoiceListObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 
  public:
-  static SpeechSynthesis* Create(ExecutionContext*);
-  static SpeechSynthesis* CreateForTesting(
-      ExecutionContext*,
+  static const char kSupplementName[];
+
+  static SpeechSynthesis* speechSynthesis(LocalDOMWindow&);
+  static void CreateForTesting(
+      LocalDOMWindow&,
       mojo::PendingRemote<mojom::blink::SpeechSynthesis>);
 
-  explicit SpeechSynthesis(ExecutionContext*);
+  explicit SpeechSynthesis(LocalDOMWindow&);
 
   bool pending() const;
   bool speaking() const;

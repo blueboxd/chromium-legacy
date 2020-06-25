@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -67,7 +68,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -562,6 +562,19 @@ bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
       Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
           prefs::kCorsMitigationList);
   return apply_cors_mitigation_list;
+}
+
+base::FilePath ChromeExtensionsBrowserClient::GetSaveFilePath(
+    content::BrowserContext* context) {
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(context);
+  return download_prefs->SaveFilePath();
+}
+
+void ChromeExtensionsBrowserClient::SetLastSaveFilePath(
+    content::BrowserContext* context,
+    const base::FilePath& path) {
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(context);
+  download_prefs->SetSaveFilePath(path);
 }
 
 const MediaRouterExtensionAccessLogger*

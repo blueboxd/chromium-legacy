@@ -19,6 +19,16 @@
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
 
+namespace net {
+struct NetworkTrafficAnnotationTag;
+}
+
+namespace network {
+struct ResourceRequest;
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace safe_browsing {
 
 using RTLookupRequestCallback =
@@ -33,7 +43,9 @@ class VerdictCacheManager;
 // lookup feature.
 class RealTimeUrlLookupServiceBase : public KeyedService {
  public:
-  explicit RealTimeUrlLookupServiceBase(VerdictCacheManager* cache_manager);
+  explicit RealTimeUrlLookupServiceBase(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      VerdictCacheManager* cache_manager);
   ~RealTimeUrlLookupServiceBase() override;
 
   // Returns true if |url|'s scheme can be checked.
@@ -74,11 +86,22 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
                            RTLookupRequestCallback request_callback,
                            RTLookupResponseCallback response_callback) = 0;
 
+  // KeyedService:
+  // Called before the actual deletion of the object.
+  void Shutdown() override;
+
  protected:
   // Fragments, usernames and passwords are removed, because fragments are only
   // used for local navigations and usernames/passwords are too privacy
   // sensitive.
   static GURL SanitizeURL(const GURL& url);
+
+  // Returns the traffic annotation tag that is attached in the simple URL
+  // loader.
+  virtual net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const = 0;
+
+  // Returns the endpoint that the URL lookup will be sent to.
+  virtual GURL GetRealTimeLookupUrl() const = 0;
 
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until it
@@ -106,7 +129,29 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // |cache_manager|.
   void MayBeCacheRealTimeUrlVerdict(const GURL& url, RTLookupResponse response);
 
+  // Get a resource request with URL, load_flags and method set.
+  std::unique_ptr<network::ResourceRequest> GetResourceRequest();
+
+  void SendRequestInternal(
+      std::unique_ptr<network::ResourceRequest> resource_request,
+      const std::string& req_data,
+      const GURL& url,
+      RTLookupResponseCallback response_callback);
+
  private:
+  using PendingRTLookupRequests =
+      base::flat_map<network::SimpleURLLoader*, RTLookupResponseCallback>;
+
+  // Called when the response from the real-time lookup remote endpoint is
+  // received. |url_loader| is the unowned loader that was used to send the
+  // request. |request_start_time| is the time when the request was sent.
+  // |response_body| is the response received. |url| is used for calling
+  // |MayBeCacheRealTimeUrlVerdict|.
+  void OnURLLoaderComplete(const GURL& url,
+                           network::SimpleURLLoader* url_loader,
+                           base::TimeTicks request_start_time,
+                           std::unique_ptr<std::string> response_body);
+
   // Count of consecutive failures to complete URL lookup requests. When it
   // reaches |kMaxFailuresToEnforceBackoff|, we enter the backoff mode. It gets
   // reset when we complete a lookup successfully or when the backoff reset
@@ -126,8 +171,14 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // If this timer is running, backoff is in effect.
   base::OneShotTimer backoff_timer_;
 
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
   // Unowned object used for getting and storing real time url check cache.
   VerdictCacheManager* cache_manager_;
+
+  // All requests that are sent but haven't received a response yet.
+  PendingRTLookupRequests pending_requests_;
 
   base::WeakPtrFactory<RealTimeUrlLookupServiceBase> weak_factory_{this};
 

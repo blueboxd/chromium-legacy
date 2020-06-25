@@ -128,6 +128,8 @@ class PipelineImplTest : public ::testing::Test {
         .WillRepeatedly(Return(base::TimeDelta()));
 
     EXPECT_CALL(*demuxer_, GetStartTime()).WillRepeatedly(Return(start_time_));
+
+    EXPECT_CALL(*renderer_, SetPreservesPitch(true)).Times(AnyNumber());
   }
 
   ~PipelineImplTest() override {
@@ -302,6 +304,7 @@ class PipelineImplTest : public ::testing::Test {
     // |renderer_| has been deleted, replace it.
     scoped_renderer_.reset(new StrictMock<MockRenderer>());
     renderer_ = scoped_renderer_.get();
+    EXPECT_CALL(*renderer_, SetPreservesPitch(_)).Times(AnyNumber());
   }
 
   void ExpectResume(const base::TimeDelta& seek_time) {
@@ -606,6 +609,10 @@ TEST_F(PipelineImplTest, SuspendResume) {
   EXPECT_EQ(stats.video_memory_usage,
             pipeline_->GetStatistics().video_memory_usage);
 
+  // Make sure the preserves pitch flag is preserved between after resuming.
+  EXPECT_CALL(*renderer_, SetPreservesPitch(false)).Times(1);
+  pipeline_->SetPreservesPitch(false);
+
   ExpectSuspend();
   DoSuspend();
 
@@ -614,6 +621,8 @@ TEST_F(PipelineImplTest, SuspendResume) {
 
   base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
   ExpectResume(expected);
+  EXPECT_CALL(*renderer_, SetPreservesPitch(false)).Times(1);
+
   DoResume(expected);
 }
 
@@ -628,6 +637,21 @@ TEST_F(PipelineImplTest, SetVolume) {
   // Initialize then set volume!
   StartPipelineAndExpect(PIPELINE_OK);
   pipeline_->SetVolume(expected);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PipelineImplTest, SetPreservesPitch) {
+  CreateAudioStream();
+  SetDemuxerExpectations();
+
+  // The audio renderer preserve pitch by default.
+  EXPECT_CALL(*renderer_, SetPreservesPitch(true));
+  StartPipelineAndExpect(PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
+
+  // Changes to the preservesPitch flag should be propagated.
+  EXPECT_CALL(*renderer_, SetPreservesPitch(false));
+  pipeline_->SetPreservesPitch(false);
   base::RunLoop().RunUntilIdle();
 }
 

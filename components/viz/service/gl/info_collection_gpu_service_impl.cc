@@ -4,6 +4,7 @@
 
 #include "components/viz/service/gl/info_collection_gpu_service_impl.h"
 
+#include <utility>
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "gpu/config/dx_diag_node.h"
@@ -59,9 +60,8 @@ void InfoCollectionGpuServiceImpl::
         GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
-  uint32_t d3d12_feature_level;
-  gpu::RecordGpuSupportedDx12VersionHistograms(gpu_device_,
-                                               &d3d12_feature_level);
+  uint32_t d3d12_feature_level = gpu::GetGpuSupportedD3D12Version();
+  gpu::RecordGpuSupportedDx12VersionHistograms(d3d12_feature_level);
 
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), d3d12_feature_level,
@@ -83,9 +83,7 @@ void InfoCollectionGpuServiceImpl::GetGpuSupportedVulkanVersionInfoOnMain(
     GetGpuSupportedVulkanVersionInfoCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
-  uint32_t vulkan_version;
-  gpu::GetGpuSupportedVulkanVersion(gpu_device_, &vulkan_version);
-
+  uint32_t vulkan_version = gpu::GetGpuSupportedVulkanVersion(gpu_device_);
   io_runner_->PostTask(FROM_HERE,
                        base::BindOnce(std::move(callback), vulkan_version));
 }

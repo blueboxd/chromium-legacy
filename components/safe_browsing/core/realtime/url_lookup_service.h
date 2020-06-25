@@ -21,8 +21,11 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "url/gurl.h"
 
+namespace net {
+struct NetworkTrafficAnnotationTag;
+}
+
 namespace network {
-class SimpleURLLoader;
 class SharedURLLoaderFactory;
 }  // namespace network
 
@@ -75,13 +78,11 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
                    RTLookupRequestCallback request_callback,
                    RTLookupResponseCallback response_callback) override;
 
-  // KeyedService:
-  // Called before the actual deletion of the object.
-  void Shutdown() override;
-
  private:
-  using PendingRTLookupRequests =
-      base::flat_map<network::SimpleURLLoader*, RTLookupResponseCallback>;
+  // RealTimeUrlLookupServiceBase:
+  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
+
+  GURL GetRealTimeLookupUrl() const override;
 
   // Called when the access token is obtained from |token_fetcher_|.
   void OnGetAccessToken(
@@ -101,25 +102,10 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
 
   bool IsHistorySyncEnabled();
 
-  // Called when the response from the real-time lookup remote endpoint is
-  // received. |url_loader| is the unowned loader that was used to send the
-  // request. |request_start_time| is the time when the request was sent.
-  // |response_body| is the response received. |url| is used for calling
-  // |MayBeCacheRealTimeUrlVerdict|.
-  void OnURLLoaderComplete(const GURL& url,
-                           network::SimpleURLLoader* url_loader,
-                           base::TimeTicks request_start_time,
-                           std::unique_ptr<std::string> response_body);
-
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url);
 
   // Returns true if real time URL lookup with GAIA token is enabled.
   bool CanPerformFullURLLookupWithToken() const;
-
-  PendingRTLookupRequests pending_requests_;
-
-  // The URLLoaderFactory we use to issue network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Unowned object used for getting access token when real time url check with
   // token is enabled.

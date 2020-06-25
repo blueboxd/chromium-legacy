@@ -105,6 +105,7 @@ class StatusCollector {
   virtual bool ShouldReportUsers() const = 0;
   virtual bool ShouldReportHardwareStatus() const = 0;
   virtual bool ShouldReportCrashReportInfo() const = 0;
+  virtual bool ShouldReportAppInfoAndActivity() const = 0;
 
   // Returns the DeviceLocalAccount associated with the currently active kiosk
   // session, if the session was auto-launched with zero delay (this enables

@@ -263,21 +263,20 @@ group("closure_compile_module") {
   ]
 }
 
-# TODO: Uncomment as the Polymer3 migration makes progress.
-#js_type_check("closure_compile_local_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":metrics_recorder.m",
-#    ":os_icons.m",
-#    ":os_page_visibility.m",
-#    ":os_route.m",
-#    ":os_settings.m",
-#    ":os_settings_icons_css.m",
-#    ":os_settings_routes.m",
-#    ":route_origin_behavior.m",
-#    ":search_handler.m",
-#  ]
-#}
+js_type_check("closure_compile_local_module") {
+  is_polymer3 = true
+  deps = [
+    ":metrics_recorder.m",
+    #  ":os_icons.m",
+    #  ":os_page_visibility.m",
+    ":os_route.m",
+    #  ":os_settings.m",
+    #  ":os_settings_icons_css.m",
+    ":os_settings_routes.m",
+    #  ":route_origin_behavior.m",
+    #  ":search_handler.m",
+  ]
+}
 
 js_library("metrics_recorder.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/metrics_recorder.m.js" ]
@@ -311,8 +310,8 @@ js_library("os_route.m") {
     ":os_settings_routes.m",
     "..:router.m",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js_library_for_compile",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":modulize" ]
 }

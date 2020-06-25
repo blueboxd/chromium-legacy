@@ -8,7 +8,7 @@ of their two days working on bug triage/investigation.
 ## 1. Review untriaged bugs
 
 Look through [this list of untriaged
-bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-opened&q=component%3AInternals%3ENetwork%20status%3Aunconfirmed%2Cuntriaged%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3EDNS%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3ECertificate%20-component%3AInternals%3ENetwork%3EReportingAndNEL%20-component%3AInternals%3ENetwork%3EDataUse%20-component%3AInternals%3ENetwork%3EEV%20-component%3AInternals%3ENetwork%3EDataProxy%20-component%3AInternals%3ENetwork%3ECertTrans%20-component%3AInternals%3ENetwork%3ENetworkQuality%20-component%3AInternals%3ENetwork%3EDoH%20-component%3AInternals%3ENetwork%3ENetInfo%20-component%3AInternals%3ENetwork%3EVPN).
+bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=component%3AInternals%3ENetwork%20status%3Aunconfirmed%2Cuntriaged%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3EDNS%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3ECertificate%20-component%3AInternals%3ENetwork%3EReportingAndNEL%20-component%3AInternals%3ENetwork%3EDataUse%20-component%3AInternals%3ENetwork%3EEV%20-component%3AInternals%3ENetwork%3EDataProxy%20-component%3AInternals%3ENetwork%3ECertTrans%20-component%3AInternals%3ENetwork%3ENetworkQuality%20-component%3AInternals%3ENetwork%3EDoH%20-component%3AInternals%3ENetwork%3ENetInfo%20-component%3AInternals%3ENetwork%3EVPN%20-Needs%3DFeedback).
 
 * Go through them in the given order (top to bottom).
   The link sorts them by priority and then recency.

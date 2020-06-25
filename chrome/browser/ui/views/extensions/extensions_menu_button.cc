@@ -24,11 +24,13 @@ const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
     ExtensionsMenuItemView* parent,
-    ToolbarActionViewController* controller)
+    ToolbarActionViewController* controller,
+    bool allow_pinning)
     : views::LabelButton(this, base::string16(), views::style::CONTEXT_BUTTON),
       browser_(browser),
       parent_(parent),
-      controller_(controller) {
+      controller_(controller),
+      allow_pinning_(allow_pinning) {
   ConfigureBubbleMenuItem(this, 0);
   SetButtonController(std::make_unique<HoverButtonController>(
       this, this,
@@ -45,6 +47,10 @@ const char* ExtensionsMenuButton::GetClassName() const {
 
 SkColor ExtensionsMenuButton::GetInkDropBaseColor() const {
   return HoverButton::GetInkDropColor(this);
+}
+
+bool ExtensionsMenuButton::CanShowIconInToolbar() const {
+  return allow_pinning_;
 }
 
 void ExtensionsMenuButton::ButtonPressed(Button* sender,

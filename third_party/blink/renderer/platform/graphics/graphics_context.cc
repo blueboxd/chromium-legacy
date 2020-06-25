@@ -441,8 +441,14 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float min_border_width,
                                     const Color& color,
                                     WebColorScheme color_scheme) {
+#if defined(OS_MACOSX)
+  const Color& inner_color = color_scheme == WebColorScheme::kDark
+                                 ? SkColorSetRGB(0x99, 0xC8, 0xFF)
+                                 : color;
+#else
   const Color& inner_color =
       color_scheme == WebColorScheme::kDark ? SK_ColorWHITE : color;
+#endif
   if (::features::IsFormControlsRefreshEnabled()) {
     // The focus ring is made of two borders which have a 2:1 ratio.
     const float first_border_width = (width / 3) * 2;

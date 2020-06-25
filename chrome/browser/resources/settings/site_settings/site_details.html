@@ -203,13 +203,11 @@
             label="$i18n{siteSettingsNativeFileSystemWrite}">
         </site-details-permission>
       </template>
-      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
-        <site-details-permission
-            category="[[ContentSettingsTypes.HID_DEVICES]]"
-            icon="settings:hid-device" id="hidDevices"
-            label="$i18n{siteSettingsHidDevices}">
-        </site-details-permission>
-      </template>
+      <site-details-permission
+          category="[[ContentSettingsTypes.HID_DEVICES]]"
+          icon="settings:hid-device" id="hidDevices"
+          label="$i18n{siteSettingsHidDevices}">
+      </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
           icon="cr:extension" id="unsandboxedPlugins"

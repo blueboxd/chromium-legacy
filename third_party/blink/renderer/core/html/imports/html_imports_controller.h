@@ -60,7 +60,7 @@ class HTMLImportsController final
                         HTMLImportChildClient*,
                         FetchParameters&);
 
-  Document* Master() const;
+  Document* TreeRoot() const;
 
   wtf_size_t LoaderCount() const { return loaders_.size(); }
   HTMLImportLoader* LoaderAt(wtf_size_t i) const { return loaders_[i]; }

@@ -77,14 +77,8 @@ class SerialPort final : public ScriptWrappable,
   bool CreateDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
                       mojo::ScopedDataPipeConsumerHandle* consumer);
   void OnConnectionError();
-  void OnOpen(mojo::ScopedDataPipeConsumerHandle,
-              mojo::ScopedDataPipeProducerHandle,
-              mojo::PendingReceiver<device::mojom::blink::SerialPortClient>,
+  void OnOpen(mojo::PendingReceiver<device::mojom::blink::SerialPortClient>,
               bool success);
-  void InitializeReadableStream(ScriptState*,
-                                mojo::ScopedDataPipeConsumerHandle);
-  void InitializeWritableStream(ScriptState*,
-                                mojo::ScopedDataPipeProducerHandle);
   void OnGetSignals(ScriptPromiseResolver*,
                     device::mojom::blink::SerialPortControlSignalsPtr);
   void OnSetSignals(ScriptPromiseResolver*, bool success);

@@ -52,7 +52,7 @@ class CORE_EXPORT V0CustomElement {
 
   // API to notify of document-level changes
   static V0CustomElementMicrotaskImportStep* DidCreateImport(HTMLImportChild*);
-  static void DidFinishLoadingImport(Document& master);
+  static void DidFinishLoadingImport(Document& tree_root);
 
   // API for registration contexts
   static void Define(Element*, V0CustomElementDefinition*);

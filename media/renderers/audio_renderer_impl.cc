@@ -619,6 +619,8 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
   algorithm_->Initialize(audio_parameters_, is_encrypted_);
   if (latency_hint_)
     algorithm_->SetLatencyHint(latency_hint_);
+
+  algorithm_->SetPreservesPitch(preserves_pitch_);
   ConfigureChannelMask();
 
   ChangeState_Locked(kFlushed);
@@ -706,6 +708,15 @@ void AudioRendererImpl::SetLatencyHint(
     // This may be needed if rendering isn't active to schedule regular reads.
     AttemptRead_Locked();
   }
+}
+
+void AudioRendererImpl::SetPreservesPitch(bool preserves_pitch) {
+  base::AutoLock auto_lock(lock_);
+
+  preserves_pitch_ = preserves_pitch;
+
+  if (algorithm_)
+    algorithm_->SetPreservesPitch(preserves_pitch);
 }
 
 void AudioRendererImpl::OnSuspend() {

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
@@ -60,7 +61,9 @@ class ASH_EXPORT QuickAnswersUiController {
 
   // Creates a view for user-consent for Quick Answers vertically aligned to the
   // anchor.
-  void CreateUserConsentView(const gfx::Rect& anchor_bounds);
+  void CreateUserConsentView(const gfx::Rect& anchor_bounds,
+                             const base::string16& intent_type,
+                             const base::string16& intent_text);
 
   // Returns true if there was a UserConsentView to close.
   bool CloseUserConsentView();

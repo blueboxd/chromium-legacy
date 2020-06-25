@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 
 namespace chromeos {
 namespace network_diagnostics {

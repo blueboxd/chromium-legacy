@@ -175,11 +175,17 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_EnabledUserOptin) {
 
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookup_EnhancedProtection) {
-  base::test::ScopedFeatureList feature_list;
   pref_service_.SetBoolean(prefs::kSafeBrowsingEnhanced, true);
-  ASSERT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
-  feature_list.InitAndEnableFeature(kEnhancedProtection);
-  ASSERT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(kEnhancedProtection);
+    ASSERT_FALSE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kEnhancedProtection);
+    ASSERT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
+  }
 }
 
 TEST_F(RealTimePolicyEngineTest,

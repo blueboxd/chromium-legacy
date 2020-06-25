@@ -57,7 +57,7 @@ base::TimeTicks GetSignalTime(const base::ScopedFD& fence) {
 
 GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
     ANativeWindow* window,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<TaskScheduler> task_scheduler)
     : root_surface_name_(BuildSurfaceName(kRootSurfaceName)),
       child_surface_name_(BuildSurfaceName(kChildSurfaceName)),
       window_rect_(0,
@@ -66,7 +66,7 @@ GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
                    ANativeWindow_getHeight(window)),
       root_surface_(
           new SurfaceControl::Surface(window, root_surface_name_.c_str())),
-      gpu_task_runner_(std::move(task_runner)) {}
+      gpu_task_scheduler_(std::move(task_scheduler)) {}
 
 GLSurfaceEGLSurfaceControl::~GLSurfaceEGLSurfaceControl() {
   Destroy();
@@ -250,7 +250,8 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
       std::move(present_callback), std::move(resources_to_release),
       std::move(primary_plane_fences_));
   primary_plane_fences_.reset();
-  pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
+  pending_transaction_->SetOnCompleteCb(std::move(callback),
+                                        gpu_task_scheduler_);
 
   // Cache only those surfaces which were used in this transaction. The surfaces
   // removed here are persisted in |resources_to_release| so we can release
@@ -448,7 +449,6 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   TRACE_EVENT0("gpu",
                "GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread");
 
-  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(transaction_ack_pending_);
 
   transaction_ack_pending_ = false;
@@ -507,8 +507,6 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
 void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
   TRACE_EVENT0("gpu",
                "GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks");
-  check_pending_presentation_callback_queue_task_.Cancel();
-
   while (!pending_presentation_callback_queue_.empty()) {
     auto& pending_cb = pending_presentation_callback_queue_.front();
 
@@ -540,19 +538,6 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
 
     std::move(pending_cb.callback).Run(feedback);
     pending_presentation_callback_queue_.pop();
-  }
-
-  // If there are unsignaled fences and we don't have any pending transactions,
-  // schedule a task to poll the fences again. If there is a pending transaction
-  // already, then we'll poll when that transaction is acked.
-  if (!pending_presentation_callback_queue_.empty() &&
-      pending_transaction_queue_.empty()) {
-    check_pending_presentation_callback_queue_task_.Reset(base::BindOnce(
-        &GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks,
-        weak_factory_.GetWeakPtr()));
-    gpu_task_runner_->PostDelayedTask(
-        FROM_HERE, check_pending_presentation_callback_queue_task_.callback(),
-        base::TimeDelta::FromSeconds(1) / 60);
   }
 }
 

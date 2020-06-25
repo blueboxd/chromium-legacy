@@ -221,6 +221,18 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
     std::string printer_name = *new_settings.FindStringKey(kSettingDeviceName);
     crash_key = std::make_unique<crash_keys::ScopedPrinterInfo>(
         print_backend->GetPrinterDriverInfo(printer_name));
+
+#if defined(OS_LINUX) && defined(USE_CUPS) && !defined(OS_CHROMEOS)
+    PrinterBasicInfo basic_info;
+    if (print_backend->GetPrinterBasicInfo(printer_name, &basic_info)) {
+      base::Value advanced_settings(base::Value::Type::DICTIONARY);
+      for (const auto& pair : basic_info.options)
+        advanced_settings.SetStringKey(pair.first, pair.second);
+
+      new_settings.SetKey(kSettingAdvancedSettings,
+                          std::move(advanced_settings));
+    }
+#endif  // defined(OS_LINUX) && defined(USE_CUPS) && !defined(OS_CHROMEOS)
   }
 
   PrintingContext::Result result;

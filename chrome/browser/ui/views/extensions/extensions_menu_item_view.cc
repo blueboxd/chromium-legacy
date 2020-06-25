@@ -40,9 +40,12 @@ constexpr char ExtensionsMenuItemView::kClassName[];
 
 ExtensionsMenuItemView::ExtensionsMenuItemView(
     Browser* browser,
-    std::unique_ptr<ToolbarActionViewController> controller)
-    : primary_action_button_(
-          new ExtensionsMenuButton(browser, this, controller.get())),
+    std::unique_ptr<ToolbarActionViewController> controller,
+    bool allow_pinning)
+    : primary_action_button_(new ExtensionsMenuButton(browser,
+                                                      this,
+                                                      controller.get(),
+                                                      allow_pinning)),
       controller_(std::move(controller)),
       model_(ToolbarActionsModel::Get(browser->profile())) {
   // Set so the extension button receives enter/exit on children to retain hover
@@ -63,14 +66,16 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
 
-  auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
-  pin_button->SetBorder(views::CreateEmptyBorder(kSecondaryButtonInsets));
-  // Extension pinning is not available in Incognito as it leaves a trace of
-  // user activity.
-  pin_button->SetEnabled(!browser->profile()->IsOffTheRecord());
+  if (primary_action_button_->CanShowIconInToolbar()) {
+    auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
+    pin_button->SetBorder(views::CreateEmptyBorder(kSecondaryButtonInsets));
+    // Extension pinning is not available in Incognito as it leaves a trace of
+    // user activity.
+    pin_button->SetEnabled(!browser->profile()->IsOffTheRecord());
 
-  pin_button_ = pin_button.get();
-  AddChildView(std::move(pin_button));
+    pin_button_ = pin_button.get();
+    AddChildView(std::move(pin_button));
+  }
 
   auto context_menu_button =
       CreateBubbleMenuItem(EXTENSION_CONTEXT_MENU, nullptr);
@@ -115,13 +120,17 @@ void ExtensionsMenuItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   const SkColor icon_color =
       GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_MenuIconColor);
-  pin_button_->set_ink_drop_base_color(icon_color);
+
+  if (pin_button_)
+    pin_button_->set_ink_drop_base_color(icon_color);
   views::SetImageFromVectorIcon(context_menu_button_, kBrowserToolsIcon,
                                 kSecondaryIconSizeDp, icon_color);
   UpdatePinButton();
 }
 
 void ExtensionsMenuItemView::UpdatePinButton() {
+  if (!pin_button_)
+    return;
   pin_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IsPinned() ? IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP
                  : IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP));

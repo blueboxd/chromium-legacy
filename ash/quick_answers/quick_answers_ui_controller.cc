@@ -98,10 +98,13 @@ void QuickAnswersUiController::UpdateQuickAnswersBounds(
 }
 
 void QuickAnswersUiController::CreateUserConsentView(
-    const gfx::Rect& anchor_bounds) {
+    const gfx::Rect& anchor_bounds,
+    const base::string16& intent_type,
+    const base::string16& intent_text) {
   DCHECK(!quick_answers_view_);
   DCHECK(!user_consent_view_);
-  user_consent_view_ = new quick_answers::UserConsentView(anchor_bounds, this);
+  user_consent_view_ = new quick_answers::UserConsentView(
+      anchor_bounds, intent_type, intent_text, this);
   user_consent_view_->GetWidget()->ShowInactive();
 }
 

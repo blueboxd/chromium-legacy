@@ -160,3 +160,12 @@ export function getZoomableViewport(
   viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
   return viewport;
 }
+
+export async function testAsync(f) {
+  try {
+    await f();
+    chrome.test.succeed();
+  } catch (e) {
+    chrome.test.fail(e.stack);
+  }
+}

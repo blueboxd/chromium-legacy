@@ -120,6 +120,8 @@ class PDFViewerElement extends PDFViewerBaseElement {
       canSerializeDocument_: Boolean,
 
       title_: String,
+
+      isFormFieldFocused_: Boolean,
     };
   }
 
@@ -154,9 +156,10 @@ class PDFViewerElement extends PDFViewerBaseElement {
     /** @private {string} */
     this.title_ = '';
 
-    // Non-Polymer properties
     /** @private {boolean} */
     this.isFormFieldFocused_ = false;
+
+    // Non-Polymer properties
 
     /** @private {number} */
     this.beepCount_ = 0;

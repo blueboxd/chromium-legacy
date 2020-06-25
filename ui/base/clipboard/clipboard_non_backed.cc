@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/geometry/size.h"
@@ -518,12 +519,14 @@ ClipboardNonBacked::ReadAvailablePlatformSpecificFormatNames(
 void ClipboardNonBacked::ReadText(ClipboardBuffer buffer,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadText(result);
 }
 
 void ClipboardNonBacked::ReadAsciiText(ClipboardBuffer buffer,
                                        std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kText);
   clipboard_internal_->ReadAsciiText(result);
 }
 
@@ -533,18 +536,21 @@ void ClipboardNonBacked::ReadHTML(ClipboardBuffer buffer,
                                   uint32_t* fragment_start,
                                   uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kHtml);
   clipboard_internal_->ReadHTML(markup, src_url, fragment_start, fragment_end);
 }
 
 void ClipboardNonBacked::ReadRTF(ClipboardBuffer buffer,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kRtf);
   clipboard_internal_->ReadRTF(result);
 }
 
 void ClipboardNonBacked::ReadImage(ClipboardBuffer buffer,
                                    ReadImageCallback callback) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(clipboard_internal_->ReadImage());
 }
 
@@ -552,18 +558,21 @@ void ClipboardNonBacked::ReadCustomData(ClipboardBuffer buffer,
                                         const base::string16& type,
                                         base::string16* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kCustomData);
   clipboard_internal_->ReadCustomData(type, result);
 }
 
 void ClipboardNonBacked::ReadBookmark(base::string16* title,
                                       std::string* url) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kBookmark);
   clipboard_internal_->ReadBookmark(title, url);
 }
 
 void ClipboardNonBacked::ReadData(const ClipboardFormatType& format,
                                   std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kData);
   clipboard_internal_->ReadData(format.GetName(), result);
 }
 

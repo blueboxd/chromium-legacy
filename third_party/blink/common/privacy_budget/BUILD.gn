@@ -44,6 +44,7 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/common/privacy_budget:internal",
   ]
 }
 

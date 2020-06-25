@@ -24,6 +24,13 @@ config("compiler") {
       "-arch",
       "i386",
     ]
+  } else if (current_cpu == "arm64") {
+    common_mac_flags += [
+      "-arch",
+      current_cpu,
+    ]
+  } else {
+    assert(false, "unknown current_cpu $current_cpu")
   }
 
   # This is here so that all files get recompiled after an Xcode update.

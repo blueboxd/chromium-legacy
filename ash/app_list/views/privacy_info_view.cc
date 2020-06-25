@@ -4,6 +4,9 @@
 
 #include "ash/app_list/views/privacy_info_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -25,6 +28,7 @@ namespace ash {
 namespace {
 
 constexpr int kRowMarginDip = 4;
+constexpr int kVerticalPaddingDip = 9;
 constexpr int kLeftPaddingDip = 14;
 constexpr int kRightPaddingDip = 4;
 constexpr int kCellSpacingDip = 18;
@@ -46,21 +50,15 @@ gfx::Size PrivacyInfoView::CalculatePreferredSize() const {
 }
 
 int PrivacyInfoView::GetHeightForWidth(int width) const {
-  // TODO(crbug/1079169): Deduce height using the right sources and remove the
-  // magic number 28.
-  const int kPreferredHeightDip =
-      text_view_->GetHeightForWidth(text_view_->width()) + 28;
-  return kPreferredHeightDip;
-}
-
-void PrivacyInfoView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
   const int used_width = kRowMarginDip + kLeftPaddingDip + info_icon_->width() +
                          kCellSpacingDip +
                          /*|text_view_| is here*/
                          kCellSpacingDip + close_button_->width() +
                          kRightPaddingDip + kRowMarginDip;
-  const int available_width = width() - used_width;
-  text_view_->SizeToFit(available_width);
+  const int available_width = width - used_width;
+  const int text_height = text_view_->GetHeightForWidth(available_width);
+  return kRowMarginDip + /*border*/ 1 + kVerticalPaddingDip + text_height +
+         kVerticalPaddingDip + /*border*/ 1 + kRowMarginDip;
 }
 
 void PrivacyInfoView::OnMouseEvent(ui::MouseEvent* event) {
@@ -90,24 +88,18 @@ void PrivacyInfoView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void PrivacyInfoView::InitLayout() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-  SetBorder(views::CreateEmptyBorder(gfx::Insets(kRowMarginDip)));
-  row_container_ = AddChildView(std::make_unique<views::View>());
-
-  constexpr int kVerticalPaddingDip = 0;
-  auto* layout_manager =
-      row_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(kVerticalPaddingDip, kLeftPaddingDip, kVerticalPaddingDip,
-                      kRightPaddingDip),
-          kCellSpacingDip));
+  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(kVerticalPaddingDip, kLeftPaddingDip, kVerticalPaddingDip,
+                  kRightPaddingDip),
+      kCellSpacingDip));
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  row_container_->SetBorder(views::CreateRoundedRectBorder(
+  SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/1,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_MEDIUM),
-      gfx::kGoogleGrey300));
+      gfx::Insets(kRowMarginDip, kRowMarginDip), gfx::kGoogleGrey300));
 
   // Info icon.
   InitInfoIcon();
@@ -124,8 +116,7 @@ void PrivacyInfoView::InitLayout() {
 }
 
 void PrivacyInfoView::InitInfoIcon() {
-  info_icon_ =
-      row_container_->AddChildView(std::make_unique<views::ImageView>());
+  info_icon_ = AddChildView(std::make_unique<views::ImageView>());
   info_icon_->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
   info_icon_->SetImage(gfx::CreateVectorIcon(views::kInfoIcon, kIconSizeDip,
                                              gfx::kGoogleBlue600));
@@ -149,7 +140,7 @@ void PrivacyInfoView::InitText() {
   text_view->AddStyleRange(gfx::Range(offset, offset + link.length()),
                            link_style);
   text_view->SetAutoColorReadabilityEnabled(false);
-  text_view_ = row_container_->AddChildView(std::move(text_view));
+  text_view_ = AddChildView(std::move(text_view));
 }
 
 void PrivacyInfoView::InitCloseButton() {
@@ -179,7 +170,7 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->set_ink_drop_base_color(kInkDropBaseColor);
   close_button->set_has_ink_drop_action_on_click(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
-  close_button_ = row_container_->AddChildView(std::move(close_button));
+  close_button_ = AddChildView(std::move(close_button));
 }
 
 bool PrivacyInfoView::IsCloseButton(views::Button* button) const {

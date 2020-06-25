@@ -74,8 +74,14 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
       int height,
       gl::GLSurface::SwapCompletionCallback completion_callback,
       gl::GLSurface::PresentationCallback presentation_callback) override;
+  gfx::SwapResult CommitOverlayPlanes(
+      gl::GLSurface::PresentationCallback callback) override;
+  void CommitOverlayPlanesAsync(
+      gl::GLSurface::SwapCompletionCallback completion_callback,
+      gl::GLSurface::PresentationCallback presentation_callback) override;
 
   bool SupportsPostSubBuffer() override;
+  bool SupportsCommitOverlayPlanes() override;
   bool SupportsAsyncSwap() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
@@ -101,7 +107,6 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
   ~ImageTransportSurfaceOverlayMacBase() override;
 
   gfx::SwapResult SwapBuffersInternal(
-      const gfx::Rect& pixel_damage_rect,
       gl::GLSurface::SwapCompletionCallback completion_callback,
       gl::GLSurface::PresentationCallback presentation_callback);
   void ApplyBackpressure();

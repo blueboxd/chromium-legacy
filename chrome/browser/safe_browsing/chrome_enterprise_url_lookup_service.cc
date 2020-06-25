@@ -12,6 +12,7 @@
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -22,8 +23,7 @@ ChromeEnterpriseRealTimeUrlLookupService::
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         VerdictCacheManager* cache_manager,
         Profile* profile)
-    : RealTimeUrlLookupServiceBase(cache_manager),
-      url_loader_factory_(url_loader_factory),
+    : RealTimeUrlLookupServiceBase(url_loader_factory, cache_manager),
       profile_(profile) {}
 
 ChromeEnterpriseRealTimeUrlLookupService::
@@ -51,6 +51,18 @@ bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
 
 policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
   return ::safe_browsing::GetDMToken(profile_);
+}
+
+net::NetworkTrafficAnnotationTag
+ChromeEnterpriseRealTimeUrlLookupService::GetTrafficAnnotationTag() const {
+  // TODO(crbug.com/1085261): Implement this method.
+  return net::NetworkTrafficAnnotationTag::NotReached();
+}
+
+GURL ChromeEnterpriseRealTimeUrlLookupService::GetRealTimeLookupUrl() const {
+  // TODO(crbug.com/1085261): Implement this method.
+  NOTREACHED();
+  return GURL("");
 }
 
 }  // namespace safe_browsing

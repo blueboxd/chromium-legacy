@@ -42,12 +42,19 @@ base::UnguessableToken DecodeToken(base::StringPiece input) {
 }
 
 bool CanStorePersistentEntry(const device::mojom::SerialPortInfo& port) {
+  // If there is no display name then the path name will be used instead. The
+  // path name is not guaranteed to be stable. For example, on Linux the name
+  // "ttyUSB0" is reused for any USB serial device. A name like that would be
+  // confusing to show in settings when the device is disconnected.
+  if (!port.display_name || port.display_name->empty())
+    return false;
+
   return port.persistent_id && !port.persistent_id->empty();
 }
 
 base::Value PortInfoToValue(const device::mojom::SerialPortInfo& port) {
   base::Value value(base::Value::Type::DICTIONARY);
-  if (port.display_name)
+  if (port.display_name && !port.display_name->empty())
     value.SetStringKey(kPortNameKey, *port.display_name);
   else
     value.SetStringKey(kPortNameKey, port.path.LossyDisplayName());

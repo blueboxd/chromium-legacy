@@ -416,6 +416,39 @@ const struct {
     {"Via", ConcerningHeaderId::kVia},
 };
 
+void ReportFetchUploadStreamingUMA(const net::URLRequest* request,
+                                   bool allow_http1_for_streaming_upload) {
+  // Same as tools/metrics/histograms/enums.xml's.
+  enum class HttpProtocolScheme {
+    kHTTP1_1 = 0,
+    kHTTP2 = 1,
+    kQUIC = 2,
+    kMaxValue = kQUIC
+  } protocol;
+  const auto connection_info = request->response_info().connection_info;
+  switch (net::HttpResponseInfo::ConnectionInfoToCoarse(connection_info)) {
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP1:
+      protocol = HttpProtocolScheme::kHTTP1_1;
+      break;
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_HTTP2:
+      protocol = HttpProtocolScheme::kHTTP2;
+      break;
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_QUIC:
+      protocol = HttpProtocolScheme::kQUIC;
+      break;
+    case net::HttpResponseInfo::CONNECTION_INFO_COARSE_OTHER:
+      protocol = HttpProtocolScheme::kHTTP1_1;
+      break;
+  }
+  if (allow_http1_for_streaming_upload) {
+    base::UmaHistogramEnumeration("Net.Fetch.UploadStreamingProtocolAllowH1",
+                                  protocol);
+  } else {
+    base::UmaHistogramEnumeration("Net.Fetch.UploadStreamingProtocolNotAllowH1",
+                                  protocol);
+  }
+}
+
 }  // namespace
 
 URLLoader::URLLoader(
@@ -480,7 +513,10 @@ URLLoader::URLLoader(
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
       isolated_world_origin_(request.isolated_world_origin),
       cookie_observer_(std::move(cookie_observer)),
-      has_streaming_upload_body_(HasStreamingUploadBody(&request)) {
+      has_fetch_streaming_upload_body_(HasFetchStreamingUploadBody(&request)),
+      allow_http1_for_streaming_upload_(
+          request.request_body &&
+          request.request_body->AllowHTTP1ForStreamingUpload()) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (url_loader_header_client &&
@@ -994,7 +1030,11 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 }
 
 // static
-bool URLLoader::HasStreamingUploadBody(const ResourceRequest* request) {
+bool URLLoader::HasFetchStreamingUploadBody(const ResourceRequest* request) {
+  // Follows blink::mojom::ResourceType::kXhr.
+  const int kXhr = 13;
+  if (request->resource_type != kXhr)
+    return false;
   const ResourceRequestBody* request_body = request->request_body.get();
   if (!request_body)
     return false;
@@ -1011,7 +1051,7 @@ bool URLLoader::HasStreamingUploadBody(const ResourceRequest* request) {
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
                                const net::AuthChallengeInfo& auth_info) {
-  if (has_streaming_upload_body_) {
+  if (has_fetch_streaming_upload_body_) {
     NotifyCompleted(net::ERR_FAILED);
     // |this| may have been deleted.
     return;
@@ -1098,6 +1138,10 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   has_received_response_ = true;
 
   ReportFlaggedResponseCookies();
+  if (has_fetch_streaming_upload_body_) {
+    ReportFetchUploadStreamingUMA(url_request_.get(),
+                                  allow_http1_for_streaming_upload_);
+  }
 
   if (net_error != net::OK) {
     NotifyCompleted(net_error);
@@ -1906,9 +1950,9 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     // Discard any remaining callbacks or data by rerouting the pipes to
     // EmptyURLLoaderClient.
     receiver_.reset();
-    EmptyURLLoaderClient::DrainURLRequest(
+    EmptyURLLoaderClientWrapper::DrainURLRequest(
         url_loader_client_.BindNewPipeAndPassReceiver(),
-        receiver_.BindNewPipeAndPassRemote(), base::OnceClosure());
+        receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
 

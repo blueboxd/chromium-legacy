@@ -18,6 +18,9 @@
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_ui_data.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -27,6 +30,7 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/origin.h"
 
 namespace predictors {
@@ -419,6 +423,75 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   }
 
   fake_delegate_->WaitForPrefetchFinished(main_frame_url);
+}
+
+class HeaderInjectingThrottle : public blink::URLLoaderThrottle {
+ public:
+  HeaderInjectingThrottle() = default;
+  ~HeaderInjectingThrottle() override = default;
+
+  HeaderInjectingThrottle(const HeaderInjectingThrottle&) = delete;
+  HeaderInjectingThrottle& operator=(const HeaderInjectingThrottle&) = delete;
+
+  void WillStartRequest(network::ResourceRequest* request,
+                        bool* defer) override {
+    request->headers.SetHeader("x-injected", "injected value");
+  }
+};
+
+class ThrottlingContentBrowserClient : public content::ContentBrowserClient {
+ public:
+  ThrottlingContentBrowserClient() = default;
+  ~ThrottlingContentBrowserClient() override = default;
+
+  ThrottlingContentBrowserClient(const ThrottlingContentBrowserClient&) =
+      delete;
+  ThrottlingContentBrowserClient& operator=(
+      const ThrottlingContentBrowserClient&) = delete;
+
+  // ContentBrowserClient overrides:
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      content::BrowserContext* browser_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+    throttles.emplace_back(std::make_unique<HeaderInjectingThrottle>());
+    return throttles;
+  }
+};
+
+// Test that prefetches go through URLLoaderThrottles.
+TEST_F(PrefetchManagerTest, Throttles) {
+  // Add a throttle which injects a header.
+  ThrottlingContentBrowserClient content_browser_client;
+  auto* old_content_browser_client =
+      content::SetBrowserClientForTesting(&content_browser_client);
+
+  net::test_server::EmbeddedTestServer test_server;
+  net::test_server::ControllableHttpResponse response(&test_server,
+                                                      "/prefetch");
+
+  // Start the server.
+  auto test_server_handle = test_server.StartAndReturnHandle();
+  ASSERT_TRUE(test_server_handle);
+
+  GURL main_frame_url("https://abc.invalid");
+  GURL prefetch_url = test_server.GetURL("/prefetch");
+  PrefetchRequest request(prefetch_url,
+                          CreateNetworkIsolationKey(main_frame_url));
+
+  prefetch_manager_->Start(main_frame_url, {request});
+
+  response.WaitForRequest();
+  const net::test_server::HttpRequest* actual_request = response.http_request();
+  auto iter = actual_request->headers.find("x-injected");
+  ASSERT_TRUE(iter != actual_request->headers.end());
+  EXPECT_EQ(iter->second, "injected value");
+
+  content::SetBrowserClientForTesting(old_content_browser_client);
 }
 
 }  // namespace predictors

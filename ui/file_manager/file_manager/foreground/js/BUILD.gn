@@ -30,6 +30,7 @@ js_type_check("closure_compile_module") {
     ":closure_compile_externs",
     ":column_visibility_controller",
     ":constants",
+    ":crostini_controller",
     ":dialog_action_controller",
     ":dialog_type",
     ":directory_contents",
@@ -233,6 +234,10 @@ js_library("column_visibility_controller") {
 js_library("constants") {
 }
 
+js_library("crostini_controller") {
+  deps = [ "ui:directory_tree" ]
+}
+
 js_library("dialog_action_controller") {
   deps = [
     ":dialog_type",
@@ -329,6 +334,7 @@ js_library("file_manager") {
     ":android_app_list_model",
     ":app_state_controller",
     ":column_visibility_controller",
+    ":crostini_controller",
     ":dialog_action_controller",
     ":dialog_type",
     ":directory_model",

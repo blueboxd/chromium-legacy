@@ -88,7 +88,8 @@ class ASH_EXPORT QuickAnswersControllerImpl
   void MaybeDismissQuickAnswersConsent();
 
   // Return true if the user consent view is showing.
-  bool MaybeShowUserConsent();
+  bool MaybeShowUserConsent(const base::string16& intent_type,
+                            const base::string16& intent_text);
 
   chromeos::quick_answers::QuickAnswersRequest BuildRequest();
 

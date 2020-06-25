@@ -82,6 +82,9 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3517
+    'ChromeDriverTest.testPrint',
+    'ChromeDriverTest.testPrintInvalidArgument',
 ]
 
 
@@ -133,6 +136,7 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # HeadlessInvalidCertificateTest is sometimes flaky.
     'HeadlessInvalidCertificateTest.*',
     # Similar issues with HeadlessChromeDriverTest.
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3519
     'HeadlessChromeDriverTest.*',
     # Flaky: https://crbug.com/899919
     'SessionHandlingTest.testGetSessions',
@@ -2278,6 +2282,34 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     analysisResult = self.takeScreenshotAndVerifyCorrect(redElement)
     self.assertEquals('PASS', analysisResult)
 
+  def testPrint(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    pdf = self._driver.PrintPDF({
+                                  'orientation': 'landscape',
+                                  'scale': 1.1,
+                                  'margin': {
+                                    'top': 1.1,
+                                    'bottom': 2.2,
+                                    'left': 3.3,
+                                    'right': 4.4
+                                  },
+                                  'background': True,
+                                  'shrinkToFit': False,
+                                  'pageRanges': [1],
+                                  'page': {
+                                    'width': 15.6,
+                                    'height': 20.6
+                                  }
+                                })
+    decoded_pdf = base64.b64decode(pdf)
+    self.assertTrue(decoded_pdf.startswith("%PDF"))
+    self.assertTrue(decoded_pdf.endswith("%%EOF"))
+
+  def testPrintInvalidArgument(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self.assertRaises(chromedriver.InvalidArgument,
+                      self._driver.PrintPDF, {'pageRanges': ['x-y']})
+
   def testGenerateTestReport(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/reporting_observer.html'))
@@ -4272,6 +4304,33 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # Restore a known size so next tests won't fail
     self._driver.SetWindowRect(*old_rect_list)
 
+  def testPrintHeadless(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    pdf = self._driver.PrintPDF({
+                                  'orientation': 'landscape',
+                                  'scale': 1.1,
+                                  'margin': {
+                                    'top': 1.1,
+                                    'bottom': 2.2,
+                                    'left': 3.3,
+                                    'right': 4.4
+                                  },
+                                  'background': True,
+                                  'shrinkToFit': False,
+                                  'pageRanges': [1],
+                                  'page': {
+                                    'width': 15.6,
+                                    'height': 20.6
+                                  }
+                                })
+    decoded_pdf = base64.b64decode(pdf)
+    self.assertTrue(decoded_pdf.startswith("%PDF"))
+    self.assertTrue(decoded_pdf.endswith("%%EOF"))
+
+  def testPrintInvalidArgumentHeadless(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self.assertRaises(chromedriver.InvalidArgument,
+                      self._driver.PrintPDF, {'pageRanges': ['x-y']})
 
 class SupportIPv4AndIPv6(ChromeDriverBaseTest):
   def testSupportIPv4AndIPv6(self):

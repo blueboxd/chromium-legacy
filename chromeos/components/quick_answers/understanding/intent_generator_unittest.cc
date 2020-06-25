@@ -64,8 +64,10 @@ class IntentGeneratorTest : public testing::Test {
     intent_generator_->SetLanguageDetectorForTesting(
         std::move(mock_language_detector_));
 
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kQuickAnswersTextAnnotator);
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kQuickAnswersTextAnnotator,
+         chromeos::features::kQuickAnswersTranslation},
+        {});
   }
 
   void TearDown() override { intent_generator_.reset(); }
@@ -142,6 +144,24 @@ TEST_F(IntentGeneratorTest, TranslationIntentTextLengthAboveThreshold) {
 }
 
 TEST_F(IntentGeneratorTest, TranslationIntentNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::features::kQuickAnswersTextAnnotator},
+      {chromeos::features::kQuickAnswersTranslation});
+  UseFakeServiceConnection();
+
+  QuickAnswersRequest request;
+  request.selected_text = "quick answers";
+  request.context.device_properties.language = "es";
+  intent_generator_->GenerateIntent(request);
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(IntentType::kUnknown, intent_type_);
+  EXPECT_EQ("quick answers", intent_text_);
+}
+
+TEST_F(IntentGeneratorTest, TranslationIntentDeviceLanguageNotSet) {
   UseFakeServiceConnection();
 
   QuickAnswersRequest request;

@@ -22,19 +22,6 @@ extern const char kHistogramName[];
 using LookalikeTargetAllowlistChecker =
     base::RepeatingCallback<bool(const std::string&)>;
 
-// Common words are allow listed in target embedding (e.g. weather.jp.com should
-// not be considered a lookalike for weather.com). However, some of the common
-// words are well-known brand names when paired with a specific TLD. For
-// example, "office.com-foo.com" should be considered a lookalike for
-// "office.com", but "office.jp-foo.com" should not.
-enum class CommonWordType {
-  // The word is a common word when paired with any TLD.
-  kAllTLDs = 0,
-  // The word is a common word only when it is paired with TLDs other than the
-  // TLD representing a brand name (e.g. office.com and office.jp).
-  kNonMatchingTLDs = 1,
-};
-
 // Used for |GetTargetEmbeddingType| return value. It shows if the target
 // embedding triggers on the input domain, and if it does, what type of warning
 // should be shown to the user.

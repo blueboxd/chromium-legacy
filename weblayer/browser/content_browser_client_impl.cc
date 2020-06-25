@@ -46,6 +46,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -665,6 +666,12 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
 scoped_refptr<content::QuotaPermissionContext>
 ContentBrowserClientImpl::CreateQuotaPermissionContext() {
   return base::MakeRefCounted<permissions::QuotaPermissionContextImpl>();
+}
+
+content::TtsPlatform* ContentBrowserClientImpl::GetTtsPlatform() {
+  // TODO(sky): figure out a better way to integrate this.
+  content::TtsController::GetInstance()->SetStopSpeakingWhenHidden(true);
+  return nullptr;
 }
 
 void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {

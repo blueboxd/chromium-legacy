@@ -232,7 +232,7 @@ void DynamicsCompressorKernel::Process(
   // Empirical/perceptual tuning.
   full_range_makeup_gain = powf(full_range_makeup_gain, 0.6f);
 
-  float master_linear_gain =
+  float linear_post_gain =
       audio_utilities::DecibelsToLinear(db_post_gain) * full_range_makeup_gain;
 
   // Attack parameters.
@@ -455,7 +455,7 @@ void DynamicsCompressorKernel::Process(
 
         // Calculate total gain using master gain and effect blend.
         float total_gain =
-            dry_mix + wet_mix * master_linear_gain * post_warp_compressor_gain;
+            dry_mix + wet_mix * linear_post_gain * post_warp_compressor_gain;
 
         // Calculate metering.
         float db_real_gain = 20 * std::log10(post_warp_compressor_gain);

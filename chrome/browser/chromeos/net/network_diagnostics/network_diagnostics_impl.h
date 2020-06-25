@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_DIAGNOSTICS_NETWORK_DIAGNOSTICS_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 

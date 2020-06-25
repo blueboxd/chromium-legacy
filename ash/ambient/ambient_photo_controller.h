@@ -64,6 +64,10 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
  private:
   friend class AmbientAshTestBase;
 
+  void FetchTopics();
+
+  void ScheduleFetchTopics();
+
   void ScheduleRefreshImage();
 
   void GetScreenUpdateInfo();
@@ -87,10 +91,14 @@ class ASH_EXPORT AmbientPhotoController : public AmbientBackendModelObserver {
 
   AmbientBackendModel ambient_backend_model_;
 
+  // The timer to refresh photos.
   base::OneShotTimer photo_refresh_timer_;
 
   // The index of a topic to download.
   size_t topic_index_ = 0;
+
+  // Tracking how many batches of topics have been fetched.
+  int topics_batch_fetched_ = 0;
 
   ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver>
       ambient_backedn_model_observer_{this};

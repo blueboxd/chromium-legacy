@@ -381,6 +381,10 @@ HttpHandler::HttpHandler(
           WrapToCommand("ElementScreenshot",
                         base::BindRepeating(&ExecuteElementScreenshot))),
 
+      CommandMapping(
+          kPost, "session/:sessionId/print",
+          WrapToCommand("Print", base::BindRepeating(&ExecutePrint))),
+
       //
       // Json wire protocol endpoints
       //

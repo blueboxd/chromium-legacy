@@ -1003,10 +1003,6 @@ TEST_P(QuicStreamFactoryTest, Create) {
 }
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   Initialize();
   factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -1097,10 +1093,6 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
 }
 
 TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->set_synchronous_mode(true);
@@ -1143,10 +1135,6 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
 }
 
 TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::ZERO_RTT);
   host_resolver_->set_synchronous_mode(true);
@@ -3150,44 +3138,22 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
     quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
     // A RESET will be sent to the peer to cancel the non-migratable stream.
     if (VersionUsesHttp3(version_.transport_version)) {
-      if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
         quic_data1.AddWrite(SYNCHRONOUS,
                             client_maker_.MakeDataRstAndAckPacket(
                                 packet_num++, true, GetQpackDecoderStreamId(),
                                 StreamCancellationQpackDecoderInstruction(0),
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED, 1, 1));
-      } else {
-        quic_data1.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeDataAndRstPacket(
-                                packet_num++, true, GetQpackDecoderStreamId(),
-                                StreamCancellationQpackDecoderInstruction(0),
-                                GetNthClientInitiatedBidirectionalStreamId(0),
-                                quic::QUIC_STREAM_CANCELLED));
-      }
     } else {
-      if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
         quic_data1.AddWrite(SYNCHRONOUS,
                             client_maker_.MakeAckAndRstPacket(
                                 packet_num++, false,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
-      } else {
-        quic_data1.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeRstPacket(
-                                packet_num++, false,
-                                GetNthClientInitiatedBidirectionalStreamId(0),
-                                quic::QUIC_STREAM_CANCELLED));
-      }
     }
     // Ping packet to send after migration is completed.
-    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
       quic_data1.AddWrite(SYNCHRONOUS,
                           client_maker_.MakePingPacket(packet_num++, false));
-    } else {
-      quic_data1.AddWrite(SYNCHRONOUS, client_maker_.MakeAckAndPingPacket(
-                                           packet_num++, false, 1, 1, 1));
-    }
   } else {
     if (version_.UsesTls()) {
       if (VersionUsesHttp3(version_.transport_version)) {
@@ -5736,45 +5702,23 @@ void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
     quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // Hanging read.
     // A RESET will be sent to the peer to cancel the non-migratable stream.
     if (VersionUsesHttp3(version_.transport_version)) {
-      if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
         quic_data1.AddWrite(SYNCHRONOUS,
                             client_maker_.MakeDataRstAndAckPacket(
                                 packet_num++, true, GetQpackDecoderStreamId(),
                                 StreamCancellationQpackDecoderInstruction(0),
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED, 1, 1));
-      } else {
-        quic_data1.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeDataAndRstPacket(
-                                packet_num++, true, GetQpackDecoderStreamId(),
-                                StreamCancellationQpackDecoderInstruction(0),
-                                GetNthClientInitiatedBidirectionalStreamId(0),
-                                quic::QUIC_STREAM_CANCELLED));
-      }
     } else {
-      if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
         quic_data1.AddWrite(SYNCHRONOUS,
                             client_maker_.MakeAckAndRstPacket(
                                 packet_num++, false,
                                 GetNthClientInitiatedBidirectionalStreamId(0),
                                 quic::QUIC_STREAM_CANCELLED, 1, 1, 1));
-      } else {
-        quic_data1.AddWrite(SYNCHRONOUS,
-                            client_maker_.MakeRstPacket(
-                                packet_num++, false,
-                                GetNthClientInitiatedBidirectionalStreamId(0),
-                                quic::QUIC_STREAM_CANCELLED));
-      }
     }
     // Ping packet to send after migration is completed.
-    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
       quic_data1.AddWrite(SYNCHRONOUS,
                           client_maker_.MakePingPacket(packet_num++, false));
 
-    } else {
-      quic_data1.AddWrite(SYNCHRONOUS, client_maker_.MakeAckAndPingPacket(
-                                           packet_num++, false, 1, 1, 1));
-    }
   } else {
     if (version_.UsesTls()) {
       if (VersionUsesHttp3(version_.transport_version)) {
@@ -10672,10 +10616,6 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 }
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   Initialize();
   factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -11205,10 +11145,6 @@ TEST_P(QuicStreamFactoryTest,
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   Initialize();
   factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -11261,10 +11197,6 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   Initialize();
   factory_->set_is_quic_known_to_work_on_current_network(true);
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -12541,10 +12473,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 // async, and then the result matches.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncConnectAsyncStaleMatch) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -12616,10 +12544,6 @@ TEST_P(QuicStreamFactoryTest,
 // return, then connection finishes and matches with the result.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncStaleMatchConnectAsync) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -12765,10 +12689,6 @@ TEST_P(QuicStreamFactoryTest,
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, finishes before dns, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
-  if (version_.UsesTls()) {
-    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -12783,7 +12703,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
                                             kNonCachedIPAddress, "");
 
-  // Set up a different address in the stale resolvercache.
+  // Set up a different address in the stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
                      HostResolverSource::ANY, NetworkIsolationKey());
   HostCache::Entry entry(OK,
@@ -12854,10 +12774,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, dns finishes first, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
-  if (version_.UsesTls()) {
-    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -13221,10 +13137,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
 // With dns race experiment on, dns resolve async and stale connect async, dns
 // resolve returns error and then preconnect finishes
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
-  if (version_.UsesTls()) {
-    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -13235,8 +13147,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
   host_resolver_->set_ondemand_mode(true);
   host_resolver_->rules()->AddSimulatedFailure(host_port_pair_.host());
   factory_->set_is_quic_known_to_work_on_current_network(false);
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
 
   // Set up an address in stale resolver cache.
   HostCache::Key key(host_port_pair_.host(), DnsQueryType::UNSPECIFIED, 0,
@@ -13253,7 +13163,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
   // Socket data for stale connection which is supposed to disconnect.
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -13286,10 +13195,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 // resolve returns error and then preconnect fails.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceResolveAsyncErrorStaleAsyncError) {
-  if (version_.UsesTls()) {
-    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   Initialize();
@@ -13299,8 +13204,6 @@ TEST_P(QuicStreamFactoryTest,
   // Add asynchronous failure to host resolver.
   host_resolver_->set_ondemand_mode(true);
   factory_->set_is_quic_known_to_work_on_current_network(false);
-  crypto_client_stream_factory_.set_handshake_mode(
-      MockCryptoClientStream::ZERO_RTT);
   host_resolver_->rules()->AddSimulatedFailure(host_port_pair_.host());
 
   // Set up an address in stale resolver cache.
@@ -13317,7 +13220,6 @@ TEST_P(QuicStreamFactoryTest,
 
   MockQuicData quic_data(version_);
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
@@ -13396,10 +13298,6 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
 // With stale dns and migration before handshake experiment on, migration failed
 // after handshake confirmed, and then fresh resolve returns.
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
 
@@ -13475,10 +13373,6 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 // With stale dns experiment on,  the stale session is killed while waiting for
 // handshake
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   quic_params_->race_stale_dns_on_connection = true;
   host_resolver_ = std::make_unique<MockCachingHostResolver>();
   InitializeConnectionMigrationV2Test(

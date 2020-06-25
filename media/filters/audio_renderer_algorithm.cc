@@ -190,6 +190,15 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
+  if (reached_end_of_stream_ && !audio_buffer_.frames()) {
+    // Previous calls to ResampleAndFill() and OnResamplerRead() have used all
+    // of the available buffers from |audio_buffer_|. Some valid input buffers
+    // might be stuck in |resampler_.BufferedFrames()|, but the rest is silence.
+    // Forgo the few remaining valid buffers, or else we will keep playing out
+    // silence forever and never trigger any "ended" events.
+    return 0;
+  }
+
   // |resampler_| can request more than |requested_frames|, due to the
   // requests size not being aligned. To prevent having to fill it with silence,
   // we find the max number of reads it could request, and make sure we have
@@ -252,15 +261,9 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     return frames_read;
   }
 
-  // WSOLA at playback rates that are close to 1.0 produces noticeable
-  // warbling and stuttering. We prefer resampling the audio at these speeds.
-  // This does results in a noticeable pitch shift.
-  // NOTE: The cutoff values are arbitrary, and picked based off of a tradeoff
-  // between "resample pitch shift" vs "WSOLA distortions".
-  if (kLowerResampleThreshold <= playback_rate &&
-      playback_rate <= kUpperResampleThreshold) {
+  // Use resampling when no pitch adjustments are needed.
+  if (!preserves_pitch_)
     return ResampleAndFill(dest, dest_offset, requested_frames, playback_rate);
-  }
 
   // Destroy the resampler if it was used before, but it's no longer needed
   // (e.g. before playback rate has changed). This ensures that we don't try to
@@ -590,6 +593,10 @@ void AudioRendererAlgorithm::CreateSearchWrappers() {
       AudioBus::WrapVector(target_block_->frames(), active_target_channels);
   search_block_wrapper_ =
       AudioBus::WrapVector(search_block_->frames(), active_search_channels);
+}
+
+void AudioRendererAlgorithm::SetPreservesPitch(bool preserves_pitch) {
+  preserves_pitch_ = preserves_pitch;
 }
 
 }  // namespace media

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
@@ -29,6 +30,25 @@ enum HttpssvcDnsRcode {
   kNotImp,
   kRefused,
   kMaxValue = kRefused,
+};
+
+// Helper that classifies domains as experimental, control, or other. Queries
+// feature params and caches result to avoid repeated parsing.
+class NET_EXPORT_PRIVATE HttpssvcExperimentDomainCache {
+ public:
+  HttpssvcExperimentDomainCache();
+  ~HttpssvcExperimentDomainCache();
+  bool IsExperimental(base::StringPiece domain);
+  bool IsControl(base::StringPiece domain);
+
+ private:
+  bool ListContainsDomain(
+      const std::string& domain_list,
+      base::StringPiece domain,
+      base::Optional<base::flat_set<std::string>>& in_out_cached_list);
+
+  base::Optional<base::flat_set<std::string>> experimental_list_;
+  base::Optional<base::flat_set<std::string>> control_list_;
 };
 
 // Translate an RCODE value to the |HttpssvcDnsRcode| enum, which is used for

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/guid.h"
 #include "base/optional.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/network/network_status_listener_impl.h"
@@ -20,6 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using TaskParams = download::TaskManager::TaskParams;
 using network::mojom::ConnectionType;
 using testing::_;
 using testing::NiceMock;
@@ -28,6 +30,16 @@ using testing::ReturnRef;
 using testing::ReturnRefOfCopy;
 
 namespace download {
+namespace {
+
+const char kNow[] = "1 Sep 2020 01:00:00 GMT";
+
+base::Time GetNow() {
+  base::Time now;
+  bool success = base::Time::FromString(kNow, &now);
+  EXPECT_TRUE(success);
+  return now;
+}
 
 class AutoResumptionHandlerTest : public testing::Test {
  public:
@@ -42,14 +54,14 @@ class AutoResumptionHandlerTest : public testing::Test {
         network::TestNetworkConnectionTracker::GetInstance());
     auto task_manager = std::make_unique<download::test::MockTaskManager>();
     task_manager_ = task_manager.get();
-
     auto config = std::make_unique<AutoResumptionHandler::Config>();
     config->auto_resumption_size_limit = 100;
     config->is_auto_resumption_enabled_in_native = true;
+    clock_.SetNow(GetNow());
 
     auto_resumption_handler_ = std::make_unique<AutoResumptionHandler>(
-        std::move(network_listener), std::move(task_manager),
-        std::move(config));
+        std::move(network_listener), std::move(task_manager), std::move(config),
+        &clock_);
 
     std::vector<DownloadItem*> empty_list;
     auto_resumption_handler_->SetResumableDownloads(empty_list);
@@ -80,7 +92,7 @@ class AutoResumptionHandlerTest : public testing::Test {
             : download::DOWNLOAD_INTERRUPT_REASON_NONE;
     ON_CALL(*download, GetLastReason()).WillByDefault(Return(last_reason));
     ON_CALL(*download, GetDownloadSchedule())
-        .WillByDefault(ReturnRef(download_schedule_));
+        .WillByDefault(ReturnRefOfCopy(base::Optional<DownloadSchedule>()));
   }
 
   void SetNetworkConnectionType(ConnectionType connection_type) {
@@ -88,15 +100,18 @@ class AutoResumptionHandlerTest : public testing::Test {
         connection_type);
   }
 
-  void SetDownloadSchedule(DownloadSchedule download_schedule) {
-    download_schedule_ = download_schedule;
+  void SetDownloadSchedule(MockDownloadItem* download,
+                           DownloadSchedule download_schedule) {
+    base::Optional<DownloadSchedule> copy = download_schedule;
+    ON_CALL(*download, GetDownloadSchedule())
+        .WillByDefault(ReturnRefOfCopy(copy));
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
   download::test::MockTaskManager* task_manager_;
   std::unique_ptr<AutoResumptionHandler> auto_resumption_handler_;
-  base::Optional<DownloadSchedule> download_schedule_;
+  base::SimpleTestClock clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoResumptionHandlerTest);
 };
@@ -236,7 +251,8 @@ TEST_F(AutoResumptionHandlerTest,
   // Start the task. It should resume all downloads.
   EXPECT_CALL(*item.get(), Resume(_)).Times(1);
   TaskFinishedCallback callback;
-  auto_resumption_handler_->OnStartScheduledTask(std::move(callback));
+  auto_resumption_handler_->OnStartScheduledTask(
+      DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK, std::move(callback));
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
@@ -248,7 +264,8 @@ TEST_F(AutoResumptionHandlerTest, DownloadWithoutTargetPathNotAutoResumed) {
   task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_CALL(*item.get(), Resume(_)).Times(0);
-  auto_resumption_handler_->OnStartScheduledTask(base::DoNothing());
+  auto_resumption_handler_->OnStartScheduledTask(
+      DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK, base::DoNothing());
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
@@ -257,13 +274,15 @@ TEST_F(AutoResumptionHandlerTest, DownloadLaterStartFutureNotAutoResumed) {
   SetNetworkConnectionType(ConnectionType::CONNECTION_WIFI);
   auto item = std::make_unique<NiceMock<MockDownloadItem>>();
   base::Time future_time = base::Time::Now() + base::TimeDelta::FromDays(10);
-  SetDownloadSchedule(DownloadSchedule(false /*only_on_wifi*/, future_time));
+  SetDownloadSchedule(item.get(),
+                      DownloadSchedule(false /*only_on_wifi*/, future_time));
   SetDownloadState(item.get(), DownloadItem::INTERRUPTED, false, false, false);
   auto_resumption_handler_->OnDownloadStarted(item.get());
   task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_CALL(*item.get(), Resume(_)).Times(0);
-  auto_resumption_handler_->OnStartScheduledTask(base::DoNothing());
+  auto_resumption_handler_->OnStartScheduledTask(
+      DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK, base::DoNothing());
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
@@ -272,7 +291,8 @@ TEST_F(AutoResumptionHandlerTest, DownloadLaterStartFutureNotAutoResumed) {
 TEST_F(AutoResumptionHandlerTest, DownloadLaterMeteredAutoResumed) {
   SetNetworkConnectionType(ConnectionType::CONNECTION_3G);
   auto item = std::make_unique<NiceMock<MockDownloadItem>>();
-  SetDownloadSchedule(DownloadSchedule(true /*only_on_wifi*/, base::nullopt));
+  SetDownloadSchedule(item.get(),
+                      DownloadSchedule(true /*only_on_wifi*/, base::nullopt));
   SetDownloadState(item.get(), DownloadItem::INTERRUPTED, false,
                    true /*allow_metered*/);
 
@@ -280,8 +300,10 @@ TEST_F(AutoResumptionHandlerTest, DownloadLaterMeteredAutoResumed) {
   task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_CALL(*item.get(), Resume(_));
-  auto_resumption_handler_->OnStartScheduledTask(base::DoNothing());
+  auto_resumption_handler_->OnStartScheduledTask(
+      DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK, base::DoNothing());
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
+}  // namespace
 }  // namespace download

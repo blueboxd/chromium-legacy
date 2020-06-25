@@ -51,6 +51,10 @@ class MEDIA_EXPORT Renderer {
   // thresholds.
   virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
 
+  // Sets whether pitch adjustment should be applied when the playback rate is
+  // different than 1.0.
+  virtual void SetPreservesPitch(bool preserves_pitch);
+
   // The following functions must be called after Initialize().
 
   // Discards any buffered data, executing |flush_cb| when completed.

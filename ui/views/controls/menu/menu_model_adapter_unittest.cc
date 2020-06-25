@@ -78,6 +78,10 @@ class MenuModelBase : public ui::MenuModel {
 
   bool IsVisibleAt(int index) const override { return items_[index].visible; }
 
+  bool IsNewFeatureAt(int index) const override {
+    return items_[index].new_feature;
+  }
+
   MenuModel* GetSubmenuModelAt(int index) const override {
     return items_[index].submenu;
   }
@@ -117,6 +121,7 @@ class MenuModelBase : public ui::MenuModel {
     ui::MenuModel* submenu;
     bool enabled;
     bool visible;
+    bool new_feature = false;
   };
 
   const Item& GetItemDefinition(size_t index) { return items_[index]; }
@@ -155,6 +160,7 @@ class ActionableSubmenuModel : public MenuModelBase {
   ActionableSubmenuModel() : MenuModelBase(kActionableSubmenuIdBase) {
     items_.emplace_back(TYPE_COMMAND, "actionable submenu item 0", nullptr);
     items_.emplace_back(TYPE_COMMAND, "actionable submenu item 1", nullptr);
+    items_[1].new_feature = true;
   }
   ~ActionableSubmenuModel() override = default;
 
@@ -246,6 +252,9 @@ void CheckSubmenu(const RootModel& model,
     // Check visibility.
     EXPECT_EQ(model_item.visible, item->GetVisible());
 
+    // Check new feature flag.
+    EXPECT_EQ(model_item.new_feature, item->is_new());
+
     // Check activation.
     static_cast<views::MenuDelegate*>(delegate)->ExecuteCommand(id);
     EXPECT_EQ(i, size_t{submodel->last_activation()});
@@ -323,6 +332,9 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check visibility.
     EXPECT_EQ(model_item.visible, item->GetVisible());
+
+    // Check visibility.
+    EXPECT_EQ(model_item.new_feature, item->is_new());
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);

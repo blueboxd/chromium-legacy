@@ -114,7 +114,7 @@ inline bool MatchesBMPSignature(const char* contents) {
 constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
 // static
-String SniffImageTypeInternal(scoped_refptr<SegmentReader> reader) {
+String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
   // At least kLongestSignatureLength bytes are needed to sniff the signature.
   if (reader->size() < kLongestSignatureLength)
     return String();
@@ -161,7 +161,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     const ColorBehavior& color_behavior,
     const OverrideAllowDecodeToYuv allow_decode_to_yuv,
     const SkISize& desired_size) {
-  auto type = SniffImageTypeInternal(data);
+  auto type = SniffMimeTypeInternal(data);
   if (type.IsEmpty())
     return nullptr;
 
@@ -171,13 +171,13 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     high_bit_depth_decoding_option = kDefaultBitDepth;
   }
 
-  return CreateByImageType(type, std::move(data), data_complete, alpha_option,
-                           high_bit_depth_decoding_option, color_behavior,
-                           allow_decode_to_yuv, desired_size);
+  return CreateByMimeType(type, std::move(data), data_complete, alpha_option,
+                          high_bit_depth_decoding_option, color_behavior,
+                          allow_decode_to_yuv, desired_size);
 }
 
-std::unique_ptr<ImageDecoder> ImageDecoder::CreateByImageType(
-    String image_type,
+std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
+    String mime_type,
     scoped_refptr<SegmentReader> data,
     bool data_complete,
     AlphaOption alpha_option,
@@ -191,31 +191,31 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByImageType(
   // Note: The mime types below should match those supported by
   // MimeUtil::IsSupportedImageMimeType().
   std::unique_ptr<ImageDecoder> decoder;
-  if (image_type == "image/jpeg" || image_type == "image/pjpeg" ||
-      image_type == "image/jpg") {
+  if (mime_type == "image/jpeg" || mime_type == "image/pjpeg" ||
+      mime_type == "image/jpg") {
     decoder = std::make_unique<JPEGImageDecoder>(
         alpha_option, color_behavior, max_decoded_bytes, allow_decode_to_yuv);
-  } else if (image_type == "image/png" || image_type == "image/x-png" ||
-             image_type == "image/apng") {
+  } else if (mime_type == "image/png" || mime_type == "image/x-png" ||
+             mime_type == "image/apng") {
     decoder = std::make_unique<PNGImageDecoder>(
         alpha_option, high_bit_depth_decoding_option, color_behavior,
         max_decoded_bytes);
-  } else if (image_type == "image/gif") {
+  } else if (mime_type == "image/gif") {
     decoder = std::make_unique<GIFImageDecoder>(alpha_option, color_behavior,
                                                 max_decoded_bytes);
-  } else if (image_type == "image/webp") {
+  } else if (mime_type == "image/webp") {
     decoder = std::make_unique<WEBPImageDecoder>(alpha_option, color_behavior,
                                                  max_decoded_bytes);
-  } else if (image_type == "image/x-icon" ||
-             image_type == "image/vnd.microsoft.icon") {
+  } else if (mime_type == "image/x-icon" ||
+             mime_type == "image/vnd.microsoft.icon") {
     decoder = std::make_unique<ICOImageDecoder>(alpha_option, color_behavior,
                                                 max_decoded_bytes);
-  } else if (image_type == "image/bmp" || image_type == "image/x-xbitmap") {
+  } else if (mime_type == "image/bmp" || mime_type == "image/x-xbitmap") {
     decoder = std::make_unique<BMPImageDecoder>(alpha_option, color_behavior,
                                                 max_decoded_bytes);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   } else if (base::FeatureList::IsEnabled(features::kAVIF) &&
-             image_type == "image/avif") {
+             mime_type == "image/avif") {
     decoder = std::make_unique<AVIFImageDecoder>(
         alpha_option, high_bit_depth_decoding_option, color_behavior,
         max_decoded_bytes);
@@ -228,13 +228,13 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByImageType(
   return decoder;
 }
 
-bool ImageDecoder::HasSufficientDataToSniffImageType(const SharedBuffer& data) {
+bool ImageDecoder::HasSufficientDataToSniffMimeType(const SharedBuffer& data) {
   return data.size() >= kLongestSignatureLength;
 }
 
 // static
-String ImageDecoder::SniffImageType(scoped_refptr<SharedBuffer> image_data) {
-  return SniffImageTypeInternal(
+String ImageDecoder::SniffMimeType(scoped_refptr<SharedBuffer> image_data) {
+  return SniffMimeTypeInternal(
       SegmentReader::CreateFromSharedBuffer(std::move(image_data)));
 }
 
@@ -249,8 +249,8 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
   // (for example, due to a misconfigured web server), then it is possible that
   // the wrong compression format will be returned. However, this case should be
   // exceedingly rare.
-  if (image_data && HasSufficientDataToSniffImageType(*image_data.get()))
-    mime_type = SniffImageType(image_data);
+  if (image_data && HasSufficientDataToSniffMimeType(*image_data.get()))
+    mime_type = SniffMimeType(image_data);
   if (!mime_type)
     return kUndefinedFormat;
 

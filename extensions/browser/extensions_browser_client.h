@@ -349,6 +349,11 @@ class ExtensionsBrowserClient {
   virtual bool ShouldForceWebRequestExtraHeaders(
       content::BrowserContext* context) const;
 
+  // Gets and sets the last save (download) path for a given context.
+  virtual base::FilePath GetSaveFilePath(content::BrowserContext* context);
+  virtual void SetLastSaveFilePath(content::BrowserContext* context,
+                                   const base::FilePath& path);
+
   // Retrieves the media router access logger for this session.
   virtual const MediaRouterExtensionAccessLogger* GetMediaRouterAccessLogger()
       const;

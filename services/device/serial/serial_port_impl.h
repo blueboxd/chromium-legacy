@@ -49,12 +49,10 @@ class SerialPortImpl : public mojom::SerialPort {
 
   // mojom::SerialPort methods:
   void Open(mojom::SerialConnectionOptionsPtr options,
-            mojo::ScopedDataPipeConsumerHandle in_stream,
-            mojo::ScopedDataPipeProducerHandle out_stream,
             mojo::PendingRemote<mojom::SerialPortClient> client,
             OpenCallback callback) override;
-  void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
-  void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
+  void StartWriting(mojo::ScopedDataPipeConsumerHandle consumer) override;
+  void StartReading(mojo::ScopedDataPipeProducerHandle producer) override;
   void Flush(FlushCallback callback) override;
   void GetControlSignals(GetControlSignalsCallback callback) override;
   void SetControlSignals(mojom::SerialHostControlSignalsPtr signals,
@@ -64,7 +62,6 @@ class SerialPortImpl : public mojom::SerialPort {
   void GetPortInfo(GetPortInfoCallback callback) override;
   void Close(CloseCallback callback) override;
 
-  void OnOpenCompleted(OpenCallback callback, bool success);
   void WriteToPort(MojoResult result, const mojo::HandleSignalsState& state);
   void OnWriteToPortCompleted(uint32_t bytes_expected,
                               uint32_t bytes_sent,

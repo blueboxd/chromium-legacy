@@ -21,6 +21,7 @@ struct MyStruct {
   SomeClass* in_out_via_ptr;
   SomeClass* in_out_via_ref;
   SomeClass* in_out_via_auto_reset;
+  SomeClass* not_in_out;
 };
 
 template <typename T>
@@ -45,11 +46,38 @@ void GetViaRef(SomeClass*& out_ptr) {
   out_ptr = nullptr;
 }
 
+// Based on trace_event_internal::AddTraceEvent.  This test verifies that
+// regular references are covered, but RValue references are excluded.
+template <typename T>
+void GetViaRValue(T&& param) {}
+
+// Based on base::Bind.  Verifies that RValue references are excluded when used
+// as a template parameter pack.
+template <typename... TArgs>
+void GetViaRValuePack(TArgs&&... param_pack) {}
+
+// Based on std::sort.  Verifies that undecorated, plain |T| is not matched
+// (e.g. when it is hypothetically instantiated as something like
+// |SomeClass*&|).
+template <typename T>
+void GetViaPlainT(T t) {}
+
 void foo() {
   MyStruct my_struct;
   GetViaPtr(&my_struct.in_out_via_ptr);
   GetViaRef(my_struct.in_out_via_ref);
   AutoReset<SomeClass*> auto_reset1(&my_struct.in_out_via_auto_reset, nullptr);
+
+  // RValue references should *not* appear in the "FIELD FILTERS" section of the
+  // output, with "in-out-param-ref" tag (this requires special care in the
+  // rewriter, because a RValueReferenceType is derived from ReferenceType).
+  GetViaRValue(my_struct.not_in_out);
+  GetViaRValuePack(my_struct.not_in_out);
+  GetViaRValuePack(1, 2, 3, my_struct.not_in_out);
+
+  // Plain T template parameters should *not* appear in the "FIELD FILETS"
+  // section of the output.
+  GetViaRValuePack(my_struct.not_in_out);
 }
 
 template <typename T>

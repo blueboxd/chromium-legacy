@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/i18n/case_conversion.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
@@ -118,7 +119,12 @@ void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
   if (text_classifier_) {
     TextAnnotationRequestPtr text_annotation_request =
         machine_learning::mojom::TextAnnotationRequest::New();
-    text_annotation_request->text = request.selected_text;
+
+    // TODO(b/159664194): There is a issue with text classifier that some
+    // capitalized words are not annotated properly. Convert the text to lower
+    // case for now. Clean up after the issue is fixed.
+    text_annotation_request->text = base::UTF16ToUTF8(
+        base::i18n::ToLower(base::UTF8ToUTF16(request.selected_text)));
     text_annotation_request->default_locales =
         request.context.device_properties.language;
 
@@ -157,6 +163,12 @@ void IntentGenerator::SetLanguageDetectorForTesting(
 void IntentGenerator::MaybeGenerateTranslationIntent(
     const QuickAnswersRequest& request) {
   DCHECK(complete_callback_);
+
+  if (!features::IsQuickAnswersTranslationEnabled()) {
+    std::move(complete_callback_)
+        .Run(request.selected_text, IntentType::kUnknown);
+    return;
+  }
 
   // Don't do language detection if no device language is provided or the length
   // of selected text is above the threshold. Returns unknown intent type.

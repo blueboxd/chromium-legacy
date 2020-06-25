@@ -45,7 +45,9 @@ public class LensUtils {
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
             "useSearchByImageText";
     private static final String LENS_SHOPPING_ALLOWLIST_ENTRIES_FEATURE_PARAM_NAME =
-            "AllowlistEntries";
+            "allowlistEntries";
+    private static final String LENS_SHOPPING_URL_PATTERNS_FEATURE_PARAM_NAME =
+            "shoppingUrlPatterns";
     private static final String LOG_UKM_PARAM_NAME = "logUkm";
     private static final String SEND_SRC_PARAM_NAME = "sendSrc";
     private static final String SEND_ALT_PARAM_NAME = "sendAlt";
@@ -54,12 +56,14 @@ public class LensUtils {
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT = "11.16";
     private static final String LENS_INTENT_TYPE_LENS_CHROME_SHOPPING = "18";
     private static final String LENS_SHOPPING_FEATURE_FLAG_VARIANT_NAME = "lensShopVariation";
+    private static final String LENS_DEFAULT_SHOPPING_URL_PATTERNS =
+            "^https://www.google.com/shopping/.*|^https://www.google.com/.*tbm=shop.*";
 
     /**
      * See function for details.
      */
     private static boolean sFakePassableLensEnvironmentForTesting;
-    private static boolean sFakeImageSrcUrlInAllowlist;
+    private static boolean sFakeImageUrlInShoppingAllowlistForTesting;
     private static String sFakeVariationsForTesting;
     /** Supported Lens intent types. */
     @IntDef({
@@ -81,8 +85,9 @@ public class LensUtils {
         sFakePassableLensEnvironmentForTesting = shouldFake;
     }
 
-    public static void setFakeImageSrlUrlInAllowlist(final boolean shouldFake) {
-        sFakeImageSrcUrlInAllowlist = shouldFake;
+    @VisibleForTesting
+    public static void setFakeImageUrlInShoppingAllowlistForTesting(final boolean shouldFake) {
+        sFakeImageUrlInShoppingAllowlistForTesting = shouldFake;
     }
 
     /*
@@ -362,17 +367,27 @@ public class LensUtils {
      * list of Entry names (as strings).
      */
     public static String getAllowlistEntries() {
-        // TODO(yusuyoutube): Create a default allowlist to support QA testing.
         return ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
                 LENS_SHOPPING_ALLOWLIST_ENTRIES_FEATURE_PARAM_NAME);
     }
 
     /**
-     * Check if the uri domain is in the Lens shopping domain Allowlist.
+     * Gets the list of shopping url patterns(regex) as String. Format is a "||" separated
+     * list of regex strings.
      */
-    public static boolean isInDomainAllowlist(final String url) {
-        if (sFakeImageSrcUrlInAllowlist) {
+    public static String getShoppingUrlPatterns() {
+        return ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
+                LENS_SHOPPING_URL_PATTERNS_FEATURE_PARAM_NAME);
+    }
+
+    /**
+     * Check if the page uri to determine whether the image is shoppable.
+     * @return true if the image is shoppable.
+     */
+    public static boolean isInShoppingAllowlist(final String url) {
+        if (sFakeImageUrlInShoppingAllowlistForTesting) {
             return true;
         }
 
@@ -380,19 +395,7 @@ public class LensUtils {
             return false;
         }
 
-        final String allowlistEntries = getAllowlistEntries();
-        if (allowlistEntries == null || allowlistEntries.isEmpty()) {
-            return false;
-        }
-
-        final String[] allowlist = allowlistEntries.split(",");
-        for (final String allowlistEntry : allowlist) {
-            if (url.contains(allowlistEntry)) {
-                return true;
-            }
-        }
-
-        return false;
+        return hasShoppingUrlPattern(url) || isInDomainAllowList(url);
     }
 
     /*
@@ -410,6 +413,35 @@ public class LensUtils {
             return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS, LOG_UKM_PARAM_NAME,
                     true);
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the uri matches any shopping url patterns.
+     */
+    private static boolean hasShoppingUrlPattern(final String url) {
+        String shoppingUrlPatterns = getShoppingUrlPatterns();
+        if (shoppingUrlPatterns == null || shoppingUrlPatterns.isEmpty()) {
+            // Fallback to default shopping url patterns.
+            shoppingUrlPatterns = LENS_DEFAULT_SHOPPING_URL_PATTERNS;
+        }
+
+        return url.matches(shoppingUrlPatterns);
+    }
+
+    /**
+     * Check if the uri domain is in the Lens shopping domain Allowlist.
+     */
+    private static boolean isInDomainAllowList(final String url) {
+        final String allowlistEntries = getAllowlistEntries();
+        final String[] allowlist = allowlistEntries.split(",");
+
+        for (final String allowlistEntry : allowlist) {
+            if (allowlistEntry.length() > 0 && url.contains(allowlistEntry)) {
+                return true;
+            }
         }
 
         return false;

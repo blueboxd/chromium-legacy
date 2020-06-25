@@ -141,7 +141,7 @@ inline Document* StyleEngine::HTMLImportRootDocument() {
   // destructor.
   if (!import)
     return nullptr;
-  return import->Master();
+  return import->TreeRoot();
 }
 
 TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
@@ -784,7 +784,7 @@ void StyleEngine::MarkDocumentDirty() {
   document_scope_dirty_ = true;
   document_style_sheet_collection_->MarkSheetListDirty();
   if (GetDocument().ImportLoader())
-    GetDocument().MasterDocument().GetStyleEngine().MarkDocumentDirty();
+    GetDocument().TreeRootDocument().GetStyleEngine().MarkDocumentDirty();
   else
     GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
@@ -1449,7 +1449,10 @@ void StyleEngine::ViewportRulesChanged() {
 
 void StyleEngine::HtmlImportAddedOrRemoved() {
   if (GetDocument().ImportLoader()) {
-    GetDocument().MasterDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
+    GetDocument()
+        .TreeRootDocument()
+        .GetStyleEngine()
+        .HtmlImportAddedOrRemoved();
     return;
   }
 

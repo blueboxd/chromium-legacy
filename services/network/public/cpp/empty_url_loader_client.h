@@ -23,24 +23,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClient
     : public mojom::URLLoaderClient,
       public mojo::DataPipeDrainer::Client {
  public:
-  // Binds |client_receiver| to a newly constructed EmptyURLLoaderClient which
-  // will drain/discard all callbacks/data.  Takes ownership of |url_loader| and
-  // discards it (together with EmptyURLLoaderClient) when the URL request has
-  // been completed. If |callback| is provided, it is called once
-  // the request has completed.
-  static void DrainURLRequest(
-      mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-      mojo::PendingRemote<mojom::URLLoader> url_loader,
-      base::OnceClosure callback);
+  EmptyURLLoaderClient();
+  ~EmptyURLLoaderClient() override;
+
+  // Calls |callback| when the request is done.
+  void Drain(base::OnceClosure callback);
 
  private:
-  EmptyURLLoaderClient(
-      mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-      mojo::PendingRemote<mojom::URLLoader> url_loader,
-      base::OnceClosure callback);
-
-  ~EmptyURLLoaderClient() override;
-  void DeleteSelf();
+  void MaybeDone();
 
   // mojom::URLLoaderClient overrides:
   void OnReceiveResponse(mojom::URLResponseHeadPtr head) override;
@@ -59,15 +49,37 @@ class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClient
   void OnDataAvailable(const void* data, size_t num_bytes) override;
   void OnDataComplete() override;
 
-  mojo::Receiver<mojom::URLLoaderClient> receiver_;
-
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
 
-  mojo::Remote<mojom::URLLoader> url_loader_;
-
+  bool done_ = false;
   base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyURLLoaderClient);
+};
+
+// Self-owned helper class for using EmptyURLLoaderClient.
+class COMPONENT_EXPORT(NETWORK_CPP) EmptyURLLoaderClientWrapper {
+ public:
+  // Binds |client_receiver| to a newly constructed EmptyURLLoaderClient which
+  // will drain/discard all callbacks/data. Takes ownership of |url_loader| and
+  // discards it (together with EmptyURLLoaderClient) when the URL request has
+  // been completed.
+  static void DrainURLRequest(
+      mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
+      mojo::PendingRemote<mojom::URLLoader> url_loader);
+
+  ~EmptyURLLoaderClientWrapper();
+
+ private:
+  EmptyURLLoaderClientWrapper(
+      mojo::PendingReceiver<mojom::URLLoaderClient> receiver,
+      mojo::PendingRemote<mojom::URLLoader> url_loader);
+
+  void DeleteSelf();
+
+  EmptyURLLoaderClient client_;
+  mojo::Receiver<mojom::URLLoaderClient> receiver_;
+  mojo::Remote<mojom::URLLoader> url_loader_;
 };
 
 }  // namespace network

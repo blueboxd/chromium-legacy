@@ -364,6 +364,10 @@ void End2EndTestRenderer::SetLatencyHint(
   courier_renderer_->SetLatencyHint(latency_hint);
 }
 
+void End2EndTestRenderer::SetPreservesPitch(bool preserves_pitch) {
+  courier_renderer_->SetPreservesPitch(preserves_pitch);
+}
+
 void End2EndTestRenderer::Flush(base::OnceClosure flush_cb) {
   courier_renderer_->Flush(std::move(flush_cb));
 }

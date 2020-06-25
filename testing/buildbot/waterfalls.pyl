@@ -211,6 +211,16 @@
           'all',
         ],
       },
+      'android-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'fuchsia-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'linux-archive-dbg': {
         'additional_compile_targets': [
           'all',
@@ -226,6 +236,11 @@
         'test_suites': {
           'scripts': 'public_build_scripts',
         },
+      },
+      'linux-official': {
+        'additional_compile_targets': [
+          'all',
+        ],
       },
       'mac-archive-dbg': {
         'additional_compile_targets': [

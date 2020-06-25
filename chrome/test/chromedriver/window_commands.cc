@@ -440,6 +440,175 @@ bool IsRepeatedClickEvent(float x,
   return true;
 }
 
+const char kLandscape[] = "landscape";
+const char kPortrait[] = "portrait";
+
+Status ParseOrientation(const base::DictionaryValue& params,
+                        std::string* orientation) {
+  bool has_value;
+  if (!GetOptionalString(&params, "orientation", orientation, &has_value)) {
+    return Status(kInvalidArgument, "'orientation' must be a string");
+  }
+
+  if (!has_value) {
+    *orientation = kPortrait;
+  } else if (*orientation != kPortrait && *orientation != kLandscape) {
+    return Status(kInvalidArgument, "'orientation' must be '" +
+                                        std::string(kPortrait) + "' or '" +
+                                        std::string(kLandscape) + "'");
+  }
+  return Status(kOk);
+}
+
+Status ParseScale(const base::DictionaryValue& params, double* scale) {
+  bool has_value;
+  if (!GetOptionalDouble(&params, "scale", scale, &has_value)) {
+    return Status(kInvalidArgument, "'scale' must be a double");
+  }
+
+  if (!has_value) {
+    *scale = 1;
+  } else if (*scale < 0.1 || *scale > 2) {
+    return Status(kInvalidArgument, "'scale' must not be < 0.1 or > 2");
+  }
+  return Status(kOk);
+}
+
+Status ParseBoolean(const base::DictionaryValue& params,
+                    const std::string& name,
+                    bool default_value,
+                    bool* b) {
+  *b = default_value;
+  if (!GetOptionalBool(&params, name, b)) {
+    return Status(kInvalidArgument, "'" + name + "' must be a boolean");
+  }
+  return Status(kOk);
+}
+
+Status GetNonNegativeDouble(const base::DictionaryValue* dict,
+                            const std::string& parent,
+                            const std::string& child,
+                            double* attribute) {
+  bool has_value;
+  std::string attributeStr = "'" + parent + "." + child + "'";
+  if (!GetOptionalDouble(dict, child, attribute, &has_value)) {
+    return Status(kInvalidArgument, attributeStr + " must be a double");
+  }
+
+  if (has_value) {
+    *attribute = ConvertCentimeterToInch(*attribute);
+    if (*attribute < 0) {
+      return Status(kInvalidArgument,
+                    attributeStr + " must not be less than 0");
+    }
+  }
+  return Status(kOk);
+}
+
+struct Page {
+  double width;
+  double height;
+};
+
+Status ParsePage(const base::DictionaryValue& params, Page* page) {
+  bool has_value;
+  const base::DictionaryValue* page_dict;
+  if (!GetOptionalDictionary(&params, "page", &page_dict, &has_value)) {
+    return Status(kInvalidArgument, "'page' must be an object");
+  }
+  page->width = ConvertCentimeterToInch(21.59);
+  page->height = ConvertCentimeterToInch(27.94);
+  if (!has_value)
+    return Status(kOk);
+
+  Status status =
+      GetNonNegativeDouble(page_dict, "page", "width", &page->width);
+  if (status.IsError())
+    return status;
+
+  status = GetNonNegativeDouble(page_dict, "page", "height", &page->height);
+  if (status.IsError())
+    return status;
+
+  return Status(kOk);
+}
+
+struct Margin {
+  double top;
+  double bottom;
+  double left;
+  double right;
+};
+
+Status ParseMargin(const base::DictionaryValue& params, Margin* margin) {
+  bool has_value;
+  const base::DictionaryValue* margin_dict;
+  if (!GetOptionalDictionary(&params, "margin", &margin_dict, &has_value)) {
+    return Status(kInvalidArgument, "'margin' must be an object");
+  }
+
+  margin->top = ConvertCentimeterToInch(1.0);
+  margin->bottom = ConvertCentimeterToInch(1.0);
+  margin->left = ConvertCentimeterToInch(1.0);
+  margin->right = ConvertCentimeterToInch(1.0);
+
+  if (!has_value)
+    return Status(kOk);
+
+  Status status =
+      GetNonNegativeDouble(margin_dict, "margin", "top", &margin->top);
+  if (status.IsError())
+    return status;
+
+  status =
+      GetNonNegativeDouble(margin_dict, "margin", "bottom", &margin->bottom);
+  if (status.IsError())
+    return status;
+
+  status = GetNonNegativeDouble(margin_dict, "margin", "left", &margin->left);
+  if (status.IsError())
+    return status;
+
+  status = GetNonNegativeDouble(margin_dict, "margin", "right", &margin->right);
+  if (status.IsError())
+    return status;
+
+  return Status(kOk);
+}
+
+Status ParsePageRanges(const base::DictionaryValue& params,
+                       std::string* pageRanges) {
+  bool has_value;
+  const base::ListValue* page_range_list = nullptr;
+  if (!GetOptionalList(&params, "pageRanges", &page_range_list, &has_value)) {
+    return Status(kInvalidArgument, "'pageRanges' must be an array");
+  }
+
+  if (!has_value) {
+    return Status(kOk);
+  }
+
+  std::vector<std::string> ranges;
+  int page;
+  std::string pages_str;
+  for (const base::Value& page_range : *page_range_list) {
+    if (page_range.GetAsInteger(&page)) {
+      if (page < 0) {
+        return Status(kInvalidArgument,
+                      "a Number entry in 'pageRanges' must not be less than 0");
+      }
+      ranges.push_back(base::NumberToString(page));
+    } else if (page_range.GetAsString(&pages_str)) {
+      ranges.push_back(pages_str);
+    } else {
+      return Status(kInvalidArgument,
+                    "an entry in 'pageRanges' must be a Number or String");
+    }
+  }
+
+  *pageRanges = base::JoinString(ranges, ",");
+  return Status(kOk);
+}
 }  // namespace
 
 Status ExecuteWindowCommand(const WindowCommand& command,
@@ -1792,6 +1961,69 @@ Status ExecuteScreenshot(Session* session,
     return status;
 
   value->reset(new base::Value(screenshot));
+  return Status(kOk);
+}
+
+Status ExecutePrint(Session* session,
+                    WebView* web_view,
+                    const base::DictionaryValue& params,
+                    std::unique_ptr<base::Value>* value,
+                    Timeout* timeout) {
+  std::string orientation;
+  Status status = ParseOrientation(params, &orientation);
+  if (status.IsError())
+    return status;
+
+  double scale;
+  status = ParseScale(params, &scale);
+  if (status.IsError())
+    return status;
+
+  bool background;
+  status = ParseBoolean(params, "background", false, &background);
+  if (status.IsError())
+    return status;
+
+  Page page;
+  status = ParsePage(params, &page);
+  if (status.IsError())
+    return status;
+
+  Margin margin;
+  status = ParseMargin(params, &margin);
+  if (status.IsError())
+    return status;
+
+  bool shrinkToFit;
+  status = ParseBoolean(params, "shrinkToFit", true, &shrinkToFit);
+  if (status.IsError())
+    return status;
+
+  std::string pageRanges;
+  status = ParsePageRanges(params, &pageRanges);
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue printParams;
+  printParams.SetBoolean(kLandscape, orientation == kLandscape);
+  printParams.SetDouble("scale", scale);
+  printParams.SetBoolean("printBackground", background);
+  printParams.SetDouble("paperWidth", page.width);
+  printParams.SetDouble("paperHeight", page.height);
+  printParams.SetDouble("marginTop", margin.top);
+  printParams.SetDouble("marginBottom", margin.bottom);
+  printParams.SetDouble("marginLeft", margin.left);
+  printParams.SetDouble("marginRight", margin.right);
+  printParams.SetBoolean("preferCSSPageSize", !shrinkToFit);
+  printParams.SetString("pageRanges", pageRanges);
+  printParams.SetString("transferMode", "ReturnAsBase64");
+
+  std::string pdf;
+  status = web_view->PrintToPDF(printParams, &pdf);
+  if (status.IsError())
+    return status;
+
+  *value = std::make_unique<base::Value>(pdf);
   return Status(kOk);
 }
 

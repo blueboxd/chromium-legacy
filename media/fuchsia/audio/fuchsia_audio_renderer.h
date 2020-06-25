@@ -43,6 +43,7 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   void StartPlaying() final;
   void SetVolume(float volume) final;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
+  void SetPreservesPitch(bool preserves_pitch) final;
 
   // TimeSource implementation.
   void StartTicking() final;

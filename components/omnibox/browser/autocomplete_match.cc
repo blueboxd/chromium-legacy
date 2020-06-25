@@ -626,7 +626,9 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          type == AutocompleteMatchType::TILE_SUGGESTION ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
+         type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         type == AutocompleteMatchType::CLIPBOARD_IMAGE;
 }
 
 // static

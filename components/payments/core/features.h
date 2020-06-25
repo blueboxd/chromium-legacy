@@ -72,6 +72,9 @@ extern const base::Feature kDownRankJustInTimePaymentApp;
 // window size.
 extern const base::Feature kPaymentHandlerPopUpSizeWindow;
 
+// Used to test icon refetch for JIT installed apps with missing icons.
+extern const base::Feature kAllowJITInstallationWhenAppIconIsMissing;
+
 }  // namespace features
 }  // namespace payments
 

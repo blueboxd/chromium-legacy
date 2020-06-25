@@ -166,6 +166,7 @@ check_targets = [
   "//chrome/browser/prerender/*",
   "//chrome/browser/previews/*",
   "//chrome/browser/printing/*",
+  "//chrome/browser/privacy_budget/*",
   "//chrome/browser/profile_resetter/*",
   "//chrome/browser/profiles/*",
 
@@ -344,6 +345,7 @@ check_targets = [
 
   # "//third_party/blink/*",  # Errors: https://crbug.com/800764
   "//third_party/blink/public/*",
+  "//third_party/blink/common/privacy_budget/*",
 
   #"//third_party/breakpad/*",  # Small errors.
   "//third_party/boringssl/*",

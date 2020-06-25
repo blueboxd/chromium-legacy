@@ -2669,6 +2669,40 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
         base::size(kExceptionsForEntry78),  // exceptions count
         kExceptionsForEntry78,              // exceptions
     },
+    {
+        79,  // id
+        "GpuControlListEntryTest.DeviceRevisionUnspecifiedEntry",
+        base::size(kFeatureListForGpuControlTestingEntry79),  // features size
+        kFeatureListForGpuControlTestingEntry79,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsWin,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},                                        // os_version
+            0x1002,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry79),  // Devices size
+            kDevicesForGpuControlTestingEntry79,              // Devices
+            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+            nullptr,                                // driver info
+            nullptr,                                // GL strings
+            nullptr,                                // machine model info
+            0,                                      // intel_gpu_series size
+            nullptr,                                // intel_gpu_series
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry79_1440601243,  // more data
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    },
 };
-const size_t kGpuControlListTestingEntryCount = 78;
+const size_t kGpuControlListTestingEntryCount = 79;
 }  // namespace gpu

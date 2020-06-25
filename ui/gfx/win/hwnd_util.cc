@@ -4,6 +4,9 @@
 
 #include "ui/gfx/win/hwnd_util.h"
 
+#include <windows.h>
+
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
@@ -51,17 +54,31 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
 
 // Don't inline these functions so they show up in crash reports.
 
-NOINLINE void CrashOutOfMemory() {
-  PLOG(FATAL);
+NOINLINE void CrashOutOfMemory(DWORD last_error) {
+  // Record Graphics Device Interface (GDI) object counts so they are visible in
+  // the crash's minidump. By default, GDI and USER handles are limited to
+  // 10,000 each per process and 65,535 each globally, exceeding which typically
+  // indicates a leak of GDI resources.
+  const HANDLE process = ::GetCurrentProcess();
+  DWORD num_process_gdi_handles = ::GetGuiResources(process, GR_GDIOBJECTS);
+  DWORD num_process_user_handles = ::GetGuiResources(process, GR_USEROBJECTS);
+  DWORD num_global_gdi_handles = ::GetGuiResources(GR_GLOBAL, GR_GDIOBJECTS);
+  DWORD num_global_user_handles = ::GetGuiResources(GR_GLOBAL, GR_USEROBJECTS);
+  base::debug::Alias(&num_process_gdi_handles);
+  base::debug::Alias(&num_process_user_handles);
+  base::debug::Alias(&num_global_gdi_handles);
+  base::debug::Alias(&num_global_user_handles);
+
+  LOG(FATAL) << last_error;
 }
 
-NOINLINE void CrashAccessDenied() {
-  PLOG(FATAL);
+NOINLINE void CrashAccessDenied(DWORD last_error) {
+  LOG(FATAL) << last_error;
 }
 
 // Crash isn't one of the ones we commonly see.
-NOINLINE void CrashOther() {
-  PLOG(FATAL);
+NOINLINE void CrashOther(DWORD last_error) {
+  LOG(FATAL) << last_error;
 }
 
 }  // namespace
@@ -183,20 +200,20 @@ void CenterAndSizeWindow(HWND parent,
   AdjustWindowToFit(window, window_bounds, !parent);
 }
 
-void CheckWindowCreated(HWND hwnd) {
+void CheckWindowCreated(HWND hwnd, DWORD last_error) {
   if (!hwnd) {
-    switch (GetLastError()) {
+    switch (last_error) {
       case ERROR_NOT_ENOUGH_MEMORY:
-        CrashOutOfMemory();
+        CrashOutOfMemory(last_error);
         break;
       case ERROR_ACCESS_DENIED:
-        CrashAccessDenied();
+        CrashAccessDenied(last_error);
         break;
       default:
-        CrashOther();
+        CrashOther(last_error);
         break;
     }
-    PLOG(FATAL);
+    LOG(FATAL) << last_error;
   }
 }
 

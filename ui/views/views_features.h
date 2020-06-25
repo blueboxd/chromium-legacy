@@ -18,6 +18,7 @@ VIEWS_EXPORT extern const base::Feature kEnableMDRoundedCornersOnDialogs;
 VIEWS_EXPORT extern const base::Feature kEnablePlatformHighContrastInkDrop;
 VIEWS_EXPORT extern const base::Feature kEnableViewPaintOptimization;
 VIEWS_EXPORT extern const base::Feature kTextfieldFocusOnTapUp;
+VIEWS_EXPORT extern const base::Feature kEnableNewBadgeOnMenuItems;
 
 }  // namespace features
 }  // namespace views

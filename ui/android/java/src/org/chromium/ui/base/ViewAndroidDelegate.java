@@ -363,6 +363,17 @@ public class ViewAndroidDelegate {
     }
 
     /**
+     * Called when root scroll direction changes.
+     * @param directionUp whether the new scroll direction is up (true) or down (false).
+     * @param current_scroll_ratio the ratio of vertical scroll in [0, 1] range.
+     * Scroll at top of page is 0, and bottom of page is 1. It is defined as 0
+     * if page is not scrollable, though this should not be called in that case.
+     */
+    @CalledByNative
+    protected void onVerticalScrollDirectionChanged(boolean directionUp, float currentScrollRatio) {
+    }
+
+    /**
      * While ViewAndroidDelegate takes a ViewGroup, and internally adds Views to it, all other
      * consumers should *not* be manipulating child Views. This is particularly important as the
      * container view is usually ContentView, and ContentView only supports children directly added

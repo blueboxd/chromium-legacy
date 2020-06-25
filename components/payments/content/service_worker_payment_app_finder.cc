@@ -22,6 +22,7 @@
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
 #include "components/payments/core/payment_manifest_downloader.h"
+#include "components/payments/core/url_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -220,12 +221,35 @@ class SelfDeletingServiceWorkerPaymentAppFinder
                              const std::string& error_message) {
     if (first_error_message_.empty())
       first_error_message_ = error_message;
-    if (apps.empty() && crawler_ != nullptr) {
+
+    std::set<GURL> method_manifest_urls_for_icon_refetch;
+    installed_apps_ = std::move(apps);
+    for (auto& app : installed_apps_) {
+      if (app.second->icon.get() && !app.second->icon.get()->drawsNothing()) {
+        continue;
+      }
+
+      for (const auto& method : app.second->enabled_methods) {
+        // Only payment methods with manifests are eligible for refetching the
+        // icon of their installed payment apps.
+        GURL method_manifest_url = GURL(method);
+        if (!UrlUtil::IsValidUrlBasedPaymentMethodIdentifier(
+                method_manifest_url)) {
+          continue;
+        }
+        method_manifest_urls_for_icon_refetch.insert(method_manifest_url);
+      }
+    }
+
+    if ((installed_apps_.empty() ||
+         !method_manifest_urls_for_icon_refetch.empty()) &&
+        crawler_ != nullptr) {
       // Crawls installable web payment apps if no web payment apps have been
-      // installed.
+      // installed or when an installed app is missing an icon.
       is_payment_app_crawler_finished_using_resources_ = false;
       crawler_->Start(
           requested_method_data_,
+          std::move(method_manifest_urls_for_icon_refetch),
           base::BindOnce(
               &SelfDeletingServiceWorkerPaymentAppFinder::OnPaymentAppsCrawled,
               weak_ptr_factory_.GetWeakPtr()),
@@ -239,18 +263,36 @@ class SelfDeletingServiceWorkerPaymentAppFinder
     crawler_.reset();
 
     std::move(callback_).Run(
-        std::move(apps),
+        std::move(installed_apps_),
         ServiceWorkerPaymentAppFinder::InstallablePaymentApps(),
         first_error_message_);
   }
 
   void OnPaymentAppsCrawled(
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info,
+      std::map<GURL, std::unique_ptr<SkBitmap>> refetched_icons,
       const std::string& error_message) {
     if (first_error_message_.empty())
       first_error_message_ = error_message;
-    std::move(callback_).Run(content::PaymentAppProvider::PaymentApps(),
-                             std::move(apps_info), first_error_message_);
+
+    for (auto& refetched_icon : refetched_icons) {
+      GURL web_app_manifest_url = refetched_icon.first;
+      for (auto& app : installed_apps_) {
+        // It is possible (unlikely) to have multiple apps with same origins.
+        // The proper validation is to store web_app_manifest_url in
+        // StoredPaymentApp and confirm that it is the same as the
+        // web_app_manifest_url from which icon is fetched.
+        if (crawler_->IsSameOriginWith(GURL(app.second->scope),
+                                       web_app_manifest_url)) {
+          // TODO(crbug.com/1069010): Update the payment app database with the
+          // new icon.
+          app.second->icon = std::move(refetched_icon.second);
+          break;
+        }
+      }
+    }
+    std::move(callback_).Run(std::move(installed_apps_), std::move(apps_info),
+                             first_error_message_);
   }
 
   void OnPaymentAppsCrawlerFinishedUsingResources() {
@@ -303,6 +345,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder
   bool is_payment_app_crawler_finished_using_resources_ = true;
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
+
+  content::PaymentAppProvider::PaymentApps installed_apps_;
 
   base::WeakPtrFactory<SelfDeletingServiceWorkerPaymentAppFinder>
       weak_ptr_factory_{this};

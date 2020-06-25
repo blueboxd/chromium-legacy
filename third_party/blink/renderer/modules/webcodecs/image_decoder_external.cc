@@ -235,7 +235,7 @@ void ImageDecoderExternal::CreateImageDecoder() {
   }
 
   DCHECK(canDecodeType(mime_type_));
-  decoder_ = ImageDecoder::CreateByImageType(
+  decoder_ = ImageDecoder::CreateByMimeType(
       mime_type_, segment_reader_, data_complete_, premultiply_alpha,
       ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
       ImageDecoder::OverrideAllowDecodeToYuv::kDeny, desired_size);

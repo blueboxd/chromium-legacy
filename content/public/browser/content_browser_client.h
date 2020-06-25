@@ -1178,16 +1178,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       mojo::PendingRemote<media::mojom::RemotingSource> source,
       mojo::PendingReceiver<media::mojom::Remoter> receiver) {}
 
-  // Allows the embedder to register one or more URLLoaderThrottles for one of
-  // the following requests:
-  // 1) A navigation request.
-  // 2) A request for a dedicated worker's main script (when PlzDedicatedWorker
-  //    is enabled).
-  // 3) A request for a shared worker's main script.
+  // Allows the embedder to register one or more URLLoaderThrottles for a
+  // browser-initiated request. These include navigation requests and requests
+  // for web worker scripts.
   //
-  // For a request for worker's main script, |wc_getter|, |navigation_ui_data|,
-  // and |frame_tree_node_id| take a callback returning a nullptr, nullptr, and
-  // RenderFrameHost::kNoFrameTreeNodeId respectively.
+  // |wc_getter| returns the WebContents of the context of the |request| when
+  // available. It can return nullptr for requests for which it there are no
+  // WebContents (e.g., requests for web workers).
+  //
+  // |navigation_ui_data| is only valid if this is a navigation request.
+  //
+  // |frame_tree_node_id| is also invalid (kNoFrameTreeNodeId) in some cases
+  // (e.g., requests for web workers).
   //
   // This is called on the UI thread.
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>

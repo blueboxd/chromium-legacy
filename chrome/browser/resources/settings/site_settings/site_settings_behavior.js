@@ -228,9 +228,6 @@ const SiteSettingsBehaviorImpl = {
         ContentSettingsTypes.MIXEDSCRIPT,
         'enableInsecureContentContentSetting');
     addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.HID_DEVICES,
-        'enableExperimentalWebPlatformFeatures');
-    addOrRemoveSettingWithFlag(
         ContentSettingsTypes.BLUETOOTH_DEVICES,
         'enableWebBluetoothNewPermissionsBackend');
     addOrRemoveSettingWithFlag(

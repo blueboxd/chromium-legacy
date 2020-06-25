@@ -1530,11 +1530,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   return new_instance;
 }
 
-bool RenderFrameHostManager::InitializeRenderFrameForImmediateUse() {
+bool RenderFrameHostManager::InitializeMainRenderFrameForImmediateUse() {
   // TODO(jam): this copies some logic inside GetFrameHostForNavigation, which
   // also duplicates logic in Navigate. They should all use this method, but
   // that involves slight reordering.
   // http://crbug.com/794229
+  DCHECK(frame_tree_node_->IsMainFrame());
   if (render_frame_host_->IsRenderFrameLive())
     return true;
 
@@ -1555,10 +1556,8 @@ bool RenderFrameHostManager::InitializeRenderFrameForImmediateUse() {
   // RenderFrameHostManager are completely initialized. This should be
   // removed once the process manager moves away from NotificationService.
   // See https://crbug.com/462682.
-  if (frame_tree_node_->IsMainFrame()) {
-    delegate_->NotifyMainFrameSwappedFromRenderManager(
-        nullptr, render_frame_host_.get());
-  }
+  delegate_->NotifyMainFrameSwappedFromRenderManager(nullptr,
+                                                     render_frame_host_.get());
   return true;
 }
 

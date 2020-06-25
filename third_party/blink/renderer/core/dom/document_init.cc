@@ -104,7 +104,7 @@ DocumentInit& DocumentInit::WithImportsController(
 }
 
 bool DocumentInit::ShouldSetURL() const {
-  DocumentLoader* loader = MasterDocumentLoader();
+  DocumentLoader* loader = TreeRootDocumentLoader();
   return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
 }
 
@@ -113,11 +113,11 @@ bool DocumentInit::IsSrcdocDocument() const {
   return parent_document_ && is_srcdoc_document_;
 }
 
-DocumentLoader* DocumentInit::MasterDocumentLoader() const {
+DocumentLoader* DocumentInit::TreeRootDocumentLoader() const {
   if (document_loader_)
     return document_loader_;
   if (imports_controller_) {
-    return imports_controller_->Master()
+    return imports_controller_->TreeRoot()
         ->GetFrame()
         ->Loader()
         .GetDocumentLoader();
@@ -129,15 +129,15 @@ network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   DCHECK(content_security_policy_);
   network::mojom::blink::WebSandboxFlags flags =
       sandbox_flags_ | content_security_policy_->GetSandboxMask();
-  if (DocumentLoader* loader = MasterDocumentLoader())
+  if (DocumentLoader* loader = TreeRootDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
   return flags;
 }
 
 mojom::blink::InsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy()
     const {
-  DCHECK(MasterDocumentLoader());
-  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
+  DCHECK(TreeRootDocumentLoader());
+  Frame* parent_frame = TreeRootDocumentLoader()->GetFrame()->Tree().Parent();
   if (!parent_frame)
     return mojom::blink::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
   return parent_frame->GetSecurityContext()->GetInsecureRequestPolicy();
@@ -145,8 +145,8 @@ mojom::blink::InsecureRequestPolicy DocumentInit::GetInsecureRequestPolicy()
 
 const SecurityContext::InsecureNavigationsSet*
 DocumentInit::InsecureNavigationsToUpgrade() const {
-  DCHECK(MasterDocumentLoader());
-  Frame* parent_frame = MasterDocumentLoader()->GetFrame()->Tree().Parent();
+  DCHECK(TreeRootDocumentLoader());
+  Frame* parent_frame = TreeRootDocumentLoader()->GetFrame()->Tree().Parent();
   if (!parent_frame)
     return nullptr;
   return &parent_frame->GetSecurityContext()->InsecureNavigationsToUpgrade();
@@ -348,9 +348,9 @@ scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
     document_origin = sandbox_origin;
   }
 
-  if (MasterDocumentLoader() &&
-      MasterDocumentLoader()->GetFrame()->GetSettings()) {
-    Settings* settings = MasterDocumentLoader()->GetFrame()->GetSettings();
+  if (TreeRootDocumentLoader() &&
+      TreeRootDocumentLoader()->GetFrame()->GetSettings()) {
+    Settings* settings = TreeRootDocumentLoader()->GetFrame()->GetSettings();
     if (!settings->GetWebSecurityEnabled()) {
       // Web security is turned off. We should let this document access
       // every other document. This is used primary by testing harnesses for

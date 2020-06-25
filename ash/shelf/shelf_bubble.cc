@@ -36,6 +36,9 @@ ShelfBubble::ShelfBubble(views::View* anchor,
           /* Don't pass the Shelf so the translucent color is always used. */
           nullptr,
           Shell::Get()->wallpaper_controller()) {
+  // Bubbles that use transparent colors should not paint their ClientViews to a
+  // layer as doing so could result in visual artifacts.
+  SetPaintClientToLayer(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.AddObserver(this);

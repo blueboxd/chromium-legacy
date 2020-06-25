@@ -977,6 +977,18 @@
       "features": [
         "test_feature_0"
       ]
+    },
+    {
+      "id": 79,
+      "description": "GpuControlListEntryTest.DeviceRevisionUnspecifiedEntry",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x15D8", "0x15DD"],
+      "features": [
+        "test_feature_0"
+      ]
     }
   ]
 }

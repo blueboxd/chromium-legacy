@@ -12,12 +12,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_loader_throttles.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/empty_url_loader_client.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace predictors {
@@ -140,8 +143,9 @@ void PrefetchManager::Stop(const GURL& url) {
   it->second->was_canceled = true;
 }
 
-void PrefetchManager::PrefetchUrl(std::unique_ptr<PrefetchJob> job,
-                                  network::SharedURLLoaderFactory& factory) {
+void PrefetchManager::PrefetchUrl(
+    std::unique_ptr<PrefetchJob> job,
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
   DCHECK(job);
   DCHECK(job->info);
 
@@ -176,36 +180,54 @@ void PrefetchManager::PrefetchUrl(std::unique_ptr<PrefetchJob> job,
       net::IsolationInfo::RedirectMode::kUpdateNothing, top_frame_origin,
       frame_origin, net::SiteForCookies::FromUrl(info.url));
 
-  mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client;
-  auto client_receiver = url_loader_client.InitWithNewPipeAndPassReceiver();
-
-  mojo::PendingRemote<network::mojom::URLLoader> loader;
-
-  // TODO(crbug.com/1095842): Use throttles. Call
-  // content::CreateContentBrowserURLLoaderThrottles() to get necessary
-  // throttles and use blink::ThrottlingURLLoader::CreateLoaderAndStart().
-
   // TODO(crbug.com/1092329): Ensure the request is seen by extensions.
 
-  factory.CreateLoaderAndStart(
-      loader.InitWithNewPipeAndPassReceiver(), /*routing_id is not needed*/ -1,
-      content::GlobalRequestID::MakeBrowserInitiated().request_id,
-      network::mojom::kURLLoadOptionNone, request, std::move(url_loader_client),
-      net::MutableNetworkTrafficAnnotationTag(kPrefetchTrafficAnnotation));
+  // Set up throttles. Use null values for frame/navigation-related params, for
+  // now, since this is just the browser prefetching resources and the requests
+  // don't need to appear to come from a frame.
+  // TODO(falken): Clarify the API of CreateURLLoaderThrottles() for prefetching
+  // and subresources.
+  auto wc_getter =
+      base::BindRepeating([]() -> content::WebContents* { return nullptr; });
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
+      content::CreateContentBrowserURLLoaderThrottles(
+          request, profile_, std::move(wc_getter),
+          /*navigation_ui_data=*/nullptr,
+          content::RenderFrameHost::kNoFrameTreeNodeId);
+
+  auto client = std::make_unique<network::EmptyURLLoaderClient>();
 
   ++inflight_jobs_count_;
+
+  std::unique_ptr<blink::ThrottlingURLLoader> loader =
+      blink::ThrottlingURLLoader::CreateLoaderAndStart(
+          std::move(factory), std::move(throttles),
+          /*routing_id is not needed*/ -1,
+          content::GlobalRequestID::MakeBrowserInitiated().request_id,
+          network::mojom::kURLLoadOptionNone, &request, client.get(),
+          kPrefetchTrafficAnnotation, base::ThreadTaskRunnerHandle::Get(),
+          /*cors_exempt_header_list=*/base::nullopt);
 
   // The idea of prefetching is for the network service to put the response in
   // the http cache. So from the prefetching layer, nothing needs to be done
   // with the response, so just drain it.
-  network::EmptyURLLoaderClient::DrainURLRequest(
-      std::move(client_receiver), std::move(loader),
-      base::BindOnce(&PrefetchManager::OnPrefetchFinished,
-                     weak_factory_.GetWeakPtr(), std::move(job)));
+  auto* raw_client = client.get();
+  raw_client->Drain(base::BindOnce(&PrefetchManager::OnPrefetchFinished,
+                                   weak_factory_.GetWeakPtr(), std::move(job),
+                                   std::move(loader), std::move(client)));
 }
 
-void PrefetchManager::OnPrefetchFinished(std::unique_ptr<PrefetchJob> job) {
+// The params are just bound to this function to keep them alive
+// until the load finishes.
+void PrefetchManager::OnPrefetchFinished(
+    std::unique_ptr<PrefetchJob> job,
+    std::unique_ptr<blink::ThrottlingURLLoader> loader,
+    std::unique_ptr<network::mojom::URLLoaderClient> client) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  loader.reset();
+  client.reset();
+  job.reset();
 
   --inflight_jobs_count_;
   TryToLaunchPrefetchJobs();
@@ -230,7 +252,7 @@ void PrefetchManager::TryToLaunchPrefetchJobs() {
     DCHECK(info);
 
     if (job->url.is_valid() && factory && !info->was_canceled)
-      PrefetchUrl(std::move(job), *factory);
+      PrefetchUrl(std::move(job), factory);
   }
 }
 

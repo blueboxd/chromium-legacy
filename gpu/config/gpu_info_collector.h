@@ -45,12 +45,11 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 #if defined(OS_WIN)
 // Collect the DirectX Disagnostics information about the attached displays.
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
+GPU_EXPORT uint32_t GetGpuSupportedD3D12Version();
 GPU_EXPORT void RecordGpuSupportedDx12VersionHistograms(
-    const gpu::GPUInfo::GPUDevice& gpu_device,
-    uint32_t* d3d12_feature_level);
-GPU_EXPORT void GetGpuSupportedVulkanVersion(
-    const gpu::GPUInfo::GPUDevice& gpu_device,
-    uint32_t* vulkan_version);
+    uint32_t d3d12_feature_level);
+GPU_EXPORT uint32_t
+GetGpuSupportedVulkanVersion(const gpu::GPUInfo::GPUDevice& gpu_device);
 
 // Iterate through all adapters and create a hardware D3D11 device on each
 // adapter. If succeeded, query the highest feature level it supports and

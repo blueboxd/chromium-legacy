@@ -180,9 +180,10 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
 
   for (const auto& arg : args->DictItems()) {
     if (!base::Contains(kAllowedArgs, arg.first)) {
-      LOG(ERROR) << "Unknown command-line arg: " << arg.first;
-      // TODO(https://crbug.com/1032439): Return false here once we are done
-      // experimenting with memory-related command-line options.
+      // TODO(https://crbug.com/1032439): Increase severity and return false
+      // once we have a mechanism for soft transitions of supported arguments.
+      LOG(WARNING) << "Unknown command-line arg: '" << arg.first
+                   << "'. Config file and WebEngine version may not match.";
       continue;
     }
 

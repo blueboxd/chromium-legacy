@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/url_loader_throttles.h"
+#include "content/public/browser/url_loader_throttles.h"
 
 #include "components/variations/net/omnibox_url_loader_throttle.h"
 #include "components/variations/net/variations_url_loader_throttle.h"

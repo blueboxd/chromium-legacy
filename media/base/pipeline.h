@@ -225,6 +225,10 @@ class MEDIA_EXPORT Pipeline {
   // can choose its own default.
   virtual void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) = 0;
 
+  // Sets whether pitch adjustment should be applied when the playback rate is
+  // different than 1.0.
+  virtual void SetPreservesPitch(bool preserves_pitch) = 0;
+
   // Returns the current media playback time, which progresses from 0 until
   // GetMediaDuration().
   virtual base::TimeDelta GetMediaTime() const = 0;

@@ -29,6 +29,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   void SetRate(double) override {}
   void SetVolume(double) override {}
   void SetLatencyHint(double) override {}
+  void SetPreservesPitch(bool) override {}
   void OnRequestPictureInPicture() override {}
   void OnPictureInPictureAvailabilityChanged(bool available) override {}
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {

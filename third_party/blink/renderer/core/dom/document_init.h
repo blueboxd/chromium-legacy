@@ -105,7 +105,7 @@ class CORE_EXPORT DocumentInit final {
     return imports_controller_;
   }
 
-  bool HasSecurityContext() const { return MasterDocumentLoader(); }
+  bool HasSecurityContext() const { return TreeRootDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
   network::mojom::blink::WebSandboxFlags GetSandboxFlags() const;
@@ -217,7 +217,7 @@ class CORE_EXPORT DocumentInit final {
   // DocumentLoader driving the commit. For an import, XSLT-generated
   // document, etc., it will be the DocumentLoader that drove the commit
   // of its owning Document.
-  DocumentLoader* MasterDocumentLoader() const;
+  DocumentLoader* TreeRootDocumentLoader() const;
 
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags) const;
 

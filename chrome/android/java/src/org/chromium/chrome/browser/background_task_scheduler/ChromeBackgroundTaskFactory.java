@@ -70,6 +70,7 @@ public class ChromeBackgroundTaskFactory implements BackgroundTaskFactory {
             case TaskIds.DOWNLOAD_SERVICE_JOB_ID:
             case TaskIds.DOWNLOAD_CLEANUP_JOB_ID:
             case TaskIds.DOWNLOAD_AUTO_RESUMPTION_JOB_ID:
+            case TaskIds.DOWNLOAD_LATER_JOB_ID:
                 return new DownloadBackgroundTask();
             case TaskIds.WEBAPK_UPDATE_JOB_ID:
                 return new WebApkUpdateTask();

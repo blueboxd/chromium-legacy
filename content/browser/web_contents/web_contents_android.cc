@@ -504,7 +504,7 @@ bool WebContentsAndroid::InitializeRenderFrameForJavaScript() {
   if (!web_contents_->GetFrameTree()
            ->root()
            ->render_manager()
-           ->InitializeRenderFrameForImmediateUse()) {
+           ->InitializeMainRenderFrameForImmediateUse()) {
     LOG(ERROR) << "Failed to initialize RenderFrame to evaluate javascript";
     return false;
   }

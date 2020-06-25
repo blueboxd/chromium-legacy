@@ -284,6 +284,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     HRESULT hr = dcomp_device_->CreateSurface(
         size_.width(), size_.height(), dxgi_format,
         DXGI_ALPHA_MODE_PREMULTIPLIED, &dcomp_surface_);
+    base::UmaHistogramSparse("GPU.DirectComposition.DcompDeviceCreateSurface",
+                             hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
       // Disable direct composition because CreateSurface might fail again next

@@ -67,11 +67,13 @@ void ExtensionsMenuView::ButtonListener::ButtonPressed(views::Button* sender,
 ExtensionsMenuView::ExtensionsMenuView(
     views::View* anchor_view,
     Browser* browser,
-    ExtensionsContainer* extensions_container)
+    ExtensionsContainer* extensions_container,
+    bool allow_pinning)
     : BubbleDialogDelegateView(anchor_view,
                                views::BubbleBorder::Arrow::TOP_RIGHT),
       browser_(browser),
       extensions_container_(extensions_container),
+      allow_pinning_(allow_pinning),
       toolbar_model_(ToolbarActionsModel::Get(browser_->profile())),
       toolbar_model_observer_(this),
       button_listener_(browser_),
@@ -283,7 +285,8 @@ void ExtensionsMenuView::CreateAndInsertNewItem(
 
   // The bare `new` is safe here, because InsertMenuItem is guaranteed to
   // be added to the view hierarchy, which takes ownership.
-  auto* item = new ExtensionsMenuItemView(browser_, std::move(controller));
+  auto* item = new ExtensionsMenuItemView(browser_, std::move(controller),
+                                          allow_pinning_);
   extensions_menu_items_.push_back(item);
   InsertMenuItem(item);
   // Sanity check that the item was added.
@@ -479,10 +482,11 @@ base::AutoReset<bool> ExtensionsMenuView::AllowInstancesForTesting() {
 views::Widget* ExtensionsMenuView::ShowBubble(
     views::View* anchor_view,
     Browser* browser,
-    ExtensionsContainer* extensions_container) {
+    ExtensionsContainer* extensions_container,
+    bool allow_pinning) {
   DCHECK(!g_extensions_dialog);
-  g_extensions_dialog =
-      new ExtensionsMenuView(anchor_view, browser, extensions_container);
+  g_extensions_dialog = new ExtensionsMenuView(
+      anchor_view, browser, extensions_container, allow_pinning);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(g_extensions_dialog);
   widget->Show();

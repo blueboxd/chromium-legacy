@@ -210,6 +210,28 @@ public class CompositorAnimator extends Animator {
      * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
      * @param model The {@link PropertyModel} to modify.
      * @param key The {@link WritableFloatPropertyKey} in the model to update.
+     * @param startValue The {@link Supplier} of the starting animation value.
+     * @param endValue The {@link Supplier} of the end animation value.
+     * @param durationMs The duration of the animation in ms.
+     * @param interpolator The time interpolator for the animation.
+     * @return {@link CompositorAnimator} for animating the {@link WritableFloatPropertyKey}.
+     */
+    public static CompositorAnimator ofWritableFloatPropertyKey(CompositorAnimationHandler handler,
+            final PropertyModel model, WritableFloatPropertyKey key, Supplier<Float> startValue,
+            Supplier<Float> endValue, long durationMs, TimeInterpolator interpolator) {
+        CompositorAnimator animator = new CompositorAnimator(handler);
+        animator.setValues(startValue, endValue);
+        animator.setDuration(durationMs);
+        animator.addUpdateListener((CompositorAnimator a) -> model.set(key, a.getAnimatedValue()));
+        animator.setInterpolator(interpolator);
+        return animator;
+    }
+
+    /**
+     * Create a {@link CompositorAnimator} to animate the {@link WritableFloatPropertyKey}.
+     * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
+     * @param model The {@link PropertyModel} to modify.
+     * @param key The {@link WritableFloatPropertyKey} in the model to update.
      * @param startValue The starting animation value.
      * @param endValue The end animation value.
      * @param durationMs The duration of the animation in ms.
@@ -219,12 +241,8 @@ public class CompositorAnimator extends Animator {
     public static CompositorAnimator ofWritableFloatPropertyKey(CompositorAnimationHandler handler,
             final PropertyModel model, WritableFloatPropertyKey key, float startValue,
             float endValue, long durationMs, TimeInterpolator interpolator) {
-        CompositorAnimator animator = new CompositorAnimator(handler);
-        animator.setValues(startValue, endValue);
-        animator.setDuration(durationMs);
-        animator.addUpdateListener((CompositorAnimator a) -> model.set(key, a.getAnimatedValue()));
-        animator.setInterpolator(interpolator);
-        return animator;
+        return ofWritableFloatPropertyKey(
+                handler, model, key, () -> startValue, () -> endValue, durationMs, interpolator);
     }
 
     /**

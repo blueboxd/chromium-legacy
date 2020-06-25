@@ -5,21 +5,34 @@
 #ifndef CONTENT_BROWSER_SPEECH_TTS_UTTERANCE_IMPL_H_
 #define CONTENT_BROWSER_SPEECH_TTS_UTTERANCE_IMPL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
-#include "base/values.h"
-#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_utterance.h"
+#include "content/public/browser/web_contents_observer.h"
+
+namespace base {
+class Value;
+}
 
 namespace content {
 class BrowserContext;
+class WebContents;
 
 // Implementation of TtsUtterance.
-class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance {
+class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance,
+                                        public WebContentsObserver {
  public:
-  TtsUtteranceImpl(BrowserContext* browser_context);
+  TtsUtteranceImpl(BrowserContext* browser_context, WebContents* web_contents);
   ~TtsUtteranceImpl() override;
+
+  bool was_created_with_web_contents() const {
+    return was_created_with_web_contents_;
+  }
+
+  // Returns true if the utterance should be spoken.
+  bool ShouldSpeak();
 
   // TtsUtterance overrides.
   void OnTtsEvent(TtsEventType event_type,
@@ -76,6 +89,9 @@ class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance {
  private:
   // The BrowserContext that initiated this utterance.
   BrowserContext* browser_context_;
+
+  // True if the constructor was supplied with a WebContents.
+  const bool was_created_with_web_contents_;
 
   // The content embedder engine ID of the engine providing TTS for this
   // utterance, or empty if native TTS is being used.

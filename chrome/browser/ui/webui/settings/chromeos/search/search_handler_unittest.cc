@@ -41,7 +41,7 @@ class FakeObserver : public mojom::SearchResultsObserver {
   // mojom::SearchResultsObserver:
   void OnSearchResultAvailabilityChanged() override { ++num_calls_; }
 
-  size_t num_calls_;
+  size_t num_calls_ = 0;
   mojo::Receiver<mojom::SearchResultsObserver> receiver_{this};
 };
 

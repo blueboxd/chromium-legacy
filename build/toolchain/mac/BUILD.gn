@@ -477,6 +477,13 @@ mac_toolchain("clang_arm") {
   }
 }
 
+mac_toolchain("clang_arm64") {
+  toolchain_args = {
+    current_cpu = "arm64"
+    current_os = "mac"
+  }
+}
+
 mac_toolchain("clang_x64") {
   toolchain_args = {
     current_cpu = "x64"

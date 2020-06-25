@@ -193,59 +193,56 @@ class FakeSerialPort {
     return this.outputSignals_;
   }
 
-  waitForReadErrorCleared() {
+  writable() {
     if (this.writable_)
       return Promise.resolve();
 
-    if (!this.readErrorClearedPromise_) {
-      this.readErrorClearedPromise_ = new Promise((resolve) => {
-        this.readErrorCleared_ = resolve;
+    if (!this.writablePromise_) {
+      this.writablePromise_ = new Promise((resolve) => {
+        this.writableResolver_ = resolve;
       });
     }
 
-    return this.readErrorClearedPromise_;
+    return this.writablePromise_;
   }
 
-  waitForWriteErrorCleared() {
+  readable() {
     if (this.readable_)
       return Promise.resolve();
 
-    if (!this.writeErrorClearedPromise_) {
-      this.writeErrorClearedPromise_ = new Promise((resolve) => {
-        this.writeErrorCleared_ = resolve;
+    if (!this.readablePromise_) {
+      this.readablePromise_ = new Promise((resolve) => {
+        this.readableResolver_ = resolve;
       });
     }
 
-    return this.writeErrorClearedPromise_;
+    return this.readablePromise_;
   }
 
-  async open(options, in_stream, out_stream, client) {
+  async open(options, client) {
     this.options_ = options;
     this.client_ = client;
-    this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
-    this.writable_ = new WritableStream(new DataPipeSink(out_stream));
-    this.writer_ = this.writable_.getWriter();
     // OS typically sets DTR on open.
     this.outputSignals_.dtr = true;
     return { success: true };
   }
 
-  async clearSendError(in_stream) {
+  async startWriting(in_stream) {
     this.readable_ = new ReadableStream(new DataPipeSource(in_stream));
-    if (this.writeErrorCleared_) {
-      this.writeErrorCleared_();
-      this.writeErrorCleared_ = undefined;
-      this.writeErrorClearedPromise_ = undefined;
+    if (this.readableResolver_) {
+      this.readableResolver_();
+      this.readableResolver_ = undefined;
+      this.readablePromise_ = undefined;
     }
   }
 
-  async clearReadError(out_stream) {
+  async startReading(out_stream) {
     this.writable_ = new WritableStream(new DataPipeSink(out_stream));
     this.writer_ = this.writable_.getWriter();
-    if (this.readErrorCleared_) {
-      this.readErrorCleared_();
-      this.readErrorCleared_ = undefined;
-      this.readErrorClearedPromise_ = undefined;
+    if (this.writableResolver_) {
+      this.writableResolver_();
+      this.writableResolver_ = undefined;
+      this.writablePromise_ = undefined;
     }
   }
 

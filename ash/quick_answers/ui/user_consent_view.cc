@@ -121,6 +121,8 @@ class CustomizedLabelButton : public views::MdTextButton {
 // UserConsentView -------------------------------------------------------------
 
 UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
+                                 const base::string16& intent_type,
+                                 const base::string16& intent_text,
                                  QuickAnswersUiController* ui_controller)
     : anchor_view_bounds_(anchor_view_bounds),
       event_handler_(std::make_unique<QuickAnswersPreTargetHandler>(this)),
@@ -129,6 +131,15 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
           this,
           base::BindRepeating(&UserConsentView::GetFocusableViews,
                               base::Unretained(this)))) {
+  if (intent_type.empty() || intent_text.empty()) {
+    title_ = l10n_util::GetStringUTF16(
+        IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT);
+  } else {
+    title_ = l10n_util::GetStringFUTF16(
+        IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT_WITH_INTENT,
+        intent_type, intent_text);
+  }
+
   InitLayout();
   InitWidget();
 
@@ -143,11 +154,8 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
 
   // Read out user-consent notice if screen-reader is active.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
-  GetViewAccessibility().OverrideName(
-      base::StringPrintf(kA11yInfoNameTemplate,
-                         l10n_util::GetStringUTF8(
-                             IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT)
-                             .c_str()));
+  GetViewAccessibility().OverrideName(base::StringPrintf(
+      kA11yInfoNameTemplate, base::UTF16ToUTF8(title_).c_str()));
   GetViewAccessibility().OverrideDescription(l10n_util::GetStringUTF8(
       IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT));
   NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
@@ -253,9 +261,7 @@ void UserConsentView::InitContent() {
 
   // Title.
   content_->AddChildView(
-      CreateLabel(l10n_util::GetStringUTF16(
-                      IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT),
-                  kTitleTextColor, kTitleFontSizeDelta));
+      CreateLabel(title_, kTitleTextColor, kTitleFontSizeDelta));
 
   // Description.
   auto* desc = content_->AddChildView(

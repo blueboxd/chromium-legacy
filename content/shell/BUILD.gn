@@ -700,10 +700,10 @@ repack("pak") {
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
   }
-  if (!is_android) {
+  if (!is_android && !is_fuchsia) {
     sources +=
         [ "$root_gen_dir/content/browser/devtools/devtools_resources.pak" ]
-    deps += [ "//content/browser/devtools:resources" ]
+    deps += [ "//content/browser/devtools:devtools_resources" ]
   }
   output = "$root_out_dir/content_shell.pak"
 }

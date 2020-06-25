@@ -27,10 +27,12 @@ import sys
 import subprocess
 import tempfile
 import traceback
-import urllib2
 import zipfile
 
-from collections import OrderedDict
+if sys.version_info.major == 2:
+  from urllib2 import urlopen
+else:
+  from urllib.request import urlopen
 
 CHROMIUM_SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -1791,7 +1793,7 @@ class MetaBuildWrapper(object):
 
   def Fetch(self, url):
     # This function largely exists so it can be overridden for testing.
-    f = urllib2.urlopen(url)
+    f = urlopen(url)
     contents = f.read()
     f.close()
     return contents
@@ -1799,7 +1801,7 @@ class MetaBuildWrapper(object):
   def MaybeMakeDirectory(self, path):
     try:
       os.makedirs(path)
-    except OSError, e:
+    except OSError as e:
       if e.errno != errno.EEXIST:
         raise
 

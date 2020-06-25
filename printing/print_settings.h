@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
@@ -19,11 +20,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #include <map>
 
 #include "base/values.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 namespace printing {
 
@@ -68,9 +69,9 @@ class PRINTING_EXPORT PrintSettings {
     }
   };
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   using AdvancedSettings = std::map<std::string, base::Value>;
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
   PrintSettings();
   ~PrintSettings();
@@ -205,6 +206,13 @@ class PRINTING_EXPORT PrintSettings {
     pages_per_sheet_ = pages_per_sheet;
   }
 
+#if defined(OS_LINUX)
+  AdvancedSettings& advanced_settings() { return advanced_settings_; }
+  const AdvancedSettings& advanced_settings() const {
+    return advanced_settings_;
+  }
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_CHROMEOS)
   void set_send_user_info(bool send_user_info) {
     send_user_info_ = send_user_info;
@@ -216,11 +224,6 @@ class PRINTING_EXPORT PrintSettings {
 
   void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
   const std::string& pin_value() const { return pin_value_; }
-
-  AdvancedSettings& advanced_settings() { return advanced_settings_; }
-  const AdvancedSettings& advanced_settings() const {
-    return advanced_settings_;
-  }
 #endif  // defined(OS_CHROMEOS)
 
   // Cookie generator. It is used to initialize PrintedDocument with its
@@ -302,6 +305,11 @@ class PRINTING_EXPORT PrintSettings {
   // Number of pages per sheet.
   int pages_per_sheet_;
 
+#if defined(OS_LINUX)
+  // Advanced settings.
+  AdvancedSettings advanced_settings_;
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_CHROMEOS)
   // Whether to send user info.
   bool send_user_info_;
@@ -311,9 +319,6 @@ class PRINTING_EXPORT PrintSettings {
 
   // PIN code entered by the user.
   std::string pin_value_;
-
-  // Advanced settings.
-  AdvancedSettings advanced_settings_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintSettings);

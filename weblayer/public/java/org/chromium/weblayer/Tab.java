@@ -734,6 +734,15 @@ public class Tab {
                 callback.onBackgroundColorChanged(color);
             }
         }
+
+        @Override
+        public void onScrollNotification(
+                @ScrollNotificationType int notificationType, float currentScrollRatio) {
+            StrictModeWorkaround.apply();
+            for (TabCallback callback : mCallbacks) {
+                callback.onScrollNotification(notificationType, currentScrollRatio);
+            }
+        }
     }
 
     private static final class ErrorPageCallbackClientImpl extends IErrorPageCallbackClient.Stub {

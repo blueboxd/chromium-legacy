@@ -10,10 +10,12 @@ serial_test(async (t, fake) => {
   // Select a buffer size larger than the amount of data transferred.
   await port.open({ baudrate: 9600, buffersize: 64 });
 
+  const reader = port.readable.getReader();
+
+  await fakePort.writable();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   fakePort.write(data);
 
-  const reader = port.readable.getReader();
   let { value, done } = await reader.read();
   assert_false(done);
   compareArrays(data, value);

@@ -151,12 +151,17 @@ bool MockCryptoClientStream::CryptoConnect() {
               ENCRYPTION_ZERO_RTT,
               std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
         }
-        session()->connection()->SetEncrypter(
+        if (session()->version().UsesHttp3()) {
+          SetConfigNegotiated();
+        }
+        session()->OnNewEncryptionKeyAvailable(
             ENCRYPTION_ZERO_RTT,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
       if (session()->version().UsesQuicCrypto()) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
+      } else {
+        session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
       }
       break;
     }
@@ -249,43 +254,48 @@ void MockCryptoClientStream::OnOneRttPacketAcknowledged() {}
 
 void MockCryptoClientStream::NotifySessionOneRttKeyAvailable() {
   encryption_established_ = true;
-    handshake_confirmed_ = true;
+  handshake_confirmed_ = true;
+  if (session()->version().UsesQuicCrypto())
     SetConfigNegotiated();
-    if (use_mock_crypter_) {
-      if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
-        session()->connection()->InstallDecrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<MockDecrypter>(Perspective::IS_CLIENT));
-      } else {
-        session()->connection()->SetDecrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<MockDecrypter>(Perspective::IS_CLIENT));
-      }
-      session()->connection()->SetEncrypter(
+  if (use_mock_crypter_) {
+    if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
+      session()->connection()->InstallDecrypter(
           ENCRYPTION_FORWARD_SECURE,
-          std::make_unique<MockEncrypter>(Perspective::IS_CLIENT));
+          std::make_unique<MockDecrypter>(Perspective::IS_CLIENT));
     } else {
-      if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
-        session()->connection()->InstallDecrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
-      } else {
-        session()->connection()->SetDecrypter(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
-      }
-      session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
-      session()->OnNewEncryptionKeyAvailable(
+      session()->connection()->SetDecrypter(
           ENCRYPTION_FORWARD_SECURE,
-          std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
+          std::make_unique<MockDecrypter>(Perspective::IS_CLIENT));
     }
-    if (session()->version().UsesTls()) {
-      session()->OnOneRttKeysAvailable();
+    session()->connection()->SetEncrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        std::make_unique<MockEncrypter>(Perspective::IS_CLIENT));
+  } else {
+    if (session()->connection()->version().KnowsWhichDecrypterToUse()) {
+      session()->connection()->InstallDecrypter(
+          ENCRYPTION_FORWARD_SECURE,
+          std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
     } else {
-      session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+      session()->connection()->SetDecrypter(
+          ENCRYPTION_FORWARD_SECURE,
+          std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
     }
-    session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
-    session()->NeuterHandshakeData();
+    session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
+    session()->OnNewEncryptionKeyAvailable(
+        ENCRYPTION_FORWARD_SECURE,
+        std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
+  }
+  if (session()->version().UsesTls()) {
+    SetConfigNegotiated();
+    session()->OnOneRttKeysAvailable();
+  } else {
+    session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  }
+  session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+  if (session()->version().UsesTls()) {
+    session()->DiscardOldEncryptionKey(ENCRYPTION_ZERO_RTT);
+  }
+  session()->NeuterHandshakeData();
 }
 
 // static
@@ -296,7 +306,8 @@ CryptoHandshakeMessage MockCryptoClientStream::GetDummyCHLOMessage() {
 }
 
 void MockCryptoClientStream::SetConfigNegotiated() {
-  ASSERT_FALSE(session()->config()->negotiated());
+  if (!session()->version().UsesHttp3())
+    ASSERT_FALSE(session()->config()->negotiated());
   QuicTagVector cgst;
 // TODO(rtenneti): Enable the following code after BBR code is checked in.
 #if 0

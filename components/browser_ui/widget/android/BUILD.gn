@@ -240,6 +240,7 @@ android_library("javatests") {
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",

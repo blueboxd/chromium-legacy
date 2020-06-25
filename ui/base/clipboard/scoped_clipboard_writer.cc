@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/gfx/geometry/size.h"
 
 // Documentation on the format of the parameters for each clipboard target can
@@ -36,6 +37,7 @@ ScopedClipboardWriter::~ScopedClipboardWriter() {
 }
 
 void ScopedClipboardWriter::WriteText(const base::string16& text) {
+  RecordWrite(ClipboardFormatMetric::kText);
   std::string utf8_text = base::UTF16ToUTF8(text);
 
   Clipboard::ObjectMapParams parameters;
@@ -46,6 +48,7 @@ void ScopedClipboardWriter::WriteText(const base::string16& text) {
 
 void ScopedClipboardWriter::WriteHTML(const base::string16& markup,
                                       const std::string& source_url) {
+  RecordWrite(ClipboardFormatMetric::kHtml);
   std::string utf8_markup = base::UTF16ToUTF8(markup);
 
   Clipboard::ObjectMapParams parameters;
@@ -61,6 +64,7 @@ void ScopedClipboardWriter::WriteHTML(const base::string16& markup,
 }
 
 void ScopedClipboardWriter::WriteRTF(const std::string& rtf_data) {
+  RecordWrite(ClipboardFormatMetric::kRtf);
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(Clipboard::ObjectMapParam(rtf_data.begin(),
                                                  rtf_data.end()));
@@ -71,6 +75,7 @@ void ScopedClipboardWriter::WriteBookmark(const base::string16& bookmark_title,
                                           const std::string& url) {
   if (bookmark_title.empty() || url.empty())
     return;
+  RecordWrite(ClipboardFormatMetric::kBookmark);
 
   std::string utf8_markup = base::UTF16ToUTF8(bookmark_title);
 
@@ -96,6 +101,7 @@ void ScopedClipboardWriter::WriteHyperlink(const base::string16& anchor_text,
 }
 
 void ScopedClipboardWriter::WriteWebSmartPaste() {
+  RecordWrite(ClipboardFormatMetric::kWebSmartPaste);
   objects_[Clipboard::PortableFormat::kWebkit] = Clipboard::ObjectMapParams();
 }
 
@@ -103,6 +109,7 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing())
     return;
   DCHECK(bitmap.getPixels());
+  RecordWrite(ClipboardFormatMetric::kImage);
 
   bitmap_ = bitmap;
   // TODO(dcheng): This is slightly less horrible than what we used to do, but
@@ -123,6 +130,7 @@ void ScopedClipboardWriter::MarkAsConfidential() {
 void ScopedClipboardWriter::WritePickledData(
     const base::Pickle& pickle,
     const ClipboardFormatType& format) {
+  RecordWrite(ClipboardFormatMetric::kCustomData);
   std::string format_string = format.Serialize();
   Clipboard::ObjectMapParam format_parameter(format_string.begin(),
                                              format_string.end());
@@ -140,6 +148,7 @@ void ScopedClipboardWriter::WritePickledData(
 
 void ScopedClipboardWriter::WriteData(const base::string16& format,
                                       mojo_base::BigBuffer data) {
+  RecordWrite(ClipboardFormatMetric::kData);
   platform_representations_.push_back(
       {base::UTF16ToUTF8(format), std::move(data)});
 }

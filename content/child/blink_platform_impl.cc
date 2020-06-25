@@ -86,12 +86,10 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 }
 
 // This must match third_party/WebKit/public/blink_resources.grd.
-// In particular, |is_gzipped| corresponds to compress="gzip".
 struct DataResource {
   const char* name;
   int id;
   ui::ScaleFactor scale_factor;
-  bool is_gzipped;
 };
 
 class NestedMessageLoopRunnerImpl

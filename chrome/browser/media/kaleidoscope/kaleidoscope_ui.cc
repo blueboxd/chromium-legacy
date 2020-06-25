@@ -9,7 +9,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/media/kaleidoscope/constants.h"
 #include "chrome/browser/media/kaleidoscope/kaleidoscope_data_provider_impl.h"
-#include "chrome/browser/media/kaleidoscope/switches.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/dev_ui_browser_resources.h"

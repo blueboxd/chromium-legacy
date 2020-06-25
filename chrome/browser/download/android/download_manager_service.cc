@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/DownloadItem_jni.h"
 #include "chrome/android/chrome_jni_headers/DownloadManagerService_jni.h"
@@ -115,7 +116,8 @@ void DownloadManagerService::CreateAutoResumptionHandler() {
       chrome::android::IsJavaDrivenFeatureEnabled(
           download::features::kDownloadAutoResumptionNative);
   download::AutoResumptionHandler::Create(
-      std::move(network_listener), std::move(task_manager), std::move(config));
+      std::move(network_listener), std::move(task_manager), std::move(config),
+      base::DefaultClock::GetInstance());
 }
 
 // static

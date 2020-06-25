@@ -203,6 +203,11 @@ Status StubWebView::CaptureScreenshot(
   return Status(kOk);
 }
 
+Status StubWebView::PrintToPDF(const base::DictionaryValue& params,
+                               std::string* pdf) {
+  return Status(kOk);
+}
+
 Status StubWebView::SetFileInputFiles(const std::string& frame,
                                       const base::DictionaryValue& element,
                                       const std::vector<base::FilePath>& files,

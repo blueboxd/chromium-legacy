@@ -57,8 +57,7 @@ class CreateElementFlags {
         already_started_(false) {}
 
   CreateElementFlags& SetCreatedByParser(bool flag, Document* document) {
-    // TODO(crbug.com/1086507): Change this to a DCHECK.
-    CHECK(flag || !document);
+    DCHECK(flag || !document);
     created_by_parser_ = flag;
     parser_document_ = document;
     return *this;

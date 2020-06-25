@@ -65,6 +65,8 @@ jumbo_component("clipboard") {
   sources = [
     "clipboard.cc",
     "clipboard.h",
+    "clipboard_metrics.cc",
+    "clipboard_metrics.h",
     "clipboard_monitor.cc",
     "clipboard_monitor.h",
     "clipboard_observer.h",

@@ -61,7 +61,6 @@ source_set("chromeos") {
     ":user_activity_event_proto",
     ":user_charging_event_proto",
     "crostini:crostini_installer_types_mojom",
-    "net/network_diagnostics:network_diagnostics_mojom",
     "//apps",
     "//ash",
     "//ash/public/cpp",

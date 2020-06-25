@@ -88,7 +88,8 @@ class QuotaManagerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    mock_special_storage_policy_ = new MockSpecialStoragePolicy;
+    mock_special_storage_policy_ =
+        base::MakeRefCounted<MockSpecialStoragePolicy>();
     ResetQuotaManager(false /* is_incognito */);
   }
 
@@ -114,12 +115,13 @@ class QuotaManagerTest : public testing::Test {
     additional_callback_count_ = 0;
   }
 
-  MockQuotaClient* CreateAndRegisterClient(
+  scoped_refptr<MockQuotaClient> CreateAndRegisterClient(
       base::span<const MockOriginData> mock_data,
       QuotaClientType client_type,
       const std::vector<blink::mojom::StorageType> storage_types) {
-    MockQuotaClient* client =
-        new MockQuotaClient(quota_manager_->proxy(), mock_data, client_type);
+    scoped_refptr<MockQuotaClient> client =
+        base::MakeRefCounted<MockQuotaClient>(quota_manager_->proxy(),
+                                              mock_data, client_type);
     quota_manager_->proxy()->RegisterClient(client, client_type, storage_types);
     return client;
   }
@@ -903,7 +905,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
     { "http://foo.com/",   type,  10 },
     { "http://foo.com:1/", type,  20 },
   };
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(data, QuotaClientType::kFileSystem, {type});
 
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), type);
@@ -1404,7 +1406,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
     { "http://foo.com/",   kTemp, 7000000 },
   };
 
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(kData, QuotaClientType::kFileSystem,
                               {blink::mojom::StorageType::kTemporary,
                                blink::mojom::StorageType::kPersistent});
@@ -1451,7 +1453,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
     { "http://foo.com/",   kPerm,   300 },
     { "http://bar.com/",   kTemp,  4000 },
   };
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(kData, QuotaClientType::kFileSystem,
                               {blink::mojom::StorageType::kTemporary,
                                blink::mojom::StorageType::kPersistent});
@@ -1468,7 +1470,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
   task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
-  DeleteClientOriginData(client, ToOrigin("http://foo.com/"), kTemp);
+  DeleteClientOriginData(client.get(), ToOrigin("http://foo.com/"), kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
 
@@ -1566,7 +1568,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
   };
 
   base::HistogramTester histograms;
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(kData, QuotaClientType::kFileSystem,
                               {blink::mojom::StorageType::kTemporary});
 
@@ -1632,7 +1634,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
     { "http://bar.com/",   kTemp,    4000 },
   };
   static const int kNumberOfTemporaryOrigins = 3;
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(kData, QuotaClientType::kFileSystem,
                               {blink::mojom::StorageType::kTemporary,
                                blink::mojom::StorageType::kPersistent});
@@ -2110,7 +2112,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
     { "http://b.com/",   kPerm,  0 },  // persistent
     { "http://c.com/",   kTemp,  0 },
   };
-  MockQuotaClient* client =
+  scoped_refptr<MockQuotaClient> client =
       CreateAndRegisterClient(kData, QuotaClientType::kFileSystem,
                               {blink::mojom::StorageType::kTemporary,
                                blink::mojom::StorageType::kPersistent});

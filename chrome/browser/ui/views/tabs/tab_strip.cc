@@ -839,20 +839,30 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       int start,
       base::Optional<tab_groups::TabGroupId> group) const {
     const int last_tab = GetTabCount() - 1;
-    const int dragged_x = GetDraggedX(dragged_bounds);
-    if (start < 0 || start > last_tab || dragged_x < ideal_bounds(start).x() ||
-        dragged_x > ideal_bounds(last_tab).right())
+    if (start < 0 || start > last_tab)
       return base::nullopt;
+
+    const int dragged_x = GetDraggedX(dragged_bounds);
+    if ((dragged_x < ideal_bounds(start).x() && !group.has_value()) ||
+        dragged_x > ideal_bounds(last_tab).right()) {
+      return base::nullopt;
+    }
 
     base::Optional<int> insertion_index;
     for (int i = start; i <= last_tab; ++i) {
-      int current_center = ideal_bounds(i).CenterPoint().x();
+      const gfx::Rect current_bounds = ideal_bounds(i);
+      int current_center = current_bounds.CenterPoint().x();
+
       base::Optional<tab_groups::TabGroupId> current_group =
           tab_strip_->tab_at(i)->group();
       if (current_group.has_value() &&
           tab_strip_->controller()->IsGroupCollapsed(current_group.value())) {
         current_center = ideal_bounds(current_group.value()).CenterPoint().x();
+      } else if (dragged_bounds.width() > current_bounds.width() &&
+                 dragged_bounds.x() < current_bounds.x()) {
+        current_center -= (dragged_bounds.width() - current_bounds.width());
       }
+
       if (dragged_x < current_center) {
         insertion_index = i;
         break;

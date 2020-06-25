@@ -88,7 +88,10 @@ class TtsPlatformImpl implements ActivityStateListener {
         });
         addOnUtteranceProgressListener();
 
-        ApplicationStatus.registerStateListenerForAllActivities(this);
+        // WebView and WebLayer don't use ApplicationStatus.
+        if (ApplicationStatus.isInitialized()) {
+            ApplicationStatus.registerStateListenerForAllActivities(this);
+        }
     }
 
     /**
@@ -112,7 +115,10 @@ class TtsPlatformImpl implements ActivityStateListener {
      */
     @CalledByNative
     private void destroy() {
-        ApplicationStatus.unregisterActivityStateListener(this);
+        // WebView and WebLayer don't use ApplicationStatus.
+        if (ApplicationStatus.isInitialized()) {
+            ApplicationStatus.unregisterActivityStateListener(this);
+        }
         mNativeTtsPlatformImplAndroid = 0;
     }
 
@@ -168,9 +174,11 @@ class TtsPlatformImpl implements ActivityStateListener {
     @CalledByNative
     private boolean speak(
             int utteranceId, String text, String lang, float rate, float pitch, float volume) {
+        // WebView and WebLayer don't use ApplicationStatus.
         // Don't speak when in the background.
-        if (!ApplicationStatus.hasVisibleActivities()) return false;
-
+        if (ApplicationStatus.isInitialized() && !ApplicationStatus.hasVisibleActivities()) {
+            return false;
+        }
         if (!mInitialized) {
             mPendingUtterance =
                     new PendingUtterance(this, utteranceId, text, lang, rate, pitch, volume);

@@ -593,6 +593,9 @@ class ChromeDriver(object):
   def TakeScreenshot(self):
     return self.ExecuteCommand(Command.SCREENSHOT)
 
+  def PrintPDF(self, params={}):
+    return self.ExecuteCommand(Command.PRINT, params)
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self.ExecuteCommand(Command.QUIT)

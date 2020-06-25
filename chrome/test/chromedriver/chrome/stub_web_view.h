@@ -103,6 +103,8 @@ class StubWebView : public WebView {
   Status CaptureScreenshot(
       std::string* screenshot,
       const base::DictionaryValue& params) override;
+  Status PrintToPDF(const base::DictionaryValue& params,
+                    std::string* pdf) override;
   Status SetFileInputFiles(const std::string& frame,
                            const base::DictionaryValue& element,
                            const std::vector<base::FilePath>& files,

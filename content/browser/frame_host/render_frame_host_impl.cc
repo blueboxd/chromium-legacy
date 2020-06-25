@@ -7419,7 +7419,7 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
     mojo::PendingReceiver<blink::mojom::SpeechSynthesis> receiver) {
   if (!speech_synthesis_impl_) {
     speech_synthesis_impl_ = std::make_unique<SpeechSynthesisImpl>(
-        GetProcess()->GetBrowserContext());
+        GetProcess()->GetBrowserContext(), delegate_->GetAsWebContents());
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
 

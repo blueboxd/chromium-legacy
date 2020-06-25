@@ -255,6 +255,7 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::Optional<std::vector<std::string>> cors_exempt_header_list) {
+  DCHECK(url_request);
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
   loader->Start(std::move(factory), routing_id, request_id, options,
@@ -267,7 +268,7 @@ ThrottlingURLLoader::~ThrottlingURLLoader() {
   if (inside_delegate_calls_ > 0) {
     // A throttle is calling into this object. In this case, delay destruction
     // of the throttles, so that throttles don't need to worry about any
-    // delegate calls may destory them synchronously.
+    // delegate calls may destroy them synchronously.
     for (auto& entry : throttles_)
       entry.delegate->Detach();
 

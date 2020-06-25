@@ -269,9 +269,11 @@ suite('TabList', () => {
 
   /**
    * @param {!Element} element
-   * @param {number} scale
+   * @param {number} horizontalScale
+   * @param {number} verticalScale
    */
-  function testPlaceElementAnimationParams(element, scale) {
+  function testPlaceElementAnimationParams(
+      element, horizontalScale, verticalScale) {
     const animations = element.getAnimations();
 
     // TODO(crbug.com/1090645): Remove logging once the test no longer flakes.
@@ -289,13 +291,17 @@ suite('TabList', () => {
     assertEquals('ease-out', animations[0].effect.getTiming().easing);
 
     const keyframes = animations[0].effect.getKeyframes();
-    const tabSpacingVars =
+    const horizontalTabSpacingVars =
         '(var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing))';
+    const verticalTabSpacingVars =
+        '(var(--tabstrip-tab-height) + var(--tabstrip-tab-spacing))';
     assertEquals(2, keyframes.length);
     assertEquals(
-        `translateX(calc(${scale} * ${tabSpacingVars}))`,
+        `translate(calc(${horizontalScale} * ${
+            horizontalTabSpacingVars}), calc(${verticalScale} * ${
+            verticalTabSpacingVars}))`,
         keyframes[0].transform);
-    assertEquals('translateX(0px)', keyframes[1].transform);
+    assertEquals('translate(0px, 0px)', keyframes[1].transform);
   }
 
   /**
@@ -314,13 +320,13 @@ suite('TabList', () => {
     const movedTab = unpinnedTabs[indexToMove];
     tabList.placeTabElement(movedTab, newIndex, false, undefined);
     testPlaceElementAnimationParams(
-        movedTab, -1 * direction * Math.abs(newIndex - indexToMove));
+        movedTab, -1 * direction * Math.abs(newIndex - indexToMove), 0);
 
     Array.from(unpinnedTabs)
         .filter(tabElement => tabElement !== movedTab)
         .forEach(
             tabElement =>
-                testPlaceElementAnimationParams(tabElement, direction));
+                testPlaceElementAnimationParams(tabElement, direction, 0));
   }
 
   test('PlaceTabElementAnimatesTabMovedTowardsStart', () => {
@@ -340,6 +346,75 @@ suite('TabList', () => {
     document.documentElement.dir = 'rtl';
     return testPlaceTabElementAnimation(0, tabs.length - 1, -1);
   });
+
+  test('PlacePinnedTabElementAnimatesTabsWithinSameColumn', async () => {
+    tabs.forEach(pinTabAt);
+    await tabList.animationPromises;
+
+    // Test moving a tab within the same column. If a tab is moved from index 0
+    // to index 2, it should move vertically down 2 places. Tabs at index 1 and
+    // index 2 should move up 1 space.
+    const pinnedTabs = getPinnedTabs();
+    tabList.placeTabElement(pinnedTabs[0], 2, /*pinned=*/ true);
+    await Promise.all([
+      testPlaceElementAnimationParams(pinnedTabs[0], 0, -2),
+      testPlaceElementAnimationParams(pinnedTabs[1], 0, 1),
+      testPlaceElementAnimationParams(pinnedTabs[2], 0, 1),
+    ]);
+  });
+
+  test(
+      'PlacePinnedTabElementAnimatesTabsAcrossColumnsToHigherIndex',
+      async () => {
+        tabs.forEach(pinTabAt);
+        for (let i = 0; i < 4; i++) {
+          webUIListenerCallback('tab-created', {
+            active: false,
+            alertStates: [],
+            id: tabs.length + i,
+            index: tabs.length + i,
+            pinned: true,
+            title: 'Pinned tab',
+          });
+        }
+        await tabList.animationPromises;
+
+        const pinnedTabs = getPinnedTabs();
+        tabList.placeTabElement(pinnedTabs[2], 6, /*pinned=*/ true);
+        await Promise.all([
+          testPlaceElementAnimationParams(pinnedTabs[2], -2, 2),
+          testPlaceElementAnimationParams(pinnedTabs[3], 1, -2),
+          testPlaceElementAnimationParams(pinnedTabs[4], 0, 1),
+          testPlaceElementAnimationParams(pinnedTabs[5], 0, 1),
+          testPlaceElementAnimationParams(pinnedTabs[6], 1, -2),
+        ]);
+      });
+
+  test(
+      'PlacePinnedTabElementAnimatesTabsAcrossColumnsToLowerIndex',
+      async () => {
+        tabs.forEach(pinTabAt);
+        for (let i = 0; i < 4; i++) {
+          webUIListenerCallback('tab-created', {
+            active: false,
+            alertStates: [],
+            id: tabs.length + i,
+            index: tabs.length + i,
+            pinned: true,
+            title: 'Pinned tab',
+          });
+        }
+        await tabList.animationPromises;
+
+        const pinnedTabs = getPinnedTabs();
+        tabList.placeTabElement(pinnedTabs[3], 0, /*pinned=*/ true);
+        await Promise.all([
+          testPlaceElementAnimationParams(pinnedTabs[3], 1, 0),
+          testPlaceElementAnimationParams(pinnedTabs[2], -1, 2),
+          testPlaceElementAnimationParams(pinnedTabs[1], 0, -1),
+          testPlaceElementAnimationParams(pinnedTabs[0], 0, -1),
+        ]);
+      });
 
   test('PlacesTabGroupElement', () => {
     const tabGroupElement = /** @type {!TabGroupElement} */ (
@@ -373,14 +448,14 @@ suite('TabList', () => {
         /** @type {!TabGroupElement} */ (tabToGroup.parentElement);
     tabList.placeTabGroupElement(groupElement, newIndex);
     testPlaceElementAnimationParams(
-        groupElement, -1 * direction * Math.abs(newIndex - indexToGroup));
+        groupElement, -1 * direction * Math.abs(newIndex - indexToGroup), 0);
 
     // Test animations on all the other tabs.
     Array.from(getUnpinnedTabs())
         .filter(tabElement => tabElement.parentElement !== groupElement)
         .forEach(
             tabElement =>
-                testPlaceElementAnimationParams(tabElement, direction));
+                testPlaceElementAnimationParams(tabElement, direction, 0));
   }
 
   test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsStart', () => {
@@ -416,8 +491,8 @@ suite('TabList', () => {
     tabList.placeTabGroupElement(tabGroup, 0);
 
     // Both the TabElement and TabGroupElement should move by a scale of 1.
-    testPlaceElementAnimationParams(tabGroup, 1);
-    testPlaceElementAnimationParams(ungroupedTab, -1);
+    testPlaceElementAnimationParams(tabGroup, 1, 0);
+    testPlaceElementAnimationParams(ungroupedTab, -1, 0);
   });
 
   test('AddNewTabGroup', () => {

@@ -4278,7 +4278,9 @@ class ProtocolHandlerThrottle : public blink::URLLoaderThrottle {
  public:
   explicit ProtocolHandlerThrottle(
       ProtocolHandlerRegistry* protocol_handler_registry)
-      : protocol_handler_registry_(protocol_handler_registry) {}
+      : protocol_handler_registry_(protocol_handler_registry) {
+    DCHECK(protocol_handler_registry);
+  }
   ~ProtocolHandlerThrottle() override = default;
 
   void WillStartRequest(network::ResourceRequest* request,
@@ -4320,7 +4322,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
 
+  DCHECK(browser_context);
   Profile* profile = Profile::FromBrowserContext(browser_context);
+  DCHECK(profile);
 
   ChromeNavigationUIData* chrome_navigation_ui_data =
       static_cast<ChromeNavigationUIData*>(navigation_ui_data);
@@ -4407,8 +4411,13 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 #endif
       std::move(dynamic_params)));
 
-  result.push_back(std::make_unique<ProtocolHandlerThrottle>(
-      ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
+  {
+    auto* factory =
+        ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context);
+    // null in unit tests.
+    if (factory)
+      result.push_back(std::make_unique<ProtocolHandlerThrottle>(factory));
+  }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(

@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
   // connected to this service. The system service manager will restart the
   // service on demand as needed.
   binding.SetOnLastClientCallback(
-      base::BindOnce(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
   run_loop.Run();
 
   return 0;

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_HEALTH_NETWORK_HEALTH_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_HEALTH_NETWORK_HEALTH_SERVICE_H_
 
+#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics_impl.h"
 #include "chrome/browser/chromeos/net/network_health/network_health.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
 namespace chromeos {
 namespace network_health {
@@ -19,9 +19,13 @@ class NetworkHealthService {
   ~NetworkHealthService() = delete;
 
   void BindRemote(mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
+  void BindDiagnosticsRemote(
+      mojo::PendingReceiver<
+          network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver);
 
  private:
   NetworkHealth network_health_;
+  network_diagnostics::NetworkDiagnosticsImpl network_diagnostics_;
 };
 
 }  // namespace network_health

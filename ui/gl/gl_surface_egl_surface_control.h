@@ -31,7 +31,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
  public:
   explicit GLSurfaceEGLSurfaceControl(
       ANativeWindow* window,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<TaskScheduler> task_scheduler);
 
   // GLSurface implementation.
   int GetBufferCount() const override;
@@ -155,8 +155,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
                                 SwapCompletionCallback completion_callback,
                                 PresentationCallback callback);
 
-  // Called on the |gpu_task_runner_| when a transaction is acked by the
-  // framework.
+  // Called on the GPU thread when a transaction is acked by the framework.
   void OnTransactionAckOnGpuThread(
       SwapCompletionCallback completion_callback,
       PresentationCallback presentation_callback,
@@ -221,12 +220,11 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool frame_rate_update_pending_ = false;
 
   EGLSurface offscreen_surface_ = nullptr;
-  base::CancelableOnceClosure check_pending_presentation_callback_queue_task_;
 
   // Set if a swap failed and the surface is no longer usable.
   bool surface_lost_ = false;
 
-  scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
+  scoped_refptr<TaskScheduler> gpu_task_scheduler_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_{this};
 };
 

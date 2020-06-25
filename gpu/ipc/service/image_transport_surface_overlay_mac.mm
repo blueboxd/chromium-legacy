@@ -113,7 +113,6 @@ void ImageTransportSurfaceOverlayMacBase<BaseClass>::BufferPresented(
 template <typename BaseClass>
 gfx::SwapResult
 ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
-    const gfx::Rect& pixel_damage_rect,
     gl::GLSurface::SwapCompletionCallback completion_callback,
     gl::GLSurface::PresentationCallback presentation_callback) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
@@ -128,7 +127,7 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
   base::TimeTicks before_transaction_time = base::TimeTicks::Now();
   {
     TRACE_EVENT0("gpu", "CommitPendingTreesToCA");
-    ca_layer_tree_coordinator_->CommitPendingTreesToCA(pixel_damage_rect);
+    ca_layer_tree_coordinator_->CommitPendingTreesToCA();
     base::TimeTicks after_transaction_time = base::TimeTicks::Now();
     UMA_HISTOGRAM_TIMES("GPU.IOSurface.CATransactionTime",
                         after_transaction_time - before_transaction_time);
@@ -204,7 +203,6 @@ template <typename BaseClass>
 gfx::SwapResult ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffers(
     gl::GLSurface::PresentationCallback callback) {
   return SwapBuffersInternal(
-      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()),
       base::DoNothing(), std::move(callback));
 }
 
@@ -213,7 +211,6 @@ void ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersAsync(
     gl::GLSurface::SwapCompletionCallback completion_callback,
     gl::GLSurface::PresentationCallback presentation_callback) {
   SwapBuffersInternal(
-      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()),
       std::move(completion_callback), std::move(presentation_callback));
 }
 
@@ -224,8 +221,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacBase<BaseClass>::PostSubBuffer(
     int width,
     int height,
     gl::GLSurface::PresentationCallback callback) {
-  return SwapBuffersInternal(gfx::Rect(x, y, width, height), base::DoNothing(),
-                             std::move(callback));
+  return SwapBuffersInternal(base::DoNothing(), std::move(callback));
 }
 
 template <typename BaseClass>
@@ -236,13 +232,33 @@ void ImageTransportSurfaceOverlayMacBase<BaseClass>::PostSubBufferAsync(
     int height,
     gl::GLSurface::SwapCompletionCallback completion_callback,
     gl::GLSurface::PresentationCallback presentation_callback) {
-  SwapBuffersInternal(gfx::Rect(x, y, width, height),
-                      std::move(completion_callback),
+  SwapBuffersInternal(std::move(completion_callback),
+                      std::move(presentation_callback));
+}
+
+template <typename BaseClass>
+gfx::SwapResult
+ImageTransportSurfaceOverlayMacBase<BaseClass>::CommitOverlayPlanes(
+    gl::GLSurface::PresentationCallback callback) {
+  return SwapBuffersInternal(base::DoNothing(), std::move(callback));
+}
+
+template <typename BaseClass>
+void ImageTransportSurfaceOverlayMacBase<BaseClass>::CommitOverlayPlanesAsync(
+    gl::GLSurface::SwapCompletionCallback completion_callback,
+    gl::GLSurface::PresentationCallback presentation_callback) {
+  SwapBuffersInternal(std::move(completion_callback),
                       std::move(presentation_callback));
 }
 
 template <typename BaseClass>
 bool ImageTransportSurfaceOverlayMacBase<BaseClass>::SupportsPostSubBuffer() {
+  return true;
+}
+
+template <typename BaseClass>
+bool ImageTransportSurfaceOverlayMacBase<
+    BaseClass>::SupportsCommitOverlayPlanes() {
   return true;
 }
 

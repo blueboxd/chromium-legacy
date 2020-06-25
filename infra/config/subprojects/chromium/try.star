@@ -22,6 +22,7 @@ try_.set_defaults(
     name = name,
 ) for name in (
     'tryserver.blink',
+    'tryserver.chromium',
     'tryserver.chromium.android',
     'tryserver.chromium.angle',
     'tryserver.chromium.chromiumos',
@@ -50,6 +51,17 @@ try_.blink_builder(
     ),
 )
 
+try_.chromium_builder(
+    name = 'android-official',
+)
+
+try_.chromium_builder(
+    name = 'fuchsia-official',
+)
+
+try_.chromium_builder(
+    name = 'linux-official',
+)
 
 try_.chromium_android_builder(
     name = 'android-binary-size',

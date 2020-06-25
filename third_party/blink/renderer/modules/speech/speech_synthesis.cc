@@ -44,33 +44,39 @@
 
 namespace blink {
 
-SpeechSynthesis* SpeechSynthesis::Create(ExecutionContext* context) {
-  SpeechSynthesis* synthesis = MakeGarbageCollected<SpeechSynthesis>(context);
+const char SpeechSynthesis::kSupplementName[] = "SpeechSynthesis";
+
+SpeechSynthesis* SpeechSynthesis::speechSynthesis(LocalDOMWindow& window) {
+  SpeechSynthesis* synthesis =
+      Supplement<LocalDOMWindow>::From<SpeechSynthesis>(window);
+  if (!synthesis) {
+    synthesis = MakeGarbageCollected<SpeechSynthesis>(window);
+    ProvideTo(window, synthesis);
 #if defined(OS_ANDROID)
-  // On Android devices we lazily initialize |mojom_synthesis_| to avoid
-  // needlessly binding to the TTS service, see https://crbug.com/811929.
-  // TODO(crbug/811929): Consider moving this logic into the Android-
-  // specific backend implementation.
+    // On Android devices we lazily initialize |mojom_synthesis_| to avoid
+    // needlessly binding to the TTS service, see https://crbug.com/811929.
+    // TODO(crbug/811929): Consider moving this logic into the Android-
+    // specific backend implementation.
 #else
-  synthesis->InitializeMojomSynthesis();
+    synthesis->InitializeMojomSynthesis();
 #endif
+  }
   return synthesis;
 }
 
-SpeechSynthesis* SpeechSynthesis::CreateForTesting(
-    ExecutionContext* context,
+void SpeechSynthesis::CreateForTesting(
+    LocalDOMWindow& window,
     mojo::PendingRemote<mojom::blink::SpeechSynthesis> mojom_synthesis) {
-  SpeechSynthesis* synthesis = MakeGarbageCollected<SpeechSynthesis>(context);
+  DCHECK(!Supplement<LocalDOMWindow>::From<SpeechSynthesis>(window));
+  SpeechSynthesis* synthesis = MakeGarbageCollected<SpeechSynthesis>(window);
+  ProvideTo(window, synthesis);
   synthesis->SetMojomSynthesisForTesting(std::move(mojom_synthesis));
-  return synthesis;
 }
 
-SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
-    : ExecutionContextClient(context),
-      receiver_(this, context),
-      mojom_synthesis_(context) {
-  DCHECK(!GetExecutionContext() || GetExecutionContext()->IsDocument());
-}
+SpeechSynthesis::SpeechSynthesis(LocalDOMWindow& window)
+    : ExecutionContextClient(&window),
+      receiver_(this, &window),
+      mojom_synthesis_(&window) {}
 
 void SpeechSynthesis::OnSetVoiceList(
     Vector<mojom::blink::SpeechSynthesisVoicePtr> mojom_voices) {
@@ -295,6 +301,7 @@ void SpeechSynthesis::Trace(Visitor* visitor) const {
   visitor->Trace(voice_list_);
   visitor->Trace(utterance_queue_);
   ExecutionContextClient::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

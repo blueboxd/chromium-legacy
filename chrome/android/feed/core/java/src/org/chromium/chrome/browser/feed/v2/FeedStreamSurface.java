@@ -40,10 +40,8 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
-import org.chromium.components.feed.proto.FeedUiProto.Slice.SliceDataCase;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
-import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate.UpdateCase;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -92,6 +90,37 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     new FeedSurfaceDependencyProvider());
         }
         return sXSurfaceProcessScope;
+    }
+
+    // We avoid attaching surfaces until after |startup()| is called. This ensures that
+    // the correct sign-in state is used if attaching the surface triggers a fetch.
+
+    private static boolean sStartupCalled;
+    private static HashSet<FeedStreamSurface> sWaitingSurfaces;
+
+    public static void startup() {
+        if (sStartupCalled) return;
+        sStartupCalled = true;
+        xSurfaceProcessScope();
+        if (sWaitingSurfaces != null) {
+            for (FeedStreamSurface surface : sWaitingSurfaces) {
+                surface.surfaceOpened();
+            }
+            sWaitingSurfaces = null;
+        }
+    }
+
+    private static void openSurfaceAtStartup(FeedStreamSurface surface) {
+        if (sWaitingSurfaces == null) {
+            sWaitingSurfaces = new HashSet<FeedStreamSurface>();
+        }
+        sWaitingSurfaces.add(surface);
+    }
+
+    private static void cancelOpenSurfaceAtStartup(FeedStreamSurface surface) {
+        if (sWaitingSurfaces != null) {
+            sWaitingSurfaces.remove(surface);
+        }
     }
 
     /**
@@ -283,7 +312,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             newContentList.add(mContentManager.getContent(i));
         }
         for (SliceUpdate sliceUpdate : streamUpdate.getUpdatedSlicesList()) {
-            if (sliceUpdate.getUpdateCase() == UpdateCase.SLICE) {
+            if (sliceUpdate.hasSlice()) {
                 newContentList.add(createContentFromSlice(sliceUpdate.getSlice()));
             } else {
                 String existingSliceId = sliceUpdate.getSliceId();
@@ -348,10 +377,10 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     private FeedListContentManager.FeedContent createContentFromSlice(Slice slice) {
         String sliceId = slice.getSliceId();
-        if (slice.getSliceDataCase() == SliceDataCase.XSURFACE_SLICE) {
+        if (slice.hasXsurfaceSlice()) {
             return new FeedListContentManager.ExternalViewContent(
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
-        } else if (slice.getSliceDataCase() == SliceDataCase.LOADING_SPINNER_SLICE) {
+        } else if (slice.hasLoadingSpinnerSlice()) {
             return new FeedListContentManager.NativeViewContent(sliceId, R.layout.feed_spinner);
         } else {
             // TODO(jianli): Create native view for ZeroStateSlice.
@@ -447,7 +476,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * the content is available, onStreamUpdated will be called.
      */
     public void surfaceOpened() {
-        FeedStreamSurfaceJni.get().surfaceOpened(mNativeFeedStreamSurface, FeedStreamSurface.this);
+        if (!sStartupCalled) {
+            openSurfaceAtStartup(this);
+        } else {
+            FeedStreamSurfaceJni.get().surfaceOpened(
+                    mNativeFeedStreamSurface, FeedStreamSurface.this);
+        }
     }
 
     /**
@@ -458,7 +492,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);
         }
-        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
+
+        if (!sStartupCalled) {
+            cancelOpenSurfaceAtStartup(this);
+        } else {
+            FeedStreamSurfaceJni.get().surfaceClosed(
+                    mNativeFeedStreamSurface, FeedStreamSurface.this);
+        }
     }
 
     private void openUrl(String url, boolean inNewTab) {

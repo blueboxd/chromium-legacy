@@ -495,9 +495,10 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
 
-  // Add 4dp at the bottom for aesthetic reasons. https://crbug.com/1076646
+  // Add 8dp at the bottom for aesthetic reasons. https://crbug.com/1076646
   // It's expected that this space is dead unclickable/unhighlightable space.
-  popup_height += 4;
+  constexpr int kExtraBottomPadding = 8;
+  popup_height += kExtraBottomPadding;
 
   // The rounded popup is always offset the same amount from the omnibox.
   gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();

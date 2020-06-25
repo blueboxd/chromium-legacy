@@ -13350,4 +13350,31 @@ TEST_F(WebFrameTest, FocusElementCallsFocusedElementChanged) {
   EXPECT_TRUE(frame_host.did_notify_);
 }
 
+// Tests that form.submit() cancels any navigations already sent to the browser
+// process.
+TEST_F(WebFrameTest, FormSubmitCancelsNavigation) {
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize(&web_frame_client);
+  RegisterMockedHttpURLLoad("foo.html");
+  RegisterMockedHttpURLLoad("bar.html");
+  auto* main_frame = web_view_helper.GetWebView()->MainFrameImpl();
+  auto* local_frame = main_frame->GetFrame();
+  auto* document = local_frame->GetDocument();
+
+  document->documentElement()->setInnerHTML(
+      "<form id=formid action='http://internal.test/bar.html'></form>");
+  ASSERT_FALSE(local_frame->Loader().HasProvisionalNavigation());
+
+  FrameLoadRequest request(document,
+                           ResourceRequest("http://internal.test/foo.html"));
+  local_frame->Navigate(request, WebFrameLoadType::kStandard);
+  ASSERT_TRUE(local_frame->Loader().HasProvisionalNavigation());
+
+  main_frame->ExecuteScript(WebScriptSource(WebString("formid.submit()")));
+  EXPECT_FALSE(local_frame->Loader().HasProvisionalNavigation());
+
+  RunPendingTasks();
+}
+
 }  // namespace blink

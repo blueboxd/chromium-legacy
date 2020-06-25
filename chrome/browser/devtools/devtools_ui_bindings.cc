@@ -330,7 +330,7 @@ std::string SanitizeFrontendQueryParam(
     const std::string& key,
     const std::string& value) {
   // Convert boolean flags to true.
-  if (key == "can_dock" || key == "isSharedWorker" ||
+  if (key == "can_dock" || key == "debugFrontend" || key == "isSharedWorker" ||
       key == "v8only" || key == "remoteFrontend" || key == "nodeFrontend" ||
       key == "hasOtherClients" || key == "uiDevTools")
     return "true";

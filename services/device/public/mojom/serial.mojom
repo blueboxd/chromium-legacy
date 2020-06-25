@@ -134,19 +134,17 @@ interface SerialPortManagerClient {
 interface SerialPort {
   // Initiates an Open of the device then returns result.
   Open(SerialConnectionOptions options,
-       handle<data_pipe_consumer> in_stream,
-       handle<data_pipe_producer> out_stream,
        pending_remote<SerialPortClient> client) => (bool success);
 
-  // Try to clear existing send error and reconnect the data pipe for send.
-  // This is supposed to be called after SerialPortClient#OnSendError is
-  // notified.
-  ClearSendError(handle<data_pipe_consumer> consumer);
+  // Start writing data from |consumer| to the port. This should be called after
+  // Open() or to restart data flow after when SerialPortClient#OnSendError is
+  // called on |client| to indicate an error.
+  StartWriting(handle<data_pipe_consumer> consumer);
 
-  // Try to clear existing read error and reconnect the data pipe for read.
-  // This is supposed to be called after SerialPortClient#OnReadError is
-  // notified.
-  ClearReadError(handle<data_pipe_producer> producer);
+  // Start reading data from the port into |producer|. This should be called
+  // after Open() or to restart data flow when SerialPortClient#OnReadError is
+  // called on |client| to indicate an error.
+  StartReading(handle<data_pipe_producer> producer);
 
   // Flushes input and output buffers.
   Flush() => (bool success);

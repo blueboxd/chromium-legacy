@@ -208,6 +208,15 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
 #endif
   }
 
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_CUPS))
+  const base::Value* advanced_settings =
+      job_settings.FindDictKey(kSettingAdvancedSettings);
+  if (advanced_settings) {
+    for (const auto& item : advanced_settings->DictItems())
+      settings->advanced_settings().emplace(item.first, item.second.Clone());
+  }
+#endif  // defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(USE_CUPS))
+
 #if defined(OS_CHROMEOS)
   bool send_user_info =
       job_settings.FindBoolKey(kSettingSendUserInfo).value_or(false);
@@ -221,13 +230,6 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   const std::string* pin_value = job_settings.FindStringKey(kSettingPinValue);
   if (pin_value)
     settings->set_pin_value(*pin_value);
-
-  const base::Value* advanced_settings =
-      job_settings.FindDictKey(kSettingAdvancedSettings);
-  if (advanced_settings) {
-    for (const auto& item : advanced_settings->DictItems())
-      settings->advanced_settings().emplace(item.first, item.second.Clone());
-  }
 #endif
 
   return true;

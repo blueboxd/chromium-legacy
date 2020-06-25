@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.weblayer.ContextMenuParams;
+import org.chromium.weblayer.ScrollNotificationType;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -349,5 +350,49 @@ public class TabCallbackTest {
 
         callbackHelper.waitForFirst();
         Assert.assertEquals(0xffff0000, (int) backgroundColors[0]);
+    }
+
+    @MinWebLayerVersion(85)
+    @Test
+    @SmallTest
+    public void testScrollNotificationDirectionChange() throws TimeoutException {
+        final String url = mActivityTestRule.getTestDataURL("tall_page.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
+
+        Integer notificationTypes[] = new Integer[1];
+        Float scrollRatio[] = new Float[1];
+        CallbackHelper callbackHelper = new CallbackHelper();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = activity.getTab();
+            TabCallback callback = new TabCallback() {
+                @Override
+                public void onScrollNotification(
+                        @ScrollNotificationType int notificationType, float currentScrollRatio) {
+                    notificationTypes[0] = notificationType;
+                    scrollRatio[0] = currentScrollRatio;
+                    callbackHelper.notifyCalled();
+                }
+            };
+            tab.registerTabCallback(callback);
+        });
+
+        // Scroll to bottom of page.
+        int callCount = callbackHelper.getCallCount();
+        mActivityTestRule.executeScriptSync("window.scroll(0, 5000)",
+                /*useSeparateIsolate=*/false);
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(
+                ScrollNotificationType.DIRECTION_CHANGED_DOWN, (int) notificationTypes[0]);
+        Assert.assertTrue(scrollRatio[0] > 0.5);
+
+        // Scroll to top of page.
+        callCount = callbackHelper.getCallCount();
+        mActivityTestRule.executeScriptSync("window.scroll(0, 0)",
+                /*useSeparateIsolate=*/false);
+        callbackHelper.waitForCallback(callCount);
+        Assert.assertEquals(
+                ScrollNotificationType.DIRECTION_CHANGED_UP, (int) notificationTypes[0]);
+        Assert.assertTrue(scrollRatio[0] < 0.5);
     }
 }

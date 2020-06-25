@@ -96,12 +96,12 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
     const ResourceResponse& response) {
   DCHECK(controller_);
   DCHECK(!imports_.IsEmpty());
-  Document* master = controller_->Master();
+  Document* tree_root = controller_->TreeRoot();
   document_ = MakeGarbageCollected<HTMLDocument>(
       DocumentInit::Create()
           .WithImportsController(controller_)
-          .WithExecutionContext(master->GetExecutionContext())
-          .WithRegistrationContext(master->RegistrationContext())
+          .WithExecutionContext(tree_root->GetExecutionContext())
+          .WithRegistrationContext(tree_root->RegistrationContext())
           .WithURL(response.CurrentRequestUrl()));
   // imports expect to be able to log CSP errors, which requires binding the CSP
   // to a CSP delegate.

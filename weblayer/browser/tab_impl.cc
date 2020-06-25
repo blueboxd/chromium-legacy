@@ -151,16 +151,11 @@ NewTabType NewTabTypeFromWindowDisposition(WindowOpenDisposition disposition) {
 // Opens a captive portal login page in |web_contents|.
 void OpenCaptivePortalLoginTabInWebContents(
     content::WebContents* web_contents) {
-  // In Chrome this opens in a new tab, but WebLayer's TabImpl has no support
-  // for opening new tabs (its OpenURLFromTab() method DCHECKs if the
-  // disposition is not |CURRENT_TAB|).
-  // TODO(crbug.com/1047130): Revisit if TabImpl gets support for opening URLs
-  // in new tabs.
   content::OpenURLParams params(
       CaptivePortalServiceFactory::GetForBrowserContext(
           web_contents->GetBrowserContext())
           ->test_url(),
-      content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false);
   web_contents->OpenURL(params);
 }

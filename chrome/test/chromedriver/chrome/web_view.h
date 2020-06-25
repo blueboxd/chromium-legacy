@@ -217,6 +217,9 @@ class WebView {
       std::string* screenshot,
       const base::DictionaryValue& params) = 0;
 
+  virtual Status PrintToPDF(const base::DictionaryValue& params,
+                            std::string* pdf) = 0;
+
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.
   virtual Status SetFileInputFiles(const std::string& frame,

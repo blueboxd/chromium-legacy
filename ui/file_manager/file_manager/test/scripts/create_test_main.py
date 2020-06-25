@@ -12,6 +12,7 @@ as a regular web page in a single renderer.
 
 
 import argparse
+import glob
 import json
 import os
 import re
@@ -34,13 +35,11 @@ output = args.output or os.path.abspath(
 # SRC   : Absolute path to //src/.
 # GEN   : Absolute path to $target_gen_dir.
 # ROOT  : Relative path from GEN to //src/ui/file_manager/file_manager.
-# CC_SRC: Source directory for components-chromium.
-# CC_GEN: Directory where components-chromium is copied to.
+# R_GEN : Directory where chrome://resources/ is copied to.
 SRC = os.path.abspath(os.path.join(sys.path[0], '../../../../..')) + '/'
 GEN = os.path.dirname(os.path.abspath(args.output)) + '/'
 ROOT = os.path.relpath(SRC, GEN) + '/ui/file_manager/file_manager/'
-CC_SRC = 'third_party/polymer/v1_0/components-chromium/'
-CC_GEN = 'test/gen/cc/'
+R_GEN = 'test/gen/resources/'
 scripts = []
 GENERATED = 'Generated at %s by: %s' % (time.ctime(), sys.path[0])
 GENERATED_HTML = '<!-- %s -->\n\n' % GENERATED
@@ -122,24 +121,32 @@ def i18n(template):
   repl = lambda x: strings.get(x.group(1), x.group())
   return re.sub(r'\$i18n(?:Raw)?\{(.*?)\}', repl, template)
 
+
+# Copy tree from src_dir to dst_dir with substitutions.
+def copytree(src_dir, dst_dir):
+  for root, _, files in os.walk(SRC + src_dir):
+    for f in files:
+      srcf = os.path.join(root[len(SRC):], f)
+      dstf = dst_dir + srcf[len(src_dir):]
+      write(dstf, i18n(read(srcf).replace('chrome://resources/', GEN + R_GEN)))
+
+# Copy any files required in chrome://resources/... into test/gen/resources.
+copytree('ui/webui/resources/', R_GEN)
+copytree('third_party/polymer/v1_0/components-chromium/',
+         R_GEN + 'polymer/v1_0/')
+shutil.rmtree(GEN + R_GEN + 'polymer/v1_0/polymer')
+os.rename(GEN + R_GEN + 'polymer/v1_0/polymer2',
+          GEN + R_GEN + 'polymer/v1_0/polymer')
+for css in glob.glob(GEN + '../../webui/resources/css/*.css'):
+  shutil.copy(css, GEN + R_GEN + 'css/')
+
 # Substitute $i18n{}.
-# Update relative paths.
-# Fix link to action_link.css and text_defaults.css.
-# Fix stylesheet from extension.
+# Update relative paths, and paths to chrome://resources/.
 main_html = (i18n(read('ui/file_manager/file_manager/main.html'))
-             .replace('chrome://resources/polymer/v1_0/', '../../../' + CC_SRC)
-             .replace('chrome://resources/css/action_link.css',
-                      '../../webui/resources/css/action_link.css')
              .replace('href="', 'href="' + ROOT)
              .replace('src="', 'src="' + ROOT)
-             .replace(ROOT + 'chrome://resources/html/', CC_GEN + 'polymer/')
-             .replace(ROOT + 'chrome://resources/css/text_defaults.css',
-                      'test/gen/css/text_defaults.css')
+             .replace(ROOT + 'chrome://resources/', R_GEN)
              .split('\n'))
-
-# Fix text_defaults.css.  Copy and replace placeholders.
-text_defaults = i18n(read('ui/webui/resources/css/text_defaults.css'))
-write('test/gen/css/text_defaults.css', text_defaults)
 
 # Add scripts required for testing, and the test files (test/*.js).
 src = [
@@ -193,15 +200,6 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
 def elements_path(elements_filename):
   return '../../../../%sforeground/elements/%s' % (ROOT, elements_filename)
 
-# Copy all files from //third_party/polymer/v1_0/components-chromium/ into
-# test/gen/cc.  Rename polymer2 to polymer.
-gen_cc = GEN + CC_GEN
-if os.path.exists(gen_cc):
-  shutil.rmtree(gen_cc)
-shutil.copytree(SRC + CC_SRC, gen_cc)
-shutil.rmtree(gen_cc + 'polymer')
-os.rename(gen_cc + 'polymer2', gen_cc + 'polymer')
-
 # Generate strings.js
 # Copy all html files in foreground/elements and fix references to polymer
 # Load QuickView in iframe rather than webview.
@@ -209,13 +207,13 @@ for filename, substitutions in (
     ('test/js/strings.js', (
         ('$GRDP', json.dumps(strings, sort_keys=True, indent=2)),
     )),
-    ('foreground/elements/elements_bundle.html', (
-        ('="files_xf', '="' + elements_path('files_xf')),
-    )),
+    ('foreground/elements/elements_bundle.html', ()),
     ('foreground/js/elements_importer.js', (
         ("= 'foreground", "= 'test/gen/foreground"),
     )),
+    ('foreground/elements/files_format_dialog.html', ()),
     ('foreground/elements/files_icon_button.html', ()),
+    ('foreground/elements/files_message.html', ()),
     ('foreground/elements/files_metadata_box.html', ()),
     ('foreground/elements/files_metadata_entry.html', ()),
     ('foreground/elements/files_quick_view.html', (
@@ -235,23 +233,19 @@ for filename, substitutions in (
          ('this.webview_.contentWindow.content.type = this.type;'
           'this.webview_.contentWindow.content.src = this.src;')),
     )),
+    ('foreground/elements/files_spinner.html', ()),
     ('foreground/elements/files_toast.html', ()),
     ('foreground/elements/files_toggle_ripple.html', ()),
     ('foreground/elements/files_tooltip.html', ()),
+    ('foreground/elements/files_xf_elements.html', (
+        ('src="xf_',
+         'src="%sui/file_manager/file_manager/foreground/elements/xf_' % SRC),
+    )),
     ('foreground/elements/icons.html', ()),
     ):
   buf = i18n(read('ui/file_manager/file_manager/' + filename))
-  buf = buf.replace('chrome://resources/html/', '../../cc/polymer/')
-  buf = buf.replace('chrome://resources/polymer/v1_0/', '../../cc/')
-  buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
-                    'cr_input/cr_input.html">', '')
-  buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
-                    'cr_button/cr_button.html">', '')
+  buf = buf.replace('chrome://resources/', '../../resources/')
   buf = buf.replace('src="files_', 'src="' + elements_path('files_'))
-  # The files_format_dialog and files_message import various files that are
-  # not available in a ui test, just ignore them completely.
-  buf = buf.replace('<link rel="import" href="files_format_dialog.html">', '')
-  buf = buf.replace('<link rel="import" href="files_message.html">', '')
   for old, new in substitutions:
     buf = buf.replace(old, new)
   write('test/gen/' + filename, buf)

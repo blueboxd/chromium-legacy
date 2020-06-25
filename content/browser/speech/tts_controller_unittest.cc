@@ -7,10 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/browser/speech/tts_controller_impl.h"
+#include "content/browser/speech/tts_utterance_impl.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/test/test_content_browser_client.h"
+#include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
@@ -28,6 +31,9 @@ class MockTtsPlatformImpl : public TtsPlatform {
 
   void set_voices(const std::vector<VoiceData>& voices) { voices_ = voices; }
 
+  void set_run_speak_callback(bool value) { run_speak_callback_ = value; }
+  void set_is_speaking(bool value) { is_speaking_ = value; }
+
   // TtsPlatform:
   bool PlatformImplAvailable() override { return true; }
   void Speak(int utterance_id,
@@ -36,9 +42,10 @@ class MockTtsPlatformImpl : public TtsPlatform {
              const VoiceData& voice,
              const UtteranceContinuousParameters& params,
              base::OnceCallback<void(bool)> on_speak_finished) override {
-    std::move(on_speak_finished).Run(true);
+    if (run_speak_callback_)
+      std::move(on_speak_finished).Run(true);
   }
-  bool IsSpeaking() override { return false; }
+  bool IsSpeaking() override { return is_speaking_; }
   bool StopSpeaking() override { return true; }
   void Pause() override {}
   void Resume() override {}
@@ -56,6 +63,8 @@ class MockTtsPlatformImpl : public TtsPlatform {
 
  private:
   std::vector<VoiceData> voices_;
+  bool run_speak_callback_ = true;
+  bool is_speaking_ = false;
 };
 
 #if defined(OS_CHROMEOS)
@@ -361,6 +370,106 @@ TEST(TtsControllerTest, TestGetMatchingVoice) {
     EXPECT_EQ(0, controller->GetMatchingVoice(utterance.get(), voices));
 #endif
   }
-}  // namespace content
+}
+
+TEST(TtsControllerTest, StopsWhenWebContentsDestroyed) {
+  content::BrowserTaskEnvironment task_environment;
+  RenderViewHostTestEnabler rvh_enabler;
+  TestBrowserContext browser_context;
+  std::unique_ptr<WebContents> web_contents(
+      TestWebContents::Create(&browser_context, nullptr));
+  std::unique_ptr<TtsUtteranceImpl> utterance =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents.get());
+
+  MockTtsPlatformImpl platform_impl;
+  TtsControllerForTesting controller;
+  platform_impl.set_run_speak_callback(false);
+  platform_impl.set_is_speaking(true);
+  controller.SetTtsPlatform(&platform_impl);
+  controller.SpeakOrEnqueue(std::move(utterance));
+  EXPECT_TRUE(controller.IsSpeaking());
+  EXPECT_TRUE(controller.current_utterance_.get());
+
+  web_contents.reset();
+  // Destroying the WebContents should reset |current_utterance_|.
+  EXPECT_FALSE(controller.current_utterance_.get());
+}
+
+TEST(TtsControllerTest, StartsQueuedUtteranceWhenWebContentsDestroyed) {
+  content::BrowserTaskEnvironment task_environment;
+  RenderViewHostTestEnabler rvh_enabler;
+  TestBrowserContext browser_context;
+  std::unique_ptr<WebContents> web_contents1(
+      TestWebContents::Create(&browser_context, nullptr));
+  std::unique_ptr<WebContents> web_contents2(
+      TestWebContents::Create(&browser_context, nullptr));
+  std::unique_ptr<TtsUtteranceImpl> utterance1 =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents1.get());
+  void* raw_utterance1 = utterance1.get();
+  std::unique_ptr<TtsUtteranceImpl> utterance2 =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents2.get());
+  void* raw_utterance2 = utterance2.get();
+  utterance2->SetCanEnqueue(true);
+
+  MockTtsPlatformImpl platform_impl;
+  TtsControllerForTesting controller;
+  platform_impl.set_run_speak_callback(false);
+  platform_impl.set_is_speaking(true);
+  controller.SetTtsPlatform(&platform_impl);
+  controller.SpeakOrEnqueue(std::move(utterance1));
+  EXPECT_TRUE(controller.IsSpeaking());
+  EXPECT_TRUE(controller.current_utterance_.get());
+  controller.SpeakOrEnqueue(std::move(utterance2));
+  EXPECT_EQ(raw_utterance1, controller.current_utterance_.get());
+
+  web_contents1.reset();
+  // Destroying |web_contents1| should delete |utterance1| and start
+  // |utterance2|.
+  EXPECT_TRUE(controller.current_utterance_.get());
+  EXPECT_EQ(raw_utterance2, controller.current_utterance_.get());
+}
+
+TEST(TtsControllerTest, StartsQueuedUtteranceWhenWebContentsDestroyed2) {
+  content::BrowserTaskEnvironment task_environment;
+  RenderViewHostTestEnabler rvh_enabler;
+  TestBrowserContext browser_context;
+  std::unique_ptr<WebContents> web_contents1(
+      TestWebContents::Create(&browser_context, nullptr));
+  std::unique_ptr<WebContents> web_contents2(
+      TestWebContents::Create(&browser_context, nullptr));
+  std::unique_ptr<TtsUtteranceImpl> utterance1 =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents1.get());
+  void* raw_utterance1 = utterance1.get();
+  std::unique_ptr<TtsUtteranceImpl> utterance2 =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents1.get());
+  std::unique_ptr<TtsUtteranceImpl> utterance3 =
+      std::make_unique<TtsUtteranceImpl>(&browser_context, web_contents2.get());
+  void* raw_utterance3 = utterance3.get();
+  utterance2->SetCanEnqueue(true);
+  utterance3->SetCanEnqueue(true);
+
+  MockTtsPlatformImpl platform_impl;
+  TtsControllerForTesting controller;
+  platform_impl.set_run_speak_callback(false);
+  platform_impl.set_is_speaking(true);
+  controller.SetTtsPlatform(&platform_impl);
+  controller.SpeakOrEnqueue(std::move(utterance1));
+  controller.SpeakOrEnqueue(std::move(utterance2));
+  controller.SpeakOrEnqueue(std::move(utterance3));
+  EXPECT_TRUE(controller.IsSpeaking());
+  EXPECT_EQ(raw_utterance1, controller.current_utterance_.get());
+
+  web_contents1.reset();
+  // Deleting |web_contents1| should delete |utterance1| and |utterance2| as
+  // they are both from |web_contents1|. |raw_utterance3| should be made the
+  // current as it's from a different WebContents.
+  EXPECT_EQ(raw_utterance3, controller.current_utterance_.get());
+  EXPECT_TRUE(controller.utterance_list_.empty());
+
+  web_contents2.reset();
+  // Deleting |web_contents2| should delete |utterance3| as it's from a
+  // different WebContents.
+  EXPECT_EQ(nullptr, controller.current_utterance_.get());
+}
 
 }  // namespace content

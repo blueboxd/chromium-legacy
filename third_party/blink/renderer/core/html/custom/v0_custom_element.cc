@@ -48,8 +48,8 @@ V0CustomElementMicrotaskImportStep* V0CustomElement::DidCreateImport(
   return V0CustomElementScheduler::ScheduleImport(import);
 }
 
-void V0CustomElement::DidFinishLoadingImport(Document& master) {
-  master.CustomElementMicrotaskRunQueue()->RequestDispatchIfNeeded();
+void V0CustomElement::DidFinishLoadingImport(Document& tree_root) {
+  tree_root.CustomElementMicrotaskRunQueue()->RequestDispatchIfNeeded();
 }
 
 static inline bool IsValidNCName(const AtomicString& name) {

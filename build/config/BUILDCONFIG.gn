@@ -237,7 +237,7 @@ if (target_os == "android") {
   _default_toolchain = "//build/toolchain/mac:ios_clang_$target_cpu"
 } else if (target_os == "mac") {
   assert(host_os == "mac", "Mac cross-compiles are unsupported.")
-  _default_toolchain = host_toolchain
+  _default_toolchain = "//build/toolchain/mac:clang_$target_cpu"
 } else if (target_os == "win") {
   # On Windows, we use the same toolchain for host and target by default.
   # Beware, win cross builds have some caveats, see docs/win_cross.md
@@ -585,10 +585,9 @@ foreach(_target_type,
       # On Android, write shared library output file to metadata. We will use
       # this information to, for instance, collect all shared libraries that
       # should be packaged into an APK.
-      if (!defined(invoker.metadata) && is_android && (_target_type ==
-                                                       "shared_library" ||
-                                                       _target_type ==
-                                                       "loadable_module")) {
+      if (!defined(invoker.metadata) && is_android &&
+          (_target_type == "shared_library" ||
+           _target_type == "loadable_module")) {
         _output_name = _target_name
         if (defined(invoker.output_name)) {
           _output_name = invoker.output_name

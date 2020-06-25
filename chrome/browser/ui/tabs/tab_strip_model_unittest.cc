@@ -1096,6 +1096,87 @@ TEST_F(TabStripModelTest, CloseGroupedTabShiftsSelectionWithinGroup) {
   ASSERT_TRUE(tabstrip.empty());
 }
 
+// Tests that the active selection will change to another non collapsed tab when
+// the active index is in the collapsing group.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_SuccessNextTab) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({0, 1});
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(2, next_active);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that the active selection will change to another non collapsed tab when
+// the active index is in the collapsing group.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_SuccessPreviousTab) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({2, 3});
+  tabstrip.ActivateTabAt(2, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(2, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(1, next_active);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
+// Tests that there is no valid selection to shift to when the active tab is in
+// the group that will be collapsed.
+TEST_F(TabStripModelTest, CollapseGroupShiftsSelection_NoAvailableTabs) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel tabstrip(&delegate, profile());
+  ASSERT_TRUE(tabstrip.empty());
+
+  std::unique_ptr<WebContents> opener = CreateWebContents();
+  tabstrip.AppendWebContents(std::move(opener), true);
+  InsertWebContentses(&tabstrip, CreateWebContents(), CreateWebContents(),
+                      CreateWebContents());
+  ASSERT_EQ(0, tabstrip.active_index());
+
+  tabstrip.ForgetAllOpeners();
+  tab_groups::TabGroupId group = tabstrip.AddToNewGroup({0, 1, 2, 3});
+  tabstrip.ActivateTabAt(1, {TabStripModel::GestureType::kOther});
+  ASSERT_EQ(1, tabstrip.active_index());
+
+  base::Optional<int> next_active =
+      tabstrip.GetNextExpandedActiveTab(tabstrip.active_index(), group);
+
+  EXPECT_EQ(base::nullopt, next_active);
+
+  tabstrip.CloseAllTabs();
+  ASSERT_TRUE(tabstrip.empty());
+}
+
 // Tests that selection is shifted to the correct tab when a tab is closed.
 // If the tab does have an opener, selection shifts to the next tab opened by
 // the same opener scanning LTR.

@@ -74,10 +74,6 @@ class CONTENT_EXPORT MouseLockDispatcher {
   virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame,
                                     bool request_unadjusted_movement) = 0;
 
-  base::WeakPtr<MouseLockDispatcher> AsWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
  private:
   bool MouseLockedOrPendingAction() const {
     return mouse_lock_context_ || pending_lock_request_ ||
@@ -100,8 +96,6 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // owning reference here that must be cleared by |OnLockTargetDestroyed|
   // when it is destroyed.
   LockTarget* target_;
-
-  base::WeakPtrFactory<MouseLockDispatcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MouseLockDispatcher);
 };

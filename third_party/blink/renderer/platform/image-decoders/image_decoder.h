@@ -179,9 +179,9 @@ class PLATFORM_EXPORT ImageDecoder {
   }
 
   // Similar to above, but does not allow mime sniffing. Creates explicitly
-  // based on the |image_type| value.
-  static std::unique_ptr<ImageDecoder> CreateByImageType(
-      String image_type,
+  // based on the |mime_type| value.
+  static std::unique_ptr<ImageDecoder> CreateByMimeType(
+      String mime_type,
       scoped_refptr<SegmentReader> data,
       bool data_complete,
       AlphaOption alpha_option,
@@ -204,10 +204,10 @@ class PLATFORM_EXPORT ImageDecoder {
   // Returns true if the buffer holds enough data to instantiate a decoder.
   // This is useful for callers to determine whether a decoder instantiation
   // failure is due to insufficient or bad data.
-  static bool HasSufficientDataToSniffImageType(const SharedBuffer&);
+  static bool HasSufficientDataToSniffMimeType(const SharedBuffer&);
 
   // Looks at the image data to determine and return the image MIME type.
-  static String SniffImageType(scoped_refptr<SharedBuffer> image_data);
+  static String SniffMimeType(scoped_refptr<SharedBuffer> image_data);
 
   // Returns the image data's compression format.
   static CompressionFormat GetCompressionFormat(

@@ -48,7 +48,6 @@ class OmniboxRowView::HeaderView : public views::View,
                               views::style::STYLE_PRIMARY)
             .DeriveWithWeight(gfx::Font::Weight::MEDIUM);
     header_text_->SetFontList(font);
-    header_text_->SetEnabledColor(gfx::kGoogleGrey700);
 
     header_toggle_button_ =
         AddChildView(views::CreateVectorToggleImageButton(this));
@@ -144,6 +143,10 @@ class OmniboxRowView::HeaderView : public views::View,
     } else if (IsMouseHovered()) {
       part_state = OmniboxPartState::HOVERED;
     }
+
+    SkColor text_color = GetOmniboxColor(
+        GetThemeProvider(), OmniboxPart::RESULTS_TEXT_DIMMED, part_state);
+    header_text_->SetEnabledColor(text_color);
 
     SkColor icon_color = GetOmniboxColor(GetThemeProvider(),
                                          OmniboxPart::RESULTS_ICON, part_state);

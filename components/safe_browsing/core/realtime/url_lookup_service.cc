@@ -28,16 +28,10 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace safe_browsing {
 
 namespace {
-
-const char kRealTimeLookupUrlPrefix[] =
-    "https://safebrowsing.google.com/safebrowsing/clientreport/realtime";
-
-const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
 
 constexpr char kAuthHeaderBearer[] = "Bearer ";
 
@@ -54,8 +48,7 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
     bool is_under_advanced_protection,
     bool is_off_the_record,
     variations::VariationsService* variations_service)
-    : RealTimeUrlLookupServiceBase(cache_manager),
-      url_loader_factory_(url_loader_factory),
+    : RealTimeUrlLookupServiceBase(url_loader_factory, cache_manager),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       pref_service_(pref_service),
@@ -126,43 +119,8 @@ void RealTimeUrlLookupService::SendRequest(
                             ChromeUserPopulation::UserPopulation_MAX + 1);
   std::string req_data;
   request->SerializeToString(&req_data);
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("safe_browsing_realtime_url_lookup",
-                                          R"(
-        semantics {
-          sender: "Safe Browsing"
-          description:
-            "When Safe Browsing can't detect that a URL is safe based on its "
-            "local database, it sends the top-level URL to Google to verify it "
-            "before showing a warning to the user."
-          trigger:
-            "When a main frame URL fails to match the local hash-prefix "
-            "database of known safe URLs and a valid result from a prior "
-            "lookup is not already cached, this will be sent."
-          data: "The main frame URL that did not match the local safelist."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "Safe Browsing cookie store"
-          setting:
-            "Users can disable Safe Browsing real time URL checks by "
-            "unchecking 'Protect you and your device from dangerous sites' in "
-            "Chromium settings under Privacy, or by unchecking 'Make searches "
-            "and browsing better (Sends URLs of pages you visit to Google)' in "
-            "Chromium settings under Privacy."
-          chrome_policy {
-            UrlKeyedAnonymizedDataCollectionEnabled {
-              policy_options {mode: MANDATORY}
-              UrlKeyedAnonymizedDataCollectionEnabled: false
-            }
-          }
-        })");
 
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(kRealTimeLookupUrlPrefix);
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  resource_request->method = "POST";
+  auto resource_request = GetResourceRequest();
   if (access_token_info.has_value()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAuthorization,
@@ -171,20 +129,8 @@ void RealTimeUrlLookupService::SendRequest(
   base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenInRequest",
                             access_token_info.has_value());
 
-  std::unique_ptr<network::SimpleURLLoader> owned_loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       traffic_annotation);
-  network::SimpleURLLoader* loader = owned_loader.get();
-  owned_loader->AttachStringForUpload(req_data, "application/octet-stream");
-  owned_loader->SetTimeoutDuration(
-      base::TimeDelta::FromSeconds(kURLLookupTimeoutDurationInSeconds));
-  owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
-      base::BindOnce(&RealTimeUrlLookupService::OnURLLoaderComplete,
-                     weak_factory_.GetWeakPtr(), url, loader,
-                     base::TimeTicks::Now()));
-
-  pending_requests_[owned_loader.release()] = std::move(response_callback);
+  SendRequestInternal(std::move(resource_request), req_data, url,
+                      std::move(response_callback));
 
   base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
                  base::BindOnce(std::move(request_callback), std::move(request),
@@ -193,59 +139,7 @@ void RealTimeUrlLookupService::SendRequest(
                                     : ""));
 }
 
-void RealTimeUrlLookupService::Shutdown() {
-  for (auto& pending : pending_requests_) {
-    // Treat all pending requests as safe.
-    auto response = std::make_unique<RTLookupResponse>();
-    std::move(pending.second)
-        .Run(/* is_rt_lookup_successful */ true, std::move(response));
-    delete pending.first;
-  }
-  pending_requests_.clear();
-}
-
 RealTimeUrlLookupService::~RealTimeUrlLookupService() {}
-
-void RealTimeUrlLookupService::OnURLLoaderComplete(
-    const GURL& url,
-    network::SimpleURLLoader* url_loader,
-    base::TimeTicks request_start_time,
-    std::unique_ptr<std::string> response_body) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-
-  auto it = pending_requests_.find(url_loader);
-  DCHECK(it != pending_requests_.end()) << "Request not found";
-
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.Network.Time",
-                      base::TimeTicks::Now() - request_start_time);
-
-  int net_error = url_loader->NetError();
-  int response_code = 0;
-  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
-    response_code = url_loader->ResponseInfo()->headers->response_code();
-  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.RT.Network.Result", net_error, response_code);
-
-  auto response = std::make_unique<RTLookupResponse>();
-  bool is_rt_lookup_successful = (net_error == net::OK) &&
-                                 (response_code == net::HTTP_OK) &&
-                                 response->ParseFromString(*response_body);
-  base::UmaHistogramBoolean("SafeBrowsing.RT.IsLookupSuccessful",
-                            is_rt_lookup_successful);
-  is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
-
-  MayBeCacheRealTimeUrlVerdict(url, *response);
-
-  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.RT.ThreatInfoSize",
-                           response->threat_info_size());
-
-  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
-                 base::BindOnce(std::move(it->second), is_rt_lookup_successful,
-                                std::move(response)));
-
-  delete it->first;
-  pending_requests_.erase(it);
-}
 
 std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
     const GURL& url) {
@@ -299,6 +193,47 @@ bool RealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
   // Always return true, because consumer real time URL check only works when
   // safe browsing is enabled.
   return true;
+}
+
+net::NetworkTrafficAnnotationTag
+RealTimeUrlLookupService::GetTrafficAnnotationTag() const {
+  return net::DefineNetworkTrafficAnnotation(
+      "safe_browsing_realtime_url_lookup",
+      R"(
+        semantics {
+          sender: "Safe Browsing"
+          description:
+            "When Safe Browsing can't detect that a URL is safe based on its "
+            "local database, it sends the top-level URL to Google to verify it "
+            "before showing a warning to the user."
+          trigger:
+            "When a main frame URL fails to match the local hash-prefix "
+            "database of known safe URLs and a valid result from a prior "
+            "lookup is not already cached, this will be sent."
+          data: "The main frame URL that did not match the local safelist."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "Safe Browsing cookie store"
+          setting:
+            "Users can disable Safe Browsing real time URL checks by "
+            "unchecking 'Protect you and your device from dangerous sites' in "
+            "Chromium settings under Privacy, or by unchecking 'Make searches "
+            "and browsing better (Sends URLs of pages you visit to Google)' in "
+            "Chromium settings under Privacy."
+          chrome_policy {
+            UrlKeyedAnonymizedDataCollectionEnabled {
+              policy_options {mode: MANDATORY}
+              UrlKeyedAnonymizedDataCollectionEnabled: false
+            }
+          }
+        })");
+}
+
+GURL RealTimeUrlLookupService::GetRealTimeLookupUrl() const {
+  return GURL(
+      "https://safebrowsing.google.com/safebrowsing/clientreport/realtime");
 }
 
 }  // namespace safe_browsing

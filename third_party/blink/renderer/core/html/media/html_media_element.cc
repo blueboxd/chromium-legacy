@@ -1317,6 +1317,8 @@ void HTMLMediaElement::StartPlayerLoad() {
 
   web_media_player_->SetLatencyHint(latencyHint());
 
+  web_media_player_->SetPreservesPitch(preservesPitch());
+
   OnLoadStarted();
 }
 
@@ -2574,6 +2576,17 @@ void HTMLMediaElement::PauseInternal() {
   }
 
   UpdatePlayState();
+}
+
+bool HTMLMediaElement::preservesPitch() const {
+  return preserves_pitch_;
+}
+
+void HTMLMediaElement::setPreservesPitch(bool preserves_pitch) {
+  preserves_pitch_ = preserves_pitch;
+
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->SetPreservesPitch(preserves_pitch_);
 }
 
 double HTMLMediaElement::latencyHint() const {

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -239,7 +240,9 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
 }
 
 bool DisplayLockContext::NeedsLifecycleNotifications() const {
-  return needs_deferred_not_intersecting_signal_;
+  return needs_deferred_not_intersecting_signal_ ||
+         render_affecting_state_[static_cast<int>(
+             RenderAffectingState::kAutoStateUnlockedUntilLifecycle)];
 }
 
 void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
@@ -409,7 +412,29 @@ void DisplayLockContext::CommitForActivationWithSignal(
   DCHECK(IsLocked());
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
 
+  // Find in page scrolls content into view. However, if the position of the
+  // target is outside of the bounds that would cause the auto-context to
+  // unlock, then we can scroll into wrong content while the context remains
+  // lock. To avoid this, unlock it until the next lifecycle. If the scroll is
+  // successful, then we will gain visibility anyway so the context will be
+  // unlocked for other reasons.
+  // TODO(vmpstr): See if scrollIntoView() needs this as well.
+  if (reason == DisplayLockActivationReason::kFindInPage) {
+    // Note that because the visibility is only determined at the _end_ of the
+    // next frame, we need to ensure that we stay unlocked for two frames.
+    SetKeepUnlockedUntilLifecycleCount(2);
+  }
+
   RecordActivationReason(document_, reason);
+}
+
+void DisplayLockContext::SetKeepUnlockedUntilLifecycleCount(int count) {
+  DCHECK_GT(count, 0);
+  keep_unlocked_count_ = std::max(keep_unlocked_count_, count);
+  SetRenderAffectingState(
+      RenderAffectingState::kAutoStateUnlockedUntilLifecycle, true);
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
 }
 
 void DisplayLockContext::NotifyIsIntersectingViewport() {
@@ -805,9 +830,18 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   if (needs_deferred_not_intersecting_signal_)
     NotifyIsNotIntersectingViewport();
 
-  if (has_deferred_selection_clear_) {
-    NotifySubtreeLostSelection();
-    DCHECK(!has_deferred_selection_clear_);
+  // If we're keeping this context unlocked, update the values.
+  if (keep_unlocked_count_) {
+    if (--keep_unlocked_count_) {
+      ScheduleAnimation();
+    } else {
+      SetRenderAffectingState(
+          RenderAffectingState::kAutoStateUnlockedUntilLifecycle, false);
+      UpdateLifecycleNotificationRegistration();
+    }
+  } else {
+    DCHECK(!render_affecting_state_[static_cast<int>(
+        RenderAffectingState::kAutoStateUnlockedUntilLifecycle)]);
   }
 }
 
@@ -983,16 +1017,11 @@ void DisplayLockContext::SetRenderAffectingState(RenderAffectingState state,
   // find-in-page. We cannot lock an object while doing this, since it may
   // invalidate layout and in turn prevent find-in-page from properly finding
   // text (and DCHECK). Since layout is clean for this lock (we're unlocked),
-  // defer selection clearing to the next lifecycle.
-  if (state == RenderAffectingState::kSubtreeHasSelection) {
-    if (!new_flag && document_->GetDisplayLockDocumentState()
-                         .ActivatableDisplayLocksForced()) {
-      has_deferred_selection_clear_ = true;
-      ScheduleAnimation();
-      return;
-    } else {
-      has_deferred_selection_clear_ = false;
-    }
+  // keep the context unlocked until the next lifecycle starts.
+  if (state == RenderAffectingState::kSubtreeHasSelection && !new_flag &&
+      document_->GetDisplayLockDocumentState()
+          .ActivatableDisplayLocksForced()) {
+    SetKeepUnlockedUntilLifecycleCount(1);
   }
 
   render_affecting_state_[static_cast<int>(state)] = new_flag;
@@ -1022,7 +1051,8 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
       (state_ != EContentVisibility::kAuto ||
        (!state(RenderAffectingState::kIntersectsViewport) &&
         !state(RenderAffectingState::kSubtreeHasFocus) &&
-        !state(RenderAffectingState::kSubtreeHasSelection)));
+        !state(RenderAffectingState::kSubtreeHasSelection) &&
+        !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle)));
 
   if (should_be_locked && !IsLocked())
     Lock();
@@ -1034,6 +1064,37 @@ void DisplayLockContext::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);
+}
+
+const char* DisplayLockContext::RenderAffectingStateName(int state) const {
+  switch (static_cast<RenderAffectingState>(state)) {
+    case RenderAffectingState::kLockRequested:
+      return "LockRequested";
+    case RenderAffectingState::kIntersectsViewport:
+      return "IntersectsViewport";
+    case RenderAffectingState::kSubtreeHasFocus:
+      return "SubtreeHasFocus";
+    case RenderAffectingState::kSubtreeHasSelection:
+      return "SubtreeHasSelection";
+    case RenderAffectingState::kAutoStateUnlockedUntilLifecycle:
+      return "AutoStateUnlockedUntilLifecycle";
+    case RenderAffectingState::kNumRenderAffectingStates:
+      break;
+  }
+  return "<Invalid State>";
+}
+
+String DisplayLockContext::RenderAffectingStateToString() const {
+  StringBuilder builder;
+  for (int i = 0;
+       i < static_cast<int>(RenderAffectingState::kNumRenderAffectingStates);
+       ++i) {
+    builder.Append(RenderAffectingStateName(i));
+    builder.Append(": ");
+    builder.Append(render_affecting_state_[i] ? "true" : "false");
+    builder.Append("\n");
+  }
+  return builder.ToString();
 }
 
 }  // namespace blink

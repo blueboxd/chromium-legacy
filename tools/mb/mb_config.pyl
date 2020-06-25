@@ -15,12 +15,12 @@
   'masters': {
     'chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
-      'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official',
       'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
       'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
+      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
       # Don't include unwind tables for the remaining three builders since
       # they monitor binary size growth, which may be affected by the tables.
@@ -56,8 +56,11 @@
     'chromium': {
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols',
       'android-archive-dbg': 'android_without_codecs_debug_bot',
+      'android-official': 'android_official_optimize_goma',
+      'fuchsia-official': 'fuchsia_official_optimize_goma',
       'linux-archive-rel': 'release_bot',
       'linux-archive-dbg': 'debug_bot',
+      'linux-official': 'official_optimize_goma',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
@@ -689,6 +692,12 @@
       'win10-blink-rel': 'release_bot_blink_x86_minimal_symbols',
     },
 
+    'tryserver.chromium': {
+      'android-official': 'android_official_optimize_goma_trybot',
+      'fuchsia-official': 'fuchsia_official_optimize_goma_trybot',
+      'linux-official': 'official_optimize_goma_trybot'
+    },
+
     'tryserver.chromium.android': {
       'android-asan': 'android_clang_asan_release_trybot',
       'android-bfcache-rel': 'android_release_trybot',
@@ -773,11 +782,11 @@
 
     'tryserver.chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
-      'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official',
       'chromeos-betty-cfi-thin-lto-chrome': 'chromeos_betty_cfi_thin_lto_official',
       'chromeos-betty-chrome': 'chromeos_betty_include_unwind_tables_official',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official',
+      'chromeos-eve-arc-r-chrome': 'chromeos_eve-arc-r_include_unwind_tables_official',
       'chromeos-eve-chrome': 'chromeos_eve_include_unwind_tables_official',
       'chromeos-eve-compile-chrome': 'chromeos_eve_include_unwind_tables_official',
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
@@ -1201,6 +1210,14 @@
       'android', 'incremental', 'debug_bot',
     ],
 
+    'android_official_optimize_goma': [
+      'official_optimize_goma', 'android_without_codecs',
+    ],
+
+    'android_official_optimize_goma_trybot': [
+      'official_optimize_goma_trybot', 'android_without_codecs',
+    ],
+
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
@@ -1483,10 +1500,6 @@
       'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
-    'chromeos_betty-arc-r_include_unwind_tables_official': [
-      'chromeos_device', 'betty-arc-r', 'include_unwind_tables', 'official',
-    ],
-
     'chromeos_betty_cfi_thin_lto_official': [
       'chromeos_device', 'betty', 'cfi_full', 'thin_lto', 'official',
     ],
@@ -1504,6 +1517,10 @@
 
     'chromeos_betty-pi-arc_include_unwind_tables_official': [
       'chromeos_device', 'betty-pi-arc', 'include_unwind_tables', 'official',
+    ],
+
+    'chromeos_eve-arc-r_include_unwind_tables_official': [
+      'chromeos_device', 'eve-arc-r', 'include_unwind_tables', 'official',
     ],
 
     'chromeos_eve_include_unwind_tables_official': [
@@ -1707,6 +1724,14 @@
 
     'debug_bot_x86_no_com_init_hooks_with_codecs': [
       'debug_bot', 'x86', 'no_com_init_hooks', 'chrome_with_codecs'
+    ],
+
+    'fuchsia_official_optimize_goma': [
+      'official_optimize_goma', 'fuchsia',
+    ],
+
+    'fuchsia_official_optimize_goma_trybot': [
+      'official_optimize_goma_trybot', 'fuchsia',
     ],
 
     'gpu_fyi_tests_android_vulkan_ndk_release_trybot': [
@@ -2110,6 +2135,14 @@
       'official', 'goma', 'x86', 'static', 'no_symbols', 'pgo_phase_1', 'no_resource_whitelisting',
     ],
 
+    'official_optimize_goma': [
+      'official_optimize_goma',
+    ],
+
+    'official_optimize_goma_trybot': [
+      'official_optimize_goma_trybot',
+    ],
+
     'ozone_linux_release_bot': [
       'ozone_linux', 'release_bot',
     ],
@@ -2386,10 +2419,6 @@
       'args_file': '//build/args/chromeos/betty.gni',
     },
 
-    'betty-arc-r': {
-      'args_file': '//build/args/chromeos/betty-arc-r.gni',
-    },
-
     'betty-pi-arc': {
       'args_file': '//build/args/chromeos/betty-pi-arc.gni',
     },
@@ -2557,6 +2586,10 @@
 
     'eve': {
       'args_file': '//build/args/chromeos/eve.gni',
+    },
+
+    'eve-arc-r': {
+      'args_file': '//build/args/chromeos/eve-arc-r.gni',
     },
 
     'java_warnings_as_errors': {
@@ -2748,6 +2781,14 @@
 
     'official_optimize': {
       'gn_args': 'is_official_build=true is_debug=false',
+    },
+
+    'official_optimize_goma': {
+      'mixins': ['official_optimize', 'goma'],
+    },
+
+    'official_optimize_goma_trybot': {
+      'mixins': ['official_optimize_goma', 'minimal_symbols', 'dcheck_always_on'],
     },
 
     'optimize_for_fuzzing': {

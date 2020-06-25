@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/features.h"
 #include "net/dns/dns_util.h"
@@ -34,6 +35,37 @@ enum HttpssvcDnsRcode TranslateDnsRcodeForHttpssvcExperiment(uint8_t rcode) {
       return HttpssvcDnsRcode::kUnrecognizedRcode;
   }
   NOTREACHED();
+}
+
+HttpssvcExperimentDomainCache::HttpssvcExperimentDomainCache() = default;
+HttpssvcExperimentDomainCache::~HttpssvcExperimentDomainCache() = default;
+
+bool HttpssvcExperimentDomainCache::ListContainsDomain(
+    const std::string& domain_list,
+    base::StringPiece domain,
+    base::Optional<base::flat_set<std::string>>& in_out_cached_list) {
+  if (!in_out_cached_list) {
+    in_out_cached_list = base::SplitString(
+        domain_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
+  return in_out_cached_list->find(domain) != in_out_cached_list->end();
+}
+
+bool HttpssvcExperimentDomainCache::IsExperimental(base::StringPiece domain) {
+  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
+    return false;
+  return ListContainsDomain(features::kDnsHttpssvcExperimentDomains.Get(),
+                            domain, experimental_list_);
+}
+
+bool HttpssvcExperimentDomainCache::IsControl(base::StringPiece domain) {
+  std::vector<base::StringPiece> control_domains;
+  if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc))
+    return false;
+  if (features::kDnsHttpssvcControlDomainWildcard.Get())
+    return !IsExperimental(domain);
+  return ListContainsDomain(features::kDnsHttpssvcControlDomains.Get(), domain,
+                            control_list_);
 }
 
 HttpssvcMetrics::HttpssvcMetrics(bool expect_intact)

@@ -24,10 +24,15 @@ class QuickAnswersPreTargetHandler;
 namespace quick_answers {
 
 // TODO(siabhijeet): Investigate BubbleDialogDelegateView as a common view for
-// UserConsentView and QuickAnswersView
+// UserConsentView and QuickAnswersView.
+// |intent_type| and |intent_text| are used to generate the consent title
+// including predicted intent information. Fallback to title without intent
+// information if any of these two strings are empty.
 class UserConsentView : public views::View, public views::ButtonListener {
  public:
   UserConsentView(const gfx::Rect& anchor_view_bounds,
+                  const base::string16& intent_type,
+                  const base::string16& intent_text,
                   QuickAnswersUiController* ui_controller);
 
   // Disallow copy and assign.
@@ -61,6 +66,8 @@ class UserConsentView : public views::View, public views::ButtonListener {
 
   // Cached bounds of the anchor this view is tied to.
   gfx::Rect anchor_view_bounds_;
+  // Cached title text.
+  base::string16 title_;
 
   std::unique_ptr<QuickAnswersPreTargetHandler> event_handler_;
   QuickAnswersUiController* const ui_controller_;

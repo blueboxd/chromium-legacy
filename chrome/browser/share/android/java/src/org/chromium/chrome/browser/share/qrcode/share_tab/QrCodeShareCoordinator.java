@@ -18,9 +18,10 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class QrCodeShareCoordinator implements QrCodeDialogTab {
     private final QrCodeShareView mShareView;
 
-    public QrCodeShareCoordinator(Context context) {
+    public QrCodeShareCoordinator(Context context, Runnable closeDialog) {
         PropertyModel shareViewModel = new PropertyModel(QrCodeShareViewProperties.ALL_KEYS);
-        QrCodeShareMediator shareViewMediator = new QrCodeShareMediator(context, shareViewModel);
+        QrCodeShareMediator shareViewMediator =
+                new QrCodeShareMediator(context, shareViewModel, closeDialog);
 
         mShareView = new QrCodeShareView(context, shareViewMediator::downloadQrCode);
         PropertyModelChangeProcessor.create(

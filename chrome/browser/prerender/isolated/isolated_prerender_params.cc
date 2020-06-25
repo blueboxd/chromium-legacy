@@ -13,15 +13,18 @@
 #include "chrome/common/chrome_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
+const char kIsolatedPrerenderEnableNSPCmdLineFlag[] =
+    "isolated-prerender-nsp-enabled";
+
 bool IsolatedPrerenderIsEnabled() {
   return base::FeatureList::IsEnabled(features::kIsolatePrerenders);
 }
 
 bool IsolatedPrerenderNoStatePrefetchSubresources() {
-  // This is just a command line flag during development.
-  // TODO(robertogden): Move this to a experiment param when code complete.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      "isolated-prerender-nsp-enabled");
+             kIsolatedPrerenderEnableNSPCmdLineFlag) ||
+         base::GetFieldTrialParamByFeatureAsBool(features::kIsolatePrerenders,
+                                                 "do_no_state_prefetch", false);
 }
 
 base::Optional<size_t> IsolatedPrerenderMaximumNumberOfPrefetches() {

@@ -13,6 +13,7 @@
 namespace views {
 class ImageView;
 class Label;
+class Link;
 class ProgressBar;
 }  // namespace views
 
@@ -69,6 +70,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   base::string16 GetCurrentDialogButtonLabel(ui::DialogButton button) const;
 
   void OnStateUpdated();
+  void OnLinkClicked();
   // views::BubbleDialogDelegateView implementation.
   void AddedToWidget() override;
 
@@ -88,6 +90,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::ProgressBar* progress_bar_ = nullptr;
   views::Label* download_progress_message_label_ = nullptr;
   views::ImageView* big_image_ = nullptr;
+  views::Link* learn_more_link_ = nullptr;
   base::TimeTicks setup_start_tick_;
 
   State state_ = State::kConfirmInstall;

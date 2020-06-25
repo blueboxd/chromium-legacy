@@ -20,6 +20,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.ColorInt;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
@@ -103,10 +105,10 @@ public class ScrimTest extends DummyUiActivityTestCase {
 
         ThreadUtils.runOnUiThreadBlocking(() -> mScrimCoordinator.hideScrim(false));
 
-        CriteriaHelper.pollUiThread(()
-                                            -> mScrimCoordinator.getViewForTesting() == null,
-                "Scrim should be null after being hidden.", CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Scrim should be null after being hidden.",
+                    mScrimCoordinator.getViewForTesting(), Matchers.nullValue());
+        });
     }
 
     @Test
@@ -215,10 +217,10 @@ public class ScrimTest extends DummyUiActivityTestCase {
 
         ThreadUtils.runOnUiThreadBlocking(() -> mScrimCoordinator.hideScrim(false));
 
-        CriteriaHelper.pollUiThread(()
-                                            -> mScrimCoordinator.getViewForTesting() == null,
-                "Scrim should be null after being hidden.", CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Scrim should be null after being hidden.",
+                    mScrimCoordinator.getViewForTesting(), Matchers.nullValue());
+        });
     }
 
     @Test

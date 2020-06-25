@@ -285,7 +285,9 @@ bool ShouldBlockBySpoofCheckResult(
   return spoof_check_result ==
              url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot ||
          spoof_check_result ==
-             url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks;
+             url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks ||
+         spoof_check_result ==
+             url_formatter::IDNSpoofChecker::Result::kTLDSpecificCharacters;
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(

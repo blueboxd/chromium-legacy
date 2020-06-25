@@ -111,6 +111,10 @@ void DecryptingRenderer::SetLatencyHint(
   renderer_->SetLatencyHint(latency_hint);
 }
 
+void DecryptingRenderer::SetPreservesPitch(bool preserves_pitch) {
+  renderer_->SetPreservesPitch(preserves_pitch);
+}
+
 void DecryptingRenderer::Flush(base::OnceClosure flush_cb) {
   renderer_->Flush(std::move(flush_cb));
 }

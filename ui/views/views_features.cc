@@ -34,5 +34,10 @@ const base::Feature kEnableViewPaintOptimization{
 const base::Feature kTextfieldFocusOnTapUp{"TextfieldFocusOnTapUp",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows a "New" badge to be displayed on menu items that provide access to new
+// features.
+const base::Feature kEnableNewBadgeOnMenuItems{
+    "EnableNewBadgeOnMenuItems", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace views

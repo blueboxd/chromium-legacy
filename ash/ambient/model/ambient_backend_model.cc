@@ -26,9 +26,9 @@ void AmbientBackendModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AmbientBackendModel::SetTopics(
+void AmbientBackendModel::AppendTopics(
     const std::vector<AmbientModeTopic>& topics) {
-  topics_ = topics;
+  topics_.insert(topics_.end(), topics.begin(), topics.end());
   NotifyTopicsChanged();
 }
 

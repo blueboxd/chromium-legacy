@@ -3055,7 +3055,12 @@ void NavigationControllerImpl::HandleRendererDebugURL(
       DiscardNonCommittedEntries();
       return;
     }
-    frame_tree_node->render_manager()->InitializeRenderFrameForImmediateUse();
+    // The current frame is always a main frame. If IsInitialNavigation() is
+    // true then there have been no navigations and any frames of this tab must
+    // be in the same renderer process. If that has crashed then the only frame
+    // that can be revived is the main frame.
+    frame_tree_node->render_manager()
+        ->InitializeMainRenderFrameForImmediateUse();
   }
   frame_tree_node->current_frame_host()->HandleRendererDebugURL(url);
 }

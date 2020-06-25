@@ -16,6 +16,10 @@
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
+#include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace safe_browsing {
 
@@ -26,11 +30,14 @@ const size_t kMaxFailuresToEnforceBackoff = 3;
 const size_t kMinBackOffResetDurationInSeconds = 5 * 60;   //  5 minutes.
 const size_t kMaxBackOffResetDurationInSeconds = 30 * 60;  // 30 minutes.
 
+const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
+
 }  // namespace
 
 RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     VerdictCacheManager* cache_manager)
-    : cache_manager_(cache_manager) {}
+    : url_loader_factory_(url_loader_factory), cache_manager_(cache_manager) {}
 
 RealTimeUrlLookupServiceBase::~RealTimeUrlLookupServiceBase() = default;
 
@@ -191,6 +198,87 @@ void RealTimeUrlLookupServiceBase::MayBeCacheRealTimeUrlVerdict(
                                   response, base::Time::Now(),
                                   /* store_old_cache */ false));
   }
+}
+
+std::unique_ptr<network::ResourceRequest>
+RealTimeUrlLookupServiceBase::GetResourceRequest() {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetRealTimeLookupUrl();
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->method = "POST";
+  return resource_request;
+}
+
+void RealTimeUrlLookupServiceBase::SendRequestInternal(
+    std::unique_ptr<network::ResourceRequest> resource_request,
+    const std::string& req_data,
+    const GURL& url,
+    RTLookupResponseCallback response_callback) {
+  std::unique_ptr<network::SimpleURLLoader> owned_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       GetTrafficAnnotationTag());
+  network::SimpleURLLoader* loader = owned_loader.get();
+  owned_loader->AttachStringForUpload(req_data, "application/octet-stream");
+  owned_loader->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kURLLookupTimeoutDurationInSeconds));
+  owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&RealTimeUrlLookupServiceBase::OnURLLoaderComplete,
+                     GetWeakPtr(), url, loader, base::TimeTicks::Now()));
+
+  pending_requests_[owned_loader.release()] = std::move(response_callback);
+}
+
+void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
+    const GURL& url,
+    network::SimpleURLLoader* url_loader,
+    base::TimeTicks request_start_time,
+    std::unique_ptr<std::string> response_body) {
+  DCHECK(CurrentlyOnThread(ThreadID::UI));
+
+  auto it = pending_requests_.find(url_loader);
+  DCHECK(it != pending_requests_.end()) << "Request not found";
+
+  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.Network.Time",
+                      base::TimeTicks::Now() - request_start_time);
+
+  int net_error = url_loader->NetError();
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
+  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
+      "SafeBrowsing.RT.Network.Result", net_error, response_code);
+
+  auto response = std::make_unique<RTLookupResponse>();
+  bool is_rt_lookup_successful = (net_error == net::OK) &&
+                                 (response_code == net::HTTP_OK) &&
+                                 response->ParseFromString(*response_body);
+  base::UmaHistogramBoolean("SafeBrowsing.RT.IsLookupSuccessful",
+                            is_rt_lookup_successful);
+  is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
+
+  MayBeCacheRealTimeUrlVerdict(url, *response);
+
+  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.RT.ThreatInfoSize",
+                           response->threat_info_size());
+
+  base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
+                 base::BindOnce(std::move(it->second), is_rt_lookup_successful,
+                                std::move(response)));
+
+  delete it->first;
+  pending_requests_.erase(it);
+}
+
+void RealTimeUrlLookupServiceBase::Shutdown() {
+  for (auto& pending : pending_requests_) {
+    // Treat all pending requests as safe.
+    auto response = std::make_unique<RTLookupResponse>();
+    std::move(pending.second)
+        .Run(/* is_rt_lookup_successful */ true, std::move(response));
+    delete pending.first;
+  }
+  pending_requests_.clear();
 }
 
 }  // namespace safe_browsing

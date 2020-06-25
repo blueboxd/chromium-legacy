@@ -83,7 +83,6 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   int64_t DisplayId() const;
 
  private:
-  int RecordThenReturn(WebFeature, int) const;
   // A static snapshot of the display's information, provided upon construction.
   // This member is only valid for Screen objects obtained via the experimental
   // Screen Enumeration API.

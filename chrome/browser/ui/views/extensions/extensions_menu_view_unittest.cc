@@ -148,7 +148,7 @@ void ExtensionsMenuViewUnitTest::SetUp() {
   views::test::ReduceAnimationDuration(extensions_container());
 
   ExtensionsMenuView::ShowBubble(extensions_container()->extensions_button(),
-                                 browser(), extensions_container());
+                                 browser(), extensions_container(), true);
 }
 
 scoped_refptr<const extensions::Extension>

@@ -292,6 +292,15 @@ def blink_mac_builder(*, name, **kwargs):
   )
 
 
+def chromium_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      goma_backend = builders.goma.backend.RBE_PROD,
+      mastername = 'tryserver.chromium',
+      **kwargs
+  )
+
+
 def chromium_android_builder(*, name, **kwargs):
   return try_builder(
       name = name,
@@ -504,6 +513,7 @@ try_ = struct(
 
     blink_builder = blink_builder,
     blink_mac_builder = blink_mac_builder,
+    chromium_builder = chromium_builder,
     chromium_android_builder = chromium_android_builder,
     chromium_angle_builder = chromium_angle_builder,
     chromium_chromiumos_builder = chromium_chromiumos_builder,

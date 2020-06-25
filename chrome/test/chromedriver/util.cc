@@ -38,6 +38,7 @@ std::string GenerateId() {
 }
 
 namespace {
+const double kCentimetersPerInch = 2.54;
 
 Status FlattenStringArray(const base::ListValue* src, base::string16* dest) {
   base::string16 keys;
@@ -436,6 +437,10 @@ Status NotifyCommandListenersBeforeCommand(Session* session,
   return Status(kOk);
 }
 
+double ConvertCentimeterToInch(double centimeter) {
+  return centimeter / kCentimetersPerInch;
+}
+
 namespace {
 
 template <typename T>
@@ -504,6 +509,22 @@ bool GetOptionalString(const base::DictionaryValue* dict,
                        bool* has_value) {
   return GetOptionalValue(dict, path, out_value, has_value,
                           &base::Value::GetAsString);
+}
+
+bool GetOptionalDictionary(const base::DictionaryValue* dict,
+                           base::StringPiece path,
+                           const base::DictionaryValue** out_value,
+                           bool* has_value) {
+  return GetOptionalValue(dict, path, out_value, has_value,
+                          &base::Value::GetAsDictionary);
+}
+
+bool GetOptionalList(const base::DictionaryValue* dict,
+                     base::StringPiece path,
+                     const base::ListValue** out_value,
+                     bool* has_value) {
+  return GetOptionalValue(dict, path, out_value, has_value,
+                          &base::Value::GetAsList);
 }
 
 bool GetOptionalSafeInt(const base::DictionaryValue* dict,

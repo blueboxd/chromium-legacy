@@ -140,6 +140,12 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void SetBackgroundColor(SkColor color);
   SkColor GetBackgroundColor() const;
 
+  // For masking reasons, the ClientView may be painted to a textured layer. To
+  // ensure bubbles that rely on the frame background color continue to work as
+  // expected, we must set the background of the ClientView to match that of the
+  // BubbleFrameView.
+  void UpdateClientViewBackground();
+
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
   // does not fit on the monitor or anchor window (if one exists) and

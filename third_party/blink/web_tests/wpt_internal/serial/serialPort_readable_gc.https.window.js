@@ -29,6 +29,7 @@ serial_test(async (t, fake) => {
 
   GCController.collectAll();
 
+  await fakePort.writable();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   fakePort.write(data);
 

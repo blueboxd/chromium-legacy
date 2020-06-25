@@ -6,9 +6,6 @@
 
 #include "base/no_destructor.h"
 
-#include "chrome/browser/chromeos/net/network_health/network_health.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-
 namespace chromeos {
 namespace network_health {
 
@@ -17,6 +14,12 @@ NetworkHealthService::NetworkHealthService() = default;
 void NetworkHealthService::BindRemote(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
   network_health_.BindRemote(std::move(receiver));
+}
+
+void NetworkHealthService::BindDiagnosticsRemote(
+    mojo::PendingReceiver<
+        network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
+  network_diagnostics_.BindReceiver(std::move(receiver));
 }
 
 NetworkHealthService* NetworkHealthService::GetInstance() {

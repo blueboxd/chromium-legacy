@@ -226,6 +226,10 @@ GURL DecorateFrontendURL(const GURL& base_url) {
         switches::kDevToolsFlags);
   }
 
+  if (command_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
+    url_string += "&debugFrontend=true";
+  }
+
   return GURL(url_string);
 }
 

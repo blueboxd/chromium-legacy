@@ -371,7 +371,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // If |actualResponse|’s status is not 303, |request|’s body is non-null, and
   // |request|’s body’s source is null, then return a network error.
   if (redirect_info.status_code != net::HTTP_SEE_OTHER &&
-      network::URLLoader::HasStreamingUploadBody(&request_)) {
+      network::URLLoader::HasFetchStreamingUploadBody(&request_)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }

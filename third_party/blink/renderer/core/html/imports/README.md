@@ -13,7 +13,7 @@ HTML Imports form a tree:
 
 * The root of the tree is `HTMLImportTreeRoot`.
 * The `HTMLImportTreeRoot` is owned by `HTMLImportsController`, which is owned
-  by the master document as a `DocumentSupplement`.
+  by the tree_root document as a `DocumentSupplement`.
 * The non-root nodes are `HTMLImportChild`. They are all owned by
   `HTMLImporTreeRoot`.  `LinkStyle` is wired into `HTMLImportChild` by
   implementing `HTMLImportChildClient` interface.

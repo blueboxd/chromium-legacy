@@ -221,6 +221,8 @@ Polymer({
         return 'cr:computer';
       case DeviceReportingType.CRASH_REPORT:
         return 'management:crash';
+      case DeviceReportingType.APP_INFO_AND_ACTIVITY:
+        return 'management:timelapse';
       case DeviceReportingType.LOGS:
         return 'management:report';
       case DeviceReportingType.PRINT:

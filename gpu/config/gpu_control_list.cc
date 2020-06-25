@@ -448,7 +448,7 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
                 device_id != candidate.device_id)
               continue;
 #if defined(OS_WIN)
-            if (revision != candidate.revision)
+            if (revision && revision != candidate.revision)
               continue;
 #endif  // OS_WIN
             found = true;

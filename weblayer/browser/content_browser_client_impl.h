@@ -134,6 +134,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
   ukm::UkmService* GetUkmService() override;
+  content::TtsPlatform* GetTtsPlatform() override;
 
   void CreateFeatureListAndFieldTrials();
 

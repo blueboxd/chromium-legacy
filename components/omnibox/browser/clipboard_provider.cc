@@ -39,6 +39,10 @@ namespace {
 
 const size_t kMaxClipboardSuggestionShownNumTimesSimpleSize = 20;
 
+// Clipboard suggestions should be placed above search and url suggestions, but
+// below query tiles.
+const int kClipboardMatchRelevanceScore = 1500;
+
 bool IsMatchDeletionEnabled() {
   return base::FeatureList::IsEnabled(
       omnibox::kOmniboxRemoveSuggestionsFromClipboard);
@@ -258,8 +262,8 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
 
   DCHECK(url.is_valid());
 
-  // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
+  AutocompleteMatch match(this, kClipboardMatchRelevanceScore,
+                          IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_URL);
   match.destination_url = url;
 
@@ -299,8 +303,8 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
   if (GURL(text).is_valid())
     return base::nullopt;
 
-  // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
+  AutocompleteMatch match(this, kClipboardMatchRelevanceScore,
+                          IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_TEXT);
   match.fill_into_edit = text;
 
@@ -394,8 +398,9 @@ void ClipboardProvider::ConstructImageMatchCallback(
     scoped_refptr<base::RefCountedMemory> image_bytes) {
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   DCHECK(default_url);
-  // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
+
+  AutocompleteMatch match(this, kClipboardMatchRelevanceScore,
+                          IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_IMAGE);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));
@@ -427,6 +432,7 @@ void ClipboardProvider::ConstructImageMatchCallback(
   match.post_content =
       std::make_unique<TemplateURLRef::PostContent>(post_content);
 
+  match.keyword = default_url->keyword();
   match.transition = ui::PAGE_TRANSITION_GENERATED;
 
   field_trial_triggered_ = true;

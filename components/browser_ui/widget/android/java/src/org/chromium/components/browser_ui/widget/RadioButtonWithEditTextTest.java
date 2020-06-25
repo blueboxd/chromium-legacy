@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -267,14 +268,11 @@ public class RadioButtonWithEditTextTest extends DummyUiActivityTestCase {
     }
 
     private void assertIsKeyboardShowing(boolean isShowing) {
-        CriteriaHelper.pollUiThread(
-                new Criteria("Keyboard visibility does not consist with test setting.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        return KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                                       mActivity, mEditText)
-                                == isShowing;
-                    }
-                });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Keyboard visibility does not consist with test setting.",
+                    KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
+                            mActivity, mEditText),
+                    Matchers.is(isShowing));
+        });
     }
 }

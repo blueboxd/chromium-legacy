@@ -82,10 +82,11 @@ public class DownloadTaskScheduler {
                 return TaskIds.DOWNLOAD_CLEANUP_JOB_ID;
             case DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK:
                 return TaskIds.DOWNLOAD_AUTO_RESUMPTION_JOB_ID;
-            default:
-                assert false;
-                return -1;
+            case DownloadTaskType.DOWNLOAD_LATER_TASK:
+                return TaskIds.DOWNLOAD_LATER_JOB_ID;
         }
+        assert false : "Unknown download task type.";
+        return -1;
     }
 
     private static int getRequiredNetworkType(
@@ -97,9 +98,10 @@ public class DownloadTaskScheduler {
             case DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK:
                 return requiresUnmeteredNetwork ? TaskInfo.NetworkType.UNMETERED
                                                 : TaskInfo.NetworkType.ANY;
-            default:
-                assert false;
+            case DownloadTaskType.DOWNLOAD_LATER_TASK:
                 return TaskInfo.NetworkType.ANY;
         }
+        assert false : "Unknown download task type.";
+        return -1;
     }
 }

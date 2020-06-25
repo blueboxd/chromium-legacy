@@ -90,6 +90,8 @@ if (use_arm_neon_optimizations) {
         defines += [ "ARMV8_OS_ANDROID" ]
       } else if (is_linux || is_chromeos) {
         defines += [ "ARMV8_OS_LINUX" ]
+      } else if (is_mac) {
+        defines += [ "ARMV8_OS_MACOS" ]
       } else if (is_fuchsia) {
         defines += [ "ARMV8_OS_FUCHSIA" ]
       } else if (is_win) {

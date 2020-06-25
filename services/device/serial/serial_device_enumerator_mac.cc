@@ -171,10 +171,14 @@ void SerialDeviceEnumeratorMac::AddDevices() {
       info->product_id = *product_id;
     }
 
-    base::Optional<std::string> display_name =
+    info->display_name =
         GetStringProperty(device.get(), CFSTR(kUSBProductString));
-    if (display_name) {
-      info->display_name = std::move(*display_name);
+
+    base::Optional<std::string> serial_number =
+        GetStringProperty(device.get(), CFSTR(kUSBSerialNumberString));
+    if (vendor_id && product_id && serial_number) {
+      info->persistent_id = base::StringPrintf(
+          "%04X-%04X-%s", *vendor_id, *product_id, serial_number->c_str());
     }
 
     // Each serial device has two paths associated with it: a "dialin" path

@@ -268,6 +268,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the command id of this item.
   int GetCommand() const { return command_; }
 
+  void set_is_new(bool is_new) { is_new_ = is_new; }
+  bool is_new() const { return is_new_; }
+
   // Paints the menu item.
   void OnPaint(gfx::Canvas* canvas) override;
 
@@ -487,6 +490,20 @@ class VIEWS_EXPORT MenuItemView : public View {
         static_cast<const MenuItemView*>(this)->GetFirstVisibleChild());
   }
 
+  // Returns whether or not a "new" badge should be shown on this menu item.
+  // Takes into account whether the badging feature is enabled.
+  bool ShouldShowNewBadge() const;
+
+  // Renders a "New" badge on |canvas| in the given |badge_bounds|, which should
+  // be roughly adjacent to the menu item label.
+  void DrawNewBadge(gfx::Canvas* canvas,
+                    gfx::Rect badge_bounds,
+                    int render_flags,
+                    const gfx::FontList& font_list);
+
+  // Returns the additional width required for a "New" badge.
+  int GetNewBadgeRequiredWidth(const gfx::FontList& font_list) const;
+
   void invalidate_dimensions() { dimensions_.height = 0; }
   bool is_dimensions_valid() const { return dimensions_.height > 0; }
 
@@ -516,6 +533,10 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Command id.
   int command_ = 0;
+
+  // Whether the menu item should be badged as "New" (if badging is enabled) as
+  // a way to highlight a new feature for users.
+  bool is_new_ = false;
 
   // Submenu, created via CreateSubmenu.
   SubmenuView* submenu_ = nullptr;

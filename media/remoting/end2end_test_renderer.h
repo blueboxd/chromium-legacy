@@ -33,6 +33,7 @@ class End2EndTestRenderer final : public Renderer {
                   RendererClient* client,
                   PipelineStatusCallback init_cb) override;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetPreservesPitch(bool preserves_pitch) override;
   void Flush(base::OnceClosure flush_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
   void SetPlaybackRate(double playback_rate) override;

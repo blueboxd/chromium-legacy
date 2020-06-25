@@ -236,8 +236,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
                {"editdistance", "true"},
                {"editdistance_siteengagement", "true"},
                {"targetembedding", "true"}}},
-             {lookalikes::features::kDetectTargetEmbeddingLookalikes,
-              {{"enhanced_protection_enabled", "true"}}}},
+             {lookalikes::features::kDetectTargetEmbeddingLookalikes, {}}},
             {});
     }
 
@@ -727,36 +726,6 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnEditDistance) {
   // This domain is an edit distance of one from the top 500.
   const GURL kNavigatedUrl = GetURL("goooglé.com");
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
-}
-
-// Tests that when Safety Tips are enabled, lookalike domains with embedded top
-// domain will trigger Safety Tips.
-IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       TriggersOnTargetEmbedding) {
-  // This domain has google.com embedded and because it has a non-matching
-  // ccTLD, it will not trigger an Interstitial, but will trigger a SafetyTip.
-  const GURL kNavigatedUrl = GetURL("test-google.br-site.com");
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);
-}
-
-// Tests that when Safety Tips are enabled, lookalike domains with embedded
-// engaged domain will trigger Safety Tips.
-IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
-                       TriggersOnHighEngagementTargetEmbedding) {
-  // This domain has foo.com embedded and because it has a non-matching ccTLD,
-  // it will not trigger an Interstitial, but will trigger a SafetyTip.
-  const GURL kNavigatedUrl = GetURL("test-foo.br-site.com");
-  const GURL kEngagedDomain = GetURL("foo.com");
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kEngagedDomain, kHighEngagement);
-
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_EQ(IsUIShowing(), ui_status() == UIStatus::kEnabledWithAllFeatures);

@@ -36,7 +36,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
 
   // Commit the pending frame's OpenGL backbuffer or CALayer tree to be
   // attached to the root CALayer.
-  void CommitPendingTreesToCA(const gfx::Rect& pixel_damage_rect);
+  void CommitPendingTreesToCA();
 
   // Get the root CALayer to display the current frame. This does not change
   // over the lifetime of the object.

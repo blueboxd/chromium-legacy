@@ -41,8 +41,14 @@ const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtection{"SafeBrowsingEnhancedProtection",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnhancedProtection {
+  "SafeBrowsingEnhancedProtection",
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

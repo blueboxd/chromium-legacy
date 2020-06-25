@@ -83,8 +83,6 @@ NET_EXPORT extern const base::FeatureParam<bool>
 namespace dns_httpssvc_experiment {
 // Get the value of |kDnsHttpssvcExtraTimeMs|.
 NET_EXPORT base::TimeDelta GetExtraTimeAbsolute();
-NET_EXPORT bool IsExperimentDomain(base::StringPiece domain);
-NET_EXPORT bool IsControlDomain(base::StringPiece domain);
 }  // namespace dns_httpssvc_experiment
 
 // Enables optimizing the network quality estimation algorithms in network

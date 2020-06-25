@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/class_property.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
@@ -39,7 +40,8 @@ namespace views {
 
 class Button;
 
-class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
+class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
+                                          public ui::PropertyHandler {
  public:
   enum class CloseReason {
     DEACTIVATION,
@@ -58,6 +60,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   // DialogDelegate:
   BubbleDialogDelegate* AsBubbleDialogDelegate() override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  ClientView* CreateClientView(Widget* widget) override;
   ax::mojom::Role GetAccessibleWindowRole() override;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -218,6 +221,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
     title_margins_ = title_margins;
   }
 
+  // Sets whether or not CreateClientView() returns a layer backed ClientView.
+  void SetPaintClientToLayer(bool paint_client_to_layer);
+
   // Sets the content margins to a default picked for smaller bubbles.
   void UseCompactMargins();
 
@@ -340,6 +346,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
 
   bool accept_events_ = true;
   gfx::NativeView parent_window_ = nullptr;
+
+  // Pointer to this bubble's ClientView.
+  ClientView* client_view_ = nullptr;
 
 #if defined(OS_MACOSX)
   // Special handler for close_on_deactivate() on Mac. Window (de)activation is

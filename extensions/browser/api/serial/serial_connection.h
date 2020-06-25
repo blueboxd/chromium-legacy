@@ -146,8 +146,6 @@ class SerialConnection : public ApiResource,
   void OnSendError(device::mojom::SerialSendError error) override;
 
   void OnOpen(
-      mojo::ScopedDataPipeConsumerHandle consumer,
-      mojo::ScopedDataPipeProducerHandle producer,
       mojo::PendingReceiver<device::mojom::SerialPortClient> client_receiver,
       OpenCompleteCallback callback,
       bool success);
@@ -160,8 +158,8 @@ class SerialConnection : public ApiResource,
 
   void CreatePipe(mojo::ScopedDataPipeProducerHandle* producer,
                   mojo::ScopedDataPipeConsumerHandle* consumer);
-  void SetUpReceiveDataPipe(mojo::ScopedDataPipeConsumerHandle producer);
-  void SetUpSendDataPipe(mojo::ScopedDataPipeProducerHandle consumer);
+  void SetUpReceiveDataPipe();
+  void SetUpSendDataPipe();
 
   void SetTimeoutCallback();
 

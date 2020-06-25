@@ -42,8 +42,8 @@
 
 namespace blink {
 
-HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(MakeGarbageCollected<HTMLImportTreeRoot>(&master)) {}
+HTMLImportsController::HTMLImportsController(Document& tree_root)
+    : root_(MakeGarbageCollected<HTMLImportTreeRoot>(&tree_root)) {}
 
 void HTMLImportsController::Dispose() {
   // TODO(tkent): We copy loaders_ before iteration to avoid crashes.
@@ -117,7 +117,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   }
 
   scoped_refptr<const SecurityOrigin> security_origin =
-      Master()->GetSecurityOrigin();
+      TreeRoot()->GetSecurityOrigin();
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
   if (parent->GetDocument()->ImportsController()) {
@@ -137,7 +137,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   return child;
 }
 
-Document* HTMLImportsController::Master() const {
+Document* HTMLImportsController::TreeRoot() const {
   return root_ ? root_->GetDocument() : nullptr;
 }
 

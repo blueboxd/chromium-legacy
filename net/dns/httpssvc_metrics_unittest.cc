@@ -292,13 +292,14 @@ INSTANTIATE_TEST_SUITE_P(
             testing::Values(false) /* DnsHttpssvcControlDomainWildcard */)));
 
 TEST_P(HttpssvcDomainParsingTest, ParseFeatureParamIntegrityDomains) {
+  HttpssvcExperimentDomainCache domain_cache;
+
   // We are not testing this feature param yet.
   CHECK(!config().use_httpssvc);
 
   const std::string kReservedDomain = "neither.example";
-  EXPECT_FALSE(
-      features::dns_httpssvc_experiment::IsExperimentDomain(kReservedDomain));
-  EXPECT_EQ(features::dns_httpssvc_experiment::IsControlDomain(kReservedDomain),
+  EXPECT_FALSE(domain_cache.IsExperimental(kReservedDomain));
+  EXPECT_EQ(domain_cache.IsControl(kReservedDomain),
             config().enabled && config().control_domain_wildcard);
 
   // If |config().use_integrity| is true, then we expect all domains in
@@ -310,34 +311,21 @@ TEST_P(HttpssvcDomainParsingTest, ParseFeatureParamIntegrityDomains) {
     // When the HTTPSSVC feature is disabled, no domain should be considered
     // experimental or control.
     for (const std::string& experiment_domain : expected_experiment_domains_) {
-      EXPECT_FALSE(features::dns_httpssvc_experiment::IsExperimentDomain(
-          experiment_domain));
-      EXPECT_FALSE(features::dns_httpssvc_experiment::IsControlDomain(
-          experiment_domain));
+      EXPECT_FALSE(domain_cache.IsExperimental(experiment_domain));
+      EXPECT_FALSE(domain_cache.IsControl(experiment_domain));
     }
     for (const std::string& control_domain : expected_control_domains_) {
-      EXPECT_FALSE(features::dns_httpssvc_experiment::IsExperimentDomain(
-          control_domain));
-      EXPECT_FALSE(
-          features::dns_httpssvc_experiment::IsControlDomain(control_domain));
+      EXPECT_FALSE(domain_cache.IsExperimental(control_domain));
+      EXPECT_FALSE(domain_cache.IsControl(control_domain));
     }
-    return;
-  }
-
-  if (config().use_integrity) {
-    // When the HTTPSSVC feature is disabled, no domain should be considered
-    // experimental or control.
+  } else if (config().use_integrity) {
     for (const std::string& experiment_domain : expected_experiment_domains_) {
-      EXPECT_TRUE(features::dns_httpssvc_experiment::IsExperimentDomain(
-          experiment_domain));
-      EXPECT_FALSE(features::dns_httpssvc_experiment::IsControlDomain(
-          experiment_domain));
+      EXPECT_TRUE(domain_cache.IsExperimental(experiment_domain));
+      EXPECT_FALSE(domain_cache.IsControl(experiment_domain));
     }
     for (const std::string& control_domain : expected_control_domains_) {
-      EXPECT_FALSE(features::dns_httpssvc_experiment::IsExperimentDomain(
-          control_domain));
-      EXPECT_TRUE(
-          features::dns_httpssvc_experiment::IsControlDomain(control_domain));
+      EXPECT_FALSE(domain_cache.IsExperimental(control_domain));
+      EXPECT_TRUE(domain_cache.IsControl(control_domain));
     }
     return;
   }

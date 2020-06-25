@@ -124,8 +124,7 @@ TEST_F(ChromeWebClientTest, UserAgent) {
 }
 
 // Tests that ChromeWebClient provides accessibility script for WKWebView.
-// TODO(crbug.com/1098758): Test flaky.
-TEST_F(ChromeWebClientTest, FLAKY_WKWebViewEarlyPageScriptAccessibility) {
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptAccessibility) {
   // Chrome scripts rely on __gCrWeb object presence.
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
   web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");

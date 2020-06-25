@@ -22,17 +22,10 @@ chrome.fileManagerPrivate = {
     SHARE: 'share',
     UNSHARE: 'unshare',
   },
-  Verb: {
-    OPEN_WITH: 'open_with',
-    ADD_TO: 'add_to',
-    PACK_WITH: 'pack_with',
-    SHARE_WITH: 'share_with',
-  },
-  SearchType: {
-    ALL: 'ALL',
-    SHARED_WITH_ME: 'SHARED_WITH_ME',
-    EXCLUDE_DIRECTORIES: 'EXCLUDE_DIRECTORIES',
-    OFFLINE: 'OFFLINE',
+  FormatFileSystemType: {
+    VFAT: 'vfat',
+    EXFAT: 'exfat',
+    NTFS: 'ntfs',
   },
   DriveConnectionStateType: {
     ONLINE: 'ONLINE',
@@ -43,6 +36,18 @@ chrome.fileManagerPrivate = {
     NOT_READY: 'NOT_READY',
     NO_NETWORK: 'NO_NETWORK',
     NO_SERVICE: 'NO_SERVICE',
+  },
+  SearchType: {
+    ALL: 'ALL',
+    SHARED_WITH_ME: 'SHARED_WITH_ME',
+    EXCLUDE_DIRECTORIES: 'EXCLUDE_DIRECTORIES',
+    OFFLINE: 'OFFLINE',
+  },
+  Verb: {
+    OPEN_WITH: 'open_with',
+    ADD_TO: 'add_to',
+    PACK_WITH: 'pack_with',
+    SHARE_WITH: 'share_with',
   },
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',

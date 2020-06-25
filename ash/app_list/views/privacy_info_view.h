@@ -27,7 +27,6 @@ class PrivacyInfoView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void OnBoundsChanged(const gfx::Rect& prev_bounds) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -44,7 +43,6 @@ class PrivacyInfoView : public views::View,
   void InitText();
   void InitCloseButton();
 
-  views::View* row_container_ = nullptr;        // Owned by view hierarchy.
   views::ImageView* info_icon_ = nullptr;       // Owned by view hierarchy.
   views::StyledLabel* text_view_ = nullptr;     // Owned by view hierarchy.
   views::ImageButton* close_button_ = nullptr;  // Owned by view hierarchy.

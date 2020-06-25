@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "url/gurl.h"
 #include "weblayer/browser/browser_impl.h"
+#include "weblayer/browser/browser_list.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
@@ -109,10 +110,10 @@ Tab* Shell::tab() {
 Browser* Shell::browser() {
 #if defined(OS_ANDROID)
   // TODO(jam): this won't work if we need more than one Shell in a test.
-  const auto& browsers = BrowserImpl::GetAllBrowsers();
+  const auto& browsers = BrowserList::GetInstance()->browsers();
   if (browsers.empty())
     return nullptr;
-  return browsers[0];
+  return *(browsers.begin());
 #else
   return browser_.get();
 #endif

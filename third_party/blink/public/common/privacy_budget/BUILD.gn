@@ -2,9 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("internal") {
+  sources = [ "identifiability_internal_templates.h" ]
+
+  visibility = [
+    ":*",
+    "//third_party/blink/common/privacy_budget:*",
+  ]
+}
+
 source_set("privacy_budget") {
   sources = [
-    "identifiability_internal_templates.h",
     "identifiability_metric_builder.h",
     "identifiability_metrics.h",
     "identifiability_study_participation.h",
@@ -16,13 +24,11 @@ source_set("privacy_budget") {
   ]
 
   deps = [
+    ":internal",
     "//base",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network/public/cpp:cpp",
     "//third_party/blink/public/common:common_export",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
   ]
-
-  # Internal templates are not a public API.
-  public = sources - [ "identifiability_internal_templates.h" ]
 }

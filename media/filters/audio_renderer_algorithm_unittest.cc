@@ -282,13 +282,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
     EXPECT_NEAR(playback_rate, actual_playback_rate, playback_rate / 100.0);
   }
 
-  void TestPlaybackRateWithUnderflow(double playback_rate, bool end_of_stream) {
-    if (playback_rate > AudioRendererAlgorithm::kUpperResampleThreshold ||
-        playback_rate < AudioRendererAlgorithm::kLowerResampleThreshold) {
-      // This test is only used for the range in which we resample data instead
-      // of using WSOLA.
-      return;
-    }
+  void TestResamplingWithUnderflow(double playback_rate, bool end_of_stream) {
+    // We are only testing the behavior of the resampling case.
+    algorithm_.SetPreservesPitch(false);
 
     if (end_of_stream) {
       algorithm_.MarkEndOfStream();
@@ -452,13 +448,20 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_NearlyNormalSlowerRate) {
 // The range of playback rates in which we use resampling is [0.95, 1.06].
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_ResamplingRates) {
   Initialize();
-  TestPlaybackRate(0.94);  // WSOLA.
-  TestPlaybackRate(AudioRendererAlgorithm::kLowerResampleThreshold);
-  TestPlaybackRate(0.97);
+  // WSOLA.
+  TestPlaybackRate(0.50);
+  TestPlaybackRate(0.95);
   TestPlaybackRate(1.00);
-  TestPlaybackRate(1.04);
-  TestPlaybackRate(AudioRendererAlgorithm::kUpperResampleThreshold);
-  TestPlaybackRate(1.07);  // WSOLA.
+  TestPlaybackRate(1.05);
+  TestPlaybackRate(2.00);
+
+  // Resampling.
+  algorithm_.SetPreservesPitch(false);
+  TestPlaybackRate(0.50);
+  TestPlaybackRate(0.95);
+  TestPlaybackRate(1.00);
+  TestPlaybackRate(1.05);
+  TestPlaybackRate(2.00);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_WithOffset) {
@@ -480,14 +483,10 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_WithOffset) {
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_UnderFlow) {
   Initialize();
-  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kLowerResampleThreshold,
-                                true);
-  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kLowerResampleThreshold,
-                                false);
-  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kUpperResampleThreshold,
-                                true);
-  TestPlaybackRateWithUnderflow(AudioRendererAlgorithm::kUpperResampleThreshold,
-                                false);
+  TestResamplingWithUnderflow(0.75, true);
+  TestResamplingWithUnderflow(0.75, false);
+  TestResamplingWithUnderflow(1.25, true);
+  TestResamplingWithUnderflow(1.25, false);
 }
 
 TEST_F(AudioRendererAlgorithmTest, FillBuffer_OneAndAQuarterRate) {

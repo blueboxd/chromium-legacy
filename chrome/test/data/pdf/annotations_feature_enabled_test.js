@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {testAsync} from './test_util.js';
 
 window.onerror = e => chrome.test.fail(e.stack);
 window.onunhandledrejection = e => chrome.test.fail(e.reason);
@@ -27,15 +28,6 @@ function contentElement() {
 
 function isAnnotationMode() {
   return viewer.shadowRoot.querySelector('#toolbar').annotationMode;
-}
-
-async function testAsync(f) {
-  try {
-    await f();
-    chrome.test.succeed();
-  } catch (e) {
-    chrome.test.fail(e.stack);
-  }
 }
 
 chrome.test.runTests([

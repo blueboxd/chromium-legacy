@@ -320,17 +320,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, true)
 // If true, reject IETF QUIC connections with invalid SNI.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tls_enforce_valid_sni, true)
 
-// If true, update ack timeout upon receiving an retransmittable frame.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_advance_ack_timeout_update,
-          true)
-
-// If true, only extend idle time on decryptable packets.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_extend_idle_time_on_decryptable_packets,
-    true)
-
 // If true, support for IETF QUIC 0-rtt is enabled.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, true)
 
@@ -472,3 +461,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_dispatcher_legacy_version_encapsulation,
     false)
+
+// If true, update packet size when the first frame gets queued.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, false)

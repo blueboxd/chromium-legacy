@@ -51,6 +51,8 @@ class SkiaOutputSurfaceDependencyWebView
   void DidLoseContext(gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
 
+  scoped_refptr<gpu::GLSurfaceTaskScheduler> CreateGLSurfaceTaskScheduler()
+      override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
   bool NeedsSupportForExternalStencil() override;
 

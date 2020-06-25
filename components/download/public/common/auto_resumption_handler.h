@@ -18,6 +18,10 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/task/task_manager.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace download {
 
 // Handles auto-resumptions for downloads. Listens to network changes and
@@ -38,7 +42,8 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   static void Create(
       std::unique_ptr<download::NetworkStatusListener> network_listener,
       std::unique_ptr<download::TaskManager> task_manager,
-      std::unique_ptr<Config> config);
+      std::unique_ptr<Config> config,
+      base::Clock* clock);
 
   // Returns the singleton instance of the AutoResumptionHandler, or nullptr if
   // initialization is not yet complete.
@@ -53,14 +58,16 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   AutoResumptionHandler(
       std::unique_ptr<download::NetworkStatusListener> network_listener,
       std::unique_ptr<download::TaskManager> task_manager,
-      std::unique_ptr<Config> config);
+      std::unique_ptr<Config> config,
+      base::Clock* clock);
   ~AutoResumptionHandler() override;
 
   void SetResumableDownloads(
       const std::vector<download::DownloadItem*>& downloads);
   bool IsActiveNetworkMetered() const;
-  void OnStartScheduledTask(download::TaskFinishedCallback callback);
-  bool OnStopScheduledTask();
+  void OnStartScheduledTask(DownloadTaskType type,
+                            TaskFinishedCallback callback);
+  bool OnStopScheduledTask(DownloadTaskType type);
 
   void OnDownloadStarted(download::DownloadItem* item);
 
@@ -85,6 +92,8 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   std::unique_ptr<download::TaskManager> task_manager_;
 
   std::unique_ptr<Config> config_;
+
+  base::Clock* clock_;
 
   // List of downloads that are auto-resumable. These will be resumed as soon as
   // network conditions becomes favorable.

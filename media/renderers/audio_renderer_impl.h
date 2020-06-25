@@ -95,6 +95,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void StartPlaying() override;
   void SetVolume(float volume) override;
   void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
+  void SetPreservesPitch(bool preserves_pitch) override;
 
   // base::PowerObserver implementation.
   void OnSuspend() override;
@@ -292,6 +293,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Stored value from last call to SetLatencyHint(). Passed to |algorithm_|
   // during Initialize().
   base::Optional<base::TimeDelta> latency_hint_;
+
+  // Passed to |algorithm_|. Indicates whether |algorithm_| should or should not
+  // make pitch adjustments at playbacks other than 1.0.
+  bool preserves_pitch_ = true;
 
   // Simple state tracking variable.
   State state_;

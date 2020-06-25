@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController;
-import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoVariationManager;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -450,16 +449,12 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             headers.add(new NonDismissibleHeader(mNtpHeader));
         }
 
-        // TODO(wenyufu): Consider moving priority logic into Mediator
-        if (mHomepagePromoController != null) {
-            if (!isSignInPromoVisible
-                    || HomepagePromoVariationManager.getInstance().isSuppressingSignInPromo()) {
-                View promoView = mHomepagePromoController.getPromoView();
-                if (promoView != null) {
-                    mHomepagePromoView = promoView;
-                    headers.add(new HomepagePromoHeader());
-                    isSignInPromoVisible = false;
-                }
+        // TODO(wenyufu): check Finch flag for whether sign-in takes precedence over homepage promo
+        if (!isSignInPromoVisible && mHomepagePromoController != null) {
+            View promoView = mHomepagePromoController.getPromoView();
+            if (promoView != null) {
+                mHomepagePromoView = promoView;
+                headers.add(new HomepagePromoHeader());
             }
         }
 

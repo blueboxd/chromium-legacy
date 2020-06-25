@@ -64,10 +64,6 @@ config("xrandr") {
   libs = [ "Xrandr" ]
 }
 
-config("xscrnsaver") {
-  libs = [ "Xss" ]
-}
-
 config("xfixes") {
   libs = [ "Xfixes" ]
 }

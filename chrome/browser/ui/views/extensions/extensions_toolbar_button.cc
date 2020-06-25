@@ -97,7 +97,8 @@ void ExtensionsToolbarButton::ButtonPressed(views::Button* sender,
   }
   pressed_lock_ = menu_button_controller_->TakeLock();
   base::RecordAction(base::UserMetricsAction("Extensions.Toolbar.MenuOpened"));
-  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_)
+  ExtensionsMenuView::ShowBubble(this, browser_, extensions_container_,
+                                 extensions_container_->CanShowIconInToolbar())
       ->AddObserver(this);
 }
 

@@ -45,6 +45,7 @@ class Command(object):
   SCREENSHOT = (_Method.GET, '/session/:sessionId/screenshot')
   ELEMENT_SCREENSHOT = (
       _Method.GET, '/session/:sessionId/element/:id/screenshot')
+  PRINT = (_Method.POST, '/session/:sessionId/print')
   SET_BROWSER_VISIBLE = (_Method.POST, '/session/:sessionId/visible')
   IS_BROWSER_VISIBLE = (_Method.GET, '/session/:sessionId/visible')
   FIND_ELEMENT = (_Method.POST, '/session/:sessionId/element')

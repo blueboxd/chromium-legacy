@@ -717,10 +717,7 @@ void SetUseOSWindowFrame(x11::Window window, bool use_os_window_frame) {
 }
 
 bool IsShapeExtensionAvailable() {
-  int dummy;
-  static bool is_shape_available =
-      XShapeQueryExtension(gfx::GetXDisplay(), &dummy, &dummy);
-  return is_shape_available;
+  return x11::Connection::Get()->shape().present();
 }
 
 x11::Window GetX11RootWindow() {
@@ -855,23 +852,21 @@ bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
   // client bounding region. Any portion of the client input region that is not
   // included in both the default input region and the client bounding region
   // will not be included in the effective input region on the screen.
-  int rectangle_kind[] = {ShapeInput, ShapeBounding};
-  for (int kind_index : rectangle_kind) {
-    int dummy;
-    int shape_rects_size = 0;
-    gfx::XScopedPtr<XRectangle[]> shape_rects(
-        XShapeGetRectangles(gfx::GetXDisplay(), static_cast<uint32_t>(window),
-                            kind_index, &shape_rects_size, &dummy));
-    if (!shape_rects) {
-      // The shape is empty. This can occur when |window| is minimized.
-      DCHECK_EQ(0, shape_rects_size);
+  x11::Shape::Sk rectangle_kind[] = {x11::Shape::Sk::Input,
+                                     x11::Shape::Sk::Bounding};
+  for (auto kind : rectangle_kind) {
+    auto shape =
+        x11::Connection::Get()->shape().GetRectangles({window, kind}).Sync();
+    if (!shape)
+      return true;
+    if (shape->rectangles.empty()) {
+      // The shape can be empty when |window| is minimized.
       return false;
     }
     bool is_in_shape_rects = false;
-    for (int i = 0; i < shape_rects_size; ++i) {
+    for (const auto& rect : shape->rectangles) {
       // The ShapeInput and ShapeBounding rects are to be in window space, so we
       // have to translate by the window_rect's offset to map to screen space.
-      const XRectangle& rect = shape_rects[i];
       gfx::Rect shape_rect =
           gfx::Rect(rect.x + window_rect.x(), rect.y + window_rect.y(),
                     rect.width, rect.height);

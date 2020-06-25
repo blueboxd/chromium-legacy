@@ -62,5 +62,9 @@ const base::Feature kDownRankJustInTimePaymentApp{
 const base::Feature kPaymentHandlerPopUpSizeWindow{
     "PaymentHandlerPopUpSizeWindow", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAllowJITInstallationWhenAppIconIsMissing{
+    "AllowJITInstallationWhenAppIconIsMissing",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace payments

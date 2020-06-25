@@ -408,6 +408,9 @@ bool ChildStatusCollector::ShouldReportHardwareStatus() const {
 bool ChildStatusCollector::ShouldReportCrashReportInfo() const {
   return false;
 }
+bool ChildStatusCollector::ShouldReportAppInfoAndActivity() const {
+  return false;
+}
 
 void ChildStatusCollector::OnOSVersion(const std::string& version) {
   os_version_ = version;

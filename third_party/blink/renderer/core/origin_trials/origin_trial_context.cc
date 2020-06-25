@@ -346,15 +346,15 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   //  - Spec: https://w3c.github.io/webcomponents/spec/imports/#terminology
   //  - Spec issue: https://github.com/w3c/webcomponents/issues/197
   // For the purposes of origin trials, we consider imported documents to be
-  // part of the master document. Thus, check if the trial is enabled in the
-  // master document and use that result.
+  // part of the tree_root document. Thus, check if the trial is enabled in the
+  // tree_root document and use that result.
   auto* window = DynamicTo<LocalDOMWindow>(context_.Get());
   auto* document = window ? window->document() : nullptr;
   if (!document || !document->IsHTMLImport())
     return false;
 
   const OriginTrialContext* context =
-      document->MasterDocument().GetOriginTrialContext();
+      document->TreeRootDocument().GetOriginTrialContext();
   if (!context)
     return false;
   return context->IsFeatureEnabled(feature);

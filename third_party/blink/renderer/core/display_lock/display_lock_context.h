@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -197,6 +198,9 @@ class CORE_EXPORT DisplayLockContext final
   // GC functions.
   void Trace(Visitor*) const override;
 
+  // Debugging functions.
+  String RenderAffectingStateToString() const;
+
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and
   // |NotifyForcedUpdateScopeEnded()|.
@@ -295,6 +299,12 @@ class CORE_EXPORT DisplayLockContext final
   // selected notes up to its root looking for `element_`.
   void DetermineIfSubtreeHasSelection();
 
+  // Keep this context unlocked until the beginning of lifecycle. Effectively
+  // keeps this context unlocked for the next `count` frames. It also schedules
+  // a frame to ensure the lifecycle happens. Only affects locks with 'auto'
+  // setting.
+  void SetKeepUnlockedUntilLifecycleCount(int count);
+
   WeakMember<Element> element_;
   WeakMember<Document> document_;
   EContentVisibility state_ = EContentVisibility::kVisible;
@@ -348,21 +358,26 @@ class CORE_EXPORT DisplayLockContext final
   // Lock has been requested.
   bool is_locked_ = false;
 
-  // If true, clear selection render affecting state bit on the next lifecycle.
-  bool has_deferred_selection_clear_ = false;
+  // If true, this lock is kept unlocked at least until the beginning of the
+  // lifecycle. If nothing else is keeping it unlocked, then it will be locked
+  // again at the start of the lifecycle.
+  bool keep_unlocked_until_lifecycle_ = false;
 
   enum class RenderAffectingState : int {
     kLockRequested,
     kIntersectsViewport,
     kSubtreeHasFocus,
     kSubtreeHasSelection,
+    kAutoStateUnlockedUntilLifecycle,
     kNumRenderAffectingStates
   };
   void SetRenderAffectingState(RenderAffectingState state, bool flag);
   void NotifyRenderAffectingStateChanged();
+  const char* RenderAffectingStateName(int state) const;
 
   bool render_affecting_state_[static_cast<int>(
       RenderAffectingState::kNumRenderAffectingStates)] = {false};
+  int keep_unlocked_count_ = 0;
 };
 
 }  // namespace blink

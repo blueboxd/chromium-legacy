@@ -107,7 +107,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
 
   ui::ImageModel icon = model->GetIconAt(model_index);
   ui::ImageModel minor_icon = model->GetMinorIconAt(model_index);
-  return menu->AddMenuItemAt(
+  auto* menu_item_view = menu->AddMenuItemAt(
       menu_index, item_id, model->GetLabelAt(model_index),
       model->GetSecondaryLabelAt(model_index),
       model->GetMinorTextAt(model_index),
@@ -118,6 +118,8 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
       icon.IsVectorIcon() ? ui::ThemedVectorIcon(icon.GetVectorIcon())
                           : ui::ThemedVectorIcon(),
       *type, ui::NORMAL_SEPARATOR);
+  menu_item_view->set_is_new(model->IsNewFeatureAt(model_index));
+  return menu_item_view;
 }
 
 // Static.

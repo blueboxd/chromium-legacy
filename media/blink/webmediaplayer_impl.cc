@@ -1001,6 +1001,11 @@ void WebMediaPlayerImpl::SetLatencyHint(double seconds) {
   pipeline_controller_->SetLatencyHint(latency_hint);
 }
 
+void WebMediaPlayerImpl::SetPreservesPitch(bool preserves_pitch) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  pipeline_controller_->SetPreservesPitch(preserves_pitch);
+}
+
 void WebMediaPlayerImpl::OnRequestPictureInPicture() {
   if (!surface_layer_for_video_enabled_)
     ActivateSurfaceLayerForVideo();

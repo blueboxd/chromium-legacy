@@ -563,6 +563,9 @@ testcase.saveFileDialogExtensionNotAddedWhenProvided = async () => {
  * crbug.com/917975 crbug.com/983507.
  */
 testcase.openFileDialogFileListShowContextMenu = async () => {
+  // Make sure the file picker will open to Downloads.
+  sendBrowserTestCommand({name: 'setLastDownloadDir'}, () => {});
+
   // Add entries to Downloads.
   await addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
 
@@ -639,6 +642,9 @@ testcase.openFileDialogSelectAllDisabled = async () => {
  * dialog. crbug.com/937251
  */
 testcase.openMultiFileDialogSelectAllEnabled = async () => {
+  // Make sure the file picker will open to Downloads.
+  sendBrowserTestCommand({name: 'setLastDownloadDir'}, () => {});
+
   // Open file picker dialog with support for selecting multiple files.
   chrome.fileSystem.chooseEntry(
       {type: 'openFile', acceptsMultiple: true}, (entry) => {});

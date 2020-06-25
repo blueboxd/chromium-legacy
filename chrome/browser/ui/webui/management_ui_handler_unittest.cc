@@ -100,13 +100,15 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
                             bool report_nics,
                             bool report_users,
                             bool report_hw_status,
-                            bool report_crash_info)
+                            bool report_crash_info,
+                            bool report_app_info_and_activity)
       : policy::DeviceStatusCollector(local_state, nullptr),
         report_activity_times_(report_activity_times),
         report_nics_(report_nics),
         report_users_(report_users),
         report_hw_status_(report_hw_status),
-        report_crash_info_(report_crash_info) {}
+        report_crash_info_(report_crash_info),
+        report_app_info_and_activity_(report_app_info_and_activity) {}
   ~TestDeviceStatusCollector() override = default;
 
   bool ShouldReportActivityTimes() const override {
@@ -118,8 +120,12 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   bool ShouldReportCrashReportInfo() const override {
     return report_crash_info_;
   }
+  bool ShouldReportAppInfoAndActivity() const override {
+    return report_app_info_and_activity_;
+  }
 
-  // empty methods that need to be implemented but are of no use for this case.
+  // empty methods that need to be implemented but are of no use for this
+  // case.
   void GetStatusAsync(
       const policy::StatusCollectorCallback& callback) override {}
   void OnSubmittedSuccessfully() override {}
@@ -130,6 +136,7 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   bool report_users_;
   bool report_hw_status_;
   bool report_crash_info_;
+  bool report_app_info_and_activity_;
 };
 
 class TestDeviceCloudPolicyManagerChromeOS
@@ -300,6 +307,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     bool report_users;
     bool report_hw_status;
     bool report_crash_info;
+    bool report_app_info_and_activity;
     bool upload_enabled;
     bool printing_send_username_and_filename;
     bool crostini_report_usage;
@@ -320,6 +328,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     setup_config_.report_users = default_value;
     setup_config_.report_hw_status = default_value;
     setup_config_.report_crash_info = default_value;
+    setup_config_.report_app_info_and_activity = default_value;
     setup_config_.upload_enabled = default_value;
     setup_config_.printing_send_username_and_filename = default_value;
     setup_config_.crostini_report_usage = default_value;
@@ -374,8 +383,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         new TestDeviceStatusCollector(
             &local_state_, GetTestConfig().report_activity_times,
             GetTestConfig().report_nics, GetTestConfig().report_users,
-            GetTestConfig().report_hw_status,
-            GetTestConfig().report_crash_info);
+            GetTestConfig().report_hw_status, GetTestConfig().report_crash_info,
+            GetTestConfig().report_app_info_and_activity);
     settings_.device_settings()->SetTrustedStatus(
         chromeos::CrosSettingsProvider::TRUSTED);
     settings_.device_settings()->SetBoolean(chromeos::kSystemLogUploadEnabled,
@@ -547,8 +556,8 @@ AssertionResult ReportingElementsToBeEQ(
   }
   if (!tmp_expected.empty()) {
     AssertionResult result = AssertionFailure();
-    result
-        << " the following messageId and reportingTypes could not be matched {";
+    result << " the following messageId and reportingTypes could not be "
+              "matched {";
     for (const auto& element : tmp_expected) {
       result << " messageId: " << element.first << ", reportingType "
              << element.second;
@@ -814,6 +823,7 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
       {kManagementReportHardwareStatus, "device statistics"},
       {kManagementReportNetworkInterfaces, "device"},
       {kManagementReportCrashReports, "crash report"},
+      {kManagementReportAppInfoAndActivity, "app info and activity"},
       {kManagementLogUploadEnabled, "logs"},
       {kManagementPrinting, "print"},
       {kManagementCrostini, "crostini"},
@@ -835,6 +845,7 @@ TEST_F(ManagementUIHandlerTests,
       {kManagementReportHardwareStatus, "device statistics"},
       {kManagementReportNetworkInterfaces, "device"},
       {kManagementReportCrashReports, "crash report"},
+      {kManagementReportAppInfoAndActivity, "app info and activity"},
       {kManagementLogUploadEnabled, "logs"},
       {kManagementPrinting, "print"},
       {kManagementCrostiniContainerConfiguration, "crostini"},

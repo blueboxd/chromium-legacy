@@ -46,6 +46,8 @@ serial_test(async (t, fake) => {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   let writePromise = writer.write(data);
   writer.close();
+
+  await fakePort.readable();
   let { value, done } = await fakePort.read();
   await writePromise;
   compareArrays(value, data);
@@ -66,6 +68,7 @@ serial_test(async (t, fake) => {
   writer.write(data);
   writer.close();
 
+  await fakePort.readable();
   const reader = fakePort.readable_.getReader();
   const value = await readWithLength(reader, data.byteLength);
   reader.releaseLock();
@@ -82,6 +85,7 @@ serial_test(async (t, fake) => {
   assert_true(writable instanceof WritableStream);
   let writer = writable.getWriter();
 
+  await fakePort.readable();
   fakePort.simulateSystemErrorOnWrite();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   await promise_rejects_dom(t, 'UnknownError', writer.write(data));
@@ -92,7 +96,7 @@ serial_test(async (t, fake) => {
   writer = port.writable.getWriter();
   let writePromise = writer.write(data);
   writer.close();
-  await fakePort.waitForWriteErrorCleared();
+  await fakePort.readable();
   let { value, done } = await fakePort.read();
   await writePromise;
   compareArrays(value, data);
@@ -108,6 +112,7 @@ serial_test(async (t, fake) => {
   assert_true(port.writable instanceof WritableStream);
   const writer = port.writable.getWriter();
 
+  await fakePort.readable();
   fakePort.simulateDisconnectOnWrite();
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
   await promise_rejects_dom(t, 'NetworkError', writer.write(data));
@@ -126,6 +131,8 @@ serial_test(async (t, fake) => {
   const streamClosed = encoder.readable.pipeTo(port.writable);
   const writer = encoder.writable.getWriter();
   const writePromise = writer.write("Hello world!");
+
+  await fakePort.readable();
   const { value, done } = await fakePort.read();
   await writePromise;
   assert_equals("Hello world!", new TextDecoder().decode(value));
@@ -150,6 +157,8 @@ serial_test(async (t, fake) => {
   const streamClosed = readable.pipeTo(port.writable);
   const writer = transform.writable.getWriter();
   const writePromise = writer.write("Hello world!");
+
+  await fakePort.readable();
   const { value, done } = await fakePort.read();
   await writePromise;
   assert_equals("Hello world!", new TextDecoder().decode(value));

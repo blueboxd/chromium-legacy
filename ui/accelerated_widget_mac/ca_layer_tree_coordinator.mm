@@ -41,8 +41,7 @@ CARendererLayerTree* CALayerTreeCoordinator::GetPendingCARendererLayerTree() {
   return pending_ca_renderer_layer_tree_.get();
 }
 
-void CALayerTreeCoordinator::CommitPendingTreesToCA(
-    const gfx::Rect& pixel_damage_rect) {
+void CALayerTreeCoordinator::CommitPendingTreesToCA() {
   // Update the CALayer hierarchy.
   ScopedCAActionDisabler disabler;
   if (pending_ca_renderer_layer_tree_) {

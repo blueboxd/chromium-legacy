@@ -9,6 +9,7 @@ proto_library("proto") {
     "certificate_rpc.proto",
     "contact_rpc.proto",
     "device_rpc.proto",
+    "encrypted_metadata.proto",
     "field_mask.proto",
     "rpc_resources.proto",
     "timestamp.proto",

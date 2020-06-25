@@ -132,37 +132,13 @@ struct TargetEmbeddingHeuristicTestCase {
   const TargetEmbeddingType expected_type;
 };
 
-void ValidateTestCases(
-    const std::vector<DomainInfo>& engaged_sites,
-    const std::vector<TargetEmbeddingHeuristicTestCase>& test_cases) {
-  for (auto& test_case : test_cases) {
-    std::string safe_hostname;
-    TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
-        test_case.hostname, engaged_sites,
-        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
-    if (test_case.expected_type != TargetEmbeddingType::kNone) {
-      EXPECT_EQ(safe_hostname, test_case.expected_safe_host)
-          << "Expected that \"" << test_case.hostname
-          << " should trigger because of " << test_case.expected_safe_host
-          << " But "
-          << (safe_hostname.empty() ? "it didn't trigger."
-                                    : "triggered because of ")
-          << safe_hostname;
-      EXPECT_EQ(embedding_type, test_case.expected_type)
-          << "Right warning type was not triggered for " << test_case.hostname
-          << ".";
-    } else {
-      EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
-          << "Expected that " << test_case.hostname
-          << "\" shouldn't trigger but it did. Because of URL:"
-          << safe_hostname;
-    }
-  }
-}
-
 TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
   const std::vector<DomainInfo> kEngagedSites = {
-      GetDomainInfo(GURL("https://highengagement.com"))};
+      GetDomainInfo(GURL("https://highengagement.com")),
+      GetDomainInfo(GURL("https://highengagement.co.uk")),
+      GetDomainInfo(GURL("https://subdomain.highengagement.com")),
+      GetDomainInfo(GURL("https://subdomain.google.com")),
+  };
   const std::vector<TargetEmbeddingHeuristicTestCase> kTestCases = {
       // The length of the url should not affect the outcome.
       {"this-is-a-very-long-url-but-it-should-not-affect-the-"
@@ -243,80 +219,44 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {"google.com", "", TargetEmbeddingType::kNone},
       {"google.co.uk", "", TargetEmbeddingType::kNone},
       {"google.randomreg-login.com", "", TargetEmbeddingType::kNone},
+      {"com.foo.com", "", TargetEmbeddingType::kNone},
+
+      // Multipart eTLDs should work.
+      {"foo.google.co.uk.foo.com", "google.co.uk",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.highengagement-co-uk.foo.com", "highengagement.co.uk",
+       TargetEmbeddingType::kInterstitial},
+
+      // Engaged sites should trigger as specifically as possible, and should
+      // trigger preferentially to top sites when possible.
+      {"foo.highengagement.com.foo.com", "highengagement.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.subdomain.highengagement.com.foo.com",
+       "subdomain.highengagement.com", TargetEmbeddingType::kInterstitial},
+      {"foo.subdomain.google.com.foo.com", "subdomain.google.com",
+       TargetEmbeddingType::kInterstitial},
+
+      // Skeleton matching should work against engaged sites at the eTLD level.
+      {"subdomain.highéngagement.com-foo.com", "highengagement.com",
+       TargetEmbeddingType::kInterstitial},
   };
 
-  // Test cases for "enhanced protection", aka mixed-TLD, target embedding.
-  const std::vector<TargetEmbeddingHeuristicTestCase> kEPTestCases = {
-      // Same tests with another important TLDs.
-      {"this-is-a-very-long-url-but-it-should-not-affect-the-"
-       "outcome-of-this-target-embedding-test-google.edu-login.com",
-       "google.com", TargetEmbeddingType::kInterstitial},
-      {"google-edu-this-is-a-very-long-url-but-it-should-not-affect-"
-       "the-outcome-of-this-target-embedding-test-login.com",
-       "google.com", TargetEmbeddingType::kInterstitial},
-      {"this-is-a-very-long-url-but-it-should-not-affect-google-the-"
-       "outcome-of-this-target-embedding-test.com-login.com",
-       "", TargetEmbeddingType::kNone},
-      {"google-this-is-a-very-long-url-but-it-should-not-affect-the-"
-       "outcome-of-this-target-embedding-test.com-login.com",
-       "", TargetEmbeddingType::kNone},
-      {"goog0le.edu-login.com", "", TargetEmbeddingType::kNone},
-      {"googlé.edu-login.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"foo-googlé.edu-bar.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"google.edu.foo.com", "google.com", TargetEmbeddingType::kInterstitial},
-      {"foo-google.edu-bar.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"foo-google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"a.b.c.d.e.f.g.h.foo-google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"a.b.c.d.e.f.g.h.google.edu-foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"1.2.3.4.5.6.google.edu-foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"foo.google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"foo-google.l.edu-foo.com", "", TargetEmbeddingType::kNone},
-      {"foo.google-edu-foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-
-      // When ccTLDs are used instead of the actual TLD, it will still trigger
-      // the heuristic but will show Safety Tips instead of Lookalike
-      // Interstitials.
-      {"google.br-foo.com", "google.com", TargetEmbeddingType::kSafetyTip},
-
-      // Allowlisted domains should trigger heuristic when paired with other
-      // important TLDs.
-      {"scholar.google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"scholar.google.edu-google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"google.edu-scholar.google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"foo.scholar.google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-      {"scholar.foo.google.edu.foo.com", "google.com",
-       TargetEmbeddingType::kInterstitial},
-
-      // Targets should be longer than 6 characters. Even if the embedded domain
-      // is longer than 6 characters, if the real target is not more than 6
-      // characters, it will be allowlisted.
-      {"hp.edu-foo.com", "", TargetEmbeddingType::kNone},
-      {"hp.info-foo.com", "", TargetEmbeddingType::kNone},
-
-      // Targets that are embedded without their dots and dashes can not use
-      // other TLDs.
-      {"foo.googleedu-foo.com", "", TargetEmbeddingType::kNone},
-  };
-
-  ValidateTestCases(kEngagedSites, kTestCases);
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      lookalikes::features::kDetectTargetEmbeddingLookalikes,
-      {{"enhanced_protection_enabled", "true"}});
-
-  ValidateTestCases(kEngagedSites, kEPTestCases);
+  for (auto& test_case : kTestCases) {
+    std::string safe_hostname;
+    TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
+        test_case.hostname, kEngagedSites,
+        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
+    if (test_case.expected_type != TargetEmbeddingType::kNone) {
+      EXPECT_EQ(safe_hostname, test_case.expected_safe_host)
+          << test_case.hostname << " should trigger on "
+          << test_case.expected_safe_host << ", but "
+          << (safe_hostname.empty() ? "it didn't trigger at all."
+                                    : "triggered on " + safe_hostname);
+      EXPECT_EQ(embedding_type, test_case.expected_type);
+    } else {
+      EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
+          << test_case.hostname << " unexpectedly triggered on "
+          << safe_hostname;
+    }
+  }
 }

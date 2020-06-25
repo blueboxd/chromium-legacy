@@ -54,16 +54,16 @@ class ClipboardProviderTest : public testing::Test,
   void ClearClipboard() { clipboard_content_.SuppressClipboardContent(); }
 
   void SetClipboardUrl(const GURL& url) {
-    clipboard_content_.SetClipboardURL(url, base::TimeDelta::FromMinutes(10));
+    clipboard_content_.SetClipboardURL(url, base::TimeDelta::FromMinutes(9));
   }
 
   void SetClipboardText(const base::string16& text) {
-    clipboard_content_.SetClipboardText(text, base::TimeDelta::FromMinutes(10));
+    clipboard_content_.SetClipboardText(text, base::TimeDelta::FromMinutes(9));
   }
 
   void SetClipboardImage(const gfx::Image& image) {
     clipboard_content_.SetClipboardImage(image,
-                                         base::TimeDelta::FromMinutes(10));
+                                         base::TimeDelta::FromMinutes(9));
   }
 
   bool IsClipboardEmpty() {
@@ -119,6 +119,17 @@ TEST_F(ClipboardProviderTest, HasMultipleMatches) {
   EXPECT_EQ(GURL(kClipboardURL), provider_->matches().back().destination_url);
 }
 
+TEST_F(ClipboardProviderTest, MatchesUrl) {
+  SetClipboardUrl(GURL(kClipboardURL));
+  EXPECT_CALL(*client_.get(), GetSchemeClassifier())
+      .WillOnce(testing::ReturnRef(classifier_));
+  provider_->Start(CreateAutocompleteInput(true), false);
+  ASSERT_GE(provider_->matches().size(), 1U);
+  EXPECT_EQ(GURL(kClipboardURL), provider_->matches().back().destination_url);
+  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_URL,
+            provider_->matches().back().GetDemotionType());
+}
+
 TEST_F(ClipboardProviderTest, MatchesText) {
   auto template_url_service = std::make_unique<TemplateURLService>(
       /*initializers=*/nullptr, /*count=*/0);
@@ -130,6 +141,8 @@ TEST_F(ClipboardProviderTest, MatchesText) {
             provider_->matches().back().contents);
   EXPECT_EQ(base::UTF8ToUTF16(kClipboardText),
             provider_->matches().back().fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_TEXT,
+            provider_->matches().back().GetDemotionType());
 }
 
 TEST_F(ClipboardProviderTest, MatchesImage) {
@@ -149,6 +162,8 @@ TEST_F(ClipboardProviderTest, MatchesImage) {
                                          &template_url_service, clipboard_age,
                                          image_bytes);
   ASSERT_GE(provider_->matches().size(), 1U);
+  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_IMAGE,
+            provider_->matches().back().GetDemotionType());
 }
 
 TEST_F(ClipboardProviderTest, DeleteMatch) {

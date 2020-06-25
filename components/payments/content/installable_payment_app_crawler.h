@@ -40,7 +40,17 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
  public:
   using FinishedCrawlingCallback = base::OnceCallback<void(
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>,
+      std::map<GURL, std::unique_ptr<SkBitmap>>,
       const std::string& error_message)>;
+
+  enum class CrawlingMode {
+    // In this mode the crawler will crawl for finding JIT installable payment
+    // apps.
+    kJustInTimeInstallation,
+    // In this mode the crawler will crawl for downloading missing icons for
+    // already installed payment apps.
+    kMissingIconRefetch,
+  };
 
   // |merchant_origin| is the origin of the iframe that created the
   // PaymentRequest object. It is used by security features like
@@ -66,14 +76,15 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
   // then this object is safe to be deleted.
   void Start(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+      std::set<GURL> method_manifest_urls_for_icon_refetch,
       FinishedCrawlingCallback callback,
       base::OnceClosure finished_using_resources);
 
   void IgnorePortInOriginComparisonForTesting();
 
- private:
   bool IsSameOriginWith(const GURL& a, const GURL& b);
 
+ private:
   void OnPaymentMethodManifestDownloaded(
       const GURL& method_manifest_url,
       const GURL& method_manifest_url_after_redirects,
@@ -127,12 +138,16 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
   size_t number_of_web_app_icons_to_download_and_decode_;
   std::set<GURL> downloaded_web_app_manifests_;
   std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> installable_apps_;
+  std::map<GURL, std::unique_ptr<SkBitmap>> refetched_icons_;
+  std::set<GURL> method_manifest_urls_for_icon_refetch_;
 
   // The first error message (if any) to be forwarded to the merchant when
   // rejecting the promise returned from PaymentRequest.show().
   std::string first_error_message_;
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
+
+  CrawlingMode crawling_mode_ = CrawlingMode::kJustInTimeInstallation;
 
   base::WeakPtrFactory<InstallablePaymentAppCrawler> weak_ptr_factory_{this};
 

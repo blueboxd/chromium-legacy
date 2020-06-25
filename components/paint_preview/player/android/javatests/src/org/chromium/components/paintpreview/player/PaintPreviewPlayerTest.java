@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.url.GURL;
@@ -88,17 +90,14 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         final View activityContentView = getActivity().findViewById(android.R.id.content);
 
         // Assert that the player view has the same dimensions as the content view.
-        CriteriaHelper.pollUiThread(
-                () -> {
-                    boolean contentSizeNonZero = activityContentView.getWidth() > 0
-                            && activityContentView.getHeight() > 0;
-                    boolean viewSizeMatchContent =
-                            activityContentView.getWidth() == playerHostView.getWidth()
-                            && activityContentView.getHeight() == playerHostView.getHeight();
-                    return contentSizeNonZero && viewSizeMatchContent;
-                },
-                "Player size doesn't match R.id.content", TIMEOUT_MS,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(activityContentView.getWidth(), Matchers.greaterThan(0));
+            Criteria.checkThat(activityContentView.getHeight(), Matchers.greaterThan(0));
+            Criteria.checkThat(
+                    activityContentView.getWidth(), Matchers.is(playerHostView.getWidth()));
+            Criteria.checkThat(
+                    activityContentView.getHeight(), Matchers.is(playerHostView.getHeight()));
+        }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -224,9 +223,10 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         });
 
         // Wait until PlayerManager is initialized.
-        CriteriaHelper.pollUiThread(() -> mPlayerManager != null,
-                "PlayerManager was not initialized.", TIMEOUT_MS,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    "PlayerManager was not initialized.", mPlayerManager, Matchers.notNullValue());
+        }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         try {
             viewReady.waitForFirst();
@@ -235,10 +235,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         }
 
         // Assert that the player view is added to the player host view.
-        CriteriaHelper.pollUiThread(
-                () -> ((ViewGroup) mPlayerManager.getView()).getChildCount() > 0,
-                "Player view is not added to the host view.", TIMEOUT_MS,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Player view is not added to the host view.",
+                    ((ViewGroup) mPlayerManager.getView()).getChildCount(),
+                    Matchers.greaterThan(0));
+        }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     /*
@@ -270,18 +271,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.click(scaledX + locationXY[0], scaledY + locationXY[1]);
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> {
-                    GURL url = mLinkClickHandler.mUrl;
-                    if (url == null) return false;
-
-                    return url.getSpec().equals(expectedUrl);
-                },
-                "Link press on abs (" + x + ", " + y + ") failed. Expected: " + expectedUrl
-                        + ", found: "
-                        + (mLinkClickHandler.mUrl == null ? null
-                                                          : mLinkClickHandler.mUrl.getSpec()),
-                TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(() -> {
+            GURL url = mLinkClickHandler.mUrl;
+            String msg = "Link press on abs (" + x + ", " + y + ") failed.";
+            Criteria.checkThat(msg, url, Matchers.notNullValue());
+            Criteria.checkThat(msg, url.getSpec(), Matchers.is(expectedUrl));
+        }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 }

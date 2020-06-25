@@ -497,9 +497,16 @@ void FileSystemChooseEntryFunction::FilesSelected(
   } else {
     last_choose_directory = paths[0].DirName();
   }
-  file_system_api::SetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(browser_context()), extension()->id(),
-      last_choose_directory);
+
+  if (extension_->is_extension()) {
+    ExtensionsBrowserClient::Get()->SetLastSaveFilePath(browser_context(),
+                                                        last_choose_directory);
+  } else {
+    file_system_api::SetLastChooseEntryDirectory(
+        ExtensionPrefs::Get(browser_context()), extension()->id(),
+        last_choose_directory);
+  }
+
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
     // confirmation dialog if necessary.
@@ -618,10 +625,10 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
     ui::SelectFileDialog::FileTypeInfo* file_type_info,
     const base::FilePath::StringType& suggested_extension,
     const AcceptOptions* accepts,
-    const bool* acceptsAllTypes) {
+    const bool* accepts_all_types) {
   file_type_info->include_all_files = true;
-  if (acceptsAllTypes)
-    file_type_info->include_all_files = *acceptsAllTypes;
+  if (accepts_all_types)
+    file_type_info->include_all_files = *accepts_all_types;
 
   bool need_suggestion =
       !file_type_info->include_all_files && !suggested_extension.empty();
@@ -744,8 +751,14 @@ ExtensionFunction::ResponseAction FileSystemChooseEntryFunction::Run() {
 
   file_type_info.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
-  base::FilePath previous_path = file_system_api::GetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(browser_context()), extension()->id());
+  base::FilePath previous_path;
+  if (extension_->is_extension()) {
+    previous_path =
+        ExtensionsBrowserClient::Get()->GetSaveFilePath(browser_context());
+  } else {
+    previous_path = file_system_api::GetLastChooseEntryDirectory(
+        ExtensionPrefs::Get(browser_context()), extension()->id());
+  }
 
   if (previous_path.empty()) {
     SetInitialPathAndShowPicker(previous_path, suggested_name, file_type_info,

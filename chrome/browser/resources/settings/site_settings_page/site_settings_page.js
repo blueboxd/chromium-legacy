@@ -142,8 +142,6 @@ function getCategoryItemMap() {
       icon: 'settings:hid-device',
       enabledLabel: 'siteSettingsHidDevicesAsk',
       disabledLabel: 'siteSettingsHidDevicesBlock',
-      shouldShow: () =>
-          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
     },
     {
       route: routes.SITE_SETTINGS_IMAGES,

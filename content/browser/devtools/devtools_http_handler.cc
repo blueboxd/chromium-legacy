@@ -54,7 +54,7 @@
 #include "base/android/build_info.h"
 #endif
 
-#if !defined(OS_FUCHSIA)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "content/browser/devtools/grit/devtools_resources.h"  // nogncheck
 #endif
 
@@ -654,7 +654,7 @@ void DevToolsHttpHandler::OnJsonRequest(
 }
 
 void DevToolsHttpHandler::DecompressAndSendJsonProtocol(int connection_id) {
-#if defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   NOTREACHED();
 #else
   scoped_refptr<base::RefCountedMemory> bytes =
@@ -669,7 +669,7 @@ void DevToolsHttpHandler::DecompressAndSendJsonProtocol(int connection_id) {
       FROM_HERE, base::BindOnce(&ServerWrapper::SendResponse,
                                 base::Unretained(server_wrapper_.get()),
                                 connection_id, response));
-#endif  // defined(OS_FUCHSIA)
+#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 }
 
 void DevToolsHttpHandler::RespondToJsonList(

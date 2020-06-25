@@ -40,10 +40,12 @@ buildflag_header("buildflags") {
 
 # External-facing config for dependent code.
 config("skia_config") {
+  defines = []
   include_dirs = [ "//third_party/skia" ]
 
   if (!is_ios) {
     if (enable_skia_wuffs_gif) {
+      defines += [ "SK_FAVOR_WUFFS_V_0_3_OVER_V_0_2" ]
       include_dirs += [ "//third_party/wuffs/src/release/c" ]
     } else {
       include_dirs += [ "//third_party/libgifcodec" ]
@@ -54,7 +56,7 @@ config("skia_config") {
     configs = [ "//third_party/vulkan_headers:vulkan_headers_config" ]
   }
 
-  defines = [
+  defines += [
     "SK_CODEC_DECODES_PNG",
     "SK_CODEC_DECODES_WEBP",
     "SK_ENCODE_PNG",

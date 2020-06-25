@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -22,7 +24,21 @@ namespace ash {
 
 namespace {
 
-constexpr int kNumberTopics = 100;
+// Topic related numbers.
+
+// The number of requests to fetch topics.
+constexpr int kNumberOfRequests = 50;
+
+// The batch size of topics to fetch in one request.
+// Magic number 2 is based on experiments that no curation on Google Photos.
+constexpr int kTopicsBatchSize = 2;
+
+// The upper bound of delay to the fetch topics. An random value will be
+// generated in the range of |kTopicFetchDelayMax|/2 to |kTopicFetchDelayMax|.
+
+// TODO(b/139953713): Change to a correct time interval.
+// E.g. it will be max 36 seconds if we want to fetch 50 batches in 30 mins.
+constexpr base::TimeDelta kTopicFetchDelayMax = base::TimeDelta::FromSeconds(3);
 
 using DownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
@@ -42,24 +58,45 @@ AmbientPhotoController::AmbientPhotoController() {
 AmbientPhotoController::~AmbientPhotoController() = default;
 
 void AmbientPhotoController::StartScreenUpdate() {
-  Shell::Get()
-      ->ambient_controller()
-      ->ambient_backend_controller()
-      ->FetchScreenUpdateInfo(
-          kNumberTopics,
-          base::BindOnce(&AmbientPhotoController::OnScreenUpdateInfoFetched,
-                         weak_factory_.GetWeakPtr()));
+  FetchTopics();
 }
 
 void AmbientPhotoController::StopScreenUpdate() {
   photo_refresh_timer_.Stop();
   topic_index_ = 0;
+  topics_batch_fetched_ = 0;
   ambient_backend_model_.Clear();
   weak_factory_.InvalidateWeakPtrs();
 }
 
 void AmbientPhotoController::OnTopicsChanged() {
-  ScheduleRefreshImage();
+  ++topics_batch_fetched_;
+  if (topics_batch_fetched_ < kNumberOfRequests)
+    ScheduleFetchTopics();
+
+  // The first OnTopicsChanged event triggers the photo refresh.
+  if (topics_batch_fetched_ == 1)
+    ScheduleRefreshImage();
+}
+
+void AmbientPhotoController::FetchTopics() {
+  Shell::Get()
+      ->ambient_controller()
+      ->ambient_backend_controller()
+      ->FetchScreenUpdateInfo(
+          kTopicsBatchSize,
+          base::BindOnce(&AmbientPhotoController::OnScreenUpdateInfoFetched,
+                         weak_factory_.GetWeakPtr()));
+}
+
+void AmbientPhotoController::ScheduleFetchTopics() {
+  const base::TimeDelta kDelay =
+      (base::RandDouble() * kTopicFetchDelayMax) / 2 + kTopicFetchDelayMax / 2;
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AmbientPhotoController::FetchTopics,
+                     weak_factory_.GetWeakPtr()),
+      kDelay);
 }
 
 void AmbientPhotoController::ScheduleRefreshImage() {
@@ -79,12 +116,13 @@ const AmbientModeTopic& AmbientPhotoController::GetNextTopic() {
   const auto& topics = ambient_backend_model_.topics();
   DCHECK(!topics.empty());
 
-  const auto& topic = topics[topic_index_];
-  ++topic_index_;
+  // We prefetch the first two photos, which will increase the |topic_index_| to
+  // 2 in the first batch with size of 2. Then it will reset to 0 if we put this
+  // block after the increment of |topic_index_|.
   if (topic_index_ == topics.size())
     topic_index_ = 0;
 
-  return topic;
+  return topics[topic_index_++];
 }
 
 void AmbientPhotoController::GetNextImage() {
@@ -106,9 +144,7 @@ void AmbientPhotoController::OnScreenUpdateInfoFetched(
     return;
   }
 
-  ambient_backend_model_.SetTopics(screen_update.next_topics);
-  topic_index_ = 0;
-
+  ambient_backend_model_.AppendTopics(screen_update.next_topics);
   StartDownloadingWeatherConditionIcon(screen_update);
 }
 

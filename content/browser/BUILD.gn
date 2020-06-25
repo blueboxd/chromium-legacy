@@ -1129,7 +1129,6 @@ jumbo_source_set("browser") {
     "loader/single_request_url_loader_factory.cc",
     "loader/single_request_url_loader_factory.h",
     "loader/url_loader_throttles.cc",
-    "loader/url_loader_throttles.h",
     "loader/webrtc_connections_observer.cc",
     "loader/webrtc_connections_observer.h",
     "locks/lock_manager.cc",
@@ -2104,9 +2103,7 @@ jumbo_source_set("browser") {
     ]
   }
 
-  if (!is_fuchsia) {
-    # Fuchsia does not support DevTools front-end, so only only build DevTools
-    # resources on other platforms.
+  if (!is_fuchsia && !is_android) {
     deps += [ "//content/browser/devtools:devtools_resources" ]
   }
 

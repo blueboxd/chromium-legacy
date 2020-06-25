@@ -11,6 +11,10 @@
 #include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "url/gurl.h"
 
+namespace net {
+struct NetworkTrafficAnnotationTag;
+}
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -47,10 +51,12 @@ class ChromeEnterpriseRealTimeUrlLookupService
                    RTLookupResponseCallback response_callback) override;
 
  private:
-  policy::DMToken GetDMToken() const;
+  // RealTimeUrlLookupServiceBase:
+  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
 
-  // The URLLoaderFactory we use to issue network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  GURL GetRealTimeLookupUrl() const override;
+
+  policy::DMToken GetDMToken() const;
 
   // Unowned object used for checking profile based settings.
   Profile* profile_;

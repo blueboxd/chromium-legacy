@@ -740,6 +740,11 @@ const char kEnableSRPIsolatedPrerenderProbingName[] =
 const char kEnableSRPIsolatedPrerenderProbingDescription[] =
     "Enable probing checks for Isolated Prerenders which will block commit.";
 
+const char kEnableSRPIsolatedPrerendersNSPName[] =
+    "Enable NoStatePrefetch on Navigation Predictor Isolated Prerenders";
+const char kEnableSRPIsolatedPrerendersNSPDescription[] =
+    "Enables NoStatePrefetch on Isolated Prerenders.";
+
 const char kDownloadAutoResumptionNativeName[] =
     "Enable download auto-resumption in native";
 const char kDownloadAutoResumptionNativeDescription[] =
@@ -3646,11 +3651,6 @@ const char kEnableQuickAnswersTextAnnotatorName[] =
 const char kEnableQuickAnswersTextAnnotatorDescription[] =
     "Enable Quick Answers text annotator.";
 
-const char kEnableVideoPlayerNativeControlsName[] =
-    "Enable native controls in video player app";
-const char kEnableVideoPlayerNativeControlsDescription[] =
-    "Enable native controls in video player app";
-
 const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
 const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";
 
@@ -4051,6 +4051,12 @@ const char kReopenTabInProductHelpName[] = "Reopen tab in-product help";
 const char kReopenTabInProductHelpDescription[] =
     "Enable in-product help that guides a user to reopen a tab if it looks "
     "like they accidentally closed it.";
+
+const char kEnableNewBadgeOnMenuItemsName[] =
+    "Enable 'New' badge on menu items";
+const char kEnableNewBadgeOnMenuItemsDescription[] =
+    "When enabled, allows 'New' badge to help users identify menu items which "
+    "access new functionality.";
 
 #endif  // defined(TOOLKIT_VIEWS)
 

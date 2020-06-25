@@ -277,6 +277,7 @@ void SerialDeviceEnumeratorWin::EnumeratePort(HDEVINFO dev_info,
   info->path = *path;
   info->persistent_id = instance_id;
 
+  // TODO(https://crbug.com/1015074): Read the real USB strings here.
   std::string display_name;
   if (GetDisplayName(*friendly_name, &display_name))
     info->display_name = std::move(display_name);

@@ -41,11 +41,12 @@
      * tab. 20px is subtracted from the height of an unpinned tab as there
      * are two 10px gaps to separate each of the 3 pinned tabs. */
     --tabstrip-pinned-tab-size: calc((var(--tabstrip-tab-height) - 20px) / 3);
+    --tabstrip-tab-spacing: 10px;
 
     display: grid;
     grid-auto-columns: var(--tabstrip-pinned-tab-size);
     grid-auto-flow: column;
-    grid-gap: 10px;
+    grid-gap: var(--tabstrip-tab-spacing);
     grid-template-rows: repeat(3, var(--tabstrip-pinned-tab-size));
     padding-block-end: var(--tabstrip-tab-list-vertical-padding);
     padding-block-start: var(--tabstrip-tab-list-vertical-padding);

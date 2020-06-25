@@ -1093,6 +1093,10 @@
       status: "test",
     },
     {
+      name: "MediaPreservesPitch",
+      status: "experimental",
+    },
+    {
       name: "MediaQueryNavigationControls",
     },
     {
@@ -1967,6 +1971,7 @@
     },
     {
       name: "WebHID",
+      origin_trial_feature_name: "WebHID",
       status: "experimental",
     },
     {

@@ -117,7 +117,7 @@ CSSParserContext::CSSParserContext(
           charset,
           document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode,
           document.ImportsController() && profile == kLiveProfile
-              ? (document.ImportsController()->Master()->InQuirksMode()
+              ? (document.ImportsController()->TreeRoot()->InQuirksMode()
                      ? kHTMLQuirksMode
                      : kHTMLStandardMode)
               : document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode,

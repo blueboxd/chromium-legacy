@@ -64,7 +64,7 @@ ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser,
   }
   menu_view_ = std::make_unique<ExtensionsMenuView>(
       extensions_container_->extensions_button(), browser_,
-      extensions_container_);
+      extensions_container_, true);
 }
 ExtensionsMenuTestUtil::~ExtensionsMenuTestUtil() = default;
 

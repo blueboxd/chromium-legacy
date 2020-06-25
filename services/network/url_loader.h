@@ -210,7 +210,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::HttpRequestHeaders& request_headers,
       bool added_during_redirect);
 
-  static bool HasStreamingUploadBody(const ResourceRequest*);
+  static bool HasFetchStreamingUploadBody(const ResourceRequest*);
 
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
@@ -495,7 +495,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // Observer listening to all cookie reads and writes made by this request.
   mojo::Remote<mojom::CookieAccessObserver> cookie_observer_;
 
-  const bool has_streaming_upload_body_;
+  // Indicates |url_request_| is fetch upload request and that has streaming
+  // body.
+  const bool has_fetch_streaming_upload_body_;
+
+  // Indicates whether fetch upload streaming is allowed/rejected over H/1.
+  // Even if this is false but there is a QUIC/H2 stream, the upload is allowed.
+  const bool allow_http1_for_streaming_upload_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

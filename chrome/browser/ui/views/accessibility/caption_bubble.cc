@@ -164,6 +164,9 @@ CaptionBubble::CaptionBubble(views::View* anchor,
       ratio_in_parent_x_(kDefaultRatioInParentX),
       ratio_in_parent_y_(kDefaultRatioInParentY),
       browser_view_(browser_view) {
+  // Bubbles that use transparent colors should not paint their ClientViews to a
+  // layer as doing so could result in visual artifacts.
+  SetPaintClientToLayer(false);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_draggable(true);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));

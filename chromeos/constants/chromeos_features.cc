@@ -324,6 +324,10 @@ const base::Feature kQuickAnswersTextAnnotator{
 const base::Feature kQuickAnswersSubToggle{"QuickAnswersSubToggle",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable quick answers translation.
+const base::Feature kQuickAnswersTranslation{"QuickAnswersTranslation",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
 // https://crbug.com/996549
 const base::Feature kRar2Fs{"Rar2Fs", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -509,6 +513,10 @@ bool IsQuickAnswersSettingToggleEnabled() {
 
 bool IsQuickAnswersTextAnnotatorEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersTextAnnotator);
+}
+
+bool IsQuickAnswersTranslationEnabled() {
+  return base::FeatureList::IsEnabled(kQuickAnswersTranslation);
 }
 
 bool IsSplitSettingsSyncEnabled() {

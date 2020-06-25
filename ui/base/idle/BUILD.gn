@@ -61,7 +61,6 @@ component("idle") {
   }
 
   if (use_x11 && !is_chromeos) {
-    configs += [ "//build/config/linux:xscrnsaver" ]
     deps += [ "//ui/gfx/x" ]
     sources += [
       "idle_query_x11.cc",

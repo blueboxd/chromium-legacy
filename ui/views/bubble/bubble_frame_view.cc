@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -34,6 +35,7 @@
 #include "ui/views/paint_info.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -450,6 +452,7 @@ void BubbleFrameView::OnThemeChanged() {
   if (bubble_border_ && bubble_border_->use_theme_background_color()) {
     bubble_border_->set_background_color(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_DialogBackground));
+    UpdateClientViewBackground();
     SchedulePaint();
   }
 }
@@ -554,11 +557,30 @@ void BubbleFrameView::SetArrow(BubbleBorder::Arrow arrow) {
 
 void BubbleFrameView::SetBackgroundColor(SkColor color) {
   bubble_border_->set_background_color(color);
+  UpdateClientViewBackground();
   SchedulePaint();
 }
 
 SkColor BubbleFrameView::GetBackgroundColor() const {
   return bubble_border_->background_color();
+}
+
+void BubbleFrameView::UpdateClientViewBackground() {
+  if (!base::FeatureList::IsEnabled(features::kEnableMDRoundedCornersOnDialogs))
+    return;
+  DCHECK(GetWidget());
+  DCHECK(GetWidget()->client_view());
+
+  // If dealing with a layer backed ClientView we need to update it's color to
+  // match that of the frame view.
+  View* client_view = GetWidget()->client_view();
+  if (client_view->layer()) {
+    // If the ClientView's background is transparent this could result in visual
+    // artifacts. Make sure this isn't the case.
+    DCHECK_EQ(SK_AlphaOPAQUE, SkColorGetA(GetBackgroundColor()));
+    client_view->SetBackground(CreateSolidBackground(GetBackgroundColor()));
+    client_view->SchedulePaint();
+  }
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(

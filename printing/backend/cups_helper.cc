@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/mojom/print.mojom.h"
@@ -47,7 +48,10 @@ constexpr char kCupsMaxCopies[] = "cupsMaxCopies";
 constexpr char kColorDevice[] = "ColorDevice";
 constexpr char kColorModel[] = "ColorModel";
 constexpr char kColorMode[] = "ColorMode";
+// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
+#if !defined(OS_LINUX)
 constexpr char kInk[] = "Ink";
+#endif
 constexpr char kProcessColorModel[] = "ProcessColorModel";
 constexpr char kPrintoutMode[] = "PrintoutMode";
 constexpr char kDraftGray[] = "Draft.Gray";
@@ -329,6 +333,8 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
   return true;
 }
 
+// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
+#if !defined(OS_LINUX)
 bool GetEpsonInkSettings(ppd_file_t* ppd,
                          ColorModel* color_model_for_black,
                          ColorModel* color_model_for_color,
@@ -354,6 +360,7 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
   }
   return true;
 }
+#endif  // !defined(OS_LINUX)
 
 bool GetSharpARCModeSettings(ppd_file_t* ppd,
                              ColorModel* color_model_for_black,
@@ -458,7 +465,10 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetHPColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
+// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
+#if !defined(OS_LINUX)
          GetEpsonInkSettings(ppd, cm_black, cm_color, is_color) ||
+#endif
          GetSharpARCModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetXeroxColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);

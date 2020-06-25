@@ -147,6 +147,20 @@ TEST(SimpleMenuModelTest, IsVisibleAtWithDelegateAndCommandNotVisible) {
   ASSERT_FALSE(simple_menu_model.IsEnabledAt(0));
 }
 
+TEST(SimpleMenuModelTest, SetIsNewFeatureAt) {
+  SimpleMenuModel simple_menu_model(nullptr);
+  simple_menu_model.AddItem(/*command_id*/ 5,
+                            base::ASCIIToUTF16("menu item 0"));
+  simple_menu_model.AddItem(/*command_id*/ 6,
+                            base::ASCIIToUTF16("menu item 1"));
+
+  simple_menu_model.SetIsNewFeatureAt(/*index*/ 0, false);
+  simple_menu_model.SetIsNewFeatureAt(/*index*/ 1, true);
+
+  ASSERT_FALSE(simple_menu_model.IsNewFeatureAt(0));
+  ASSERT_TRUE(simple_menu_model.IsNewFeatureAt(1));
+}
+
 TEST(SimpleMenuModelTest, HasIconsViaDelegate) {
   DelegateBase delegate;
   SimpleMenuModel simple_menu_model(&delegate);

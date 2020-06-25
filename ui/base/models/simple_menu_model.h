@@ -159,6 +159,9 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
   // Sets whether the item at |index| is visible.
   void SetVisibleAt(int index, bool visible);
 
+  // Sets whether the item at |index| is new.
+  void SetIsNewFeatureAt(int index, bool is_new_feature);
+
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
 
@@ -183,6 +186,7 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override;
   bool IsEnabledAt(int index) const override;
   bool IsVisibleAt(int index) const override;
+  bool IsNewFeatureAt(int index) const override;
   void ActivatedAt(int index) override;
   void ActivatedAt(int index, int event_flags) override;
   MenuModel* GetSubmenuModelAt(int index) const override;
@@ -216,6 +220,7 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
     MenuSeparatorType separator_type = NORMAL_SEPARATOR;
     bool enabled = true;
     bool visible = true;
+    bool is_new_feature = false;
   };
 
   typedef std::vector<Item> ItemVector;

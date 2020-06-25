@@ -41,8 +41,6 @@ class BrowserImpl : public Browser {
   BrowserImpl& operator=(const BrowserImpl&) = delete;
   ~BrowserImpl() override;
 
-  static const std::vector<BrowserImpl*>& GetAllBrowsers();
-
   BrowserPersister* browser_persister() { return browser_persister_.get(); }
 
   ProfileImpl* profile() { return profile_; }
@@ -134,6 +132,8 @@ class BrowserImpl : public Browser {
   base::FilePath GetBrowserPersisterDataPath();
 
 #if defined(OS_ANDROID)
+  void UpdateFragmentResumedState(bool state);
+
   bool fragment_resumed_ = false;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
 #endif

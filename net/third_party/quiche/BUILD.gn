@@ -254,6 +254,8 @@ source_set("quiche") {
       "src/quic/core/crypto/transport_parameters.h",
       "src/quic/core/frames/quic_ack_frame.cc",
       "src/quic/core/frames/quic_ack_frame.h",
+      "src/quic/core/frames/quic_ack_frequency_frame.cc",
+      "src/quic/core/frames/quic_ack_frequency_frame.h",
       "src/quic/core/frames/quic_blocked_frame.cc",
       "src/quic/core/frames/quic_blocked_frame.h",
       "src/quic/core/frames/quic_connection_close_frame.cc",

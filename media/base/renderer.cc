@@ -30,4 +30,8 @@ void Renderer::OnEnabledAudioTracksChanged(
   std::move(change_completed_cb).Run();
 }
 
+void Renderer::SetPreservesPitch(bool preserves_pitch) {
+  // Not supported by most renderers.
+}
+
 }  // namespace media

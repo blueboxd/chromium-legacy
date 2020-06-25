@@ -64,4 +64,18 @@ public abstract class TabCallback {
      * @since 85
      */
     public void onBackgroundColorChanged(int color) {}
+
+    /**
+     * Notification for scroll of the root of the web page. This is generally sent as a result of
+     * displaying web page. See ScrollNotificationType for more details. ScrollNotificationType is
+     * meant to be extensible and new types may be added in the future. Embedder should take care
+     * to allow unknown values.
+     * @param notificationType type of notification. See ScrollNotificationType for more details.
+     * @param currentScrollRatio value in [0, 1] indicating the current scroll ratio. For example
+     *                           a web page that is 200 pixels, has a viewport of height 50 pixels
+     *                           and a scroll offset of 50 pixels will have a ratio of 0.5.
+     * @since 85
+     */
+    public void onScrollNotification(
+            @ScrollNotificationType int notificationType, float currentScrollRatio) {}
 }

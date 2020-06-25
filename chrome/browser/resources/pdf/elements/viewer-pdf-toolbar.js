@@ -12,11 +12,13 @@ import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
 // <if expr="chromeos">
 import './viewer-pen-options.js';
+
 // </if>
 
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Bookmark} from '../bookmark_type.js';
@@ -78,6 +80,11 @@ Polymer({
 
     hasEnteredAnnotationMode: Boolean,
 
+    isFormFieldFocused: {
+      type: Boolean,
+      observer: 'onFormFieldFocusedChanged_',
+    },
+
     /** The current loading progress of the PDF document (0 - 100). */
     loadProgress: {
       type: Number,
@@ -125,6 +132,9 @@ Polymer({
    * @private {boolean}
    */
   pdfFormSaveEnabled_: false,
+
+  /** @private {?PromiseResolver<boolean>} */
+  waitForFormFocusChange_: null,
 
   /**
    * @param {number} newProgress
@@ -223,17 +233,52 @@ Polymer({
   },
 
   /** @private */
-  onDownloadClick_() {
-    if (!this.hasEnteredAnnotationMode &&
-        (!this.hasEdits || !this.pdfFormSaveEnabled_)) {
-      this.fire('save', SaveRequestType.ORIGINAL);
-      return;
-    }
+  showDownloadMenu_() {
     this.$.downloadMenu.showAt(this.$.download, {
       anchorAlignmentX: AnchorAlignment.CENTER,
       anchorAlignmentY: AnchorAlignment.AFTER_END,
       noOffset: true,
     });
+    // For tests
+    this.fire('download-menu-shown-for-testing');
+  },
+
+  /** @private */
+  onDownloadClick_() {
+    this.waitForEdits_().then(hasEdits => {
+      if (hasEdits) {
+        this.showDownloadMenu_();
+      } else {
+        this.fire('save', SaveRequestType.ORIGINAL);
+      }
+    });
+  },
+
+  /**
+   * @return {!Promise<boolean>} Promise that resolves with true if the PDF has
+   *     edits and/or annotations, and false otherwise.
+   * @private
+   */
+  waitForEdits_() {
+    if (this.hasEnteredAnnotationMode ||
+        (this.hasEdits && this.pdfFormSaveEnabled_)) {
+      return Promise.resolve(true);
+    }
+    if (!this.isFormFieldFocused || !this.pdfFormSaveEnabled_) {
+      return Promise.resolve(false);
+    }
+    this.waitForFormFocusChange_ = new PromiseResolver();
+    return this.waitForFormFocusChange_.promise;
+  },
+
+  /** @private */
+  onFormFieldFocusedChanged_() {
+    if (!this.waitForFormFocusChange_) {
+      return;
+    }
+
+    this.waitForFormFocusChange_.resolve(this.hasEdits);
+    this.waitForFormFocusChange_ = null;
   },
 
   /** @private */

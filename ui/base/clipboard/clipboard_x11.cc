@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/nine_image_painter_factory.h"
@@ -570,6 +571,7 @@ ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
 void ClipboardX11::ReadText(ClipboardBuffer buffer,
                             base::string16* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kText);
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       buffer, x11_details_->GetTextAtoms()));
@@ -582,6 +584,7 @@ void ClipboardX11::ReadText(ClipboardBuffer buffer,
 void ClipboardX11::ReadAsciiText(ClipboardBuffer buffer,
                                  std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kText);
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       buffer, x11_details_->GetTextAtoms()));
@@ -597,6 +600,7 @@ void ClipboardX11::ReadHTML(ClipboardBuffer buffer,
                             uint32_t* fragment_start,
                             uint32_t* fragment_end) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kHtml);
   markup->clear();
   if (src_url)
     src_url->clear();
@@ -617,6 +621,7 @@ void ClipboardX11::ReadHTML(ClipboardBuffer buffer,
 
 void ClipboardX11::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kRtf);
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       buffer,
@@ -628,6 +633,7 @@ void ClipboardX11::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
 void ClipboardX11::ReadImage(ClipboardBuffer buffer,
                              ReadImageCallback callback) const {
   DCHECK(IsSupportedClipboardBuffer(buffer));
+  RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(ReadImageInternal(buffer));
 }
 
@@ -635,6 +641,7 @@ void ClipboardX11::ReadCustomData(ClipboardBuffer buffer,
                                   const base::string16& type,
                                   base::string16* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kCustomData);
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       buffer, x11_details_->GetAtomsForFormat(
@@ -652,6 +659,7 @@ void ClipboardX11::ReadBookmark(base::string16* title, std::string* url) const {
 void ClipboardX11::ReadData(const ClipboardFormatType& format,
                             std::string* result) const {
   DCHECK(CalledOnValidThread());
+  RecordRead(ClipboardFormatMetric::kData);
 
   SelectionData data(x11_details_->RequestAndWaitForTypes(
       ClipboardBuffer::kCopyPaste, x11_details_->GetAtomsForFormat(format)));

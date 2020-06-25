@@ -67,7 +67,7 @@ base::string16 SerialChooserController::GetOption(size_t index) const {
   // serial port and to differentiate between ports with similar display names.
   base::string16 display_path = port.path.BaseName().LossyDisplayName();
 
-  if (port.display_name) {
+  if (port.display_name && !port.display_name->empty()) {
     return l10n_util::GetStringFUTF16(IDS_SERIAL_PORT_CHOOSER_NAME_WITH_PATH,
                                       base::UTF8ToUTF16(*port.display_name),
                                       display_path);

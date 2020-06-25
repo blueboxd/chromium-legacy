@@ -30,6 +30,7 @@
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_metrics.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas.h"
@@ -319,6 +320,7 @@ ClipboardWin::ReadAvailablePlatformSpecificFormatNames(
 void ClipboardWin::ReadText(ClipboardBuffer buffer,
                             base::string16* result) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  RecordRead(ClipboardFormatMetric::kText);
   if (!result) {
     NOTREACHED();
     return;
@@ -344,6 +346,7 @@ void ClipboardWin::ReadText(ClipboardBuffer buffer,
 void ClipboardWin::ReadAsciiText(ClipboardBuffer buffer,
                                  std::string* result) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  RecordRead(ClipboardFormatMetric::kText);
   if (!result) {
     NOTREACHED();
     return;
@@ -372,6 +375,7 @@ void ClipboardWin::ReadHTML(ClipboardBuffer buffer,
                             uint32_t* fragment_start,
                             uint32_t* fragment_end) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  RecordRead(ClipboardFormatMetric::kHtml);
 
   markup->clear();
   // TODO(dcheng): Remove these checks, I don't think they should be optional.
@@ -425,6 +429,7 @@ void ClipboardWin::ReadHTML(ClipboardBuffer buffer,
 
 void ClipboardWin::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  RecordRead(ClipboardFormatMetric::kRtf);
 
   ReadData(ClipboardFormatType::GetRtfType(), result);
   TrimAfterNull(result);
@@ -432,6 +437,7 @@ void ClipboardWin::ReadRTF(ClipboardBuffer buffer, std::string* result) const {
 
 void ClipboardWin::ReadImage(ClipboardBuffer buffer,
                              ReadImageCallback callback) const {
+  RecordRead(ClipboardFormatMetric::kImage);
   std::move(callback).Run(ReadImageInternal(buffer));
 }
 
@@ -439,6 +445,7 @@ void ClipboardWin::ReadCustomData(ClipboardBuffer buffer,
                                   const base::string16& type,
                                   base::string16* result) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  RecordRead(ClipboardFormatMetric::kCustomData);
 
   // Acquire the clipboard.
   ScopedClipboard clipboard;
@@ -455,6 +462,7 @@ void ClipboardWin::ReadCustomData(ClipboardBuffer buffer,
 }
 
 void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
+  RecordRead(ClipboardFormatMetric::kBookmark);
   if (title)
     title->clear();
 
@@ -481,6 +489,7 @@ void ClipboardWin::ReadBookmark(base::string16* title, std::string* url) const {
 
 void ClipboardWin::ReadData(const ClipboardFormatType& format,
                             std::string* result) const {
+  RecordRead(ClipboardFormatMetric::kData);
   if (!result) {
     NOTREACHED();
     return;

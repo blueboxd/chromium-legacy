@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/profile_impl.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -29,6 +30,7 @@
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_impl.h"
+#include "weblayer/browser/browser_list.h"
 #include "weblayer/browser/browsing_data_remover_delegate.h"
 #include "weblayer/browser/cookie_manager_impl.h"
 #include "weblayer/browser/persistence/browser_persister_file_utils.h"
@@ -527,12 +529,9 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
 }
 
 int ProfileImpl::GetNumberOfBrowsers() {
-  int count = 0;
-  for (BrowserImpl* browser : BrowserImpl::GetAllBrowsers()) {
-    if (browser->profile() == this)
-      ++count;
-  }
-  return count;
+  const auto& browsers = BrowserList::GetInstance()->browsers();
+  return std::count_if(browsers.begin(), browsers.end(),
+                       [this](BrowserImpl* b) { return b->profile() == this; });
 }
 
 }  // namespace weblayer

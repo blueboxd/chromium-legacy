@@ -152,16 +152,13 @@ class TestScreen : public display::ScreenBase {
 // Returns the list of rectangles which describe |window|'s bounding region via
 // the X shape extension.
 std::vector<gfx::Rect> GetShapeRects(x11::Window window) {
-  int dummy;
-  int shape_rects_size;
-  gfx::XScopedPtr<XRectangle[]> shape_rects(
-      XShapeGetRectangles(gfx::GetXDisplay(), static_cast<uint32_t>(window),
-                          ShapeBounding, &shape_rects_size, &dummy));
-
   std::vector<gfx::Rect> shape_vector;
-  for (int i = 0; i < shape_rects_size; ++i) {
-    const XRectangle& rect = shape_rects[i];
-    shape_vector.emplace_back(rect.x, rect.y, rect.width, rect.height);
+  if (auto shape = x11::Connection::Get()
+                       ->shape()
+                       .GetRectangles({window, x11::Shape::Sk::Bounding})
+                       .Sync()) {
+    for (const auto& rect : shape->rectangles)
+      shape_vector.emplace_back(rect.x, rect.y, rect.width, rect.height);
   }
   return shape_vector;
 }

@@ -69,6 +69,7 @@ export const DeviceReportingType = {
   STATISTIC: 'device statistics',
   DEVICE: 'device',
   CRASH_REPORT: 'crash report',
+  APP_INFO_AND_ACTIVITY: 'app info and activity',
   LOGS: 'logs',
   PRINT: 'print',
   CROSTINI: 'crostini',

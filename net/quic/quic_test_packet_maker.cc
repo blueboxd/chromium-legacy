@@ -91,6 +91,10 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
         frame.new_token_frame =
             new quic::QuicNewTokenFrame(*frame.new_token_frame);
         break;
+      case quic::ACK_FREQUENCY_FRAME:
+        frame.ack_frequency_frame =
+            new quic::QuicAckFrequencyFrame(*frame.ack_frequency_frame);
+        break;
 
       case quic::NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot clone frame type: " << frame.type;
@@ -383,9 +387,7 @@ QuicTestPacketMaker::MakeRstAckAndConnectionClosePacket(
     const std::string& quic_error_details) {
   InitializeHeader(num, include_version);
 
-  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
     AddQuicAckFrame(largest_received, smallest_received);
-  }
 
   AddQuicRstStreamFrame(stream_id, error_code);
 
@@ -459,9 +461,7 @@ QuicTestPacketMaker::MakeDataRstAckAndConnectionClosePacket(
     const std::string& quic_error_details) {
   InitializeHeader(num, include_version);
 
-  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
     AddQuicAckFrame(largest_received, smallest_received);
-  }
 
   AddQuicStreamFrame(data_stream_id, /* fin = */ false, data);
   AddQuicRstStreamFrame(rst_stream_id, error_code);

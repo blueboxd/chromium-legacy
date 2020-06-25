@@ -128,6 +128,7 @@ TEST_F(SerialChooserContextTest, GrantAndRevokePersistentPermission) {
 
   auto port = device::mojom::SerialPortInfo::New();
   port->token = base::UnguessableToken::Create();
+  port->display_name = "Persistent Port";
   port->persistent_id = "ABC123";
 
   EXPECT_FALSE(context()->HasPortPermission(origin, origin, *port));
@@ -203,12 +204,52 @@ TEST_F(SerialChooserContextTest, EphemeralPermissionRevokedOnDisconnect) {
   EXPECT_EQ(0u, objects.size());
 }
 
+TEST_F(SerialChooserContextTest, PersistenceRequiresDisplayName) {
+  const auto origin = url::Origin::Create(GURL("https://google.com"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  // port->display_name is left unset.
+  port->persistent_id = "ABC123";
+  port_manager().AddPort(port.Clone());
+
+  context()->GrantPortPermission(origin, origin, *port);
+  EXPECT_TRUE(context()->HasPortPermission(origin, origin, *port));
+
+  EXPECT_CALL(permission_observer(),
+              OnChooserObjectPermissionChanged(
+                  ContentSettingsType::SERIAL_GUARD,
+                  ContentSettingsType::SERIAL_CHOOSER_DATA));
+  EXPECT_CALL(permission_observer(), OnPermissionRevoked(origin, origin));
+
+  // Without a display name a persistent permission cannot be recorded and so
+  // removing the device will revoke permission.
+  port_manager().RemovePort(port->token);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(port_observer(), OnPortRemoved(testing::_))
+        .WillOnce(
+            testing::Invoke([&](const device::mojom::SerialPortInfo& info) {
+              EXPECT_EQ(port->token, info.token);
+              EXPECT_TRUE(context()->HasPortPermission(origin, origin, info));
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+  EXPECT_FALSE(context()->HasPortPermission(origin, origin, *port));
+  auto origin_objects = context()->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(0u, origin_objects.size());
+  auto objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(0u, objects.size());
+}
+
 TEST_F(SerialChooserContextTest, PersistentPermissionNotRevokedOnDisconnect) {
   const auto origin = url::Origin::Create(GURL("https://google.com"));
   const char persistent_id[] = "ABC123";
 
   auto port = device::mojom::SerialPortInfo::New();
   port->token = base::UnguessableToken::Create();
+  port->display_name = "Persistent Port";
   port->persistent_id = persistent_id;
   port_manager().AddPort(port.Clone());
 

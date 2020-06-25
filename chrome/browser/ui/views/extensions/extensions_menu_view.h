@@ -35,7 +35,8 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
  public:
   ExtensionsMenuView(views::View* anchor_view,
                      Browser* browser,
-                     ExtensionsContainer* extensions_container);
+                     ExtensionsContainer* extensions_container,
+                     bool allow_pinning);
   ~ExtensionsMenuView() override;
 
   // Displays the ExtensionsMenu under |anchor_view|, attached to |browser|, and
@@ -43,7 +44,8 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // Only one menu is allowed to be shown at a time (outside of tests).
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    Browser* browser,
-                                   ExtensionsContainer* extensions_container);
+                                   ExtensionsContainer* extensions_container,
+                                   bool allow_pinning);
 
   // Returns true if there is currently an ExtensionsMenuView showing (across
   // all browsers and profiles).
@@ -172,6 +174,7 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
 
   Browser* const browser_;
   ExtensionsContainer* const extensions_container_;
+  bool allow_pinning_;
   ToolbarActionsModel* const toolbar_model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       toolbar_model_observer_;

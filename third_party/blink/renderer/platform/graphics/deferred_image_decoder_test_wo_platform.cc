@@ -112,7 +112,7 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
 
     // Truncated signature (only 1 byte).  Decoder instantiation should fail.
     scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create<size_t>(data, 1u);
-    EXPECT_FALSE(ImageDecoder::HasSufficientDataToSniffImageType(*buffer));
+    EXPECT_FALSE(ImageDecoder::HasSufficientDataToSniffMimeType(*buffer));
     EXPECT_EQ(nullptr, DeferredImageDecoder::Create(
                            buffer, false, ImageDecoder::kAlphaPremultiplied,
                            ColorBehavior::Ignore()));
@@ -120,7 +120,7 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
     // Append the rest of the data.  We should be able to sniff the signature
     // now, even if segmented.
     buffer->Append<size_t>(data + 1, contiguous.size() - 1);
-    EXPECT_TRUE(ImageDecoder::HasSufficientDataToSniffImageType(*buffer));
+    EXPECT_TRUE(ImageDecoder::HasSufficientDataToSniffMimeType(*buffer));
     std::unique_ptr<DeferredImageDecoder> decoder =
         DeferredImageDecoder::Create(buffer, false,
                                      ImageDecoder::kAlphaPremultiplied,

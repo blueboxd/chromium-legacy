@@ -42,6 +42,7 @@
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/search/ntp_features.h"
@@ -1471,8 +1472,6 @@ const FeatureEntry::FeatureParam kHomepagePromoCardCompact[] = {
     {"promo-card-variation", "Compact"}};
 const FeatureEntry::FeatureParam kHomepagePromoCardSlim[] = {
     {"promo-card-variation", "Slim"}};
-const FeatureEntry::FeatureParam kHomepagePromoCardSupressing[] = {
-    {"suppressing_sign_in_promo", "SuppressingSignInPromo"}};
 
 const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Large", kHomepagePromoCardLarge, base::size(kHomepagePromoCardLarge),
@@ -1480,9 +1479,7 @@ const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Compact", kHomepagePromoCardCompact,
      base::size(kHomepagePromoCardCompact), nullptr},
     {"Slim", kHomepagePromoCardSlim, base::size(kHomepagePromoCardSlim),
-     nullptr},
-    {"Compact_SuppressingSignInPromo", kHomepagePromoCardSupressing,
-     base::size(kHomepagePromoCardSupressing), nullptr}};
+     nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -2714,6 +2711,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIsolatePrerenders,
                                     kIsolatedPrerenderFeatureWithPrefetchLimit,
                                     "Prefetch Limit")},
+    {"enable-google-srp-isolated-prerender-nsp",
+     flag_descriptions::kEnableSRPIsolatedPrerendersNSPName,
+     flag_descriptions::kEnableSRPIsolatedPrerendersNSPDescription, kOsAll,
+     SINGLE_VALUE_TYPE(kIsolatedPrerenderEnableNSPCmdLineFlag)},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
@@ -4691,6 +4692,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMDRoundedCornersOnDialogsName,
      flag_descriptions::kEnableMDRoundedCornersOnDialogsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(views::features::kEnableMDRoundedCornersOnDialogs)},
+
+    {"enable-new-badge-on-menu-items",
+     flag_descriptions::kEnableNewBadgeOnMenuItemsName,
+     flag_descriptions::kEnableNewBadgeOnMenuItemsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(views::features::kEnableNewBadgeOnMenuItems)},
 #endif  // defined(TOOLKIT_VIEWS)
 
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,

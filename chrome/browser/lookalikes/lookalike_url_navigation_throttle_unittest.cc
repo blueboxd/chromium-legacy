@@ -90,11 +90,10 @@ TEST_F(LookalikeThrottleTest, SpoofsBlocked) {
   const struct TestCase {
     const char* hostname;
     bool expected_blocked;
-  } kTestCases[] = {
-      {"private.hostname", false},
-      {"example·com.com", true},
-      {"🍕.com", true},
-  };
+  } kTestCases[] = {{"private.hostname", false},
+                    {"example·com.com", true},
+                    {"🍕.com", true},
+                    {"þook.com", true}};
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(

@@ -98,3 +98,8 @@
   public int getMinApkVersion();
   public boolean requiresSignIn();
 }
+
+# Protobuf java lite runtime uses reflection
+-keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+  <fields>;
+}

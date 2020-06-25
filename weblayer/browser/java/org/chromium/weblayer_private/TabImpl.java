@@ -60,6 +60,7 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.IWebMessageCallbackClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.ScrollNotificationType;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
@@ -178,6 +179,21 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
             if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
                 try {
                     mClient.onBackgroundColorChanged(color);
+                } catch (RemoteException e) {
+                    throw new APICallException(e);
+                }
+            }
+        }
+
+        @Override
+        protected void onVerticalScrollDirectionChanged(
+                boolean directionUp, float currentScrollRatio) {
+            if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
+                try {
+                    mClient.onScrollNotification(directionUp
+                                    ? ScrollNotificationType.DIRECTION_CHANGED_UP
+                                    : ScrollNotificationType.DIRECTION_CHANGED_DOWN,
+                            currentScrollRatio);
                 } catch (RemoteException e) {
                     throw new APICallException(e);
                 }

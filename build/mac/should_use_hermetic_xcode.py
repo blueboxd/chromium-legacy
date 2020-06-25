@@ -16,6 +16,7 @@ Usage:
 
 from __future__ import print_function
 
+import argparse
 import os
 import sys
 
@@ -31,12 +32,20 @@ def _IsCorpMachine():
 
 
 def main():
+  parser = argparse.ArgumentParser(description='Download hermetic Xcode.')
+  parser.add_argument('platform')
+  parser.add_argument('--xcode-version',
+                      choices=('default', '12-beta'),
+                      default='default')
+  args = parser.parse_args()
+
   force_toolchain = os.environ.get('FORCE_MAC_TOOLCHAIN')
-  if force_toolchain and sys.argv[1] == 'ios':
+  if force_toolchain and args.platform == 'ios':
     return "3"
-  allow_corp = sys.argv[1] == 'mac' and _IsCorpMachine()
+  allow_corp = args.platform == 'mac' and _IsCorpMachine()
   if force_toolchain or allow_corp:
-    if not mac_toolchain.PlatformMeetsHermeticXcodeRequirements():
+    if not mac_toolchain.PlatformMeetsHermeticXcodeRequirements(
+        args.xcode_version):
       return "2"
     return "1"
   else:

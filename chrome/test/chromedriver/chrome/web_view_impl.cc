@@ -851,6 +851,28 @@ Status WebViewImpl::CaptureScreenshot(
   return Status(kOk);
 }
 
+Status WebViewImpl::PrintToPDF(const base::DictionaryValue& params,
+                               std::string* pdf) {
+  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=3517
+  if (!browser_info_->is_headless) {
+    return Status(kUnknownError,
+                  "PrintToPDF is only supported in headless mode");
+  }
+  std::unique_ptr<base::DictionaryValue> result;
+  Timeout timeout(base::TimeDelta::FromSeconds(10));
+  Status status = client_->SendCommandAndGetResultWithTimeout(
+      "Page.printToPDF", params, &timeout, &result);
+  if (status.IsError()) {
+    if (status.code() == kUnknownError) {
+      return Status(kInvalidArgument, status);
+    }
+    return status;
+  }
+  if (!result->GetString("data", pdf))
+    return Status(kUnknownError, "expected string 'data' in response");
+  return Status(kOk);
+}
+
 Status WebViewImpl::SetFileInputFiles(const std::string& frame,
                                       const base::DictionaryValue& element,
                                       const std::vector<base::FilePath>& files,

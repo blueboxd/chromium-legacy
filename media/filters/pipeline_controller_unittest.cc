@@ -548,4 +548,13 @@ TEST_F(PipelineControllerTest, ResumePlaybackDuringSwitchingTracksState) {
       PipelineController::State::SUSPENDED);
 }
 
+TEST_F(PipelineControllerTest, PreservesPitch) {
+  Complete(StartPipeline());
+  EXPECT_CALL(*pipeline_, SetPreservesPitch(false));
+  pipeline_controller_.SetPreservesPitch(false);
+
+  EXPECT_CALL(*pipeline_, SetPreservesPitch(true));
+  pipeline_controller_.SetPreservesPitch(true);
+}
+
 }  // namespace media

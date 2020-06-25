@@ -104,6 +104,15 @@ bool ExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
   return false;
 }
 
+base::FilePath ExtensionsBrowserClient::GetSaveFilePath(
+    content::BrowserContext* context) {
+  return base::FilePath();
+}
+
+void ExtensionsBrowserClient::SetLastSaveFilePath(
+    content::BrowserContext* context,
+    const base::FilePath& path) {}
+
 const MediaRouterExtensionAccessLogger*
 ExtensionsBrowserClient::GetMediaRouterAccessLogger() const {
   return nullptr;

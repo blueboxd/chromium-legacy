@@ -5,6 +5,8 @@
 #include "ui/base/idle/screensaver_window_finder_x11.h"
 
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/screensaver.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
@@ -14,16 +16,16 @@ namespace ui {
 ScreensaverWindowFinder::ScreensaverWindowFinder() : exists_(false) {}
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
-  XScreenSaverInfo info;
-  XDisplay* display = gfx::GetXDisplay();
-  x11::Window root = ui::GetX11RootWindow();
-  static int xss_event_base;
-  static int xss_error_base;
-  static bool have_xss =
-      XScreenSaverQueryExtension(display, &xss_event_base, &xss_error_base);
-  if (have_xss &&
-      XScreenSaverQueryInfo(display, static_cast<uint32_t>(root), &info) &&
-      info.state == ScreenSaverOn) {
+  auto* connection = x11::Connection::Get();
+
+  // Let the server know the client version before making any requests.
+  connection->screensaver().QueryVersion(
+      {x11::ScreenSaver::major_version, x11::ScreenSaver::minor_version});
+
+  auto reply =
+      connection->screensaver().QueryInfo({connection->default_root()}).Sync();
+  if (reply && static_cast<x11::ScreenSaver::State>(reply->state) ==
+                   x11::ScreenSaver::State::On) {
     return true;
   }
 
@@ -33,7 +35,8 @@ bool ScreensaverWindowFinder::ScreensaverWindowExists() {
   // for xscreensaver.
   x11::Atom lock_atom = gfx::GetAtom("LOCK");
   std::vector<int> atom_properties;
-  if (GetIntArrayProperty(root, "_SCREENSAVER_STATUS", &atom_properties) &&
+  if (GetIntArrayProperty(GetX11RootWindow(), "_SCREENSAVER_STATUS",
+                          &atom_properties) &&
       atom_properties.size() > 0) {
     if (atom_properties[0] == static_cast<int>(lock_atom)) {
       return true;

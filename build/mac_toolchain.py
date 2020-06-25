@@ -19,6 +19,7 @@ the full revision, e.g. 9A235.
 
 from __future__ import print_function
 
+import argparse
 import os
 import pkg_resources
 import platform
@@ -27,16 +28,24 @@ import shutil
 import subprocess
 import sys
 
-
-# This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
-# 11B53). To build this package, see comments in build/xcode_binaries.yaml
+# To build these packages, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
-MAC_BINARIES_TAG = 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC'
+MAC_BINARIES_TAG = {
+    # This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
+    # 11B53).
+    'default': 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC',
+    # This contains binaries from Xcode (Universal) 12 beta, along with the
+    # 11 SDK (aka 12A8158a).
+    '12-beta': '_tvvMQXaruqACKkcaZmqHR_7S-S2pHrXgcjTWfbI1qoC',
+}
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
 # 17 is the major version number for macOS 10.13.
 # 9E145 (Xcode 9.3) only runs on 10.13.2 and newer.
-MAC_MINIMUM_OS_VERSION = 17
+MAC_MINIMUM_OS_VERSION = {
+    'default': [17],  # macOS 10.13+
+    '12-beta': [19, 4],  # macOS 10.15.4+
+}
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLCHAIN_ROOT = os.path.join(BASE_DIR, 'mac_files')
@@ -49,9 +58,11 @@ TOOLCHAIN_BUILD_DIR = os.path.join(TOOLCHAIN_ROOT, 'Xcode.app')
 # Note the trailing \n!
 PARANOID_MODE = '$ParanoidMode CheckIntegrity\n'
 
-def PlatformMeetsHermeticXcodeRequirements():
-  major_version = int(platform.release().split('.')[0])
-  return major_version >= MAC_MINIMUM_OS_VERSION
+
+def PlatformMeetsHermeticXcodeRequirements(version):
+  needed = MAC_MINIMUM_OS_VERSION[version]
+  major_version = map(int, platform.release().split('.')[:len(needed)])
+  return major_version >= needed
 
 
 def _UseHermeticToolchain():
@@ -90,7 +101,7 @@ def PrintError(message):
   sys.stderr.flush()
 
 
-def InstallXcodeBinaries():
+def InstallXcodeBinaries(version):
   """Installs the Xcode binaries needed to build Chrome and accepts the license.
 
   This is the replacement for InstallXcode that installs a trimmed down version
@@ -110,8 +121,8 @@ def InstallXcodeBinaries():
   p = subprocess.Popen(
       args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
-  stdout, stderr = p.communicate(
-      input=PARANOID_MODE + MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
+  stdout, stderr = p.communicate(input=PARANOID_MODE + MAC_BINARIES_LABEL +
+                                 ' ' + MAC_BINARIES_TAG[version])
   if p.returncode != 0:
     print(stdout)
     print(stderr)
@@ -173,20 +184,17 @@ def main():
     print('Skipping Mac toolchain installation for mac')
     return 0
 
-  if not PlatformMeetsHermeticXcodeRequirements():
+  parser = argparse.ArgumentParser(description='Download hermetic Xcode.')
+  parser.add_argument('--xcode-version',
+                      choices=('default', '12-beta'),
+                      default='default')
+  args = parser.parse_args()
+
+  if not PlatformMeetsHermeticXcodeRequirements(args.xcode_version):
     print('OS version does not support toolchain.')
     return 0
 
-  # Delete obsolete hermetic full Xcode folder, the build now uses
-  # build/mac_files/xcode_binaries instead.
-  if os.path.exists(TOOLCHAIN_BUILD_DIR):
-    # TODO(thakis): Remove this after it's been here for a few months.
-    print('Deleting obsolete build/mac_files/Xcode.app...', end='')
-    sys.stdout.flush()
-    shutil.rmtree(TOOLCHAIN_BUILD_DIR)
-    print('done')
-
-  return InstallXcodeBinaries()
+  return InstallXcodeBinaries(args.xcode_version)
 
 
 if __name__ == '__main__':

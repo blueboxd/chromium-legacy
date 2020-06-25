@@ -4,6 +4,7 @@
 
 #include "printing/backend/cups_helper.h"
 
+#include "build/build_config.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
@@ -374,7 +375,13 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
   VerifyCapabilityColorModels(caps);
 }
 
-TEST(PrintBackendCupsHelperTest, TestPpdParsingEpsonPrinters) {
+// TODO(crbug.com/1081705): Epson "Ink" attribute bloats prints on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_TestPpdParsingEpsonPrinters DISABLED_TestPpdParsingEpsonPrinters
+#else
+#define MAYBE_TestPpdParsingEpsonPrinters TestPpdParsingEpsonPrinters
+#endif
+TEST(PrintBackendCupsHelperTest, MAYBE_TestPpdParsingEpsonPrinters) {
   constexpr char kTestPpdData[] =
       R"(*PPD-Adobe: "4.3"
 *ColorDevice: True

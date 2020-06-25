@@ -5,7 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [ "network_health.mojom" ]
+  sources = [
+    "network_diagnostics.mojom",
+    "network_health.mojom",
+  ]
 
   public_deps = [
     "//chromeos/services/network_config/public/mojom:network_types",

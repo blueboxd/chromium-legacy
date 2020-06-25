@@ -32,7 +32,8 @@ class ExtensionsMenuItemView : public views::View,
 
   ExtensionsMenuItemView(
       Browser* browser,
-      std::unique_ptr<ToolbarActionViewController> controller);
+      std::unique_ptr<ToolbarActionViewController> controller,
+      bool allow_pinning);
   ~ExtensionsMenuItemView() override;
 
   // views::ButtonListener:

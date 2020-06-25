@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
@@ -2449,6 +2450,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     static_cast<chromeos::FakeCrosDisksClient*>(
         dbus_thread_manager->GetCrosDisksClient())
         ->BlockMount();
+    return;
+  }
+
+  if (name == "setLastDownloadDir") {
+    base::FilePath downloads_path(util::GetDownloadsMountPointName(profile()));
+    downloads_path = downloads_path.AppendASCII("Downloads");
+    auto* download_prefs = DownloadPrefs::FromBrowserContext(profile());
+    download_prefs->SetSaveFilePath(downloads_path);
     return;
   }
 

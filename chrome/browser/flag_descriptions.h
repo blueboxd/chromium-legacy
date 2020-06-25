@@ -524,6 +524,9 @@ extern const char kEnableSRPIsolatedPrerendersDescription[];
 extern const char kEnableSRPIsolatedPrerenderProbingName[];
 extern const char kEnableSRPIsolatedPrerenderProbingDescription[];
 
+extern const char kEnableSRPIsolatedPrerendersNSPName[];
+extern const char kEnableSRPIsolatedPrerendersNSPDescription[];
+
 extern const char kEnableResamplingInputEventsName[];
 extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
@@ -2116,9 +2119,6 @@ extern const char kEnableQuickAnswersRichUiDescription[];
 extern const char kEnableQuickAnswersTextAnnotatorName[];
 extern const char kEnableQuickAnswersTextAnnotatorDescription[];
 
-extern const char kEnableVideoPlayerNativeControlsName[];
-extern const char kEnableVideoPlayerNativeControlsDescription[];
-
 extern const char kTerminalSystemAppName[];
 extern const char kTerminalSystemAppDescription[];
 
@@ -2373,6 +2373,9 @@ extern const char kTextfieldFocusOnTapUpDescription[];
 
 extern const char kReopenTabInProductHelpName[];
 extern const char kReopenTabInProductHelpDescription[];
+
+extern const char kEnableNewBadgeOnMenuItemsName[];
+extern const char kEnableNewBadgeOnMenuItemsDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS)
 

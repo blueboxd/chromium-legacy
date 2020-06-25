@@ -10,11 +10,13 @@ serial_test(async (t, fake) => {
   // Select a buffer size larger than the amount of data transferred.
   await port.open({ baudrate: 9600, buffersize: 64 });
 
-  fakePort.write(new TextEncoder().encode("Hello world!"));
-
   const decoder = new TextDecoderStream();
   const streamClosed = port.readable.pipeTo(decoder.writable);
   const reader = decoder.readable.getReader();
+
+  await fakePort.writable();
+  fakePort.write(new TextEncoder().encode("Hello world!"));
+
   const { value, done } = await reader.read();
   assert_false(done);
   assert_equals("Hello world!", value);

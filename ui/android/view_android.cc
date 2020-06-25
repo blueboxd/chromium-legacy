@@ -464,6 +464,16 @@ void ViewAndroid::OnBrowserControlsHeightChanged() {
   }
 }
 
+void ViewAndroid::OnVerticalScrollDirectionChanged(bool direction_up,
+                                                   float current_scroll_ratio) {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ViewAndroidDelegate_onVerticalScrollDirectionChanged(
+      env, delegate, direction_up, current_scroll_ratio);
+}
+
 void ViewAndroid::OnSizeChanged(int width, int height) {
   // Match-parent view must not receive size events.
   DCHECK(!match_parent());

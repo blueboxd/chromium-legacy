@@ -77,9 +77,9 @@ def _FinalizeLog(log_entry, build_ids_files):
 
 
 def IsEnabled():
-
   """Returns True if the RunnerLogManager has been created, or False if not."""
-  return _instance is not None
+
+  return _instance is not None and _instance._log_dir is not None
 
 
 def FileStreamFor(name, symbolize=False):
@@ -92,5 +92,5 @@ def FileStreamFor(name, symbolize=False):
 
   Returns an opened log file object."""
 
-  return _instance._FileStreamFor(name, symbolize) if _instance else open(
+  return _instance._FileStreamFor(name, symbolize) if IsEnabled() else open(
       os.devnull, 'w')

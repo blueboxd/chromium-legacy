@@ -2168,10 +2168,8 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     }
   }
 
-  FinishFragmentation(Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
-                      space_left, &container_builder_);
-
-  return true;
+  return FinishFragmentation(Node(), ConstraintSpace(), BreakToken(),
+                             BorderPadding(), space_left, &container_builder_);
 }
 
 NGBreakStatus NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(

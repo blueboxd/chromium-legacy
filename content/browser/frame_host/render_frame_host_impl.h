@@ -412,8 +412,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // We shouldn't be calling this for a speculative RenderFrameHost as we don't
   // want to support disallowing activation before the document became active
   // for the first time. In that case |IsInactiveAndDisallowReactivation()|
-  // returns false along with logging a DumpWithoutCrashing to understand the
-  // root cause.
+  // returns false along with terminating the renderer process.
   bool IsInactiveAndDisallowReactivation();
 
   void EvictFromBackForwardCacheWithReason(
@@ -536,9 +535,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by Navigator::DidNavigate as a helper, in the
-  // midst of a DidCommitProvisionalLoad call.
+  // midst of a DidCommitProvisionalLoad call. If |did_create_new_document| is
+  // true the navigation was not same-document and was not served from the
+  // back-forward cache.
   void DidNavigate(const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-                   bool is_same_document_navigation);
+                   bool is_same_document_navigation,
+                   bool did_create_new_document);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_.get(); }
   RenderFrameHostDelegate* delegate() { return delegate_; }
@@ -1441,10 +1443,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_committed_any_navigation() const {
     return has_committed_any_navigation_;
   }
-
-  // Sets the embedding token corresponding to the document in this
-  // RenderFrameHost.
-  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
 
   // Return true if the process this RenderFrameHost is using has crashed and we
   // are replacing RenderFrameHosts for crashed frames rather than reusing them.
@@ -2390,6 +2388,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(https://crbug.com/1041376) Remove this when we are confident the value
   // computed from the browser is always matching.
   void CheckSandboxFlags();
+
+  // Sets the embedding token corresponding to the document in this
+  // RenderFrameHost.
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

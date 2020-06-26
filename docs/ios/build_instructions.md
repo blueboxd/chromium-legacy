@@ -73,15 +73,11 @@ development and testing purposes.
 Since the iOS build is a bit more complicated than a desktop build, we provide
 `ios/build/tools/setup-gn.py`, which will create four appropriately configured
 build directories under `out` for Release and Debug device and simulator
-builds, and generates an appropriate Xcode workspace
-(`out/build/all.xcworkspace`) as well.
+builds, and generates an appropriate Xcode project (`out/build/all.xcodeproj`)
+as well.
 
-Warning: *do not open `out/build/products.xcodeproj` as this file does not
-configure the "Legacy Build System". If you do open this file, many things
-won't work properly (clicking on an error won't open the corresponding file,
-...).*
-
-More information about [developing with Xcode](xcode_tips.md).
+More information about [developing with Xcode](xcode_tips.md). *Xcode project
+is an artifact, any changes made in the project itself will be ignored.*
 
 You can customize the build by editing the file `$HOME/.setup-gn` (create it if
 it does not exist).  Look at `src/ios/build/tools/setup-gn.config` for

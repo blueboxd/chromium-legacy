@@ -2677,6 +2677,8 @@ enum WebFeature {
   kV8Window_ShowSaveFilePicker_Method = 3341,
   kV8Window_ShowDirectoryPicker_Method = 3342,
   kV8Window_GetOriginPrivateDirectory_Method = 3343,
+  kRTCConstraintEnableRtpDataChannelsTrue = 3344,
+  kRTCConstraintEnableRtpDataChannelsFalse = 3345,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

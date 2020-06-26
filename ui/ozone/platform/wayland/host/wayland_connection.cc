@@ -140,6 +140,12 @@ bool WaylandConnection::IsDragInProgress() const {
                                       WaylandDataDragController::State::kIdle;
 }
 
+wl::Object<wl_surface> WaylandConnection::CreateSurface() {
+  DCHECK(compositor_);
+  return wl::Object<wl_surface>(
+      wl_compositor_create_surface(compositor_.get()));
+}
+
 void WaylandConnection::Flush() {
   wl_display_flush(display_.get());
   scheduled_flush_ = false;

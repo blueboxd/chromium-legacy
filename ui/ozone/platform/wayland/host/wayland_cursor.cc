@@ -19,13 +19,9 @@ namespace ui {
 
 WaylandCursor::WaylandCursor(WaylandPointer* pointer,
                              WaylandConnection* connection)
-    : pointer_(pointer), connection_(connection) {
-  DCHECK(connection);
-  DCHECK(connection->compositor());
-
-  pointer_surface_.reset(
-      wl_compositor_create_surface(connection->compositor()));
-}
+    : pointer_(pointer),
+      connection_(connection),
+      pointer_surface_(connection->CreateSurface()) {}
 
 WaylandCursor::~WaylandCursor() = default;
 

@@ -5,22 +5,26 @@
 #include "chrome/test/payments/android/payment_request_test_bridge.h"
 
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/no_destructor.h"
 #include "chrome/test/test_support_jni_headers/PaymentRequestTestBridge_jni.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
 
-void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
-                                              bool is_incognito,
-                                              bool is_valid_ssl,
-                                              bool is_web_contents_active,
-                                              bool prefs_can_make_payment,
-                                              bool skip_ui_for_basic_card) {
+void SetUseDelegateOnPaymentRequestForTesting(
+    bool use_delegate,
+    bool is_incognito,
+    bool is_valid_ssl,
+    bool is_web_contents_active,
+    bool prefs_can_make_payment,
+    bool skip_ui_for_basic_card,
+    const std::string& twa_package_name) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PaymentRequestTestBridge_setUseDelegateForTest(
       env, use_delegate, is_incognito, is_valid_ssl, is_web_contents_active,
-      prefs_can_make_payment, skip_ui_for_basic_card);
+      prefs_can_make_payment, skip_ui_for_basic_card,
+      base::android::ConvertUTF8ToJavaString(env, twa_package_name));
 }
 
 content::WebContents* GetPaymentHandlerWebContentsForTest() {

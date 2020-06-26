@@ -393,11 +393,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
         version_code = trichrome_version_code
       } else if (_is_monochrome) {
         version_code = monochrome_version_code
-      } else if (_is_modern) {
-        version_code = chrome_modern_version_code
       } else {
-        # For chrome without the modern design, used on pre-L devices
-        version_code = chrome_version_code
+        version_code = chrome_modern_version_code
       }
     }
   }

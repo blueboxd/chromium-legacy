@@ -1170,9 +1170,69 @@ class GoogleMapsStory2019(_BrowsingStory):
 ##############################################################################
 # Gmail browsing stories.
 ##############################################################################
+class _GmailBrowsingStory(system_health_story.SystemHealthStory):
+  """Abstract base class for Gmail browsing stories.
+
+  Adds common functionality for re-mapping + waiting on performance
+  mark + measure data.
+  """
+
+  # Patch performance.mark and measure to get notified about page events.
+  PERFOMANCE_MARK_AND_MEASURE = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported_events = window.__telemetry_reported_page_events;
+      let reported_measures = window.__telemetry_reported_page_measures;
+
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      let performance_measure = window.performance.measure;
+
+      window.performance.measure = function(label, mark) {
+        performance_measure.call(window.performance, label, mark);
+        if(reported_measures.hasOwnProperty(label)) {
+          performance_mark.call(window.performance, reported_measures[label]);
+          observed.add(reported_measures[label]);
+        }
+      }
+
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported_events.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported_events[label]);
+          observed.add(reported_events[label]);
+        }
+      }
+    })();
+  '''
+
+  def __init__(self, story_set, take_memory_measurement,
+               events_and_measures_reported):
+    super(_GmailBrowsingStory, self).__init__(story_set,
+                                              take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_and_measures_reported_by_page}}
+        {{@performance_mark_and_measure}}''',
+        events_and_measures_reported_by_page=events_and_measures_reported,
+        performance_mark_and_measure=self.PERFOMANCE_MARK_AND_MEASURE)
+
+  def _Login(self, action_runner):
+    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+
+    # Navigating to http://mail.google.com immediately leads to an infinite
+    # redirection loop due to a bug in WPR (see
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1036791). We
+    # therefore first navigate to a dummy sub-URL to set up the session and
+    # hit the resulting redirection loop. Afterwards, we can safely navigate
+    # to http://mail.google.com.
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    action_runner.Navigate(
+        'https://mail.google.com/mail/mu/mp/872/trigger_redirection_loop')
+    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
 
 
-class GmailLabelClickStory2020(system_health_story.SystemHealthStory):
+class GmailLabelClickStory2020(_GmailBrowsingStory):
   NAME = 'browse:tools:gmail-labelclick:2020'
   # Needs to be http and not https.
   URL = 'http://mail.google.com/'
@@ -1206,59 +1266,10 @@ class GmailLabelClickStory2020(system_health_story.SystemHealthStory):
     };
   '''
 
-  # Patch performance.mark and measure to get notified about page events.
-  PERFOMANCE_MARK_AND_MEASURE = '''
-    window.__telemetry_observed_page_events = new Set();
-    (function () {
-      let reported_events = window.__telemetry_reported_page_events;
-      let reported_measures = window.__telemetry_reported_page_measures;
-
-      let observed = window.__telemetry_observed_page_events;
-      let performance_mark = window.performance.mark;
-      let performance_measure = window.performance.measure;
-
-      window.performance.measure = function(label, mark) {
-        performance_measure.call(window.performance, label, mark);
-        if(reported_measures.hasOwnProperty(label)) {
-          performance_mark.call(window.performance, reported_measures[label]);
-          observed.add(reported_measures[label]);
-        }
-      }
-
-      window.performance.mark = function (label) {
-        performance_mark.call(window.performance, label);
-        if (reported_events.hasOwnProperty(label)) {
-          performance_mark.call(
-              window.performance, reported_events[label]);
-          observed.add(reported_events[label]);
-        }
-      }
-    })();
-  '''
-
   def __init__(self, story_set, take_memory_measurement):
-    super(GmailLabelClickStory2020, self).__init__(story_set,
-                                                   take_memory_measurement)
-    self.script_to_evaluate_on_commit = js_template.Render(
-        '''{{@events_and_measures_reported_by_page}}
-        {{@performance_mark_and_measure}}''',
-        events_and_measures_reported_by_page=self.
-        EVENTS_AND_MEASURES_REPORTED_BY_PAGE,
-        performance_mark_and_measure=self.PERFOMANCE_MARK_AND_MEASURE)
-
-  def _Login(self, action_runner):
-    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
-
-    # Navigating to http://mail.google.com immediately leads to an infinite
-    # redirection loop due to a bug in WPR (see
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1036791). We
-    # therefore first navigate to a dummy sub-URL to set up the session and
-    # hit the resulting redirection loop. Afterwards, we can safely navigate
-    # to http://mail.google.com.
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    action_runner.Navigate(
-        'https://mail.google.com/mail/mu/mp/872/trigger_redirection_loop')
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    super(GmailLabelClickStory2020,
+          self).__init__(story_set, take_memory_measurement,
+                         self.EVENTS_AND_MEASURES_REPORTED_BY_PAGE)
 
   def _DidLoadDocument(self, action_runner):
     action_runner.Wait(1)
@@ -1271,6 +1282,101 @@ class GmailLabelClickStory2020(system_health_story.SystemHealthStory):
     action_runner.ClickElement(selector=self._UPDATES_SELECTOR)
     action_runner.WaitForJavaScriptCondition(self.LABEL_CLICK_BEGIN_EVENT)
     action_runner.WaitForJavaScriptCondition(self.LABEL_CLICK_END_EVENT)
+
+
+class GmailOpenConversationStory2020(_GmailBrowsingStory):
+  NAME = 'browse:tools:gmail-openconversation:2020'
+  # Needs to be http and not https.
+  URL = 'http://mail.google.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2020]
+  SKIP_LOGIN = False
+
+  _CONV_SELECTOR = 'span[data-thread-id]'
+
+  # Page event queries.
+  OPEN_CONVERSATION_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  OPEN_CONVERSATION_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+
+  # These maps translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_AND_MEASURES_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'mail:o-1':
+          'telemetry:reported_by_page:benchmark_begin',
+    };
+
+    window.__telemetry_reported_page_measures = {
+      'mail:o':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GmailOpenConversationStory2020,
+          self).__init__(story_set, take_memory_measurement,
+                         self.EVENTS_AND_MEASURES_REPORTED_BY_PAGE)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._CONV_SELECTOR)
+    action_runner.WaitForJavaScriptCondition(self.OPEN_CONVERSATION_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.OPEN_CONVERSATION_END_EVENT)
+
+class GmailSearchStory2020(_GmailBrowsingStory):
+  NAME = 'browse:tools:gmail-search:2020'
+  # Needs to be http and not https.
+  URL = 'http://mail.google.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2020]
+  SKIP_LOGIN = False
+
+  _SEARCH_SELECTOR = 'input[aria-label="Search mail"]'
+
+  # Page event queries.
+  SEARCH_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  SEARCH_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+
+  # These maps translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_AND_MEASURES_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'mail:se-1':
+          'telemetry:reported_by_page:benchmark_begin',
+    };
+
+    window.__telemetry_reported_page_measures = {
+      'mail:se':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GmailSearchStory2020,
+          self).__init__(story_set, take_memory_measurement,
+                         self.EVENTS_AND_MEASURES_REPORTED_BY_PAGE)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.Wait(1)
+    action_runner.ExecuteJavaScript(
+        'document.querySelector({{ selector }}).focus()',
+        selector=self._SEARCH_SELECTOR)
+    action_runner.EnterText('deals')
+    action_runner.PressKey('Return')
+    action_runner.WaitForJavaScriptCondition(self.SEARCH_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.SEARCH_END_EVENT)
 
 ##############################################################################
 # Google sheets browsing story.

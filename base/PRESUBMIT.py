@@ -40,20 +40,18 @@ def _CheckNoTraceEventInclude(input_api, output_api):
   to maintain compatibility with the gn flag "enable_base_tracing = false".
   """
   discouraged_includes = [
-    r'^#include "base/trace_event/blame_context.h"$',
-    r'^#include "base/trace_event/memory_allocator_dump_guid.h"$',
-    r'^#include "base/trace_event/memory_dump_provider.h"$',
-    r'^#include "base/trace_event/trace_event.h"$',
-    r'^#include "base/trace_event/traced_value.h"$',
+    r'^#include "base/trace_event/(?!base_tracing\.h)',
   ]
 
   white_list = [
     r".*\.(h|cc|mm)$",
   ]
   black_list = [
+    r".*[\\/]test[\\/].*",
     r".*[\\/]trace_event[\\/].*",
     r".*[\\/]tracing[\\/].*",
   ]
+  no_presubmit = r"// no-presubmit-check"
 
   def FilterFile(affected_file):
     return input_api.FilterSourceFile(
@@ -65,16 +63,19 @@ def _CheckNoTraceEventInclude(input_api, output_api):
   for f in input_api.AffectedSourceFiles(FilterFile):
     for line_num, line in f.ChangedContents():
       for include in discouraged_includes:
-        if input_api.re.search(include, line):
+        if (input_api.re.search(include, line) and
+            not input_api.re.search(no_presubmit, line)):
           locations.append("    %s:%d" % (f.LocalPath(), line_num))
           break
 
   if locations:
-    return [ output_api.PresubmitPromptWarning(
-        'Consider replacing includes to trace_event implementation headers\n' +
-        'in //base with "base/trace_event/base_tracing.h" and/or verify\n' +
-        'that base_unittests still passes with gn arg\n' +
-        'enable_base_tracing = false.\n' + '\n'.join(locations)) ]
+    return [ output_api.PresubmitError(
+        'Base code should include "base/trace_event/base_tracing.h" instead\n' +
+        'of trace_event implementation headers. If you need to include an\n' +
+        'implementation header, verify that base_unittests still passes\n' +
+        'with gn arg "enable_base_tracing = false" and add\n' +
+        '"// no-presubmit-check" after the include. \n' +
+        '\n'.join(locations)) ]
   return []
 
 

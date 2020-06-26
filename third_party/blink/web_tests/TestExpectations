@@ -892,6 +892,10 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-001.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-002.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-at-end-container-edge-004.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
@@ -901,6 +905,9 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-000.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-001.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/tall-line-in-short-fragmentainer-002.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-002.html [ Pass ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
@@ -3599,12 +3606,19 @@ crbug.com/1034807 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
 crbug.com/829028 external/wpt/css/css-break/avoid-border-break.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-002.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/break-at-end-container-edge-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-004.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-000.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/tall-line-in-short-fragmentainer-002.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/trailing-child-margin-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/trailing-child-margin-002.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
@@ -6595,7 +6609,7 @@ crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-
 
 crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Timeout ]
 crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
-crbug.com/1091665 external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
+crbug.com/1091665 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
 # [virtual/...]external/wpt/web-animation test flakes
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Failure ]
@@ -6628,7 +6642,7 @@ crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
 
 # COOP access reporting. This needs to be implemented in chrome to pass.
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/property.https.html [ Pass Timeout Failure ]
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property.https.html [ Pass Timeout Failure ]
 
 # Sheriff 2020-04-17
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]
@@ -6859,6 +6873,7 @@ crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Time
 # Tests blocking WPT importer
 crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry.html [ Pass Crash Timeout ]
 crbug.com/1098844 external/wpt/wasm/jsapi/functions/entry-different-function-realm.html [ Pass Crash Timeout ]
+crbug.com/1099689 [ Linux ] external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-siblings.sub.html [ Pass Failure ]
 
 #Sheriff 2020-06-25
 crbug.com/1010170 media/video-played-reset.html [ Pass Failure ]

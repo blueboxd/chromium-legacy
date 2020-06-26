@@ -47,6 +47,7 @@ public class DeprecatedChromePreferenceKeys {
                 "chrome_home_opt_out_snackbar_shown",
                 "chrome_home_user_enabled",
                 "chrome_modern_design_enabled",
+                "chromium.invalidations.uuid",
                 "click_to_call_open_dialer_directly",
                 "crash_dump_upload",
                 "crash_dump_upload_no_cellular",

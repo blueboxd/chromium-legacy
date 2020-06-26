@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -124,12 +125,6 @@ class GuestOsRegistryService : public KeyedService {
         const std::vector<std::string>& removed_apps,
         const std::vector<std::string>& inserted_apps) {}
 
-    // Called when an icon has been installed for the specified app so loading
-    // of that icon should be requested again.
-    virtual void OnAppIconUpdated(const std::string& app_id,
-                                  ui::ScaleFactor scale_factor,
-                                  const std::string& compressed_icon_data) {}
-
    protected:
     virtual ~Observer() = default;
   };
@@ -156,9 +151,10 @@ class GuestOsRegistryService : public KeyedService {
   base::FilePath GetIconPath(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
 
-  // Calls RequestIcon if no request is recorded.
-  void MaybeRequestIcon(const std::string& app_id,
-                        ui::ScaleFactor scale_factor);
+  // Fetches icons from container.
+  void RequestIcon(const std::string& app_id,
+                   ui::ScaleFactor scale_factor,
+                   base::OnceCallback<void(std::string)> callback);
 
   // Remove all apps from the named VM and container. If |container_name| is an
   // empty string, this function removes all apps associated with the VM,
@@ -197,17 +193,13 @@ class GuestOsRegistryService : public KeyedService {
   // Construct path to app local data.
   base::FilePath GetAppPath(const std::string& app_id) const;
   // Called to request an icon from the container.
-  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+  void RequestContainerAppIcon(const std::string& app_id,
+                               ui::ScaleFactor scale_factor);
   // Callback for when we request an icon from the container.
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
                           bool success,
                           const std::vector<crostini::Icon>& icons);
-  // Callback for our internal call for saving out icon data.
-  void OnIconInstalled(const std::string& app_id,
-                       ui::ScaleFactor scale_factor,
-                       const std::string& compressed_icon_data,
-                       bool success);
   // Removes all the icons installed for an application.
   void RemoveAppData(const std::string& app_id);
 
@@ -232,14 +224,15 @@ class GuestOsRegistryService : public KeyedService {
   const base::Clock* clock_;
 
   // Keeps record for icon request to avoid duplication. Each app may contain
-  // several requests for different scale factor. Scale factor is defined by
+  // several requests for different scale factors. Scale factor is defined by
   // specific bit position. The |active_icon_requests_| holds icon request that
-  // are either in flight or have been completed successfully so they should not
-  // be requested again. |retry_icon_requests| holds failed requests which we
+  // are in flight. |retry_icon_requests| holds failed requests which we
   // should attempt again when we get an app list refresh from the container
   // which means there's a good chance the container is online and the request
   // will then succeed.
-  std::map<std::string, uint32_t> active_icon_requests_;
+  std::map<std::pair<std::string, ui::ScaleFactor>,
+           std::vector<base::OnceCallback<void(std::string)>>>
+      active_icon_requests_;
   std::map<std::string, uint32_t> retry_icon_requests_;
 
   base::WeakPtrFactory<GuestOsRegistryService> weak_ptr_factory_{this};

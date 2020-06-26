@@ -121,6 +121,9 @@ class WaylandConnection {
   // Returns true when dragging is entered or started.
   bool IsDragInProgress() const;
 
+  // Creates a new wl_surface.
+  wl::Object<wl_surface> CreateSurface();
+
  private:
   void Flush();
   void UpdateInputDevices(wl_seat* seat, uint32_t capabilities);

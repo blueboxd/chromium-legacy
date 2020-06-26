@@ -174,7 +174,7 @@
     [self runCompletionCallbackWithError:error];
     return;
   }
-  [self.delegate interactionManager:self
+  [_viewController
       dismissViewControllerAnimated:animated
                          completion:^{
                            [self runCompletionCallbackWithError:error];

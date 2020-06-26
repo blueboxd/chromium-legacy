@@ -109,7 +109,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
       : has_selector_(false), request_succeeded_called_(false) {}
 
   bool hasSelector() const override { return has_selector_; }
-  blink::WebMediaStreamTrack component() const override { return component_; }
+  MediaStreamComponent* component() const override { return component_; }
   scoped_refptr<LocalRTCStatsResponse> createResponse() override {
     DCHECK(!response_.get());
     response_ = new rtc::RefCountedObject<MockRTCStatsResponse>();
@@ -122,7 +122,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
   }
 
   // Function for setting whether or not a selector is available.
-  void setSelector(const blink::WebMediaStreamTrack& component) {
+  void setSelector(MediaStreamComponent* component) {
     has_selector_ = true;
     component_ = component;
   }
@@ -138,7 +138,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
 
  private:
   bool has_selector_;
-  blink::WebMediaStreamTrack component_;
+  Persistent<MediaStreamComponent> component_;
   scoped_refptr<MockRTCStatsResponse> response_;
   bool request_succeeded_called_;
 };

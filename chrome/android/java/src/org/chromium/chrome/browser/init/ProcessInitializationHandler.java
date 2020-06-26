@@ -55,7 +55,6 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.incognito.IncognitoTabLauncher;
-import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
@@ -168,11 +167,6 @@ public class ProcessInitializationHandler {
         // default AccountManagerDelegate.
         AccountManagerFacadeProvider.setInstance(
                 new AccountManagerFacadeImpl(AppHooks.get().createAccountManagerDelegate()));
-
-        // Set the unique identification generator for invalidations.  The
-        // invalidations system can start and attempt to fetch the client ID
-        // very early.  We need this generator to be ready before that happens.
-        UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(application);
 
         // Set minimum Tango log level. This sets an in-memory static field, and needs to be
         // set in the ApplicationContext instead of an activity, since Tango can be woken up

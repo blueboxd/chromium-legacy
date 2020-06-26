@@ -71,14 +71,15 @@ public class SigninUtils {
     }
 
     @CalledByNative
-    private static void openAccountPickerBottomSheet(WindowAndroid windowAndroid) {
+    private static void openAccountPickerBottomSheet(
+            WindowAndroid windowAndroid, String continueUrl) {
         ThreadUtils.assertOnUiThread();
         if (IdentityServicesProvider.get().getSigninManager().isSignInAllowed()) {
             ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
             AccountPickerBottomSheetCoordinator coordinator =
                     new AccountPickerBottomSheetCoordinator(activity,
                             activity.getBottomSheetController(),
-                            new AccountPickerDelegate(activity));
+                            new AccountPickerDelegate(activity, continueUrl));
         }
     }
 

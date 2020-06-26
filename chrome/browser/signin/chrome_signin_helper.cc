@@ -297,7 +297,10 @@ void ProcessMirrorHeader(
   if (manage_accounts_params.show_consistency_promo &&
       base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
-    SigninUtils::OpenAccountPickerBottomSheet(window);
+    SigninUtils::OpenAccountPickerBottomSheet(
+        window, manage_accounts_params.continue_url.empty()
+                    ? chrome::kChromeUINativeNewTabURL
+                    : manage_accounts_params.continue_url);
     return;
   }
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {

@@ -70,7 +70,7 @@ void PaymentRequestTestController::SetUpOnMainThread() {
   SetUseDelegateOnPaymentRequestForTesting(
       /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
-      /*skip_ui_for_basic_card=*/false);
+      /*skip_ui_for_basic_card=*/false, twa_package_name_);
 }
 
 void PaymentRequestTestController::SetObserver(
@@ -83,7 +83,7 @@ void PaymentRequestTestController::SetOffTheRecord(bool is_off_the_record) {
   SetUseDelegateOnPaymentRequestForTesting(
       /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
-      /*skip_ui_for_basic_card=*/false);
+      /*skip_ui_for_basic_card=*/false, twa_package_name_);
 }
 
 void PaymentRequestTestController::SetValidSsl(bool valid_ssl) {
@@ -91,7 +91,7 @@ void PaymentRequestTestController::SetValidSsl(bool valid_ssl) {
   SetUseDelegateOnPaymentRequestForTesting(
       /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
-      /*skip_ui_for_basic_card=*/false);
+      /*skip_ui_for_basic_card=*/false, twa_package_name_);
 }
 
 void PaymentRequestTestController::SetCanMakePaymentEnabledPref(
@@ -100,7 +100,16 @@ void PaymentRequestTestController::SetCanMakePaymentEnabledPref(
   SetUseDelegateOnPaymentRequestForTesting(
       /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
-      /*skip_ui_for_basic_card=*/false);
+      /*skip_ui_for_basic_card=*/false, twa_package_name_);
+}
+
+void PaymentRequestTestController::SetTwaPackageName(
+    const std::string& twa_package_name) {
+  twa_package_name_ = twa_package_name;
+  SetUseDelegateOnPaymentRequestForTesting(
+      /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
+      /*is_browser_window_active=*/true, can_make_payment_pref_,
+      /*skip_ui_for_basic_card=*/false, twa_package_name_);
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {

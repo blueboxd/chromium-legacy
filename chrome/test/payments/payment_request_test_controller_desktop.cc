@@ -18,19 +18,20 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace payments {
+namespace {
 
-class CanMakePaymentTestChromePaymentRequestDelegate
-    : public ChromePaymentRequestDelegate {
+class ChromePaymentRequestTestDelegate : public ChromePaymentRequestDelegate {
  public:
-  CanMakePaymentTestChromePaymentRequestDelegate(
-      content::WebContents* web_contents,
-      bool is_off_the_record,
-      bool valid_ssl,
-      PrefService* prefs)
+  ChromePaymentRequestTestDelegate(content::WebContents* web_contents,
+                                   bool is_off_the_record,
+                                   bool valid_ssl,
+                                   PrefService* prefs,
+                                   const std::string& twa_package_name)
       : ChromePaymentRequestDelegate(web_contents),
         is_off_the_record_(is_off_the_record),
         valid_ssl_(valid_ssl),
-        prefs_(prefs) {}
+        prefs_(prefs),
+        twa_package_name_(twa_package_name) {}
 
   bool IsOffTheRecord() const override { return is_off_the_record_; }
   std::string GetInvalidSslCertificateErrorMessage() override {
@@ -38,12 +39,16 @@ class CanMakePaymentTestChromePaymentRequestDelegate
   }
   PrefService* GetPrefService() override { return prefs_; }
   bool IsBrowserWindowActive() const override { return true; }
+  std::string GetTwaPackageName() const override { return twa_package_name_; }
 
  private:
   const bool is_off_the_record_;
   const bool valid_ssl_;
   PrefService* const prefs_;
+  const std::string twa_package_name_;
 };
+
+}  // namespace
 
 class PaymentRequestTestController::ObserverConverter
     : public PaymentRequest::ObserverForTest {
@@ -147,18 +152,25 @@ void PaymentRequestTestController::SetCanMakePaymentEnabledPref(
   UpdateDelegateFactory();
 }
 
+void PaymentRequestTestController::SetTwaPackageName(
+    const std::string& twa_package_name) {
+  twa_package_name_ = twa_package_name;
+  UpdateDelegateFactory();
+}
+
 void PaymentRequestTestController::UpdateDelegateFactory() {
   SetPaymentRequestFactoryForTesting(base::BindRepeating(
       [](PaymentRequest::ObserverForTest* observer_for_test,
          bool is_off_the_record, bool valid_ssl, PrefService* prefs,
+         const std::string& twa_package_name,
          mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
          content::RenderFrameHost* render_frame_host) {
         content::WebContents* web_contents =
             content::WebContents::FromRenderFrameHost(render_frame_host);
         DCHECK(web_contents);
-        auto delegate =
-            std::make_unique<CanMakePaymentTestChromePaymentRequestDelegate>(
-                web_contents, is_off_the_record, valid_ssl, prefs);
+        auto delegate = std::make_unique<ChromePaymentRequestTestDelegate>(
+            web_contents, is_off_the_record, valid_ssl, prefs,
+            twa_package_name);
         PaymentRequestWebContentsManager* manager =
             PaymentRequestWebContentsManager::GetOrCreateForWebContents(
                 web_contents);
@@ -166,7 +178,8 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
                                       std::move(delegate), std::move(receiver),
                                       observer_for_test);
       },
-      observer_converter_.get(), is_off_the_record_, valid_ssl_, prefs_.get()));
+      observer_converter_.get(), is_off_the_record_, valid_ssl_, prefs_.get(),
+      twa_package_name_));
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {

@@ -7,6 +7,7 @@ import codecs
 import datetime
 import fnmatch
 import glob
+import json
 import os
 import plistlib
 import shutil
@@ -94,6 +95,14 @@ class ProvisioningProfile(object):
   @property
   def path(self):
     return self._path
+
+  @property
+  def team_identifier(self):
+    return self._data.get('TeamIdentifier', [''])[0]
+
+  @property
+  def name(self):
+    return self._data.get('Name', '')
 
   @property
   def application_identifier_pattern(self):
@@ -511,6 +520,31 @@ class GenerateEntitlementsAction(Action):
     entitlements.WriteTo(args.path)
 
 
+class FindProvisioningProfileAction(Action):
+  """Class implementing the find-codesign-identity action."""
+
+  name = 'find-provisioning-profile'
+  help = 'find provisioning profile for use by Xcode project generator'
+
+  @staticmethod
+  def _Register(parser):
+    parser.add_argument('--bundle-id',
+                        '-b',
+                        required=True,
+                        help='bundle identifier')
+
+  @staticmethod
+  def _Execute(args):
+    provisioning_profile_info = {}
+    provisioning_profile = FindProvisioningProfile(args.bundle_id, False)
+    for key in ('team_identifier', 'name'):
+      if provisioning_profile:
+        provisioning_profile_info[key] = getattr(provisioning_profile, key)
+      else:
+        provisioning_profile_info[key] = ''
+    print(json.dumps(provisioning_profile_info))
+
+
 def Main():
   # Cache this codec so that plistlib can find it. See
   # https://crbug.com/999461#c12 for more details.
@@ -523,6 +557,7 @@ def Main():
       CodeSignBundleAction,
       CodeSignFileAction,
       GenerateEntitlementsAction,
+      FindProvisioningProfileAction,
   ]
 
   for action in actions:

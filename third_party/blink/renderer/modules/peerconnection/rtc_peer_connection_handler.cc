@@ -615,8 +615,8 @@ bool IsRemoteStream(
 }
 
 MediaStreamTrackMetrics::Kind MediaStreamTrackMetricsKind(
-    const blink::WebMediaStreamTrack& track) {
-  return track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio
+    const MediaStreamComponent* component) {
+  return component->Source()->GetType() == MediaStreamSource::kTypeAudio
              ? MediaStreamTrackMetrics::Kind::kAudio
              : MediaStreamTrackMetrics::Kind::kVideo;
 }
@@ -646,7 +646,7 @@ bool LocalRTCStatsRequest::hasSelector() const {
   return impl_->HasSelector();
 }
 
-blink::WebMediaStreamTrack LocalRTCStatsRequest::component() const {
+MediaStreamComponent* LocalRTCStatsRequest::component() const {
   return impl_->Component();
 }
 
@@ -1733,12 +1733,12 @@ void RTCPeerConnectionHandler::GetStats(
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
 RTCPeerConnectionHandler::AddTransceiverWithTrack(
-    const blink::WebMediaStreamTrack& web_track,
+    MediaStreamComponent* component,
     const webrtc::RtpTransceiverInit& init) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(web_track);
+      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(component);
   blink::TransceiverStateSurfacer transceiver_state_surfacer(
       task_runner_, signaling_thread());
   webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpTransceiverInterface>>
@@ -1836,13 +1836,13 @@ void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-RTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
+RTCPeerConnectionHandler::AddTrack(MediaStreamComponent* component,
                                    const Vector<WebMediaStream>& streams) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(track);
+      track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(component);
   std::vector<std::string> stream_ids(streams.size());
   for (WTF::wtf_size_t i = 0; i < streams.size(); ++i)
     stream_ids[i] = streams[i].Id().Utf8();
@@ -1869,8 +1869,8 @@ RTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
     return error_or_sender.MoveError();
   }
   track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kSend,
-                          MediaStreamTrackMetricsKind(track),
-                          track.Id().Utf8());
+                          MediaStreamTrackMetricsKind(component),
+                          component->Id().Utf8());
 
   auto transceiver_states = transceiver_state_surfacer.ObtainStates();
   DCHECK_EQ(transceiver_states.size(), 1u);

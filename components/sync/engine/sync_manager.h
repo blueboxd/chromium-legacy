@@ -53,7 +53,6 @@ class ProtocolEvent;
 class SyncCycleSnapshot;
 class SyncStatusObserver;
 class TypeDebugInfoObserver;
-class UnrecoverableErrorHandler;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
@@ -229,9 +228,6 @@ class SyncManager {
     // Must outlive SyncManager.
     SyncEncryptionHandler* encryption_handler;
 
-    WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    base::RepeatingClosure report_unrecoverable_error_function;
-
     // Carries shutdown requests across threads and will be used to cut short
     // any network I/O and tell the syncer to exit early.
     //
@@ -320,11 +316,6 @@ class SyncManager {
   // potentially dereference garbage.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Call periodically from a database-safe thread to persist recent changes
-  // to the syncapi model.
-  virtual void SaveChanges() = 0;
-
-  // Issue a final SaveChanges, and close sqlite handles.
   virtual void ShutdownOnSyncThread() = 0;
 
   // Returns non-owning pointer to ModelTypeConnector. In contrast with

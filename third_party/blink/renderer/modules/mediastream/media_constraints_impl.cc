@@ -367,6 +367,14 @@ static void ParseOldStyleNames(
       }
       result.enable_dtls_srtp.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableRtpDataChannels)) {
+      bool value = ToBoolean(constraint.value_);
+      if (value) {
+        UseCounter::Count(context,
+                          WebFeature::kRTCConstraintEnableRtpDataChannelsTrue);
+      } else {
+        UseCounter::Count(context,
+                          WebFeature::kRTCConstraintEnableRtpDataChannelsFalse);
+      }
       result.enable_rtp_data_channels.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kEnableDscp)) {
       result.enable_dscp.SetExact(ToBoolean(constraint.value_));

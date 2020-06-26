@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_tag.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,6 +52,8 @@ static_assert(
     std::is_trivially_default_constructible<CheckedPtr<std::string>>::value,
     "CheckedPtr should be trivially default constructible");
 
+// Don't use base::internal for testing CheckedPtr API, to test if code outside
+// this namespace calls the correct functions from this namespace.
 namespace {
 
 static int g_wrap_raw_ptr_cnt = INT_MIN;
@@ -613,23 +616,24 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+}  // namespace
 
-namespace {
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR
+
+namespace base {
+namespace internal {
 
 struct CheckedPtr2ImplPartitionAllocSupportEnabled
-    : base::internal::CheckedPtr2ImplPartitionAllocSupport {
+    : CheckedPtr2ImplPartitionAllocSupport {
   static bool EnabledForPtr(void* ptr) { return true; }
 };
 
-using CheckedPtr2ImplEnabled = base::internal::CheckedPtr2Impl<
-    CheckedPtr2ImplPartitionAllocSupportEnabled>;
-
-}  // namespace
+using CheckedPtr2ImplEnabled =
+    CheckedPtr2Impl<CheckedPtr2ImplPartitionAllocSupportEnabled>;
 
 TEST(CheckedPtr2Impl, WrapNull) {
-  ASSERT_EQ(base::internal::CheckedPtr2Impl<>::GetWrappedNullPtr(), 0u);
-  ASSERT_EQ(base::internal::CheckedPtr2Impl<>::WrapRawPtr(nullptr), 0u);
+  ASSERT_EQ(CheckedPtr2Impl<>::GetWrappedNullPtr(), 0u);
+  ASSERT_EQ(CheckedPtr2Impl<>::WrapRawPtr(nullptr), 0u);
 }
 
 TEST(CheckedPtr2Impl, SafelyUnwrapNull) {
@@ -637,23 +641,20 @@ TEST(CheckedPtr2Impl, SafelyUnwrapNull) {
 }
 
 TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
-  char bytes[] = {0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0xBA, 0x42, 0x78, 0x89};
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-  // If protection is disabled, wrap & unwrap will read at the pointer, not
-  // before it.
-  bytes[8] = bytes[6];
-  bytes[9] = bytes[7];
-#endif
-  void* ptr = bytes + sizeof(uintptr_t);
+  // Put generation 16B and 32B before the "object", so that it works on both
+  // Debug and Release builds.
+  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
+  void* ptr = bytes + 32;
+  ASSERT_EQ(0x78, *static_cast<char*>(ptr));
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
 
   uintptr_t set_top_bit = 0x0000000000000000;
   uintptr_t mask = 0xFFFFFFFFFFFFFFFF;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
   set_top_bit = 0x8000000000000000;
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-  mask = 0x0000FFFFFFFFFFFF;
-#endif
 #endif
 
   uintptr_t wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
@@ -666,48 +667,53 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 #else
   ASSERT_EQ(wrapped, (addr | 0x42BA000000000000 | set_top_bit) & mask);
 #endif
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped), addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped),
+            ptr);
 
-  bytes[7] |= 0x80;
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-  bytes[9] = bytes[7];
-#endif
+  bytes[1] |= 0x80;                // for Debug builds
+  bytes[kCookieSize + 1] |= 0x80;  // for Release builds
   wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
   ASSERT_EQ(wrapped, addr);
 #else
   ASSERT_EQ(wrapped, (addr | 0xC2BA000000000000 | set_top_bit) & mask);
 #endif
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped), addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped),
+            ptr);
 
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
-  bytes[6] = 0;
-  bytes[7] = 0;
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-  bytes[8] = bytes[6];
-  bytes[9] = bytes[7];
-#endif
+  bytes[0] = 0;  // for Debug builds
+  bytes[1] = 0;
+  bytes[kCookieSize] = 0;  // for Release builds
+  bytes[kCookieSize + 1] = 0;
   mask = 0xFFFFFFFFFFFFFFFF;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
   mask = 0x7FFFFFFFFFFFFFFF;
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-  mask = 0x0000FFFFFFFFFFFF;
-#endif
 #endif
 
   // Mask out the top bit, because in some cases (not all), it may differ.
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped) & mask,
-            wrapped & mask);
-#endif
+  ASSERT_EQ(
+      reinterpret_cast<uintptr_t>(
+          CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(wrapped)) &
+          mask,
+      wrapped & mask);
+#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
 }
 
 TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
-  char bytes[] = {0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0xBA, 0x42, 0x78, 0x89};
-  void* ptr = bytes + sizeof(uintptr_t);
+  // Put generation 16B and 32B before the "object", so that it works on both
+  // Debug and Release builds.
+  char bytes[] = {0xBA, 0x42, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xBA, 0x42,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+                  0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x78, 0x89};
+  void* ptr = bytes + 32;
+  ASSERT_EQ(0x78, *static_cast<char*>(ptr));
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(addr), addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForDereference(addr), ptr);
 }
 
-#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+}  // namespace internal
+}  // namespace base
 
-}  // namespace
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR

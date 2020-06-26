@@ -15,10 +15,12 @@ group("sync") {
 
 group("test_support") {
   testonly = true
+
   public_deps = [
     ":sync",
     ":test_support_engine",
     ":test_support_model",
+    ":test_support_syncable",
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
     "//components/sync/js:test_support",
@@ -373,6 +375,7 @@ jumbo_static_library("rest_of_sync") {
     "syncable/syncable_write_transaction.cc",
     "syncable/syncable_write_transaction.h",
     "syncable/transaction_observer.h",
+    "syncable/unrecoverable_error_handler.h",
     "syncable/user_share.cc",
     "syncable/user_share.h",
     "syncable/write_node.cc",
@@ -478,6 +481,7 @@ static_library("test_support_engine") {
 
   deps = [
     ":sync",
+    ":test_support_syncable",
     "//services/network:test_support",
   ]
 
@@ -523,6 +527,19 @@ static_library("test_support_nigori") {
   sources = [
     "nigori/nigori_test_utils.cc",
     "nigori/nigori_test_utils.h",
+  ]
+
+  deps = [
+    ":sync",
+    "//testing/gtest",
+  ]
+}
+
+static_library("test_support_syncable") {
+  testonly = true
+  sources = [
+    "syncable/test_unrecoverable_error_handler.cc",
+    "syncable/test_unrecoverable_error_handler.h",
   ]
 
   deps = [
@@ -646,6 +663,7 @@ source_set("unit_tests") {
     ":test_support_engine",
     ":test_support_model",
     ":test_support_nigori",
+    ":test_support_syncable",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",

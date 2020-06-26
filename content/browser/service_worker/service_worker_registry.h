@@ -233,6 +233,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const std::string& key_prefix,
       GetUserDataForAllRegistrationsCallback callback);
 
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
+  GetRemoteStorageControl();
+
   // Disables the internal storage to prepare for error recovery.
   void PrepareForDeleteAndStarOver();
 
@@ -355,9 +358,6 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void EnsureRegisteredOriginIsTracked(const url::Origin& origin);
   void OnStoragePolicyChanged();
   bool ShouldPurgeOnShutdown(const url::Origin& origin);
-
-  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
-  GetRemoteStorageControl();
 
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;

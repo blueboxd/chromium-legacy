@@ -70,7 +70,7 @@ class JSChecker(object):
 
     from os import isatty as os_isatty
     args = ["--color"] if os_isatty(self.input_api.sys.stdout.fileno()) else []
-    args += ["--format", format, "--ignore-pattern '!.eslintrc.js'"]
+    args += ["--format", format, "--ignore-pattern", "!.eslintrc.js"]
     args += affected_js_files_paths
 
     import eslint

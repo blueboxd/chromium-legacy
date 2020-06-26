@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/base/test_unrecoverable_error_handler.h"
+#include "components/sync/syncable/test_unrecoverable_error_handler.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
 #include "components/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"

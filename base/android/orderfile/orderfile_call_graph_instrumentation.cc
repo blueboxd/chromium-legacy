@@ -30,8 +30,8 @@
 
 #include "base/command_line.h"
 #include "base/time/time.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/memory_dump_manager.h"   // no-presubmit-check
+#include "base/trace_event/memory_dump_provider.h"  // no-presubmit-check
 #endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
 
 #if !BUILDFLAG(SUPPORTS_CODE_ORDERING)

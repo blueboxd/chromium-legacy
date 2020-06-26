@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
@@ -27,6 +26,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
@@ -78,7 +79,7 @@ class MODULES_EXPORT LocalRTCStatsRequest : public rtc::RefCountInterface {
   LocalRTCStatsRequest();
 
   virtual bool hasSelector() const;
-  virtual blink::WebMediaStreamTrack component() const;
+  virtual MediaStreamComponent* component() const;
   virtual void requestSucceeded(const LocalRTCStatsResponse* response);
   virtual scoped_refptr<LocalRTCStatsResponse> createResponse();
 
@@ -171,13 +172,13 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
       RTCStatsReportCallback callback,
       const Vector<webrtc::NonStandardGroupId>& exposed_group_ids);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
+  AddTransceiverWithTrack(MediaStreamComponent* component,
                           const webrtc::RtpTransceiverInit& init);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(const String& kind,
                          const webrtc::RtpTransceiverInit& init);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTrack(const WebMediaStreamTrack& web_track,
+  AddTrack(MediaStreamComponent* component,
            const Vector<WebMediaStream>& web_streams);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   RemoveTrack(blink::RTCRtpSenderPlatform* web_sender);
@@ -411,7 +412,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // Map and owners of track adapters. Every track that is in use by the peer
   // connection has an associated blink and webrtc layer representation of it.
   // The map keeps track of the relationship between
-  // |blink::WebMediaStreamTrack|s and |webrtc::MediaStreamTrackInterface|s.
+  // |MediaStreamComponent|s and |webrtc::MediaStreamTrackInterface|s.
   // Track adapters are created on the fly when a component (such as a stream)
   // needs to reference it, and automatically disposed when there are no longer
   // any components referencing it.

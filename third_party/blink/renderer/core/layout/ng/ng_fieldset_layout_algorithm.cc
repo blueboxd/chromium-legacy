@@ -56,6 +56,11 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
 
   // Calculate the amount of the border block-start that was consumed in
   // previous fragments.
+  //
+  // TODO(layout-dev): The fieldset algorithm tries to handle fragmentation
+  // inside borders and padding, but this cannot happen anymore. Unless we want
+  // to re-introduce breaks inside borders and padding, we should remove the
+  // code that's only needed to support this.
   consumed_border_block_start_ =
       std::min(consumed_block_size_, borders_.block_start);
   intrinsic_block_size_ = borders_.block_start - consumed_border_block_start_;

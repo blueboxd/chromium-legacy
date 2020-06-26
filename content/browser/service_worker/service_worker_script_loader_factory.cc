@@ -196,11 +196,13 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
     int64_t resource_id,
     base::OnceCallback<void(int64_t, net::Error)> callback,
     int64_t new_resource_id) {
-  ServiceWorkerStorage* storage = context_->storage();
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
+  context_->registry()->GetRemoteStorageControl()->CreateResourceReader(
+      resource_id, reader.BindNewPipeAndPassReceiver());
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(
-      storage->CreateResponseReader(resource_id),
-      storage->CreateResponseWriter(new_resource_id));
+      std::move(reader),
+      context_->storage()->CreateResponseWriter(new_resource_id));
 
   scoped_refptr<ServiceWorkerVersion> version = worker_host_->version();
   version->script_cache_map()->NotifyStartedCaching(url, new_resource_id);

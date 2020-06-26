@@ -38,8 +38,11 @@ void EnableStartupTracingIfNeeded() {
       *base::CommandLine::ForCurrentProcess();
 
   TraceEventDataSource::GetInstance()->RegisterStartupHooks();
-  // TODO(eseckler): Initialize the entire perfetto client library instead.
-  perfetto::internal::TrackRegistry::InitializeInstance();
+
+  // Initialize the Perfetto client library now that we're past the zygote's
+  // fork point. This is important to ensure Perfetto's track registry gets a
+  // unique uuid for generating track ids.
+  PerfettoTracedProcess::Get()->SetupClientLibrary();
 
   // TODO(oysteine): Support startup tracing to a perfetto protobuf trace. This
   // should also enable TraceLog and call SetupStartupTracing().
@@ -61,6 +64,7 @@ void EnableStartupTracingIfNeeded() {
         PerfettoTracedProcess::Get()->producer_client();
     if (startup_config->GetSessionOwner() ==
         TraceStartupConfig::SessionOwner::kSystemTracing) {
+      PerfettoTracedProcess::Get()->SetupSystemTracing();
       producer = PerfettoTracedProcess::Get()->system_producer();
     }
 
@@ -102,6 +106,8 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
     // Connect to system service if available (currently a no-op except on
     // Posix). Has to happen on the producer's sequence, as all communication
     // with the system Perfetto service should occur on a single sequence.
+    if (!PerfettoTracedProcess::Get()->system_producer())
+      PerfettoTracedProcess::Get()->SetupSystemTracing();
     PerfettoTracedProcess::Get()
         ->GetTaskRunner()
         ->GetOrCreateTaskRunner()
@@ -130,8 +136,10 @@ void PropagateTracingFlagsToChildProcessCmdLine(base::CommandLine* cmd_line) {
   // (Posix)SystemProducer doesn't currently support startup tracing, so don't
   // attempt to enable startup tracing in child processes if system tracing is
   // active.
-  if (PerfettoTracedProcess::Get()->system_producer()->IsTracingActive())
+  if (PerfettoTracedProcess::Get()->system_producer() &&
+      PerfettoTracedProcess::Get()->system_producer()->IsTracingActive()) {
     return;
+  }
 
   // The child process startup may race with a concurrent disabling of the
   // tracing session by the tracing service. To avoid being stuck in startup

@@ -18,7 +18,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -142,8 +141,7 @@ public class SyncErrorInfoBar
      * Calls native side code to create an infobar.
      */
     public static void maybeLaunchSyncErrorInfoBar(WebContents webContents) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_ERROR_INFOBAR_ANDROID)
-                || webContents == null) {
+        if (webContents == null) {
             return;
         }
         @SyncErrorInfoBarType

@@ -211,67 +211,7 @@ void Storage::Create(
 Storage::Storage(const Options& options, StartUploadCb start_upload_cb)
     : options_(options), start_upload_cb_(std::move(start_upload_cb)) {}
 
-Storage::~Storage() {
-  DCHECK(is_shutting_down_) << "Storage not shut down properly";
-  for (const auto& q : queues_) {
-    DCHECK_EQ(q.second.get(), nullptr)
-        << "Queue has not been shutdown properly, priority=" << q.first;
-  }
-}
-
-// static
-void Storage::ShutDown(scoped_refptr<Storage>* storage,
-                       base::OnceCallback<void(Status)> done_cb) {
-  // Shuts down all queues of the Storage object.
-  class StorageShutDownContext : public TaskRunnerContext<Status> {
-   public:
-    StorageShutDownContext(scoped_refptr<Storage>* storage,
-                           base::OnceCallback<void(Status)> callback)
-        : TaskRunnerContext<Status>(
-              std::move(callback),
-              base::ThreadPool::CreateSequencedTaskRunner(
-                  {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
-          storage_(storage),
-          count_((*storage_)->queues_.size()) {}
-
-   private:
-    // Context can only be deleted by calling Response method.
-    ~StorageShutDownContext() override { DCHECK_EQ(count_, 0); }
-
-    void OnStart() override {
-      CheckOnValidSequence();
-      (*storage_)->is_shutting_down_ = true;
-      for (auto& queue : (*storage_)->queues_) {
-        StorageQueue::ShutDown(
-            &queue.second,
-            base::BindOnce(&StorageShutDownContext::ScheduleQueueClosed, this));
-      }
-    }
-
-    void ScheduleQueueClosed() {
-      Schedule(&StorageShutDownContext::QueueClosed, this);
-    }
-
-    void QueueClosed() {
-      CheckOnValidSequence();
-      DCHECK_GT(count_, 0);
-      if (--count_ > 0) {
-        return;
-      }
-      storage_->reset();
-      Response(Status::StatusOK());
-    }
-
-    const std::vector<std::pair<Priority, StorageQueue::Options>>
-        queues_options_;
-    scoped_refptr<Storage>* const storage_;
-    int32_t count_;
-    Status final_status_;
-  };
-
-  // Asynchronously shut down.
-  Start<StorageShutDownContext>(storage, std::move(done_cb));
-}
+Storage::~Storage() = default;
 
 void Storage::Write(Priority priority,
                     base::span<const uint8_t> data,

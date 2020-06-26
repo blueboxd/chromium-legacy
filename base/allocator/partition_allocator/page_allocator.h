@@ -193,6 +193,11 @@ BASE_EXPORT bool HasReservationForTesting();
 // (POSIX) or |VirtualAlloc| (Windows) fails.
 BASE_EXPORT uint32_t GetAllocPageErrorCode();
 
+// Returns the total amount of mapped pages from all clients of
+// PageAllocator. These pages may or may not be committed. This is mostly useful
+// to assess address space pressure.
+BASE_EXPORT size_t GetTotalMappedSize();
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H_

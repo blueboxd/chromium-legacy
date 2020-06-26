@@ -516,23 +516,6 @@ class UserSessionManager
   void SetAttemptRestartClosureInTests(
       const base::RepeatingClosure& attempt_restart_closure);
 
-  // The user pods display type for histogram.
-  enum UserPodsDisplay {
-    // User pods enabling or disabling is possible either via local settings or
-    // via domain policy. The former method only applies to regular devices,
-    // whereas the latter is for enterprise-managed devices. Therefore, we have
-    // four possible combiations.
-    USER_PODS_DISPLAY_ENABLED_REGULAR = 0,
-    USER_PODS_DISPLAY_ENABLED_MANAGED = 1,
-    USER_PODS_DISPLAY_DISABLED_REGULAR = 2,
-    USER_PODS_DISPLAY_DISABLED_MANAGED = 3,
-    // Maximum histogram value.
-    NUM_USER_PODS_DISPLAY = 4
-  };
-
-  // Sends metrics for user pods display when existing user has logged in.
-  void SendUserPodsMetrics();
-
   void NotifyEasyUnlockKeyOpsFinished();
 
   UserSessionManagerDelegate* delegate_;

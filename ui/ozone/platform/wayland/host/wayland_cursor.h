@@ -56,7 +56,7 @@ class WaylandCursor {
 
   // Holds the buffers and their memory until the compositor releases them.
   base::flat_map<wl_buffer*, WaylandShmBuffer> buffers_;
-  wl::Object<wl_surface> pointer_surface_;
+  const wl::Object<wl_surface> pointer_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandCursor);
 };

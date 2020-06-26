@@ -37,15 +37,17 @@ public class PaymentRequestTestBridge {
         private final boolean mIsWebContentsActive;
         private final boolean mPrefsCanMakePayment;
         private final boolean mSkipUiForBasicCard;
+        private final String mTwaPackageName;
 
         PaymentRequestDelegateForTest(boolean isOffTheRecord, boolean isValidSsl,
                 boolean isWebContentsActive, boolean prefsCanMakePayment,
-                boolean skipUiForBasicCard) {
+                boolean skipUiForBasicCard, String twaPackageName) {
             mIsOffTheRecord = isOffTheRecord;
             mIsValidSsl = isValidSsl;
             mIsWebContentsActive = isWebContentsActive;
             mPrefsCanMakePayment = prefsCanMakePayment;
             mSkipUiForBasicCard = skipUiForBasicCard;
+            mTwaPackageName = twaPackageName;
         }
 
         @Override
@@ -72,6 +74,12 @@ public class PaymentRequestTestBridge {
         @Override
         public boolean skipUiForBasicCard() {
             return false;
+        }
+
+        @Override
+        @Nullable
+        public String getTwaPackageName(@Nullable ChromeActivity activity) {
+            return mTwaPackageName;
         }
     }
 
@@ -189,11 +197,11 @@ public class PaymentRequestTestBridge {
     @CalledByNative
     private static void setUseDelegateForTest(boolean useDelegate, boolean isOffTheRecord,
             boolean isValidSsl, boolean isWebContentsActive, boolean prefsCanMakePayment,
-            boolean skipUiForBasicCard) {
+            boolean skipUiForBasicCard, String twaPackageName) {
         if (useDelegate) {
-            PaymentRequestFactory.sDelegateForTest =
-                    new PaymentRequestDelegateForTest(isOffTheRecord, isValidSsl,
-                            isWebContentsActive, prefsCanMakePayment, skipUiForBasicCard);
+            PaymentRequestFactory.sDelegateForTest = new PaymentRequestDelegateForTest(
+                    isOffTheRecord, isValidSsl, isWebContentsActive, prefsCanMakePayment,
+                    skipUiForBasicCard, twaPackageName);
         } else {
             PaymentRequestFactory.sDelegateForTest = null;
         }

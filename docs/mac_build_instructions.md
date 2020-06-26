@@ -226,7 +226,7 @@ build in the Terminal and write code with a text editor, though.
 
 With hybrid builds, compilation is still handled by Ninja, and can be run from
 the command line (e.g. `autoninja -C out/gn chrome`) or by choosing the `chrome`
-target in the hybrid workspace and choosing Build.
+target in the hybrid project and choosing Build.
 
 To use Xcode-Ninja Hybrid pass `--ide=xcode` to `gn gen`:
 
@@ -237,7 +237,7 @@ $ gn gen out/gn --ide=xcode
 Open it:
 
 ```shell
-$ open out/gn/ninja/all.xcworkspace
+$ open out/gn/all.xcodeproj
 ```
 
 You may run into a problem where http://YES is opened as a new tab every time

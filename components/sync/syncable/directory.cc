@@ -22,7 +22,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
@@ -35,6 +34,7 @@
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
+#include "components/sync/syncable/unrecoverable_error_handler.h"
 
 using std::string;
 
@@ -217,9 +217,11 @@ void Directory::OnUnrecoverableError(const BaseTransaction* trans,
                                      const std::string& message) {
   DCHECK(trans != nullptr);
   unrecoverable_error_set_ = true;
-  unrecoverable_error_handler_.Call(
-      FROM_HERE, &UnrecoverableErrorHandler::OnUnrecoverableError, location,
-      message);
+  if (unrecoverable_error_handler_.IsInitialized()) {
+    unrecoverable_error_handler_.Call(
+        FROM_HERE, &UnrecoverableErrorHandler::OnUnrecoverableError, location,
+        message);
+  }
 }
 
 EntryKernel* Directory::GetEntryById(const Id& id) {

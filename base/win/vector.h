@@ -77,14 +77,24 @@ class VectorIterator
   }
 
   IFACEMETHODIMP MoveNext(boolean* has_current) override {
-    ++current_index_;
     *has_current = FALSE;
-
-    HRESULT hr = get_HasCurrent(has_current);
+    unsigned size;
+    HRESULT hr = view_->get_Size(&size);
     if (FAILED(hr))
       return hr;
 
-    return *has_current ? hr : E_BOUNDS;
+    // Check if we're already past the last item.
+    if (current_index_ >= size)
+      return E_BOUNDS;
+
+    // Move to the next item.
+    current_index_++;
+
+    // Set |has_current| to TRUE if we're still on a valid item.
+    if (current_index_ < size)
+      *has_current = TRUE;
+
+    return hr;
   }
 
   IFACEMETHODIMP GetMany(unsigned capacity,

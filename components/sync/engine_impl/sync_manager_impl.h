@@ -87,7 +87,6 @@ class SyncManagerImpl
       std::unique_ptr<InvalidationInterface> invalidation) override;
   void AddObserver(SyncManager::Observer* observer) override;
   void RemoveObserver(SyncManager::Observer* observer) override;
-  void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
@@ -308,8 +307,6 @@ class SyncManagerImpl
   DebugInfoEventListener debug_info_event_listener_;
 
   ProtocolEventBuffer protocol_event_buffer_;
-
-  base::RepeatingClosure report_unrecoverable_error_function_;
 
   SyncEncryptionHandler* sync_encryption_handler_;
 

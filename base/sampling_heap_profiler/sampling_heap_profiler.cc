@@ -18,7 +18,7 @@
 #include "base/partition_alloc_buildflags.h"
 #include "base/sampling_heap_profiler/lock_free_address_hash_set.h"
 #include "base/threading/thread_local_storage.h"
-#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"  // no-presubmit-check
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -31,7 +31,7 @@
 
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
-#include "base/trace_event/cfi_backtrace_android.h"
+#include "base/trace_event/cfi_backtrace_android.h"  // no-presubmit-check
 #endif
 
 namespace base {

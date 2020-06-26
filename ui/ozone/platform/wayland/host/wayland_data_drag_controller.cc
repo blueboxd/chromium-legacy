@@ -96,7 +96,7 @@ void WaylandDataDragController::StartSession(const OSExchangeData& data,
   Offer(data, operation);
 
   // Create drag icon surface (if any) and store the data to be exchanged.
-  icon_surface_.reset(CreateIconSurfaceIfNeeded(data));
+  CreateIconSurfaceIfNeeded(data);
   data_ = std::make_unique<OSExchangeData>(data.provider().Clone());
 
   // Starts the wayland drag session setting |this| object as delegate.
@@ -265,11 +265,11 @@ void WaylandDataDragController::Offer(const OSExchangeData& data,
   data_source_->SetAction(operation);
 }
 
-wl_surface* WaylandDataDragController::CreateIconSurfaceIfNeeded(
+void WaylandDataDragController::CreateIconSurfaceIfNeeded(
     const OSExchangeData& data) {
   icon_bitmap_ = GetDragImage(data);
-  return icon_bitmap_ ? wl_compositor_create_surface(connection_->compositor())
-                      : nullptr;
+  if (icon_bitmap_)
+    icon_surface_ = connection_->CreateSurface();
 }
 
 // Asynchronously requests and reads data for every negotiated/supported mime

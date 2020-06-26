@@ -324,8 +324,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   opacity_ = properties.opacity;
   type_ = properties.type;
 
-  wayland_surface_.surface_.reset(
-      wl_compositor_create_surface(connection_->compositor()));
+  wayland_surface_.surface_ = connection_->CreateSurface();
   wayland_surface_.root_window_ = this;
   if (!surface()) {
     LOG(ERROR) << "Failed to create wl_surface";

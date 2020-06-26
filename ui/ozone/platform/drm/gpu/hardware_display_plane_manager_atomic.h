@@ -50,7 +50,6 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool InitializePlanes() override;
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
   bool CommitColorMatrix(const CrtcProperties& crtc_props) override;
-  bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
   bool AddOutFencePtrProperties(
       drmModeAtomicReqPtr property_set,
       const std::vector<uint32_t>& crtcs,

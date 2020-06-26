@@ -185,7 +185,7 @@ bool EqualsExcludingTimestamps(const base::Value& left,
   return left_iter == left_items.end() && right_iter == right_items.end();
 }
 
-bool InstallIconFromFileThread(const base::FilePath& icon_path,
+void InstallIconFromFileThread(const base::FilePath& icon_path,
                                const std::string& content_png) {
   DCHECK(!content_png.empty());
 
@@ -199,10 +199,7 @@ bool InstallIconFromFileThread(const base::FilePath& icon_path,
     if (!base::DeleteFile(icon_path)) {
       VLOG(2) << "Couldn't delete broken icon file" << icon_path.MaybeAsASCII();
     }
-    return false;
   }
-
-  return true;
 }
 
 void DeleteIconFolderFromFileThread(const base::FilePath& path) {
@@ -636,24 +633,28 @@ base::FilePath GuestOsRegistryService::GetIconPath(
   }
 }
 
-void GuestOsRegistryService::MaybeRequestIcon(const std::string& app_id,
-                                              ui::ScaleFactor scale_factor) {
-  // First check to see if this request is already in process or not.
-  const auto active_iter = active_icon_requests_.find(app_id);
-  if (active_iter != active_icon_requests_.end()) {
-    if (active_iter->second & (1 << scale_factor)) {
-      // Icon request already in progress.
-      return;
-    }
-  }
+void GuestOsRegistryService::RequestIcon(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor,
+    base::OnceCallback<void(std::string)> callback) {
+  // First check to see if this request is in the retry list. If so return
+  // immediately with an empty icon.
   const auto retry_iter = retry_icon_requests_.find(app_id);
   if (retry_iter != retry_icon_requests_.end()) {
     if (retry_iter->second & (1 << scale_factor)) {
       // Icon request already setup to be retried when we are active.
+      std::move(callback).Run({});
       return;
     }
   }
-  RequestIcon(app_id, scale_factor);
+
+  // Coalesce calls to the container.
+  auto& callbacks = active_icon_requests_[{app_id, scale_factor}];
+  callbacks.emplace_back(std::move(callback));
+  if (callbacks.size() > 1) {
+    return;
+  }
+  RequestContainerAppIcon(app_id, scale_factor);
 }
 
 void GuestOsRegistryService::ClearApplicationList(
@@ -687,10 +688,6 @@ void GuestOsRegistryService::ClearApplicationList(
   }
 
   if (removed_apps.empty())
-    return;
-
-  // Do not notify observers for Plugin VM.
-  if (vm_type == VmType::ApplicationList_VmType_PLUGIN_VM)
     return;
 
   std::vector<std::string> updated_apps;
@@ -799,7 +796,7 @@ void GuestOsRegistryService::UpdateApplicationList(
        retry_iter != retry_icon_requests_.end(); ++retry_iter) {
     for (ui::ScaleFactor scale_factor : ui::GetSupportedScaleFactors()) {
       if (retry_iter->second & (1 << scale_factor)) {
-        RequestIcon(retry_iter->first, scale_factor);
+        RequestContainerAppIcon(retry_iter->first, scale_factor);
       }
     }
   }
@@ -808,17 +805,12 @@ void GuestOsRegistryService::UpdateApplicationList(
   if (updated_apps.empty() && removed_apps.empty() && inserted_apps.empty())
     return;
 
-  // Do not notify observers for Plugin VM.
-  if (app_list.vm_type() == VmType::ApplicationList_VmType_PLUGIN_VM)
-    return;
-
   for (Observer& obs : observers_)
     obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
 }
 
 void GuestOsRegistryService::RemoveAppData(const std::string& app_id) {
   // Remove any pending requests we have for this icon.
-  active_icon_requests_.erase(app_id);
   retry_icon_requests_.erase(app_id);
 
   // Remove local data on filesystem for the icons.
@@ -875,8 +867,9 @@ void GuestOsRegistryService::SetAppScaled(const std::string& app_id,
   app->SetKey(guest_os::prefs::kAppScaledKey, base::Value(scaled));
 }
 
-void GuestOsRegistryService::RequestIcon(const std::string& app_id,
-                                         ui::ScaleFactor scale_factor) {
+void GuestOsRegistryService::RequestContainerAppIcon(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor) {
   // Ignore requests for app_id that isn't registered.
   base::Optional<GuestOsRegistryService::Registration> registration =
       GetRegistration(app_id);
@@ -884,10 +877,7 @@ void GuestOsRegistryService::RequestIcon(const std::string& app_id,
     VLOG(2) << "Request to load icon for non-registered app: " << app_id;
     return;
   }
-
-  // Mark that we're doing a request for this icon so we don't duplicate
-  // requests.
-  active_icon_requests_[app_id] |= (1 << scale_factor);
+  VLOG(1) << "Request to load icon for app: " << app_id;
 
   // Now make the call to request the actual icon.
   std::vector<std::string> desktop_file_ids{registration->DesktopFileId()};
@@ -924,34 +914,34 @@ void GuestOsRegistryService::OnContainerAppIcon(
     ui::ScaleFactor scale_factor,
     bool success,
     const std::vector<crostini::Icon>& icons) {
+  std::string icon_content;
   if (!success) {
+    VLOG(1) << "Failed to load icon for app: " << app_id;
     // Add this to the list of retryable icon requests so we redo this when
     // we get feedback from the container that it's available.
     retry_icon_requests_[app_id] |= (1 << scale_factor);
-    return;
+  } else if (icons.empty()) {
+    VLOG(1) << "No icon in container for app: " << app_id;
+  } else {
+    VLOG(1) << "Found icon in container for app: " << app_id;
+    // Now install the icon that we received.
+    const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(&InstallIconFromFileThread, icon_path,
+                       icons[0].content));
+    icon_content = std::move(icons[0].content);
   }
-  if (icons.empty())
-    return;
-  // Now install the icon that we received.
-  const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
-      base::BindOnce(&GuestOsRegistryService::OnIconInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor,
-                     icons[0].content));
-}
 
-void GuestOsRegistryService::OnIconInstalled(
-    const std::string& app_id,
-    ui::ScaleFactor scale_factor,
-    const std::string& compressed_icon_data,
-    bool success) {
-  if (!success)
-    return;
-
-  for (Observer& obs : observers_)
-    obs.OnAppIconUpdated(app_id, scale_factor, compressed_icon_data);
+  // Invoke all active icon request callbacks with the icon.
+  auto key = std::pair<std::string, ui::ScaleFactor>(app_id, scale_factor);
+  auto& callbacks = active_icon_requests_[key];
+  VLOG(1) << "Invoking icon callbacks for app: " << app_id
+          << ", num callbacks: " << callbacks.size();
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(icon_content);
+  }
+  active_icon_requests_.erase(key);
 }
 
 void GuestOsRegistryService::MigrateTerminal() const {

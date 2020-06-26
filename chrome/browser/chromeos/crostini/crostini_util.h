@@ -15,16 +15,10 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "storage/browser/file_system/file_system_url.h"
-#include "ui/base/resource/scale_factor.h"
 
 namespace base {
 class FilePath;
-class TimeDelta;
 }  // namespace base
-
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
 
 namespace views {
 class Widget;
@@ -109,17 +103,6 @@ void LaunchCrostiniApp(Profile* profile,
                        int64_t display_id,
                        const std::vector<storage::FileSystemURL>& files,
                        LaunchCrostiniAppCallback callback);
-
-// Convenience wrapper around CrostiniAppIconLoader. As requesting icons from
-// the container can be slow, we just use the default (penguin) icons after the
-// timeout elapses. Subsequent calls would get the correct icons once loaded.
-void LoadIcons(Profile* profile,
-               const std::vector<std::string>& app_ids,
-               int resource_size_in_dip,
-               ui::ScaleFactor scale_factor,
-               base::TimeDelta timeout,
-               base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)>
-                   icons_loaded_callback);
 
 // Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);

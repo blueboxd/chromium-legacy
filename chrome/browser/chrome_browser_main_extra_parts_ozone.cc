@@ -10,7 +10,9 @@
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_error_handler.h"
-#else
+#endif
+
+#if defined(USE_OZONE)
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif

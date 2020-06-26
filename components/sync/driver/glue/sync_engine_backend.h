@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation.h"
@@ -164,11 +163,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Disables forwarding of directory type debug counters.
   void DisableDirectoryTypeDebugInfoForwarding();
 
-  // Tell the sync manager to persist its state by writing to disk.
-  // Called on the sync thread, both by a timer and, on Android, when the
-  // application is backgrounded.
-  void SaveChanges();
-
   // Notify the syncer that the cookie jar has changed.
   void DoOnCookieJarChanged(bool account_mismatch,
                             bool empty_jar,
@@ -192,12 +186,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   bool ShouldIgnoreRedundantInvalidation(const Invalidation& invalidation,
                                          ModelType Type);
 
-  // Invoked when initialization of syncapi is complete and we can start
-  // our timer.
-  // This must be called from the thread on which SaveChanges is intended to
-  // be run on; the host's |registrar_->sync_thread()|.
-  void StartSavingChanges();
-
   void LoadAndConnectNigoriController();
 
   // Name used for debugging.
@@ -211,9 +199,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
 
   // Non-null only between calls to DoInitialize() and DoShutdown().
   std::unique_ptr<SyncBackendRegistrar> registrar_;
-
-  // The timer used to periodically call SaveChanges.
-  std::unique_ptr<base::RepeatingTimer> save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
   SystemEncryptor encryptor_;

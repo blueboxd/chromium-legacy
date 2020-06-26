@@ -35,7 +35,6 @@ static_library("drive") {
     "//google_apis/drive",
     "//services/device/public/mojom",
     "//services/network/public/cpp:cpp",
-    "//third_party/cacheinvalidation",
     "//third_party/leveldatabase",
     "//third_party/re2",
   ]

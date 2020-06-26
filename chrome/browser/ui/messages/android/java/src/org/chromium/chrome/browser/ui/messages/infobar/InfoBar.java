@@ -17,6 +17,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.ActionType;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.ui.messages.R;
+import org.chromium.components.infobars.InfoBarCompactLayout;
 import org.chromium.components.infobars.InfoBarInteractionHandler;
 import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.ui.modelutil.PropertyModel;

@@ -43,7 +43,13 @@ function testIt(platform, title, id, x, y, expected) {
             const offsetX = x === 'after'
                 ? sample.offsetWidth
                 : Math.min(x, sample.offsetWidth);
-            const offsetY = y === 'below' ? target.offsetHeight - 3 : y;
+            const offsetY = {
+                'above': 15,
+                'below': sample.offsetHeight - 15,
+                'top': 10,
+                'middle': target.offsetHeight / 2,
+                'bottom': target.offsetHeight - 5,
+            }[y];
             eventSender.leapForward(9999); // reset mouse click state
             eventSender.mouseMoveTo(selection.computeLeft(target) + offsetX,
                                     selection.computeTop(target) + offsetY);
@@ -59,19 +65,21 @@ function testIt(platform, title, id, x, y, expected) {
         `${platform}: ${title}`);
 }
 
-for (const platform of ['android', 'max', 'unix', 'win']) {
+for (const platform of ['android', 'mac', 'unix', 'win']) {
+    if (window.internals)
+        internals.settings.setEditingBehavior(platform);
     testIt(platform, 'Click after sample (top)', 'editable',
-           'after', 15, 'abcd|');
+           'after', 'top', 'abcd|');
     testIt(platform, 'Click after sample (middle)', 'editable',
-           'after', kLineHeight / 2, 'abcd|');
+            'after', 'middle', 'abcd|');
     testIt(platform, 'Click after sample (bottom)', 'editable',
-           'after', kLineHeight - 1, 'abcd|');
+            'after', 'bottom', 'abcd|');
 
     for (let i = 0; i <= kSample.length; ++i) {
         const x = i * kFontSize;
         const expected = `${kSample.substr(0, i)}|${kSample.substr(i)}`;
         testIt(platform, `Click above editable at ${expected}`, 'sample',
-               x + 1, 1, expected);
+               x + 1, 'above', expected);
         testIt(platform, `Click below editable at ${expected}`, 'sample',
                x + 1, 'below', expected);
     }

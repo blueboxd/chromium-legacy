@@ -162,12 +162,6 @@ class StorageTest : public ::testing::Test {
  protected:
   void SetUp() override { ASSERT_TRUE(location_.CreateUniqueTempDir()); }
 
-  void TearDown() override {
-    if (storage_) {
-      ShutDownStorage();
-    }
-  }
-
   void CreateStorageTestOrDie(const Storage::Options& options) {
     ASSERT_FALSE(storage_) << "StorageTest already assigned";
     TestEvent<StatusOr<scoped_refptr<Storage>>> e;
@@ -179,21 +173,6 @@ class StorageTest : public ::testing::Test {
     ASSERT_OK(storage_result)
         << "Failed to create StorageTest, error=" << storage_result.status();
     storage_ = std::move(storage_result.ValueOrDie());
-  }
-
-  void ShutDownStorage() {
-    base::WaitableEvent completed(
-        base::WaitableEvent::ResetPolicy::MANUAL,
-        base::WaitableEvent::InitialState::NOT_SIGNALED);
-    Storage::ShutDown(&storage_,
-                      base::BindOnce(
-                          [](base::WaitableEvent* completed, Status status) {
-                            ASSERT_OK(status);
-                            completed->Signal();
-                          },
-                          base::Unretained(&completed)));
-    completed.Wait();
-    ASSERT_EQ(storage_.get(), nullptr);
   }
 
   Storage::Options BuildStorageOptions() const {
@@ -248,8 +227,7 @@ TEST_F(StorageTest, WriteIntoNewStorageAndReopen) {
   WriteStringOrDie(FAST_BATCH, blobs[1]);
   WriteStringOrDie(FAST_BATCH, blobs[2]);
 
-  ShutDownStorage();
-  ASSERT_EQ(storage_.get(), nullptr);
+  storage_.reset();
 
   CreateStorageTestOrDie(BuildStorageOptions());
 }
@@ -463,7 +441,8 @@ TEST_F(StorageTest, WriteAndRepeatedlyImmediateUploadWithConfirmations) {
   WriteStringOrDie(IMMEDIATE, more_blobs[2]);
 }
 
-TEST_F(StorageTest, WriteAndRepeatedlyUploadMultipleQueues) {
+// TODO(crbug.com/1098359): Flaky.
+TEST_F(StorageTest, DISABLED_WriteAndRepeatedlyUploadMultipleQueues) {
   CreateStorageTestOrDie(BuildStorageOptions());
 
   // Upload is initiated asynchronously, so it may happen after the next

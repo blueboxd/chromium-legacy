@@ -33,7 +33,6 @@ namespace syncer {
 
 class HttpPostProviderFactory;
 class SyncEngineHost;
-class UnrecoverableErrorHandler;
 
 // The interface into the sync engine, which is the part of sync that performs
 // communication between model types and the sync server. In prod the engine
@@ -68,8 +67,6 @@ class SyncEngine : public ModelTypeConfigurer {
     std::string restored_key_for_bootstrapping;
     std::string restored_keystore_key_for_bootstrapping;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-    WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    base::RepeatingClosure report_unrecoverable_error_function;
     std::map<ModelType, int64_t> invalidation_versions;
 
     // Initial authoritative values (usually read from prefs).

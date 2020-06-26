@@ -90,8 +90,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   CreateSingleScriptUpdateCheckerWithoutHttpCache(
       const char* url,
       const GURL& scope,
-      std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
-      std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
+      std::unique_ptr<MockServiceWorkerResponseReader> compare_reader,
+      std::unique_ptr<MockServiceWorkerResponseReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
@@ -101,6 +101,17 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         base::TimeDelta() /* time_since_last_check */,
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         loader_factory, out_check_result);
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> WrapReader(
+      std::unique_ptr<MockServiceWorkerResponseReader> reader) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> remote;
+    remote.Bind(reader->BindNewPipeAndPassRemote(base::BindOnce(
+        [](std::unique_ptr<MockServiceWorkerResponseReader>) {
+          // Keep |reader| until mojo connection is destroyed.
+        },
+        std::move(reader))));
+    return remote;
   }
 
   // Note that |loader_factory| should be alive as long as the single script
@@ -113,8 +124,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
-      std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
-      std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
+      std::unique_ptr<MockServiceWorkerResponseReader> compare_reader,
+      std::unique_ptr<MockServiceWorkerResponseReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
@@ -131,7 +142,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
                             browser_context_.get()),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             loader_factory),
-        std::move(compare_reader), std::move(copy_reader), std::move(writer),
+        WrapReader(std::move(compare_reader)),
+        WrapReader(std::move(copy_reader)), std::move(writer),
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
                const GURL& script_url,

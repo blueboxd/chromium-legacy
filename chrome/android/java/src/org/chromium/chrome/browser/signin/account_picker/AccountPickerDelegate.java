@@ -30,11 +30,13 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 public class AccountPickerDelegate implements AccountPickerCoordinator.Listener {
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
+    private final String mContinueUrl;
 
-    public AccountPickerDelegate(ChromeActivity chromeActivity) {
+    public AccountPickerDelegate(ChromeActivity chromeActivity, String continueUrl) {
         mChromeActivity = chromeActivity;
         // TODO(https://crbug.com/1095554): Check if website redirects after sign-in
         mTab = mChromeActivity.getActivityTab();
+        mContinueUrl = continueUrl;
     }
     /**
      * Notifies that the user has selected an account.
@@ -54,11 +56,8 @@ public class AccountPickerDelegate implements AccountPickerCoordinator.Listener 
                         // We should wait for the cookie signin and cookie regeneration here,
                         // PostTask.postDelayedTask is just a temporary measure for testing the
                         // flow, it will be removed soon.
-                        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
-                            // TODO(https//crbug.com/1092399):
-                            // Replace this with a continue URL got from GAIA
-                            mTab.loadUrl(new LoadUrlParams("https://google.com"));
-                        }, 2000);
+                        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
+                                () -> { mTab.loadUrl(new LoadUrlParams(mContinueUrl)); }, 2000);
                     }
 
                     @Override

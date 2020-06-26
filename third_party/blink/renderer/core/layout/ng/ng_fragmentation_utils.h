@@ -131,7 +131,13 @@ bool IsNodeFullyGrown(NGBlockNode,
 // do, since any block-size specified in CSS applies to the entire box,
 // regardless of fragmentation. This function will update the block-size to the
 // actual fragment size, by examining possible breakpoints, if necessary.
-void FinishFragmentation(NGBlockNode node,
+//
+// Return true if successful. If false is returned, it means that we ran out of
+// space at a less-than-ideal location - in this case between the last child and
+// the block-end padding / border. Furthermore, this also means that we know
+// that we have a better earlier breakpoint, so the correct response to 'false'
+// is to abort layout, then relayout and break earlier.
+bool FinishFragmentation(NGBlockNode node,
                          const NGConstraintSpace&,
                          const NGBlockBreakToken* previous_break_token,
                          const NGBoxStrut& border_padding,

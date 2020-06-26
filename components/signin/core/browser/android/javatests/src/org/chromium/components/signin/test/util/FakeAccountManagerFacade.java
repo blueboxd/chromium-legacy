@@ -93,7 +93,9 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {}
+    public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
+        callback.onResult(new AccountManagerResult<>(getGoogleAccounts()));
+    }
 
     @Override
     public boolean hasGoogleAccountAuthenticator() {

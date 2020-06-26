@@ -64,13 +64,13 @@ class MockRTCPeerConnectionHandlerPlatform : public RTCPeerConnectionHandler {
   void GetStats(RTCStatsReportCallback,
                 const Vector<webrtc::NonStandardGroupId>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-  AddTransceiverWithTrack(const WebMediaStreamTrack&,
+  AddTransceiverWithTrack(MediaStreamComponent*,
                           const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithKind(const String& kind,
                          const webrtc::RtpTransceiverInit&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> AddTrack(
-      const WebMediaStreamTrack&,
+      MediaStreamComponent*,
       const Vector<WebMediaStream>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>> RemoveTrack(
       RTCRtpSenderPlatform*) override;

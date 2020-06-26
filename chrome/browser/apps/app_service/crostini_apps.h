@@ -77,9 +77,6 @@ class CrostiniApps : public KeyedService,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override;
-  void OnAppIconUpdated(const std::string& app_id,
-                        ui::ScaleFactor scale_factor,
-                        const std::string& compressed_icon_data) override;
 
   // Registers and unregisters terminal with AppService.
   // TODO(crbug.com/1028898): Move this code into System Apps
@@ -89,10 +86,16 @@ class CrostiniApps : public KeyedService,
   void LoadIconFromVM(const std::string app_id,
                       apps::mojom::IconCompression icon_compression,
                       int32_t size_hint_in_dip,
-                      bool allow_placeholder_icon,
                       ui::ScaleFactor scale_factor,
                       IconEffects icon_effects,
                       LoadIconCallback callback);
+
+  void OnLoadIconFromVM(const std::string app_id,
+                        apps::mojom::IconCompression icon_compression,
+                        int32_t size_hint_in_dip,
+                        IconEffects icon_effects,
+                        LoadIconCallback callback,
+                        std::string compressed_icon_data);
 
   apps::mojom::AppPtr Convert(
       const std::string& app_id,
@@ -111,14 +114,6 @@ class CrostiniApps : public KeyedService,
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   bool crostini_enabled_;
-
-  // A map from app_ids to callbacks waiting on those apps to load an icon.
-  std::multimap<std::string,
-                std::tuple<apps::mojom::IconCompression,
-                           int32_t,
-                           IconEffects,
-                           LoadIconCallback>>
-      app_icon_callbacks_;
 
   base::WeakPtrFactory<CrostiniApps> weak_ptr_factory_{this};
 

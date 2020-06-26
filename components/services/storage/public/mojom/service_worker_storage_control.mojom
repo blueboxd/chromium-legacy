@@ -63,7 +63,7 @@ interface ServiceWorkerResourceReader {
   // Also returns metadata associated with the resource if it exists.
   ReadResponseHead() =>
       (int32 status,
-       network.mojom.URLResponseHead response_head,
+       network.mojom.URLResponseHead? response_head,
        mojo_base.mojom.BigBuffer? metadata);
   // Reads the content of the resource associated with this reader.
   ReadData(int64 size) => (handle<data_pipe_consumer> pipe);

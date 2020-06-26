@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/model/data_type_error_handler.h"

@@ -65,6 +65,7 @@ class PaymentRequestTestController {
   void SetOffTheRecord(bool is_off_the_record);
   void SetValidSsl(bool valid_ssl);
   void SetCanMakePaymentEnabledPref(bool can_make_payment_enabled);
+  void SetTwaPackageName(const std::string& twa_package_name);
 
   // Get the WebContents of the Payment Handler for testing purpose, or null if
   // nonexistent. To guarantee a non-null return, this function should be called
@@ -118,6 +119,7 @@ class PaymentRequestTestController {
   bool is_off_the_record_ = false;
   bool valid_ssl_ = true;
   bool can_make_payment_pref_ = true;
+  std::string twa_package_name_;
   std::vector<AppDescription> app_descriptions_;
 
 #if !defined(OS_ANDROID)

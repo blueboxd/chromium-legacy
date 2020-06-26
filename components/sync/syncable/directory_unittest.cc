@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
-#include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/syncable/syncable_proto_util.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/test/engine/test_syncable_utils.h"
@@ -28,6 +27,32 @@ namespace syncer {
 namespace syncable {
 
 namespace {
+
+// Mock implementation of UnrecoverableErrorHandler that counts how many times
+// it has been invoked.
+class MockUnrecoverableErrorHandler : public UnrecoverableErrorHandler {
+ public:
+  MockUnrecoverableErrorHandler() = default;
+  ~MockUnrecoverableErrorHandler() override = default;
+
+  void OnUnrecoverableError(const base::Location& from_here,
+                            const std::string& message) override {
+    ++invocation_count_;
+  }
+
+  // Returns the number of times this handler has been invoked.
+  int invocation_count() const { return invocation_count_; }
+
+  base::WeakPtr<MockUnrecoverableErrorHandler> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  int invocation_count_ = 0;
+  base::WeakPtrFactory<MockUnrecoverableErrorHandler> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(MockUnrecoverableErrorHandler);
+};
 
 bool IsLegalNewParent(const Entry& a, const Entry& b) {
   return IsLegalNewParent(a.trans(), a.GetId(), b.GetId());

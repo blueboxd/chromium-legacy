@@ -698,12 +698,15 @@ TEST(VectorTest, First) {
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_EQ(3, current);
   hr = iterator->MoveNext(&has_current);
-  EXPECT_FALSE(SUCCEEDED(hr));
-  EXPECT_EQ(E_BOUNDS, hr);
+  EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_FALSE(has_current);
   hr = iterator->get_Current(&current);
   EXPECT_FALSE(SUCCEEDED(hr));
   EXPECT_EQ(E_BOUNDS, hr);
+  hr = iterator->MoveNext(&has_current);
+  EXPECT_FALSE(SUCCEEDED(hr));
+  EXPECT_EQ(E_BOUNDS, hr);
+  EXPECT_FALSE(has_current);
 
   hr = vec->First(&iterator);
   EXPECT_TRUE(SUCCEEDED(hr));
@@ -713,6 +716,134 @@ TEST(VectorTest, First) {
   EXPECT_TRUE(SUCCEEDED(hr));
   EXPECT_EQ(3u, actual);
   EXPECT_THAT(copy, ElementsAre(1, 2, 3));
+}
+
+TEST(VectorTest, MoveNext_S_OK_ValidItem) {
+  auto vec = Make<Vector<int>>(g_one_two_three);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  // Moving next to a valid item should return S_OK:
+  // [1, 2, 3]
+  //  |->|
+  EXPECT_EQ(S_OK, iterator->MoveNext(&has_current));
+}
+
+TEST(VectorTest, MoveNext_S_OK_FromLastItem) {
+  auto vec = Make<Vector<int>>(g_one);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  // Moving next past the last item should return S_OK:
+  // [1]
+  //  |->|
+  EXPECT_EQ(S_OK, iterator->MoveNext(&has_current));
+}
+
+TEST(VectorTest, MoveNext_E_CHANGED_STATE_ValidItem) {
+  auto vec = Make<Vector<int>>(g_one_two_three);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  vec->Append(4);
+
+  // Moving next after changing the vector should return E_CHANGED_STATE:
+  EXPECT_EQ(E_CHANGED_STATE, iterator->MoveNext(&has_current));
+}
+
+TEST(VectorTest, MoveNext_E_CHANGED_STATE_AfterLastItem) {
+  auto vec = Make<Vector<int>>(g_one);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+  iterator->MoveNext(&has_current);
+
+  vec->Append(4);
+
+  // Moving next after changing the vector should return E_CHANGED_STATE:
+  EXPECT_EQ(E_CHANGED_STATE, iterator->MoveNext(&has_current));
+}
+
+TEST(VectorTest, MoveNext_E_BOUNDS) {
+  auto vec = Make<Vector<int>>(g_one);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+  iterator->MoveNext(&has_current);
+
+  // Moving next when already past the last item should return E_BOUNDS:
+  // [1]
+  //     |->|
+  EXPECT_EQ(E_BOUNDS, iterator->MoveNext(&has_current));
+}
+
+TEST(VectorTest, MoveNext_HasCurrent_ValidItem) {
+  auto vec = Make<Vector<int>>(g_one_two_three);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  // Moving next to a valid item should set |has_current| to true:
+  // [1, 2, 3]
+  //  |->|
+  iterator->MoveNext(&has_current);
+  EXPECT_TRUE(has_current);
+}
+
+TEST(VectorTest, MoveNext_HasCurrent_LastItem) {
+  auto vec = Make<Vector<int>>(g_one_two);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  // Moving next to the last item should set |has_current| to true:
+  // [1, 2]
+  //  |->|
+  iterator->MoveNext(&has_current);
+  EXPECT_TRUE(has_current);
+}
+
+TEST(VectorTest, MoveNext_HasCurrent_FromLastItem) {
+  auto vec = Make<Vector<int>>(g_one);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+  iterator->MoveNext(&has_current);
+
+  // Moving next when already past the end should set |has_current| to false:
+  // [1]
+  //     |->|
+  iterator->MoveNext(&has_current);
+  EXPECT_FALSE(has_current);
+}
+
+TEST(VectorTest, MoveNext_HasCurrent_AfterLastItem) {
+  auto vec = Make<Vector<int>>(g_one);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+
+  // Moving next from the last item should set |has_current| to false:
+  // [1]
+  //  |->|
+  boolean has_current;
+  iterator->MoveNext(&has_current);
+  EXPECT_FALSE(has_current);
+}
+
+TEST(VectorTest, MoveNext_HasCurrent_Changed) {
+  auto vec = Make<Vector<int>>(g_one_two);
+  ComPtr<IIterator<int>> iterator;
+  vec->First(&iterator);
+  boolean has_current;
+
+  vec->Append(4);
+
+  // Moving next after changing the vector should set |has_current| to false:
+  iterator->MoveNext(&has_current);
+  EXPECT_FALSE(has_current);
 }
 
 }  // namespace win

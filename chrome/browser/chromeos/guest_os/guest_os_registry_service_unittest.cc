@@ -188,7 +188,7 @@ TEST_F(GuestOsRegistryServiceTest, Observer) {
   service()->UpdateApplicationList(app_list);
 }
 
-TEST_F(GuestOsRegistryServiceTest, NoObserverForPvmDefault) {
+TEST_F(GuestOsRegistryServiceTest, ObserverForPvmDefault) {
   ApplicationList app_list = crostini::CrostiniTestHelper::BasicAppList(
       "app 1", "PvmDefault", "container");
   app_list.set_vm_type(vm_tools::apps::ApplicationList_VmType_PLUGIN_VM);
@@ -198,19 +198,19 @@ TEST_F(GuestOsRegistryServiceTest, NoObserverForPvmDefault) {
   Observer observer;
   service()->AddObserver(&observer);
 
-  // Observers should not be called when apps are added or updated.
+  // Observers should be called when apps are added or updated.
   EXPECT_CALL(observer, OnRegistryUpdated(
                             service(), testing::IsEmpty(), testing::IsEmpty(),
                             testing::UnorderedElementsAre(app_id_1)))
-      .Times(0);
+      .Times(1);
   service()->UpdateApplicationList(app_list);
 
-  // Observers should not be called when apps are removed.
+  // Observers should be called when apps are removed.
   EXPECT_CALL(observer,
               OnRegistryUpdated(service(), testing::IsEmpty(),
                                 testing::UnorderedElementsAre(app_id_1),
                                 testing::IsEmpty()))
-      .Times(0);
+      .Times(1);
   service()->ClearApplicationList(
       GuestOsRegistryService::VmType::ApplicationList_VmType_PLUGIN_VM,
       "PvmDefault", "");

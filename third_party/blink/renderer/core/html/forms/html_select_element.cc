@@ -364,7 +364,7 @@ bool HTMLSelectElement::CanSelectAll() const {
 }
 
 bool HTMLSelectElement::TypeShouldForceLegacyLayout() const {
-  if (UsesMenuList()) {
+  if (!RuntimeEnabledFeatures::LayoutNGForControlsEnabled() && UsesMenuList()) {
     UseCounter::Count(GetDocument(), WebFeature::kLegacyLayoutByMenuList);
     return true;
   }

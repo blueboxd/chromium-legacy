@@ -157,6 +157,12 @@ public class PaymentRequestImpl
          * be true in tests.
          */
         boolean skipUiForBasicCard();
+        /**
+         * If running inside of a Trusted Web Activity, returns the package name for Trusted Web
+         * Activity. Otherwise returns an empty string or null.
+         */
+        @Nullable
+        String getTwaPackageName(@Nullable ChromeActivity activity);
     }
 
     /**
@@ -570,8 +576,6 @@ public class PaymentRequestImpl
      * basic-card).
      */
     private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
-
-    private TwaPackageManagerDelegate mTwaPackageManagerDelegate = new TwaPackageManagerDelegate();
 
     /**
      * Builds the PaymentRequest service implementation.
@@ -2825,9 +2829,8 @@ public class PaymentRequestImpl
     }
 
     private boolean isInTwa() {
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        if (activity == null) return false;
-        return mTwaPackageManagerDelegate.getTwaPackageName(activity) != null;
+        return !TextUtils.isEmpty(
+                mDelegate.getTwaPackageName(ChromeActivity.fromWebContents(mWebContents)));
     }
 
     /**

@@ -460,11 +460,6 @@ public final class ChromePreferenceKeys {
     public static final String INCOGNITO_SHORTCUT_ADDED = "incognito-shortcut-added";
 
     /**
-     * Key for UUID-based generator used for Chrome Invalidations (sync, etc.).
-     */
-    public static final String INVALIDATIONS_UUID_PREF_KEY = "chromium.invalidations.uuid";
-
-    /**
      * When the user is shown a badge that the current Android OS version is unsupported, and they
      * tap it to display the menu (which has additional information), we store the current version
      * of Chrome to this preference to ensure we only show the badge once. The value is cleared

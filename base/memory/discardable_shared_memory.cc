@@ -41,8 +41,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/memory_allocator_dump.h"  // no-presubmit-check
+#include "base/trace_event/process_memory_dump.h"    // no-presubmit-check
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {

@@ -17,13 +17,12 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/test/mock_rtpreceiver.h"
@@ -66,7 +65,7 @@ class RTCRtpTransceiverImplTest : public ::testing::Test {
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
   CreateLocalTrackAndAdapter(const std::string& id) {
-    return track_map_->GetOrCreateLocalTrackAdapter(CreateBlinkLocalTrack(id));
+    return track_map_->GetOrCreateLocalTrackAdapter(CreateLocalTrack(id));
   }
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
@@ -151,21 +150,21 @@ class RTCRtpTransceiverImplTest : public ::testing::Test {
   }
 
  protected:
-  blink::WebMediaStreamTrack CreateBlinkLocalTrack(const std::string& id) {
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(
-        blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
-        blink::WebString::FromUTF8("local_audio_track"), false);
-    blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+  MediaStreamComponent* CreateLocalTrack(const std::string& id) {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8(id), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("local_audio_track"), false);
+    auto audio_source = std::make_unique<MediaStreamAudioSource>(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+    auto* audio_source_ptr = audio_source.get();
     // Takes ownership of |audio_source|.
-    web_source.SetPlatformSource(base::WrapUnique(audio_source));
+    audio_source->SetOwner(source);
+    source->SetPlatformSource(std::move(audio_source));
 
-    blink::WebMediaStreamTrack web_track;
-    web_track.Initialize(web_source.Id(), web_source);
-    audio_source->ConnectToTrack(web_track);
-    return web_track;
+    auto* component =
+        MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
+    audio_source_ptr->ConnectToTrack(component);
+    return component;
   }
 
   void CreateRemoteTrackAdapterOnSignalingThread(

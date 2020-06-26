@@ -77,8 +77,8 @@ id ExecuteJavaScript(WKWebView* web_view,
   });
   // Log stack trace to provide some context.
   EXPECT_TRUE(success)
-      << block_error.description
-      << " WKWebView failed to complete javascript execution.\n"
+      << base::SysNSStringToUTF8(block_error.description)
+      << "\nWKWebView failed to complete javascript execution.\n"
       << base::SysNSStringToUTF8(
              [[NSThread callStackSymbols] componentsJoinedByString:@"\n"]);
   if (error) {

@@ -257,25 +257,6 @@ void Navigator::DidNavigate(
     // and/or <meta> elements - we need to reset CSP and Feature Policy.
     render_frame_host->ResetContentSecurityPolicies();
     frame_tree_node->ResetForNavigation();
-
-    // Back-forward cache navigations should not update the embedding token.
-    //
-    // |was_within_same_document| (controlled by the renderer) also needs
-    // to be considered: in some cases, the browser and renderer can disagree.
-    // While this is usually a bad message kill, there are some situations
-    // where this can legitimately happen. When a new frame is created (e.g.
-    // with <iframe src="...">), the initial about:blank document doesn't have
-    // a corresponding entry in the browser process. As a result, the browser
-    // process incorrectly determines that the navigation is cross-document
-    // when in reality it's same-document.
-    if (!navigation_request->IsServedFromBackForwardCache() &&
-        !was_within_same_document) {
-      DCHECK(params.embedding_token.has_value());
-      // Save the new document's embedding token and propagate to any parent
-      // document that embeds it. A token exists for all navigations creating a
-      // new document.
-      render_frame_host->SetEmbeddingToken(params.embedding_token.value());
-    }
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
@@ -323,7 +304,27 @@ void Navigator::DidNavigate(
         site_instance);
   }
 
-  render_frame_host->DidNavigate(params, is_same_document_navigation);
+  // Back-forward cache navigations do not create a new document.
+  //
+  // |was_within_same_document| (controlled by the renderer) also needs to be
+  // considered: in some cases, the browser and renderer can disagree. While
+  // this is usually a bad message kill, there are some situations where this
+  // can legitimately happen. When a new frame is created (e.g. with
+  // <iframe src="...">), the initial about:blank document doesn't have a
+  // corresponding entry in the browser process. As a result, the browser
+  // process incorrectly determines that the navigation is cross-document when
+  // in reality it's same-document.
+  //
+  // TODO(crbug/1099264): Remove |was_within_same_document| from this logic
+  // once all same-document navigations have a NavigationEntry. Once this
+  // happens there should be no cases where the browser and renderer
+  // legitimately disagree as described above.
+  bool did_create_new_document =
+      !navigation_request->IsServedFromBackForwardCache() &&
+      !is_same_document_navigation && !was_within_same_document;
+
+  render_frame_host->DidNavigate(params, is_same_document_navigation,
+                                 did_create_new_document);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

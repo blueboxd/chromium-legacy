@@ -5174,7 +5174,7 @@ def _CheckStrings(input_api, output_api):
       'screenshots check.'))
 
   if icu_syntax_errors:
-    results.append(output_api.PresubmitError(
+    results.append(output_api.PresubmitPromptWarning(
       'ICU syntax errors were found in the following strings (problems or '
       'feedback? Contact rainhard@chromium.org):', items=icu_syntax_errors))
 

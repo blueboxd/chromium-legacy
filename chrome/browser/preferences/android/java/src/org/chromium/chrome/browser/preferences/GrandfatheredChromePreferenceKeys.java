@@ -109,7 +109,6 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.HOMEPAGE_ENABLED,
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI,
                 ChromePreferenceKeys.INCOGNITO_SHORTCUT_ADDED,
-                ChromePreferenceKeys.INVALIDATIONS_UUID_PREF_KEY,
                 ChromePreferenceKeys.LATEST_UNSUPPORTED_VERSION,
                 ChromePreferenceKeys.LOCALE_MANAGER_AUTO_SWITCH,
                 ChromePreferenceKeys.LOCALE_MANAGER_PROMO_SHOWN,

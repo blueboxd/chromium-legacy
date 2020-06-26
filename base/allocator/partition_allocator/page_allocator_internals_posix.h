@@ -155,28 +155,6 @@ void* SystemAllocPagesInternal(void* hint,
   return ret;
 }
 
-void* TrimMappingInternal(void* base,
-                          size_t base_length,
-                          size_t trim_length,
-                          PageAccessibilityConfiguration accessibility,
-                          bool commit,
-                          size_t pre_slack,
-                          size_t post_slack) {
-  void* ret = base;
-  // We can resize the allocation run. Release unneeded memory before and after
-  // the aligned range.
-  if (pre_slack) {
-    int res = munmap(base, pre_slack);
-    PCHECK(!res);
-    ret = reinterpret_cast<char*>(base) + pre_slack;
-  }
-  if (post_slack) {
-    int res = munmap(reinterpret_cast<char*>(ret) + trim_length, post_slack);
-    PCHECK(!res);
-  }
-  return ret;
-}
-
 bool TrySetSystemPagesAccessInternal(
     void* address,
     size_t length,
@@ -193,6 +171,26 @@ void SetSystemPagesAccessInternal(
 
 void FreePagesInternal(void* address, size_t length) {
   PCHECK(!munmap(address, length));
+}
+
+void* TrimMappingInternal(void* base,
+                          size_t base_length,
+                          size_t trim_length,
+                          PageAccessibilityConfiguration accessibility,
+                          bool commit,
+                          size_t pre_slack,
+                          size_t post_slack) {
+  void* ret = base;
+  // We can resize the allocation run. Release unneeded memory before and after
+  // the aligned range.
+  if (pre_slack) {
+    FreePages(base, pre_slack);
+    ret = reinterpret_cast<char*>(base) + pre_slack;
+  }
+  if (post_slack) {
+    FreePages(reinterpret_cast<char*>(ret) + trim_length, post_slack);
+  }
+  return ret;
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {

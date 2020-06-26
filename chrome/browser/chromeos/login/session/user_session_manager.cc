@@ -2046,9 +2046,6 @@ void UserSessionManager::OnChildPolicyReady(
 }
 
 void UserSessionManager::ActiveUserChanged(user_manager::User* active_user) {
-  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
-    SendUserPodsMetrics();
-
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(active_user);
   // If profile has not yet been initialized, delay initialization of IME.
   if (!profile)
@@ -2212,29 +2209,6 @@ void UserSessionManager::InjectAuthenticatorBuilder(
     std::unique_ptr<StubAuthenticatorBuilder> builder) {
   injected_authenticator_builder_ = std::move(builder);
   authenticator_.reset();
-}
-
-void UserSessionManager::SendUserPodsMetrics() {
-  bool show_users_on_signin;
-  CrosSettings::Get()->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
-                                  &show_users_on_signin);
-  bool is_enterprise_managed = g_browser_process->platform_part()
-                                   ->browser_policy_connector_chromeos()
-                                   ->IsEnterpriseManaged();
-  UserPodsDisplay display;
-  if (show_users_on_signin) {
-    if (is_enterprise_managed)
-      display = USER_PODS_DISPLAY_ENABLED_MANAGED;
-    else
-      display = USER_PODS_DISPLAY_ENABLED_REGULAR;
-  } else {
-    if (is_enterprise_managed)
-      display = USER_PODS_DISPLAY_DISABLED_MANAGED;
-    else
-      display = USER_PODS_DISPLAY_DISABLED_REGULAR;
-  }
-  UMA_HISTOGRAM_ENUMERATION("UserSessionManager.UserPodsDisplay", display,
-                            NUM_USER_PODS_DISPLAY);
 }
 
 void UserSessionManager::OnOAuth2TokensFetched(UserContext context) {

@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/scoped_observer.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -65,7 +66,7 @@ void SyncASIdentityStore(ArchivableCredentialStore* credential_store) {
       }
       auto replaceCompletion = ^(BOOL success, NSError* error) {
         DCHECK(success) << "Failed to update store, error: "
-                        << error.description;
+                        << base::SysNSStringToUTF8(error.description);
         NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
         NSString* key =
             kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted;

@@ -14,7 +14,7 @@
 #include "base/tracing_buildflags.h"
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
-#include "base/trace_event/trace_event_impl.h"
+#include "base/trace_event/trace_event_impl.h"  // no-presubmit-check
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {

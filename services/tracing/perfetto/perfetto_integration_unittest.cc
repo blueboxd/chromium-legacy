@@ -10,12 +10,16 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/perfetto/test_utils.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_platform.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 #include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 
 // TODO(crbug.com/961066): Fix memory leaks in tests and re-enable on LSAN.
@@ -361,6 +365,32 @@ TEST_F(PerfettoIntegrationTest,
   EXPECT_TRUE((*client2)->shared_memory_for_testing());
   EXPECT_NE((*client1)->shared_memory_for_testing(),
             (*client2)->shared_memory_for_testing());
+}
+
+TEST_F(PerfettoIntegrationTest, PerfettoPlatformTest) {
+  auto* platform =
+      PerfettoTracedProcess::Get()->perfetto_platform_for_testing();
+  auto* tls = platform->GetOrCreateThreadLocalObject();
+  EXPECT_TRUE(tls);
+  EXPECT_EQ(tls, platform->GetOrCreateThreadLocalObject());
+
+  base::Thread thread("TestThread");
+  thread.Start();
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&platform, &tls] {
+        auto* thread_tls = platform->GetOrCreateThreadLocalObject();
+        EXPECT_TRUE(thread_tls);
+        EXPECT_NE(tls, thread_tls);
+      }));
+  thread.Stop();
+}
+
+TEST_F(PerfettoIntegrationTest, PerfettoClientLibraryTest) {
+  PerfettoTracedProcess::Get()->SetupClientLibrary();
+  // Create a dummy tracing session without any active backends to check that
+  // the client library was initialized.
+  auto tracing_session = perfetto::Tracing::NewTrace();
+  EXPECT_TRUE(tracing_session);
 }
 
 }  // namespace

@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/entry_info.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -41,72 +43,12 @@ namespace file_tasks {
 
 namespace {
 
-constexpr base::TimeDelta kIconLoadTimeout =
-    base::TimeDelta::FromMilliseconds(100);
-constexpr size_t kIconSizeInDip = 16;
 // When MIME type detection is done; if we can't be properly determined then
 // the detection system will end up guessing one of the 2 values below depending
 // upon whether it "thinks" it is binary or text content.
 constexpr char kUnknownBinaryMimeType[] = "application/octet-stream";
 constexpr char kUnknownTextMimeType[] = "text/plain";
 constexpr char kPluginVmAppNameSuffix[] = " (Windows)";
-
-GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
-  std::vector<unsigned char> output;
-  gfx::PNGCodec::EncodeBGRASkBitmap(sk_bitmap, false /* discard_transparency */,
-                                    &output);
-  std::string encoded;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(output.data()),
-                        output.size()),
-      &encoded);
-  return GURL("data:image/png;base64," + encoded);
-}
-
-void OnAppIconsLoaded(
-    Profile* profile,
-    const std::vector<std::string>& app_ids,
-    const std::vector<std::string>& app_names,
-    const std::vector<guest_os::GuestOsRegistryService::VmType>& vm_types,
-    ui::ScaleFactor scale_factor,
-    std::vector<FullTaskDescriptor>* result_list,
-    base::OnceClosure completion_closure,
-    const std::vector<gfx::ImageSkia>& icons) {
-  DCHECK(!app_ids.empty());
-  DCHECK_EQ(app_ids.size(), icons.size());
-
-  float scale = ui::GetScaleForScaleFactor(scale_factor);
-
-  std::vector<TaskType> task_types;
-  task_types.reserve(vm_types.size());
-  for (auto vm_type : vm_types) {
-    switch (vm_type) {
-      case guest_os::GuestOsRegistryService::VmType::
-          ApplicationList_VmType_TERMINA:
-        task_types.push_back(TASK_TYPE_CROSTINI_APP);
-        break;
-      case guest_os::GuestOsRegistryService::VmType::
-          ApplicationList_VmType_PLUGIN_VM:
-        task_types.push_back(TASK_TYPE_PLUGIN_VM_APP);
-        break;
-      default:
-        LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
-        return;
-    }
-  }
-
-  for (size_t i = 0; i < app_ids.size(); ++i) {
-    result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(app_ids[i], task_types[i], kGuestOsAppActionID),
-        app_names[i],
-        extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
-        GeneratePNGDataUrl(icons[i].GetRepresentation(scale).GetBitmap()),
-        false /* is_default */, false /* is_generic */,
-        false /* is_file_extension_match */));
-  }
-
-  std::move(completion_closure).Run();
-}
 
 bool HasSupportedMimeType(
     const std::set<std::string>& supported_mime_types,
@@ -267,13 +209,36 @@ void FindGuestOsTasks(Profile* profile,
     return;
   }
 
-  ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors().back();
+  std::vector<TaskType> task_types;
+  task_types.reserve(result_vm_types.size());
+  for (auto vm_type : result_vm_types) {
+    switch (vm_type) {
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_TERMINA:
+        task_types.push_back(TASK_TYPE_CROSTINI_APP);
+        break;
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_PLUGIN_VM:
+        task_types.push_back(TASK_TYPE_PLUGIN_VM_APP);
+        break;
+      default:
+        LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
+        return;
+    }
+  }
 
-  crostini::LoadIcons(
-      profile, result_app_ids, kIconSizeInDip, scale_factor, kIconLoadTimeout,
-      base::BindOnce(OnAppIconsLoaded, profile, result_app_ids,
-                     std::move(result_app_names), std::move(result_vm_types),
-                     scale_factor, result_list, std::move(completion_closure)));
+  for (size_t i = 0; i < result_app_ids.size(); ++i) {
+    GURL icon_url(
+        base::StrCat({chrome::kChromeUIAppIconURL, result_app_ids[i], "/32"}));
+    result_list->push_back(FullTaskDescriptor(
+        TaskDescriptor(result_app_ids[i], task_types[i], kGuestOsAppActionID),
+        result_app_names[i],
+        extensions::api::file_manager_private::Verb::VERB_OPEN_WITH, icon_url,
+        /*is_default=*/false, /*is_generic=*/false,
+        /*is_file_extension_match=*/false));
+  }
+
+  std::move(completion_closure).Run();
 }
 
 void ExecuteGuestOsTask(

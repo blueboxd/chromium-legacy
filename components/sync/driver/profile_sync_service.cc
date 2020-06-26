@@ -32,7 +32,6 @@
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/backend_migrator.h"
@@ -375,11 +374,6 @@ WeakHandle<JsEventHandler> ProfileSyncService::GetJsEventHandler() {
   return MakeWeakHandle(sync_js_controller_.AsWeakPtr());
 }
 
-WeakHandle<UnrecoverableErrorHandler>
-ProfileSyncService::GetUnrecoverableErrorHandler() {
-  return MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr());
-}
-
 void ProfileSyncService::AccountStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -631,9 +625,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.engine_components_factory =
       std::make_unique<EngineComponentsFactoryImpl>(
           EngineSwitchesFromCommandLine());
-  params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
-  params.report_unrecoverable_error_function =
-      base::BindRepeating(ReportUnrecoverableError, channel_);
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
   params.poll_interval = sync_prefs_.GetPollInterval();
   if (params.poll_interval.is_zero()) {
@@ -894,18 +885,6 @@ void ProfileSyncService::ClearUnrecoverableError() {
   unrecoverable_error_reason_ = ERROR_REASON_UNSET;
   unrecoverable_error_message_.clear();
   unrecoverable_error_location_ = base::Location();
-}
-
-// An invariant has been violated.  Transition to an error state where we try
-// to do as little work as possible, to avoid further corruption or crashes.
-void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
-                                              const std::string& message) {
-  // TODO(crbug.com/840720): Get rid of the UnrecoverableErrorHandler interface
-  // and instead pass a callback.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Unrecoverable errors that arrive via the UnrecoverableErrorHandler
-  // interface are assumed to originate within the syncer.
-  OnUnrecoverableErrorImpl(from_here, message, ERROR_REASON_SYNCER);
 }
 
 void ProfileSyncService::OnUnrecoverableErrorImpl(

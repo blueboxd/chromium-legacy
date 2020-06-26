@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/html/loading_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
@@ -150,7 +151,7 @@ class TokenPreloadScanner::StartTagScanner {
         referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
         integrity_attr_set_(false),
         integrity_features_(features),
-        loading_attr_value_(LoadingAttrValue::kAuto),
+        loading_attr_value_(LoadingAttributeValue::kAuto),
         width_attr_dimension_type_(
             HTMLImageElement::LazyLoadDimensionType::kNotAbsolute),
         height_attr_dimension_type_(
@@ -317,8 +318,6 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
  private:
-  enum class LoadingAttrValue { kAuto, kLazy, kEager };
-
   template <typename NameType>
   void ProcessScriptAttribute(const NameType& attribute_name,
                               const String& attribute_value) {
@@ -377,15 +376,10 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, html_names::kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
-    } else if (loading_attr_value_ == LoadingAttrValue::kAuto &&
+    } else if (loading_attr_value_ == LoadingAttributeValue::kAuto &&
                Match(attribute_name, html_names::kLoadingAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled()) {
-      loading_attr_value_ =
-          EqualIgnoringASCIICase(attribute_value, "eager")
-              ? LoadingAttrValue::kEager
-              : EqualIgnoringASCIICase(attribute_value, "lazy")
-                    ? LoadingAttrValue::kLazy
-                    : LoadingAttrValue::kAuto;
+      loading_attr_value_ = GetLoadingAttributeValue(attribute_value);
     } else if (width_attr_dimension_type_ ==
                    HTMLImageElement::LazyLoadDimensionType::kNotAbsolute &&
                Match(attribute_name, html_names::kWidthAttr) &&
@@ -553,11 +547,11 @@ class TokenPreloadScanner::StartTagScanner {
     }
 
     switch (loading_attr_value_) {
-      case LoadingAttrValue::kEager:
+      case LoadingAttributeValue::kEager:
         return false;
-      case LoadingAttrValue::kLazy:
+      case LoadingAttributeValue::kLazy:
         return true;
-      case LoadingAttrValue::kAuto:
+      case LoadingAttributeValue::kAuto:
         if ((width_attr_dimension_type_ ==
                  HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
              height_attr_dimension_type_ ==
@@ -751,7 +745,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool integrity_attr_set_;
   IntegrityMetadataSet integrity_metadata_;
   SubresourceIntegrity::IntegrityFeatures integrity_features_;
-  LoadingAttrValue loading_attr_value_;
+  LoadingAttributeValue loading_attr_value_;
   HTMLImageElement::LazyLoadDimensionType width_attr_dimension_type_;
   HTMLImageElement::LazyLoadDimensionType height_attr_dimension_type_;
   HTMLImageElement::LazyLoadDimensionType inline_style_dimensions_type_;

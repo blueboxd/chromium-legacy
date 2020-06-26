@@ -23,6 +23,26 @@ promise_test(t => {
   return promise_rejects_dom(t, "InvalidAccessError", pc.setRemoteDescription(sd));
 }, 'Local RTP channel, remote offer of SCTP channel');
 
+promise_test(async t => {
+  var pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  pc.createDataChannel('');
+  offer = await pc.createOffer();
+  assert_regexp_match(offer.sdp, /m=application .* webrtc-datachannel/);
+  assert_equals(offer.sdp.match(/a=rtpmap:\d+ google-data/), null);
+}, 'Asking for default Data Channels generates appropriate offer');
+
+promise_test(async t => {
+  const rtpConstraints = { optional: [{ RtpDataChannels: true}]};
+
+  var pc = new RTCPeerConnection({}, rtpConstraints);
+  t.add_cleanup(() => pc.close());
+  pc.createDataChannel('');
+  offer = await pc.createOffer();
+  assert_equals(offer.sdp.match(/m=application .* webrtc-datachannel/), null);
+  assert_regexp_match(offer.sdp, /a=rtpmap:\d+ google-data/);
+}, 'Asking for RTP Data Channels generates appropriate offer');
+
 </script>
 </body>
 </html>

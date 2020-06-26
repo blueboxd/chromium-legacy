@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/web/public/web_state.h"
 
@@ -45,7 +46,8 @@
           UIPrintInteractionController* printInteractionController,
           BOOL completed, NSError* error) {
         if (error)
-          DLOG(ERROR) << "Air printing error: " << error.description;
+          DLOG(ERROR) << "Air printing error: "
+                      << base::SysNSStringToUTF8(error.description);
       }];
 }
 

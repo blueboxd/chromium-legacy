@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -18,6 +19,21 @@ namespace auto_screen_brightness {
 
 namespace {
 constexpr double kTol = 1e-10;
+
+// Entries should not be renumbered and numeric values should never be reused.
+enum class InvalidCurveReason {
+  kTooFewPoints = 0,
+  kUnequalXY = 1,
+  kKnotsNotIncreasing = 2,
+  kControlsDecreasing = 3,
+  kMaxValue = kControlsDecreasing
+};
+
+void LogError(InvalidCurveReason reason) {
+  base::UmaHistogramEnumeration("AutoScreenBrightness.InvalidCurveReason",
+                                reason);
+  VLOG(1) << "ABCurve invalid curve: " << static_cast<int>(reason);
+}
 
 bool IsIncreasing(const std::vector<double>& data, bool is_strict) {
   DCHECK_GT(data.size(), 1u);
@@ -30,16 +46,27 @@ bool IsIncreasing(const std::vector<double>& data, bool is_strict) {
 
 bool IsDataValid(const std::vector<double>& xs, const std::vector<double>& ys) {
   const size_t num_points = xs.size();
-  if (num_points < 2)
+  if (num_points < 2) {
+    LogError(InvalidCurveReason::kTooFewPoints);
     return false;
+  }
 
-  if (num_points != ys.size())
+  if (num_points != ys.size()) {
+    LogError(InvalidCurveReason::kUnequalXY);
     return false;
+  }
 
-  if (!IsIncreasing(xs, true /* is_strict */))
+  if (!IsIncreasing(xs, true /* is_strict */)) {
+    LogError(InvalidCurveReason::kKnotsNotIncreasing);
     return false;
+  }
 
-  return IsIncreasing(ys, false /* is_strict */);
+  if (!IsIncreasing(ys, false /* is_strict */)) {
+    LogError(InvalidCurveReason::kControlsDecreasing);
+    return false;
+  }
+
+  return true;
 }
 
 // Computes the tangents at every control point as the average of the secants,

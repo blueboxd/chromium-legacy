@@ -104,6 +104,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
      * about the system.
      */
     public static class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
+        private final TwaPackageManagerDelegate mPackageManager = new TwaPackageManagerDelegate();
+
         @Override
         public boolean isOffTheRecord(@Nullable ChromeActivity activity) {
             return activity != null && activity.getCurrentTabModel().getProfile().isOffTheRecord();
@@ -130,6 +132,12 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         @Override
         public boolean skipUiForBasicCard() {
             return false; // Only tests do this.
+        }
+
+        @Override
+        @Nullable
+        public String getTwaPackageName(@Nullable ChromeActivity activity) {
+            return activity != null ? mPackageManager.getTwaPackageName(activity) : null;
         }
     }
 

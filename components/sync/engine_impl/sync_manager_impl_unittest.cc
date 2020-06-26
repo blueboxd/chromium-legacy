@@ -24,7 +24,6 @@
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/extensions_activity.h"
-#include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine/engine_util.h"
@@ -792,8 +791,6 @@ class SyncManagerTest : public testing::Test,
     args.local_sync_backend_folder = temp_dir_.GetPath();
     args.engine_components_factory.reset(GetFactory());
     args.encryption_handler = &encryption_handler_;
-    args.unrecoverable_error_handler =
-        MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
     args.poll_interval = base::TimeDelta::FromMinutes(60);
     sync_manager_.Init(&args);
@@ -917,10 +914,6 @@ class SyncManagerTest : public testing::Test,
                 OnCryptographerStateChanged(_, /*has_pending_keys=*/false));
   }
 
-  bool HasUnrecoverableError() {
-    return mock_unrecoverable_error_handler_.invocation_count() > 0;
-  }
-
  private:
   // Needed by |sync_manager_|.
   base::test::TaskEnvironment task_environment_;
@@ -940,7 +933,6 @@ class SyncManagerTest : public testing::Test,
   // Owned by |sync_manager_|.
   StrictMock<SyncEncryptionHandlerObserverMock>* encryption_observer_;
   EngineComponentsFactory::StorageOption storage_used_;
-  MockUnrecoverableErrorHandler mock_unrecoverable_error_handler_;
 };
 
 // Create a bookmark and set the title/url, then verify the data was properly

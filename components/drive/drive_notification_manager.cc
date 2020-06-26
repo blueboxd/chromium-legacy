@@ -17,7 +17,6 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
-#include "google/cacheinvalidation/types.pb.h"
 
 namespace drive {
 

@@ -436,7 +436,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingFixCollisions) {
       GetProfile(0), WebappInstallSource::OMNIBOX_INSTALL_ICON,
       GetUserInitiatedAppURL2());
 
-  // Wait for the second install (as they install in order).
+  // Wait for both installs.
+  EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id1).AwaitNextInstall(),
+            app_id1);
   EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id2).AwaitNextInstall(),
             app_id2);
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());

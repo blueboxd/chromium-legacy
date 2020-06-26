@@ -476,12 +476,15 @@ TEST(MapTest, First) {
   EXPECT_HRESULT_SUCCEEDED(hr);
   EXPECT_EQ(20.3, value);
   hr = iterator->MoveNext(&has_current);
-  EXPECT_FALSE(SUCCEEDED(hr));
-  EXPECT_EQ(E_BOUNDS, hr);
+  EXPECT_HRESULT_SUCCEEDED(hr);
   EXPECT_FALSE(has_current);
   hr = iterator->get_Current(&current);
   EXPECT_FALSE(SUCCEEDED(hr));
   EXPECT_EQ(E_BOUNDS, hr);
+  hr = iterator->MoveNext(&has_current);
+  EXPECT_FALSE(SUCCEEDED(hr));
+  EXPECT_EQ(E_BOUNDS, hr);
+  EXPECT_FALSE(has_current);
 
   // Test invalidation.
   hr = map->First(&iterator);

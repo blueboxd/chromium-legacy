@@ -272,8 +272,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   database_path_ = args->database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
-  report_unrecoverable_error_function_ =
-      args->report_unrecoverable_error_function;
 
   DCHECK(args->encryption_handler);
   sync_encryption_handler_ = args->encryption_handler;
@@ -300,8 +298,8 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(backing_store);
 
   user_share_.directory = std::make_unique<syncable::Directory>(
-      std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_, &nigori_handler_proxy_);
+      std::move(backing_store), WeakHandle<UnrecoverableErrorHandler>(),
+      base::DoNothing(), &nigori_handler_proxy_);
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -907,10 +905,6 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
   } else {
     scheduler_->ScheduleLocalRefreshRequest(types, FROM_HERE);
   }
-}
-
-void SyncManagerImpl::SaveChanges() {
-  directory()->SaveChanges();
 }
 
 UserShare* SyncManagerImpl::GetUserShare() {

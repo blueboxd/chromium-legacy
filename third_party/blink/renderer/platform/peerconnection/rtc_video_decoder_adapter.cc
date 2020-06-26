@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -127,6 +128,16 @@ void OnRequestOverlayInfo(bool decoder_requires_restart_for_overlay,
     std::move(overlay_info_cb).Run(media::OverlayInfo());
 }
 
+void RecordInitializationLatency(base::TimeDelta latency) {
+  base::UmaHistogramTimes("Media.RTCVideoDecoderInitializationLatencyMs",
+                          latency);
+}
+
+void RecordReinitializationLatency(base::TimeDelta latency) {
+  base::UmaHistogramTimes("Media.RTCVideoDecoderReinitializationLatencyMs",
+                          latency);
+}
+
 }  // namespace
 
 // static
@@ -213,6 +224,7 @@ bool RTCVideoDecoderAdapter::InitializeSync(
   DVLOG(3) << __func__;
   // Can be called on |worker_thread_| or |decoding_thread_|.
   DCHECK(!media_task_runner_->BelongsToCurrentThread());
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;
@@ -227,8 +239,12 @@ bool RTCVideoDecoderAdapter::InitializeSync(
                               CrossThreadUnretained(this), config,
                               std::move(init_cb)))) {
     // TODO(crbug.com/1076817) Remove if a root cause is found.
-    if (!waiter.TimedWait(base::TimeDelta::FromSeconds(10)))
+    if (!waiter.TimedWait(base::TimeDelta::FromSeconds(10))) {
+      RecordInitializationLatency(base::TimeTicks::Now() - start_time);
       return false;
+    }
+
+    RecordInitializationLatency(base::TimeTicks::Now() - start_time);
   }
   return result;
 }
@@ -527,6 +543,7 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
     const media::VideoDecoderConfig& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -546,6 +563,7 @@ bool RTCVideoDecoderAdapter::ReinitializeSync(
                               weak_this_, std::move(flush_success_cb),
                               std::move(flush_fail_cb)))) {
     waiter.Wait();
+    RecordReinitializationLatency(base::TimeTicks::Now() - start_time);
   }
   return result;
 }

@@ -200,7 +200,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c81da1c809fed1f5f0f7ced07584f1dca4d3f7dc',
+  'angle_revision': 'c9f311e46255f65f5aa72beee8c70dca515f10d3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -259,7 +259,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '82270c608217db40144b95d6c016780cdd663647',
+  'devtools_frontend_revision': 'bf571219978d7234cd562875df312d9a3490c02d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -311,7 +311,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '2a6cc4f8fb40beb27a3542528955df7790a42116',
+  'dawn_revision': 'ff90599cdf600e48d5868f8b3d35698686f5b161',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -534,7 +534,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '39de3e3efbabda3e20aabf14485f872979b8d230',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '87422cf14f454ce8c0c9f4a9c3233f2aa73ef6b4',
       'condition': 'checkout_ios',
   },
 
@@ -1230,7 +1230,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c84119493b9c8e2058f5359908c073faa0faf248',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '55be03a1e00161bb91f55545abe45fbe89ad364c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1308,7 +1308,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'YFi4RbbToiNVSl0eKxjhhhAElSEXx2Y9i-5Q4eBGkUwC'
+              'version': 'FN-ckx_oV2JTqPuW3iMG50qdN5FgGqm-4XP9AkoLwPUC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1458,7 +1458,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b19cfeeb5c668bea40fed33628ebf1ec1eeb9c6e',
+    Var('webrtc_git') + '/src.git' + '@' + 'c403081641a89853043ee3cd55ab1d04e2f4b47e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1530,7 +1530,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7be9918fef159ee5934df59d5c49824b16fe9d92',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4b4651dbc2554afbd5359c6b0bf31d5a0c6000b1',
     'condition': 'checkout_src_internal',
   },
 

@@ -19,6 +19,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -109,9 +110,10 @@ void CrostiniApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  for (const auto& pair :
-       registry_->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
-                                        ApplicationList_VmType_TERMINA)) {
+  // Register all apps with app service. We will only show termina apps in
+  // launcher, shelf, etc, but app service will manage icons for all apps which
+  // can appear in FilesApp open-with.
+  for (const auto& pair : registry_->GetAllRegisteredApps()) {
     const std::string& app_id = pair.first;
     const guest_os::GuestOsRegistryService::Registration& registration =
         pair.second;
@@ -149,8 +151,7 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
           static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
           base::BindOnce(&CrostiniApps::LoadIconFromVM,
                          weak_ptr_factory_.GetWeakPtr(), app_id,
-                         icon_compression, size_hint_in_dip,
-                         allow_placeholder_icon, scale_factor,
+                         icon_compression, size_hint_in_dip, scale_factor,
                          static_cast<IconEffects>(icon_key->icon_effects)));
       return;
     }
@@ -244,24 +245,6 @@ void CrostiniApps::OnRegistryUpdated(
   }
 }
 
-void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
-                                    ui::ScaleFactor scale_factor,
-                                    const std::string& compressed_icon_data) {
-  auto range = app_icon_callbacks_.equal_range(app_id);
-  for (auto it = range.first; it != range.second; it++) {
-    apps::mojom::IconCompression icon_compression;
-    int32_t size_hint_in_dip;
-    IconEffects icon_effects;
-    LoadIconCallback callback;
-    std::tie(icon_compression, size_hint_in_dip, icon_effects, callback) =
-        std::move(it->second);
-
-    LoadIconFromCompressedData(icon_compression, size_hint_in_dip, icon_effects,
-                               compressed_icon_data, std::move(callback));
-  }
-  app_icon_callbacks_.erase(range.first, range.second);
-}
-
 void CrostiniApps::OnCrostiniEnabledChanged() {
   crostini_enabled_ =
       profile_ && crostini::CrostiniFeatures::Get()->IsEnabled(profile_);
@@ -282,36 +265,41 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
 void CrostiniApps::LoadIconFromVM(const std::string app_id,
                                   apps::mojom::IconCompression icon_compression,
                                   int32_t size_hint_in_dip,
-                                  bool allow_placeholder_icon,
                                   ui::ScaleFactor scale_factor,
                                   IconEffects icon_effects,
                                   LoadIconCallback callback) {
-  if (allow_placeholder_icon) {
-    // If a placeholder icon is allowed, pass back the crostini penguin while we
-    // load the real icon from the VM.
-    constexpr bool is_placeholder_icon = true;
-    LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         IDR_LOGO_CROSTINI_DEFAULT_192, is_placeholder_icon,
-                         icon_effects, std::move(callback));
-  } else {
-    // If we don't pass back a fallback icon, we need to store the callback to
-    // use later.
-    LoadIconCallback wrapped_callback =
-        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-            std::move(callback), apps::mojom::IconValue::New());
-    app_icon_callbacks_.emplace(
-        app_id,
-        std::forward_as_tuple(std::move(icon_compression), size_hint_in_dip,
-                              icon_effects, std::move(wrapped_callback)));
-  }
+  registry_->RequestIcon(
+      app_id, scale_factor,
+      base::BindOnce(&CrostiniApps::OnLoadIconFromVM,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, icon_compression,
+                     size_hint_in_dip, icon_effects, std::move(callback)));
+}
 
-  // Ask the VM to load the icon (and write a cached copy to the file system).
-  // The "Maybe" is because multiple requests for the same icon will be merged,
-  // calling OnAppIconUpdated only once. In OnAppIconUpdated, the cached
-  // callbacks will be run, we'll publish a new IconKey, and subscribers who
-  // received a placeholder icon can re-schedule new LoadIcon calls, with new
-  // LoadIconCallback's, that will pick up that cached copy.
-  registry_->MaybeRequestIcon(app_id, scale_factor);
+void CrostiniApps::OnLoadIconFromVM(
+    const std::string app_id,
+    apps::mojom::IconCompression icon_compression,
+    int32_t size_hint_in_dip,
+    IconEffects icon_effects,
+    LoadIconCallback callback,
+    std::string compressed_icon_data) {
+  if (compressed_icon_data.empty()) {
+    auto registration = registry_->GetRegistration(app_id);
+    if (registration && registration->VmType() ==
+                            guest_os::GuestOsRegistryService::VmType::
+                                ApplicationList_VmType_TERMINA) {
+      // Load default penguin for crostini. We must set is_placeholder_icon to
+      // false to stop endless recursive calls.
+      LoadIconFromResource(
+          icon_compression, size_hint_in_dip, IDR_LOGO_CROSTINI_DEFAULT_192,
+          /*is_placeholder_icon=*/false, icon_effects, std::move(callback));
+    } else {
+      // Leave it for app service to get a default for Plugin VM.
+      std::move(callback).Run(apps::mojom::IconValue::New());
+    }
+  } else {
+    LoadIconFromCompressedData(icon_compression, size_hint_in_dip, icon_effects,
+                               compressed_icon_data, std::move(callback));
+  }
 }
 
 apps::mojom::AppPtr CrostiniApps::Convert(
@@ -337,8 +325,13 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->last_launch_time = registration.LastLaunchTime();
   app->install_time = registration.InstallTime();
 
-  auto show = !registration.NoDisplay() ? apps::mojom::OptionalBool::kTrue
-                                        : apps::mojom::OptionalBool::kFalse;
+  auto show = apps::mojom::OptionalBool::kTrue;
+  // Only display for termina (not Plugin VM), if no_display not set.
+  if (registration.VmType() != guest_os::GuestOsRegistryService::VmType::
+                                   ApplicationList_VmType_TERMINA ||
+      registration.NoDisplay()) {
+    show = apps::mojom::OptionalBool::kFalse;
+  }
   auto show_in_search = show;
   if (registration.is_terminal_app()) {
     show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
@@ -348,7 +341,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
     show_in_search = apps::mojom::OptionalBool::kTrue;
   }
   app->show_in_launcher = show;
-  app->show_in_shelf = app->show_in_search = show_in_search;
+  app->show_in_search = show_in_search;
+  app->show_in_shelf = show_in_search;
   // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;

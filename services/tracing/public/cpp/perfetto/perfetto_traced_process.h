@@ -20,6 +20,7 @@ class TraceConfig;
 
 namespace tracing {
 
+class PerfettoPlatform;
 class PerfettoProducer;
 class ProducerClient;
 class SystemProducer;
@@ -95,7 +96,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   static PerfettoTracedProcess* Get();
 
   ProducerClient* producer_client() const;
-  SystemProducer* system_producer() const;
+  SystemProducer* system_producer() const;  // May be null.
 
   ~PerfettoTracedProcess();
 
@@ -119,8 +120,18 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
                            const base::trace_event::TraceConfig&,
                            bool privacy_filtering_enabled);
 
+  // Initialize the Perfetto client library (i.e., perfetto::Tracing) for this
+  // process. Should be called early during startup.
+  void SetupClientLibrary();
+
   // Called on the process's main thread once the thread pool is ready.
   void OnThreadPoolAvailable();
+
+  // Called to initialize system tracing, i.e., connecting to a system Perfetto
+  // daemon as a producer. If |system_socket| isn't provided, Perfetto's default
+  // socket name is used.
+  void SetupSystemTracing(base::Optional<const char*> system_socket =
+                              base::Optional<const char*>());
 
   // If the provided |producer| can begin tracing then |start_tracing| will be
   // invoked (unless cancelled by the Perfetto service) at some point later
@@ -150,12 +161,14 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
 
   void ClearDataSourcesForTesting();
   static void DeleteSoonForTesting(std::unique_ptr<PerfettoTracedProcess>);
-  static void ReconstructForTesting(const char* system_socket);
+
+  PerfettoPlatform* perfetto_platform_for_testing() const {
+    return platform_.get();
+  }
 
  protected:
   // protected for testing.
   PerfettoTracedProcess();
-  explicit PerfettoTracedProcess(const char* system_socket);
 
  private:
   friend class base::NoDestructor<PerfettoTracedProcess>;
@@ -172,6 +185,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // is no system Perfetto service this pointer will be valid, but all function
   // calls will be noops.
   std::unique_ptr<SystemProducer> system_producer_;
+
+  // Platform implementation for the Perfetto client library.
+  std::unique_ptr<PerfettoPlatform> platform_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracedProcess);

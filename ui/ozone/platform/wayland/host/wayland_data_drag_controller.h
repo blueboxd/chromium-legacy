@@ -78,7 +78,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
                         std::string* contents) override;
 
   void Offer(const OSExchangeData& data, int operation);
-  wl_surface* CreateIconSurfaceIfNeeded(const OSExchangeData& data);
+  void CreateIconSurfaceIfNeeded(const OSExchangeData& data);
   void HandleUnprocessedMimeTypes();
   void OnMimeTypeDataTransferred(const PlatformClipboard::Data& contents);
   void OnDataTransferFinished(

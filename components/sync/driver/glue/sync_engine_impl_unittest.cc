@@ -29,7 +29,6 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -230,8 +229,6 @@ class SyncEngineImplTest : public testing::Test {
     params.http_factory_getter = base::BindOnce(&CreateHttpBridgeFactory);
     params.authenticated_account_id = CoreAccountId("account_id");
     params.sync_manager_factory = std::move(fake_manager_factory_);
-    params.unrecoverable_error_handler =
-        MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
     sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
 
     backend_->Initialize(std::move(params));
@@ -297,7 +294,6 @@ class SyncEngineImplTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::Thread sync_thread_;
   TestSyncEngineHost host_;
-  TestUnrecoverableErrorHandler test_unrecoverable_error_handler_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<SyncEngineImpl> backend_;
   std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;

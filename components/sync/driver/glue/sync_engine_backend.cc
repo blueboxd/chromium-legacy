@@ -44,8 +44,6 @@
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-static const int kSaveChangesIntervalSeconds = 10;
-
 namespace net {
 class URLFetcher;
 }
@@ -108,12 +106,6 @@ void SyncEngineBackend::OnInitializationComplete(
                &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
     return;
   }
-
-  // Sync manager initialization is complete, so we can schedule recurring
-  // SaveChanges.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::StartSavingChanges,
-                                weak_ptr_factory_.GetWeakPtr()));
 
   // Hang on to these for a while longer.  We're not ready to hand them back to
   // the UI thread yet.
@@ -326,9 +318,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.invalidator_client_id = params.invalidator_client_id;
   args.engine_components_factory = std::move(params.engine_components_factory);
   args.encryption_handler = sync_encryption_handler_.get();
-  args.unrecoverable_error_handler = params.unrecoverable_error_handler;
-  args.report_unrecoverable_error_function =
-      params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
   args.poll_interval = params.poll_interval;
   args.cache_guid = params.cache_guid;
@@ -463,7 +452,6 @@ void SyncEngineBackend::DoDestroySyncManager() {
       this);
   if (sync_manager_) {
     DisableDirectoryTypeDebugInfoForwarding();
-    save_changes_timer_.reset();
     sync_manager_->RemoveObserver(this);
     sync_manager_->ShutdownOnSyncThread();
     sync_manager_.reset();
@@ -569,20 +557,6 @@ void SyncEngineBackend::DisableDirectoryTypeDebugInfoForwarding() {
 
   if (sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
     sync_manager_->UnregisterDirectoryTypeDebugInfoObserver(this);
-}
-
-void SyncEngineBackend::StartSavingChanges() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!save_changes_timer_);
-  save_changes_timer_ = std::make_unique<base::RepeatingTimer>();
-  save_changes_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
-      this, &SyncEngineBackend::SaveChanges);
-}
-
-void SyncEngineBackend::SaveChanges() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->SaveChanges();
 }
 
 void SyncEngineBackend::DoOnCookieJarChanged(bool account_mismatch,

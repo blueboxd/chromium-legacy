@@ -266,11 +266,16 @@ void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
   const bool is_main_script = url == main_script_url_;
 
   ServiceWorkerStorage* storage = version_to_update_->context()->storage();
+  ServiceWorkerRegistry* registry = version_to_update_->context()->registry();
 
   // We need two identical readers for comparing and reading the resource for
   // |resource_id| from the storage.
-  auto compare_reader = storage->CreateResponseReader(resource_id);
-  auto copy_reader = storage->CreateResponseReader(resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader;
+  registry->GetRemoteStorageControl()->CreateResourceReader(
+      resource_id, compare_reader.BindNewPipeAndPassReceiver());
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader;
+  registry->GetRemoteStorageControl()->CreateResourceReader(
+      resource_id, copy_reader.BindNewPipeAndPassReceiver());
 
   auto writer = storage->CreateResponseWriter(new_resource_id);
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(

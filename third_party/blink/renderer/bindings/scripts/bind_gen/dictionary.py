@@ -302,12 +302,49 @@ def make_dict_constructors(cg_context):
     dictionary = cg_context.dictionary
     class_name = blink_class_name(dictionary)
 
+    member_initializer_list = []
+    should_construct_in_source = False
+    for member in dictionary.own_members:
+        if member.default_value is None:
+            continue
+        # In order to avoid cyclic header inclusion of IDL dictionaries, do not
+        # put dictionary member's initialization in the class definition.
+        does_initialize_with_dict = member.default_value.idl_type.is_object
+        if does_initialize_with_dict:
+            should_construct_in_source = True
+
+        default_expr = make_default_value_expr(member.idl_type,
+                                               member.default_value)
+        if (default_expr.initializer_deps == ["isolate"]
+                or does_initialize_with_dict):
+            _1 = _blink_member_name(member).value_var
+            _2 = default_expr.initializer_expr
+            member_initializer_list.append(_format("{_1}({_2})", _1=_1, _2=_2))
+
     if _is_default_ctor_available(dictionary):
-        ctor_decl = CxxFuncDeclNode(name=class_name,
-                                    arg_decls=[],
-                                    return_type="",
-                                    default=True)
-        decls.append(ctor_decl)
+        name = class_name
+        arg_decls = []
+        return_type = ""
+        # In order to avoid cyclic header inclusion of IDL dictionaries, do not
+        # put dictionary member's initialization in the class definition.
+        if should_construct_in_source:
+            ctor_decl = CxxFuncDeclNode(name=name,
+                                        arg_decls=arg_decls,
+                                        return_type=return_type)
+            decls.append(ctor_decl)
+            ctor_def = CxxFuncDefNode(
+                name=name,
+                class_name=class_name,
+                arg_decls=arg_decls,
+                return_type=return_type,
+                member_initializer_list=member_initializer_list)
+            defs.append(ctor_def)
+        else:
+            ctor_decl = CxxFuncDeclNode(name=name,
+                                        arg_decls=arg_decls,
+                                        return_type=return_type,
+                                        default=True)
+            decls.append(ctor_decl)
 
     ctor_decl = CxxFuncDeclNode(name=class_name,
                                 arg_decls=["v8::Isolate* isolate"],
@@ -316,17 +353,7 @@ def make_dict_constructors(cg_context):
     decls.append(ctor_decl)
     ctor_decl.set_base_template_vars(cg_context.template_bindings())
 
-    member_initializer_list = ["BaseClass(${isolate})"]
-    for member in dictionary.own_members:
-        if member.default_value is None:
-            continue
-        default_expr = make_default_value_expr(member.idl_type,
-                                               member.default_value)
-        if default_expr.initializer_deps == ["isolate"]:
-            _1 = _blink_member_name(member).value_var
-            _2 = default_expr.initializer_expr
-            member_initializer_list.append(_format("{_1}({_2})", _1=_1, _2=_2))
-
+    member_initializer_list.insert(0, "BaseClass(${isolate})")
     ctor_def = CxxFuncDefNode(name=class_name,
                               class_name=class_name,
                               arg_decls=["v8::Isolate* isolate"],
@@ -373,13 +400,47 @@ def make_dict_member_get(cg_context):
         ])
 
     if not _is_member_always_present(member):
-        func_def = CxxFuncDefNode(
-            name=blink_member_name.get_or_api,
-            arg_decls=[_format("{} fallback_value", blink_type.value_t)],
-            return_type=blink_type.value_t,
-            const=True)
-        decls.append(func_def)
-        func_def.set_base_template_vars(cg_context.template_bindings())
+        name = blink_member_name.get_or_api
+        arg_decls = [_format("{} fallback_value", blink_type.value_t)]
+        return_type = blink_type.value_t
+
+        def should_be_defined_in_source(member):
+            # sequence<Dictionary> and record<String, Dictionary> are
+            # implemented with HeapVector and Dictionary's definition is
+            # required while promise<Dictionary> doesn't require it.
+            def element_or_value_of(idl_type):
+                return (idl_type.unwrap().element_type
+                        or idl_type.unwrap().value_type)
+
+            idl_type = element_or_value_of(member.idl_type)
+            while idl_type and element_or_value_of(idl_type):
+                idl_type = element_or_value_of(idl_type)
+            return idl_type and idl_type.unwrap().is_dictionary
+
+        # In order to avoid cyclic header inclusion of IDL dictionaries,
+        # whenever the function needs a dictionary's definition, do not put the
+        # function definition in the header file.
+        if should_be_defined_in_source(member):
+            func_decl = CxxFuncDeclNode(name=name,
+                                        arg_decls=arg_decls,
+                                        return_type=return_type,
+                                        const=True)
+            decls.append(func_decl)
+            func_def = CxxFuncDefNode(name=name,
+                                      class_name=cg_context.class_name,
+                                      arg_decls=arg_decls,
+                                      return_type=return_type,
+                                      const=True)
+            defs.append(func_def)
+            func_def.set_base_template_vars(cg_context.template_bindings())
+        else:
+            func_def = CxxFuncDefNode(name=name,
+                                      arg_decls=arg_decls,
+                                      return_type=return_type,
+                                      const=True)
+            decls.append(func_def)
+            func_def.set_base_template_vars(cg_context.template_bindings())
+
         body_node = TextNode(
             _format("""\
 if ({has}()) {{
@@ -487,8 +548,11 @@ def make_dict_member_vars(cg_context):
     if member.default_value:
         default_expr = make_default_value_expr(member.idl_type,
                                                member.default_value)
+        # In order to avoid cyclic header inclusion of IDL dictionaries, do not
+        # put dictionary member's initialization in the class definition.
         if (default_expr.initializer_expr is not None
-                and not default_expr.initializer_deps):
+                and not default_expr.initializer_deps
+                and not member.default_value.idl_type.is_object):
             default_value_initializer = _format("{{{}}}",
                                                 default_expr.initializer_expr)
 

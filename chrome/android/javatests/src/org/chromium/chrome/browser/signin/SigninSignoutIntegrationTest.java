@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
@@ -43,7 +44,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -64,15 +65,22 @@ public class SigninSignoutIntegrationTest {
     public final SettingsActivityTestRule<AccountManagementFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(AccountManagementFragment.class);
 
+    private final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
+    // Mock sign-in environment needs to be destroyed after ChromeActivity in case there are
+    // observers registered in the AccountManagerFacade mock.
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
+
     @Rule
     public final JniMocker mocker = new JniMocker();
 
     @Mock
     private SigninUtils.Natives mSigninUtilsNativeMock;
-
-    @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @Mock
     private SigninManager.SignInStateObserver mSignInStateObserverMock;
@@ -85,7 +93,6 @@ public class SigninSignoutIntegrationTest {
     public void setUp() {
         initMocks(this);
         mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mSigninManager = IdentityServicesProvider.get().getSigninManager(); });
@@ -95,13 +102,13 @@ public class SigninSignoutIntegrationTest {
     @After
     public void tearDown() {
         mSigninManager.removeSignInStateObserver(mSignInStateObserverMock);
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test
     @LargeTest
     public void testSignIn() {
-        Account account = SigninTestUtil.addTestAccount();
+        Account account = mAccountManagerTestRule.addAccountAndWaitForSeeding(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivity(
@@ -215,7 +222,8 @@ public class SigninSignoutIntegrationTest {
     }
 
     private void signIn() {
-        Account account = SigninTestUtil.addTestAccount();
+        Account account = mAccountManagerTestRule.addAccountAndWaitForSeeding(
+                AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mSigninManager.signIn(SigninAccessPoint.SETTINGS, account, null); });
         assertSignedIn();

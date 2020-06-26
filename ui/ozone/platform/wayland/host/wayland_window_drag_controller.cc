@@ -233,8 +233,7 @@ bool WaylandWindowDragController::OfferWindow() {
 
   if (state_ == State::kIdle) {
     DCHECK(!icon_surface_);
-    icon_surface_.reset(
-        wl_compositor_create_surface(connection_->compositor()));
+    icon_surface_ = connection_->CreateSurface();
 
     VLOG(1) << "Starting DND session.";
     state_ = State::kAttached;

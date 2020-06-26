@@ -6,23 +6,26 @@
 <script>
 'use strict';
 
-// These tests verify the algorithm for passing through error reasons from one
-// realm to another. We only test these for cancel on a ReadableStream, and
-// assume that all the other places that should be using the same algorithm are
-// doing so.
+// Chrome used to special-case the reason for cancel() and abort() in order to
+// handle exceptions correctly. This is no longer necessary. These tests are
+// retained to avoid regressions.
 
-function getTransferredReason(originalReason) {
-  return new Promise((resolve, reject) => {
-    createTransferredReadableStream({
-      cancel(reason) {
-        resolve(reason);
-      }
-    }).then(rs => rs.cancel(originalReason))
-      .catch(reject);
+async function getTransferredReason(originalReason) {
+  let resolvePromise;
+  const rv = new Promise(resolve => {
+    resolvePromise = resolve;
   });
+  const rs = await createTransferredReadableStream({
+    cancel(reason) {
+      resolvePromise(reason);
+    }
+  });
+  await rs.cancel(originalReason);
+  return rv;
 }
 
-for (const value of ['hi', '\t\r\n', 7, 3.0, undefined, null, true, false]) {
+for (const value of ['hi', '\t\r\n', 7, 3.0, undefined, null, true, false,
+                    NaN, Infinity]) {
   promise_test(async () => {
     const reason = await getTransferredReason(value);
     assert_equals(reason, value, 'reason should match');
@@ -30,17 +33,12 @@ for (const value of ['hi', '\t\r\n', 7, 3.0, undefined, null, true, false]) {
 }
 
 for (const badType of [Symbol('hi'), _ => 'hi']) {
-  promise_test(async () => {
-    const reason = await getTransferredReason(badType);
-    assert_equals(reason, undefined, 'reason should be undefined');
-  }, `reason with a type of '${typeof badType}' should be squished to undefined`);
-}
-
-for (const badNumber of [NaN, Infinity]) {
-  promise_test(async () => {
-    const reason = await getTransferredReason(badNumber);
-    assert_equals(reason, null, 'reason should be null');
-  }, `number with a value of '${badNumber}' should be squished to null`);
+  promise_test(async t => {
+    return promise_rejects_dom(t, 'DataCloneError',
+                               getTransferredReason(badType),
+                               'cancel() should reject');
+  }, `reason with a type of '${typeof badType}' should be rejected and ` +
+     `error the stream`);
 }
 
 promise_test(async () => {
@@ -55,8 +53,10 @@ promise_test(async () => {
   const circularObject = {};
   circularObject.self = circularObject;
   const reason = await getTransferredReason(circularObject);
-  assert_true(reason instanceof TypeError, 'a TypeError should be output');
-}, 'objects that cannot be expressed in JSON should result in a TypeError');
+  assert_true(reason instanceof Object, 'an Object should be output');
+  assert_equals(reason.self, reason,
+                'the object should have a circular reference');
+}, 'objects that cannot be expressed in JSON should also be preserved');
 
 promise_test(async () => {
   const originalReason = new TypeError('hi');
@@ -77,10 +77,10 @@ promise_test(async () => {
 
 promise_test(async () => {
   const originalReason = new TypeError();
-  originalReason.message = {};
+  originalReason.message = [1, 2, 3];
   const reason = await getTransferredReason(originalReason);
-  assert_equals(reason.message, '', 'message should not be preserved');
-}, 'a TypeError message should not be preserved if it is not a string');
+  assert_equals(reason.message, '1,2,3', 'message should be stringified');
+}, 'a TypeError message should be converted to a string');
 
 promise_test(async () => {
   const originalReason = new TypeError();
@@ -111,17 +111,22 @@ promise_test(async () => {
                 'the names should match');
 }, 'DOMException errors should be preserved');
 
-promise_test(async () => {
-  const originalReason = new RangeError('nope');
-  const reason = await getTransferredReason(originalReason);
-  assert_equals(typeof reason, 'object', 'reason should have type object');
-  assert_false(reason instanceof RangeError,
-               'reason should not be a RangeError');
-  assert_false(reason instanceof Error,
-               'reason should not be an Error');
-  assert_equals(reason.constructor, Object, 'reason should be an Object');
-  assert_array_equals(Object.getOwnPropertyNames(reason), [],
-                      'reason should have no properties');
-}, 'RangeErrors should not be preserved');
+for (const errorConstructor of [EvalError, RangeError,
+                                ReferenceError, SyntaxError, TypeError,
+                                URIError]) {
+  promise_test(async () => {
+    const originalReason = new errorConstructor('nope');
+    const reason = await getTransferredReason(originalReason);
+    assert_equals(typeof reason, 'object', 'reason should have type object');
+    assert_true(reason instanceof errorConstructor,
+                `reason should inherit ${errorConstructor.name}`);
+    assert_true(reason instanceof Error, 'reason should inherit Error');
+    assert_equals(reason.constructor, errorConstructor,
+                  'reason should have the right constructor');
+    assert_equals(reason.name, errorConstructor.name,
+                  `name should match constructor name`);
+    assert_equals(reason.message, 'nope', 'message should match');
+  }, `${errorConstructor.name} should be preserved`);
+}
 
 </script>

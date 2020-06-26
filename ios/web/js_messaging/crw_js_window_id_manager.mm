@@ -63,7 +63,7 @@ const size_t kUniqueKeyLength = 16;
                if (error) {
                  DCHECK(error.code == WKErrorWebViewInvalidated ||
                         error.code == WKErrorWebContentProcessTerminated)
-                     << error.description;
+                     << base::SysNSStringToUTF8(error.description);
                  return;
                }
 

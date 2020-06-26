@@ -144,6 +144,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
   }
+  LayoutUnit IntrinsicBlockSize() const { return intrinsic_block_size_; }
   const NGBoxStrut& Borders() const {
     DCHECK(initial_fragment_geometry_);
     DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);

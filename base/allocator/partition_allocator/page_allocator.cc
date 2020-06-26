@@ -42,6 +42,8 @@ Lock& GetReserveLock() {
   return *lock;
 }
 
+std::atomic<size_t> g_total_mapped_address_space;
+
 // We only support a single block of reserved address space.
 void* s_reservation_address GUARDED_BY(GetReserveLock()) = nullptr;
 size_t s_reservation_size GUARDED_BY(GetReserveLock()) = 0;
@@ -97,8 +99,12 @@ void* SystemAllocPages(void* hint,
   PA_DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
               kPageAllocationGranularityOffsetMask));
   PA_DCHECK(commit || accessibility == PageInaccessible);
-  return SystemAllocPagesInternal(hint, length, accessibility, page_tag,
-                                  commit);
+  void* ptr =
+      SystemAllocPagesInternal(hint, length, accessibility, page_tag, commit);
+  if (ptr)
+    g_total_mapped_address_space.fetch_add(length, std::memory_order_relaxed);
+
+  return ptr;
 }
 
 void* AllocPages(void* address,
@@ -188,6 +194,8 @@ void FreePages(void* address, size_t length) {
               kPageAllocationGranularityOffsetMask));
   PA_DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   FreePagesInternal(address, length);
+  PA_DCHECK(g_total_mapped_address_space.load(std::memory_order_relaxed) > 0);
+  g_total_mapped_address_space.fetch_sub(length, std::memory_order_relaxed);
 }
 
 bool TrySetSystemPagesAccess(void* address,
@@ -259,6 +267,10 @@ bool HasReservationForTesting() {
 
 uint32_t GetAllocPageErrorCode() {
   return s_allocPageErrorCode;
+}
+
+size_t GetTotalMappedSize() {
+  return g_total_mapped_address_space;
 }
 
 }  // namespace base

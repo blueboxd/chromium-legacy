@@ -121,9 +121,9 @@ StorageQueue::StorageQueue(const Options& options,
 }
 
 StorageQueue::~StorageQueue() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
-  DCHECK(is_shutting_down_) << "StorageQueue not shut down properly";
-  DCHECK_EQ(active_read_operations_, 0);
+  // TODO(b/153364303): Should be
+  // DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
+
   // Stop upload timer.
   upload_timer_.AbandonAndStop();
   // CLose all opened files.
@@ -365,10 +365,6 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
   void OnStart() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(read_sequence_checker_);
-    if (storage_queue_->is_shutting_down_) {
-      Response(Status(error::UNAVAILABLE, "StorageQueue shutting down"));
-      return;
-    }
     seq_number_ = storage_queue_->first_seq_number_;
     // If the last file is not empty (has at least one record),
     // close it and create the new one, so that its records are
@@ -566,11 +562,6 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   void OnStart() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(write_sequence_checker_);
 
-    if (storage_queue_->is_shutting_down_) {
-      Response(Status(error::UNAVAILABLE, "StorageQueue shutting down"));
-      return;
-    }
-
     // Prepare uploader, if need to run it after Write.
     if (storage_queue_->options_.upload_period().is_zero()) {
       StatusOr<std::unique_ptr<UploaderInterface>> uploader =
@@ -688,10 +679,6 @@ class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
 
   void OnStart() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(confirm_sequence_checker_);
-    if (storage_queue_->is_shutting_down_) {
-      Response(Status(error::UNAVAILABLE, "StorageQueue shutting down"));
-      return;
-    }
     Response(storage_queue_->RemoveUnusedFiles(seq_number_));
   }
 
@@ -706,20 +693,6 @@ class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
 void StorageQueue::Confirm(uint64_t seq_number,
                            base::OnceCallback<void(Status)> completion_cb) {
   Start<ConfirmContext>(seq_number, std::move(completion_cb), this);
-}
-
-// static
-void StorageQueue::ShutDown(scoped_refptr<StorageQueue>* queue,
-                            base::OnceClosure done_cb) {
-  (*queue)->sequenced_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<StorageQueue>* queue, base::OnceClosure done_cb) {
-            (*queue)->is_shutting_down_ = true;
-            queue->reset();
-            std::move(done_cb).Run();
-          },
-          base::Unretained(queue), std::move(done_cb)));
 }
 
 Status StorageQueue::RemoveUnusedFiles(uint64_t seq_number) {

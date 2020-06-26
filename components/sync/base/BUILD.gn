@@ -61,7 +61,6 @@ jumbo_static_library("base") {
     "time.h",
     "unique_position.cc",
     "unique_position.h",
-    "unrecoverable_error_handler.h",
     "unrecoverable_error_info.cc",
     "unrecoverable_error_info.h",
     "user_demographics.cc",
@@ -109,12 +108,8 @@ static_library("test_support") {
     "../test/trackable_mock_invalidation.h",
     "fake_encryptor.cc",
     "fake_encryptor.h",
-    "mock_unrecoverable_error_handler.cc",
-    "mock_unrecoverable_error_handler.h",
     "model_type_test_util.cc",
     "model_type_test_util.h",
-    "test_unrecoverable_error_handler.cc",
-    "test_unrecoverable_error_handler.h",
   ]
 
   public_deps = [

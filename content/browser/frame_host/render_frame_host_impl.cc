@@ -2367,7 +2367,8 @@ void RenderFrameHostImpl::OnCreateChildFrame(
 
 void RenderFrameHostImpl::DidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    bool did_create_new_document) {
   // Keep track of the last committed URL and origin in the RenderFrameHost
   // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
   // stay correct even if the render_frame_host later becomes pending deletion.
@@ -2397,6 +2398,11 @@ void RenderFrameHostImpl::DidNavigate(
   // Reset the salt so that media device IDs are reset after the new navigation
   // if necessary.
   media_device_id_salt_base_ = BrowserContext::CreateRandomMediaDeviceIDSalt();
+
+  if (did_create_new_document) {
+    DCHECK(params.embedding_token.has_value());
+    SetEmbeddingToken(params.embedding_token.value());
+  }
 }
 
 void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
@@ -2749,30 +2755,6 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // The page is already loaded since it came from the cache, so fire the stop
   // loading event.
   OnDidStopLoading();
-}
-
-void RenderFrameHostImpl::SetEmbeddingToken(
-    const base::UnguessableToken& embedding_token) {
-  embedding_token_ = embedding_token;
-
-  // We only need to propagate the token to the parent frame if it's
-  // remote. For local parents the propagation occurs within the renderer
-  // process. The token is also present on the main frame for generalization
-  // when the main frame in embedded in another context (e.g. browser UI).
-  // The main frame is not embedded in the context of the frame tree so it
-  // is not propagated here. See RenderFrameHost::GetEmbeddingToken for more
-  // details.
-  if (!IsCrossProcessSubframe())
-    return;
-
-  // Only non-null tokens are propagated to the parent document. The token is
-  // automatically reset in the parent document when the child document is
-  // navigated cross-origin.
-  RenderFrameProxyHost* proxy_to_parent =
-      frame_tree_node()->render_manager()->GetProxyToParent();
-  DCHECK(proxy_to_parent);
-  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
-      embedding_token_.value());
 }
 
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
@@ -4162,12 +4144,12 @@ bool RenderFrameHostImpl::IsInactiveAndDisallowReactivation() {
           BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict);
       return true;
     case LifecycleState::kSpeculative:
-      // TODO(sreejakshetty): Upgrade NOTREACHED to a CHECK(false) after
-      // monitoring the DumpWithoutCrashing reports and ensuring this doesn't
-      // happen in practice.
-      base::debug::DumpWithoutCrashing();
-      NOTREACHED() << "We should not try to ignore events for a speculative "
-                      "RenderFrameHost\n";
+      // We do not expect speculative RenderFrameHosts to generate events that
+      // require an active/inactive check. Don't crash the browser process in
+      // case it comes from a compromised renderer, but kill the renderer to
+      // avoid further confusion.
+      bad_message::ReceivedBadMessage(
+          GetProcess(), bad_message::RFH_INACTIVE_CHECK_FROM_SPECULATIVE_RFH);
       return false;
     case LifecycleState::kActive:
       return false;
@@ -9092,6 +9074,30 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
     return;
 
   DCHECK(false);
+}
+
+void RenderFrameHostImpl::SetEmbeddingToken(
+    const base::UnguessableToken& embedding_token) {
+  embedding_token_ = embedding_token;
+
+  // We only need to propagate the token to the parent frame if it's
+  // remote. For local parents the propagation occurs within the renderer
+  // process. The token is also present on the main frame for generalization
+  // when the main frame in embedded in another context (e.g. browser UI).
+  // The main frame is not embedded in the context of the frame tree so it
+  // is not propagated here. See RenderFrameHost::GetEmbeddingToken for more
+  // details.
+  if (!IsCrossProcessSubframe())
+    return;
+
+  // Only non-null tokens are propagated to the parent document. The token is
+  // automatically reset in the parent document when the child document is
+  // navigated cross-origin.
+  RenderFrameProxyHost* proxy_to_parent =
+      frame_tree_node()->render_manager()->GetProxyToParent();
+  DCHECK(proxy_to_parent);
+  proxy_to_parent->GetAssociatedRemoteFrame()->SetEmbeddingToken(
+      embedding_token_.value());
 }
 
 std::ostream& operator<<(std::ostream& o,

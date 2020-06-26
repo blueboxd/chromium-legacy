@@ -151,10 +151,6 @@ void FakeSyncManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FakeSyncManager::SaveChanges() {
-  // Do nothing.
-}
-
 void FakeSyncManager::ShutdownOnSyncThread() {
   DCHECK(sync_task_runner_->RunsTasksInCurrentSequence());
 }

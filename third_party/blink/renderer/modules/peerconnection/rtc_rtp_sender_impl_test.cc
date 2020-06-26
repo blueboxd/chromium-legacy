@@ -14,9 +14,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
@@ -24,6 +21,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
@@ -67,28 +65,28 @@ class RTCRtpSenderImplTest : public ::testing::Test {
     run_loop.Run();
   }
 
-  blink::WebMediaStreamTrack CreateWebTrack(const std::string& id) {
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(
-        blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
-        blink::WebString::FromUTF8("local_audio_track"), false);
-    blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
-    // Takes ownership of |audio_source|.
-    web_source.SetPlatformSource(base::WrapUnique(audio_source));
-    blink::WebMediaStreamTrack web_track;
-    web_track.Initialize(web_source.Id(), web_source);
-    audio_source->ConnectToTrack(web_track);
-    return web_track;
+  MediaStreamComponent* CreateTrack(const std::string& id) {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8(id), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("local_audio_track"), false);
+    auto audio_source = std::make_unique<MediaStreamAudioSource>(
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+    auto* audio_source_ptr = audio_source.get();
+    audio_source->SetOwner(source);
+    source->SetPlatformSource(std::move(audio_source));
+
+    auto* component =
+        MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
+    audio_source_ptr->ConnectToTrack(component);
+    return component;
   }
 
   std::unique_ptr<RTCRtpSenderImpl> CreateSender(
-      blink::WebMediaStreamTrack web_track) {
+      MediaStreamComponent* component) {
     std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
         track_ref;
-    if (!web_track.IsNull()) {
-      track_ref = track_map_->GetOrCreateLocalTrackAdapter(web_track);
+    if (component) {
+      track_ref = track_map_->GetOrCreateLocalTrackAdapter(component);
       DCHECK(track_ref->is_initialized());
     }
     RtpSenderState sender_state(
@@ -105,14 +103,13 @@ class RTCRtpSenderImplTest : public ::testing::Test {
   // Calls replaceTrack(), which is asynchronous, returning a callback that when
   // invoked waits for (run-loops) the operation to complete and returns whether
   // replaceTrack() was successful.
-  base::OnceCallback<bool()> ReplaceTrack(
-      blink::WebMediaStreamTrack web_track) {
+  base::OnceCallback<bool()> ReplaceTrack(MediaStreamComponent* component) {
     std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
     std::unique_ptr<bool> result_holder(new bool());
     // On complete, |*result_holder| is set with the result of replaceTrack()
     // and the |run_loop| quit.
     sender_->ReplaceTrack(
-        web_track,
+        component,
         WTF::Bind(&RTCRtpSenderImplTest::CallbackOnComplete,
                   WTF::Unretained(this), WTF::Unretained(result_holder.get()),
                   WTF::Unretained(run_loop.get())));
@@ -156,73 +153,74 @@ class RTCRtpSenderImplTest : public ::testing::Test {
 };
 
 TEST_F(RTCRtpSenderImplTest, CreateSender) {
-  auto web_track = CreateWebTrack("track_id");
-  sender_ = CreateSender(web_track);
+  auto* component = CreateTrack("track_id");
+  sender_ = CreateSender(component);
   EXPECT_TRUE(sender_->Track());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
+  EXPECT_EQ(component->UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, CreateSenderWithNullTrack) {
-  blink::WebMediaStreamTrack null_track;
-  sender_ = CreateSender(null_track);
+  MediaStreamComponent* null_component = nullptr;
+  sender_ = CreateSender(null_component);
   EXPECT_FALSE(sender_->Track());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackSetsTrack) {
-  auto web_track1 = CreateWebTrack("track1");
-  sender_ = CreateSender(web_track1);
+  auto* component1 = CreateTrack("track1");
+  sender_ = CreateSender(component1);
 
-  auto web_track2 = CreateWebTrack("track2");
+  auto* component2 = CreateTrack("track2");
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
-  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(web_track2);
+  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(component2);
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
   ASSERT_TRUE(sender_->Track());
-  EXPECT_EQ(web_track2.UniqueId(), sender_->Track()->UniqueId());
+  EXPECT_EQ(component2->UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackWithNullTrack) {
-  auto web_track = CreateWebTrack("track_id");
-  sender_ = CreateSender(web_track);
+  auto* component = CreateTrack("track_id");
+  sender_ = CreateSender(component);
 
-  blink::WebMediaStreamTrack null_track;
+  MediaStreamComponent* null_component = nullptr;
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
-  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_track);
+  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_component);
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
   EXPECT_FALSE(sender_->Track());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackCanFail) {
-  auto web_track = CreateWebTrack("track_id");
-  sender_ = CreateSender(web_track);
+  auto* component = CreateTrack("track_id");
+  sender_ = CreateSender(component);
   ASSERT_TRUE(sender_->Track());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
+  EXPECT_EQ(component->UniqueId(), sender_->Track()->UniqueId());
 
-  blink::WebMediaStreamTrack null_track;
+  MediaStreamComponent* null_component = nullptr;
+  ;
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(false));
-  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_track);
+  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_component);
   EXPECT_FALSE(std::move(replaceTrackRunLoopAndGetResult).Run());
   // The track should not have been set.
   ASSERT_TRUE(sender_->Track());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
+  EXPECT_EQ(component->UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackIsNotSetSynchronously) {
-  auto web_track1 = CreateWebTrack("track1");
-  sender_ = CreateSender(web_track1);
+  auto* component1 = CreateTrack("track1");
+  sender_ = CreateSender(component1);
 
-  auto web_track2 = CreateWebTrack("track2");
+  auto* component2 = CreateTrack("track2");
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
-  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(web_track2);
+  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(component2);
   // The track should not be set until the run loop has executed.
   ASSERT_TRUE(sender_->Track());
-  EXPECT_NE(web_track2.UniqueId(), sender_->Track()->UniqueId());
+  EXPECT_NE(component2->UniqueId(), sender_->Track()->UniqueId());
   // Wait for operation to run to ensure EXPECT_CALL is satisfied.
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
 
 TEST_F(RTCRtpSenderImplTest, GetStats) {
-  auto web_track = CreateWebTrack("track_id");
-  sender_ = CreateSender(web_track);
+  auto* component = CreateTrack("track_id");
+  sender_ = CreateSender(component);
 
   // Make the mock return a blink version of the |webtc_report|. The mock does
   // not perform any stats filtering, we just set it to a dummy value.
@@ -247,15 +245,15 @@ TEST_F(RTCRtpSenderImplTest, GetStats) {
 }
 
 TEST_F(RTCRtpSenderImplTest, CopiedSenderSharesInternalStates) {
-  auto web_track = CreateWebTrack("track_id");
-  sender_ = CreateSender(web_track);
+  auto* component = CreateTrack("track_id");
+  sender_ = CreateSender(component);
   auto copy = std::make_unique<RTCRtpSenderImpl>(*sender_);
   // Copy shares original's ID.
   EXPECT_EQ(sender_->Id(), copy->Id());
 
-  blink::WebMediaStreamTrack null_track;
+  MediaStreamComponent* null_component = nullptr;
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
-  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_track);
+  auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_component);
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
 
   // Both original and copy shows a modified state.

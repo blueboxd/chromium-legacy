@@ -776,11 +776,22 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
     uint32_t consumed_size,
     int64_t old_resource_id,
     int64_t new_resource_id) {
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader;
+  worker_test_helper->context()
+      ->registry()
+      ->GetRemoteStorageControl()
+      ->CreateResourceReader(old_resource_id,
+                             compare_reader.BindNewPipeAndPassReceiver());
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader;
+  worker_test_helper->context()
+      ->registry()
+      ->GetRemoteStorageControl()
+      ->CreateResourceReader(old_resource_id,
+                             copy_reader.BindNewPipeAndPassReceiver());
+
   auto cache_writer = ServiceWorkerCacheWriter::CreateForComparison(
-      worker_test_helper->context()->storage()->CreateResponseReader(
-          old_resource_id),
-      worker_test_helper->context()->storage()->CreateResponseReader(
-          old_resource_id),
+      std::move(compare_reader), std::move(copy_reader),
       worker_test_helper->context()->storage()->CreateResponseWriter(
           new_resource_id),
       true /* pause_when_not_identical */);

@@ -401,4 +401,9 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState() {
   return true;
 }
 
+bool HardwareDisplayPlaneManager::CommitGammaCorrection(
+    const CrtcProperties& crtc_props) {
+  return true;
+}
+
 }  // namespace ui

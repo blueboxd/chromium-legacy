@@ -5551,6 +5551,13 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="kBrightnessPercent"/>
 </enum>
 
+<enum name="AutoScreenBrightnessInvalidCurveReason">
+  <int value="0" label="TooFewPoints"/>
+  <int value="1" label="UnequalXY"/>
+  <int value="2" label="KnotsNotIncreasing"/>
+  <int value="3" label="ControlsDecreasing"/>
+</enum>
+
 <enum name="AutoScreenBrightnessModelLoadingStatus">
   <int value="0" label="Success"/>
   <int value="1" label="MissingGlobal"/>
@@ -6145,6 +6152,7 @@ Unknown properties are collapsed to zero. -->
   <int value="226" label="RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN"/>
   <int value="227" label="RFH_INVALID_CALL_FROM_NOT_MAIN_FRAME"/>
   <int value="228" label="INPUT_ROUTER_INVALID_EVENT_SOURCE"/>
+  <int value="229" label="RFH_INACTIVE_CHECK_FROM_SPECULATIVE_RFH"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -28134,6 +28142,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3341" label="V8Window_ShowSaveFilePicker_Method"/>
   <int value="3342" label="V8Window_ShowDirectoryPicker_Method"/>
   <int value="3343" label="V8Window_GetOriginPrivateDirectory_Method"/>
+  <int value="3344" label="RTCConstraintEnableRtpDataChannelsTrue"/>
+  <int value="3345" label="RTCConstraintEnableRtpDataChannelsFalse"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

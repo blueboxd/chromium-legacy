@@ -285,6 +285,16 @@ template("create_signed_bundle") {
     _xcode_product_bundle_id = invoker.xcode_product_bundle_id
   }
 
+  if (_xcode_product_bundle_id != "") {
+    _ios_provisioning_profile_info =
+        exec_script("//build/config/ios/codesign.py",
+                    [
+                      "find-provisioning-profile",
+                      "-b=" + _xcode_product_bundle_id,
+                    ],
+                    "json")
+  }
+
   create_bundle(_target_name) {
     forward_variables_from(invoker,
                            [
@@ -313,6 +323,12 @@ template("create_signed_bundle") {
       IPHONEOS_DEPLOYMENT_TARGET = ios_deployment_target
       if (_xcode_product_bundle_id != "") {
         PRODUCT_BUNDLE_IDENTIFIER = _xcode_product_bundle_id
+
+        if (defined(_ios_provisioning_profile_info)) {
+          CODE_SIGN_IDENTITY = "iPhone Developer"
+          DEVELOPMENT_TEAM = _ios_provisioning_profile_info.team_identifier
+          PROVISIONING_PROFILE_SPECIFIER = _ios_provisioning_profile_info.name
+        }
       }
 
       # If invoker has defined extra attributes, they override the defaults.

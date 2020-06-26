@@ -89,7 +89,6 @@ class FakeSyncManager : public SyncManager {
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void SaveChanges() override;
   void ShutdownOnSyncThread() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;

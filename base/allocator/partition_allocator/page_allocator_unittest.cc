@@ -270,9 +270,30 @@ TEST(PageAllocatorTest, DecommitErasesMemory) {
     sum += recommitted_buffer[i];
   }
   EXPECT_EQ(0u, sum) << "Data was not erased";
+
+  FreePages(buffer, size);
 }
 
 #endif  // defined(OS_MACOSX)
+
+TEST(PageAllocatorTest, MappedPagesAccounting) {
+  size_t size = kPageAllocationGranularity;
+  size_t mapped_size_before = GetTotalMappedSize();
+
+  // Ask for a large alignment to make sure that trimming doesn't change the
+  // accounting.
+  void* data = AllocPages(nullptr, size, 128 * kPageAllocationGranularity,
+                          PageInaccessible, PageTag::kChromium, true);
+  ASSERT_TRUE(data);
+
+  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+  DecommitSystemPages(data, size);
+  EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
+
+  FreePages(data, size);
+  EXPECT_EQ(mapped_size_before, GetTotalMappedSize());
+}
 
 }  // namespace base
 

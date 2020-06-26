@@ -23,7 +23,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/data_type_manager_observer.h"
@@ -67,7 +66,6 @@ class ProfileSyncService : public SyncService,
                            public SyncEngineHost,
                            public SyncPrefObserver,
                            public DataTypeManagerObserver,
-                           public UnrecoverableErrorHandler,
                            public signin::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
@@ -205,10 +203,6 @@ class ProfileSyncService : public SyncService,
   bool HasCookieJarMismatch(
       const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
-  // UnrecoverableErrorHandler implementation.
-  void OnUnrecoverableError(const base::Location& from_here,
-                            const std::string& message) override;
-
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
   void OnFirstSetupCompletePrefChange(bool is_first_setup_complete) override;
@@ -276,8 +270,6 @@ class ProfileSyncService : public SyncService,
 
   // Virtual for testing.
   virtual WeakHandle<JsEventHandler> GetJsEventHandler();
-
-  WeakHandle<UnrecoverableErrorHandler> GetUnrecoverableErrorHandler();
 
   // Callbacks for SyncAuthManager.
   void AccountStateChanged();

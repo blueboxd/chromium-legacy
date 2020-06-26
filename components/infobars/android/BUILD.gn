@@ -35,6 +35,7 @@ android_resources("java_resources") {
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/infobars/InfoBarCompactLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarControlLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarInteractionHandler.java",
     "java/src/org/chromium/components/infobars/InfoBarLayout.java",

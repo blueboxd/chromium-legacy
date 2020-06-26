@@ -28,10 +28,14 @@ void SigninUtils::OpenAccountManagementScreen(
                     : base::android::ConvertUTF8ToJavaString(env, email));
 }
 
-void SigninUtils::OpenAccountPickerBottomSheet(ui::WindowAndroid* window) {
+void SigninUtils::OpenAccountPickerBottomSheet(
+    ui::WindowAndroid* window,
+    const std::string& continue_url) {
   DCHECK(window);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SigninUtils_openAccountPickerBottomSheet(env, window->GetJavaObject());
+  Java_SigninUtils_openAccountPickerBottomSheet(
+      env, window->GetJavaObject(),
+      base::android::ConvertUTF8ToJavaString(env, continue_url));
 }
 
 static void JNI_SigninUtils_LogEvent(JNIEnv* env,

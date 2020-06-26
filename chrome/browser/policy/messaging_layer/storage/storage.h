@@ -95,14 +95,6 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
                uint64_t seq_number,
                base::OnceCallback<void(Status)> completion_cb);
 
-  // Shuts the Storage down with each queue on its sequenced task runner, and
-  // returns by calling |done_cb| closure. Guarantees that all previously
-  // scheduled operations are complete before the Storage is shut down and calls
-  // |done_cb|, assuming no queue is referenced elsewhere. Status passed to
-  // done_cb currently has no meaning and is expected to be OK.
-  static void ShutDown(scoped_refptr<Storage>* storage,
-                       base::OnceCallback<void(Status)> done_cb);
-
   Storage(const Storage& other) = delete;
   Storage& operator=(const Storage& other) = delete;
 
@@ -128,10 +120,6 @@ class Storage : public base::RefCountedThreadSafe<Storage> {
 
   // Map priority->StorageQueue.
   base::flat_map<Priority, scoped_refptr<StorageQueue>> queues_;
-
-  // Flag indicating that the Storage is shutting down, and no new asynchronous
-  // operations can be started.
-  bool is_shutting_down_ = false;
 
   // Upload provider callback.
   const StartUploadCb start_upload_cb_;

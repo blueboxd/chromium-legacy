@@ -849,8 +849,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                     // |-removeWebView| are ignored to prevent crashing.
                     if (error || !weakSelf.webView) {
                       if (error) {
-                        DLOG(ERROR) << "WKWebView snapshot error: "
-                                    << error.description;
+                        DLOG(ERROR)
+                            << "WKWebView snapshot error: "
+                            << base::SysNSStringToUTF8(error.description);
                       }
                       completion(nil);
                     } else {

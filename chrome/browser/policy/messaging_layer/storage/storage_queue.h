@@ -145,13 +145,6 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   void Confirm(uint64_t seq_number,
                base::OnceCallback<void(Status)> completion_cb);
 
-  // Shuts the StorageQueue down on its sequenced task runner, and returns by
-  // calling |done_cb| closure. If the reference is the last one, ShutDown
-  // guarantees that all previously scheduled operations are complete before the
-  // queue is shut down.
-  static void ShutDown(scoped_refptr<StorageQueue>* queue,
-                       base::OnceClosure done_cb);
-
   StorageQueue(const StorageQueue& other) = delete;
   StorageQueue& operator=(const StorageQueue& other) = delete;
 
@@ -305,10 +298,6 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // deleted. Incremented by Upload context OnStart(), decremented by
   // destructor.
   int32_t active_read_operations_ = 0;
-
-  // Flag indicating that the queue is shutting down, and no new asynchronous
-  // operations can be started.
-  bool is_shutting_down_ = false;
 
   // Upload timer (active only if options_.upload_period() is not 0).
   base::RepeatingTimer upload_timer_;

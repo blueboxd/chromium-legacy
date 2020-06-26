@@ -10,14 +10,10 @@
 
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
-
-// TEST: We can't use protection in the real code (yet) because it may lead to
-// crashes in absence of PartitionAlloc support. Setting it to 0 will disable
-// the protection, while preserving all calculations.
-#define CHECKED_PTR2_PROTECTION_ENABLED 0
 
 #define CHECKED_PTR2_USE_NO_OP_WRAPPER 0
 
@@ -116,9 +112,7 @@ struct CheckedPtr2Impl {
   static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
     void* ptr = const_cast<void*>(cv_ptr);
     uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-#if CHECKED_PTR2_USE_NO_OP_WRAPPER
-    static_assert(!CHECKED_PTR2_PROTECTION_ENABLED, "");
-#else
+#if !CHECKED_PTR2_USE_NO_OP_WRAPPER
     // Make sure that the address bits that will be used for generation are 0.
     // If they aren't, they'd fool the unwrapper into thinking that the
     // protection is enabled, making it try to read and compare the generation.
@@ -130,33 +124,18 @@ struct CheckedPtr2Impl {
       return addr;
     }
 
-    // Read the generation from 16 bits before the allocation. Then place it in
-    // the top bits of the address.
-    static_assert(sizeof(uint16_t) * 8 == kGenerationBits, "");
-#if CHECKED_PTR2_PROTECTION_ENABLED
-    uintptr_t generation = *(static_cast<volatile uint16_t*>(ptr) - 1);
-#else
-    // TEST: Reading from offset -1 may crash without full PA support.
-    // Just read from offset 0 to attain the same perf characteristics as the
-    // expected production solution.
-    // This generation will be ignored anyway either when unwrapping or below
-    // (depending on the algorithm variant), on the
-    // !CHECKED_PTR2_PROTECTION_ENABLED path.
-    uintptr_t generation = *(static_cast<volatile uint16_t*>(ptr));
-#endif  // CHECKED_PTR2_PROTECTION_ENABLED
+    // Read the generation and place it in the top bits of the address.
+    static_assert(sizeof(PartitionTag) * 8 == kGenerationBits, "");
+    uintptr_t generation =
+        *(static_cast<volatile PartitionTag*>(PartitionTagPointer(ptr)));
+
     generation <<= kValidAddressBits;
     addr |= generation;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
     // Always set top bit to 1, to indicated that the protection is enabled.
     addr |= kTopBit;
-#if !CHECKED_PTR2_PROTECTION_ENABLED
-    // TEST: Clear the generation, or else it could crash without PA support.
-    // If the top bit was set, the unwrapper would read from before the address
-    // address, but with it cleared, it'll read from the address itself.
-    addr &= kAddressMask;
-#endif  // !CHECKED_PTR2_PROTECTION_ENABLED
 #endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-#endif  // CHECKED_PTR2_USE_NO_OP_WRAPPER
+#endif  // !CHECKED_PTR2_USE_NO_OP_WRAPPER
     return addr;
   }
 
@@ -166,8 +145,10 @@ struct CheckedPtr2Impl {
     return kWrappedNullPtr;
   }
 
-  static ALWAYS_INLINE uintptr_t
-  SafelyUnwrapPtrInternal(uintptr_t wrapped_ptr) {
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function is allowed to crash on nullptr.
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
+      uintptr_t wrapped_ptr) {
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
     // Top bit tells if the protection is enabled. Use it to decide whether to
     // read the word before the allocation, which exists only if the protection
@@ -205,9 +186,9 @@ struct CheckedPtr2Impl {
     //        anything)
     //   Ex.2: generation_ptr=0x0000000012345678, read e.g. 0x2345 (doesn't
     //         matter what we read, as long as this read doesn't crash)
-    volatile uint16_t* generation_ptr =
-        reinterpret_cast<volatile uint16_t*>(ExtractAddress(wrapped_ptr)) -
-        offset;
+    volatile PartitionTag* generation_ptr =
+        static_cast<volatile PartitionTag*>(ExtractPtr(wrapped_ptr)) -
+        offset * (kPartitionTagOffset / sizeof(PartitionTag));
     uintptr_t generation = *generation_ptr;
     // Shift generation into the right place and add back the enabled bit.
     //
@@ -241,7 +222,7 @@ struct CheckedPtr2Impl {
     //     b) returning 0x1676000012345678 (this will generate a desired crash)
     //   Ex.2: returning 0x0000000012345678
     static_assert(CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING, "");
-    return generation ^ wrapped_ptr;
+    return reinterpret_cast<void*>(generation ^ wrapped_ptr);
 #else  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
     uintptr_t ptr_generation = wrapped_ptr >> kValidAddressBits;
     if (ptr_generation > 0) {
@@ -250,52 +231,22 @@ struct CheckedPtr2Impl {
       // Cast to volatile to ensure memory is read. E.g. in a tight loop, the
       // compiler could cache the value in a register and thus could miss that
       // another thread freed memory and cleared generation.
-#if CHECKED_PTR2_PROTECTION_ENABLED
-      uintptr_t read_generation =
-          *(reinterpret_cast<volatile uint16_t*>(ExtractAddress(wrapped_ptr)) -
-            1);
-#else
-      // TEST: Reading from before the pointer may crash. See more above...
-      uintptr_t read_generation =
-          *(reinterpret_cast<volatile uint16_t*>(ExtractAddress(wrapped_ptr)));
-#endif
+      uintptr_t read_generation = *static_cast<volatile PartitionTag*>(
+          PartitionTagPointer(ExtractPtr(wrapped_ptr)));
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
       // Use hardware to detect generation mismatch. CPU will crash if top bits
       // aren't all 0 (technically it won't if all bits are 1, but that's a
       // kernel mode address, which isn't allowed either).
       read_generation <<= kValidAddressBits;
-      return read_generation ^ wrapped_ptr;
+      return reinterpret_cast<void*>(read_generation ^ wrapped_ptr);
 #else
-#if CHECKED_PTR2_PROTECTION_ENABLED
       if (UNLIKELY(ptr_generation != read_generation))
         IMMEDIATE_CRASH();
-#else
-      // TEST: Use volatile to prevent optimizing out the calculations leading
-      // to this point.
-      volatile bool x = false;
-      if (ptr_generation != read_generation)
-        x = true;
-#endif  // CHECKED_PTR2_PROTECTION_ENABLED
-      return wrapped_ptr & kAddressMask;
+      return reinterpret_cast<void*>(wrapped_ptr & kAddressMask);
 #endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
     }
-    return wrapped_ptr;
+    return reinterpret_cast<void*>(wrapped_ptr);
 #endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-  }
-
-  // Unwraps the pointer's uintptr_t representation, while asserting that memory
-  // hasn't been freed. The function is allowed to crash on nullptr.
-  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
-      uintptr_t wrapped_ptr) {
-#if CHECKED_PTR2_PROTECTION_ENABLED
-    return reinterpret_cast<void*>(SafelyUnwrapPtrInternal(wrapped_ptr));
-#else
-    // TEST: Use volatile to prevent optimizing out the calculations leading to
-    // this point.
-    // |SafelyUnwrapPtrInternal| was separated out solely for this purpose.
-    volatile uintptr_t addr = SafelyUnwrapPtrInternal(wrapped_ptr);
-    return reinterpret_cast<void*>(addr);
-#endif
   }
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
@@ -303,16 +254,16 @@ struct CheckedPtr2Impl {
   static ALWAYS_INLINE void* SafelyUnwrapPtrForExtraction(
       uintptr_t wrapped_ptr) {
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-    // In this implementation SafelyUnwrapPtrForDereference doesn't tolerate
+    // In this implementation, SafelyUnwrapPtrForDereference doesn't tolerate
     // nullptr, because it reads unconditionally to avoid branches. Handle the
     // nullptr case here.
     if (wrapped_ptr == kWrappedNullPtr)
       return nullptr;
-    return reinterpret_cast<void*>(SafelyUnwrapPtrForDereference(wrapped_ptr));
+    return SafelyUnwrapPtrForDereference(wrapped_ptr);
 #else
-    // In this implementation SafelyUnwrapPtrForDereference handles nullptr case
-    // well.
-    return reinterpret_cast<void*>(SafelyUnwrapPtrForDereference(wrapped_ptr));
+    // In this implementation, SafelyUnwrapPtrForDereference handles nullptr
+    // case well.
+    return SafelyUnwrapPtrForDereference(wrapped_ptr);
 #endif
   }
 
@@ -320,7 +271,7 @@ struct CheckedPtr2Impl {
   // on whether memory was freed or not.
   static ALWAYS_INLINE void* UnsafelyUnwrapPtrForComparison(
       uintptr_t wrapped_ptr) {
-    return reinterpret_cast<void*>(ExtractAddress(wrapped_ptr));
+    return ExtractPtr(wrapped_ptr);
   }
 
   // Advance the wrapped pointer by |delta| bytes.
@@ -337,7 +288,9 @@ struct CheckedPtr2Impl {
   static ALWAYS_INLINE uintptr_t ExtractAddress(uintptr_t wrapped_ptr) {
     return wrapped_ptr & kAddressMask;
   }
-
+  static ALWAYS_INLINE void* ExtractPtr(uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(ExtractAddress(wrapped_ptr));
+  }
   static ALWAYS_INLINE uintptr_t ExtractGeneration(uintptr_t wrapped_ptr) {
     return wrapped_ptr & kGenerationMask;
   }
@@ -375,7 +328,7 @@ struct DereferencedPointerType<void> {};
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
 template <typename T,
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && ENABLE_CHECKED_PTR
           typename Impl = internal::CheckedPtr2Impl<>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>

@@ -25,6 +25,8 @@ class CORE_EXPORT LayoutNGFlexibleBox : public LayoutNGMixin<LayoutBlock> {
   const char* GetName() const override { return "LayoutNGFlexibleBox"; }
 
  protected:
+  bool IsChildAllowed(LayoutObject* object,
+                      const ComputedStyle& style) const override;
   void RemoveChild(LayoutObject*) override;
 
   bool IsOfType(LayoutObjectType type) const override {

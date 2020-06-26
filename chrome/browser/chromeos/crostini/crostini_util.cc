@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/virtual_machines/virtual_machines_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_crostini_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -237,89 +236,6 @@ void LaunchApplication(
   }
 }
 
-// Helper class for loading icons. The callback is called when all icons have
-// been loaded, or after a provided timeout, after which the object deletes
-// itself.
-// TODO(timloh): We should consider having a service, so multiple requests for
-// the same icon won't load the same image multiple times and only the first
-// request would incur the loading delay.
-class IconLoadWaiter : public CrostiniAppIcon::Observer {
- public:
-  static void LoadIcons(
-      Profile* profile,
-      const std::vector<std::string>& app_ids,
-      int resource_size_in_dip,
-      ui::ScaleFactor scale_factor,
-      base::TimeDelta timeout,
-      base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback) {
-    new IconLoadWaiter(profile, app_ids, resource_size_in_dip, scale_factor,
-                       timeout, std::move(callback));
-  }
-
- private:
-  IconLoadWaiter(
-      Profile* profile,
-      const std::vector<std::string>& app_ids,
-      int resource_size_in_dip,
-      ui::ScaleFactor scale_factor,
-      base::TimeDelta timeout,
-      base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback)
-      : callback_(std::move(callback)) {
-    for (const std::string& app_id : app_ids) {
-      icons_.push_back(std::make_unique<CrostiniAppIcon>(
-          profile, app_id, resource_size_in_dip, this));
-      icons_.back()->LoadForScaleFactor(scale_factor);
-    }
-
-    timeout_timer_.Start(FROM_HERE, timeout, this,
-                         &IconLoadWaiter::RunCallback);
-  }
-
-  // TODO(timloh): This is only called when an icon is found, so if any of the
-  // requested apps are missing an icon, we'll have to wait for the timeout. We
-  // should add an interface so we can avoid this.
-  void OnIconUpdated(CrostiniAppIcon* icon) override {
-    loaded_icons_++;
-    if (loaded_icons_ != icons_.size())
-      return;
-
-    RunCallback();
-  }
-
-  void Delete() {
-    DCHECK(!timeout_timer_.IsRunning());
-    delete this;
-  }
-
-  void RunCallback() {
-    DCHECK(callback_);
-    std::vector<gfx::ImageSkia> result;
-    for (const auto& icon : icons_)
-      result.emplace_back(icon->image_skia());
-    std::move(callback_).Run(result);
-
-    // If we're running the callback as loading has finished, we can't delete
-    // ourselves yet as it would destroy the CrostiniAppIcon which is calling
-    // into us right now. If we hit the timeout, we delete immediately to avoid
-    // any race with more icons finishing loading.
-    if (timeout_timer_.IsRunning()) {
-      timeout_timer_.AbandonAndStop();
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&IconLoadWaiter::Delete, base::Unretained(this)));
-    } else {
-      Delete();
-    }
-  }
-
-  std::vector<std::unique_ptr<CrostiniAppIcon>> icons_;
-  size_t loaded_icons_ = 0;
-
-  base::OneShotTimer timeout_timer_;
-
-  base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)> callback_;
-};
-
 }  // namespace
 
 ContainerId::ContainerId(std::string vm_name,
@@ -524,18 +440,6 @@ void LaunchCrostiniApp(Profile* profile,
   }
   LaunchCrostiniAppImpl(profile, app_id, display_id, files,
                         std::move(registration), std::move(callback));
-}
-
-void LoadIcons(Profile* profile,
-               const std::vector<std::string>& app_ids,
-               int resource_size_in_dip,
-               ui::ScaleFactor scale_factor,
-               base::TimeDelta timeout,
-               base::OnceCallback<void(const std::vector<gfx::ImageSkia>&)>
-                   icons_loaded_callback) {
-  IconLoadWaiter::LoadIcons(profile, app_ids, resource_size_in_dip,
-                            scale_factor, timeout,
-                            std::move(icons_loaded_callback));
 }
 
 std::string CryptohomeIdForProfile(Profile* profile) {

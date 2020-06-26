@@ -20,12 +20,14 @@ using SetAppDescriptionsCallback =
 // Sets a delegate on future Java PaymentRequests that returns the given values
 // for queries about system state. If |use_delegate| is false, it disables the
 // use of a testing delegate, returning to the production one.
-void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
-                                              bool is_incognito,
-                                              bool is_valid_ssl,
-                                              bool is_web_contents_active,
-                                              bool prefs_can_make_payment,
-                                              bool skip_ui_for_basic_card);
+void SetUseDelegateOnPaymentRequestForTesting(
+    bool use_delegate,
+    bool is_incognito,
+    bool is_valid_ssl,
+    bool is_web_contents_active,
+    bool prefs_can_make_payment,
+    bool skip_ui_for_basic_card,
+    const std::string& twa_package_name);
 
 // Get the WebContents of the Expandable Payment Handler for testing purpose, or
 // null if nonexistent. To guarantee a non-null return, this function should be

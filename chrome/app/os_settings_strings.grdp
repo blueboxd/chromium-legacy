@@ -1087,9 +1087,6 @@
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_LABEL" desc="Label for the text input of the port number in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
     Port number
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_PLACEHOLDER" desc="Placeholder text for the port number text input in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
-    1024-65535
-  </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL_LABEL" desc="Label for the text input of an optional label to attach to the port in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
     Label (optional)
   </message>

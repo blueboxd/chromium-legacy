@@ -245,6 +245,11 @@ struct AutocompleteMatch {
   // usually this surfaces a clock icon to the user.
   static bool IsSearchHistoryType(Type type);
 
+  // Convenience function to check if |type| is one of the suggest types we
+  // need to skip for search vs url partitions - url, text or image in the
+  // clipboard or query tile.
+  static bool ShouldBeSkippedForGroupBySearchVsUrl(Type type);
+
   // If this match is a submatch, returns the parent's type, otherwise this
   // match's type.
   Type GetDemotionType() const;

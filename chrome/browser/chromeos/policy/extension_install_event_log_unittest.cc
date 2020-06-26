@@ -391,7 +391,7 @@ TEST_F(ExtensionInstallEventLogTest, AddStoreAndStore) {
   log_->Store();
   EXPECT_TRUE(base::PathExists(file_name_));
 
-  EXPECT_TRUE(base::DeleteFile(file_name_, false /* recursive */));
+  EXPECT_TRUE(base::DeleteFile(file_name_));
 
   log_->Store();
   EXPECT_FALSE(base::PathExists(file_name_));
@@ -453,7 +453,7 @@ TEST_F(ExtensionInstallEventLogTest, StoreLoadAndStore) {
   VerifyTenLogEntriesEach(0 /* first_extension_timestamp_offset */,
                           10 /* second_extension_timestamp_offset*/);
 
-  EXPECT_TRUE(base::DeleteFile(file_name_, false /* recursive */));
+  EXPECT_TRUE(base::DeleteFile(file_name_));
 
   log.Store();
   EXPECT_FALSE(base::PathExists(file_name_));

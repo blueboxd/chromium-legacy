@@ -16,7 +16,9 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -61,6 +63,15 @@ class HttpsImageCompressionInfoBarDeciderPrefTest
         profile()->GetPrefs(), drp_settings);
 
     return decider_.get();
+  }
+
+  // Sets the last enabled time of LiteMode in prefs.
+  void SetLiteModeLastEnableDate(const char* enabled_time) {
+    base::Time time;
+    EXPECT_TRUE(base::Time::FromUTCString(enabled_time, &time));
+    profile()->GetPrefs()->SetInt64(
+        data_reduction_proxy::prefs::kDataReductionProxyLastEnabledTime,
+        time.ToInternalValue());
   }
 
  private:
@@ -111,6 +122,31 @@ TEST_F(HttpsImageCompressionInfoBarDeciderPrefTest, TestDRPEnabledThenNotify) {
 
   // Simulate the callback being run.
   decider->SetUserHasSeenInfoBar();
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  EXPECT_FALSE(decider->NeedToShowInfoBar());
+}
+
+TEST_F(HttpsImageCompressionInfoBarDeciderPrefTest, TestRecentLiteModeUser) {
+  SetLiteModeLastEnableDate("2020-12-01T00:00:01Z");
+  HttpsImageCompressionInfoBarDecider* decider = GetDeciderWithDRPEnabled(true);
+  EXPECT_FALSE(decider->NeedToShowInfoBar());
+
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  // Should still be false after a navigation.
+  EXPECT_FALSE(decider->NeedToShowInfoBar());
+}
+
+TEST_F(HttpsImageCompressionInfoBarDeciderPrefTest, TestNonRecentLiteModeUser) {
+  HttpsImageCompressionInfoBarDecider* decider = GetDeciderWithDRPEnabled(true);
+  SetLiteModeLastEnableDate("2020-01-01T00:00:01Z");
+  EXPECT_TRUE(decider->NeedToShowInfoBar());
+  decider->SetUserHasSeenInfoBar();
+  EXPECT_FALSE(decider->NeedToShowInfoBar());
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));

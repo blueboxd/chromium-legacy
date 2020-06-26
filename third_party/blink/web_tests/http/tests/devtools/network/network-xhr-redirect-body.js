@@ -24,10 +24,12 @@
 
 
   function step4() {
-    NetworkTestRunner.networkRequests()[offset + 1].requestContent().then(step5);
+    NetworkTestRunner.networkRequests()[offset + 2].requestContent().then(
+        step5);
   }
   async function step5() {
-    var requests = NetworkTestRunner.networkRequests();
+    var requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
     for (var i = 0; i < requests.length; ++i) {
       var request = requests[i];
       var requestMethod = request.requestMethod;

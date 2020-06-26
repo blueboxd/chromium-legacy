@@ -54,12 +54,12 @@ TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
 
   Blacklist blacklist(prefs());
   TestBlacklist tester(&blacklist);
-  tester.SetBlacklistState(a, BLACKLISTED_MALWARE, false);
-  tester.SetBlacklistState(b, BLACKLISTED_MALWARE, false);
+  tester.SetBlacklistState(a, BLOCKLISTED_MALWARE, false);
+  tester.SetBlacklistState(b, BLOCKLISTED_MALWARE, false);
 
-  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
-  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(b));
-  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(c));
+  EXPECT_EQ(BLOCKLISTED_MALWARE, tester.GetBlacklistState(a));
+  EXPECT_EQ(BLOCKLISTED_MALWARE, tester.GetBlacklistState(b));
+  EXPECT_EQ(NOT_BLOCKLISTED, tester.GetBlacklistState(c));
 
   std::set<std::string> blacklisted_ids;
   blacklist.GetMalwareIDs(
@@ -76,21 +76,21 @@ TEST_F(BlacklistTest, SafeBrowsing) {
   TestBlacklist tester(&blacklist);
   tester.DisableSafeBrowsing();
 
-  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLOCKLISTED, tester.GetBlacklistState(a));
 
-  tester.SetBlacklistState(a, BLACKLISTED_MALWARE, false);
+  tester.SetBlacklistState(a, BLOCKLISTED_MALWARE, false);
   // The manager is still disabled at this point, so it won't be blacklisted.
-  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLOCKLISTED, tester.GetBlacklistState(a));
 
   tester.EnableSafeBrowsing();
   tester.NotifyUpdate();
   base::RunLoop().RunUntilIdle();
   // Now it should be.
-  EXPECT_EQ(BLACKLISTED_MALWARE, tester.GetBlacklistState(a));
+  EXPECT_EQ(BLOCKLISTED_MALWARE, tester.GetBlacklistState(a));
 
   tester.Clear(true);
   // Safe browsing blacklist empty, now enabled.
-  EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
+  EXPECT_EQ(NOT_BLOCKLISTED, tester.GetBlacklistState(a));
 }
 
 // Test getting different blacklist states from Blacklist.
@@ -104,10 +104,10 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
   std::string d = AddExtension("d");
   std::string e = AddExtension("e");
 
-  tester.SetBlacklistState(a, BLACKLISTED_MALWARE, false);
-  tester.SetBlacklistState(b, BLACKLISTED_SECURITY_VULNERABILITY, false);
-  tester.SetBlacklistState(c, BLACKLISTED_CWS_POLICY_VIOLATION, false);
-  tester.SetBlacklistState(d, BLACKLISTED_POTENTIALLY_UNWANTED, false);
+  tester.SetBlacklistState(a, BLOCKLISTED_MALWARE, false);
+  tester.SetBlacklistState(b, BLOCKLISTED_SECURITY_VULNERABILITY, false);
+  tester.SetBlacklistState(c, BLOCKLISTED_CWS_POLICY_VIOLATION, false);
+  tester.SetBlacklistState(d, BLOCKLISTED_POTENTIALLY_UNWANTED, false);
 
   Blacklist::BlacklistStateMap states_abc;
   Blacklist::BlacklistStateMap states_bcd;
@@ -119,12 +119,12 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
       base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states_bcd));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(BLACKLISTED_MALWARE, states_abc[a]);
-  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, states_abc[b]);
-  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states_abc[c]);
-  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, states_bcd[b]);
-  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states_bcd[c]);
-  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_bcd[d]);
+  EXPECT_EQ(BLOCKLISTED_MALWARE, states_abc[a]);
+  EXPECT_EQ(BLOCKLISTED_SECURITY_VULNERABILITY, states_abc[b]);
+  EXPECT_EQ(BLOCKLISTED_CWS_POLICY_VIOLATION, states_abc[c]);
+  EXPECT_EQ(BLOCKLISTED_SECURITY_VULNERABILITY, states_bcd[b]);
+  EXPECT_EQ(BLOCKLISTED_CWS_POLICY_VIOLATION, states_bcd[c]);
+  EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED, states_bcd[d]);
   EXPECT_EQ(0U, states_abc.count(e));
   EXPECT_EQ(0U, states_bcd.count(e));
 
@@ -133,8 +133,8 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
   blacklist.GetBlacklistedIDs(
       {a, d, e}, base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states_ad));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(BLACKLISTED_MALWARE, states_ad[a]);
-  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_ad[d]);
+  EXPECT_EQ(BLOCKLISTED_MALWARE, states_ad[a]);
+  EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED, states_ad[d]);
   EXPECT_EQ(0U, states_ad.count(e));
   EXPECT_EQ(old_request_count, tester.fetcher()->request_count());
 }
@@ -173,8 +173,8 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
   EXPECT_TRUE(fetcher_tester.HandleFetcher(a));
   EXPECT_TRUE(fetcher_tester.HandleFetcher(b));
 
-  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, states[a]);
-  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states[b]);
+  EXPECT_EQ(BLOCKLISTED_CWS_POLICY_VIOLATION, states[a]);
+  EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED, states[b]);
   EXPECT_EQ(0U, states.count(c));
 
   Blacklist::BlacklistStateMap cached_states;
@@ -186,8 +186,8 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
 
   // No new fetchers.
   EXPECT_FALSE(fetcher_tester.HandleFetcher(c));
-  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, cached_states[a]);
-  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, cached_states[b]);
+  EXPECT_EQ(BLOCKLISTED_CWS_POLICY_VIOLATION, cached_states[a]);
+  EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED, cached_states[b]);
   EXPECT_EQ(0U, cached_states.count(c));
 }
 

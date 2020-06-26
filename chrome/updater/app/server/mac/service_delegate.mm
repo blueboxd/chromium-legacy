@@ -42,14 +42,14 @@ const base::Version& GetSelfVersion() {
 // Designated initializers.
 - (instancetype)
     initWithUpdateService:(updater::UpdateService*)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer
            callbackRunner:
                (scoped_refptr<base::SequencedTaskRunner>)callbackRunner
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)
        initWithUpdateService:(updater::UpdateService*)service
-                   appServer:(scoped_refptr<updater::AppServer>)appServer
+                   appServer:(scoped_refptr<updater::AppServerMac>)appServer
     updaterConnectionOptions:(NSXPCConnectionOptions)options
               callbackRunner:
                   (scoped_refptr<base::SequencedTaskRunner>)callbackRunner;
@@ -58,7 +58,7 @@ const base::Version& GetSelfVersion() {
 
 @implementation CRUUpdateCheckXPCServiceImpl {
   updater::UpdateService* _service;
-  scoped_refptr<updater::AppServer> _appServer;
+  scoped_refptr<updater::AppServerMac> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
   NSXPCConnectionOptions _updateCheckXPCConnectionOptions;
   base::scoped_nsobject<NSXPCConnection> _updateCheckXPCConnection;
@@ -67,7 +67,7 @@ const base::Version& GetSelfVersion() {
 
 - (instancetype)
     initWithUpdateService:(updater::UpdateService*)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer
            callbackRunner:
                (scoped_refptr<base::SequencedTaskRunner>)callbackRunner {
   if (self = [super init]) {
@@ -80,7 +80,7 @@ const base::Version& GetSelfVersion() {
 
 - (instancetype)
        initWithUpdateService:(updater::UpdateService*)service
-                   appServer:(scoped_refptr<updater::AppServer>)appServer
+                   appServer:(scoped_refptr<updater::AppServerMac>)appServer
     updaterConnectionOptions:(NSXPCConnectionOptions)options
               callbackRunner:
                   (scoped_refptr<base::SequencedTaskRunner>)callbackRunner {
@@ -153,7 +153,7 @@ const base::Version& GetSelfVersion() {
       FROM_HERE,
       base::BindOnce(&updater::UpdateService::UpdateAll, _service,
                      std::move(sccb), std::move(cb)),
-      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
+      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
@@ -201,7 +201,7 @@ const base::Version& GetSelfVersion() {
       base::BindOnce(&updater::UpdateService::Update, _service,
                      base::SysNSStringToUTF8(appID), [priority priority],
                      std::move(sccb), std::move(cb)),
-      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
+      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -231,7 +231,7 @@ const base::Version& GetSelfVersion() {
       FROM_HERE,
       base::BindOnce(&updater::UpdateService::RegisterApp, _service, request,
                      std::move(cb)),
-      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
+      base::BindOnce(&updater::AppServerMac::TaskCompleted, _appServer));
 }
 
 - (void)getUpdaterVersionWithReply:
@@ -385,13 +385,13 @@ const base::Version& GetSelfVersion() {
 
 @implementation CRUUpdateCheckXPCServiceDelegate {
   scoped_refptr<updater::UpdateService> _service;
-  scoped_refptr<updater::AppServer> _appServer;
+  scoped_refptr<updater::AppServerMac> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
 - (instancetype)
     initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer {
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer {
   if (self = [super init]) {
     _service = service;
     _appServer = appServer;
@@ -421,13 +421,13 @@ const base::Version& GetSelfVersion() {
 
 @implementation CRUAdministrationXPCServiceDelegate {
   scoped_refptr<updater::UpdateService> _service;
-  scoped_refptr<updater::AppServer> _appServer;
+  scoped_refptr<updater::AppServerMac> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
 - (instancetype)
     initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer {
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer {
   if (self = [super init]) {
     _service = service;
     _callbackRunner = base::SequencedTaskRunnerHandle::Get();

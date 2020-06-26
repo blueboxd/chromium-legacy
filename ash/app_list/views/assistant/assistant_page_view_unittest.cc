@@ -233,11 +233,7 @@ class AssistantInteractionCounter
   }
 
   int interaction_count_ = 0;
-  ScopedObserver<
-      chromeos::assistant::Assistant,
-      chromeos::assistant::AssistantInteractionSubscriber,
-      &chromeos::assistant::Assistant::AddAssistantInteractionSubscriber,
-      &chromeos::assistant::Assistant::RemoveAssistantInteractionSubscriber>
+  chromeos::assistant::ScopedAssistantInteractionSubscriber
       interaction_observer_{this};
 };
 

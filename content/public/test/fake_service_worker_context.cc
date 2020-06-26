@@ -55,6 +55,18 @@ void FakeServiceWorkerContext::CountExternalRequestsForTest(
     CountExternalRequestsCallback callback) {
   NOTREACHED();
 }
+bool FakeServiceWorkerContext::MaybeHasRegistrationForOrigin(
+    const url::Origin& origin) {
+  NOTREACHED();
+  return false;
+}
+void FakeServiceWorkerContext::WaitForRegistrationsInitializedForTest() {
+  NOTREACHED();
+}
+void FakeServiceWorkerContext::AddRegistrationToRegisteredOriginsForTest(
+    const url::Origin& origin) {
+  NOTREACHED();
+}
 void FakeServiceWorkerContext::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   NOTREACHED();

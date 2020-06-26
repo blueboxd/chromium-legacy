@@ -673,14 +673,14 @@ void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
   }
 
   // Check the blacklist state.
-  if (errors.count(PreloadCheck::BLACKLISTED_ID) ||
-      errors.count(PreloadCheck::BLACKLISTED_UNKNOWN)) {
+  if (errors.count(PreloadCheck::BLOCKLISTED_ID) ||
+      errors.count(PreloadCheck::BLOCKLISTED_UNKNOWN)) {
     if (allow_silent_install_) {
       // NOTE: extension may still be blacklisted, but we're forced to silently
       // install it. In this case, ExtensionService::OnExtensionInstalled needs
       // to deal with it.
-      if (errors.count(PreloadCheck::BLACKLISTED_ID))
-        install_flags_ |= kInstallFlagIsBlacklistedForMalware;
+      if (errors.count(PreloadCheck::BLOCKLISTED_ID))
+        install_flags_ |= kInstallFlagIsBlocklistedForMalware;
     } else {
       // User tried to install a blacklisted extension. Show an error and
       // refuse to install it.

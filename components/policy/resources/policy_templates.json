@@ -16732,6 +16732,23 @@
       'desc': '''Setting the policy to True sends reports of key, policy-triggered Android app installation events to Google. Setting the policy to False means no events are captured.''',
     },
     {
+      'name': 'ExtensionInstallEventLoggingEnabled',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 727,
+      'caption': '''Log events for policy based extension installs''',
+      'tags': ['google-sharing'],
+      'desc': '''Setting the policy to True sends reports of key, policy-triggered extension installation events to Google. Setting the policy to False means no events are captured. If the policy is unset, default value is set to True.''',
+    },
+    {
       'name': 'UsageTimeLimit',
       'owners': ['hgrandinetti@chromium.org', 'vtrmc@chromium.org'],
       'type': 'dict',
@@ -22536,6 +22553,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 726,
+  'highest_id_currently_used': 727,
   'highest_atomic_group_id_currently_used': 38
 }

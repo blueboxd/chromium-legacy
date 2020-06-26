@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest, SearchDoesntCrash) {
 // Test that searching for "wifi" correctly returns a settings result for wifi.
 IN_PROC_BROWSER_TEST_F(OsSettingsSearchBrowserTest, AppListSearchForSettings) {
   DoLogin();
-  SearchAndWaitForProviders("network", {ResultType::kOsSettings});
+  SearchAndWaitForProviders("wifi", {ResultType::kOsSettings});
 
   auto* result = FindResult("os-settings://networks?type=WiFi");
   ASSERT_TRUE(result);

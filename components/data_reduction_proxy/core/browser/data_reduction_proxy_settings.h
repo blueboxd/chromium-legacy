@@ -179,6 +179,11 @@ class DataReductionProxySettings {
   // Returns the list of hosts for the prefetch proxy.
   const std::vector<GURL>& GetPrefetchProxies() const;
 
+  // Returns the time LiteMode was last enabled. This is reset whenever LiteMode
+  // is disabled and re-enabled from settings. Null time is returned when
+  // LiteMode has never been enabled.
+  base::Time GetLastEnabledTime() const;
+
   // Adds an observer that is notified every time the proxy request headers
   // change.
   void AddDataReductionProxySettingsObserver(

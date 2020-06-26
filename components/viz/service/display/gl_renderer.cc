@@ -2864,8 +2864,9 @@ void GLRenderer::FinishDrawingQuadList() {
     // Use the current surface area as max result. The effect is that overdraw
     // is reported as a percentage of the output surface size. ie. 2x overdraw
     // for the whole screen is reported as 200.
-    const int surface_area = current_surface_size_.GetArea();
-    DCHECK_GT(surface_area, 0);
+    base::CheckedNumeric<int> surface_area =
+        current_surface_size_.GetCheckedArea();
+    DCHECK_GT(static_cast<int>(surface_area.ValueOrDefault(INT_MAX)), 0);
 
     gl_->EndQueryEXT(GL_SAMPLES_PASSED_ARB);
     context_support_->SignalQuery(
@@ -3990,7 +3991,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   }
 }
 
-void GLRenderer::ProcessOverdrawFeedback(int surface_area,
+void GLRenderer::ProcessOverdrawFeedback(base::CheckedNumeric<int> surface_area,
                                          unsigned occlusion_query) {
   unsigned result = 0;
   DCHECK(occlusion_query);
@@ -3999,7 +4000,8 @@ void GLRenderer::ProcessOverdrawFeedback(int surface_area,
 
   // Report GPU overdraw as a percentage of |surface_area|.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"), "GPU Overdraw",
-                 (result * 100.0 / surface_area));
+                 (result * 100.0 /
+                  static_cast<int>(surface_area.ValueOrDefault(INT_MAX))));
 }
 
 void GLRenderer::UpdateRenderPassTextures(

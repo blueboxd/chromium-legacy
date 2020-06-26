@@ -25,9 +25,9 @@ scoped_refptr<VideoFrame> DefaultCreateFrame(
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     base::TimeDelta timestamp) {
-  return CreatePlatformVideoFrame(gpu_memory_buffer_factory, format, coded_size,
-                                  visible_rect, natural_size, timestamp,
-                                  gfx::BufferUsage::SCANOUT_VDA_WRITE);
+  return CreateGpuMemoryBufferVideoFrame(
+      gpu_memory_buffer_factory, format, coded_size, visible_rect, natural_size,
+      timestamp, gfx::BufferUsage::SCANOUT_VDA_WRITE);
 }
 
 }  // namespace
@@ -49,6 +49,15 @@ PlatformVideoFramePool::~PlatformVideoFramePool() {
   frames_in_use_.clear();
   free_frames_.clear();
   weak_this_factory_.InvalidateWeakPtrs();
+}
+
+// static
+gfx::GpuMemoryBufferId PlatformVideoFramePool::GetGpuMemoryBufferId(
+    const VideoFrame& frame) {
+  DCHECK_EQ(frame.storage_type(),
+            VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER);
+  DCHECK(frame.GetGpuMemoryBuffer());
+  return frame.GetGpuMemoryBuffer()->GetId();
 }
 
 scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
@@ -88,7 +97,8 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
       origin_frame, format, visible_rect_, natural_size_);
   DCHECK(wrapped_frame);
-  frames_in_use_.emplace(GetDmabufId(*wrapped_frame), origin_frame.get());
+  frames_in_use_.emplace(GetGpuMemoryBufferId(*wrapped_frame),
+                         origin_frame.get());
   wrapped_frame->AddDestructionObserver(
       base::BindOnce(&PlatformVideoFramePool::OnFrameReleasedThunk, weak_this_,
                      parent_task_runner_, std::move(origin_frame)));
@@ -169,7 +179,7 @@ VideoFrame* PlatformVideoFramePool::UnwrapFrame(
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  auto it = frames_in_use_.find(GetDmabufId(wrapped_frame));
+  auto it = frames_in_use_.find(GetGpuMemoryBufferId(wrapped_frame));
   return (it == frames_in_use_.end()) ? nullptr : it->second;
 }
 
@@ -204,7 +214,7 @@ void PlatformVideoFramePool::OnFrameReleased(
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  DmabufId frame_id = GetDmabufId(*origin_frame);
+  gfx::GpuMemoryBufferId frame_id = GetGpuMemoryBufferId(*origin_frame);
   auto it = frames_in_use_.find(frame_id);
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);

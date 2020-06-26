@@ -142,6 +142,7 @@ void PrintPreviewMessageHandler::OnDidStartPreview(
 }
 
 void PrintPreviewMessageHandler::OnDidPrepareForDocumentToPdf(
+    content::RenderFrameHost* render_frame_host,
     int document_cookie,
     const PrintHostMsg_PreviewIds& ids) {
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
@@ -163,7 +164,7 @@ void PrintPreviewMessageHandler::OnDidPrepareForDocumentToPdf(
     return;
 
   client->DoPrepareForDocumentToPdf(
-      document_cookie,
+      document_cookie, render_frame_host,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(
               &PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone,
@@ -482,6 +483,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,
                         OnRequestPrintPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
+                        OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_MetafileReadyForPrinting,
                         OnMetafileReadyForPrinting)
@@ -493,8 +496,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
-                        OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,
                         OnDidGetDefaultPageLayout)
     IPC_MESSAGE_UNHANDLED(handled = false)

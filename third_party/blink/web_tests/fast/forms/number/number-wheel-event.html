@@ -2,21 +2,15 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
-<script src="../../../resources/gesture-util.js"></script>
 <script src="../resources/common-wheel-event.js"></script>
 </head>
-<body onload="runTest();">
+<body>
 <script>
-
-async function runTest() {
-    await testWheelEvent({
-        'inputType' : 'number',
-        'initialValue' : '0',
-        'stepUpValue1' : '1',
-        'stepUpValue2' : '2' });
-    finishJSTest();
-}
-
+testWheelEvent({
+    'inputType' : 'number',
+    'initialValue' : '0',
+    'stepUpValue1' : '1',
+    'stepUpValue2' : '2' });
 </script>
 </body>
 </html>

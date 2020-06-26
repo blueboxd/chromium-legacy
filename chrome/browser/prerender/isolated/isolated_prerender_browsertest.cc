@@ -31,7 +31,6 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_test_utils.h"
@@ -70,6 +69,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/page_type.h"
@@ -790,16 +790,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("DONE", EvalJs(GetWebContents(),
                            "register('network_fallback_worker.js');"));
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
-  EXPECT_EQ(base::Optional<bool>(true),
-            isolated_prerender_service->service_workers_observer()
-                ->IsServiceWorkerRegisteredForOrigin(
-                    url::Origin::Create(GetOriginServerURL("/"))));
-  EXPECT_EQ(base::Optional<bool>(false),
-            isolated_prerender_service->service_workers_observer()
-                ->IsServiceWorkerRegisteredForOrigin(
-                    url::Origin::Create(GURL("https://unregistered.com"))));
+  content::ServiceWorkerContext* service_worker_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetServiceWorkerContext();
+  EXPECT_EQ(true, service_worker_context_->MaybeHasRegistrationForOrigin(
+                      url::Origin::Create(GetOriginServerURL("/"))));
+  EXPECT_EQ(false, service_worker_context_->MaybeHasRegistrationForOrigin(
+                       url::Origin::Create(GURL("https://unregistered.com"))));
 
   GURL prefetch_url = GetOriginServerURL("/title2.html");
 
@@ -2108,6 +2105,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
       service->GetSubresourceManagerForURL(eligible_link);
   ASSERT_TRUE(manager);
 
+  base::RunLoop().RunUntilIdle();
+
   std::set<GURL> expected_subresources = {
       GetOriginServerURL("/prerender/isolated/prefetch.js"),
       GetOriginServerURL("/prerender/isolated/prefetch-redirect-start.js"),
@@ -2182,6 +2181,132 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
       "IsolatedPrerender.Prefetch.Subresources.RespCode", 200, 2);
   histogram_tester.ExpectUniqueSample(
       "IsolatedPrerender.AfterClick.Subresources.UsedCache", true, 2);
+}
+
+namespace {
+std::unique_ptr<net::test_server::HttpResponse> HandleNonEligibleOrigin(
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().path() == "/script.js") {
+    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    resp->set_code(net::HTTP_OK);
+    resp->set_content_type("application/javascript");
+    resp->set_content("console.log(0);");
+    return resp;
+  }
+  return nullptr;
+}
+
+std::unique_ptr<net::test_server::HttpResponse> HandleEligibleOrigin(
+    net::EmbeddedTestServer* eligible_server,
+    net::EmbeddedTestServer* non_eligible_server,
+    const net::test_server::HttpRequest& request) {
+  GURL url = request.GetURL();
+
+  if (url.path() == "/page.html") {
+    GURL same_origin_resource = eligible_server->GetURL("a.test", "/script.js");
+    GURL redirect_resource = eligible_server->GetURL("a.test", "/redirect.js");
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    resp->set_code(net::HTTP_OK);
+    resp->set_content_type("text/html");
+    resp->set_content(base::StringPrintf(R"(
+        <html>
+          <head>
+            <script src="%s">
+            <script src="%s">
+          </head>
+          <body>Test</body>
+        </html>)",
+                                         same_origin_resource.spec().c_str(),
+                                         redirect_resource.spec().c_str()));
+    return resp;
+  }
+
+  if (url.path() == "/script.js") {
+    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    resp->set_code(net::HTTP_OK);
+    resp->set_content_type("application/javascript");
+    resp->set_content("console.log(0);");
+    return resp;
+  }
+
+  if (url.path() == "/redirect.js") {
+    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    resp->set_code(net::HTTP_TEMPORARY_REDIRECT);
+    resp->AddCustomHeader(
+        "location", non_eligible_server->GetURL("b.test", "/script.js").spec());
+    return resp;
+  }
+
+  return nullptr;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(
+    IsolatedPrerenderWithNSPBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NSPWithIneligibleSubresourceRedirect)) {
+  net::EmbeddedTestServer non_eligible_origin(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  non_eligible_origin.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  non_eligible_origin.RegisterRequestHandler(
+      base::BindRepeating(&HandleNonEligibleOrigin));
+  ASSERT_TRUE(non_eligible_origin.Start());
+
+  net::EmbeddedTestServer eligible_origin(net::EmbeddedTestServer::TYPE_HTTPS);
+  eligible_origin.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  eligible_origin.RegisterRequestHandler(base::BindRepeating(
+      &HandleEligibleOrigin, &eligible_origin, &non_eligible_origin));
+  ASSERT_TRUE(eligible_origin.Start());
+
+  content::SetCookie(browser()->profile(),
+                     non_eligible_origin.GetURL("b.test", "/"), "cookie=yes");
+
+  SetDataSaverEnabled(true);
+  WaitForUpdatedCustomProxyConfig();
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link = eligible_origin.GetURL("a.test", "/page.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
+
+  base::RunLoop prefetch_run_loop;
+  base::RunLoop nsp_run_loop;
+  tab_helper_observer.SetOnPrefetchSuccessfulClosure(
+      prefetch_run_loop.QuitClosure());
+
+  tab_helper_observer.SetOnNSPFinishedClosure(nsp_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop will quit when all the prefetch responses have been
+  // successfully done and processed.
+  prefetch_run_loop.Run();
+
+  // This run loop will quit when a NSP finishes.
+  nsp_run_loop.Run();
+
+  // Verify the resource load was reported to the subresource manager.
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+  IsolatedPrerenderSubresourceManager* manager =
+      service->GetSubresourceManagerForURL(eligible_link);
+  ASSERT_TRUE(manager);
+
+  base::RunLoop().RunUntilIdle();
+
+  std::set<GURL> expected_subresources = {
+      eligible_origin.GetURL("a.test", "/script.js"),
+  };
+  EXPECT_EQ(expected_subresources, manager->successfully_loaded_subresources());
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,

@@ -2209,8 +2209,6 @@ void ComputedStyle::ClearMultiCol() {
       LayoutUnit(ComputedStyleInitialValues::InitialColumnRuleWidth()));
   SetColumnRuleColorInternal(
       ComputedStyleInitialValues::InitialColumnRuleColor());
-  SetColumnRuleColorIsCurrentColor(
-      ComputedStyleInitialValues::InitialColumnRuleColorIsCurrentColor());
   SetInternalVisitedColumnRuleColorInternal(
       ComputedStyleInitialValues::InitialInternalVisitedColumnRuleColor());
   SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());

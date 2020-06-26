@@ -24,7 +24,6 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
@@ -970,10 +970,13 @@ void IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
     return;
   }
 
-  base::Optional<bool> site_has_service_worker =
-      isolated_prerender_service->service_workers_observer()
-          ->IsServiceWorkerRegisteredForOrigin(url::Origin::Create(url));
-  if (!site_has_service_worker.has_value() || site_has_service_worker.value()) {
+  content::ServiceWorkerContext* service_worker_context_ =
+      default_storage_partition->GetServiceWorkerContext();
+
+  bool site_has_service_worker =
+      service_worker_context_->MaybeHasRegistrationForOrigin(
+          url::Origin::Create(url));
+  if (site_has_service_worker) {
     std::move(result_callback)
         .Run(url, false,
              PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker);

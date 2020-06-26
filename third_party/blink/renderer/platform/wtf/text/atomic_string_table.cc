@@ -10,35 +10,9 @@
 
 namespace WTF {
 
-AtomicStringTable::AtomicStringTable() {
-  for (StringImpl* string : StringImpl::AllStaticStrings().Values())
-    Add(string);
-}
+namespace {
 
-AtomicStringTable::~AtomicStringTable() {
-  for (StringImpl* string : table_) {
-    if (!string->IsStatic()) {
-      DCHECK(string->IsAtomic());
-      string->SetIsAtomic(false);
-    }
-  }
-}
-
-void AtomicStringTable::ReserveCapacity(unsigned size) {
-  table_.ReserveCapacityForSize(size);
-}
-
-template <typename T, typename HashTranslator>
-scoped_refptr<StringImpl> AtomicStringTable::AddToStringTable(const T& value) {
-  HashSet<StringImpl*>::AddResult add_result =
-      table_.AddWithTranslator<HashTranslator>(value);
-
-  // If the string is newly-translated, then we need to adopt it.
-  // The boolean in the pair tells us if that is so.
-  return add_result.is_new_entry ? base::AdoptRef(*add_result.stored_value)
-                                 : *add_result.stored_value;
-}
-
+// TODO(ajwong): consider replacing with a span in the future.
 template <typename CharacterType>
 struct HashTranslatorCharBuffer {
   const CharacterType* s;
@@ -148,6 +122,85 @@ struct HashAndUTF8CharactersTranslator {
   }
 };
 
+struct StringViewLookupTranslator {
+  static unsigned GetHash(const StringView& buf) {
+    StringImpl* shared_impl = buf.SharedImpl();
+    if (LIKELY(shared_impl))
+      return shared_impl->GetHash();
+
+    if (buf.Is8Bit()) {
+      return StringHasher::ComputeHashAndMaskTop8Bits(buf.Characters8(),
+                                                      buf.length());
+    } else {
+      return StringHasher::ComputeHashAndMaskTop8Bits(buf.Characters16(),
+                                                      buf.length());
+    }
+  }
+
+  static bool Equal(StringImpl* const& str, const StringView& buf) {
+    return *str == buf;
+  }
+};
+
+struct LowercaseStringViewLookupTranslator {
+  template <typename CharType>
+  static UChar ToASCIILowerUChar(CharType ch) {
+    return ToASCIILower(ch);
+  }
+
+  static unsigned GetHash(const StringView& buf) {
+    // If possible, use cached hash if the string is lowercased.
+    StringImpl* shared_impl = buf.SharedImpl();
+    if (LIKELY(shared_impl && buf.IsLowerASCII()))
+      return shared_impl->GetHash();
+
+    if (buf.Is8Bit()) {
+      return StringHasher::ComputeHashAndMaskTop8Bits<LChar,
+                                                      ToASCIILowerUChar<LChar>>(
+          buf.Characters8(), buf.length());
+    } else {
+      return StringHasher::ComputeHashAndMaskTop8Bits<UChar,
+                                                      ToASCIILowerUChar<UChar>>(
+          buf.Characters16(), buf.length());
+    }
+  }
+
+  static bool Equal(StringImpl* const& str, const StringView& buf) {
+    return EqualIgnoringASCIICase(StringView(str), buf);
+  }
+};
+
+}  // namespace
+
+AtomicStringTable::AtomicStringTable() {
+  for (StringImpl* string : StringImpl::AllStaticStrings().Values())
+    Add(string);
+}
+
+AtomicStringTable::~AtomicStringTable() {
+  for (StringImpl* string : table_) {
+    if (!string->IsStatic()) {
+      DCHECK(string->IsAtomic());
+      string->SetIsAtomic(false);
+    }
+  }
+}
+
+void AtomicStringTable::ReserveCapacity(unsigned size) {
+  table_.ReserveCapacityForSize(size);
+}
+
+template <typename T, typename HashTranslator>
+scoped_refptr<StringImpl> AtomicStringTable::AddToStringTable(const T& value) {
+  HashSet<StringImpl*>::AddResult add_result =
+      table_.AddWithTranslator<HashTranslator>(value);
+
+  // If the string is newly-translated, then we need to adopt it.
+  // The boolean in the pair tells us if that is so.
+  return add_result.is_new_entry ? base::AdoptRef(*add_result.stored_value)
+                                 : *add_result.stored_value;
+}
+
 scoped_refptr<StringImpl> AtomicStringTable::Add(const UChar* s,
                                                  unsigned length) {
   if (!s)
@@ -219,6 +272,67 @@ scoped_refptr<StringImpl> AtomicStringTable::AddUTF8(
 
   return AddToStringTable<HashAndUTF8Characters,
                           HashAndUTF8CharactersTranslator>(buffer);
+}
+
+AtomicStringTable::WeakResult AtomicStringTable::WeakFindSlow(
+    StringImpl* string) {
+  DCHECK(string->length());
+  const auto& it = table_.find(string);
+  if (it == table_.end())
+    return WeakResult();
+  return WeakResult(*it);
+}
+
+AtomicStringTable::WeakResult AtomicStringTable::WeakFindSlow(
+    const StringView& string) {
+  DCHECK(string.length());
+  const auto& it = table_.Find<StringViewLookupTranslator>(string);
+  if (it == table_.end())
+    return WeakResult();
+  return WeakResult(*it);
+}
+
+AtomicStringTable::WeakResult AtomicStringTable::WeakFindLowercasedSlow(
+    const StringView& string) {
+  DCHECK(string.length());
+  const auto& it = table_.Find<LowercaseStringViewLookupTranslator>(string);
+  if (it == table_.end())
+    return WeakResult();
+  return WeakResult(*it);
+}
+
+AtomicStringTable::WeakResult AtomicStringTable::WeakFind(const LChar* chars,
+                                                          unsigned length) {
+  if (!chars)
+    return WeakResult();
+
+  // Mirror the empty logic in Add().
+  if (!length)
+    return WeakResult(StringImpl::empty_);
+
+  LCharBuffer buffer = {chars, length};
+  const auto& it = table_.Find<LCharBufferTranslator>(buffer);
+  if (it == table_.end())
+    return WeakResult();
+
+  return WeakResult(*it);
+}
+
+AtomicStringTable::WeakResult AtomicStringTable::WeakFind(const UChar* chars,
+                                                          unsigned length) {
+  if (!chars)
+    return WeakResult();
+
+  // Mirror the empty logic in Add().
+  if (!length)
+    return WeakResult(StringImpl::empty_);
+
+  UCharBuffer buffer = {chars, length};
+  const auto& it = table_.Find<UCharBufferTranslator>(buffer);
+  if (it == table_.end())
+    return WeakResult();
+
+  return WeakResult(*it);
 }
 
 void AtomicStringTable::Remove(StringImpl* string) {

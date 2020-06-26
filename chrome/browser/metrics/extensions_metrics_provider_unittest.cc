@@ -383,8 +383,8 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("blacklist").SetLocation(Manifest::INTERNAL).Build();
     add_extension(extension.get());
-    prefs()->SetExtensionBlacklistState(
-        extension->id(), extensions::BLACKLISTED_SECURITY_VULNERABILITY);
+    prefs()->SetExtensionBlocklistState(
+        extension->id(), extensions::BLOCKLISTED_SECURITY_VULNERABILITY);
     ExtensionInstallProto install = ConstructProto(*extension);
     EXPECT_EQ(ExtensionInstallProto::BLACKLISTED_SECURITY_VULNERABILITY,
               install.blacklist_state());

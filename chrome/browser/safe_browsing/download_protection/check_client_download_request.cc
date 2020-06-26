@@ -270,7 +270,16 @@ CheckClientDownloadRequest::ShouldUploadBinary(
   if (reason == REASON_DOWNLOAD_DESTROYED)
     return base::nullopt;
 
-  return DeepScanningRequest::ShouldUploadBinary(item_);
+  auto settings = DeepScanningRequest::ShouldUploadBinary(item_);
+  if (settings && (reason == REASON_DOWNLOAD_DANGEROUS ||
+                   reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
+                   reason == REASON_WHITELISTED_URL)) {
+    settings->tags.erase("malware");
+    if (settings->tags.empty())
+      return base::nullopt;
+  }
+
+  return settings;
 }
 
 void CheckClientDownloadRequest::UploadBinary(
@@ -279,7 +288,6 @@ void CheckClientDownloadRequest::UploadBinary(
   if (reason == REASON_DOWNLOAD_DANGEROUS ||
       reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
       reason == REASON_WHITELISTED_URL) {
-    settings.tags.erase("malware");
     service()->UploadForDeepScanning(
         item_,
         base::BindRepeating(&MaybeOverrideDlpScanResult, reason, callback_),

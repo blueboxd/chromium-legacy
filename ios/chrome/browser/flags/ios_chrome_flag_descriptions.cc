@@ -11,6 +11,12 @@
 
 namespace flag_descriptions {
 
+const char kAddWebContentDropInteractionName[] =
+    "Add Web Content Drop Interaction";
+const char kAddWebContentDropInteractionDescription[] =
+    "When enabled, adds ability to drop a URL on the web content area to "
+    "navigate to that URL.";
+
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =

@@ -384,6 +384,12 @@ be describing additional metrics about the same event.
       A contentful paint includes a paint of text, image, SVG, or canvas.
     </summary>
   </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToFirstPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time the first paint is performed, in the AMP subframe.
+    </summary>
+  </metric>
   <metric name="SubFrame.PaintTiming.NavigationToLargestContentfulPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation

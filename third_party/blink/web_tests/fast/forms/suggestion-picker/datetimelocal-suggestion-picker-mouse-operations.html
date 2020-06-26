@@ -2,7 +2,6 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
-<script src="../../../resources/gesture-util.js"></script>
 <script src="../../forms/resources/common.js"></script>
 <script src="../../forms/resources/common-wheel-event.js"></script>
 <script src="../../forms/resources/picker-common.js"></script>
@@ -83,15 +82,15 @@ function test2() {
         waitUntilClosing(test2AfterClosing);
     }
 
-    async function scrollUp() {
+    function scrollUp() {
         scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-        await dispatchWheelEvent(suggestionList, 0, -100);
-        shouldBecomeEqual('scrollTopBeforeWheelEvent > suggestionList.scrollTop', 'true', finishTest);
+        dispatchWheelEvent(suggestionList, 0, 100);
+        shouldBecomeEqual('scrollTopBeforeWheelEvent > suggestionList.scrollTop', 'true', finishTest)
     }
 
-    async function scrollDown() {
+    function scrollDown() {
         scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-        await dispatchWheelEvent(suggestionList, 0, 100);
+        dispatchWheelEvent(suggestionList, 0, -100);
         shouldBecomeEqual('scrollTopBeforeWheelEvent < suggestionList.scrollTop', 'true', scrollUp);
     }
 

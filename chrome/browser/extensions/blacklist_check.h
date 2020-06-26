@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/preload_check.h"
 
 namespace extensions {
@@ -26,7 +26,7 @@ class BlacklistCheck : public PreloadCheck {
   void Start(ResultCallback callback) override;
 
  private:
-  void OnBlacklistedStateRetrieved(BlacklistState blacklist_state);
+  void OnBlacklistedStateRetrieved(BlocklistState blacklist_state);
 
   Blacklist* blacklist_;
   ResultCallback callback_;

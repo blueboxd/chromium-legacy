@@ -58,14 +58,10 @@ class CachedUAStyle {
   LengthSize top_right_;
   LengthSize bottom_left_;
   LengthSize bottom_right_;
-  Color border_left_color;
-  Color border_right_color;
-  Color border_top_color;
-  Color border_bottom_color;
-  bool border_left_color_is_current_color;
-  bool border_right_color_is_current_color;
-  bool border_top_color_is_current_color;
-  bool border_bottom_color_is_current_color;
+  StyleColor border_left_color;
+  StyleColor border_right_color;
+  StyleColor border_top_color;
+  StyleColor border_bottom_color;
   unsigned border_left_style : 4;    // EBorderStyle
   unsigned border_right_style : 4;   // EBorderStyle
   unsigned border_top_style : 4;     // EBorderStyle

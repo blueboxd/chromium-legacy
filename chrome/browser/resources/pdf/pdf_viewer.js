@@ -5,6 +5,7 @@
 import './elements/viewer-error-screen.js';
 import './elements/viewer-password-screen.js';
 import './elements/viewer-pdf-toolbar.js';
+import './elements/viewer-pdf-toolbar-new.js';
 import './elements/shared-vars.js';
 // <if expr="chromeos">
 import './elements/viewer-ink-host.js';
@@ -126,6 +127,15 @@ class PDFViewerElement extends PDFViewerBaseElement {
       title_: String,
 
       isFormFieldFocused_: Boolean,
+
+      /** @private */
+      pdfViewerUpdateEnabled_: {
+        type: Boolean,
+        value: function() {
+          return document.documentElement.hasAttribute(
+              'pdf-viewer-update-enabled');
+        },
+      },
     };
   }
 
@@ -187,6 +197,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {string} */
     this.title_ = '';
+
+    /** @private {boolean} */
+    this.pdfViewerUpdateEnabled_;
   }
 
   /** @override */
@@ -277,8 +290,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
       }
     });
 
-    this.toolbarManager_ =
-        new ToolbarManager(window, this.getToolbar_(), this.getZoomToolbar());
+    this.toolbarManager_ = new ToolbarManager(
+        window, this.pdfViewerUpdateEnabled_ ? null : this.getToolbar_(),
+        this.getZoomToolbar());
 
     // Setup the keyboard event listener.
     document.addEventListener(

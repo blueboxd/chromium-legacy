@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
@@ -30,8 +31,8 @@ namespace ash {
 namespace {
 
 constexpr int kMaxFolderNameWidth = 204;
-constexpr SkColor kFolderNameColor = SkColorSetARGB(138, 0, 0, 0);
-constexpr SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
+constexpr SkColor kFolderNameColor = gfx::kGoogleGrey700;
+constexpr SkColor kFolderTitleHintTextColor = gfx::kGoogleGrey600;
 
 }  // namespace
 

@@ -105,7 +105,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandle {
 
   ServiceWorkerMainResourceHandleCore* core() { return core_; }
 
-  const ServiceWorkerContextWrapper* context_wrapper() const {
+  ServiceWorkerContextWrapper* context_wrapper() {
     return context_wrapper_.get();
   }
 

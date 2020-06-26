@@ -3148,18 +3148,6 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
   waiter.WaitForOperationToFinish();
 }
 
-void PwnMessageHelper::OpenURL(RenderProcessHost* process,
-                               int routing_id,
-                               const GURL& url) {
-  FrameHostMsg_OpenURL_Params params;
-  params.url = url;
-  params.disposition = WindowOpenDisposition::CURRENT_TAB;
-  params.should_replace_current_entry = false;
-  params.user_gesture = true;
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      process->GetChannel(), FrameHostMsg_OpenURL(routing_id, params));
-}
-
 #if defined(USE_AURA)
 namespace {
 

@@ -124,7 +124,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       event_data->event_text) {
     AccessibilityInfoDataWrapper* source_node =
         GetFromId(event_data->source_id);
-    UpdateAXNameCache(source_node, *event_data->event_text);
+    if (IsValid(source_node))
+      UpdateAXNameCache(source_node, *event_data->event_text);
   }
 
   ApplyCachedProperties();
@@ -371,12 +372,11 @@ AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
 
 bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
   if (event_data.event_type == AXEventType::VIEW_FOCUSED) {
-    AccessibilityInfoDataWrapper* focused_node =
-        GetFromId(event_data.source_id);
-    if (focused_node && focused_node->IsVisibleToUser()) {
+    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
+    if (source_node && source_node->IsVisibleToUser()) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
-          FindFirstFocusableNode(focused_node);
+          FindFirstFocusableNode(source_node);
       android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
                                                    : event_data.source_id;
     }
@@ -385,8 +385,9 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
     // 1. Changing a value in ProgressBar or TimePicker in ARC P.
     // 2. Selecting an item in the context of an AdapterView.
     AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
-    DCHECK(source_node);
-    DCHECK(source_node->IsNode());
+    if (!source_node || !source_node->IsNode())
+      return false;
+
     AXNodeInfoData* node_info = source_node->GetNode();
     DCHECK(node_info);
 
@@ -436,16 +437,16 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
 }
 
 void AXTreeSourceArc::UpdateAXNameCache(
-    AccessibilityInfoDataWrapper* focused_node,
+    AccessibilityInfoDataWrapper* source_node,
     const std::vector<std::string>& event_text) {
-  if (IsDrawerLayout(focused_node->GetNode())) {
+  if (IsDrawerLayout(source_node->GetNode())) {
     // When drawer menu opened, make the menu title announced.
     // When focus is changed, ChromeVox computes the diff in ancestry between
     // the previously focused and new focused node.
     // As the DrawerLayout is LCA of them, set the new title to be the first
     // visible child node (which is usually drawer menu).
     std::vector<AccessibilityInfoDataWrapper*> children;
-    focused_node->GetChildren(&children);
+    source_node->GetChildren(&children);
     for (auto* child : children) {
       if (child->IsNode() && child->IsVisibleToUser() &&
           GetBooleanProperty(child->GetNode(), AXBooleanProperty::IMPORTANCE)) {

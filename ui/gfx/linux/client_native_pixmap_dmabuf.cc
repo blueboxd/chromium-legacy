@@ -213,6 +213,8 @@ ClientNativePixmapDmaBuf::ImportFromDmabuf(gfx::NativePixmapHandle handle,
 
   for (size_t i = 0; i < handle.planes.size(); ++i) {
     // Verify that the plane buffer has appropriate size.
+    const size_t plane_stride =
+        base::strict_cast<size_t>(handle.planes[i].stride);
     size_t min_stride = 0;
     size_t subsample_factor = SubsamplingFactorForBufferFormat(format, i);
     base::CheckedNumeric<size_t> plane_height =
@@ -220,12 +222,18 @@ ClientNativePixmapDmaBuf::ImportFromDmabuf(gfx::NativePixmapHandle handle,
         subsample_factor;
     if (!gfx::RowSizeForBufferFormatChecked(size.width(), format, i,
                                             &min_stride) ||
-        handle.planes[i].stride < min_stride) {
+        plane_stride < min_stride) {
       return nullptr;
     }
     base::CheckedNumeric<size_t> min_size =
-        base::CheckedNumeric<size_t>(handle.planes[i].stride) * plane_height;
+        base::CheckedNumeric<size_t>(plane_stride) * plane_height;
     if (!min_size.IsValid() || handle.planes[i].size < min_size.ValueOrDie())
+      return nullptr;
+
+    // The stride must be a valid integer in order to be consistent with the
+    // GpuMemoryBuffer::stride() API. Also, refer to http://crbug.com/1093644#c1
+    // for some comments on this check and others in this method.
+    if (!base::IsValueInRangeForNumericType<int>(plane_stride))
       return nullptr;
 
     const size_t map_size = base::checked_cast<size_t>(handle.planes[i].size);

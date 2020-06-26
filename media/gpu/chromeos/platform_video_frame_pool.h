@@ -21,6 +21,7 @@
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
 class GpuMemoryBufferFactory;
@@ -42,6 +43,9 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   explicit PlatformVideoFramePool(
       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~PlatformVideoFramePool() override;
+
+  // Returns the ID of the GpuMemoryBuffer wrapped by |frame|.
+  static gfx::GpuMemoryBufferId GetGpuMemoryBufferId(const VideoFrame& frame);
 
   // DmabufVideoFramePool implementation.
   base::Optional<GpuBufferLayout> Initialize(const Fourcc& fourcc,
@@ -116,8 +120,9 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // should be the same as |format_| and |coded_size_|.
   base::circular_deque<scoped_refptr<VideoFrame>> free_frames_
       GUARDED_BY(lock_);
-  // Mapping from the unique_id of the wrapped frame to the original frame.
-  std::map<DmabufId, VideoFrame*> frames_in_use_ GUARDED_BY(lock_);
+  // Mapping from the frame's GpuMemoryBuffer's ID to the original frame.
+  std::map<gfx::GpuMemoryBufferId, VideoFrame*> frames_in_use_
+      GUARDED_BY(lock_);
 
   // The maximum number of frames created by the pool.
   size_t max_num_frames_ GUARDED_BY(lock_) = 0;

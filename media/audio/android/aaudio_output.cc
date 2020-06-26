@@ -173,8 +173,10 @@ base::TimeDelta AAudioOutputStream::GetDelay(base::TimeTicks delay_timestamp) {
   const base::TimeDelta next_frame_pts = base::TimeDelta::FromNanosecondsD(
       existing_frame_pts + frame_index_delta * ns_per_frame_);
 
-  // Calculate the latency between write time and presentation time.
-  return next_frame_pts - (delay_timestamp - base::TimeTicks());
+  // Calculate the latency between write time and presentation time. At startup
+  // we may end up with negative values here.
+  return std::max(base::TimeDelta(),
+                  next_frame_pts - (delay_timestamp - base::TimeTicks()));
 }
 
 aaudio_data_callback_result_t AAudioOutputStream::OnAudioDataRequested(
@@ -232,4 +234,5 @@ void AAudioOutputStream::SetMute(bool muted) {
   base::AutoLock al(lock_);
   muted_ = muted;
 }
+
 }  // namespace media

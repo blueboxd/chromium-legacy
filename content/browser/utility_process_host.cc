@@ -476,6 +476,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kVModule,
 #if defined(OS_ANDROID)
       switches::kEnableReachedCodeProfiler,
+      switches::kReachedCodeSamplingIntervalUs,
 #endif
       switches::kEnableExperimentalWebPlatformFeatures,
       // These flags are used by the audio service:

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -141,6 +142,7 @@ class SigninReauthViewController
   void OnStateChanged();
 
   void RecordClickOnce(UserAction click_action);
+  void RecordGaiaNavigationDuration();
 
   signin::ReauthTabHelper* GetReauthTabHelper();
 
@@ -158,6 +160,8 @@ class SigninReauthViewController
   // Dialog state useful for recording metrics.
   UIState ui_state_ = UIState::kNone;
   bool has_recorded_click_ = false;
+  base::TimeTicks reauth_start_time_{base::TimeTicks::Now()};
+  base::TimeTicks user_confirmed_reauth_time_{base::TimeTicks::Max()};
 
   // Delegate displaying the dialog.
   SigninViewControllerDelegate* dialog_delegate_ = nullptr;

@@ -14,7 +14,6 @@ jumbo_source_set("filters") {
   visibility = [
     "//media",
     "//media/renderers",
-    "//media/webcodecs",
   ]
 
   sources = [
@@ -262,6 +261,8 @@ static_library("test_support") {
   visibility = [ "//media:test_support" ]
 
   sources = [
+    "fake_video_decoder.cc",
+    "fake_video_decoder.h",
     "ivf_parser.cc",
     "ivf_parser.h",
   ]
@@ -290,8 +291,6 @@ source_set("unit_tests") {
     "decrypting_demuxer_stream_unittest.cc",
     "decrypting_media_resource_unittest.cc",
     "decrypting_video_decoder_unittest.cc",
-    "fake_video_decoder.cc",
-    "fake_video_decoder.h",
     "fake_video_decoder_unittest.cc",
     "file_data_source_unittest.cc",
     "frame_buffer_pool_unittest.cc",

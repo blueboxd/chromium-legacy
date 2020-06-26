@@ -95,8 +95,15 @@ bool PrintCompositeClient::OnMessageReceived(
 
 void PrintCompositeClient::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  if (document_cookie_ == 0)
+  if (document_cookie_ == 0) {
+    DCHECK(!initiator_frame_);
     return;
+  }
+
+  if (initiator_frame_ == render_frame_host) {
+    RemoveCompositeRequest(document_cookie_);
+    return;
+  }
 
   auto iter = pending_subframes_.find(render_frame_host);
   if (iter != pending_subframes_.end()) {
@@ -201,11 +208,12 @@ void PrintCompositeClient::DoCompositePageToPdf(
 
 void PrintCompositeClient::DoPrepareForDocumentToPdf(
     int document_cookie,
+    content::RenderFrameHost* render_frame_host,
     mojom::PrintCompositor::PrepareForDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!GetIsDocumentConcurrentlyComposited(document_cookie));
 
-  auto* compositor = CreateCompositeRequest(document_cookie);
+  auto* compositor = CreateCompositeRequest(document_cookie, render_frame_host);
   is_doc_concurrently_composited_ = true;
   compositor->PrepareForDocumentToPdf(
       base::BindOnce(&PrintCompositeClient::OnDidPrepareForDocumentToPdf,
@@ -239,7 +247,7 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!GetIsDocumentConcurrentlyComposited(document_cookie));
 
-  auto* compositor = CreateCompositeRequest(document_cookie);
+  auto* compositor = CreateCompositeRequest(document_cookie, render_frame_host);
   auto region = content.metafile_data_region.Duplicate();
 
   // Since this class owns compositor, compositor will be gone when this class
@@ -292,12 +300,18 @@ bool PrintCompositeClient::GetIsDocumentConcurrentlyComposited(
 }
 
 mojom::PrintCompositor* PrintCompositeClient::CreateCompositeRequest(
-    int cookie) {
+    int cookie,
+    content::RenderFrameHost* initiator_frame) {
+  DCHECK(initiator_frame);
+
   if (document_cookie_ != 0) {
     DCHECK_NE(document_cookie_, cookie);
     RemoveCompositeRequest(document_cookie_);
   }
   document_cookie_ = cookie;
+
+  // Track which frame kicked off the composite request.
+  initiator_frame_ = initiator_frame;
 
   compositor_ = content::ServiceProcessHost::Launch<mojom::PrintCompositor>(
       content::ServiceProcessHost::Options()
@@ -323,6 +337,7 @@ void PrintCompositeClient::RemoveCompositeRequest(int cookie) {
   DCHECK_EQ(document_cookie_, cookie);
   compositor_.reset();
   document_cookie_ = 0;
+  initiator_frame_ = nullptr;
 
   // Clear all stored printed and pending subframes.
   pending_subframes_.clear();

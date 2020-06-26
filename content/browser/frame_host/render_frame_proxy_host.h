@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_proxy.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -20,8 +21,6 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-forward.h"
-
-struct FrameHostMsg_OpenURL_Params;
 
 namespace blink {
 class AssociatedInterfaceProvider;
@@ -174,6 +173,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // blink::mojom::RemoteMainFrameHost overrides:
   void FocusPage() override;
 
+  // mojom::RenderFrameProxyHost:
+  void OpenURL(mojom::OpenURLParamsPtr params) override;
+
   // Returns associated remote for the content::mojom::RenderFrameProxy Mojo
   // interface.
   const mojo::AssociatedRemote<mojom::RenderFrameProxy>&
@@ -198,7 +200,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   // IPC Message handlers.
   void OnDetach();
-  void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnPrintCrossProcessSubframe(const gfx::Rect& rect, int document_cookie);
 
   // IPC::Listener

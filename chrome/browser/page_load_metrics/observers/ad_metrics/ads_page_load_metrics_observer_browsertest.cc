@@ -554,8 +554,8 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        DocOverwritesNavigation) {
   content::DOMMessageQueue msg_queue;
 
-  base::HistogramTester histogram_tester;
-
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(
                      "/ads_observer/docwrite_provisional_frame.html"));
@@ -566,10 +566,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  // TODO(johnidel): Check that the subresources of the new frame are reported
-  // correctly. Resources from a failed provisional load are not reported to
-  // resource data updates, causing this adframe to not be recorded. This is an
-  // uncommon case but should be reported. See crbug.com/914893.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(), ukm::builders::AdFrameLoad::kLoading_NumResourcesName,
+      3);
+
+  // TODO(https://crbug.com/): We should verify that we also receive FCP for
+  // frames that are loaded in this manner. Currently timing updates are not
+  // sent for aborted navigations due to doc.write.
 }
 
 // Test that a blank ad subframe that is docwritten correctly reports metrics.

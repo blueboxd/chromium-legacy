@@ -248,7 +248,9 @@ public class CachedFeatureFlags {
         // Propagate REACHED_CODE_PROFILER feature value to LibraryLoader. This can't be done in
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
+                ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER),
+                ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                        ChromeFeatureList.REACHED_CODE_PROFILER, "sampling_interval_us", 0));
     }
 
     /**

@@ -85,8 +85,7 @@ class AssistiveWindowController : public views::WidgetObserver,
 
   // ui::ime::AssistiveDelegate implementation.
   void AssistiveWindowButtonClicked(
-      ui::ime::ButtonId id,
-      ui::ime::AssistiveWindowType type) const override;
+      const ui::ime::AssistiveWindowButton& button) const override;
 
   void InitSuggestionWindow();
   void InitUndoWindow();

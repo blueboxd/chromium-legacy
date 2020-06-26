@@ -15,9 +15,10 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_server.h"
 #import "chrome/updater/app/server/mac/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
-#import "chrome/updater/configurator.h"
+#include "chrome/updater/configurator.h"
 #import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/prefs.h"
@@ -25,27 +26,26 @@
 
 namespace updater {
 
-AppServer::AppServer() = default;
-AppServer::~AppServer() = default;
+AppServerMac::AppServerMac() = default;
+AppServerMac::~AppServerMac() = default;
 
-void AppServer::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
-}
-
-void AppServer::Uninitialize() {
+void AppServerMac::Uninitialize() {
   // These delegates need to have a reference to the AppServer. To break the
   // circular reference, we need to reset them.
   update_check_delegate_.reset();
   administration_delegate_.reset();
+
+  AppServer::Uninitialize();
 }
 
-void AppServer::FirstTaskRun() {
+void AppServerMac::ActiveDuty() {
   @autoreleasepool {
-    // Sets up a listener and delegate for the CRUUpdateChecking XPC connection
+    // Sets up a listener and delegate for the CRUUpdateChecking XPC
+    // connection
     update_check_delegate_.reset([[CRUUpdateCheckXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
                                   config_)
-                    appServer:scoped_refptr<AppServer>(this)]);
+                    appServer:scoped_refptr<AppServerMac>(this)]);
 
     update_check_listener_.reset([[NSXPCListener alloc]
         initWithMachServiceName:GetGoogleUpdateServiceMachName().get()]);
@@ -60,7 +60,7 @@ void AppServer::FirstTaskRun() {
     administration_delegate_.reset([[CRUAdministrationXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
                                   config_)
-                    appServer:scoped_refptr<AppServer>(this)]);
+                    appServer:scoped_refptr<AppServerMac>(this)]);
 
     administration_listener_.reset([[NSXPCListener alloc]
         initWithMachServiceName:
@@ -72,30 +72,39 @@ void AppServer::FirstTaskRun() {
   }
 }
 
-void AppServer::TaskStarted() {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&AppServer::MarkTaskStarted, this));
+void AppServerMac::UninstallSelf() {
+  // TODO(crbug.com/1098934): Uninstall this candidate version of the updater.
 }
 
-void AppServer::MarkTaskStarted() {
+bool AppServerMac::SwapRPCInterfaces() {
+  // TODO(crbug.com/1098935): Update unversioned XPC interface.
+  return true;
+}
+
+void AppServerMac::TaskStarted() {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&AppServerMac::MarkTaskStarted, this));
+}
+
+void AppServerMac::MarkTaskStarted() {
   tasks_running_++;
 }
 
-void AppServer::TaskCompleted() {
+void AppServerMac::TaskCompleted() {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&AppServer::AcknowledgeTaskCompletion, this),
+      FROM_HERE, base::BindOnce(&AppServerMac::AcknowledgeTaskCompletion, this),
       base::TimeDelta::FromSeconds(10));
 }
 
-void AppServer::AcknowledgeTaskCompletion() {
+void AppServerMac::AcknowledgeTaskCompletion() {
   if (--tasks_running_ < 1) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppServer::Shutdown, this, 0));
+        FROM_HERE, base::BindOnce(&AppServerMac::Shutdown, this, 0));
   }
 }
 
 scoped_refptr<App> MakeAppServer() {
-  return base::MakeRefCounted<AppServer>();
+  return base::MakeRefCounted<AppServerMac>();
 }
 
 }  // namespace updater

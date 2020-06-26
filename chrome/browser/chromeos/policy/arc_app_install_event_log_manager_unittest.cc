@@ -292,7 +292,7 @@ class ArcAppInstallEventLogManagerTest : public testing::Test {
 
   void VerifyAndDeleteLogFile() {
     VerifyLogFile();
-    base::DeleteFile(log_file_path_, false /* recursive */);
+    base::DeleteFile(log_file_path_);
   }
 
   TestLogTaskRunnerWrapper log_task_runner_wrapper_;
@@ -342,7 +342,7 @@ TEST_F(ArcAppInstallEventLogManagerTest, CreateNonEmpty) {
   log.Store();
 
   CreateManager();
-  base::DeleteFile(log_file_path_, false /* recursive */);
+  base::DeleteFile(log_file_path_);
 
   FastForwardTo(kExpeditedUploadDelay - kOneMs);
   Mock::VerifyAndClearExpectations(&cloud_policy_client_);

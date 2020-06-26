@@ -427,7 +427,7 @@ void ServiceWorkerTaskQueue::DeactivateExtension(const Extension* extension) {
       ->UnregisterServiceWorker(
           extension->url(),
           base::BindOnce(&ServiceWorkerTaskQueue::DidUnregisterServiceWorker,
-                         weak_factory_.GetWeakPtr(), extension_id));
+                         weak_factory_.GetWeakPtr(), extension_id, *sequence));
 }
 
 void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
@@ -496,7 +496,12 @@ void ServiceWorkerTaskQueue::DidRegisterServiceWorker(
 
 void ServiceWorkerTaskQueue::DidUnregisterServiceWorker(
     const ExtensionId& extension_id,
+    ActivationSequence sequence,
     bool success) {
+  // Extension run with |sequence| was already deactivated.
+  if (!IsCurrentSequence(extension_id, sequence))
+    return;
+
   // TODO(lazyboy): Handle success = false case.
   if (!success)
     LOG(ERROR) << "Failed to unregister service worker!";

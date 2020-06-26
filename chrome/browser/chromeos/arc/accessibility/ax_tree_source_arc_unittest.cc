@@ -1178,4 +1178,37 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
   // TODO(sahok): add test when source_node is not a range widget.
 }
 
+TEST_F(AXTreeSourceArcTest, EventWithWrongSourceId) {
+  auto event = AXEventData::New();
+  event->source_id = 99999;  // This doesn't exist in serialized nodes.
+  event->task_id = 1;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 10;
+
+  // This test only verifies that wrong source id won't make Chrome crash.
+
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  event->event_type = AXEventType::VIEW_SELECTED;
+  CallNotifyAccessibilityEvent(event.get());
+
+  event->event_type = AXEventType::WINDOW_STATE_CHANGED;
+  event->event_text = std::vector<std::string>({"test text."});
+  SetProperty(event.get(), AXEventIntListProperty::CONTENT_CHANGE_TYPES,
+              {static_cast<int>(mojom::ContentChangeType::STATE_DESCRIPTION)});
+  CallNotifyAccessibilityEvent(event.get());
+
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+}
+
 }  // namespace arc

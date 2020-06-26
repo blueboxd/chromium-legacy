@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -206,9 +207,7 @@ const char CustomTabBarView::kViewClassName[] = "CustomTabBarView";
 
 CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
                                    LocationBarView::Delegate* delegate)
-    : TabStripModelObserver(),
-      delegate_(delegate),
-      browser_(browser_view->browser()) {
+    : delegate_(delegate), browser_(browser_view->browser()) {
   set_context_menu_controller(this);
 
   const gfx::FontList& font_list = views::style::GetFont(
@@ -224,14 +223,32 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   title_origin_view->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred));
+                               views::MaximumFlexSizeRule::kUnbounded));
   title_origin_view_ = AddChildView(std::move(title_origin_view));
+
+  // (TODO): This value can change, e.g. when changing from clamshell to tablet
+  // mode. Find a better place to set it.
+  gfx::Insets interior_margin =
+      GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
+#if defined(OS_CHROMEOS)
+  if (browser_->is_type_custom_tab()) {
+    web_app_menu_button_ = AddChildView(std::make_unique<WebAppMenuButton>(
+        browser_view, l10n_util::GetStringUTF16(
+                          IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME)));
+
+    // Remove the vertical portion of the interior margin here to avoid
+    // increasing the height of the toolbar when |web_app_menu_button_| is drawn
+    // while maintaining its touch area.
+    interior_margin.set_top(0);
+    interior_margin.set_bottom(0);
+  }
+#endif
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
+      .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
+      .SetInteriorMargin(interior_margin);
 
   browser_->tab_strip_model()->AddObserver(this);
 }
@@ -320,6 +337,10 @@ void CustomTabBarView::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(background_color_));
 
   title_origin_view_->SetColors(background_color_);
+  if (web_app_menu_button_) {
+    web_app_menu_button_->SetColor(GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
+  }
 }
 
 void CustomTabBarView::TabChangedAt(content::WebContents* contents,

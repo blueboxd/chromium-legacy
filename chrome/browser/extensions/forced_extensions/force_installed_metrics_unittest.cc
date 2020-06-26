@@ -364,7 +364,7 @@ TEST_F(ForceInstalledMetricsTest,
 TEST_F(ForceInstalledMetricsTest, ExtensionForceInstalledAndBlacklisted) {
   SetupForceList();
   auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
-  registry_->AddBlacklisted(ext1.get());
+  registry_->AddBlocklisted(ext1.get());
   auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
   registry_->AddEnabled(ext2.get());
   tracker_->OnExtensionLoaded(profile_, ext2.get());

@@ -100,8 +100,6 @@ class ASH_EXPORT ShellDelegate {
   virtual media_session::mojom::MediaSessionService* GetMediaSessionService();
 
   virtual void OpenKeyboardShortcutHelpPage() const {}
-
-  virtual void OpenDisplaySettings() const {}
 };
 
 }  // namespace ash

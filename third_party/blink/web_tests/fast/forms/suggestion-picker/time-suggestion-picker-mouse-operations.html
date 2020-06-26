@@ -2,7 +2,6 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
-<script src="../../../resources/gesture-util.js"></script>
 <script src="../../forms/resources/common.js"></script>
 <script src="../../forms/resources/common-wheel-event.js"></script>
 <script src="../../forms/resources/picker-common.js"></script>
@@ -48,6 +47,9 @@ function test1() {
     debug('Check that page popup exists.');
     shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
+    debug('Check that page popup exists.');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
+
     debug('Check that hovering over an entry highlights it.');
     hoverOverElement(popupWindow.document.querySelector(".suggestion-list-entry:nth-child(2)"));
     shouldBeEqualToString('highlightedEntry()', '01:02');
@@ -83,15 +85,15 @@ function test2() {
         waitUntilClosing(test2AfterClosing);
     }
 
-    async function scrollUp() {
+    function scrollUp() {
         scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-        await dispatchWheelEvent(suggestionList, 0, -100);
+        dispatchWheelEvent(suggestionList, 0, 100);
         shouldBecomeEqual('scrollTopBeforeWheelEvent > suggestionList.scrollTop', 'true', finishTest)
     }
 
-    async function scrollDown() {
+    function scrollDown() {
         scrollTopBeforeWheelEvent = suggestionList.scrollTop;
-        await dispatchWheelEvent(suggestionList, 0, 100);
+        dispatchWheelEvent(suggestionList, 0, -100);
         shouldBecomeEqual('scrollTopBeforeWheelEvent < suggestionList.scrollTop', 'true', scrollUp);
     }
 

@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TAB_SWITCHER_TITLE_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TRENDY_TERMS_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
@@ -66,7 +67,7 @@ import java.util.List;
 class StartSurfaceMediator
         implements StartSurface.Controller, TabSwitcher.OverviewModeObserver, View.OnClickListener {
     @IntDef({SurfaceMode.NO_START_SURFACE, SurfaceMode.TASKS_ONLY, SurfaceMode.TWO_PANES,
-            SurfaceMode.SINGLE_PANE, SurfaceMode.OMNIBOX_ONLY})
+            SurfaceMode.SINGLE_PANE, SurfaceMode.OMNIBOX_ONLY, SurfaceMode.TRENDY_TERMS})
     @Retention(RetentionPolicy.SOURCE)
     @interface SurfaceMode {
         int NO_START_SURFACE = 0;
@@ -74,6 +75,7 @@ class StartSurfaceMediator
         int TWO_PANES = 2;
         int SINGLE_PANE = 3;
         int OMNIBOX_ONLY = 4;
+        int TRENDY_TERMS = 5;
     }
 
     /** Interface to initialize a secondary tasks surface for more tabs. */
@@ -157,7 +159,8 @@ class StartSurfaceMediator
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
                     || mSurfaceMode == SurfaceMode.TASKS_ONLY
-                    || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY;
+                    || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY
+                    || mSurfaceMode == SurfaceMode.TRENDY_TERMS;
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
 
@@ -261,8 +264,10 @@ class StartSurfaceMediator
                 }
             };
 
-            // Only tweak the margins between sections for non-OMNIBOX_ONLY variations.
-            if (surfaceMode != SurfaceMode.OMNIBOX_ONLY) {
+            // Only tweak the margins between sections for non-OMNIBOX_ONLY and non-TRENDY_TERMS
+            // variations.
+            if (surfaceMode != SurfaceMode.OMNIBOX_ONLY
+                    && surfaceMode != SurfaceMode.TRENDY_TERMS) {
                 Resources resources = ContextUtils.getApplicationContext().getResources();
                 mPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN,
                         resources.getDimensionPixelSize(R.dimen.tasks_surface_body_top_margin));
@@ -372,6 +377,8 @@ class StartSurfaceMediator
             RecordUserAction.record("StartSurface.TasksOnly");
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
             RecordUserAction.record("StartSurface.OmniboxOnly");
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS) {
+            RecordUserAction.record("StartSurface.TrendyTerms");
         }
     }
 
@@ -431,6 +438,11 @@ class StartSurfaceMediator
             setMVTilesVisibility(false);
             setExploreSurfaceVisibility(false);
             setFakeBoxVisibility(true);
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS) {
+            setMVTilesVisibility(false);
+            setExploreSurfaceVisibility(false);
+            setFakeBoxVisibility(true);
+            setTrendyTermsVisibility(true);
         } else if (mOverviewModeState == OverviewModeState.NOT_SHOWN) {
             if (mSecondaryTasksSurfacePropertyModel != null) {
                 setSecondaryTasksSurfaceVisibility(false);
@@ -696,6 +708,7 @@ class StartSurfaceMediator
         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS
                 || (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
                         && !mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE))) {
             return true;
@@ -735,6 +748,11 @@ class StartSurfaceMediator
     private void setMVTilesVisibility(boolean isVisible) {
         if (mExcludeMVTiles || isVisible == mPropertyModel.get(MV_TILES_VISIBLE)) return;
         mPropertyModel.set(MV_TILES_VISIBLE, isVisible);
+    }
+
+    private void setTrendyTermsVisibility(boolean isVisible) {
+        if (isVisible == mPropertyModel.get(TRENDY_TERMS_VISIBLE)) return;
+        mPropertyModel.set(TRENDY_TERMS_VISIBLE, isVisible);
     }
 
     private void setFakeBoxVisibility(boolean isVisible) {
@@ -806,6 +824,9 @@ class StartSurfaceMediator
         if (mSurfaceMode == SurfaceMode.OMNIBOX_ONLY) {
             return OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY;
         }
+        if (mSurfaceMode == SurfaceMode.TRENDY_TERMS) {
+            return OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS;
+        }
         return OverviewModeState.DISABLED;
     }
 
@@ -814,6 +835,7 @@ class StartSurfaceMediator
                 || state == OverviewModeState.SHOWN_TABSWITCHER
                 || state == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
                 || state == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
-                || state == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY;
+                || state == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                || state == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS;
     }
 }

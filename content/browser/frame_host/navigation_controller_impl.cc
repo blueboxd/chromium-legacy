@@ -3304,7 +3304,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
           node->pending_frame_policy(),
-          std::vector<std::string>() /* force_enabled_origin_trials */);
+          std::vector<std::string>() /* force_enabled_origin_trials */,
+          false /* origin_isolation_restricted */);
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();

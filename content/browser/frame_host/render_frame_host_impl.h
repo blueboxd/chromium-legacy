@@ -155,7 +155,6 @@
 #endif
 
 class GURL;
-struct FrameHostMsg_OpenURL_Params;
 
 namespace blink {
 class AssociatedInterfaceProvider;
@@ -1686,6 +1685,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnCookiesAccessed(
       network::mojom::CookieAccessDetailsPtr details) override;
 
+  // mojom::FrameHost:
+  void OpenURL(mojom::OpenURLParamsPtr params) override;
+
   void GetSavableResourceLinksFromRenderer();
 
  protected:
@@ -1848,7 +1850,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // IPC Message handlers.
   void OnDetach();
-  void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);

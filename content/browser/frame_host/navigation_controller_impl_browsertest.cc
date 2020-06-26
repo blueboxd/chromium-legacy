@@ -6702,15 +6702,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostInSubframe) {
 }
 
 // Tests that POST body is not lost when decidePolicyForNavigation tells the
-// renderer to route the request via FrameHostMsg_OpenURL sent to the browser.
+// renderer to route the request via OpenURL mojo method sent to the browser.
 // See also https://crbug.com/344348.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
   GURL main_url(
       embedded_test_server()->GetURL("/form_that_posts_to_echoall.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  // Ask the renderer to go through OpenURL FrameHostMsg_OpenURL IPC message.
-  // Without this, the test wouldn't repro https://crbug.com/344348.
+  // Ask the renderer to go through OpenURL Mojo method. Without this, the test
+  // wouldn't repro https://crbug.com/344348.
   shell()
       ->web_contents()
       ->GetMutableRendererPrefs()

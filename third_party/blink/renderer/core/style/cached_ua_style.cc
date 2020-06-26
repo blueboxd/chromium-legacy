@@ -12,15 +12,7 @@ bool CachedUAStyle::BorderColorEquals(const ComputedStyle& other) const {
   return (border_left_color == other.BorderLeftColorInternal() &&
           border_right_color == other.BorderRightColorInternal() &&
           border_top_color == other.BorderTopColorInternal() &&
-          border_bottom_color == other.BorderBottomColorInternal()) &&
-         (border_left_color_is_current_color ==
-              other.BorderLeftColorIsCurrentColor() &&
-          border_right_color_is_current_color ==
-              other.BorderRightColorIsCurrentColor() &&
-          border_top_color_is_current_color ==
-              other.BorderTopColorIsCurrentColor() &&
-          border_bottom_color_is_current_color ==
-              other.BorderBottomColorIsCurrentColor());
+          border_bottom_color == other.BorderBottomColorInternal());
 }
 
 bool CachedUAStyle::BorderWidthEquals(const ComputedStyle& other) const {
@@ -54,13 +46,6 @@ CachedUAStyle::CachedUAStyle(const ComputedStyle* style)
       border_right_color(style->BorderRightColorInternal()),
       border_top_color(style->BorderTopColorInternal()),
       border_bottom_color(style->BorderBottomColorInternal()),
-      border_left_color_is_current_color(
-          style->BorderLeftColorIsCurrentColor()),
-      border_right_color_is_current_color(
-          style->BorderRightColorIsCurrentColor()),
-      border_top_color_is_current_color(style->BorderTopColorIsCurrentColor()),
-      border_bottom_color_is_current_color(
-          style->BorderBottomColorIsCurrentColor()),
       border_left_style(static_cast<unsigned>(style->BorderLeftStyle())),
       border_right_style(static_cast<unsigned>(style->BorderRightStyle())),
       border_top_style(static_cast<unsigned>(style->BorderTopStyle())),

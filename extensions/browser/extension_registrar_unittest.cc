@@ -158,13 +158,13 @@ class ExtensionRegistrarTest : public ExtensionsTest {
         extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED));
   }
 
-  // Adds the extension as blacklisted and verifies the result.
-  void AddBlacklistedExtension() {
-    SCOPED_TRACE("AddBlacklistedExtension");
+  // Adds the extension as blocklisted and verifies the result.
+  void AddBlocklistedExtension() {
+    SCOPED_TRACE("AddBlocklistedExtension");
     ExtensionPrefs::Get(browser_context())
-        ->SetExtensionBlacklistState(extension_->id(), BLACKLISTED_MALWARE);
+        ->SetExtensionBlocklistState(extension_->id(), BLOCKLISTED_MALWARE);
     registrar_->AddExtension(extension_);
-    ExpectInSet(ExtensionRegistry::BLACKLISTED);
+    ExpectInSet(ExtensionRegistry::BLOCKLISTED);
     EXPECT_FALSE(IsExtensionReady());
     EXPECT_EQ(0u, notification_tracker_.size());
   }
@@ -209,20 +209,20 @@ class ExtensionRegistrarTest : public ExtensionsTest {
         extensions::NOTIFICATION_EXTENSION_REMOVED));
   }
 
-  // Removes a blacklisted extension and verifies the result.
-  void RemoveBlacklistedExtension() {
-    SCOPED_TRACE("RemoveBlacklistedExtension");
+  // Removes a blocklisted extension and verifies the result.
+  void RemoveBlocklistedExtension() {
+    SCOPED_TRACE("RemoveBlocklistedExtension");
     // Calling RemoveExtension removes the extension.
-    // TODO(michaelpg): Blacklisted extensions shouldn't need to be
+    // TODO(michaelpg): Blocklisted extensions shouldn't need to be
     // "deactivated". See crbug.com/708230.
     EXPECT_CALL(delegate_, PostDeactivateExtension(extension_));
     registrar_->RemoveExtension(extension_->id(),
                                 UnloadedExtensionReason::UNINSTALL);
 
-    // RemoveExtension does not un-blacklist the extension.
-    ExpectInSet(ExtensionRegistry::BLACKLISTED);
+    // RemoveExtension does not un-blocklist the extension.
+    ExpectInSet(ExtensionRegistry::BLOCKLISTED);
 
-    // Removing a blacklisted extension should trigger a notification.
+    // Removing a blocklisted extension should trigger a notification.
     EXPECT_TRUE(notification_tracker_.Check1AndReset(
         extensions::NOTIFICATION_EXTENSION_REMOVED));
 
@@ -356,8 +356,8 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     EXPECT_EQ(set_id == ExtensionRegistry::TERMINATED,
               registry->terminated_extensions().Contains(extension_->id()));
 
-    EXPECT_EQ(set_id == ExtensionRegistry::BLACKLISTED,
-              registry->blacklisted_extensions().Contains(extension_->id()));
+    EXPECT_EQ(set_id == ExtensionRegistry::BLOCKLISTED,
+              registry->blocklisted_extensions().Contains(extension_->id()));
 
     EXPECT_EQ(set_id == ExtensionRegistry::BLOCKED,
               registry->blocked_extensions().Contains(extension_->id()));
@@ -458,19 +458,19 @@ TEST_F(ExtensionRegistrarTest, AddForceDisabled) {
   ExpectInSet(ExtensionRegistry::DISABLED);
 }
 
-TEST_F(ExtensionRegistrarTest, AddBlacklisted) {
-  AddBlacklistedExtension();
+TEST_F(ExtensionRegistrarTest, AddBlocklisted) {
+  AddBlocklistedExtension();
 
-  // A blacklisted extension cannot be enabled/disabled/reloaded.
+  // A blocklisted extension cannot be enabled/disabled/reloaded.
   registrar()->EnableExtension(extension()->id());
-  ExpectInSet(ExtensionRegistry::BLACKLISTED);
+  ExpectInSet(ExtensionRegistry::BLOCKLISTED);
   registrar()->DisableExtension(extension()->id(),
                                 disable_reason::DISABLE_USER_ACTION);
-  ExpectInSet(ExtensionRegistry::BLACKLISTED);
+  ExpectInSet(ExtensionRegistry::BLOCKLISTED);
   registrar()->ReloadExtension(extension()->id(), LoadErrorBehavior::kQuiet);
-  ExpectInSet(ExtensionRegistry::BLACKLISTED);
+  ExpectInSet(ExtensionRegistry::BLOCKLISTED);
 
-  RemoveBlacklistedExtension();
+  RemoveBlocklistedExtension();
 }
 
 TEST_F(ExtensionRegistrarTest, AddBlocked) {

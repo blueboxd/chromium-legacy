@@ -134,7 +134,7 @@ class SafeBrowsingClientImpl
 void CheckOneExtensionState(
     const Blacklist::IsBlacklistedCallback& callback,
     const Blacklist::BlacklistStateMap& state_map) {
-  callback.Run(state_map.empty() ? NOT_BLACKLISTED : state_map.begin()->second);
+  callback.Run(state_map.empty() ? NOT_BLOCKLISTED : state_map.begin()->second);
 }
 
 void GetMalwareFromBlacklistStateMap(
@@ -145,8 +145,8 @@ void GetMalwareFromBlacklistStateMap(
     // TODO(oleg): UNKNOWN is treated as MALWARE for backwards compatibility.
     // In future GetMalwareIDs will be removed and the caller will have to
     // deal with BLACKLISTED_UNKNOWN state returned from GetBlacklistedIDs.
-    if (state_pair.second == BLACKLISTED_MALWARE ||
-        state_pair.second == BLACKLISTED_UNKNOWN) {
+    if (state_pair.second == BLOCKLISTED_MALWARE ||
+        state_pair.second == BLOCKLISTED_UNKNOWN) {
       malware.insert(state_pair.first);
     }
   }
@@ -236,7 +236,7 @@ void Blacklist::GetBlacklistStateForIDs(
     auto cache_it = blacklist_state_cache_.find(blacklisted_id);
     if (cache_it == blacklist_state_cache_.end() ||
         cache_it->second ==
-            BLACKLISTED_UNKNOWN) {  // Do not return UNKNOWN
+            BLOCKLISTED_UNKNOWN) {  // Do not return UNKNOWN
                                     // from cache, retry request.
       ids_unknown_state.insert(blacklisted_id);
     } else {
@@ -289,7 +289,7 @@ void Blacklist::RequestExtensionsBlacklistState(
 }
 
 void Blacklist::OnBlacklistStateReceived(const std::string& id,
-                                         BlacklistState state) {
+                                         BlocklistState state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blacklist_state_cache_[id] = state;
 

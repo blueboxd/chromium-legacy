@@ -6,6 +6,7 @@ package org.chromium.base.library_loader;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -63,7 +64,13 @@ public class LibraryLoader {
     private static final String LIBRARY_DIR = "native_libraries";
 
     // Shared preferences key for the reached code profiler.
-    private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
+    private static final String DEPRECATED_REACHED_CODE_PROFILER_KEY =
+            "reached_code_profiler_enabled";
+    private static final String REACHED_CODE_SAMPLING_INTERVAL_KEY =
+            "reached_code_sampling_interval";
+
+    // Default sampling interval for reached code profiler in microseconds.
+    private static final int DEFAULT_REACHED_CODE_SAMPLING_INTERVAL_US = 10000;
 
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
@@ -376,23 +383,35 @@ public class LibraryLoader {
      * on ChromeFeatureList, and has to rely on external code pushing the value.
      *
      * @param enabled whether to enable the reached code profiler.
+     * @param samplingIntervalUs the sampling interval for reached code profiler.
      */
-    public static void setReachedCodeProfilerEnabledOnNextRuns(boolean enabled) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(REACHED_CODE_PROFILER_ENABLED_KEY, enabled)
-                .apply();
+    public static void setReachedCodeProfilerEnabledOnNextRuns(
+            boolean enabled, int samplingIntervalUs) {
+        // Store 0 if the profiler is not enabled, otherwise store the sampling interval in
+        // microseconds.
+        if (enabled && samplingIntervalUs == 0) {
+            samplingIntervalUs = DEFAULT_REACHED_CODE_SAMPLING_INTERVAL_US;
+        } else if (!enabled) {
+            samplingIntervalUs = 0;
+        }
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.remove(DEPRECATED_REACHED_CODE_PROFILER_KEY);
+        editor.putInt(REACHED_CODE_SAMPLING_INTERVAL_KEY, samplingIntervalUs).apply();
     }
 
     /**
-     * @return whether to enable reached code profiler (see
+     * @return sampling interval for reached code profiler, or 0 when the profiler is disabled. (see
      *         setReachedCodeProfilerEnabledOnNextRuns()).
      */
     @VisibleForTesting
-    public static boolean isReachedCodeProfilerEnabled() {
+    public static int getReachedCodeSamplingIntervalUs() {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return ContextUtils.getAppSharedPreferences().getBoolean(
-                    REACHED_CODE_PROFILER_ENABLED_KEY, false);
+            if (ContextUtils.getAppSharedPreferences().getBoolean(
+                        DEPRECATED_REACHED_CODE_PROFILER_KEY, false)) {
+                return DEFAULT_REACHED_CODE_SAMPLING_INTERVAL_US;
+            }
+            return ContextUtils.getAppSharedPreferences().getInt(
+                    REACHED_CODE_SAMPLING_INTERVAL_KEY, 0);
         }
     }
 
@@ -581,9 +600,14 @@ public class LibraryLoader {
 
         // Add a switch for the reached code profiler as late as possible since it requires a read
         // from the shared preferences. At this point the shared preferences are usually warmed up.
-        if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER
-                && isReachedCodeProfilerEnabled()) {
-            CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_REACHED_CODE_PROFILER);
+        if (mLibraryProcessType == LibraryProcessType.PROCESS_BROWSER) {
+            int reachedCodeSamplingIntervalUs = getReachedCodeSamplingIntervalUs();
+            if (reachedCodeSamplingIntervalUs > 0) {
+                CommandLine.getInstance().appendSwitch(BaseSwitches.ENABLE_REACHED_CODE_PROFILER);
+                CommandLine.getInstance().appendSwitchWithValue(
+                        BaseSwitches.REACHED_CODE_SAMPLING_INTERVAL_US,
+                        Integer.toString(reachedCodeSamplingIntervalUs));
+            }
         }
 
         ensureCommandLineSwitchedAlreadyLocked();

@@ -109,6 +109,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // to determine whether the user subsequently scrolls back to the top.
   bool did_non_zero_scroll_ = false;
 
+  // Whether a text fragment finder was run.
+  bool has_performed_first_text_search_ = false;
+
   enum BeforematchState {
     kNoMatchFound,  // DidFindMatch has not been called.
     kEventQueued,   // Beforematch event has been queued, but not fired yet.

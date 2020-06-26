@@ -24,8 +24,8 @@ class PreloadCheck {
   // insert or remove values as necessary.
   enum Error {
     NONE,
-    BLACKLISTED_ID,
-    BLACKLISTED_UNKNOWN,
+    BLOCKLISTED_ID,
+    BLOCKLISTED_UNKNOWN,
     DISALLOWED_BY_POLICY,
     WEBGL_NOT_SUPPORTED,
     WINDOW_SHAPE_NOT_SUPPORTED,

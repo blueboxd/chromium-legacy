@@ -157,6 +157,21 @@ class CONTENT_EXPORT ServiceWorkerContext {
       const GURL& origin,
       CountExternalRequestsCallback callback) = 0;
 
+  // Whether |origin| has any registrations. Uninstalling and uninstalled
+  // registrations do not cause this to return true, that is, only registrations
+  // with status ServiceWorkerRegistration::Status::kIntact are considered, such
+  // as even if the corresponding live registrations may still exist. Also,
+  // returns true if it doesn't know (registrations are not yet initialized).
+  // Must be called on the UI thread.
+  virtual bool MaybeHasRegistrationForOrigin(const url::Origin& origin) = 0;
+
+  // TODO(nidhijaju): Remove the ForTest() functions here and the tests that
+  // need it (e.g. in IsolatedPrerender) should use FakeServiceWorkerContext
+  // instead.
+  virtual void WaitForRegistrationsInitializedForTest() = 0;
+  virtual void AddRegistrationToRegisteredOriginsForTest(
+      const url::Origin& origin) = 0;
+
   // May be called from any thread, and the callback is called on that thread.
   virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
 

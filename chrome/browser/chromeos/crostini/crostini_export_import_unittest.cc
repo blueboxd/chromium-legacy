@@ -163,7 +163,7 @@ class CrostiniExportImportTest : public testing::Test {
     // they can trigger and execute against a destroyed service.
     guest_os::GuestOsSharePath::GetForProfile(profile())->Shutdown();
     task_environment_.RunUntilIdle();
-    base::DeleteFile(tarball_, false);
+    base::DeleteFile(tarball_);
     test_helper_.reset();
     profile_.reset();
   }

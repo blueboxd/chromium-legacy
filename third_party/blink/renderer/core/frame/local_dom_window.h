@@ -283,6 +283,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const Vector<String>& originPolicyIds() const;
   void SetOriginPolicyIds(const Vector<String>&);
 
+  // https://github.com/whatwg/html/pull/5545
+  bool originIsolationRestricted() const;
+  void SetOriginIsolationRestricted(bool);
+
   // Idle callback extensions
   int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
   void cancelIdleCallback(int id);
@@ -444,6 +448,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   String default_status_;
 
   Vector<String> origin_policy_ids_;
+
+  bool origin_isolation_restricted_ = false;
 
   mutable Member<ApplicationCache> application_cache_;
 

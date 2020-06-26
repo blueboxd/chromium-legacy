@@ -295,15 +295,14 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   }
 
   void OnAssistiveWindowButtonClicked(
-      const ui::ime::ButtonId& id,
-      const ui::ime::AssistiveWindowType& type) override {
+      const ui::ime::AssistiveWindowButton& button) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnAssistiveWindowButtonClicked::kEventName)) {
       return;
     }
     input_ime::OnAssistiveWindowButtonClicked::Details details;
-    details.button_id = ConvertAssistiveWindowButton(id);
-    details.window_type = ConvertAssistiveWindowType(type);
+    details.button_id = ConvertAssistiveWindowButton(button.id);
+    details.window_type = ConvertAssistiveWindowType(button.window_type);
 
     std::unique_ptr<base::ListValue> args(
         input_ime::OnAssistiveWindowButtonClicked::Create(details));

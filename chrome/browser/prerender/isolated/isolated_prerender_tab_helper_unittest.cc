@@ -21,13 +21,13 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -97,10 +97,10 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    IsolatedPrerenderService* isolated_prerender_service =
-        IsolatedPrerenderServiceFactory::GetForProfile(profile());
-    isolated_prerender_service->service_workers_observer()
-        ->CallOnHasUsageInfoForTesting({});
+    content::ServiceWorkerContext* service_worker_context_ =
+        content::BrowserContext::GetDefaultStoragePartition(profile())
+            ->GetServiceWorkerContext();
+    service_worker_context_->WaitForRegistrationsInitializedForTest();
 
     tab_helper_ =
         std::make_unique<TestIsolatedPrerenderTabHelper>(web_contents());
@@ -1322,11 +1322,11 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerRegistered) {
   GURL doc_url("https://www.google.com/search?q=cats");
   GURL prediction_url("https://www.cat-food.com/");
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(profile());
-  content::ServiceWorkerContextObserver* observer =
-      isolated_prerender_service->service_workers_observer();
-  observer->OnRegistrationCompleted(prediction_url);
+  content::ServiceWorkerContext* service_worker_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetServiceWorkerContext();
+  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+      url::Origin::Create(prediction_url));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1354,11 +1354,11 @@ TEST_F(IsolatedPrerenderTabHelperTest, ServiceWorkerNotRegistered) {
   GURL prediction_url("https://www.cat-food.com/");
   GURL service_worker_registration("https://www.service-worker.com/");
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(profile());
-  content::ServiceWorkerContextObserver* observer =
-      isolated_prerender_service->service_workers_observer();
-  observer->OnRegistrationCompleted(service_worker_registration);
+  content::ServiceWorkerContext* service_worker_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetServiceWorkerContext();
+  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+      url::Origin::Create(service_worker_registration));
 
   MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
 
@@ -1538,11 +1538,11 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_ServiceWorker) {
 
   GURL site_with_worker("https://service-worker.com");
 
-  IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(profile());
-  content::ServiceWorkerContextObserver* observer =
-      isolated_prerender_service->service_workers_observer();
-  observer->OnRegistrationCompleted(site_with_worker);
+  content::ServiceWorkerContext* service_worker_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetServiceWorkerContext();
+  service_worker_context_->AddRegistrationToRegisteredOriginsForTest(
+      url::Origin::Create(site_with_worker));
 
   RunNoRedirectTest(site_with_worker);
 

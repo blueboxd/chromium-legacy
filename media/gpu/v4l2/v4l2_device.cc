@@ -27,6 +27,7 @@
 #include "media/base/color_plane_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -580,14 +581,34 @@ bool V4L2WritableBufferRef::QueueDMABuf(scoped_refptr<VideoFrame> video_frame,
     return false;
   }
 
-  const std::vector<base::ScopedFD>& fds = video_frame->DmabufFds();
+  // TODO(andrescj): consider replacing this by a DCHECK.
+  if (video_frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
+      video_frame->storage_type() != VideoFrame::STORAGE_DMABUFS) {
+    VLOGF(1) << "Only GpuMemoryBuffer and dma-buf VideoFrames are supported";
+    return false;
+  }
 
-  if (!self.buffer_data_->CheckNumFDsForFormat(fds.size()))
+  // The FDs duped by CreateGpuMemoryBufferHandle() will be closed after the
+  // call to DoQueue() which uses the VIDIOC_QBUF ioctl and so ends up
+  // increasing the reference count of the dma-buf. Thus, closing the FDs is
+  // safe.
+  // TODO(andrescj): for dma-buf VideoFrames, duping the FDs is unnecessary.
+  // Consider handling that path separately.
+  gfx::GpuMemoryBufferHandle gmb_handle =
+      CreateGpuMemoryBufferHandle(video_frame.get());
+  if (gmb_handle.type != gfx::GpuMemoryBufferType::NATIVE_PIXMAP) {
+    VLOGF(1) << "Failed to create GpuMemoryBufferHandle for frame!";
+    return false;
+  }
+  const std::vector<gfx::NativePixmapPlane>& planes =
+      gmb_handle.native_pixmap_handle.planes;
+
+  if (!self.buffer_data_->CheckNumFDsForFormat(planes.size()))
     return false;
 
   size_t num_planes = self.PlanesCount();
   for (size_t i = 0; i < num_planes; i++)
-    self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
+    self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
   return std::move(self).DoQueue(request_ref, std::move(video_frame));
 }

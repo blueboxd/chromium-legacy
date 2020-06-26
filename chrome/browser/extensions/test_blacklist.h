@@ -25,14 +25,14 @@ class BlacklistStateFetcherMock : public BlacklistStateFetcher {
 
   void Request(const std::string& id, const RequestCallback& callback) override;
 
-  void SetState(const std::string& id, BlacklistState state);
+  void SetState(const std::string& id, BlocklistState state);
 
   void Clear();
 
   int request_count() const { return request_count_; }
 
  private:
-  std::map<std::string, BlacklistState> states_;
+  std::map<std::string, BlocklistState> states_;
   int request_count_;
 };
 
@@ -45,7 +45,7 @@ class TestBlacklist {
  public:
   // Use this if the SafeBrowsing and/or StateFetcher mocks should be created
   // before initializing the Blacklist.
-  explicit TestBlacklist();
+  TestBlacklist();
 
   explicit TestBlacklist(Blacklist* blacklist);
 
@@ -62,10 +62,10 @@ class TestBlacklist {
   // Set the extension state in SafeBrowsingDatabaseManager and
   // BlacklistFetcher.
   void SetBlacklistState(const std::string& extension_id,
-                         BlacklistState state,
+                         BlocklistState state,
                          bool notify);
 
-  BlacklistState GetBlacklistState(const std::string& extension_id);
+  BlocklistState GetBlacklistState(const std::string& extension_id);
 
   void Clear(bool notify);
 

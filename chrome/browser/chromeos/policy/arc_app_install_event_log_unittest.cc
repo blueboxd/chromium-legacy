@@ -359,7 +359,7 @@ TEST_F(ArcAppInstallEventLogTest, AddStoreAndStore) {
   log_->Store();
   EXPECT_TRUE(base::PathExists(file_name_));
 
-  EXPECT_TRUE(base::DeleteFile(file_name_, false /* recursive */));
+  EXPECT_TRUE(base::DeleteFile(file_name_));
 
   log_->Store();
   EXPECT_FALSE(base::PathExists(file_name_));
@@ -421,7 +421,7 @@ TEST_F(ArcAppInstallEventLogTest, StoreLoadAndStore) {
   VerifyTenLogEntriesEach(0 /* first_app_timestamp_offset */,
                           10 /* second_app_timestamp_offset*/);
 
-  EXPECT_TRUE(base::DeleteFile(file_name_, false /* recursive */));
+  EXPECT_TRUE(base::DeleteFile(file_name_));
 
   log.Store();
   EXPECT_FALSE(base::PathExists(file_name_));

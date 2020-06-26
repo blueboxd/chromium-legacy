@@ -563,7 +563,7 @@ const base::Feature kAppCacheRequireOriginTrial{
     "AppCacheRequireOriginTrial", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the AV1 Image File Format (AVIF).
-const base::Feature kAVIF{"AVIF", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAVIF{"AVIF", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Make all pending 'display: auto' web fonts enter the swap or failure period
 // immediately before reaching the LCP time limit (~2500ms), so that web fonts

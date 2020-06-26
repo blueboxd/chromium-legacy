@@ -36,6 +36,7 @@ class MockTileManager : public TileManager {
   MOCK_METHOD2(SaveTiles,
                void(std::unique_ptr<TileGroup>, TileGroupStatusCallback));
   MOCK_METHOD1(SetAcceptLanguagesForTesting, void(const std::string&));
+  MOCK_METHOD0(PurgeDb, TileGroupStatus());
 };
 
 class MockTileServiceScheduler : public TileServiceScheduler {
@@ -44,6 +45,7 @@ class MockTileServiceScheduler : public TileServiceScheduler {
   MOCK_METHOD1(OnFetchCompleted, void(TileInfoRequestStatus));
   MOCK_METHOD1(OnTileManagerInitialized, void(TileGroupStatus));
   MOCK_METHOD0(CancelTask, void());
+  MOCK_METHOD1(OnDbPurged, void(TileGroupStatus));
 };
 
 class MockImagePrefetcher : public ImagePrefetcher {
@@ -239,4 +241,14 @@ TEST_F(TileServiceImplTest, GetTile) {
       tile_id, base::BindOnce(&TileServiceImplTest::OnGetTileDone,
                               base::Unretained(this), tile_id));
 }
+
+TEST_F(TileServiceImplTest, PurgeDb) {
+  EXPECT_CALL(*tile_manager(), PurgeDb());
+  EXPECT_CALL(*tile_manager(), GetTiles(_));
+  EXPECT_CALL(*scheduler(), OnDbPurged(_));
+  query_tiles_service()->PurgeDb();
+  query_tiles_service()->GetQueryTiles(base::BindOnce(
+      &TileServiceImplTest::OnGetTilesDone, base::Unretained(this), 0));
+}
+
 }  // namespace query_tiles

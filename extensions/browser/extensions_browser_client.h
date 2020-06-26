@@ -319,7 +319,7 @@ class ExtensionsBrowserClient {
   // of whether it is currently loaded or not) under the provided |context|.
   // Loaded extensions return true if they are currently loaded or terminated.
   // Unloaded extensions will return true if they are not blocked, disabled,
-  // blacklisted or uninstalled (for external extensions). The default return
+  // blocklisted or uninstalled (for external extensions). The default return
   // value of this function is false.
   virtual bool IsExtensionEnabled(const std::string& extension_id,
                                   content::BrowserContext* context) const;

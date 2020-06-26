@@ -82,14 +82,14 @@ class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
     extension_id_ = prefs_.AddExtensionAndReturnId("last_ping_day");
     EXPECT_TRUE(prefs()->LastPingDay(extension_id_).is_null());
     prefs()->SetLastPingDay(extension_id_, extension_time_);
-    prefs()->SetBlacklistLastPingDay(blacklist_time_);
+    prefs()->SetBlocklistLastPingDay(blacklist_time_);
   }
 
   void Verify() override {
     Time result = prefs()->LastPingDay(extension_id_);
     EXPECT_FALSE(result.is_null());
     EXPECT_TRUE(result == extension_time_);
-    result = prefs()->BlacklistLastPingDay();
+    result = prefs()->BlocklistLastPingDay();
     EXPECT_FALSE(result.is_null());
     EXPECT_TRUE(result == blacklist_time_);
   }
@@ -426,7 +426,7 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
     for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
       std::string id = (*iter)->id();
       EXPECT_FALSE(prefs()->IsExternalExtensionAcknowledged(id));
-      EXPECT_FALSE(prefs()->IsBlacklistedExtensionAcknowledged(id));
+      EXPECT_FALSE(prefs()->IsBlocklistedExtensionAcknowledged(id));
       if (external_id_.empty()) {
         external_id_ = id;
         continue;
@@ -439,9 +439,9 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
     // For each type of acknowledgment, acknowledge one installed and one
     // not-installed extension id.
     prefs()->AcknowledgeExternalExtension(external_id_);
-    prefs()->AcknowledgeBlacklistedExtension(blacklisted_id_);
+    prefs()->AcknowledgeBlocklistedExtension(blacklisted_id_);
     prefs()->AcknowledgeExternalExtension(not_installed_id_);
-    prefs()->AcknowledgeBlacklistedExtension(not_installed_id_);
+    prefs()->AcknowledgeBlocklistedExtension(not_installed_id_);
   }
 
   void Verify() override {
@@ -454,13 +454,13 @@ class ExtensionPrefsAcknowledgment : public ExtensionPrefsTest {
         EXPECT_FALSE(prefs()->IsExternalExtensionAcknowledged(id));
       }
       if (id == blacklisted_id_) {
-        EXPECT_TRUE(prefs()->IsBlacklistedExtensionAcknowledged(id));
+        EXPECT_TRUE(prefs()->IsBlocklistedExtensionAcknowledged(id));
       } else {
-        EXPECT_FALSE(prefs()->IsBlacklistedExtensionAcknowledged(id));
+        EXPECT_FALSE(prefs()->IsBlocklistedExtensionAcknowledged(id));
       }
     }
     EXPECT_TRUE(prefs()->IsExternalExtensionAcknowledged(not_installed_id_));
-    EXPECT_TRUE(prefs()->IsBlacklistedExtensionAcknowledged(not_installed_id_));
+    EXPECT_TRUE(prefs()->IsBlocklistedExtensionAcknowledged(not_installed_id_));
   }
 
  private:
@@ -792,60 +792,62 @@ class ExtensionPrefsBlacklistedExtensions : public ExtensionPrefsTest {
   void Verify() override {
     {
       ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    prefs()->SetExtensionBlocklistState(extension_a_->id(),
+                                        BLOCKLISTED_MALWARE);
     {
       ExtensionIdSet ids;
       ids.insert(extension_a_->id());
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
-    prefs()->SetExtensionBlacklisted(extension_b_->id(), true);
-    prefs()->SetExtensionBlacklisted(extension_c_->id(), true);
+    prefs()->SetExtensionBlocklistState(extension_b_->id(),
+                                        BLOCKLISTED_MALWARE);
+    prefs()->SetExtensionBlocklistState(extension_c_->id(),
+                                        BLOCKLISTED_MALWARE);
     {
       ExtensionIdSet ids;
       ids.insert(extension_a_->id());
       ids.insert(extension_b_->id());
       ids.insert(extension_c_->id());
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), false);
+    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
     {
       ExtensionIdSet ids;
       ids.insert(extension_b_->id());
       ids.insert(extension_c_->id());
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
-    prefs()->SetExtensionBlacklisted(extension_b_->id(), false);
-    prefs()->SetExtensionBlacklisted(extension_c_->id(), false);
+    prefs()->SetExtensionBlocklistState(extension_b_->id(), NOT_BLOCKLISTED);
+    prefs()->SetExtensionBlocklistState(extension_c_->id(), NOT_BLOCKLISTED);
     {
       ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
 
     // The interesting part: make sure that we're cleaning up after ourselves
     // when we're storing *just* the fact that the extension is blacklisted.
     std::string arbitrary_id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
-    prefs()->SetExtensionBlacklisted(arbitrary_id, true);
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), true);
+    prefs()->SetExtensionBlocklistState(arbitrary_id, BLOCKLISTED_MALWARE);
+    prefs()->SetExtensionBlocklistState(extension_a_->id(),
+                                        BLOCKLISTED_MALWARE);
 
     // (And make sure that the acknowledged bit is also cleared).
-    prefs()->AcknowledgeBlacklistedExtension(arbitrary_id);
+    prefs()->AcknowledgeBlocklistedExtension(arbitrary_id);
 
-    EXPECT_TRUE(prefs()->GetExtensionPref(arbitrary_id));
     {
       ExtensionIdSet ids;
       ids.insert(arbitrary_id);
       ids.insert(extension_a_->id());
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
-    prefs()->SetExtensionBlacklisted(arbitrary_id, false);
-    prefs()->SetExtensionBlacklisted(extension_a_->id(), false);
-    EXPECT_FALSE(prefs()->GetExtensionPref(arbitrary_id));
+    prefs()->SetExtensionBlocklistState(arbitrary_id, NOT_BLOCKLISTED);
+    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
     {
       ExtensionIdSet ids;
-      EXPECT_EQ(ids, prefs()->GetBlacklistedExtensions());
+      EXPECT_EQ(ids, prefs()->GetBlocklistedExtensions());
     }
   }
 
@@ -867,33 +869,32 @@ class ExtensionPrefsBlacklistState : public ExtensionPrefsTest {
 
   void Verify() override {
     ExtensionIdSet empty_ids;
-    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
 
-    prefs()->SetExtensionBlacklistState(extension_a_->id(),
-                                        BLACKLISTED_MALWARE);
-    EXPECT_EQ(BLACKLISTED_MALWARE,
-              prefs()->GetExtensionBlacklistState(extension_a_->id()));
+    prefs()->SetExtensionBlocklistState(extension_a_->id(),
+                                        BLOCKLISTED_MALWARE);
+    EXPECT_EQ(BLOCKLISTED_MALWARE,
+              prefs()->GetExtensionBlocklistState(extension_a_->id()));
 
-    prefs()->SetExtensionBlacklistState(extension_a_->id(),
-                                        BLACKLISTED_POTENTIALLY_UNWANTED);
-    EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED,
-              prefs()->GetExtensionBlacklistState(extension_a_->id()));
-    EXPECT_FALSE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
-    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+    prefs()->SetExtensionBlocklistState(extension_a_->id(),
+                                        BLOCKLISTED_POTENTIALLY_UNWANTED);
+    EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED,
+              prefs()->GetExtensionBlocklistState(extension_a_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
+    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
 
-    prefs()->SetExtensionBlacklistState(extension_a_->id(),
-                                        BLACKLISTED_MALWARE);
-    EXPECT_TRUE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
-    EXPECT_EQ(BLACKLISTED_MALWARE,
-              prefs()->GetExtensionBlacklistState(extension_a_->id()));
-    EXPECT_EQ(1u, prefs()->GetBlacklistedExtensions().size());
+    prefs()->SetExtensionBlocklistState(extension_a_->id(),
+                                        BLOCKLISTED_MALWARE);
+    EXPECT_TRUE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
+    EXPECT_EQ(BLOCKLISTED_MALWARE,
+              prefs()->GetExtensionBlocklistState(extension_a_->id()));
+    EXPECT_EQ(1u, prefs()->GetBlocklistedExtensions().size());
 
-    prefs()->SetExtensionBlacklistState(extension_a_->id(),
-                                        NOT_BLACKLISTED);
-    EXPECT_EQ(NOT_BLACKLISTED,
-              prefs()->GetExtensionBlacklistState(extension_a_->id()));
-    EXPECT_FALSE(prefs()->IsExtensionBlacklisted(extension_a_->id()));
-    EXPECT_EQ(empty_ids, prefs()->GetBlacklistedExtensions());
+    prefs()->SetExtensionBlocklistState(extension_a_->id(), NOT_BLOCKLISTED);
+    EXPECT_EQ(NOT_BLOCKLISTED,
+              prefs()->GetExtensionBlocklistState(extension_a_->id()));
+    EXPECT_FALSE(prefs()->IsExtensionBlocklisted(extension_a_->id()));
+    EXPECT_EQ(empty_ids, prefs()->GetBlocklistedExtensions());
   }
 
  private:

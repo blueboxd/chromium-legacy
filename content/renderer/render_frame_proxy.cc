@@ -622,31 +622,31 @@ void RenderFrameProxy::Navigate(
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
 
-  FrameHostMsg_OpenURL_Params params;
-  params.url = request.Url();
-  params.initiator_origin = request.RequestorOrigin();
-  params.post_body = GetRequestBodyForWebURLRequest(request);
-  DCHECK_EQ(!!params.post_body, request.HttpMethod().Utf8() == "POST");
-  params.extra_headers = GetWebURLRequestHeadersAsString(request);
-  params.referrer.url = blink::WebStringToGURL(request.ReferrerString());
-  params.referrer.policy = request.GetReferrerPolicy();
-  params.disposition = WindowOpenDisposition::CURRENT_TAB;
-  params.should_replace_current_entry = should_replace_current_entry;
-  params.user_gesture = request.HasUserGesture();
-  params.triggering_event_info = blink::TriggeringEventInfo::kUnknown;
-  params.blob_url_token =
+  auto params = mojom::OpenURLParams::New();
+  params->url = request.Url();
+  params->initiator_origin = request.RequestorOrigin();
+  params->post_body = GetRequestBodyForWebURLRequest(request);
+  DCHECK_EQ(!!params->post_body, request.HttpMethod().Utf8() == "POST");
+  params->extra_headers = GetWebURLRequestHeadersAsString(request);
+  params->referrer = blink::mojom::Referrer::New(
+      blink::WebStringToGURL(request.ReferrerString()),
+      request.GetReferrerPolicy());
+  params->disposition = WindowOpenDisposition::CURRENT_TAB;
+  params->should_replace_current_entry = should_replace_current_entry;
+  params->user_gesture = request.HasUserGesture();
+  params->triggering_event_info = blink::TriggeringEventInfo::kUnknown;
+  params->blob_url_token =
       mojo::PendingRemote<blink::mojom::BlobURLToken>(std::move(blob_url_token))
-          .PassPipe()
-          .release();
+          .PassPipe();
 
   RenderFrameImpl* initiator_render_frame =
       RenderFrameImpl::FromWebFrame(initiator_frame);
-  params.initiator_routing_id = initiator_render_frame
-                                    ? initiator_render_frame->GetRoutingID()
-                                    : MSG_ROUTING_NONE;
+  params->initiator_routing_id = initiator_render_frame
+                                     ? initiator_render_frame->GetRoutingID()
+                                     : MSG_ROUTING_NONE;
 
   if (impression)
-    params.impression = ConvertWebImpressionToImpression(*impression);
+    params->impression = ConvertWebImpressionToImpression(*impression);
 
   // Note: For the AdFrame/Sandbox download policy here it only covers the case
   // where the navigation initiator frame is ad. The download_policy may be
@@ -656,9 +656,9 @@ void RenderFrameProxy::Navigate(
       is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
       initiator_frame_has_download_sandbox_flag,
       blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
-      &params.download_policy);
+      &params->download_policy);
 
-  Send(new FrameHostMsg_OpenURL(routing_id_, params));
+  GetFrameProxyHost()->OpenURL(std::move(params));
 }
 
 void RenderFrameProxy::FrameRectsChanged(

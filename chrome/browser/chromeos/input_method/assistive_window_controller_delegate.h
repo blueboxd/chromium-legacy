@@ -8,8 +8,7 @@
 namespace ui {
 namespace ime {
 
-enum class ButtonId;
-enum class AssistiveWindowType;
+struct AssistiveWindowButton;
 
 }  // namespace ime
 }  // namespace ui
@@ -20,8 +19,7 @@ namespace input_method {
 class AssistiveWindowControllerDelegate {
  public:
   virtual void AssistiveWindowButtonClicked(
-      ui::ime::ButtonId id,
-      ui::ime::AssistiveWindowType type) const = 0;
+      const ui::ime::AssistiveWindowButton& button) const = 0;
 
  protected:
   AssistiveWindowControllerDelegate() = default;

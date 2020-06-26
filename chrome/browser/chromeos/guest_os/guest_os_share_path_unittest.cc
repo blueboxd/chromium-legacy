@@ -907,7 +907,7 @@ TEST_F(GuestOsSharePathTest, UnshareOnDeleteMountExists) {
   SetUpVolume();
   crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
       crostini::kCrostiniDefaultVmName);
-  ASSERT_TRUE(base::DeleteFile(shared_path_, false));
+  ASSERT_TRUE(base::DeleteFile(shared_path_));
   guest_os_share_path_->set_seneschal_callback_for_testing(base::BindRepeating(
       &GuestOsSharePathTest::SeneschalUnsharePathCallback,
       base::Unretained(this), "unshare-on-delete", shared_path_, Persist::NO,

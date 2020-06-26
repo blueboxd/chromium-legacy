@@ -86,6 +86,21 @@ void LogUpdateUIDismissalReason(UIDismissalReason reason) {
                                 reason, NUM_UI_RESPONSES);
 }
 
+void LogMoveUIDismissalReason(UIDismissalReason reason,
+                              PasswordAccountStorageUserState user_state) {
+  DCHECK(base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage));
+
+  base::UmaHistogramEnumeration("PasswordManager.MoveUIDismissalReason", reason,
+                                NUM_UI_RESPONSES);
+
+  std::string suffix =
+      GetPasswordAccountStorageUserStateHistogramSuffix(user_state);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.MoveUIDismissalReason." + suffix, reason,
+      NUM_UI_RESPONSES);
+}
+
 void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
                                          LeakDialogDismissalReason reason) {
   static constexpr char kHistogram[] =

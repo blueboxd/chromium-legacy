@@ -81,6 +81,8 @@ if (is_win || is_mac) {
     sources = [
       "app/app.cc",
       "app/app.h",
+      "app/app_server.cc",
+      "app/app_server.h",
       "app/app_uninstall.cc",
       "app/app_uninstall.h",
       "app/app_wake.cc",
@@ -221,6 +223,7 @@ if (is_win || is_mac) {
     testonly = true
 
     sources = [
+      "app/app_server_unittest.cc",
       "dm_policy_manager_unittest.cc",
       "dm_storage_unittest.cc",
       "external_constants_unittest.cc",

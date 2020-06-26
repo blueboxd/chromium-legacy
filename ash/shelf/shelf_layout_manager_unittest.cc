@@ -758,6 +758,64 @@ TEST_P(ShelfLayoutManagerTest, StatusAreaMoveWithSwipeOnAutoHiddenShelf) {
             GetWidgetOffsetFromBottom(shelf->status_area_widget()));
 }
 
+TEST_P(ShelfLayoutManagerTest,
+       NavigationWidgetDoesNotMoveWithoutAutoHiddenShelf) {
+  Shelf* shelf = GetPrimaryShelf();
+  CreateTestWidget();
+  TabletModeControllerTestApi().EnterTabletMode();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  gfx::Rect nav_widget_bounds =
+      shelf->navigation_widget()->GetWindowBoundsInScreen();
+
+  const gfx::Point end(nav_widget_bounds.top_center());
+  const gfx::Point middle(end +
+                          gfx::Vector2d(0, -nav_widget_bounds.height() / 2));
+  const gfx::Point start(end + gfx::Vector2d(0, -nav_widget_bounds.height()));
+
+  // Perform a drag down on the status area widget.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveTouch(start);
+  generator->PressTouch();
+  generator->MoveTouch(middle);
+  EXPECT_EQ(nav_widget_bounds,
+            shelf->navigation_widget()->GetWindowBoundsInScreen());
+  generator->MoveTouch(end);
+  EXPECT_EQ(nav_widget_bounds,
+            shelf->navigation_widget()->GetWindowBoundsInScreen());
+  generator->ReleaseTouch();
+  EXPECT_EQ(nav_widget_bounds,
+            shelf->navigation_widget()->GetWindowBoundsInScreen());
+}
+
+TEST_P(ShelfLayoutManagerTest, StatusWidgetDoesNotMoveWithoutAutoHiddenShelf) {
+  Shelf* shelf = GetPrimaryShelf();
+  CreateTestWidget();
+  TabletModeControllerTestApi().EnterTabletMode();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  gfx::Rect status_widget_bounds =
+      shelf->status_area_widget()->GetWindowBoundsInScreen();
+
+  const gfx::Point end(status_widget_bounds.top_center());
+  const gfx::Point middle(end +
+                          gfx::Vector2d(0, -status_widget_bounds.height() / 2));
+  const gfx::Point start(end +
+                         gfx::Vector2d(0, -status_widget_bounds.height()));
+
+  // Perform a drag down on the status area widget.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveTouch(start);
+  generator->PressTouch();
+  generator->MoveTouch(middle);
+  EXPECT_EQ(status_widget_bounds,
+            shelf->status_area_widget()->GetWindowBoundsInScreen());
+  generator->MoveTouch(end);
+  EXPECT_EQ(status_widget_bounds,
+            shelf->status_area_widget()->GetWindowBoundsInScreen());
+  generator->ReleaseTouch();
+  EXPECT_EQ(status_widget_bounds,
+            shelf->status_area_widget()->GetWindowBoundsInScreen());
+}
+
 // Checks that the navigation widget follows along the auto-hidden shelf when
 // the user swipes it up or down.
 TEST_P(ShelfLayoutManagerTest, NavigationWidgetMoveWithSwipeOnAutoHiddenShelf) {

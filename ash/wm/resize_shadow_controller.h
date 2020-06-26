@@ -33,6 +33,9 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
   // Hides the shadow for a |window|, if it has one.
   void HideShadow(aura::Window* window);
 
+  // Hides all shadows.
+  void HideAllShadows();
+
   ResizeShadow* GetShadowForWindowForTest(aura::Window* window);
 
   // aura::WindowObserver overrides:

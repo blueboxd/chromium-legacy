@@ -18,7 +18,7 @@ namespace extensions {
 
 namespace {
 
-void Assign(BlacklistState *out, BlacklistState in) {
+void Assign(BlocklistState* out, BlocklistState in) {
   *out = in;
 }
 
@@ -32,7 +32,7 @@ void BlacklistStateFetcherMock::Request(const std::string& id,
                                         const RequestCallback& callback) {
   ++request_count_;
 
-  BlacklistState result = NOT_BLACKLISTED;
+  BlocklistState result = NOT_BLOCKLISTED;
   if (base::Contains(states_, id))
     result = states_[id];
 
@@ -41,7 +41,7 @@ void BlacklistStateFetcherMock::Request(const std::string& id,
 }
 
 void BlacklistStateFetcherMock::SetState(const std::string& id,
-                                         BlacklistState state)  {
+                                         BlocklistState state) {
   states_[id] = state;
 }
 
@@ -79,19 +79,19 @@ void TestBlacklist::Detach() {
 }
 
 void TestBlacklist::SetBlacklistState(const std::string& extension_id,
-                                      BlacklistState state,
+                                      BlocklistState state,
                                       bool notify) {
   state_fetcher_mock_.SetState(extension_id, state);
 
   switch (state) {
-    case NOT_BLACKLISTED:
+    case NOT_BLOCKLISTED:
       blacklist_db_->RemoveUnsafe(extension_id);
       break;
 
-    case BLACKLISTED_MALWARE:
-    case BLACKLISTED_SECURITY_VULNERABILITY:
-    case BLACKLISTED_CWS_POLICY_VIOLATION:
-    case BLACKLISTED_POTENTIALLY_UNWANTED:
+    case BLOCKLISTED_MALWARE:
+    case BLOCKLISTED_SECURITY_VULNERABILITY:
+    case BLOCKLISTED_CWS_POLICY_VIOLATION:
+    case BLOCKLISTED_POTENTIALLY_UNWANTED:
       blacklist_db_->AddUnsafe(extension_id);
       break;
 
@@ -110,9 +110,9 @@ void TestBlacklist::Clear(bool notify) {
     blacklist_db_->NotifyUpdate();
 }
 
-BlacklistState TestBlacklist::GetBlacklistState(
+BlocklistState TestBlacklist::GetBlacklistState(
     const std::string& extension_id) {
-  BlacklistState blacklist_state;
+  BlocklistState blacklist_state;
   blacklist_->IsBlacklisted(extension_id,
                             base::Bind(&Assign, &blacklist_state));
   base::RunLoop().RunUntilIdle();

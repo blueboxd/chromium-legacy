@@ -32,6 +32,7 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void ShowProcessingSpinner() override;
   bool IsBrowserWindowActive() const override;
   bool SkipUiForBasicCard() const override;
+  std::string GetTwaPackageName() const override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsOffTheRecord() const override;

@@ -37,7 +37,7 @@ void BlacklistStateFetcher::Request(const std::string& id,
           g_browser_process->safe_browsing_service()->GetV4ProtocolConfig());
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback, BLACKLISTED_UNKNOWN));
+          FROM_HERE, base::BindOnce(callback, BLOCKLISTED_UNKNOWN));
       return;
     }
   }
@@ -150,13 +150,13 @@ void BlacklistStateFetcher::OnURLLoaderCompleteInternal(
   std::string id = it->second.second;
   requests_.erase(it);
 
-  BlacklistState state;
+  BlocklistState state;
   if (net_error == net::OK && response_code == 200) {
     ClientCRXListInfoResponse response;
     if (response.ParseFromString(response_body)) {
-      state = static_cast<BlacklistState>(response.verdict());
+      state = static_cast<BlocklistState>(response.verdict());
     } else {
-      state = BLACKLISTED_UNKNOWN;
+      state = BLOCKLISTED_UNKNOWN;
     }
   } else {
     if (net_error != net::OK) {
@@ -167,7 +167,7 @@ void BlacklistStateFetcher::OnURLLoaderCompleteInternal(
               << " failed with error: " << response_code;
     }
 
-    state = BLACKLISTED_UNKNOWN;
+    state = BLOCKLISTED_UNKNOWN;
   }
 
   std::pair<CallbackMultiMap::iterator, CallbackMultiMap::iterator> range =

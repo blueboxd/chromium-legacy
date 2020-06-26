@@ -566,6 +566,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Whether the document can be scrolled on load
   bool navigation_scroll_allowed_ = true;
+
+  bool origin_isolation_restricted_ = false;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -167,7 +167,7 @@ void SessionFlagsManager::StoreStateToBackingFile() {
   // If a user session is not active, clear the backing file so default flags
   // are used next time.
   if (!session_active && !has_restart_job) {
-    base::DeleteFile(backing_file_, false /*recursive*/);
+    base::DeleteFile(backing_file_);
     return;
   }
 

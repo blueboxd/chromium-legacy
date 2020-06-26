@@ -30,7 +30,7 @@ class BlacklistCheckTest : public testing::Test {
     extension_ = test_prefs_.AddExtension("foo");
   }
 
-  void SetBlacklistState(BlacklistState state) {
+  void SetBlacklistState(BlocklistState state) {
     test_blacklist_.SetBlacklistState(extension_->id(), state, /*notify=*/true);
   }
 
@@ -49,19 +49,19 @@ class BlacklistCheckTest : public testing::Test {
 
 // Tests that the blacklist check identifies a blacklisted extension.
 TEST_F(BlacklistCheckTest, BlacklistedMalware) {
-  SetBlacklistState(BLACKLISTED_MALWARE);
+  SetBlacklistState(BLOCKLISTED_MALWARE);
 
   BlacklistCheck check(blacklist(), extension_);
   runner_.RunUntilComplete(&check);
 
   EXPECT_THAT(runner_.errors(),
-              testing::UnorderedElementsAre(PreloadCheck::BLACKLISTED_ID));
+              testing::UnorderedElementsAre(PreloadCheck::BLOCKLISTED_ID));
   EXPECT_TRUE(check.GetErrorMessage().empty());
 }
 
 // Tests that the blacklist check ignores a non-blacklisted extension.
 TEST_F(BlacklistCheckTest, Pass) {
-  SetBlacklistState(NOT_BLACKLISTED);
+  SetBlacklistState(NOT_BLOCKLISTED);
 
   BlacklistCheck check(blacklist(), extension_);
   runner_.RunUntilComplete(&check);
@@ -72,7 +72,7 @@ TEST_F(BlacklistCheckTest, Pass) {
 
 // Tests that destroying the check after starting it does not cause errors.
 TEST_F(BlacklistCheckTest, ResetCheck) {
-  SetBlacklistState(BLACKLISTED_MALWARE);
+  SetBlacklistState(BLOCKLISTED_MALWARE);
 
   {
     BlacklistCheck check(blacklist(), extension_);

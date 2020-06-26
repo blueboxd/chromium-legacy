@@ -57,12 +57,13 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     # - It uses POD types that will not import STL (or base string) types into blink
     #   (such as no strings or vectors).
     #
-    # So far, non-blink interfaces are allowed only for loading / loader
+    # So far, non-blink interfaces are allowed only for loading / loader and media
     # interfaces so that we don't need type conversions to get through the
     # boundary between Blink and non-Blink.
-    allowed_interfaces = (r'services/network/public/mojom/cross_origin_embedder_policy', r'services/network/public/mojom/fetch_api',
-                          r'services/network/public/mojom/load_timing_info',
-                          r'third_party/blink/public/mojom/worker/subresource_loader_updater')
+    allowed_interfaces = ('services/network/public/mojom/cross_origin_embedder_policy', 'services/network/public/mojom/fetch_api',
+                          'services/network/public/mojom/load_timing_info',
+                          'third_party/blink/public/mojom/worker/subresource_loader_updater', 'media/mojo/mojom/interface_factory',
+                          'media/mojo/mojom/video_decoder')
 
     for f in input_api.AffectedFiles(file_filter=source_file_filter):
         for line_num, line in f.ChangedContents():

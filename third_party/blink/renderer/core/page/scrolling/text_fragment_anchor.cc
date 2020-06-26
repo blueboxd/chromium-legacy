@@ -172,11 +172,32 @@ bool TextFragmentAnchor::Invoke() {
   else
     page_has_been_visible_ = true;
 
+  // We need to keep this TextFragmentAnchor alive if we're proxying an
+  // element fragment anchor.
   if (element_fragment_anchor_) {
     DCHECK(search_finished_);
-    // We need to keep this TextFragmentAnchor alive if we're proxying an
-    // element fragment anchor.
     return true;
+  }
+
+  // Only invoke once, and then a second time once the document is loaded.
+  // Otherwise page load performance could be significantly
+  // degraded, since TextFragmentFinder has O(n) performance. The reason
+  // for invoking twice is to give client-side rendered sites more opportunity
+  // to add text that can participate in text fragment invocation.
+  if (!frame_->GetDocument()->IsLoadCompleted()) {
+    // When parsing is complete the following sequence happens:
+    // 1. Invoke with beforematch_state_ == kNoMatchFound. This runs a match and
+    //    causes beforematch_state_ to be set to kEventQueued, and queues
+    //    a task to set beforematch_state_ to be set to kFiredEvent.
+    // 2. (maybe) Invoke with beforematch_state_ == kEventQueued.
+    // 3. Invoke with beforematch_state_ == kFiredEvent. This runs a match and
+    //    causes text_searched_after_parsing_finished_ to become true.
+    // 4. Any future calls to Invoke before loading are ignored.
+    //
+    // TODO(chrishtr): if layout is not dirtied, we don't need to re-run
+    // the text finding again and again for each of the above steps.
+    if (has_performed_first_text_search_ && beforematch_state_ != kEventQueued)
+      return true;
   }
 
   // If we're done searching, return true if this hasn't been dismissed yet so
@@ -209,6 +230,9 @@ bool TextFragmentAnchor::Invoke() {
     for (auto& finder : text_fragment_finders_)
       finder.FindMatch(*frame_->GetDocument());
   }
+
+  if (beforematch_state_ != kEventQueued)
+    has_performed_first_text_search_ = true;
 
   // Stop searching for matching text once the load event has fired. This may
   // cause ScrollToTextFragment to not work on pages which dynamically load

@@ -23,11 +23,16 @@ enum class AssistiveWindowType {
   kEmojiSuggestion,
 };
 
+struct AssistiveWindowButton {
+  ButtonId id = ButtonId::kNone;
+  AssistiveWindowType window_type = AssistiveWindowType::kNone;
+};
+
 class UI_CHROMEOS_EXPORT AssistiveDelegate {
  public:
   // Invoked when a button in an assistive window is clicked.
-  virtual void AssistiveWindowButtonClicked(ButtonId id,
-                                            AssistiveWindowType type) const = 0;
+  virtual void AssistiveWindowButtonClicked(
+      const AssistiveWindowButton& button) const = 0;
 
  protected:
   virtual ~AssistiveDelegate() = default;

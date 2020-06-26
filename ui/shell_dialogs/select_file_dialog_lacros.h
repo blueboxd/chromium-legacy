@@ -5,6 +5,10 @@
 #ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_LACROS_H_
 #define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_LACROS_H_
 
+#include <vector>
+
+#include "chromeos/lacros/mojom/select_file.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -14,7 +18,7 @@ namespace ui {
 // SelectFileDialogLacros implements file open and save dialogs for the
 // lacros-chrome binary. The dialog itself is handled by the file manager in
 // ash-chrome.
-class SelectFileDialogLacros : public SelectFileDialog {
+class SHELL_DIALOGS_EXPORT SelectFileDialogLacros : public SelectFileDialog {
  public:
   class SHELL_DIALOGS_EXPORT Factory : public SelectFileDialogFactory {
    public:
@@ -51,8 +55,15 @@ class SelectFileDialogLacros : public SelectFileDialog {
   // Private because SelectFileDialog is ref-counted.
   ~SelectFileDialogLacros() override;
 
-  // Calls the listener's cancel method with |params|.
-  void Cancel(void* params);
+  // Callback for file selection.
+  void OnSelected(lacros::mojom::SelectFileResult result,
+                  std::vector<lacros::mojom::SelectedFileInfoPtr> files);
+
+  // Cached parameters from the call to SelectFileImpl.
+  void* params_ = nullptr;
+
+  // Remote in the ash-chrome process.
+  mojo::Remote<lacros::mojom::SelectFile> select_file_remote_;
 };
 
 }  // namespace ui

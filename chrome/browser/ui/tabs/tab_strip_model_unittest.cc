@@ -2520,6 +2520,34 @@ TEST_F(TabStripModelTest, MoveTabNext_Pinned) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, MoveTabNext_Group) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 4, 0, "0"));
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({1, 2});
+  EXPECT_EQ(strip.GetTabGroupForTab(0), base::nullopt);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(0), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 0 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 2 0 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+
+  strip.MoveTabNext();
+  EXPECT_EQ("1 2 0 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), base::nullopt);
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, MoveTabPrevious) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
@@ -2552,6 +2580,34 @@ TEST_F(TabStripModelTest, MoveTabPrevious_Pinned) {
 
   strip.MoveTabPrevious();
   EXPECT_EQ("2p 0p 1p 3 4 5", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, MoveTabPrevious_Group) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 4, 0, "3"));
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+
+  tab_groups::TabGroupId group = strip.AddToNewGroup({1, 2});
+  EXPECT_EQ(strip.GetTabGroupForTab(3), base::nullopt);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 1 2 3", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(3), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(2), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), group);
+
+  strip.MoveTabPrevious();
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+  EXPECT_EQ(strip.GetTabGroupForTab(1), base::nullopt);
 
   strip.CloseAllTabs();
 }

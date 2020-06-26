@@ -15,6 +15,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "ui/gfx/x/xproto_util.h"
 
@@ -28,8 +30,66 @@ constexpr uint8_t kSendEventMask = 0x80;
 
 namespace detail {
 
+template <typename T>
+void VerifyAlignment(T* t, size_t offset) {
+  // On the wire, X11 types are always aligned to their size.  This is a sanity
+  // check to ensure padding etc are working properly.
+  if (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+    DCHECK_EQ(offset % sizeof(*t), 0UL);
+}
+
+}  // namespace detail
+
+// Wraps data read from the connection.
+struct COMPONENT_EXPORT(X11) ReadBuffer {
+  explicit ReadBuffer(scoped_refptr<base::RefCountedMemory> data);
+
+  ReadBuffer(const ReadBuffer&);
+
+  ~ReadBuffer();
+
+  scoped_refptr<base::RefCountedMemory> ReadAndAdvance(size_t length);
+
+  scoped_refptr<base::RefCountedMemory> data;
+  size_t offset = 0;
+};
+
+// Wraps data to write to the connection.
+class COMPONENT_EXPORT(X11) WriteBuffer {
+ public:
+  WriteBuffer();
+
+  WriteBuffer(const WriteBuffer&);
+
+  ~WriteBuffer();
+
+  void AppendBuffer(scoped_refptr<base::RefCountedMemory> buffer, size_t size);
+
+  std::vector<scoped_refptr<base::RefCountedMemory>>& GetBuffers();
+
+  size_t offset() const { return offset_; }
+
+  template <typename T>
+  void Write(const T* t) {
+    static_assert(std::is_trivially_copyable<T>::value, "");
+    detail::VerifyAlignment(t, offset_);
+    const uint8_t* start = reinterpret_cast<const uint8_t*>(t);
+    std::copy(start, start + sizeof(*t), std::back_inserter(current_buffer_));
+    offset_ += sizeof(*t);
+  }
+
+ private:
+  void AppendCurrentBuffer();
+
+  std::vector<scoped_refptr<base::RefCountedMemory>> buffers_;
+  std::vector<uint8_t> current_buffer_;
+  size_t offset_ = 0;
+};
+
+namespace detail {
+
 template <typename Reply>
-std::unique_ptr<Reply> ReadReply(const uint8_t* buffer);
+std::unique_ptr<Reply> ReadReply(ReadBuffer* buffer);
 
 }  // namespace detail
 
@@ -39,13 +99,13 @@ template <class Reply>
 class Future;
 
 template <typename T>
-T Read(const uint8_t* buf);
+T Read(ReadBuffer* buf);
 
 template <typename T>
-std::vector<uint8_t> Write(const T& t);
+WriteBuffer Write(const T& t);
 
 template <typename T>
-void ReadEvent(T* event, const uint8_t* buf);
+void ReadEvent(T* event, ReadBuffer* buf);
 
 template <typename Reply>
 struct Response {
@@ -76,7 +136,7 @@ struct Response<void> {
 
 class COMPONENT_EXPORT(X11) FutureBase {
  public:
-  using RawReply = std::unique_ptr<uint8_t, base::FreeDeleter>;
+  using RawReply = scoped_refptr<base::RefCountedMemory>;
   using RawError = std::unique_ptr<xcb_generic_error_t, base::FreeDeleter>;
   using ResponseCallback =
       base::OnceCallback<void(RawReply reply, RawError error)>;
@@ -91,7 +151,8 @@ class COMPONENT_EXPORT(X11) FutureBase {
   FutureBase(FutureBase&& future);
   FutureBase& operator=(FutureBase&& future);
 
-  void SyncImpl(Error** raw_error, uint8_t** raw_reply);
+  void SyncImpl(Error** raw_error,
+                scoped_refptr<base::RefCountedMemory>* raw_reply);
   void SyncImpl(Error** raw_error);
 
   void OnResponseImpl(ResponseCallback callback);
@@ -114,13 +175,13 @@ class Future : public FutureBase {
   // Blocks until we receive the response from the server. Returns the response.
   Response<Reply> Sync() {
     Error* raw_error = nullptr;
-    uint8_t* raw_reply = nullptr;
+    scoped_refptr<base::RefCountedMemory> raw_reply;
     SyncImpl(&raw_error, &raw_reply);
 
     std::unique_ptr<Reply> reply;
     if (raw_reply) {
-      reply = detail::ReadReply<Reply>(raw_reply);
-      free(raw_reply);
+      auto buf = ReadBuffer(raw_reply);
+      reply = detail::ReadReply<Reply>(&buf);
     }
 
     std::unique_ptr<Error, base::FreeDeleter> error;
@@ -137,8 +198,9 @@ class Future : public FutureBase {
     // |callback| must be bound as the first argument of the intermediate
     // function.
     auto wrapper = [](Callback callback, RawReply raw_reply, RawError error) {
+      ReadBuffer buf(raw_reply);
       std::unique_ptr<Reply> reply =
-          raw_reply ? detail::ReadReply<Reply>(raw_reply.get()) : nullptr;
+          raw_reply ? detail::ReadReply<Reply>(&buf) : nullptr;
       std::move(callback).Run({std::move(reply), std::move(error)});
     };
     OnResponseImpl(base::BindOnce(wrapper, std::move(callback)));
@@ -150,7 +212,7 @@ class Future : public FutureBase {
 
  private:
   template <typename R>
-  friend Future<R> SendRequest(Connection*, std::vector<uint8_t>*);
+  friend Future<R> SendRequest(Connection*, WriteBuffer*);
 
   Future(Connection* connection, base::Optional<unsigned int> sequence)
       : FutureBase(connection, sequence) {}

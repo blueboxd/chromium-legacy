@@ -119,15 +119,29 @@ base::Value NetLogQuicStreamFactoryJobParams(
   return std::move(dict);
 }
 
+std::string QuicPlatformNotificationToString(
+    QuicPlatformNotification notification) {
+  switch (notification) {
+    case NETWORK_CONNECTED:
+      return "OnNetworkConnected";
+    case NETWORK_MADE_DEFAULT:
+      return "OnNetworkMadeDefault";
+    case NETWORK_DISCONNECTED:
+      return "OnNetworkDisconnected";
+    case NETWORK_SOON_TO_DISCONNECT:
+      return "OnNetworkSoonToDisconnect";
+    case NETWORK_IP_ADDRESS_CHANGED:
+      return "OnIPAddressChanged";
+    default:
+      QUIC_NOTREACHED();
+      break;
+  }
+  return "InvalidNotification";
+}
+
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
-}
-
-void LogPlatformNotificationInHistogram(
-    enum QuicPlatformNotification notification) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PlatformNotification",
-                            notification, NETWORK_NOTIFICATION_MAX);
 }
 
 void LogConnectionIpPooling(bool pooled) {
@@ -1089,6 +1103,7 @@ QuicStreamFactory::QuicStreamFactory(
       need_to_check_persisted_supports_quic_(true),
       prefer_aes_gcm_recorded_(false),
       num_push_streams_created_(0),
+      connectivity_monitor_(default_network_),
       tick_clock_(nullptr),
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
@@ -1159,7 +1174,7 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                               QuicStreamRequest* request) {
   if (clock_skew_detector_.ClockSkewDetected(base::TimeTicks::Now(),
                                              base::Time::Now())) {
-    MarkAllActiveSessionsGoingAway();
+    MarkAllActiveSessionsGoingAway(kClockSkewDetected);
   }
   DCHECK(HostPortPair(session_key.server_id().host(),
                       session_key.server_id().port())
@@ -1293,7 +1308,6 @@ void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
 void QuicStreamFactory::OnSessionClosed(QuicChromiumClientSession* session) {
   DCHECK_EQ(0u, session->GetNumActiveStreams());
   OnSessionGoingAway(session);
-
   for (const auto& iter : active_jobs_) {
     if (iter.first == session->quic_session_key()) {
       iter.second->OnSessionClosed(session);
@@ -1463,22 +1477,25 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
-  LogPlatformNotificationInHistogram(NETWORK_IP_ADDRESS_CHANGED);
+  CollectDataOnPlatformNotification(
+      NETWORK_IP_ADDRESS_CHANGED, NetworkChangeNotifier::kInvalidNetworkHandle);
   // Do nothing if connection migration is turned on.
   if (params_.migrate_sessions_on_network_change_v2)
     return;
+
+  connectivity_monitor_.OnIPAddressChanged();
 
   set_is_quic_known_to_work_on_current_network(false);
   if (params_.close_sessions_on_ip_change) {
     CloseAllSessions(ERR_NETWORK_CHANGED, quic::QUIC_IP_ADDRESS_CHANGED);
   } else {
     DCHECK(params_.goaway_sessions_on_ip_change);
-    MarkAllActiveSessionsGoingAway();
+    MarkAllActiveSessionsGoingAway(kIPAddressChanged);
   }
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
-  LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
+  CollectDataOnPlatformNotification(NETWORK_CONNECTED, network);
   if (params_.migrate_sessions_on_network_change_v2) {
     NetLogWithSource net_log = NetLogWithSource::Make(
         net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
@@ -1498,7 +1515,7 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 }
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
-  LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
+  CollectDataOnPlatformNotification(NETWORK_DISCONNECTED, network);
   if (params_.migrate_sessions_on_network_change_v2) {
     NetLogWithSource net_log = NetLogWithSource::Make(
         net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
@@ -1520,13 +1537,12 @@ void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
 // This method is expected to only be called when migrating from Cellular to
 // WiFi on Android, and should always be preceded by OnNetworkMadeDefault().
 void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {
-  LogPlatformNotificationInHistogram(NETWORK_SOON_TO_DISCONNECT);
+  CollectDataOnPlatformNotification(NETWORK_SOON_TO_DISCONNECT, network);
 }
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
-  LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
-  if (!params_.migrate_sessions_on_network_change_v2)
-    return;
+  CollectDataOnPlatformNotification(NETWORK_MADE_DEFAULT, network);
+  connectivity_monitor_.OnDefaultNetworkUpdated(network);
 
   // Clear alternative services that were marked as broken until default network
   // changes.
@@ -1538,11 +1554,14 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   default_network_ = network;
-  NetLogWithSource net_log = NetLogWithSource::Make(
-      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  net_log.AddEventWithStringParams(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION,
-      "signal", "OnNetworkMadeDefault");
+
+  if (params_.migrate_sessions_on_network_change_v2) {
+    NetLogWithSource net_log = NetLogWithSource::Make(
+        net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+    net_log.AddEventWithStringParams(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION,
+        "signal", "OnNetworkMadeDefault");
+  }
 
   auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
@@ -1551,7 +1570,8 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
     ++it;
     session->OnNetworkMadeDefault(network);
   }
-  set_is_quic_known_to_work_on_current_network(false);
+  if (params_.migrate_sessions_on_network_change_v2)
+    set_is_quic_known_to_work_on_current_network(false);
 }
 
 void QuicStreamFactory::OnCertDBChanged() {
@@ -1564,7 +1584,7 @@ void QuicStreamFactory::OnCertDBChanged() {
   // Since the OnCertDBChanged method doesn't tell us what
   // kind of change it is, we have to flush the socket
   // pools to be safe.
-  MarkAllActiveSessionsGoingAway();
+  MarkAllActiveSessionsGoingAway(kCertDBChanged);
 }
 
 void QuicStreamFactory::set_is_quic_known_to_work_on_current_network(
@@ -1737,6 +1757,7 @@ int QuicStreamFactory::CreateSession(
       // creation, update |default_network_| when the first socket is bound
       // to the default network.
       default_network_ = *network;
+      connectivity_monitor_.SetInitialDefaultNetwork(default_network_);
     } else {
       UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.DefaultNetworkMatch",
                             default_network_ == *network);
@@ -1824,6 +1845,7 @@ int QuicStreamFactory::CreateSession(
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);
+  (*session)->AddConnectivityObserver(&connectivity_monitor_);
 
   (*session)->Initialize();
   bool closed_during_initialize = !base::Contains(all_sessions_, *session) ||
@@ -1852,9 +1874,14 @@ void QuicStreamFactory::ActivateSession(const QuicSessionAliasKey& key,
   session_peer_ip_[session] = peer_address;
 }
 
-void QuicStreamFactory::MarkAllActiveSessionsGoingAway() {
+void QuicStreamFactory::MarkAllActiveSessionsGoingAway(
+    AllActiveSessionsGoingAwayReason reason) {
   while (!active_sessions_.empty()) {
     QuicChromiumClientSession* session = active_sessions_.begin()->second;
+    // If IP address change is detected, disable session's connectivity
+    // monitoring by remove the Delegate.
+    if (reason == kIPAddressChanged)
+      connectivity_monitor_.OnSessionGoingAwayOnIPAddressChange(session);
     OnSessionGoingAway(session);
   }
 }
@@ -2159,6 +2186,38 @@ void QuicStreamFactory::OnAllCryptoClientRefReleased(
   recent_crypto_config_map_.Put(map_iterator->first,
                                 std::move(map_iterator->second));
   active_crypto_config_map_.erase(map_iterator);
+}
+
+void QuicStreamFactory::CollectDataOnPlatformNotification(
+    enum QuicPlatformNotification notification,
+    NetworkChangeNotifier::NetworkHandle affected_network) const {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.PlatformNotification",
+                            notification, NETWORK_NOTIFICATION_MAX);
+  if (notification == NETWORK_SOON_TO_DISCONNECT ||
+      notification == NETWORK_DISCONNECTED) {
+    // If the disconnected network is not the default network, ignore
+    // stats collections.
+    if (affected_network != default_network_)
+      return;
+  }
+
+  // Skip degrading session collection if there are less than two sessions.
+  if (all_sessions_.size() < 2)
+    return;
+
+  size_t num_degrading_sessions =
+      connectivity_monitor_.GetNumDegradingSessions();
+  const std::string raw_histogram_name =
+      "Net.QuicStreamFactory.NumDegradingSessions." +
+      QuicPlatformNotificationToString(notification);
+  base::UmaHistogramExactLinear(raw_histogram_name, num_degrading_sessions,
+                                101);
+
+  int percentage = num_degrading_sessions * 100 / all_sessions_.size();
+  const std::string percentage_histogram_name =
+      "Net.QuicStreamFactory.PercentageDegradingSessions." +
+      QuicPlatformNotificationToString(notification);
+  base::UmaHistogramExactLinear(percentage_histogram_name, percentage, 101);
 }
 
 std::unique_ptr<QuicCryptoClientConfigHandle>

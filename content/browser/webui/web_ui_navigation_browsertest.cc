@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
@@ -34,6 +35,15 @@ const char kAddIframeScript[] =
     "var frame = document.createElement('iframe');\n"
     "frame.src = $1;\n"
     "document.body.appendChild(frame);\n";
+
+content::mojom::OpenURLParamsPtr CreateOpenURLParams(const GURL& url) {
+  auto params = content::mojom::OpenURLParams::New();
+  params->url = url;
+  params->disposition = WindowOpenDisposition::CURRENT_TAB;
+  params->should_replace_current_entry = false;
+  params->user_gesture = true;
+  return params;
+}
 
 }  // namespace
 
@@ -378,13 +388,11 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 }
 
 // Verify that a browser check stops websites from embeding chrome:// iframes.
-// This tests the FrameHostMsg_OpenURL path.
+// This tests the OpenURL Mojo method.
 IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
                        DisallowEmbeddingChromeSchemeFromWebFrameBrowserCheck) {
   GURL main_frame_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
-
-  GURL webui_url(GetWebUIURL("web-ui/title1.html?noxfo=true"));
 
   // Add iframe but don't navigate it to a chrome:// URL yet.
   EXPECT_TRUE(ExecJs(shell(),
@@ -403,8 +411,8 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
   // This bypasses the renderer-side check that would have stopped the
   // navigation.
   TestNavigationObserver observer(shell()->web_contents());
-  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
-                                     webui_url);
+  static_cast<content::RenderFrameHostImpl*>(child)->OpenURL(
+      CreateOpenURLParams(GetWebUIURL("web-ui/title1.html?noxfo=true")));
   observer.Wait();
 
   child = root->child_at(0)->current_frame_host();
@@ -412,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
 }
 
 // Verify that a browser check stops websites from embeding chrome-untrusted://
-// iframes. This tests the FrameHostMsg_OpenURL path.
+// iframes. This tests the OpenURL Mojo method path.
 IN_PROC_BROWSER_TEST_F(
     WebUINavigationBrowserTest,
     DisallowEmbeddingChromeUntrustedSchemeFromWebFrameBrowserCheck) {
@@ -423,8 +431,6 @@ IN_PROC_BROWSER_TEST_F(
   csp.no_xfo = true;
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          "test-iframe-host", csp);
-
-  GURL untrusted_url(GetChromeUntrustedUIURL("test-iframe-host/title1.html"));
 
   // Add iframe but don't navigate it to a chrome-untrusted:// URL yet.
   EXPECT_TRUE(ExecJs(shell(),
@@ -439,11 +445,12 @@ IN_PROC_BROWSER_TEST_F(
   RenderFrameHost* child = root->child_at(0)->current_frame_host();
   EXPECT_EQ("about:blank", child->GetLastCommittedURL());
 
-  // Simulate an IPC message to navigate the subframe to a
-  // chrome-untrusted:// URL.
+  // Simulate a Mojo message to navigate the subframe to a chrome-untrusted://
+  // URL.
   TestNavigationObserver observer(shell()->web_contents());
-  content::PwnMessageHelper::OpenURL(child->GetProcess(), child->GetRoutingID(),
-                                     untrusted_url);
+  static_cast<content::RenderFrameHostImpl*>(child)->OpenURL(
+      CreateOpenURLParams(
+          GetChromeUntrustedUIURL("test-iframe-host/title1.html")));
   observer.Wait();
 
   child = root->child_at(0)->current_frame_host();

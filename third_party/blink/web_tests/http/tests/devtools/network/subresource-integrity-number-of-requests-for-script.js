@@ -21,7 +21,9 @@
   TestRunner.evaluateInPage('loadIFrame()');
 
   async function step1() {
-    var requests = NetworkTestRunner.findRequestsByURLPattern(/call-success.js/);
+    const requests =
+        NetworkTestRunner.findRequestsByURLPattern(/call-success.js/)
+            .filter((e, i, a) => i % 2 == 0);
     TestRunner.assertTrue(requests.length === 1);
     await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();

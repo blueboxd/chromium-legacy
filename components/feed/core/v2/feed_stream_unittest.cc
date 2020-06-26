@@ -1153,6 +1153,26 @@ TEST_F(FeedStreamTest, LoadMoreSendsTokens) {
                           .next_page_token());
 }
 
+TEST_F(FeedStreamTest, LoadMoreAbortsIfNoNextPageToken) {
+  {
+    std::unique_ptr<StreamModelUpdateRequest> initial_state =
+        MakeTypicalInitialModelState();
+    initial_state->stream_data.clear_next_page_token();
+    response_translator_.InjectResponse(std::move(initial_state));
+  }
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  CallbackReceiver<bool> callback;
+  stream_->LoadMore(surface.GetSurfaceId(), callback.Bind());
+  WaitForIdleTaskQueue();
+
+  // LoadMore fails, and does not make an additional request.
+  EXPECT_EQ(base::Optional<bool>(false), callback.GetResult());
+  ASSERT_EQ(1, network_.send_query_call_count);
+  EXPECT_EQ("loading -> 2 slices", surface.DescribeUpdates());
+}
+
 TEST_F(FeedStreamTest, LoadMoreFail) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestSurface surface(stream_.get());

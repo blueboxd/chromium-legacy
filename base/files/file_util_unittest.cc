@@ -4084,15 +4084,16 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_NoSize) {
   FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
   CreateTextFile(text_file, bogus_content);
 
-  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false));
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false).succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_ExistingFile_ExactSize) {
   FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
   CreateTextFile(text_file, bogus_content);
 
-  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content)));
+  EXPECT_TRUE(
+      PreReadFile(text_file, /*is_executable=*/false, base::size(bogus_content))
+          .succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_ExistingFile_OverSized) {
@@ -4100,7 +4101,8 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_OverSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) * 2));
+                          base::size(bogus_content) * 2)
+                  .succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_ExistingFile_UnderSized) {
@@ -4108,14 +4110,16 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_UnderSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) / 2));
+                          base::size(bogus_content) / 2)
+                  .succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_ExistingFile_ZeroSize) {
   FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
   CreateTextFile(text_file, bogus_content);
 
-  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0));
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0)
+                  .succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_ExistingEmptyFile_NoSize) {
@@ -4130,12 +4134,14 @@ TEST_F(FileUtilTest, PreReadFile_ExistingEmptyFile_NoSize) {
 TEST_F(FileUtilTest, PreReadFile_ExistingEmptyFile_ZeroSize) {
   FilePath text_file = temp_dir_.GetPath().Append(FPL("text_file"));
   CreateTextFile(text_file, L"");
-  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0));
+  EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false, /*max_bytes=*/0)
+                  .succeeded());
 }
 
 TEST_F(FileUtilTest, PreReadFile_InexistentFile) {
   FilePath inexistent_file = temp_dir_.GetPath().Append(FPL("inexistent_file"));
-  EXPECT_FALSE(PreReadFile(inexistent_file, /*is_executable=*/false));
+  EXPECT_FALSE(
+      PreReadFile(inexistent_file, /*is_executable=*/false).succeeded());
 }
 
 #endif  // !defined(OS_NACL_NONSFI)

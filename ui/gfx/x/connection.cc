@@ -11,9 +11,11 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/gfx/x/bigreq.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_switches.h"
+#include "ui/gfx/x/xproto_internal.h"
 #include "ui/gfx/x/xproto_types.h"
 
 namespace x11 {
@@ -61,8 +63,9 @@ Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
   if (display_) {
     XSetEventQueueOwner(display_, XCBOwnsEventQueue);
 
-    setup_ = Read<Setup>(
-        reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection())));
+    auto buf = ReadBuffer(base::MakeRefCounted<UnretainedRefCountedMemory>(
+        xcb_get_setup(XcbConnection())));
+    setup_ = Read<Setup>(&buf);
     default_screen_ = &setup_.roots[DefaultScreenId()];
     default_root_depth_ = &*std::find_if(
         default_screen_->allowed_depths.begin(),
@@ -136,8 +139,8 @@ void Connection::Sync() {
 
 void Connection::ReadResponses() {
   while (auto* event = xcb_poll_for_event(XcbConnection())) {
-    events_.emplace_back(event, this);
-    free(event);
+    events_.emplace_back(base::MakeRefCounted<MallocedRefCountedMemory>(event),
+                         this);
   }
 }
 
@@ -157,9 +160,10 @@ void Connection::Dispatch(Delegate* delegate) {
     xcb_generic_error_t* raw_error = nullptr;
     xcb_poll_for_reply(connection, request.sequence, &raw_reply, &raw_error);
 
-    std::move(request.callback)
-        .Run(FutureBase::RawReply{reinterpret_cast<uint8_t*>(raw_reply)},
-             FutureBase::RawError{raw_error});
+    scoped_refptr<MallocedRefCountedMemory> reply;
+    if (raw_reply)
+      reply = base::MakeRefCounted<MallocedRefCountedMemory>(raw_reply);
+    std::move(request.callback).Run(reply, FutureBase::RawError{raw_error});
   };
 
   auto process_next_event = [&] {

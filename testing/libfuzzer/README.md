@@ -66,6 +66,7 @@ Started Guide].
 [Creating a fuzz target that expects a protobuf]: libprotobuf-mutator.md
 [Detailed references]: reference.md
 [Fuzzing]: https://en.wikipedia.org/wiki/Fuzzing
+[Fuzzing mojo interfaces]: ../../mojo/docs/mojolpm.md
 [Getting Started Guide]: getting_started.md
 [Guided in-process fuzzing of Chrome components]: https://security.googleblog.com/2016/08/guided-in-process-fuzzing-of-chrome.html
 [Improving fuzz target efficiency]: efficient_fuzzing.md

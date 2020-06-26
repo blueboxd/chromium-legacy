@@ -3443,6 +3443,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_ANDROID)
     switches::kDisableMediaSessionAPI,
     switches::kEnableReachedCodeProfiler,
+    switches::kReachedCodeSamplingIntervalUs,
     switches::kRendererWaitForJavaDebugger,
 #endif
 #if defined(OS_WIN)

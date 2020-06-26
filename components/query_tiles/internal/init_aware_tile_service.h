@@ -32,6 +32,7 @@ class InitAwareTileService : public TileService {
   void StartFetchForTiles(bool is_from_reduced_mode,
                           BackgroundTaskFinishedCallback callback) override;
   void CancelTask() override;
+  void PurgeDb() override;
 
   void OnTileServiceInitialized(bool success);
   void MaybeCacheApiCall(base::OnceClosure api_call);

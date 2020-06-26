@@ -10,7 +10,9 @@
   await TestRunner.addIframe('/loading/sxg/resources/sxg-larger-than-10k.sxg');
   await ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
-  var requests = NetworkTestRunner.findRequestsByURLPattern(/sxg-larger-than-10k.sxg/);
+  var requests =
+      NetworkTestRunner.findRequestsByURLPattern(/sxg-larger-than-10k.sxg/)
+          .filter((e, i, a) => i % 2 == 0);
   TestRunner.assertTrue(requests.length === 1);
   TestRunner.assertTrue(requests[0].transferSize > 10000);
   TestRunner.completeTest();

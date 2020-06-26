@@ -332,6 +332,35 @@ struct CreateNewWindowReply {
   bool wait_for_debugger;
 };
 
+[Native]
+enum TriggeringEventInfo;
+
+// This struct holds parameters included in the OpenURL method sent by the
+// renderer to the browser, |is_history_navigation_in_new_child_frame| is true
+// in the case that the browser process should look for an existing history item
+// for the frame.
+struct OpenURLParams {
+  // The main URL to open.
+  url.mojom.Url url;
+  url.mojom.Origin initiator_origin;
+  int32 initiator_routing_id;
+  network.mojom.URLRequestBody? post_body;
+  string extra_headers;
+  blink.mojom.Referrer referrer;
+
+  // The window position to open the URL.
+  ui.mojom.WindowOpenDisposition disposition;
+  bool should_replace_current_entry;
+  bool user_gesture;
+
+  // Extra information about the triggering of the OpenURL.
+  TriggeringEventInfo triggering_event_info;
+  handle<message_pipe>? blob_url_token;
+  string href_translate;
+  Impression? impression;
+  NavigationDownloadPolicy download_policy;
+};
+
 // An opaque handle that keeps alive the associated render process even after
 // the frame is detached. Used by resource requests with "keepalive" specified.
 interface KeepAliveHandle {};
@@ -511,4 +540,7 @@ interface FrameHost {
 
   // Notifies the browser that this frame has new session history information.
   UpdateState(PageState state);
+
+  // Requests that the given URL be opened in the specified manner.
+  OpenURL(OpenURLParams params);
 };

@@ -196,8 +196,9 @@ class StringHasher {
   }
 
  private:
+  // The StringHasher works on UChar so all converters should normalize input
+  // data into being a UChar.
   static UChar DefaultConverter(UChar character) { return character; }
-
   static UChar DefaultConverter(LChar character) { return character; }
 
   unsigned AvalancheBits() const {

@@ -140,7 +140,7 @@ bool PrepareNativeLocalFileForWritableApp(const base::FilePath& path,
 
 // Checks whether a list of paths are all OK for writing and calls a provided
 // on_success or on_failure callback when done. A path is OK for writing if it
-// is not a symlink, is not in a blacklisted path and can be opened for writing.
+// is not a symlink, is not in a blocklisted path and can be opened for writing.
 // Creates files if they do not exist, but fails for non-existent directory
 // paths. On Chrome OS, also fails for non-local files that don't already exist.
 class WritableFileChecker

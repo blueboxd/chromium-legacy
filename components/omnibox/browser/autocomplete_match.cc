@@ -626,15 +626,21 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
          type == AutocompleteMatchType::TILE_SUGGESTION ||
-         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
-         type == AutocompleteMatchType::CLIPBOARD_TEXT ||
-         type == AutocompleteMatchType::CLIPBOARD_IMAGE;
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
 // static
 bool AutocompleteMatch::IsSearchHistoryType(Type type) {
   return type == AutocompleteMatchType::SEARCH_HISTORY ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED;
+}
+
+// static
+bool AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(Type type) {
+  return type == AutocompleteMatchType::CLIPBOARD_URL ||
+         type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         type == AutocompleteMatchType::CLIPBOARD_IMAGE ||
+         type == AutocompleteMatchType::TILE_SUGGESTION;
 }
 
 AutocompleteMatch::Type AutocompleteMatch::GetDemotionType() const {

@@ -1895,7 +1895,7 @@ TEST_F(BlacklistedExtensionSyncServiceTest, SyncBlacklistedExtension) {
 
   // Blacklist the extension.
   test_blacklist().SetBlacklistState(extension_id,
-                                     extensions::BLACKLISTED_MALWARE, true);
+                                     extensions::BLOCKLISTED_MALWARE, true);
   ForceBlacklistUpdate();
 
   // Try enabling the extension via sync.
@@ -1912,7 +1912,7 @@ TEST_F(BlacklistedExtensionSyncServiceTest, SyncAllowedGreylistedExtension) {
 
   // Greylist the extension.
   test_blacklist().SetBlacklistState(
-      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED, true);
+      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED, true);
   ForceBlacklistUpdate();
 
   EXPECT_FALSE(registry()->enabled_extensions().GetByID(extension_id));

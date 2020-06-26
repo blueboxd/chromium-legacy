@@ -40,7 +40,6 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -349,9 +348,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)
       continue;
-
-    // Hide the drag shadow if it is visible.
-    Shell::Get()->resize_shadow_controller()->HideShadow(window);
 
     // Stop ongoing animations before entering overview mode. Because we are
     // deferring SetTransform of the windows beneath the window covering the

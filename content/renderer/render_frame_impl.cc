@@ -150,6 +150,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -1010,6 +1011,9 @@ void FillMiscNavigationParams(
     navigation_params->force_fetch_cache_mode =
         blink::mojom::FetchCacheMode::kDefault;
   }
+
+  navigation_params->origin_isolation_restricted =
+      commit_params.origin_isolation_restricted;
 }
 
 // Fills in the origin policy associated with this response, if any is present.
@@ -5684,35 +5688,35 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   DCHECK(!info->url_request.RequestorOrigin().IsNull());
 
   WebNavigationPolicy policy = info->navigation_policy;
-  FrameHostMsg_OpenURL_Params params;
-  params.url = info->url_request.Url();
-  params.initiator_origin = info->url_request.RequestorOrigin();
-  params.post_body = GetRequestBodyForWebURLRequest(info->url_request);
-  DCHECK_EQ(!!params.post_body, IsHttpPost(info->url_request));
-  params.extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
-  params.referrer.url =
-      blink::WebStringToGURL(info->url_request.ReferrerString());
-  params.referrer.policy = info->url_request.GetReferrerPolicy();
-  params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
-  params.triggering_event_info = info->triggering_event_info;
-  params.blob_url_token =
-      CloneBlobURLToken(info->blob_url_token).PassPipe().release();
-  params.should_replace_current_entry =
+  auto params = mojom::OpenURLParams::New();
+  params->url = info->url_request.Url();
+  params->initiator_origin = info->url_request.RequestorOrigin();
+  params->post_body = GetRequestBodyForWebURLRequest(info->url_request);
+  DCHECK_EQ(!!params->post_body, IsHttpPost(info->url_request));
+  params->extra_headers = GetWebURLRequestHeadersAsString(info->url_request);
+
+  params->referrer = blink::mojom::Referrer::New(
+      blink::WebStringToGURL(info->url_request.ReferrerString()),
+      info->url_request.GetReferrerPolicy());
+  params->disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
+  params->triggering_event_info = info->triggering_event_info;
+  params->blob_url_token = CloneBlobURLToken(info->blob_url_token).PassPipe();
+  params->should_replace_current_entry =
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
       render_view_->history_list_length_;
-  params.user_gesture = info->has_transient_user_activation;
+  params->user_gesture = info->has_transient_user_activation;
 
   RenderFrameImpl* initiator_render_frame =
       RenderFrameImpl::FromWebFrame(info->initiator_frame);
-  params.initiator_routing_id = initiator_render_frame
-                                    ? initiator_render_frame->GetRoutingID()
-                                    : MSG_ROUTING_NONE;
+  params->initiator_routing_id = initiator_render_frame
+                                     ? initiator_render_frame->GetRoutingID()
+                                     : MSG_ROUTING_NONE;
 
   if (info->impression)
-    params.impression = ConvertWebImpressionToImpression(*info->impression);
+    params->impression = ConvertWebImpressionToImpression(*info->impression);
 
   if (GetContentClient()->renderer()->AllowPopup())
-    params.user_gesture = true;
+    params->user_gesture = true;
 
   // A main frame navigation should already have consumed an activation in
   // FrameLoader::StartNavigation.
@@ -5725,7 +5729,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
     frame_->ConsumeTransientUserActivation();
   }
 
-  params.href_translate = info->href_translate.Latin1();
+  params->href_translate = info->href_translate.Latin1();
 
   bool current_frame_has_download_sandbox_flag = !frame_->IsAllowedToDownload();
   bool has_download_sandbox_flag =
@@ -5737,9 +5741,8 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
                               frame_->GetSecurityOrigin(),
                               has_download_sandbox_flag,
                               info->blocking_downloads_in_sandbox_enabled,
-                              from_ad, &params.download_policy);
-
-  Send(new FrameHostMsg_OpenURL(routing_id_, params));
+                              from_ad, &params->download_policy);
+  GetFrameHost()->OpenURL(std::move(params));
 }
 
 ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {

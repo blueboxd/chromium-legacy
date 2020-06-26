@@ -1,5 +1,6 @@
 <style include="pdf-viewer-shared-style">
-  viewer-pdf-toolbar {
+  viewer-pdf-toolbar,
+  viewer-pdf-toolbar-new {
     position: fixed;
     width: 100%;
     z-index: 4;
@@ -18,18 +19,24 @@
   }
 </style>
 
-<viewer-pdf-toolbar id="toolbar" strings="[[strings]]"
-    annotation-available="[[annotationAvailable_]]"
-    bookmarks="[[bookmarks_]]" doc-title="[[title_]]"
-    has-edits="[[hasEdits_]]"
-    has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
-    is-form-field-focused="[[isFormFieldFocused_]]"
-    on-save="onToolbarSave_" on-print="onPrint_"
-    on-annotation-mode-toggled="onAnnotationModeToggled_"
-    on-annotation-tool-changed="onAnnotationToolChanged_"
-    on-rotate-right="rotateClockwise" on-undo="onUndo_" on-redo="onRedo_"
-    hidden>
-</viewer-pdf-toolbar>
+<template is="dom-if" if="[[!pdfViewerUpdateEnabled_]]">
+  <viewer-pdf-toolbar id="toolbar" strings="[[strings]]"
+      annotation-available="[[annotationAvailable_]]"
+      bookmarks="[[bookmarks_]]" doc-title="[[title_]]"
+      has-edits="[[hasEdits_]]"
+      has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
+      is-form-field-focused="[[isFormFieldFocused_]]"
+      on-save="onToolbarSave_" on-print="onPrint_"
+      on-annotation-mode-toggled="onAnnotationModeToggled_"
+      on-annotation-tool-changed="onAnnotationToolChanged_"
+      on-rotate-right="rotateClockwise" on-undo="onUndo_" on-redo="onRedo_"
+      hidden>
+  </viewer-pdf-toolbar>
+</template>
+<template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
+  <viewer-pdf-toolbar-new id="toolbar" hidden>
+  </viewer-pdf-toolbar-new>
+</template>
 
 <div id="sizer"></div>
 <viewer-password-screen id="password-screen"

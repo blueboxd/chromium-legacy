@@ -425,14 +425,9 @@ void WithdrawWindow(x11::Window window) {
 
   auto root = connection->default_root();
   x11::UnmapNotifyEvent event{.event = root, .window = window};
-  auto event_bytes = x11::Write(event);
-  event_bytes.resize(32);
-
   auto mask =
       x11::EventMask::SubstructureNotify | x11::EventMask::SubstructureRedirect;
-  x11::SendEventRequest request{false, root, mask};
-  std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
-  connection->SendEvent(request);
+  SendEvent(event, root, mask);
 }
 
 void RaiseWindow(x11::Window window) {
@@ -894,7 +889,7 @@ bool PropertyExists(x11::Window window, const std::string& property_name) {
 
 bool GetRawBytesOfProperty(x11::Window window,
                            x11::Atom property,
-                           std::vector<uint8_t>* out_data,
+                           scoped_refptr<base::RefCountedMemory>* out_data,
                            x11::Atom* out_type) {
   auto future = x11::Connection::Get()->GetProperty({
       .window = static_cast<x11::Window>(window),
@@ -905,7 +900,7 @@ bool GetRawBytesOfProperty(x11::Window window,
   auto response = future.Sync();
   if (!response || !response->format)
     return false;
-  *out_data = std::move(response->value);
+  *out_data = response->value;
   if (out_type)
     *out_type = response->type;
   return true;
@@ -1314,10 +1309,10 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
   std::string atom_name = monitor == 0
                               ? "_ICC_PROFILE"
                               : base::StringPrintf("_ICC_PROFILE_%d", monitor);
-  std::vector<uint8_t> data;
+  scoped_refptr<base::RefCountedMemory> data;
   if (GetRawBytesOfProperty(GetX11RootWindow(), gfx::GetAtom(atom_name), &data,
                             nullptr)) {
-    icc_profile = gfx::ICCProfile::FromData(data.data(), data.size());
+    icc_profile = gfx::ICCProfile::FromData(data->data(), data->size());
   }
   return icc_profile;
 }
@@ -1382,13 +1377,7 @@ x11::Future<void> SendClientMessage(x11::Window window,
                                     x11::EventMask event_mask) {
   x11::ClientMessageEvent event{.format = 32, .window = window, .type = type};
   event.data.data32 = data;
-  auto event_bytes = x11::Write(event);
-  DCHECK_EQ(event_bytes.size(), 32ul);
-
-  auto* connection = x11::Connection::Get();
-  x11::SendEventRequest request{false, target, event_mask};
-  std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
-  return connection->SendEvent(request);
+  return SendEvent(event, target, event_mask);
 }
 
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)

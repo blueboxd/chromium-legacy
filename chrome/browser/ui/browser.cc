@@ -794,8 +794,8 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   if (title.empty() &&
       (is_type_app() || is_type_app_popup() || is_type_devtools()) &&
       include_app_name) {
-    return base::UTF8ToUTF16(
-        app_controller_ ? app_controller_->GetAppShortName() : app_name());
+    return app_controller_ ? app_controller_->GetAppShortName()
+                           : base::UTF8ToUTF16(app_name());
   }
 
   // Include the app name in window titles for tabbed browser windows when

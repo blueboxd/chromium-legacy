@@ -25,7 +25,7 @@ class JourneyLogger {
 
   // The different sections of a Payment Request. Used to record journey
   // stats.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Section
   enum Section {
     SECTION_CONTACT_INFO = 0,
@@ -36,7 +36,7 @@ class JourneyLogger {
 
   // Used to log different parameters' effect on whether the transaction was
   // completed.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CompletionStatus
   enum CompletionStatus {
     COMPLETION_STATUS_COMPLETED = 0,
@@ -48,7 +48,7 @@ class JourneyLogger {
 
   // Used to record the different events that happened during the Payment
   // Request.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: Event
   enum Event {
     // Initiated means the PaymentRequest object was constructed.
@@ -112,7 +112,7 @@ class JourneyLogger {
   };
 
   // The reason why the Payment Request was aborted.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AbortReason
   enum AbortReason {
     ABORT_REASON_ABORTED_BY_USER = 0,
@@ -130,7 +130,7 @@ class JourneyLogger {
   };
 
   // The reason why the Payment Request was not shown to the user.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.payments
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: NotShownReason
   enum NotShownReason {
     NOT_SHOWN_REASON_NO_MATCHING_PAYMENT_METHOD = 0,

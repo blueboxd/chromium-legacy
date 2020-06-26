@@ -210,23 +210,19 @@ template("trichrome_library_apk_tmpl") {
 # parameters, and is used by SuperSize-archive to create multi-container .size
 # files. This is used to support SuperSize on Trichrome.
 template("write_ssargs_trichrome") {
-  action(target_name) {
-    script = "//chrome/android/write_ssargs.py"
-    outputs = [ invoker.ssargs_path ]
+  # Base names (i.e., no full path) are used because .ssargs files specifies
+  # files using paths relative to itself. It is expected for |ssargs_path| to
+  # be in the same directory as all Trichrome files whose sizes are measured
+  # by SuperSize.
+  ssargs_lines = [
+    "# Written by build target \"${target_name}.\"",
+    "Library -f ${invoker.trichrome_library_basename}",
+    "Chrome -f ${invoker.trichrome_chrome_basename}",
 
-    # Base names (i.e., no full path) are used because .ssargs files specifies
-    # files using paths relative to itself. It is expected for |ssargs_path| to
-    # be in the same directory as all Trichrome files whose sizes are measured
-    # by SuperSize.
-    args = [
-      rebase_path(invoker.ssargs_path, root_build_dir),
-      "--items",
-      "Library -f ${invoker.trichrome_library_basename}",
-      "Chrome -f ${invoker.trichrome_chrome_basename}",
+    # WebView has no .so files. --java-only is needed to prevent SuperSize
+    # from failing.
+    "WebView -f ${invoker.trichrome_webview_basename} --java-only",
+  ]
 
-      # WebView has no .so files. --java-only is needed to prevent SuperSize
-      # from failing.
-      "WebView -f ${invoker.trichrome_webview_basename} --java-only",
-    ]
-  }
+  write_file(invoker.ssargs_path, ssargs_lines)
 }

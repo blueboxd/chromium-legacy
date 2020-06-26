@@ -23,11 +23,6 @@
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
 
-const NSString* kHeaderEtag =
-    base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderEtag);
-const NSString* kHeaderXRetryAfter =
-    base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderXRetryAfter);
-
 using ResponseStartedCallback =
     update_client::NetworkFetcher::ResponseStartedCallback;
 using ProgressCallback = update_client::NetworkFetcher::ProgressCallback;
@@ -153,12 +148,17 @@ using DownloadToFileCompleteCallback =
 
   NSHTTPURLResponse* response = (NSHTTPURLResponse*)task.response;
   NSDictionary* headers = response.allHeaderFields;
+
+  NSString* headerEtag =
+      base::SysUTF8ToNSString(update_client::NetworkFetcher::kHeaderEtag);
   NSString* etag = @"";
-  if ([headers objectForKey:kHeaderEtag]) {
-    etag = [headers objectForKey:kHeaderEtag];
+  if ([headers objectForKey:headerEtag]) {
+    etag = [headers objectForKey:headerEtag];
   }
   int64_t retryAfterResult = -1;
-  NSString* xRetryAfter = [headers objectForKey:kHeaderXRetryAfter];
+  NSString* xRetryAfter = [headers
+      objectForKey:base::SysUTF8ToNSString(
+                       update_client::NetworkFetcher::kHeaderXRetryAfter)];
   if (xRetryAfter) {
     retryAfterResult = [xRetryAfter intValue];
   }

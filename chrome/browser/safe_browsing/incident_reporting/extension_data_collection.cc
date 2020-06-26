@@ -43,7 +43,7 @@ void PopulateExtensionInfo(
     extension_info->set_state(Info::STATE_ENABLED);
   else if (extension_registry.disabled_extensions().Contains(extension_id))
     extension_info->set_state(Info::STATE_DISABLED);
-  else if (extension_registry.blacklisted_extensions().Contains(extension_id))
+  else if (extension_registry.blocklisted_extensions().Contains(extension_id))
     extension_info->set_state(Info::STATE_BLACKLISTED);
   else if (extension_registry.blocked_extensions().Contains(extension_id))
     extension_info->set_state(Info::STATE_BLOCKED);

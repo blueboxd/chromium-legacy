@@ -12,8 +12,6 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "url/gurl.h"
 
-struct FrameHostMsg_OpenURL_Params;
-
 namespace content {
 
 class SiteInstance;
@@ -41,7 +39,7 @@ bool VerifyDownloadUrlParams(SiteInstance* site_instance,
 //
 // This function has to be called on the UI thread.
 bool VerifyOpenURLParams(SiteInstance* site_instance,
-                         const FrameHostMsg_OpenURL_Params& params,
+                         const mojom::OpenURLParamsPtr& params,
                          GURL* out_validated_url,
                          scoped_refptr<network::SharedURLLoaderFactory>*
                              out_blob_url_loader_factory);

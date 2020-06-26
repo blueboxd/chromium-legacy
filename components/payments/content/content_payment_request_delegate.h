@@ -55,6 +55,10 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
   // Returns whether the UI should be skipped for a "basic-card" scenario. This
   // will only be true in tests.
   virtual bool SkipUiForBasicCard() const = 0;
+
+  // Returns the Android package name of the Trusted Web Activity that invoked
+  // this browser, if any. Otherwise, an empty string.
+  virtual std::string GetTwaPackageName() const = 0;
 };
 
 }  // namespace payments

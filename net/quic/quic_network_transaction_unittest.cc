@@ -3347,11 +3347,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC protocol error occurs after the handshake is confirmed
 // the request fails with QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3375,10 +3370,13 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientAckAndConnectionClosePacket(
-                         packet_num++, 1, 1, 1, quic::QUIC_INVALID_STREAM_ID,
-                         quic_error_details, quic::IETF_RST_STREAM));
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndConnectionClosePacket(
+          packet_num++, 1, 1, 1,
+          version_.HasIetfQuicFrames() ? quic::QUIC_HTTP_STREAM_WRONG_DIRECTION
+                                       : quic::QUIC_INVALID_STREAM_ID,
+          quic_error_details, quic::IETF_RST_STREAM));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -3570,11 +3568,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   context_.params()->idle_connection_timeout = base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
@@ -3600,10 +3593,13 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientAckAndConnectionClosePacket(
-                         packet_num++, 1, 1, 1, quic::QUIC_INVALID_STREAM_ID,
-                         quic_error_details, quic::IETF_RST_STREAM));
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndConnectionClosePacket(
+          packet_num++, 1, 1, 1,
+          version_.HasIetfQuicFrames() ? quic::QUIC_HTTP_STREAM_WRONG_DIRECTION
+                                       : quic::QUIC_INVALID_STREAM_ID,
+          quic_error_details, quic::IETF_RST_STREAM));
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // After that fails, it will be resent via TCP.
@@ -3799,11 +3795,6 @@ TEST_P(QuicNetworkTransactionTest,
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   spdy::SpdyPriority priority =
@@ -3830,10 +3821,10 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
                         quic::QUIC_HEADERS_TOO_LARGE));
 
   if (VersionUsesHttp3(version_.transport_version)) {
-    quic_data.AddWrite(SYNCHRONOUS,
-                       ConstructClientDataPacket(
-                           packet_num++, GetQpackDecoderStreamId(), true, false,
-                           StreamCancellationQpackDecoderInstruction(0)));
+    quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckAndDataPacket(
+                         packet_num++, true, GetQpackDecoderStreamId(), 1, 1, 1,
+                         false, StreamCancellationQpackDecoderInstruction(0)));
   }
 
   quic_data.AddRead(ASYNC, OK);
@@ -5139,11 +5130,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5203,11 +5189,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5304,11 +5285,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5361,7 +5337,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
         SYNCHRONOUS,
         ConstructClientAckAndDataPacket(
             packet_number++, false, GetQpackDecoderStreamId(), 2, 1, 1, false,
-            StreamCancellationQpackDecoderInstruction(1)));
+            StreamCancellationQpackDecoderInstruction(1, false)));
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             client_maker_->MakeRstPacket(
                                 packet_number++, false,
@@ -5422,11 +5398,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorLocal) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5484,11 +5455,6 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5511,9 +5477,12 @@ TEST_P(QuicNetworkTransactionTest,
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
   mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
-                       packet_num++, 1, 1, 1, quic::QUIC_INVALID_STREAM_ID,
-                       quic_error_details, quic::IETF_RST_STREAM));
+      SYNCHRONOUS,
+      ConstructClientAckAndConnectionClosePacket(
+          packet_num++, 1, 1, 1,
+          version_.HasIetfQuicFrames() ? quic::QUIC_HTTP_STREAM_WRONG_DIRECTION
+                                       : quic::QUIC_INVALID_STREAM_ID,
+          quic_error_details, quic::IETF_RST_STREAM));
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // The non-alternate protocol job needs to hang in order to guarantee that
@@ -5546,15 +5515,13 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_EQ(quic::QUIC_NO_ERROR, details.quic_connection_error);
 
   trans.PopulateNetErrorDetails(&details);
-  EXPECT_EQ(quic::QUIC_INVALID_STREAM_ID, details.quic_connection_error);
+  EXPECT_EQ(version_.HasIetfQuicFrames()
+                ? quic::QUIC_HTTP_STREAM_WRONG_DIRECTION
+                : quic::QUIC_INVALID_STREAM_ID,
+            details.quic_connection_error);
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5633,11 +5600,6 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   context_.params()->retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5659,9 +5621,10 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
 
   if (VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientDataPacket(
-                         packet_num++, GetQpackDecoderStreamId(), true, false,
-                         StreamCancellationQpackDecoderInstruction(0)));
+        SYNCHRONOUS,
+        ConstructClientAckAndDataPacket(
+            packet_num++, false, GetQpackDecoderStreamId(), 1, 1, 1, false,
+            StreamCancellationQpackDecoderInstruction(0)));
   }
 
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
@@ -5903,11 +5866,6 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
 TEST_P(QuicNetworkTransactionTest,
        DelayTCPOnStartWithQuicSupportOnDifferentIP) {
-  if (version_.UsesTls()) {
-    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
-    return;
-  }
-
   // Tests that TCP job is delayed and QUIC job requires confirmation if QUIC
   // was recently supported on a different IP address on start.
 

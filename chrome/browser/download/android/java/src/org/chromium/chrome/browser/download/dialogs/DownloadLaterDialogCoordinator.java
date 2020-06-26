@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -21,7 +22,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Coordinator to construct the download later dialog.
  */
-public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Controller {
+public class DownloadLaterDialogCoordinator
+        implements ModalDialogProperties.Controller, DownloadLaterDialogView.Controller {
     private PropertyModel mDownloadLaterDialogModel;
     private DownloadLaterDialogView mCustomView;
     private ModalDialogManager mModalDialogManager;
@@ -56,7 +58,6 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
         mDownloadLaterDialogModel = model;
         mCustomView = (DownloadLaterDialogView) LayoutInflater.from(activity).inflate(
                 R.layout.download_later_dialog, null);
-        mCustomView.initialize();
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mDownloadLaterDialogModel, mCustomView,
                         DownloadLaterDialogView.Binder::bind, true /*performInitialBind*/);
@@ -124,12 +125,20 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
             @DownloadLaterDialogChoice
             int choice = (mCustomView == null) ? DownloadLaterDialogChoice.DOWNLOAD_NOW
                                                : mCustomView.getChoice();
+            @DownloadLaterPromptStatus
+            int promptStatus = (mCustomView == null) ? DownloadLaterPromptStatus.SHOW_INITIAL
+                                                     : mCustomView.getPromptStatus();
             assert mController != null;
-            mController.onDownloadLaterDialogComplete(choice);
+            mController.onDownloadLaterDialogComplete(choice, promptStatus);
             return;
         }
 
         assert mController != null;
         mController.onDownloadLaterDialogCanceled();
+    }
+
+    @Override
+    public void onEditLocationClicked() {
+        mController.onEditLocationClicked();
     }
 }

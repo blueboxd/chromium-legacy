@@ -319,8 +319,6 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_TITLE},
       {"crostiniPortForwardingAddPortDialogPortNumberLabel",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_LABEL},
-      {"crostiniPortForwardingAddPortDialogPortNumberPlaceholder",
-       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_PLACEHOLDER},
       {"crostiniPortForwardingAddPortDialogLabelLabel",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL_LABEL},
       {"crostiniPortForwardingTCP", IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP},

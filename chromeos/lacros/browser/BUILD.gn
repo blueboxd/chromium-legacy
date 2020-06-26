@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
+# Code lives in the lacros-chrome browser only, not ash-chrome.
+assert(chromeos_is_browser_only)
+
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
 # See docs/no_sources_assignment_filter.md for more information.
@@ -13,6 +18,7 @@ component("browser") {
   deps = [
     "//base",
     "//chromeos/lacros/mojom",
+    "//mojo/public/cpp/bindings",
   ]
   sources = [
     "lacros_chrome_service_impl.cc",

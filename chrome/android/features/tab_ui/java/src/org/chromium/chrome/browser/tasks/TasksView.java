@@ -77,15 +77,18 @@ class TasksView extends CoordinatorLayoutForPointer {
         mSearchBoxCoordinator = new SearchBoxCoordinator(getContext(), this);
         mHeaderView = (AppBarLayout) findViewById(R.id.task_surface_header);
         AppBarLayout.LayoutParams layoutParams =
-                (AppBarLayout.LayoutParams) mSearchBoxCoordinator.getView().getLayoutParams();
+                (AppBarLayout.LayoutParams) (findViewById(R.id.scroll_component_container)
+                                                     .getLayoutParams());
         layoutParams.setScrollFlags(SCROLL_FLAG_SCROLL);
-        adjustOmniboxScrollMode(layoutParams);
+        adjustScrollMode(layoutParams);
         setTabCarouselTitleStyle();
     }
 
-    private void adjustOmniboxScrollMode(AppBarLayout.LayoutParams layoutParams) {
-        if (!StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue().equals("omniboxonly")) {
-            // Omnibox scroll mode is only relevant in omnibox-only variation.
+    private void adjustScrollMode(AppBarLayout.LayoutParams layoutParams) {
+        if (!StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue().equals("omniboxonly")
+                && !StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue().equals(
+                        "trendyterms")) {
+            // Scroll mode is only relevant in omnibox-only variation and trendy-terms variation.
             return;
         }
         String scrollMode = StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE.getValue();
@@ -329,5 +332,13 @@ class TasksView extends CoordinatorLayoutForPointer {
                 (MarginLayoutParams) mHeaderView.findViewById(R.id.tab_switcher_title)
                         .getLayoutParams();
         params.topMargin = topMargin;
+    }
+
+    /**
+     * Set the visibility of the trendy terms section.
+     * @param isVisible whether the trendy terms section is visible or not.
+     */
+    void setTrendyTermsVisibility(boolean isVisible) {
+        findViewById(R.id.trendy_terms_recycler_view).setVisibility(isVisible ? VISIBLE : GONE);
     }
 }

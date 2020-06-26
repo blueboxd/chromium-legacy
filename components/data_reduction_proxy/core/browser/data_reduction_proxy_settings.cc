@@ -205,6 +205,15 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() const {
   return prefs_;
 }
 
+base::Time DataReductionProxySettings::GetLastEnabledTime() const {
+  PrefService* prefs = GetOriginalProfilePrefs();
+  int64_t last_enabled_time =
+      prefs->GetInt64(prefs::kDataReductionProxyLastEnabledTime);
+  if (last_enabled_time <= 0)
+    return base::Time();
+  return base::Time::FromInternalValue(last_enabled_time);
+}
+
 void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
   register_synthetic_field_trial_.Run(
       "SyntheticDataReductionProxySetting",
@@ -242,15 +251,12 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
   bool enabled = IsDataSaverEnabledByUser(is_off_the_record_profile_, prefs);
 
   if (enabled && at_startup) {
-    // Record the number of days since data reduction proxy has been enabled.
-    int64_t last_enabled_time =
-        prefs->GetInt64(prefs::kDataReductionProxyLastEnabledTime);
-    if (last_enabled_time != 0) {
+    const auto last_enabled_time = GetLastEnabledTime();
+    if (!last_enabled_time.is_null()) {
       // Record the metric only if the time when data reduction proxy was
       // enabled is available.
       RecordDaysSinceEnabledMetric(
-          (clock_->Now() - base::Time::FromInternalValue(last_enabled_time))
-              .InDays());
+          (clock_->Now() - last_enabled_time).InDays());
     }
   }
 

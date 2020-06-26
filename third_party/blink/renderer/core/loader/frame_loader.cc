@@ -1335,24 +1335,45 @@ void FrameLoader::ProcessFragment(const KURL& url,
   if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
     boundary_local_frame->View()->SetSafeToPropagateScrollToParent(false);
 
-  // If scroll position is restored from history fragment or scroll
-  // restoration type is manual, then we should not override it unless this
-  // is a same document reload.
-  bool should_scroll_to_fragment =
-      !RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) &&
-      GetDocumentLoader()->NavigationScrollAllowed() &&
-      ((load_start_type == kNavigationWithinSameDocument &&
-        !IsBackForwardLoadType(frame_load_type)) ||
-       (!GetDocumentLoader()
-             ->GetInitialScrollState()
-             .did_restore_from_history &&
-        !(GetDocumentLoader()->GetHistoryItem() &&
-          GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
-              kScrollRestorationManual)));
+  const bool is_same_document_navigation =
+      load_start_type == kNavigationWithinSameDocument;
 
-  view->ProcessUrlFragment(url,
-                           load_start_type == kNavigationWithinSameDocument,
-                           should_scroll_to_fragment);
+  // Pages can opt-in to manual scroll restoration so the page will handle
+  // restoring the past scroll offset during a history navigation. In these
+  // cases we assume the scroll was restored from history (by the page).
+  const bool uses_manual_scroll_restoration =
+      GetDocumentLoader()->GetHistoryItem() &&
+      GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
+          kScrollRestorationManual;
+
+  // If we restored a scroll position from history, we shouldn't clobber it
+  // with the fragment.
+  const bool will_restore_scroll_from_history =
+      GetDocumentLoader()->GetInitialScrollState().did_restore_from_history ||
+      uses_manual_scroll_restoration;
+
+  // Scrolling at load can be blocked by document policy (or the equivalent
+  // ForceLoadAtTop REF currently in origin trial). This policy applies only to
+  // cross-document navigations.
+  const bool blocked_by_policy =
+      !is_same_document_navigation &&
+      (RuntimeEnabledFeatures::ForceLoadAtTopEnabled(frame_->DomWindow()) ||
+       !GetDocumentLoader()->NavigationScrollAllowed());
+
+  // We should avoid scrolling the fragment if it would clobber a history
+  // restored scroll state but still allow it on same document navigations
+  // after (i.e. if we navigate back and restore the scroll position, the user
+  // should still be able to click on a same-document fragment link and have it
+  // jump to the anchor).
+  const bool is_same_document_non_history_nav =
+      is_same_document_navigation && !IsBackForwardLoadType(frame_load_type);
+
+  const bool block_fragment_scroll =
+      blocked_by_policy ||
+      (will_restore_scroll_from_history && !is_same_document_non_history_nav);
+
+  view->ProcessUrlFragment(url, is_same_document_navigation,
+                           !block_fragment_scroll);
 
   if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
     boundary_local_frame->View()->SetSafeToPropagateScrollToParent(true);

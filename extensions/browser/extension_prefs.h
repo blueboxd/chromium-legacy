@@ -20,7 +20,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_checksum.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/install_flag.h"
@@ -181,7 +181,7 @@ class ExtensionPrefs : public KeyedService {
   // Checks whether |extension_id| is disabled. If there's no state pref for
   // the extension, this will return false. Generally you should use
   // ExtensionService::IsExtensionEnabled instead.
-  // Note that blacklisted extensions are NOT marked as disabled!
+  // Note that blocklisted extensions are NOT marked as disabled!
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
@@ -230,15 +230,12 @@ class ExtensionPrefs : public KeyedService {
   void SetExtensionDisabled(const std::string& extension_id,
                             int disable_reasons);
 
-  // Called to change the extension's BlacklistState. Currently only used for
-  // non-malicious extensions.
-  // TODO(oleg): replace SetExtensionBlacklisted by this function.
-  void SetExtensionBlacklistState(const std::string& extension_id,
-                                  BlacklistState state);
+  void SetExtensionBlocklistState(const std::string& extension_id,
+                                  BlocklistState state);
 
   // Checks whether |extension_id| is marked as greylisted.
-  // TODO(oleg): Replace IsExtensionBlacklisted by this method.
-  BlacklistState GetExtensionBlacklistState(
+  // TODO(oleg): Replace IsExtensionBlocklisted by this method.
+  BlocklistState GetExtensionBlocklistState(
       const std::string& extension_id) const;
 
   // Populates |out| with the ids of all installed extensions.
@@ -296,11 +293,11 @@ class ExtensionPrefs : public KeyedService {
   void ClearInapplicableDisableReasonsForComponentExtension(
       const std::string& component_extension_id);
 
-  // Gets the set of extensions that have been blacklisted in prefs. This will
+  // Gets the set of extensions that have been blocklisted in prefs. This will
   // return only the blocked extensions, not the "greylist" extensions.
   // TODO(oleg): Make method names consistent here, in extension service and in
-  // blacklist.
-  std::set<std::string> GetBlacklistedExtensions() const;
+  // blocklist.
+  std::set<std::string> GetBlocklistedExtensions() const;
 
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
@@ -318,13 +315,13 @@ class ExtensionPrefs : public KeyedService {
   void SetInstallLocation(const std::string& extension_id,
                           Manifest::Location location);
 
-  // Returns whether the extension with |id| has its blacklist bit set.
+  // Returns whether the extension with |id| has its blocklist bit set.
   //
   // WARNING: this only checks the extension's entry in prefs, so by definition
   // can only check extensions that prefs knows about. There may be other
-  // sources of blacklist information, such as safebrowsing. You probably want
-  // to use Blacklist::GetBlacklistedIDs rather than this method.
-  bool IsExtensionBlacklisted(const std::string& id) const;
+  // sources of blocklist information, such as safebrowsing. You probably want
+  // to use Blocklist::GetBlocklistedIDs rather than this method.
+  bool IsExtensionBlocklisted(const std::string& id) const;
 
   // Increment the count of how many times we prompted the user to acknowledge
   // the given extension, and return the new count.
@@ -334,10 +331,10 @@ class ExtensionPrefs : public KeyedService {
   bool IsExternalExtensionAcknowledged(const std::string& extension_id) const;
   void AcknowledgeExternalExtension(const std::string& extension_id);
 
-  // Whether the user has acknowledged a blacklisted extension.
-  bool IsBlacklistedExtensionAcknowledged(
+  // Whether the user has acknowledged a blocklisted extension.
+  bool IsBlocklistedExtensionAcknowledged(
       const std::string& extension_id) const;
-  void AcknowledgeBlacklistedExtension(const std::string& extension_id);
+  void AcknowledgeBlocklistedExtension(const std::string& extension_id);
 
   // Whether the external extension was installed during the first run
   // of this profile.
@@ -366,9 +363,9 @@ class ExtensionPrefs : public KeyedService {
   // the client's.
   void SetLastPingDay(const std::string& extension_id, const base::Time& time);
 
-  // Similar to the 2 above, but for the extensions blacklist.
-  base::Time BlacklistLastPingDay() const;
-  void SetBlacklistLastPingDay(const base::Time& time);
+  // Similar to the 2 above, but for the extensions blocklist.
+  base::Time BlocklistLastPingDay() const;
+  void SetBlocklistLastPingDay(const base::Time& time);
 
   // Similar to LastPingDay/SetLastPingDay, but for sending "days since active"
   // ping.
@@ -462,7 +459,7 @@ class ExtensionPrefs : public KeyedService {
   bool HasAllowFileAccessSetting(const std::string& extension_id) const;
 
   // Saves ExtensionInfo for each installed extension with the path to the
-  // version directory and the location. Blacklisted extensions won't be saved
+  // version directory and the location. Blocklisted extensions won't be saved
   // and neither will external extensions the user has explicitly uninstalled.
   // Caller takes ownership of returned structure.
   std::unique_ptr<ExtensionsInfo> GetInstalledExtensionsInfo(
@@ -668,7 +665,7 @@ class ExtensionPrefs : public KeyedService {
   static const char kFakeObsoletePrefForTesting[];
 
  private:
-  friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
+  friend class ExtensionPrefsBlocklistedExtensions;  // Unit test.
   friend class ExtensionPrefsComponentExtension;     // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.
 
@@ -712,11 +709,10 @@ class ExtensionPrefs : public KeyedService {
                                URLPatternSet* result,
                                int valid_schemes) const;
 
-  // DEPRECATED. Use GetExtensionBlacklistState() instead.
-  // TODO(atuchin): Remove this once all clients are updated.
-  // Sets whether the extension with |id| is blacklisted.
-  void SetExtensionBlacklisted(const std::string& extension_id,
-                               bool is_blacklisted);
+  // Deprecated kPrefBlocklistAcknowledged kPrefBlocklist. Use
+  // kPrefBlocklistState instead.
+  // TODO(atuchin): Remove kPrefBlocklistAcknowledged kPrefBlocklist once all
+  // clients are updated.
 
   // Converts |set| to a list of strings and sets the |pref_key| pref belonging
   // to |extension_id|. If |set| is empty, the preference for |pref_key| is

@@ -230,44 +230,6 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   infobar()->RemoveSelf();
 }
 
-base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
-  if (step_ == translate::TRANSLATE_STEP_TRANSLATING) {
-    return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_TRANSLATING_TO,
-                                      target_language_name());
-  }
-
-  DCHECK_EQ(translate::TRANSLATE_STEP_TRANSLATE_ERROR, step_);
-  UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar", error_type_,
-                            TranslateErrors::TRANSLATE_ERROR_MAX);
-  ui_delegate_.OnErrorShown(error_type_);
-  switch (error_type_) {
-    case TranslateErrors::NETWORK:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT);
-    case TranslateErrors::INITIALIZATION_ERROR:
-    case TranslateErrors::TRANSLATION_ERROR:
-    case TranslateErrors::TRANSLATION_TIMEOUT:
-    case TranslateErrors::UNEXPECTED_SCRIPT_ERROR:
-    case TranslateErrors::BAD_ORIGIN:
-    case TranslateErrors::SCRIPT_LOAD_ERROR:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE);
-    case TranslateErrors::UNKNOWN_LANGUAGE:
-      return l10n_util::GetStringUTF16(
-          IDS_TRANSLATE_INFOBAR_UNKNOWN_PAGE_LANGUAGE);
-    case TranslateErrors::UNSUPPORTED_LANGUAGE:
-      return l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_INFOBAR_UNSUPPORTED_PAGE_LANGUAGE,
-          target_language_name());
-    case TranslateErrors::IDENTICAL_LANGUAGES:
-      return l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_INFOBAR_ERROR_SAME_LANGUAGE, target_language_name());
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
 base::string16 TranslateInfoBarDelegate::GetMessageInfoBarButtonText() {
   if (step_ != translate::TRANSLATE_STEP_TRANSLATE_ERROR) {
     DCHECK_EQ(translate::TRANSLATE_STEP_TRANSLATING, step_);

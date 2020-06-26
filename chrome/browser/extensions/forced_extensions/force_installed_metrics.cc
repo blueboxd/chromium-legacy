@@ -182,7 +182,7 @@ void ForceInstalledMetrics::ReportMetrics() {
   size_t blacklisted_count = 0;
   auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
   auto blacklisted_extensions = registry_->GenerateInstalledExtensionsSet(
-      ExtensionRegistry::IncludeFlag::BLACKLISTED);
+      ExtensionRegistry::IncludeFlag::BLOCKLISTED);
   for (const auto& entry : *installed_extensions) {
     if (missing_forced_extensions.count(entry->id())) {
       missing_forced_extensions.erase(entry->id());

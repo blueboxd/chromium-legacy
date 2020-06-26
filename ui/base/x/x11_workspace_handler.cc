@@ -74,13 +74,13 @@ bool X11WorkspaceHandler::DispatchXEvent(x11::Event* x11_event) {
 
 void X11WorkspaceHandler::OnWorkspaceResponse(
     x11::GetPropertyResponse response) {
-  if (!response || response->format != 32 || response->value.size() < 4)
+  if (!response || response->format != 32 || response->value->size() < 4)
     return;
   DCHECK_EQ(response->bytes_after, 0U);
   DCHECK_EQ(response->type, static_cast<x11::Atom>(gfx::GetAtom("CARDINAL")));
 
   uint32_t workspace;
-  memcpy(&workspace, response->value.data(), 4);
+  memcpy(&workspace, response->value->data(), 4);
   workspace_ = base::NumberToString(workspace);
   delegate_->OnCurrentWorkspaceChanged(workspace_);
 }

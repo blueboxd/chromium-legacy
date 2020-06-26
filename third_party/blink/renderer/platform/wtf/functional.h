@@ -62,9 +62,10 @@ namespace WTF {
 // WTF::Bind(), WTF::BindRepeating and base::{Once,Repeating}Callback should
 // be used for same-thread closures only, i.e. the closures must be created,
 // executed and destructed on the same thread.
+//
 // Use CrossThreadBindOnce() and CrossThreadBindRepeating() if the function/task
 // is called or destructed on a (potentially) different thread from the current
-// thread.
+// thread. See cross_thread_functional.h for more details.
 
 // WTF::Bind() / WTF::BindRepeating() and move semantics
 // =====================================================

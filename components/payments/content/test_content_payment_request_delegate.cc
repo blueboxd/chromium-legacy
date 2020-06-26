@@ -53,6 +53,10 @@ bool TestContentPaymentRequestDelegate::SkipUiForBasicCard() const {
   return false;
 }
 
+std::string TestContentPaymentRequestDelegate::GetTwaPackageName() const {
+  return "";
+}
+
 autofill::PersonalDataManager*
 TestContentPaymentRequestDelegate::GetPersonalDataManager() {
   return core_delegate_.GetPersonalDataManager();

@@ -14,7 +14,7 @@
 namespace extensions {
 namespace {
 
-void Assign(BlacklistState* to, BlacklistState from) {
+void Assign(BlocklistState* to, BlocklistState from) {
   *to = from;
 }
 
@@ -32,11 +32,11 @@ TEST_F(BlacklistStateFetcherTest, RequestBlacklistState) {
   tester.SetBlacklistVerdict(
       "a", ClientCRXListInfoResponse_Verdict_SECURITY_VULNERABILITY);
 
-  BlacklistState result;
+  BlocklistState result;
   fetcher.Request("a", base::Bind(&Assign, &result));
 
   EXPECT_TRUE(tester.HandleFetcher("a"));
-  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, result);
+  EXPECT_EQ(BLOCKLISTED_SECURITY_VULNERABILITY, result);
 }
 
 TEST_F(BlacklistStateFetcherTest, RequestMultipleBlacklistStates) {
@@ -54,7 +54,7 @@ TEST_F(BlacklistStateFetcherTest, RequestMultipleBlacklistStates) {
   tester.SetBlacklistVerdict(
       "e", ClientCRXListInfoResponse_Verdict_POTENTIALLY_UNWANTED);
 
-  BlacklistState result[9];
+  BlocklistState result[9];
   fetcher.Request("a", base::Bind(&Assign, &result[0]));
   fetcher.Request("a", base::Bind(&Assign, &result[1]));
   fetcher.Request("b", base::Bind(&Assign, &result[2]));
@@ -73,15 +73,15 @@ TEST_F(BlacklistStateFetcherTest, RequestMultipleBlacklistStates) {
   EXPECT_TRUE(tester.HandleFetcher("a"));
   EXPECT_TRUE(tester.HandleFetcher("d"));
 
-  EXPECT_EQ(NOT_BLACKLISTED, result[0]);
-  EXPECT_EQ(NOT_BLACKLISTED, result[1]);
-  EXPECT_EQ(BLACKLISTED_MALWARE, result[2]);
-  EXPECT_EQ(BLACKLISTED_MALWARE, result[3]);
-  EXPECT_EQ(BLACKLISTED_SECURITY_VULNERABILITY, result[4]);
-  EXPECT_EQ(BLACKLISTED_CWS_POLICY_VIOLATION, result[5]);
-  EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, result[6]);
-  EXPECT_EQ(NOT_BLACKLISTED, result[7]);
-  EXPECT_EQ(NOT_BLACKLISTED, result[8]);
+  EXPECT_EQ(NOT_BLOCKLISTED, result[0]);
+  EXPECT_EQ(NOT_BLOCKLISTED, result[1]);
+  EXPECT_EQ(BLOCKLISTED_MALWARE, result[2]);
+  EXPECT_EQ(BLOCKLISTED_MALWARE, result[3]);
+  EXPECT_EQ(BLOCKLISTED_SECURITY_VULNERABILITY, result[4]);
+  EXPECT_EQ(BLOCKLISTED_CWS_POLICY_VIOLATION, result[5]);
+  EXPECT_EQ(BLOCKLISTED_POTENTIALLY_UNWANTED, result[6]);
+  EXPECT_EQ(NOT_BLOCKLISTED, result[7]);
+  EXPECT_EQ(NOT_BLOCKLISTED, result[8]);
 }
 
 }  // namespace extensions

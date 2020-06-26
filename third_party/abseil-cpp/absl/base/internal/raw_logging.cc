@@ -227,7 +227,7 @@ bool RawLoggingFullySupported() {
 #endif  // !ABSL_LOW_LEVEL_WRITE_SUPPORTED
 }
 
-ABSL_DLL ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES
+ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES ABSL_DLL
     absl::base_internal::AtomicHook<InternalLogFunction>
         internal_log_function(DefaultInternalLog);
 

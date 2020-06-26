@@ -115,8 +115,8 @@ const base::Feature kDragFromShelfToHomeOrOverview{
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSystemTrayMicGainSetting{
-    "SystemTrayMicGainSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSystemTrayMicGainSetting{"SystemTrayMicGainSetting",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebUITabStripTabDragIntegration{
     "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};

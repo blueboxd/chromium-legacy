@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
+#include "base/scoped_observer.h"
 #include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
@@ -370,6 +371,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {
   // isn't currently paused.
   virtual void ResumeTimer(const std::string& id) = 0;
 };
+
+using ScopedAssistantInteractionSubscriber =
+    ScopedObserver<Assistant,
+                   AssistantInteractionSubscriber,
+                   &Assistant::AddAssistantInteractionSubscriber,
+                   &Assistant::RemoveAssistantInteractionSubscriber>;
 
 // Main interface between browser and |chromeos::assistant::Service|.
 class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {

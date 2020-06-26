@@ -6,7 +6,7 @@
 #define UI_GFX_X_XPROTO_INTERNAL_H_
 
 #ifndef IS_X11_IMPL
-#error "This file should only be included by generated xprotos"
+#error "This file should only be included by //ui/gfx/x:xprotos"
 #endif
 
 #include <X11/Xlib-xcb.h>
@@ -21,6 +21,7 @@
 
 #include "base/component_export.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto_types.h"
@@ -29,8 +30,6 @@ namespace x11 {
 
 template <class Reply>
 class Future;
-
-using WriteBuffer = std::vector<uint8_t>;
 
 template <typename T, typename Enable = void>
 struct EnumBase {
@@ -45,37 +44,84 @@ struct EnumBase<T, typename std::enable_if_t<std::is_enum<T>::value>> {
 template <typename T>
 using EnumBaseType = typename EnumBase<T>::type;
 
-struct ReadBuffer {
-  const uint8_t* data = nullptr;
-  size_t offset = 0;
+// Calls free() on the underlying data when the count drops to 0.
+class COMPONENT_EXPORT(X11) MallocedRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  explicit MallocedRefCountedMemory(void* data);
+
+  MallocedRefCountedMemory(const MallocedRefCountedMemory&) = delete;
+  MallocedRefCountedMemory& operator=(const MallocedRefCountedMemory&) = delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~MallocedRefCountedMemory() override;
+
+  uint8_t* const data_;
 };
 
-template <typename T>
-void VerifyAlignment(T* t, size_t offset) {
-  // On the wire, X11 types are always aligned to their size.  This is a sanity
-  // check to ensure padding etc are working properly.
-  if (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
-    DCHECK_EQ(offset % sizeof(*t), 0UL);
-}
+// Wraps another RefCountedMemory, giving a view into it.  Similar to
+// base::StringPiece, the data is some contiguous subarray, but unlike
+// StringPiece, a counted reference is kept on the underlying memory.
+class COMPONENT_EXPORT(X11) OffsetRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  OffsetRefCountedMemory(scoped_refptr<base::RefCountedMemory> memory,
+                         size_t offset,
+                         size_t size);
 
-template <typename T>
-void Write(const T* t, WriteBuffer* buf) {
-  static_assert(std::is_trivially_copyable<T>::value, "");
-  VerifyAlignment(t, buf->size());
-  const uint8_t* start = reinterpret_cast<const uint8_t*>(t);
-  std::copy(start, start + sizeof(*t), std::back_inserter(*buf));
-}
+  OffsetRefCountedMemory(const OffsetRefCountedMemory&) = delete;
+  OffsetRefCountedMemory& operator=(const OffsetRefCountedMemory&) = delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~OffsetRefCountedMemory() override;
+
+  scoped_refptr<base::RefCountedMemory> memory_;
+  size_t offset_;
+  size_t size_;
+};
+
+// Wraps a bare pointer and does not take any action when the reference count
+// reaches 0.  This is used to wrap stack-alloctaed or persistent data so we can
+// pass those to Read/ReadEvent/ReadReply which expect RefCountedMemory.
+class COMPONENT_EXPORT(X11) UnretainedRefCountedMemory
+    : public base::RefCountedMemory {
+ public:
+  explicit UnretainedRefCountedMemory(const void* data);
+
+  UnretainedRefCountedMemory(const UnretainedRefCountedMemory&) = delete;
+  UnretainedRefCountedMemory& operator=(const UnretainedRefCountedMemory&) =
+      delete;
+
+  const uint8_t* front() const override;
+
+  size_t size() const override;
+
+ private:
+  ~UnretainedRefCountedMemory() override;
+
+  const uint8_t* const data_;
+};
 
 template <typename T>
 void Read(T* t, ReadBuffer* buf) {
   static_assert(std::is_trivially_copyable<T>::value, "");
-  VerifyAlignment(t, buf->offset);
-  memcpy(t, buf->data + buf->offset, sizeof(*t));
+  detail::VerifyAlignment(t, buf->offset);
+  memcpy(t, buf->data->data() + buf->offset, sizeof(*t));
   buf->offset += sizeof(*t);
 }
 
 inline void Pad(WriteBuffer* buf, size_t amount) {
-  buf->resize(buf->size() + amount, '\0');
+  uint8_t zero = 0;
+  for (size_t i = 0; i < amount; i++)
+    buf->Write(&zero);
 }
 
 inline void Pad(ReadBuffer* buf, size_t amount) {
@@ -83,7 +129,7 @@ inline void Pad(ReadBuffer* buf, size_t amount) {
 }
 
 inline void Align(WriteBuffer* buf, size_t align) {
-  Pad(buf, (align - (buf->size() % align)) % align);
+  Pad(buf, (align - (buf->offset() % align)) % align);
 }
 
 inline void Align(ReadBuffer* buf, size_t align) {
@@ -112,33 +158,39 @@ Future<Reply> SendRequest(x11::Connection* connection, WriteBuffer* buf) {
   };
   static_assert(sizeof(ExtendedRequestHeader) == 8, "");
 
-  auto* old_header = reinterpret_cast<RequestHeader*>(buf->data());
+  auto& first_buffer = buf->GetBuffers()[0];
+  DCHECK_GE(first_buffer->size(), sizeof(RequestHeader));
+  auto* old_header = reinterpret_cast<RequestHeader*>(
+      const_cast<uint8_t*>(first_buffer->data()));
   ExtendedRequestHeader new_header{*old_header, 0};
 
   // Requests are always a multiple of 4 bytes on the wire.  Because of this,
   // the length field represents the size in chunks of 4 bytes.
-  DCHECK_EQ(buf->size() % 4, 0UL);
-  size_t size32 = buf->size() / 4;
+  DCHECK_EQ(buf->offset() % 4, 0UL);
+  size_t size32 = buf->offset() / 4;
 
-  struct iovec io[4];
-  memset(&io, 0, sizeof(io));
+  // XCB requires 2 iovecs for its own internal usage.
+  std::vector<struct iovec> io{{nullptr, 0}, {nullptr, 0}};
   if (size32 < connection->setup().maximum_request_length) {
-    xpr.count = 1;
+    // Regular request
     old_header->length = size32;
-    io[2].iov_base = buf->data();
-    io[2].iov_len = buf->size();
   } else if (size32 < connection->extended_max_request_length()) {
-    xpr.count = 2;
+    // BigRequests extension request
     DCHECK_EQ(new_header.header.length, 0U);
     new_header.long_length = size32 + 1;
-    io[2].iov_base = &new_header;
-    io[2].iov_len = sizeof(ExtendedRequestHeader);
-    io[3].iov_base = buf->data() + sizeof(RequestHeader);
-    io[3].iov_len = buf->size() - sizeof(RequestHeader);
+
+    io.push_back({&new_header, sizeof(ExtendedRequestHeader)});
+    first_buffer = base::MakeRefCounted<OffsetRefCountedMemory>(
+        first_buffer, sizeof(RequestHeader),
+        first_buffer->size() - sizeof(RequestHeader));
   } else {
-    LOG(ERROR) << "Cannot send request of length " << buf->size();
+    LOG(ERROR) << "Cannot send request of length " << buf->offset();
     return {nullptr, base::nullopt};
   }
+
+  for (auto& buffer : buf->GetBuffers())
+    io.push_back({const_cast<uint8_t*>(buffer->data()), buffer->size()});
+  xpr.count = io.size() - 2;
 
   xcb_connection_t* conn = connection->XcbConnection();
   auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;

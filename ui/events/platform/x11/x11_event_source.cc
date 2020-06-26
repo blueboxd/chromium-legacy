@@ -16,6 +16,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -181,13 +182,14 @@ Time X11EventSource::GetCurrentServerTime() {
 
   // Make a no-op property change on |dummy_window_|.
   auto* connection = x11::Connection::Get();
+  std::vector<uint8_t> data{0};
   connection->ChangeProperty({
       .window = static_cast<x11::Window>(dummy_window_),
       .property = dummy_atom_,
       .type = x11::Atom::STRING,
       .format = CHAR_BIT,
       .data_len = 1,
-      .data = std::vector<uint8_t>{0},
+      .data = base::RefCountedBytes::TakeVector(&data),
   });
 
   // Observe the resulting PropertyNotify event to obtain the timestamp.

@@ -4064,9 +4064,11 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
   session->connection()->OnPathDegradingDetected();
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4096,6 +4098,8 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
   EXPECT_EQ(base::TimeDelta(), next_task_delay);
   task_runner->FastForwardBy(next_task_delay);
 
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Response headers are received over the new network.
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_EQ(200, response.headers->response_code());
@@ -4120,6 +4124,8 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
   // this will cancel mgirate back to default network timer.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   task_runner->FastForwardBy(next_task_delay);
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
@@ -4256,9 +4262,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   if (async_write_before)
     session->SendPing();
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
   session->connection()->OnPathDegradingDetected();
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4288,9 +4296,13 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   EXPECT_EQ(base::TimeDelta(), next_task_delay);
   task_runner->FastForwardBy(next_task_delay);
 
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Response headers are received over the new network.
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_EQ(200, response.headers->response_code());
+
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Now there are two pending tasks, the nearest one was to send connectivity
   // probe and has been cancelled due to successful migration.
@@ -4312,6 +4324,8 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
   // this will cancel mgirate back to default network timer.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
       ->NotifyNetworkMadeDefault(kNewNetworkForTests);
+
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   task_runner->FastForwardBy(next_task_delay);
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
@@ -4430,9 +4444,13 @@ TEST_P(QuicStreamFactoryTest, PortMigrationProbingReceivedStatelessReset) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Cause the connection to report path degrading to the session.
   // Session will start to probe a different port.
   session->connection()->OnPathDegradingDetected();
+
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4449,6 +4467,8 @@ TEST_P(QuicStreamFactoryTest, PortMigrationProbingReceivedStatelessReset) {
 
   // Resume quic data and a STATELESS_RESET is read from the probing path.
   quic_data2.Resume();
+
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Verify that the session is still active, and the request stream is active.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -4604,9 +4624,13 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Cause the connection to report path degrading to the session.
   // Session will start to probe a different port.
   session->connection()->OnPathDegradingDetected();
+
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4628,6 +4652,9 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
+  // Successful port migration causes the path no longer degrading on the same
+  // network.
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // There should be pending tasks, the nearest one will complete
   // migration to the new port.
@@ -4639,6 +4666,8 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
   // Response headers are received over the new port.
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_EQ(200, response.headers->response_code());
+
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Now there is one pending task to send connectivity probe and has been
   // cancelled due to successful migration.
@@ -4776,9 +4805,15 @@ TEST_P(QuicStreamFactoryTest, MultiplePortMigrationsExceedsMaxLimit) {
     quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // EOF.
     quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
+    EXPECT_EQ(0u,
+              QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
     // Cause the connection to report path degrading to the session.
     // Session will start to probe a different port.
     session->connection()->OnPathDegradingDetected();
+
+    EXPECT_EQ(1u,
+              QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
     // Next connectivity probe is scheduled to be sent in 2 *
     // kDefaultRTTMilliSecs.
@@ -4900,9 +4935,15 @@ TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Trigger the connection to report path degrading to the session.
   // Session will mark itself GOAWAY.
   session->connection()->OnPathDegradingDetected();
+
+  /// Path degrading detection on go_away_on_path_degrading detection is
+  // disabled.
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // The connection should still be alive, but marked as going away.
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
@@ -5036,9 +5077,11 @@ TEST_P(QuicStreamFactoryTest, DoNotMigrateToBadSocketOnPathDegrading) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
   session->connection()->OnPathDegradingDetected();
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // The connection should still be alive, and not marked as going away.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -5179,10 +5222,12 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, session->GetNumActiveStreams());
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   // Cause the connection to report path degrading to the session.
   // Session should still start to probe the alternate network.
   session->connection()->OnPathDegradingDetected();
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -5349,11 +5394,17 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
   // Cause the connection to report path degrading to the session.
   // Due to lack of alternate network, session will not mgirate connection.
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   session->connection()->OnPathDegradingDetected();
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Deliver a signal that a alternate network is connected now, this should
   // cause the connection to start early migration on path degrading.
@@ -5390,6 +5441,10 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   next_task_delay = task_runner->NextPendingTaskDelay();
   EXPECT_EQ(base::TimeDelta(), next_task_delay);
   task_runner->FastForwardBy(next_task_delay);
+
+  // Although the session successfully migrates, it is still considered
+  // degrading sessions.
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   // Response headers are received over the new network.
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
@@ -5639,8 +5694,10 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
   // Trigger connection migration on path degrading. Since there are no networks
   // to migrate to, the session will remain on the original network, not marked
   // as going away.
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   session->connection()->OnPathDegradingDetected();
   EXPECT_TRUE(session->connection()->IsPathDegrading());
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -6269,8 +6326,10 @@ TEST_P(QuicStreamFactoryTest,
 
   // Cause the connection to report path degrading to the session.
   // Session will ignore the signal as handshake is not completed.
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   session->connection()->OnPathDegradingDetected();
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -6329,9 +6388,11 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   // Cause the connection to report path degrading to the session.
   // Session will ignore the signal as handshake is not completed.
   session->connection()->OnPathDegradingDetected();
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -10761,18 +10822,10 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
 // Verifies that the QUIC stream factory is initialized correctly.
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   VerifyInitialization(false /* vary_network_isolation_key */);
 }
 
 TEST_P(QuicStreamFactoryTest, MaybeInitializeWithNetworkIsolationKey) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // enabled_features
@@ -11000,10 +11053,6 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCacheMRUWithNetworkIsolationKey) {
 // around, so evictions happen immediately.
 TEST_P(QuicStreamFactoryTest,
        CryptoConfigCacheMRUWithRealRequestsAndWithNetworkIsolationKey) {
-  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
-    // 0-rtt is not supported in IETF QUIC yet.
-    return;
-  }
   const int kNumSessionsToMake = kMaxRecentCryptoConfigs + 5;
 
   base::test::ScopedFeatureList feature_list;

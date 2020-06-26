@@ -1998,3 +1998,44 @@ TEST_F(AutocompleteResultTest, CalculateNumMatchesTest) {
     EXPECT_EQ(num_matches, test.num_matches);
   }
 }
+
+TEST_F(AutocompleteResultTest, ClipboardSuggestionOnTopOfSearchSuggestionTest) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 500,  false},
+      {2, 2, 1100, false},
+      {3, 2, 1000, false},
+      {4, 1, 1300, false},
+      {5, 1, 1500, false},
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  static_cast<FakeAutocompleteProvider*>(matches[0].provider)
+      ->SetType(AutocompleteProvider::Type::TYPE_ZERO_SUGGEST_LOCAL_HISTORY);
+  matches[1].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  static_cast<FakeAutocompleteProvider*>(matches[1].provider)
+      ->SetType(AutocompleteProvider::Type::TYPE_ZERO_SUGGEST_LOCAL_HISTORY);
+  matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  static_cast<FakeAutocompleteProvider*>(matches[2].provider)
+      ->SetType(AutocompleteProvider::Type::TYPE_ZERO_SUGGEST_LOCAL_HISTORY);
+  matches[3].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  static_cast<FakeAutocompleteProvider*>(matches[3].provider)
+      ->SetType(AutocompleteProvider::Type::TYPE_ZERO_SUGGEST_LOCAL_HISTORY);
+  matches[4].type = AutocompleteMatchType::CLIPBOARD_URL;
+  static_cast<FakeAutocompleteProvider*>(matches[4].provider)
+      ->SetType(AutocompleteProvider::Type::TYPE_CLIPBOARD);
+
+  AutocompleteInput input(base::ASCIIToUTF16(""),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  EXPECT_EQ(result.size(), 5u);
+  EXPECT_EQ(result.match_at(0)->relevance, 1500);
+  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_URL, result.match_at(0)->type);
+}

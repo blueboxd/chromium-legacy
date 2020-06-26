@@ -144,14 +144,14 @@ TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
 
   // Now test that registrations are recognized.
   wrapper_->WaitForRegistrationsInitializedForTest();
-  EXPECT_TRUE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_TRUE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example.com"))));
-  EXPECT_FALSE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_FALSE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example.org"))));
 }
 
 // This test involves storing two registrations for the same origin to storage
-// and deleting one of them to check that HasRegistrationForOrigin still
+// and deleting one of them to check that MaybeHasRegistrationForOrigin still
 // correctly returns TRUE since there is still one registration for the origin,
 // and should only return FALSE when ALL registrations for that origin have been
 // deleted from storage.
@@ -185,7 +185,7 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistrationsForSameOrigin) {
   base::RunLoop().RunUntilIdle();
 
   // Now test that a registration for an origin is still recognized.
-  EXPECT_TRUE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_TRUE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example1.com"))));
 
   // Remove second registration.
@@ -198,13 +198,13 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistrationsForSameOrigin) {
   base::RunLoop().RunUntilIdle();
 
   // Now test that origin does not have any registrations.
-  EXPECT_FALSE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_FALSE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example1.com"))));
 }
 
 // This tests deleting registrations from storage and checking that even if live
-// registrations may exist, HasRegistrationForOrigin correctly returns FALSE
-// since the registrations do not exist in storage.
+// registrations may exist, MaybeHasRegistrationForOrigin correctly returns
+// FALSE since the registrations do not exist in storage.
 TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
   wrapper_->WaitForRegistrationsInitializedForTest();
 
@@ -223,7 +223,7 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
   base::RunLoop().RunUntilIdle();
 
   // Now test that a registration is recognized.
-  EXPECT_TRUE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_TRUE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example2.com"))));
 
   // Delete registration from storage.
@@ -236,7 +236,7 @@ TEST_F(ServiceWorkerContextWrapperTest, DeleteRegistration) {
   // Now test that origin does not have any registrations. This should return
   // FALSE even when live registrations may exist, as the registrations have
   // been deleted from storage.
-  EXPECT_FALSE(wrapper_->HasRegistrationForOrigin(
+  EXPECT_FALSE(wrapper_->MaybeHasRegistrationForOrigin(
       url::Origin::Create(GURL("https://example2.com"))));
 }
 

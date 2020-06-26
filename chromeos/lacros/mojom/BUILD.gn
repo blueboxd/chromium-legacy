@@ -5,5 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [ "lacros.mojom" ]
+  sources = [
+    "lacros.mojom",
+    "select_file.mojom",
+  ]
+
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

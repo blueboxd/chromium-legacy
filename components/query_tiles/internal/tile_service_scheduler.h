@@ -44,6 +44,9 @@ class TileServiceScheduler {
   // directly set the release time until 24 hours later.
   virtual void OnTileManagerInitialized(TileGroupStatus status) = 0;
 
+  // Called when datanase is purged. Reset the flow and update the status.
+  virtual void OnDbPurged(TileGroupStatus status) = 0;
+
   // Cancel current existing task, and reset backoff.
   virtual void CancelTask() = 0;
 

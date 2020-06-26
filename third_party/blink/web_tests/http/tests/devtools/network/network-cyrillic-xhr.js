@@ -29,12 +29,14 @@
   }
 
   function step2() {
-    var requests = NetworkTestRunner.networkRequests();
+    var requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
     dumpRequest(requests[requests.length - 2], step3);
   }
 
   function step3() {
-    var requests = NetworkTestRunner.networkRequests();
+    var requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
     dumpRequest(requests[requests.length - 1], step4);
   }
 

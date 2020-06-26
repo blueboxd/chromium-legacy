@@ -1040,15 +1040,11 @@ void TabStripModel::SelectLastTab(UserGestureDetails detail) {
 }
 
 void TabStripModel::MoveTabNext() {
-  // TODO: this likely needs to be updated for multi-selection.
-  int new_index = std::min(active_index() + 1, count() - 1);
-  MoveWebContentsAt(active_index(), new_index, true);
+  MoveTabRelative(true);
 }
 
 void TabStripModel::MoveTabPrevious() {
-  // TODO: this likely needs to be updated for multi-selection.
-  int new_index = std::max(active_index() - 1, 0);
-  MoveWebContentsAt(active_index(), new_index, true);
+  MoveTabRelative(false);
 }
 
 tab_groups::TabGroupId TabStripModel::AddToNewGroup(
@@ -1863,6 +1859,41 @@ void TabStripModel::SelectRelativeTab(bool next, UserGestureDetails detail) {
     group = GetTabGroupForTab(index);
   }
   ActivateTabAt(index, detail);
+}
+
+void TabStripModel::MoveTabRelative(bool forward) {
+  const int offset = forward ? 1 : -1;
+
+  // TODO: this needs to be updated for multi-selection.
+  const int current_index = active_index();
+  base::Optional<tab_groups::TabGroupId> current_group =
+      GetTabGroupForTab(current_index);
+
+  int target_index = std::max(std::min(current_index + offset, count() - 1), 0);
+  base::Optional<tab_groups::TabGroupId> target_group =
+      GetTabGroupForTab(target_index);
+
+  // If the tab is at a group boundary and the group is expanded, instead of
+  // actually moving the tab just change its group membership.
+  if (current_group != target_group) {
+    if (current_group.has_value()) {
+      UngroupTab(current_index);
+      return;
+    } else if (target_group.has_value()) {
+      // If the tab is at a group boundary and the group is collapsed, treat the
+      // collapsed group as a tab and find the next available slot for the tab
+      // to move to.
+      const TabGroup* group = group_model_->GetTabGroup(target_group.value());
+      if (group->visual_data()->is_collapsed()) {
+        const std::vector<int> tabs_in_group = group->ListTabs();
+        target_index = forward ? tabs_in_group.back() : tabs_in_group.front();
+      } else {
+        GroupTab(current_index, target_group.value());
+        return;
+      }
+    }
+  }
+  MoveWebContentsAt(current_index, target_index, true);
 }
 
 void TabStripModel::MoveWebContentsAtImpl(int index,

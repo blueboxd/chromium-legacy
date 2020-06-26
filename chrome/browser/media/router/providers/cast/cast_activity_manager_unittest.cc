@@ -25,6 +25,7 @@
 #include "chrome/browser/media/router/providers/cast/mock_cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/test_util.h"
 #include "chrome/browser/media/router/providers/common/buffered_message_sender.h"
+#include "chrome/browser/media/router/test/mock_logger.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
@@ -151,7 +152,7 @@ class CastActivityManagerTest : public testing::Test,
                                socket_service_.task_runner()));
     manager_ = std::make_unique<CastActivityManager>(
         &media_sink_service_, session_tracker_.get(), &message_handler_,
-        router_remote_.get(), "theHashToken");
+        router_remote_.get(), &logger_, "theHashToken");
 
     ON_CALL(message_handler_, StopSession)
         .WillByDefault(WithArg<3>([this](auto callback) {
@@ -404,6 +405,7 @@ class CastActivityManagerTest : public testing::Test,
   const MediaSource::Id route_query_ = "theRouteQuery";
   base::Optional<MediaRoute> updated_route_;
   cast_channel::ResultCallback stop_session_callback_;
+  MockLogger logger_;
 };
 
 TEST_F(CastActivityManagerTest, LaunchCastAppSession) {

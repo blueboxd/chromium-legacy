@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -37,6 +38,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
+
+#if defined(CHROME_OS)
+#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
+#endif  // CHROME_OS
 
 namespace payments {
 
@@ -199,6 +204,22 @@ ChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
 
 bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
   return false;  // Only tests do this.
+}
+
+std::string ChromePaymentRequestDelegate::GetTwaPackageName() const {
+#if defined(CHROME_OS)
+  auto* apk_web_service = chromeos::ApkWebService::Get(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+  if (!apk_web_service)
+    return "";
+
+  base::Optional<std::string> twa_package_name =
+      apk_web_service->GetPackageNameForWebApp(top_level_url);
+
+  return twa_package_name.has_value() ? twa_package_name.value() : "";
+#else
+  return "";
+#endif  // CHROME_OS
 }
 
 }  // namespace payments

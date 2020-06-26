@@ -35,17 +35,16 @@ static_assert(KSelectionRequestorTimerPeriodMs <= kRequestTimeoutMs,
 
 // Combines |data| into a single std::vector<uint8_t>.
 std::vector<uint8_t> CombineData(
-    const std::vector<std::vector<uint8_t>>& data) {
-  if (data.size() == 1u)
-    return data[0];
-
+    const std::vector<scoped_refptr<base::RefCountedMemory>>& data) {
   size_t bytes = 0;
   for (const auto& datum : data)
-    bytes += datum.size();
+    bytes += datum->size();
   std::vector<uint8_t> combined;
   combined.reserve(bytes);
-  for (const auto& datum : data)
-    std::copy(datum.begin(), datum.end(), std::back_inserter(combined));
+  for (const auto& datum : data) {
+    std::copy(datum->data(), datum->data() + datum->size(),
+              std::back_inserter(combined));
+  }
   return combined;
 }
 
@@ -134,7 +133,7 @@ void SelectionRequestor::OnSelectionNotify(
 
   bool success = false;
   if (event_property == x_property_) {
-    std::vector<uint8_t> out_data;
+    scoped_refptr<base::RefCountedMemory> out_data;
     success = ui::GetRawBytesOfProperty(x_window_, x_property_, &out_data,
                                         &request->out_type);
     if (success) {
@@ -167,7 +166,7 @@ void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {
   if (!request || !request->data_sent_incrementally)
     return;
 
-  std::vector<uint8_t> out_data;
+  scoped_refptr<base::RefCountedMemory> out_data;
   x11::Atom out_type = x11::Atom::None;
   bool success =
       ui::GetRawBytesOfProperty(x_window_, x_property_, &out_data, &out_type);
@@ -190,7 +189,7 @@ void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {
   request->timeout = base::TimeTicks::Now() +
                      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
 
-  if (out_data.empty())
+  if (!out_data->size())
     CompleteRequest(current_request_index_, true);
 }
 

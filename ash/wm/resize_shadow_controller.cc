@@ -15,8 +15,7 @@ namespace ash {
 ResizeShadowController::ResizeShadowController() = default;
 
 ResizeShadowController::~ResizeShadowController() {
-  for (const auto& shadow : window_shadows_)
-    shadow.first->RemoveObserver(this);
+  HideAllShadows();
 }
 
 void ResizeShadowController::ShowShadow(aura::Window* window, int hit_test) {
@@ -32,12 +31,19 @@ void ResizeShadowController::HideShadow(aura::Window* window) {
     shadow->Hide();
 }
 
+void ResizeShadowController::HideAllShadows() {
+  for (const auto& shadow : window_shadows_)
+    shadow.first->RemoveObserver(this);
+  window_shadows_.clear();
+}
+
 ResizeShadow* ResizeShadowController::GetShadowForWindowForTest(
     aura::Window* window) {
   return GetShadowForWindow(window);
 }
 
 void ResizeShadowController::OnWindowDestroying(aura::Window* window) {
+  window->RemoveObserver(this);
   window_shadows_.erase(window);
 }
 

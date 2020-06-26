@@ -51,6 +51,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
     "java/src/org/chromium/components/payments/ErrorMessageUtil.java",
     "java/src/org/chromium/components/payments/JniPaymentApp.java",
+    "java/src/org/chromium/components/payments/JourneyLogger.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PaymentFeatureList.java",
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",
@@ -70,6 +71,7 @@ android_library("java") {
     "java/src/org/chromium/components/payments/CurrencyFormatter.java",
     "java/src/org/chromium/components/payments/ErrorMessageUtil.java",
     "java/src/org/chromium/components/payments/JniPaymentApp.java",
+    "java/src/org/chromium/components/payments/JourneyLogger.java",
     "java/src/org/chromium/components/payments/MojoStructCollection.java",
     "java/src/org/chromium/components/payments/OriginSecurityChecker.java",
     "java/src/org/chromium/components/payments/PackageManagerDelegate.java",
@@ -107,6 +109,7 @@ android_library("java") {
     ":error_strings_generated_srcjar",
     ":payment_app_type_generated_enum",
     ":payment_details_update_service_aidl",
+    ":payments_journey_logger_enum_javagen",
   ]
 }
 
@@ -132,4 +135,8 @@ java_cpp_strings("method_strings_generated_srcjar") {
 
 java_cpp_enum("payment_app_type_generated_enum") {
   sources = [ "//components/payments/content/payment_app.h" ]
+}
+
+java_cpp_enum("payments_journey_logger_enum_javagen") {
+  sources = [ "//components/payments/core/journey_logger.h" ]
 }

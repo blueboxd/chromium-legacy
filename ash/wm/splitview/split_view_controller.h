@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
-#define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
+#ifndef ASH_WM_SPLITVIEW_SPLIT_VIEW_CONTROLLER_H_
+#define ASH_WM_SPLITVIEW_SPLIT_VIEW_CONTROLLER_H_
 
 #include <limits>
 #include <memory>
@@ -512,4 +512,4 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
 }  // namespace ash
 
-#endif  // ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
+#endif  // ASH_WM_SPLITVIEW_SPLIT_VIEW_CONTROLLER_H_

@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -33,10 +34,12 @@ constexpr int kQueryHistoryWindowInDays = 7;
 FlocIdProviderImpl::FlocIdProviderImpl(
     syncer::SyncService* sync_service,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
+    FlocRemotePermissionService* floc_remote_permission_service,
     history::HistoryService* history_service,
     syncer::UserEventService* user_event_service)
     : sync_service_(sync_service),
       cookie_settings_(std::move(cookie_settings)),
+      floc_remote_permission_service_(floc_remote_permission_service),
       history_service_(history_service),
       user_event_service_(user_event_service) {
   sync_service_->AddObserver(this);
@@ -83,9 +86,39 @@ bool FlocIdProviderImpl::AreThirdPartyCookiesAllowed() {
   return !cookie_settings_->ShouldBlockThirdPartyCookies();
 }
 
-bool FlocIdProviderImpl::IsSwaaNacAccountEnabled() {
-  // TODO(yaoxia): Fetch and validate the swaa/nac/account_type bits.
-  return false;
+void FlocIdProviderImpl::IsSwaaNacAccountEnabled(
+    CanComputeFlocIdCallback callback) {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "floc_id_provider_impl", "floc_remote_permission_service",
+          R"(
+        semantics {
+          description:
+            "Queries google to find out if user has enabled 'web and app "
+            "activity' and 'ad personalization', and if the account type is "
+            "NOT a child account. Those permission bits will be checked before "
+            "computing the FLoC (Federated Learning of Cohorts) ID - an "
+            "anonymous similarity hash value of user’s navigation history. "
+            "This ensures that the FLoC ID is derived from data that Google "
+            "already owns and the user has explicitly granted permission on "
+            "what they will be used for."
+          trigger:
+            "This request is sent at each time a FLoC (Federated Learning of "
+            "Cohorts) ID is to be computed. A FLoC ID is an anonymous "
+            "similarity hash value of user’s navigation history. It'll be "
+            "computed at the start of each browser profile session and will be "
+            "refreshed every 24 hours during that session."
+          data:
+            "Google credentials if user is signed in."
+        }
+        policy {
+            setting:
+              "This feature cannot be disabled in settings, but disabling sync "
+              "or third-party cookies will prevent it."
+        })");
+
+  floc_remote_permission_service_->QueryFlocPermission(
+      std::move(callback), partial_traffic_annotation);
 }
 
 void FlocIdProviderImpl::Shutdown() {
@@ -118,13 +151,12 @@ void FlocIdProviderImpl::CalculateFloc() {
 
 void FlocIdProviderImpl::CheckCanComputeFlocId(
     CanComputeFlocIdCallback callback) {
-  if (!IsSyncHistoryEnabled() || !AreThirdPartyCookiesAllowed() ||
-      !IsSwaaNacAccountEnabled()) {
+  if (!IsSyncHistoryEnabled() || !AreThirdPartyCookiesAllowed()) {
     std::move(callback).Run(false);
     return;
   }
 
-  std::move(callback).Run(true);
+  IsSwaaNacAccountEnabled(std::move(callback));
 }
 
 void FlocIdProviderImpl::OnCheckCanComputeFlocIdCompleted(

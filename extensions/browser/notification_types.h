@@ -62,7 +62,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
 
   // Sent when an Extension object is removed from ExtensionService. This
-  // can happen when an extension is uninstalled, upgraded, or blacklisted,
+  // can happen when an extension is uninstalled, upgraded, or blocklisted,
   // including all cases when the Extension is deleted. The details are an
   // Extension, and the source is a BrowserContext*.
   NOTIFICATION_EXTENSION_REMOVED,

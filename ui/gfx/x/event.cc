@@ -14,7 +14,11 @@
 
 #include <cstring>
 
+#include "base/check_op.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_internal.h"
+#include "ui/gfx/x/xproto_types.h"
 
 namespace x11 {
 
@@ -22,7 +26,22 @@ Event::Event() = default;
 
 Event::Event(xcb_generic_event_t* xcb_event,
              x11::Connection* connection,
+             bool sequence_valid)
+    : Event(base::MakeRefCounted<x11::UnretainedRefCountedMemory>(xcb_event),
+            connection,
+            sequence_valid) {
+  // Make sure the event is a fixed-size (32 bytes) event, otherwise
+  // UnretainedRefCountedMemory may be unsafe to use if the event contains
+  // variable-sized data.
+  DCHECK_NE(xcb_event->response_type & ~x11::kSendEventMask,
+            x11::GeGenericEvent::opcode);
+}
+
+Event::Event(scoped_refptr<base::RefCountedMemory> event_bytes,
+             x11::Connection* connection,
              bool sequence_valid) {
+  auto* xcb_event = reinterpret_cast<xcb_generic_event_t*>(
+      const_cast<uint8_t*>(event_bytes->data()));
   XDisplay* display = connection->display();
 
   sequence_valid_ = sequence_valid;
@@ -48,7 +67,8 @@ Event::Event(xcb_generic_event_t* xcb_event,
 
   // Xlib sometimes modifies |xcb_event|, so let it handle the event after
   // we parse it with ReadEvent().
-  ReadEvent(this, connection, reinterpret_cast<uint8_t*>(xcb_event));
+  ReadBuffer buf(event_bytes);
+  ReadEvent(this, connection, &buf);
 
   _XEnq(display, reinterpret_cast<xEvent*>(xcb_event));
   if (!XEventsQueued(display, QueuedAlready)) {

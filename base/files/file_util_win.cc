@@ -973,15 +973,15 @@ using PrefetchVirtualMemoryPtr = decltype(&::PrefetchVirtualMemory);
 // Returns null if ::PrefetchVirtualMemory() is not available.
 PrefetchVirtualMemoryPtr GetPrefetchVirtualMemoryPtr() {
   HMODULE kernel32_dll = ::GetModuleHandleA("kernel32.dll");
-  return reinterpret_cast<decltype(&::PrefetchVirtualMemory)>(
+  return reinterpret_cast<PrefetchVirtualMemoryPtr>(
       GetProcAddress(kernel32_dll, "PrefetchVirtualMemory"));
 }
 
 }  // namespace
 
-bool PreReadFile(const FilePath& file_path,
-                 bool is_executable,
-                 int64_t max_bytes) {
+PrefetchResult PreReadFile(const FilePath& file_path,
+                           bool is_executable,
+                           int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
   // On Win8 and higher use ::PrefetchVirtualMemory(). This is better than a
@@ -992,12 +992,14 @@ bool PreReadFile(const FilePath& file_path,
       GetPrefetchVirtualMemoryPtr();
 
   if (prefetch_virtual_memory == nullptr)
-    return internal::PreReadFileSlow(file_path, max_bytes);
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kSlowSuccess}
+               : PrefetchResult{PrefetchResultCode::kSlowFailed};
 
   if (max_bytes == 0) {
     // PrefetchVirtualMemory() fails when asked to read zero bytes.
     // base::MemoryMappedFile::Initialize() fails on an empty file.
-    return true;
+    return PrefetchResult{PrefetchResultCode::kSuccess};
   }
 
   // PrefetchVirtualMemory() fails if the file is opened with write access.
@@ -1005,16 +1007,23 @@ bool PreReadFile(const FilePath& file_path,
                                         ? MemoryMappedFile::READ_CODE_IMAGE
                                         : MemoryMappedFile::READ_ONLY;
   MemoryMappedFile mapped_file;
-  if (!mapped_file.Initialize(file_path, access))
-    return false;
-
+  if (!mapped_file.Initialize(file_path, access)) {
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kMemoryMapFailedSlowUsed}
+               : PrefetchResult{PrefetchResultCode::kMemoryMapFailedSlowFailed};
+  }
   const ::SIZE_T length =
       std::min(base::saturated_cast<::SIZE_T>(max_bytes),
                base::saturated_cast<::SIZE_T>(mapped_file.length()));
   ::_WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(), length};
-  return (*prefetch_virtual_memory)(::GetCurrentProcess(),
-                                    /*NumberOfEntries=*/1, &address_range,
-                                    /*Flags=*/0);
+  if (!prefetch_virtual_memory(::GetCurrentProcess(),
+                               /*NumberOfEntries=*/1, &address_range,
+                               /*Flags=*/0)) {
+    return internal::PreReadFileSlow(file_path, max_bytes)
+               ? PrefetchResult{PrefetchResultCode::kFastFailedSlowUsed}
+               : PrefetchResult{PrefetchResultCode::kFastFailedSlowFailed};
+  }
+  return PrefetchResult{PrefetchResultCode::kSuccess};
 }
 
 // -----------------------------------------------------------------------------

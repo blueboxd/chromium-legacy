@@ -123,6 +123,7 @@ public class TabSwitcherButtonCoordinator {
                 && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
                 && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
                 && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
+                && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS
                 && mTabSwitcherButtonModel.get(TabSwitcherButtonProperties.NUMBER_OF_TABS) >= 1;
         mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.IS_ENABLED, shouldEnable);
     }

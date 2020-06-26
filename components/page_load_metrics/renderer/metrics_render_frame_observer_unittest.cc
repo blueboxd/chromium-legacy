@@ -32,7 +32,8 @@ class TestMetricsRenderFrameObserver : public MetricsRenderFrameObserver,
     return std::move(timer);
   }
 
-  std::unique_ptr<PageTimingSender> CreatePageTimingSender() override {
+  std::unique_ptr<PageTimingSender> CreatePageTimingSender(
+      bool limited_sending_mode) override {
     return base::WrapUnique<PageTimingSender>(
         new FakePageTimingSender(&validator_));
   }

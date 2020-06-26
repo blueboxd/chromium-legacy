@@ -87,7 +87,21 @@ void InitAwareTileService::StartFetchForTiles(
 }
 
 void InitAwareTileService::CancelTask() {
-  tile_service_->CancelTask();
+  if (IsReady()) {
+    tile_service_->CancelTask();
+  } else if (!IsFailed()) {
+    MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::CancelTask,
+                                     weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void InitAwareTileService::PurgeDb() {
+  if (IsReady()) {
+    tile_service_->PurgeDb();
+  } else if (!IsFailed()) {
+    MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::PurgeDb,
+                                     weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void InitAwareTileService::MaybeCacheApiCall(base::OnceClosure api_call) {

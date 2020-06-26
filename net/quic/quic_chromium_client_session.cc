@@ -889,6 +889,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
 QuicChromiumClientSession::~QuicChromiumClientSession() {
   DCHECK(callback_.is_null());
 
+  for (auto& observer : connectivity_observer_list_)
+    observer.OnSessionRemoved(this);
+
   net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
   DCHECK(waiting_for_confirmation_callbacks_.empty());
   if (HasActiveRequestStreams())
@@ -1092,6 +1095,16 @@ void QuicChromiumClientSession::AddHandle(Handle* handle) {
 void QuicChromiumClientSession::RemoveHandle(Handle* handle) {
   DCHECK(base::Contains(handles_, handle));
   handles_.erase(handle);
+}
+
+void QuicChromiumClientSession::AddConnectivityObserver(
+    ConnectivityObserver* observer) {
+  connectivity_observer_list_.AddObserver(observer);
+}
+
+void QuicChromiumClientSession::RemoveConnectivityObserver(
+    ConnectivityObserver* observer) {
+  connectivity_observer_list_.RemoveObserver(observer);
 }
 
 // TODO(zhongyi): replace migration_session_* booleans with
@@ -1825,8 +1838,7 @@ int QuicChromiumClientSession::HandleWriteError(
     return error_code;
   }
 
-  NetworkChangeNotifier::NetworkHandle current_network =
-      GetDefaultSocket()->GetBoundNetwork();
+  NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
 
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_WRITE_ERROR, "network",
@@ -1902,8 +1914,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
   }
 
   NetworkChangeNotifier::NetworkHandle new_network =
-      stream_factory_->FindAlternateNetwork(
-          GetDefaultSocket()->GetBoundNetwork());
+      stream_factory_->FindAlternateNetwork(GetCurrentNetwork());
   if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     // No alternate network found.
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
@@ -1913,7 +1924,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
     return;
   }
 
-  if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+  if (GetCurrentNetwork() == default_network_ &&
       current_migrations_to_non_default_network_on_write_error_ >=
           max_migrations_to_non_default_network_on_write_error_) {
     HistogramAndLogMigrationFailure(
@@ -2049,6 +2060,10 @@ void QuicChromiumClientSession::OnProbeSucceeded(
     return;
   }
 
+  // Notify the connection that migration succeeds after probing.
+  if (connection()->IsPathDegrading())
+    connection()->OnSuccessfulMigrationAfterProbing();
+
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
       "migrate_to_network", network);
@@ -2088,7 +2103,7 @@ void QuicChromiumClientSession::OnProbeFailed(
     DVLOG(1) << "Connectivity probing failed on <network: " << network
              << ", peer_address: " << peer_address.ToString() << ">.";
     DVLOG_IF(1, network == default_network_ &&
-                    GetDefaultSocket()->GetBoundNetwork() != default_network_)
+                    GetCurrentNetwork() != default_network_)
         << "Client probing failed on the default network, still using "
            "non-default network.";
   }
@@ -2155,7 +2170,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
   }
 
   // Ignore the signal if the current active network is not affected.
-  if (GetDefaultSocket()->GetBoundNetwork() != disconnected_network) {
+  if (GetCurrentNetwork() != disconnected_network) {
     DVLOG(1) << "Client's current default network is not affected by the "
              << "disconnected one.";
     return;
@@ -2189,23 +2204,26 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 
 void QuicChromiumClientSession::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle new_network) {
-  DCHECK(migrate_session_on_network_change_v2_);
+  LogMetricsOnNetworkMadeDefault();
+
+  if (!migrate_session_on_network_change_v2_)
+    return;
+
+  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT,
       "new_default_network", new_network);
-  LogMetricsOnNetworkMadeDefault();
+  default_network_ = new_network;
 
-  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
   DVLOG(1) << "Network: " << new_network
            << " becomes default, old default: " << default_network_;
-  default_network_ = new_network;
   current_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
   current_migrations_to_non_default_network_on_write_error_ = 0;
   current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
   // Simply cancel the timer to migrate back to the default network if session
   // is already on the default network.
-  if (GetDefaultSocket()->GetBoundNetwork() == new_network) {
+  if (GetCurrentNetwork() == new_network) {
     CancelMigrateBackToDefaultNetworkTimer();
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_ALREADY_MIGRATED,
                                     connection_id(),
@@ -2253,7 +2271,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
     return;
   }
 
-  if (network == GetDefaultSocket()->GetBoundNetwork()) {
+  if (network == GetCurrentNetwork()) {
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_ALREADY_MIGRATED,
                                     connection_id(),
                                     "Already bound to new network");
@@ -2330,6 +2348,12 @@ void QuicChromiumClientSession::OnPathDegrading() {
     return;
   }
 
+  if (!go_away_on_path_degrading_) {
+    NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
+    for (auto& observer : connectivity_observer_list_)
+      observer.OnSessionPathDegrading(this, current_network);
+  }
+
   if (!stream_factory_)
     return;
 
@@ -2340,6 +2364,15 @@ void QuicChromiumClientSession::OnPathDegrading() {
   }
 
   MaybeMigrateToAlternateNetworkOnPathDegrading();
+}
+
+void QuicChromiumClientSession::OnForwardProgressMadeAfterPathDegrading() {
+  if (go_away_on_path_degrading_)
+    return;
+
+  NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
+  for (auto& observer : connectivity_observer_list_)
+    observer.OnSessionResumedPostPathDegrading(this, current_network);
 }
 
 void QuicChromiumClientSession::OnProofValid(
@@ -2507,7 +2540,7 @@ void QuicChromiumClientSession::
     return;
   }
 
-  if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+  if (GetCurrentNetwork() == default_network_ &&
       current_migrations_to_non_default_network_on_path_degrading_ >=
           max_migrations_to_non_default_network_on_path_degrading_) {
     HistogramAndLogMigrationFailure(
@@ -2517,8 +2550,7 @@ void QuicChromiumClientSession::
   }
 
   NetworkChangeNotifier::NetworkHandle alternate_network =
-      stream_factory_->FindAlternateNetwork(
-          GetDefaultSocket()->GetBoundNetwork());
+      stream_factory_->FindAlternateNetwork(GetCurrentNetwork());
   if (alternate_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
                                     connection_id(),
@@ -2679,7 +2711,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
 void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
   base::TimeDelta retry_migrate_back_timeout =
       base::TimeDelta::FromSeconds(UINT64_C(1) << retry_migrate_back_count_);
-  if (default_network_ == GetDefaultSocket()->GetBoundNetwork()) {
+  if (default_network_ == GetCurrentNetwork()) {
     // If session has been back on the default already by other direct
     // migration attempt, cancel migrate back now.
     CancelMigrateBackToDefaultNetworkTimer();
@@ -3018,7 +3050,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeComplete() {
   // confirmed if the session is not created on the default network.
   if (migrate_session_on_network_change_v2_ &&
       default_network_ != NetworkChangeNotifier::kInvalidNetworkHandle &&
-      GetDefaultSocket()->GetBoundNetwork() != default_network_) {
+      GetCurrentNetwork() != default_network_) {
     current_migration_cause_ = ON_MIGRATE_BACK_TO_DEFAULT_NETWORK;
     StartMigrateBackToDefaultNetworkTimer(
         base::TimeDelta::FromSeconds(kMinRetryTimeForDefaultNetworkSecs));
@@ -3148,6 +3180,16 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
   DCHECK(sockets_.back().get() != nullptr);
   // The most recently added socket is the currently active one.
   return sockets_.back().get();
+}
+
+NetworkChangeNotifier::NetworkHandle
+QuicChromiumClientSession::GetCurrentNetwork() const {
+  // If connection migration is enabled, alternate network interface may be
+  // used to send packet, it is identified as the bound network of the default
+  // socket. Otherwise, always use |default_network_|.
+  return migrate_session_on_network_change_v2_
+             ? GetDefaultSocket()->GetBoundNetwork()
+             : default_network_;
 }
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {

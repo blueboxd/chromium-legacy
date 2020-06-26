@@ -21,8 +21,7 @@ class MockDelegate : public AssistiveWindowControllerDelegate {
  public:
   ~MockDelegate() override = default;
   void AssistiveWindowButtonClicked(
-      ui::ime::ButtonId id,
-      ui::ime::AssistiveWindowType type) const override {}
+      const ui::ime::AssistiveWindowButton& button) const override {}
 };
 
 class AssistiveWindowControllerTest : public ChromeAshTestBase {

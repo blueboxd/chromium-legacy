@@ -74,10 +74,15 @@ class PLATFORM_EXPORT FontCustomPlatformData
   size_t DataSize() const { return data_size_; }
   static bool SupportsFormat(const String&);
 
+  bool MayBeIconFont() const;
+
  private:
   FontCustomPlatformData(sk_sp<SkTypeface>, size_t data_size);
   sk_sp<SkTypeface> base_typeface_;
   size_t data_size_;
+
+  mutable bool may_be_icon_font_computed_ = false;
+  mutable bool may_be_icon_font_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FontCustomPlatformData);
 };

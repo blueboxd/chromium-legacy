@@ -567,8 +567,8 @@ void RuntimeEventRouter::OnExtensionUninstalled(
     return;
   }
 
-  // Blacklisted extensions should not open uninstall_url.
-  if (extensions::ExtensionPrefs::Get(context)->IsExtensionBlacklisted(
+  // Blocklisted extensions should not open uninstall_url.
+  if (extensions::ExtensionPrefs::Get(context)->IsExtensionBlocklisted(
           extension_id)) {
     return;
   }

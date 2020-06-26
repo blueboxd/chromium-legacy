@@ -133,9 +133,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private final int mTabStripAndToolbarHeight;
 
     @Override
-    public void onContentOffsetChanged(int offset) {}
-
-    @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         updateMargins();
@@ -492,11 +489,36 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        layoutParams.bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
-                - mBrowserControlsStateProvider.getBottomControlOffset();
-        layoutParams.topMargin = getToolbarExtraYOffset();
+        int topMargin = layoutParams.topMargin;
+        final int topControlsDistanceToRest = mBrowserControlsStateProvider.getContentOffset()
+                - mBrowserControlsStateProvider.getTopControlsHeight();
 
-        view.setLayoutParams(layoutParams);
+        // Negative |topControlsDistanceToRest| means the controls Y position is above the rest
+        // position and the controls height is increasing with animation.
+        if (topControlsDistanceToRest < 0) {
+            // #getToolbarExtraYOffset() returns the margin we will set at the end of the animation.
+            // Adding |topControlsDistanceToRest| to it gives us the translation we need for each
+            // animation frame until we reach the desired position. Once |topControlsDistanceToRest|
+            // reaches 0, we are at the desired position. In the else block below, we will set the
+            // real margin and set the translation to 0.
+            view.setTranslationY(getToolbarExtraYOffset() + topControlsDistanceToRest);
+        } else {
+            // Positive |topControlsDistanceToRest| means the controls Y position is below the rest
+            // position and the controls height is decreasing with animation. We need to set the
+            // new margin (0 in this case) immediately and update translationY during the animation,
+            // which will reach 0 at the end.
+            view.setTranslationY(topControlsDistanceToRest);
+            topMargin = getToolbarExtraYOffset();
+        }
+
+        int bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
+                - mBrowserControlsStateProvider.getBottomControlOffset();
+
+        if (topMargin != layoutParams.topMargin || bottomMargin != layoutParams.bottomMargin) {
+            layoutParams.topMargin = topMargin;
+            layoutParams.bottomMargin = bottomMargin;
+            view.setLayoutParams(layoutParams);
+        }
 
         // Apply negative margin to the top of the N logo (which would otherwise be the height of
         // the top toolbar) when Duet is enabled to remove some of the empty space.

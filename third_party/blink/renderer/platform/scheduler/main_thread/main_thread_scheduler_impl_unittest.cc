@@ -1128,6 +1128,7 @@ TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicy) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicyWithSlowCompositor) {
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -1511,6 +1512,7 @@ TEST_F(PrioritizeCompositingAndLoadingInUseCaseLoadingTest, LoadingUseCase) {
 
 TEST_F(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -1528,6 +1530,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_IgnoresMouseMove_WhenMouseUp) {
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -1717,6 +1720,7 @@ TEST_F(
 
 TEST_F(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresKeyboardEvents) {
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -1734,6 +1738,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_IgnoresKeyboardEvents) {
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -3764,7 +3769,6 @@ TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
               testing::ElementsAre("C1", "P1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
-
 class VeryHighPriorityForCompositingAlternatingExperimentTest
     : public MainThreadSchedulerImplTest {
  public:
@@ -3779,10 +3783,13 @@ TEST_F(VeryHighPriorityForCompositingAlternatingExperimentTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "D1 D2 D3 C1 C2 C3");
 
+  // Compositor is very high priority, we do a main frame and it is set to
+  // normal priority for a task before being reprioritzed.
+  DoMainFrame();
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre("C1", "D1", "C2", "D2", "C3", "D3"));
+              testing::ElementsAre("C1", "D1", "C2", "C3", "D2", "D3"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
@@ -3815,6 +3822,7 @@ TEST_F(VeryHighPriorityForCompositingAfterDelayExperimentTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
 
+  DoMainFrame();
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -3828,12 +3836,20 @@ TEST_F(VeryHighPriorityForCompositingAfterDelayExperimentTest,
   AdvanceTimeWithTask(0.15);
 
   Vector<String> run_order;
-  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
 
-  EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre("P1", "C1", "D1", "D2", "C2", "I1"));
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "C2", "D1", "D2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+
+  // Next compositor task is the BeginMainFrame. Afterwhich the priority is
+  // returned to normal.
+  DoMainFrame();
+  run_order.clear();
+  PostTestTasks(&run_order, "C1 D1 D2 C2 P1");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "D1", "D2", "C2"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
@@ -3872,7 +3888,9 @@ TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
               testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 
-  // 1000ms compositor task will exhaust the budget.
+  // 1000ms BeginMainFrame compositor task will exhaust the budget. Compositor
+  // tasks will be run at normal priority.
+  DoMainFrame();
   RunSlowCompositorTask();
 
   run_order.clear();
@@ -3880,8 +3898,6 @@ TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
 
-  // Compositor is now at kVeryHighPriority, compositing tasks will run
-  // before default tasks.
   EXPECT_THAT(run_order,
               testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
@@ -3889,7 +3905,8 @@ TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
 
 TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
        TestCompositorPolicy_CompositorPriorityNormalToVeryHigh) {
-  // 1000ms compositor task will exhaust the budget.
+  // 1000ms BeginMainFrame compositor task will exhaust the budget.
+  DoMainFrame();
   RunSlowCompositorTask();
 
   Vector<String> run_order;
@@ -3914,105 +3931,6 @@ TEST_F(VeryHighPriorityForCompositingBudgetExperimentTest,
   // before default tasks.
   EXPECT_THAT(run_order,
               testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-class VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest
-    : public MainThreadSchedulerImplTest {
- public:
-  VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest()
-      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAlternating,
-                                     kPrioritizeCompositingUntilBeginMainFrame},
-                                    {}) {}
-};
-
-TEST_F(VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest,
-       TestCompositorPolicy_AlternatingCompositorTasks) {
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "C1 D1 C2 D2");
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-
-  // Next compositor task is the BeginMainFrame. Compositor priority is set
-  // to normal for a single task before being prioritized again.
-  DoMainFrame();
-
-  run_order.clear();
-  PostTestTasks(&run_order, "C1 D1 D2 C2");
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("C1", "D1", "C2", "D2"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-class VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest
-    : public MainThreadSchedulerImplTest {
- public:
-  VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest()
-      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAfterDelay,
-                                     kPrioritizeCompositingUntilBeginMainFrame},
-                                    {}) {}
-};
-
-TEST_F(
-    VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest,
-    TestCompositorPolicy_FirstCompositorTaskSetToVeryHighPriority) {
-  // 150ms task to complete the countdown and prioritze compositing.
-  AdvanceTimeWithTask(0.15);
-
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "C2", "D1", "D2"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-
-  // Next compositor task is the BeginMainFrame.
-  DoMainFrame();
-  run_order.clear();
-  PostTestTasks(&run_order, "C1 D1 D2 C2 P1");
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "D1", "D2", "C2"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-class VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest
-    : public MainThreadSchedulerImplTest {
- public:
-  VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest()
-      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingBudget,
-                                     kPrioritizeCompositingUntilBeginMainFrame},
-                                    {}) {}
-};
-
-TEST_F(
-    VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
-    TestCompositorPolicy_CompositorPriorityNonBeginMainFrameDoesntExhaustBudget) {
-  // 1000ms compositor task will not exhaust the budget.
-  RunSlowCompositorTask();
-
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "C2", "D1", "D2"));
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-}
-
-TEST_F(VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
-       TestCompositorPolicy_CompositorPriorityBeginMainFrameExhaustsBudget) {
-  // 1000ms BeginMainFrame will exhaust the budget.
-  DoMainFrame();
-  RunSlowCompositorTask();
-
-  Vector<String> run_order;
-  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(run_order, testing::ElementsAre("P1", "D1", "C1", "D2", "C2"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 

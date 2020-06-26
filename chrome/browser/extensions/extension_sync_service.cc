@@ -237,8 +237,8 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   // for the existence of disable reasons instead), we're just setting it here
   // for older Chrome versions (<M48).
   bool enabled = (disable_reasons == extensions::disable_reason::DISABLE_NONE);
-  if (extension_prefs->GetExtensionBlacklistState(extension.id()) ==
-      extensions::BLACKLISTED_MALWARE) {
+  if (extension_prefs->GetExtensionBlocklistState(extension.id()) ==
+      extensions::BLOCKLISTED_MALWARE) {
     enabled = false;
     NOTREACHED() << "Blacklisted extensions should not be getting synced.";
   }

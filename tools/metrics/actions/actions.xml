@@ -6162,6 +6162,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="EmailPageLocation">
+  <obsolete>
+    Functionality was rolled into Share on Mac. Doesn't appear to have been used
+    on other platforms.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -22695,6 +22699,15 @@ should be able to be added at any place in this file.
   <description>
     Metric record when the tasks only start surface is shown (the user taps the
     tab switcher button or on chrome start).
+  </description>
+</action>
+
+<action name="StartSurface.TrendyTerms">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <description>
+    Metric record when the trendy terms start surface is shown (the user taps
+    the tab switcher button or on chrome start).
   </description>
 </action>
 

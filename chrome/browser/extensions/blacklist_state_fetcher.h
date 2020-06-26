@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/core/db/util.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -26,7 +26,7 @@ class TestBlacklistStateFetcher;
 
 class BlacklistStateFetcher {
  public:
-  typedef base::Callback<void(BlacklistState)> RequestCallback;
+  typedef base::Callback<void(BlocklistState)> RequestCallback;
 
   BlacklistStateFetcher();
 

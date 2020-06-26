@@ -83,7 +83,7 @@ bool StartBackground(base::ProcessId pid, const base::FilePath& lacros_path) {
     // window, and we do not want to delete the existing log file.
     // TODO(erikchen): Currently, launching a second instance of chrome deletes
     // the existing log file, even though the new instance quickly exits.
-    base::DeleteFile(LacrosLogPath(), /*recursive=*/false);
+    base::DeleteFile(LacrosLogPath());
   }
 
   return already_running;

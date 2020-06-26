@@ -85,7 +85,7 @@ class COMPONENT_EXPORT(UI_BASE) SelectionRequestor {
     bool data_sent_incrementally;
 
     // The result data for the XConvertSelection() request.
-    std::vector<std::vector<uint8_t>> out_data;
+    std::vector<scoped_refptr<base::RefCountedMemory>> out_data;
     x11::Atom out_type;
 
     // Whether the XConvertSelection() request was successful.

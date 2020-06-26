@@ -51,6 +51,10 @@ void MetricsScheduler::TaskDone(base::TimeDelta next_interval) {
 }
 
 void MetricsScheduler::TriggerTask() {
+  // This can happen in tests which set a very small timer interval.
+  if (callback_pending_)
+    return;
+
   callback_pending_ = true;
   task_callback_.Run();
 }

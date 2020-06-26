@@ -39,12 +39,16 @@ base::TimeTicks ClampToStart(base::TimeTicks event, base::TimeTicks start) {
 
 class MojoPageTimingSender : public PageTimingSender {
  public:
-  explicit MojoPageTimingSender(content::RenderFrame* render_frame) {
+  explicit MojoPageTimingSender(content::RenderFrame* render_frame,
+                                bool limited_sending_mode)
+      : limited_sending_mode_(limited_sending_mode) {
     DCHECK(render_frame);
     render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
         &page_load_metrics_);
   }
+
   ~MojoPageTimingSender() override = default;
+
   void SendTiming(const mojom::PageLoadTimingPtr& timing,
                   const mojom::FrameMetadataPtr& metadata,
                   mojom::PageLoadFeaturesPtr new_features,
@@ -55,10 +59,12 @@ class MojoPageTimingSender : public PageTimingSender {
                   mojom::InputTimingPtr input_timing_delta) override {
     DCHECK(page_load_metrics_);
     page_load_metrics_->UpdateTiming(
-        timing->Clone(), metadata->Clone(), std::move(new_features),
-        std::move(resources), render_data.Clone(), cpu_timing->Clone(),
+        limited_sending_mode_ ? CreatePageLoadTiming() : timing->Clone(),
+        metadata->Clone(), std::move(new_features), std::move(resources),
+        render_data.Clone(), cpu_timing->Clone(),
         std::move(new_deferred_resource_data), std::move(input_timing_delta));
   }
+
   void SubmitThroughputData(ukm::SourceId source_id,
                             int aggregated_percent,
                             int impl_percent,
@@ -74,6 +80,13 @@ class MojoPageTimingSender : public PageTimingSender {
   }
 
  private:
+  // Indicates that this sender should not send timing updates or frame render
+  // data updates.
+  // TODO(https://crbug.com/1097127): When timing updates are handled for cases
+  // where we have a subframe document and no committed navigation, this can be
+  // removed.
+  bool limited_sending_mode_ = false;
+
   // Use associated interface to make sure mojo messages are ordered with regard
   // to legacy IPC messages.
   mojo::AssociatedRemote<mojom::PageLoadMetrics> page_load_metrics_;
@@ -259,6 +272,47 @@ void MetricsRenderFrameObserver::DidFailProvisionalLoad() {
   provisional_frame_resource_data_use_.reset();
 }
 
+void MetricsRenderFrameObserver::DidCreateDocumentElement() {
+  // If we do not have a render frame or are already tracking this frame, ignore
+  // the new document element.
+  if (HasNoRenderFrame() || page_timing_metrics_sender_)
+    return;
+
+  // We should only track committed navigations for the main frame so ignore new
+  // document elements in the main frame.
+  if (render_frame()->IsMainFrame())
+    return;
+
+  // Every frame creates an initial about:blank document element prior to
+  // receiving a navigation to about:blank. Ignore this initial document
+  // element.
+  if (!first_document_observed_) {
+    first_document_observed_ = true;
+    return;
+  }
+
+  // A new document element was created in a frame that did not commit a
+  // provisional load. This can be due to a doc.write in the frame that aborted
+  // a navigation. Create a page timing sender to track this load. This sender
+  // will only send resource usage updates to the browser process. There
+  // currently is not infrastructure in the browser process to monitor this case
+  // and properly handle timing updates without a committed load.
+  // TODO(https://crbug.com/1097127): Implement proper handling of timing
+  // updates in the browser process and create a normal page timing sender.
+
+  // It should not be possible to have a |provisional_frame_resource_data_use_|
+  // object at this point. If we did, it means we reached
+  // ReadyToCommitNavigation() and aborted prior to load commit which should not
+  // be possible.
+  DCHECK(!provisional_frame_resource_data_use_);
+
+  Timing timing = GetTiming();
+  page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
+      CreatePageTimingSender(true /* limited_sending_mode */), CreateTimer(),
+      std::move(timing.relative_timing), timing.monotonic_timing,
+      std::make_unique<PageResourceDataUse>());
+}
+
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
   // Make sure to release the sender for a previous navigation, if we have one.
@@ -278,7 +332,7 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
 
   Timing timing = GetTiming();
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
-      CreatePageTimingSender(), CreateTimer(),
+      CreatePageTimingSender(false /* limited_sending_mode*/), CreateTimer(),
       std::move(timing.relative_timing), timing.monotonic_timing,
       std::move(provisional_frame_resource_data_use_));
 }
@@ -311,7 +365,8 @@ void MetricsRenderFrameObserver::OnThroughputDataAvailable(
     int impl_percent,
     base::Optional<int> main_percent) {
   std::unique_ptr<MojoPageTimingSender> sender =
-      std::make_unique<MojoPageTimingSender>(render_frame());
+      std::make_unique<MojoPageTimingSender>(render_frame(),
+                                             false /* limited_sending_mode */);
   sender->SubmitThroughputData(source_id, aggregated_percent, impl_percent,
                                main_percent);
 }
@@ -580,9 +635,9 @@ std::unique_ptr<base::OneShotTimer> MetricsRenderFrameObserver::CreateTimer() {
 }
 
 std::unique_ptr<PageTimingSender>
-MetricsRenderFrameObserver::CreatePageTimingSender() {
+MetricsRenderFrameObserver::CreatePageTimingSender(bool limited_sending_mode) {
   return base::WrapUnique<PageTimingSender>(
-      new MojoPageTimingSender(render_frame()));
+      new MojoPageTimingSender(render_frame(), limited_sending_mode));
 }
 
 bool MetricsRenderFrameObserver::HasNoRenderFrame() const {

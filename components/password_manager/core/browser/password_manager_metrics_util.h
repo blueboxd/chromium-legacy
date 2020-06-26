@@ -460,6 +460,10 @@ void LogSaveUIDismissalReasonAfterUnblacklisting(UIDismissalReason reason);
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
 
+// Log the |reason| a user dismissed the move password bubble.
+void LogMoveUIDismissalReason(UIDismissalReason reason,
+                              PasswordAccountStorageUserState user_state);
+
 // Log the |type| of a leak dialog shown to the user and the |reason| why it was
 // dismissed.
 void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,

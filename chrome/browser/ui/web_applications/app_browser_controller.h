@@ -107,7 +107,7 @@ class AppBrowserController : public TabStripModelObserver,
   virtual base::string16 GetTitle() const;
 
   // Gets the short name of the app.
-  virtual std::string GetAppShortName() const = 0;
+  virtual base::string16 GetAppShortName() const = 0;
 
   // Gets the origin of the app start url suitable for display (e.g
   // example.com.au).

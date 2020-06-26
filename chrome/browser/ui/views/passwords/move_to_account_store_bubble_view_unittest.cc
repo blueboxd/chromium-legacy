@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_target_iterator.h"
@@ -16,7 +18,10 @@
 
 class MoveToAccountStoreBubbleViewTest : public PasswordBubbleViewTestBase {
  public:
-  MoveToAccountStoreBubbleViewTest() = default;
+  MoveToAccountStoreBubbleViewTest() {
+    feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
+  }
   ~MoveToAccountStoreBubbleViewTest() override = default;
 
   void CreateViewAndShow();
@@ -24,6 +29,7 @@ class MoveToAccountStoreBubbleViewTest : public PasswordBubbleViewTestBase {
   void TearDown() override;
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
   MoveToAccountStoreBubbleView* view_;
 };
 

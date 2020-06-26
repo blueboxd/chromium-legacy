@@ -19,7 +19,7 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/database_manager.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 
 namespace content {
 class BrowserContext;
@@ -62,7 +62,7 @@ class Blacklist : public KeyedService,
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
 
-  using BlacklistStateMap = std::map<std::string, BlacklistState>;
+  using BlacklistStateMap = std::map<std::string, BlocklistState>;
 
   using GetBlacklistedIDsCallback =
       base::Callback<void(const BlacklistStateMap&)>;
@@ -70,7 +70,7 @@ class Blacklist : public KeyedService,
   using GetMalwareIDsCallback =
       base::Callback<void(const std::set<std::string>&)>;
 
-  using IsBlacklistedCallback = base::Callback<void(BlacklistState)>;
+  using IsBlacklistedCallback = base::Callback<void(BlocklistState)>;
 
   explicit Blacklist(ExtensionPrefs* prefs);
 
@@ -133,7 +133,7 @@ class Blacklist : public KeyedService,
   void RequestExtensionsBlacklistState(const std::set<std::string>& ids,
                                        base::OnceClosure callback);
 
-  void OnBlacklistStateReceived(const std::string& id, BlacklistState state);
+  void OnBlacklistStateReceived(const std::string& id, BlocklistState state);
 
   void ReturnBlacklistStateMap(const GetBlacklistedIDsCallback& callback,
                                const std::set<std::string>& blacklisted_ids);

@@ -1,5 +1,5 @@
 {
-  // This file specifies the fields we want to diff in the various diff functions 
+  // This file specifies the fields we want to diff in the various diff functions
   // in ComputedStyle.
 
   parameters: {
@@ -9,7 +9,7 @@
       default: [],
     },
 
-    // A list of methods to diff (these can be public getters of fields or 
+    // A list of methods to diff (these can be public getters of fields or
     // functions that use fields to determine a value).
     // Each entry is expressed as a dict of two fields:
     // 1. method: the method to be diffed
@@ -23,7 +23,7 @@
     // Each entry is expressed as a dict of two fields:
     // 1. predicate: the predicate to be tested
     // 2. field_dependencies: lists the properties this predicate test depends on.
-    // TODO: Note that you also have to pass in the arguments for the predicate. 
+    // TODO: Note that you also have to pass in the arguments for the predicate.
     // This may be removed in the future if we are always passing the other ComputedStyle
     predicates_to_test: {
       default: [],
@@ -32,8 +32,8 @@
   data: [
     {
         name: "ScrollAnchorDisablingPropertyChanged",
-        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom", 
-                  "left", "right", "top", "bottom", "padding-top", 
+        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom",
+                  "left", "right", "top", "bottom", "padding-top",
                   "padding-left", "padding-right", "padding-bottom",
                   "contain-intrinsic-size"],
         methods_to_diff: [
@@ -80,37 +80,37 @@
     },
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
-        fields_to_diff: ["padding-top", "padding-left", "padding-right", 
+        fields_to_diff: ["padding-top", "padding-left", "padding-right",
                 "padding-bottom", "appearance", "-webkit-line-clamp",
                 "text-overflow", "shape-margin", "order", "-webkit-highlight",
                 "text-indent", "text-align-last", "TextIndentLine", "EffectiveZoom",
-                "word-break", "overflow-wrap", "-webkit-line-break", 
-                "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
-                "HyphenationLimitAfter", "-webkit-hyphenate-character", 
-                "image-orientation", "-webkit-ruby-position", 
-                "TextEmphasisMark", "-webkit-text-emphasis-position", 
-                "TextEmphasisCustomMark", "text-justify", "text-orientation", 
-                "text-combine-upright", "tab-size", "text-size-adjust", 
-                "list-style-image", "line-height-step", 
+                "word-break", "overflow-wrap", "-webkit-line-break",
+                "-webkit-text-security", "hyphens", "HyphenationLimitBefore",
+                "HyphenationLimitAfter", "-webkit-hyphenate-character",
+                "image-orientation", "-webkit-ruby-position",
+                "TextEmphasisMark", "-webkit-text-emphasis-position",
+                "TextEmphasisCustomMark", "text-justify", "text-orientation",
+                "text-combine-upright", "tab-size", "text-size-adjust",
+                "list-style-image", "line-height-step",
                 "-webkit-text-stroke-width", "line-height",
-                "-webkit-border-horizontal-spacing", 
-                "-webkit-border-vertical-spacing", "TextAutosizingMultiplier", 
-                "NamedGridColumnLines", "NamedGridRowLines", "OrderedNamedGridColumnLines", 
-                "OrderedNamedGridRowLines", "AutoRepeatNamedGridColumnLines", 
-                "AutoRepeatNamedGridRowLines", "AutoRepeatOrderedNamedGridColumnLines", 
-                "AutoRepeatOrderedNamedGridRowLines", "ImplicitNamedGridColumnLines", 
-                "ImplicitNamedGridRowLines", "NamedGridArea", "grid-auto-rows", 
+                "-webkit-border-horizontal-spacing",
+                "-webkit-border-vertical-spacing", "TextAutosizingMultiplier",
+                "NamedGridColumnLines", "NamedGridRowLines", "OrderedNamedGridColumnLines",
+                "OrderedNamedGridRowLines", "AutoRepeatNamedGridColumnLines",
+                "AutoRepeatNamedGridRowLines", "AutoRepeatOrderedNamedGridColumnLines",
+                "AutoRepeatOrderedNamedGridRowLines", "ImplicitNamedGridColumnLines",
+                "ImplicitNamedGridRowLines", "NamedGridArea", "grid-auto-rows",
                 "grid-template-rows", "grid-template-columns", "grid-auto-columns", "row-gap",
-                "NamedGridAreaRowCount", "NamedGridAreaColumnCount", 
-                "GridAutoRepeatColumns", "GridAutoRepeatRows", "GridAutoRepeatColumnsInsertionPoint", 
-                "GridAutoRepeatRowsInsertionPoint", "grid-auto-flow", "GridAutoRepeatColumnsType", 
-                "GridAutoRepeatRowsType", "-webkit-box-flex", 
-                "-webkit-box-ordinal-group", "flex-basis", 
-                "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align", 
+                "NamedGridAreaRowCount", "NamedGridAreaColumnCount",
+                "GridAutoRepeatColumns", "GridAutoRepeatRows", "GridAutoRepeatColumnsInsertionPoint",
+                "GridAutoRepeatRowsInsertionPoint", "grid-auto-flow", "GridAutoRepeatColumnsType",
+                "GridAutoRepeatRowsType", "-webkit-box-flex",
+                "-webkit-box-ordinal-group", "flex-basis",
+                "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align",
                 "-webkit-box-pack", "-webkit-box-orient",
                 "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
                 "column-gap", "column-width", "column-rule-style",
-                "column-rule-width", "column-rule-color", "ColumnRuleColorIsCurrentColor", "-internal-visited-column-rule-color",
+                "column-rule-width", "column-rule-color", "-internal-visited-column-rule-color",
                 "column-count", "HasAutoColumnCount", "HasAutoColumnWidth", "column-fill", "column-span",],
         methods_to_diff: [
           {
@@ -287,7 +287,7 @@
           },
           {
             predicate: "a.OutlineVisuallyEqual(b)",
-            field_dependencies: ["outline-width", "outline-color", "OutlineColorIsCurrentColor", "outline-offset", "outline-style", "OutlineStyleIsAuto"]
+            field_dependencies: ["outline-width", "outline-color", "outline-offset", "outline-style", "OutlineStyleIsAuto"]
           },
           {
             predicate: "a.InternalVisitedBorderLeftColorHasNotChanged(b)",
@@ -351,7 +351,7 @@
         name: "UpdatePropertySpecificDifferencesTransform",
         fields_to_diff: ["transform", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",
-                     "offset-position", "offset-anchor", "offset-distance", 
+                     "offset-position", "offset-anchor", "offset-distance",
                      "perspective", "perspective-origin", "transform-box"],
         methods_to_diff: [
           {
@@ -359,8 +359,8 @@
             // while hasTransform() differs, as it checks a number of conditions aside
             // from just the matrix, including but not limited to animation state.
             method: "HasTransform()",
-            field_dependencies: ["transform", "offset-position", 
-                    "HasCurrentTransformAnimation", "translate", "rotate", 
+            field_dependencies: ["transform", "offset-position",
+                    "HasCurrentTransformAnimation", "translate", "rotate",
                     "scale"]
           },
         ]
@@ -395,7 +395,7 @@
           },
           {
             predicate: "a.OutlineVisuallyEqual(b)",
-            field_dependencies: ["outline-width", "outline-color", "OutlineColorIsCurrentColor", "outline-offset", "outline-style", "OutlineStyleIsAuto"]
+            field_dependencies: ["outline-width", "outline-color", "outline-offset", "outline-style", "OutlineStyleIsAuto"]
           },
           {
             predicate: "a.BorderVisualOverflowEqual(b)",

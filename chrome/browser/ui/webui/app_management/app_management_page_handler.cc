@@ -169,7 +169,7 @@ void AppManagementPageHandler::GetExtensionAppPermissionMessages(
   const extensions::Extension* extension = registry->GetExtensionById(
       app_id, extensions::ExtensionRegistry::ENABLED |
                   extensions::ExtensionRegistry::DISABLED |
-                  extensions::ExtensionRegistry::BLACKLISTED);
+                  extensions::ExtensionRegistry::BLOCKLISTED);
   std::vector<app_management::mojom::ExtensionAppPermissionMessagePtr> messages;
   if (extension) {
     for (const auto& message :

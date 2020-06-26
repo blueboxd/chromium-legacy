@@ -29,7 +29,8 @@
   }
 
   function step1() {
-    var results = NetworkTestRunner.findRequestsByURLPattern(/\?foo/);
+    var results = NetworkTestRunner.findRequestsByURLPattern(/\?foo/).filter(
+        (e, i, a) => i % 2 == 0);
     TestRunner.assertEquals(1, results.length);
     dumpInitiator(results[0]);
     TestRunner.completeTest();

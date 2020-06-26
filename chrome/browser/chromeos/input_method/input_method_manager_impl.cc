@@ -1264,12 +1264,11 @@ void InputMethodManagerImpl::CandidateWindowClosed() {
 }
 
 void InputMethodManagerImpl::AssistiveWindowButtonClicked(
-    ui::ime::ButtonId id,
-    ui::ime::AssistiveWindowType type) const {
+    const ui::ime::AssistiveWindowButton& button) const {
   ui::IMEEngineHandlerInterface* engine =
       ui::IMEBridge::Get()->GetCurrentEngineHandler();
   if (engine)
-    engine->AssistiveWindowButtonClicked(id, type);
+    engine->AssistiveWindowButtonClicked(button);
 }
 
 void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {

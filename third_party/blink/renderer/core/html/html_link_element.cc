@@ -153,11 +153,12 @@ void HTMLLinkElement::ParseAttribute(
     // Parse the attribute value as a space-separated list of urls
     SpaceSplitString urls(value);
     valid_resource_urls_.clear();
-    valid_resource_urls_.ReserveCapacity(SafeCast<wtf_size_t>(urls.size()));
+    valid_resource_urls_.ReserveCapacityForSize(
+        SafeCast<wtf_size_t>(urls.size()));
     for (wtf_size_t i = 0; i < urls.size(); ++i) {
       KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
       if (url.IsValid()) {
-        valid_resource_urls_.push_back(std::move(url));
+        valid_resource_urls_.insert(std::move(url));
       }
     }
     Process();

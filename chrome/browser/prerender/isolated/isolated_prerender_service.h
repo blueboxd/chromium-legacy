@@ -17,7 +17,6 @@
 
 class Profile;
 class IsolatedPrerenderProxyConfigurator;
-class IsolatedPrerenderServiceWorkersObserver;
 class IsolatedPrerenderSubresourceManager;
 class PrefetchedMainframeResponseContainer;
 
@@ -35,10 +34,6 @@ class IsolatedPrerenderService
 
   IsolatedPrerenderProxyConfigurator* proxy_configurator() {
     return proxy_configurator_.get();
-  }
-
-  IsolatedPrerenderServiceWorkersObserver* service_workers_observer() {
-    return service_workers_observer_.get();
   }
 
   // This call is forwarded to all |IsolatedPrerenderSubresourceManager| in
@@ -92,10 +87,6 @@ class IsolatedPrerenderService
 
   // The custom proxy configurator for Isolated Prerenders.
   std::unique_ptr<IsolatedPrerenderProxyConfigurator> proxy_configurator_;
-
-  // The storage partition-level observer of registered service workers.
-  std::unique_ptr<IsolatedPrerenderServiceWorkersObserver>
-      service_workers_observer_;
 
   // Map of prerender URL to its manager. Kept at the browser level since NSPs
   // are done in a separate WebContents from the one they are created in.

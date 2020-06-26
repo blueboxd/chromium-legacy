@@ -17,7 +17,7 @@
 namespace arc {
 
 void DeletePrintDocument(const base::FilePath& file_path) {
-  if (!base::DeleteFile(file_path, false))
+  if (!base::DeleteFile(file_path))
     LOG(ERROR) << "Failed to delete print document.";
 }
 

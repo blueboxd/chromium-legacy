@@ -86,7 +86,7 @@ constexpr base::FeatureParam<double> kCompositorBudgetRecoveryRate{
 // compositor is a BeginMainFrame task instead of any compositor task.
 const base::Feature kPrioritizeCompositingUntilBeginMainFrame{
     "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // LOAD PRIORITY EXPERIMENT CONTROLS
 

@@ -155,9 +155,11 @@ void AddAdditionalData(base::Value* dict) {
   dict->SetKey("pdfTwoUpViewEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFTwoUpView)));
-  dict->SetKey("pdfViewerUpdateEnabled",
-               base::Value(base::FeatureList::IsEnabled(
-                   chrome_pdf::features::kPDFViewerUpdate)));
+  dict->SetStringKey(
+      "pdfViewerUpdateEnabledAttribute",
+      base::FeatureList::IsEnabled(chrome_pdf::features::kPDFViewerUpdate)
+          ? "pdf-viewer-update-enabled"
+          : "");
 
   bool enable_printing = true;
   bool enable_annotations = false;

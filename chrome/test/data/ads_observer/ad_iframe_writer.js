@@ -12,7 +12,7 @@ function createAdIframe() {
 
 function createAdIframeWithSrc(src) {
   let frame = document.createElement('iframe');
-  document.body.appendChild(frame);
   frame.src = src;
+  document.body.appendChild(frame);
   return frame;
 }

@@ -1,0 +1,73 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module lacros.mojom;
+
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+
+// The type of dialog to open. The integer values intentionally do not match
+// ui::SelectFileDialog::Type because there is no "none" value and kOpenFile
+// is the common case.
+[Extensible]
+enum SelectFileDialogType {
+  // For opening a file.
+  kOpenFile = 0,
+
+  // Like kOpenFile, but allowing multiple files to open.
+  kOpenMultiFile = 1,
+
+  // For opening a folder.
+  kFolder = 2,
+
+  // Like kFolder, but the dialog UI shows it's specifically for "upload".
+  kUploadFolder = 3,
+
+  // Like kFolder, but folder creation is disabled.
+  kExistingFolder = 4,
+
+  // For saving into a file, allowing a nonexistent file to be selected.
+  kSaveAsFile = 5,
+};
+
+// Options for the select file dialog.
+struct SelectFileOptions {
+  // Dialog type.
+  SelectFileDialogType type;
+
+  // Window title.
+  mojo_base.mojom.String16 title;
+
+  // Default path to open.
+  mojo_base.mojom.FilePath default_path;
+
+  // TODO(jamescook): Many more.
+};
+
+// Result of the select file dialog.
+[Extensible]
+enum SelectFileResult {
+  // Everything worked.
+  kSuccess = 0,
+
+  // TODO(jamescook): Error handling.
+};
+
+// Information about the selected file or files.
+struct SelectedFileInfo {
+  // Path to the file.
+  mojo_base.mojom.FilePath file_path;
+
+  // TODO(jamescook): Many more.
+};
+
+// Select file dialog interface. Wrapper around the C++ SelectFileDialog
+// class. Called from lacros-chrome. Implemented in ash-chrome using the
+// file manager dialog.
+interface SelectFile {
+  // Selects one or more files. If the dialog is closed or canceled without
+  // selecting a file, or if there is an error, |files| will be empty.
+  Select@0(SelectFileOptions options) =>
+      (SelectFileResult result, array<SelectedFileInfo> files);
+};

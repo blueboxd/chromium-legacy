@@ -47,6 +47,10 @@ const char kReauthUserActionHistogramName[] =
     "Signin.TransactionalReauthUserAction";
 const char kReauthUserActionToFillPasswordHistogramName[] =
     "Signin.TransactionalReauthUserAction.ToFillPassword";
+const char kReauthGaiaNavigationDurationFromReauthStartHistogramName[] =
+    "Signin.TransactionalReauthGaiaNavigationDuration.FromReauthStart";
+const char kReauthGaiaNavigationDurationFromConfirmClickHistogramName[] =
+    "Signin.TransactionalReauthGaiaNavigationDuration.FromConfirmClick";
 
 const base::TimeDelta kReauthDialogTimeout = base::TimeDelta::FromSeconds(30);
 const char kReauthDonePath[] = "/embedded/xreauth/chrome?done";
@@ -333,6 +337,10 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   histogram_tester()->ExpectUniqueSample(
       kReauthUserActionToFillPasswordHistogramName,
       SigninReauthViewController::UserAction::kClickConfirmButton, 1);
+  histogram_tester()->ExpectTotalCount(
+      kReauthGaiaNavigationDurationFromReauthStartHistogramName, 1);
+  histogram_tester()->ExpectTotalCount(
+      kReauthGaiaNavigationDurationFromConfirmClickHistogramName, 1);
 }
 
 // Tests clicking on the confirm button in the reauth dialog. Reauth completes
@@ -347,6 +355,13 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   histogram_tester()->ExpectUniqueSample(
       kReauthUserActionHistogramName,
       SigninReauthViewController::UserAction::kClickConfirmButton, 1);
+  histogram_tester()->ExpectUniqueSample(
+      kReauthUserActionToFillPasswordHistogramName,
+      SigninReauthViewController::UserAction::kClickConfirmButton, 1);
+  histogram_tester()->ExpectTotalCount(
+      kReauthGaiaNavigationDurationFromReauthStartHistogramName, 1);
+  histogram_tester()->ExpectTotalCount(
+      kReauthGaiaNavigationDurationFromConfirmClickHistogramName, 1);
 }
 
 // Tests completing the Gaia reauth challenge in a dialog.

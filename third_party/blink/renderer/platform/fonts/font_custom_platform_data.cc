@@ -182,4 +182,37 @@ bool FontCustomPlatformData::SupportsFormat(const String& format) {
          EqualIgnoringASCIICase(format, "woff2-variations");
 }
 
+bool FontCustomPlatformData::MayBeIconFont() const {
+  if (!may_be_icon_font_computed_) {
+    // We observed that many icon fonts define almost all of their glyphs in the
+    // Unicode Private Use Area, while non-icon fonts rarely use PUA. We use
+    // this as a heuristic to determine if a font is an icon font.
+
+    // We first obtain the list of glyphs mapped from PUA codepoint range:
+    // https://unicode.org/charts/PDF/UE000.pdf
+    const SkUnichar pua_start = 0xE000;
+    const SkUnichar pua_end = 0xF900;
+    Vector<SkUnichar> pua_codepoints(pua_end - pua_start);
+    for (wtf_size_t i = 0; i < pua_codepoints.size(); ++i)
+      pua_codepoints[i] = pua_start + i;
+
+    Vector<SkGlyphID> glyphs(pua_codepoints.size());
+    base_typeface_->unicharsToGlyphs(pua_codepoints.data(),
+                                     pua_codepoints.size(), glyphs.data());
+
+    // Deduplicate and exclude glyph ID 0 (which means undefined glyph)
+    std::sort(glyphs.begin(), glyphs.end());
+    glyphs.erase(std::unique(glyphs.begin(), glyphs.end()), glyphs.end());
+    if (!glyphs[0])
+      glyphs.EraseAt(0);
+
+    // We use the heuristic that if most of the define glyphs are in PUA, then
+    // the font may be an icon font.
+    wtf_size_t pua_glyph_count = glyphs.size();
+    wtf_size_t total_glyphs = base_typeface_->countGlyphs();
+    may_be_icon_font_ = pua_glyph_count * 2 > total_glyphs;
+  }
+  return may_be_icon_font_;
+}
+
 }  // namespace blink

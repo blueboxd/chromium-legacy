@@ -313,6 +313,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
+#include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wallpaper_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
@@ -1082,6 +1083,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   plugin_vm::prefs::RegisterProfilePrefs(registry);
   policy::AppInstallEventLogger::RegisterProfilePrefs(registry);
   policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
+  policy::ExtensionInstallEventLogManagerWrapper::RegisterProfilePrefs(
+      registry);
   policy::StatusCollector::RegisterProfilePrefs(registry);
   RegisterChromeLauncherUserPrefs(registry);
   ::onc::RegisterProfilePrefs(registry);

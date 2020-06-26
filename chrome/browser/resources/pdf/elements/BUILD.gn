@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":viewer-page-selector",
     ":viewer-password-screen",
     ":viewer-pdf-toolbar",
+    ":viewer-pdf-toolbar-new",
     ":viewer-toolbar-dropdown",
     ":viewer-zoom-button",
     ":viewer-zoom-toolbar",
@@ -88,6 +89,12 @@ js_library("viewer-pdf-toolbar") {
   externs_list = [ "$externs_path/pending.js" ]
 }
 
+js_library("viewer-pdf-toolbar-new") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("viewer-pen-options") {
 }
 
@@ -117,6 +124,7 @@ html_to_js("web_components") {
     "viewer-page-selector.js",
     "viewer-password-screen.js",
     "viewer-pdf-toolbar.js",
+    "viewer-pdf-toolbar-new.js",
     "viewer-toolbar-dropdown.js",
     "viewer-zoom-button.js",
     "viewer-zoom-toolbar.js",

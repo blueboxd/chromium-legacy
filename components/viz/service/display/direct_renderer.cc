@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/direct_renderer.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include <utility>
@@ -818,48 +819,67 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
 
   if (render_pass == root_render_pass) {
-    auto display_area = current_frame()->device_viewport_size.GetArea();
-    DCHECK(display_area);
+    base::CheckedNumeric<int> display_area =
+        current_frame()->device_viewport_size.GetCheckedArea();
+    gfx::Rect frame_buffer_damage =
+        output_surface_->GetCurrentFramebufferDamage();
+    base::CheckedNumeric<int> root_damage_area =
+        root_damage_rect.size().GetCheckedArea();
+    if (display_area.IsValid() && root_damage_area.IsValid()) {
+      DCHECK_GT(static_cast<int>(display_area.ValueOrDie()), 0);
+      {
+        base::CheckedNumeric<int> frame_buffer_damage_area =
+            frame_buffer_damage.size().GetCheckedArea();
+        int ratio =
+            (frame_buffer_damage_area / display_area).ValueOrDefault(INT_MAX);
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Compositing.DirectRenderer.PartialSwap.FrameBufferDamage",
+            100ull * ratio);
+      }
+      {
+        int ratio = (root_damage_area / display_area).ValueOrDie();
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Compositing.DirectRenderer.PartialSwap.RootDamage",
+            100ull * ratio);
+      }
 
-    auto frame_buffer_damage = output_surface_->GetCurrentFramebufferDamage();
-    auto root_damage_area = root_damage_rect.size().GetArea();
+      root_damage_rect.Union(frame_buffer_damage);
 
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.DirectRenderer.PartialSwap.FrameBufferDamage",
-        100ull * frame_buffer_damage.size().GetArea() / display_area);
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.DirectRenderer.PartialSwap.RootDamage",
-        100ull * root_damage_area / display_area);
-
-    root_damage_rect.Union(frame_buffer_damage);
-
-    // If the root damage rect intersects any child render pass that has a
-    // pixel-moving backdrop-filter, expand the damage to include the entire
-    // child pass. See crbug.com/986206 for context.
-    if (!backdrop_filter_output_rects_.empty() && !root_damage_rect.IsEmpty()) {
-      for (auto* quad : render_pass->quad_list) {
-        if (quad->material == DrawQuad::Material::kRenderPass) {
-          auto iter = backdrop_filter_output_rects_.find(
-              RenderPassDrawQuad::MaterialCast(quad)->render_pass_id);
-          if (iter != backdrop_filter_output_rects_.end()) {
-            auto this_output_rect = iter->second;
-            if (root_damage_rect.Intersects(this_output_rect))
-              root_damage_rect.Union(this_output_rect);
+      // If the root damage rect intersects any child render pass that has a
+      // pixel-moving backdrop-filter, expand the damage to include the entire
+      // child pass. See crbug.com/986206 for context.
+      if (!backdrop_filter_output_rects_.empty() &&
+          !root_damage_rect.IsEmpty()) {
+        for (auto* quad : render_pass->quad_list) {
+          if (quad->material == DrawQuad::Material::kRenderPass) {
+            auto iter = backdrop_filter_output_rects_.find(
+                RenderPassDrawQuad::MaterialCast(quad)->render_pass_id);
+            if (iter != backdrop_filter_output_rects_.end()) {
+              gfx::Rect this_output_rect = iter->second;
+              if (root_damage_rect.Intersects(this_output_rect))
+                root_damage_rect.Union(this_output_rect);
+            }
           }
         }
       }
+
+      // Total damage after all adjustments.
+      base::CheckedNumeric<int> total_damage_area =
+          root_damage_rect.size().GetCheckedArea();
+      {
+        int ratio = (total_damage_area / display_area).ValueOrDefault(INT_MAX);
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Compositing.DirectRenderer.PartialSwap.TotalDamage",
+            100ull * ratio);
+      }
+      {
+        int ratio = ((total_damage_area - root_damage_area) / display_area)
+                        .ValueOrDefault(INT_MAX);
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Compositing.DirectRenderer.PartialSwap.ExtraDamage",
+            100ull * ratio);
+      }
     }
-
-    // Total damage after all adjustments.
-    auto total_damage_area = root_damage_rect.size().GetArea();
-
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.DirectRenderer.PartialSwap.TotalDamage",
-        100ull * total_damage_area / display_area);
-
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Compositing.DirectRenderer.PartialSwap.ExtraDamage",
-        100ull * (total_damage_area - root_damage_area) / display_area);
 
     return root_damage_rect;
   }

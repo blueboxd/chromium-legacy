@@ -349,15 +349,15 @@ const char kContextMenuShopWithGoogleLensName[] =
     "Google Lens powered image search for shoppable images in the context "
     "menu.";
 const char kContextMenuShopWithGoogleLensDescription[] =
-    "Replaces default image search with a Shopping intent to Google Lens when "
-    "supported";
+    "Enable a menu item for a Shopping intent into Google Lens when supported. "
+    "By default replaces the Search with Google Lens option.";
 
 const char kContextMenuSearchAndShopWithGoogleLensName[] =
-    "Google Lens powered image search and shopping in the context menu.";
+    "Additional menu item for Google Lens image search for shoppable images in "
+    "the context menu.";
 const char kContextMenuSearchAndShopWithGoogleLensDescription[] =
-    "Replaces default image search with an intent to Google Lens when "
-    "supported. Also display an additional menu item for a Shopping intent to "
-    "Google Lens when supported";
+    "Display an additional menu item for a Shopping intent to Google Lens "
+    "below Search with Google Lens when Lens shopping feature is enabled";
 
 const char kOmniboxContextMenuShowFullUrlsName[] =
     "Context menu show full URLs";
@@ -3838,6 +3838,12 @@ const char kMediaSessionNotificationsName[] = "Media session notifications";
 const char kMediaSessionNotificationsDescription[] =
     "Shows notifications for media sessions showing the currently playing "
     "media and providing playback controls";
+
+const char kMeteredShowToggleName[] = "Show Metered Toggle";
+const char kMeteredShowToggleDescription[] =
+    "Shows a Metered toggle in the Network settings UI for WiFI and Cellular. "
+    "The toggle allows users to set whether a network should be considered "
+    "metered for purposes of bandwith usage (e.g. for automatic updates).";
 
 const char kPrintServerUiName[] = "Print Server UI";
 const char kPrintServerUiDescription[] =

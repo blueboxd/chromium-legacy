@@ -29,7 +29,6 @@ media_subcomponent_deps = [
   "//media/muxers",
   "//media/renderers",
   "//media/video",
-  "//media/webcodecs",
 ]
 
 if (is_fuchsia) {

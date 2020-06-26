@@ -50,9 +50,7 @@ ax::mojom::Event ToAXEvent(
     case mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED:
       return ax::mojom::Event::kTextSelectionChanged;
     case mojom::AccessibilityEventType::WINDOW_STATE_CHANGED: {
-      if (arc_content_change_types.has_value()) {
-        DCHECK(source_node);  // Should be not null because it's dropped in
-                              // Android side.
+      if (source_node && arc_content_change_types.has_value()) {
         const base::Optional<ax::mojom::Event> event_or_null =
             FromContentChangeTypesToAXEvent(arc_content_change_types.value(),
                                             *source_node);
@@ -68,9 +66,7 @@ ax::mojom::Event ToAXEvent(
     case mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED:
       return ax::mojom::Event::kLayoutComplete;
     case mojom::AccessibilityEventType::WINDOW_CONTENT_CHANGED:
-      if (arc_content_change_types.has_value()) {
-        DCHECK(source_node);  // Should be not null because it's dropped in
-                              // Android side.
+      if (source_node && arc_content_change_types.has_value()) {
         const base::Optional<ax::mojom::Event> event_or_null =
             FromContentChangeTypesToAXEvent(arc_content_change_types.value(),
                                             *source_node);

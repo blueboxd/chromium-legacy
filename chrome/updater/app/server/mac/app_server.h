@@ -12,7 +12,7 @@
 #include "base/atomic_ref_count.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #import "chrome/updater/configurator.h"
 #import "chrome/updater/mac/setup/info_plist.h"
@@ -22,22 +22,27 @@
 
 namespace updater {
 
-class AppServer : public App {
+class AppServerMac : public AppServer {
  public:
-  AppServer();
+  AppServerMac();
   void TaskStarted();
   void TaskCompleted();
 
- private:
-  ~AppServer() override;
-  void FirstTaskRun() override;
-  void Initialize() override;
+ protected:
+  // Overrides of App.
   void Uninitialize() override;
+
+ private:
+  ~AppServerMac() override;
+
+  // Overrides of AppServer.
+  void ActiveDuty() override;
+  bool SwapRPCInterfaces() override;
+  void UninstallSelf() override;
 
   void MarkTaskStarted();
   void AcknowledgeTaskCompletion();
 
-  scoped_refptr<Configurator> config_;
   base::scoped_nsobject<CRUUpdateCheckXPCServiceDelegate>
       update_check_delegate_;
   base::scoped_nsobject<NSXPCListener> update_check_listener_;

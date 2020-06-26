@@ -54,6 +54,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       AddItem(TabStripModel::CommandAddToNewGroup,
               l10n_util::GetPluralStringFUTF16(
                   IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP, num_affected_tabs));
+      SetIsNewFeatureAt(GetItemCount() - 1, true);
     }
 
     for (size_t index = 0; index < affected_indices.size(); index++) {

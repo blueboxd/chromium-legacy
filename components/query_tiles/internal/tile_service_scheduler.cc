@@ -47,6 +47,8 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
     MarkFirstRunFinished();
   }
 
+  void OnDbPurged(TileGroupStatus status) override { CancelTask(); }
+
   void OnFetchCompleted(TileInfoRequestStatus status) override {
     MarkFirstRunFinished();
 

@@ -514,7 +514,6 @@ android_library("chrome_java") {
     "//chrome:instant_apps_reasons_enum_javagen",
     "//chrome:offline_pages_enum_javagen",
     "//chrome:partner_bookmarks_javagen",
-    "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:supervised_user_url_filter_enum_javagen",
     "//chrome/browser:sharing_dialog_type_generated_enum",
@@ -2808,10 +2807,7 @@ if (public_android_sdk) {
 
     # Used for binary size monitoring.
     create_app_bundle_minimal_apks("trichrome_chrome_minimal_apks") {
-      deps = [
-        ":ssargs_trichrome",
-        ":trichrome_chrome_bundle",
-      ]
+      deps = [ ":trichrome_chrome_bundle" ]
       bundle_path = "$root_build_dir/apks/TrichromeChrome.aab"
     }
 

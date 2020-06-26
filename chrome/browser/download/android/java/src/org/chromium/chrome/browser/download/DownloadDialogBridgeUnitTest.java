@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 
@@ -23,23 +24,26 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
-import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * Unit test for {@link DownloadDialogBridge}.
  */
-@RunWith(BaseRobolectricTestRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class DownloadDialogBridgeUnitTest {
     private static final int FAKE_NATIVE_HOLDER = 1;
@@ -65,7 +69,6 @@ public class DownloadDialogBridgeUnitTest {
     @Mock
     ModalDialogManager mModalDialogManager;
 
-    @Mock
     Activity mActivity;
 
     @Mock
@@ -77,18 +80,26 @@ public class DownloadDialogBridgeUnitTest {
     @Mock
     DownloadDateTimePickerDialogCoordinator mDateTimePickerDialog;
 
+    @Mock
+    private PrefService mPrefService;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ShadowLog.stream = System.out;
         mJniMocker.mock(DownloadDialogBridgeJni.TEST_HOOKS, mNativeMock);
+        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mBridge = new DownloadDialogBridge(
                 FAKE_NATIVE_HOLDER, mDownloadLaterDialog, mDateTimePickerDialog, mLocationDialog);
+        mBridge.setPrefServiceForTesting(mPrefService);
+        when(mPrefService.getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS))
+                .thenReturn(DownloadLaterPromptStatus.SHOW_INITIAL);
     }
 
     @After
     public void tearDown() {
         mBridge = null;
+        mActivity = null;
     }
 
     @Test
@@ -159,7 +170,8 @@ public class DownloadDialogBridgeUnitTest {
     @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
     public void testDownloadLaterComplete_downloadNow() {
         doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.DOWNLOAD_NOW);
+            mBridge.onDownloadLaterDialogComplete(
+                    DownloadLaterDialogChoice.DOWNLOAD_NOW, DownloadLaterPromptStatus.DONT_SHOW);
             return null;
         })
                 .when(mDownloadLaterDialog)
@@ -188,7 +200,8 @@ public class DownloadDialogBridgeUnitTest {
     @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
     public void testDownloadLaterComplete_downloadOnWifi() {
         doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.ON_WIFI);
+            mBridge.onDownloadLaterDialogComplete(
+                    DownloadLaterDialogChoice.ON_WIFI, DownloadLaterPromptStatus.DONT_SHOW);
             return null;
         })
                 .when(mDownloadLaterDialog)
@@ -217,7 +230,8 @@ public class DownloadDialogBridgeUnitTest {
     @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
     public void testDownloadLaterComplete_downloadLater() {
         doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.DOWNLOAD_LATER);
+            mBridge.onDownloadLaterDialogComplete(
+                    DownloadLaterDialogChoice.DOWNLOAD_LATER, DownloadLaterPromptStatus.DONT_SHOW);
             return null;
         })
                 .when(mDownloadLaterDialog)

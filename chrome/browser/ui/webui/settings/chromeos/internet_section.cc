@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -194,6 +195,12 @@ const std::vector<SearchConcept>& GetWifiConnectedSearchConcepts() {
        {.setting = mojom::Setting::kWifiAutoConnectToNetwork},
        {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
         SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetWifiMeteredSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_SETTINGS_INTERNET_NETWORK_METERED,
        mojom::kWifiDetailsSubpagePath,
        mojom::SearchResultIcon::kWifi,
@@ -305,6 +312,12 @@ const std::vector<SearchConcept>& GetCellularConnectedSearchConcepts() {
        {.setting = mojom::Setting::kCellularAutoConnectToNetwork},
        {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
         SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularMeteredSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_SETTINGS_INTERNET_NETWORK_METERED,
        mojom::kCellularDetailsSubpagePath,
        mojom::SearchResultIcon::kCellular,
@@ -630,6 +643,9 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
+  html_source->AddBoolean(
+      "showMeteredToggle",
+      base::FeatureList::IsEnabled(features::kMeteredShowToggle));
 
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);
@@ -865,7 +881,9 @@ void InternetSection::OnActiveNetworks(
 
   registry()->RemoveSearchTags(GetEthernetConnectedSearchConcepts());
   registry()->RemoveSearchTags(GetWifiConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetWifiMeteredSearchConcepts());
   registry()->RemoveSearchTags(GetCellularConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetCellularMeteredSearchConcepts());
   registry()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
   registry()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
 
@@ -888,11 +906,15 @@ void InternetSection::OnActiveNetworks(
       case NetworkType::kWiFi:
         connected_wifi_guid_ = network->guid;
         registry()->AddSearchTags(GetWifiConnectedSearchConcepts());
+        if (base::FeatureList::IsEnabled(features::kMeteredShowToggle))
+          registry()->AddSearchTags(GetWifiMeteredSearchConcepts());
         break;
 
       case NetworkType::kCellular:
         connected_cellular_guid_ = network->guid;
         registry()->AddSearchTags(GetCellularConnectedSearchConcepts());
+        if (base::FeatureList::IsEnabled(features::kMeteredShowToggle))
+          registry()->AddSearchTags(GetCellularMeteredSearchConcepts());
         break;
 
       case NetworkType::kTether:

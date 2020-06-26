@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/query_tiles/tile_service_factory.h"
+#include "components/query_tiles/tile_service.h"
 #include "content/public/browser/web_ui.h"
 
 QueryTilesInternalsUIMessageHandler::QueryTilesInternalsUIMessageHandler(
@@ -58,10 +59,12 @@ void QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus(
 
 void QueryTilesInternalsUIMessageHandler::HandleStartFetch(
     const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  AllowJavascript();
+  tile_service_->StartFetchForTiles(false /*is_from_reduce_mode*/,
+                                    base::BindOnce([](bool reschedule) {}));
 }
 
 void QueryTilesInternalsUIMessageHandler::HandlePurgeDb(
     const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  tile_service_->PurgeDb();
 }

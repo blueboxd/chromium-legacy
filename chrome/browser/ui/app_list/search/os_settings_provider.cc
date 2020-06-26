@@ -33,6 +33,9 @@ namespace {
 
 using SettingsResultPtr = chromeos::settings::mojom::SearchResultPtr;
 using SettingsResultType = chromeos::settings::mojom::SearchResultType;
+using Setting = chromeos::settings::mojom::Setting;
+using Subpage = chromeos::settings::mojom::Subpage;
+using Section = chromeos::settings::mojom::Section;
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 constexpr float kScoreEps = 1e-5f;
@@ -57,6 +60,50 @@ void LogError(Error error) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", error);
 }
 
+bool ContainsAncestor(Subpage subpage,
+                      const chromeos::settings::Hierarchy* hierarchy,
+                      const base::flat_set<Subpage>& subpages,
+                      const base::flat_set<Section>& sections) {
+  // Returns whether or not an ancestor subpage or section of |subpage| is
+  // present within |subpages| or |sections|.
+  const auto& metadata = hierarchy->GetSubpageMetadata(subpage);
+
+  // Check parent subpage if one exists.
+  if (metadata.parent_subpage) {
+    const auto it = subpages.find(metadata.parent_subpage);
+    if (it != subpages.end() ||
+        ContainsAncestor(metadata.parent_subpage.value(), hierarchy, subpages,
+                         sections))
+      return true;
+  }
+
+  // Check section.
+  const auto it = sections.find(metadata.section);
+  return it != sections.end();
+}
+
+bool ContainsAncestor(Setting setting,
+                      const chromeos::settings::Hierarchy* hierarchy,
+                      const base::flat_set<Subpage>& subpages,
+                      const base::flat_set<Section>& sections) {
+  // Returns whether or not an ancestor subpage or section of |setting| is
+  // present within |subpages| or |sections|.
+  const auto& metadata = hierarchy->GetSettingMetadata(setting);
+
+  // Check primary subpage only. Alternate subpages aren't used enough for the
+  // check to be worthwhile.
+  if (metadata.primary.second) {
+    const auto parent_subpage = metadata.primary.second.value();
+    const auto it = subpages.find(parent_subpage);
+    if (it != subpages.end() ||
+        ContainsAncestor(parent_subpage, hierarchy, subpages, sections))
+      return true;
+  }
+
+  // Check section.
+  const auto it = sections.find(metadata.primary.first);
+  return it != sections.end();
+}
 
 }  // namespace
 
@@ -260,7 +307,8 @@ OsSettingsProvider::FilterResults(
     const std::vector<chromeos::settings::mojom::SearchResultPtr>& results,
     const chromeos::settings::Hierarchy* hierarchy) {
   base::flat_set<std::string> seen_urls;
-  base::flat_set<chromeos::settings::mojom::Subpage> seen_subpages;
+  base::flat_set<Subpage> seen_subpages;
+  base::flat_set<Section> seen_sections;
   std::vector<SettingsResultPtr> clean_results;
 
   for (const SettingsResultPtr& result : results) {
@@ -290,34 +338,21 @@ OsSettingsProvider::FilterResults(
     clean_results.push_back(result.Clone());
     if (result->type == SettingsResultType::kSubpage)
       seen_subpages.insert(result->id->get_subpage());
+    if (result->type == SettingsResultType::kSection)
+      seen_sections.insert(result->id->get_section());
   }
 
   // Iterate through the clean results a second time. Remove subpage or setting
-  // results whose parent subpage is also present.
+  // results that have an ancestor subpage or section also present in the
+  // results.
   for (size_t i = 0; i < clean_results.size(); ++i) {
-    bool should_remove = false;
     const auto& result = clean_results[i];
-
-    if (result->type == SettingsResultType::kSubpage) {
-      const auto& metadata =
-          hierarchy->GetSubpageMetadata(result->id->get_subpage());
-      if (!metadata.parent_subpage)
-        continue;
-      const auto it = seen_subpages.find(metadata.parent_subpage.value());
-      if (it != seen_subpages.end())
-        should_remove = true;
-
-    } else if (result->type == SettingsResultType::kSetting) {
-      const auto& metadata =
-          hierarchy->GetSettingMetadata(result->id->get_setting());
-      if (!metadata.primary.second)
-        continue;
-      const auto it = seen_subpages.find(metadata.primary.second.value());
-      if (it != seen_subpages.end())
-        should_remove = true;
-    }
-
-    if (should_remove) {
+    if ((result->type == SettingsResultType::kSubpage &&
+         ContainsAncestor(result->id->get_subpage(), hierarchy_, seen_subpages,
+                          seen_sections)) ||
+        (result->type == SettingsResultType::kSetting &&
+         ContainsAncestor(result->id->get_setting(), hierarchy_, seen_subpages,
+                          seen_sections))) {
       clean_results.erase(clean_results.begin() + i);
       --i;
     }

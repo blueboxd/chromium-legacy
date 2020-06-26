@@ -1567,8 +1567,7 @@ TEST_P(OverviewSessionTest, DragWindowShadow) {
   ResizeShadow* shadow =
       Shell::Get()->resize_shadow_controller()->GetShadowForWindowForTest(
           window.get());
-  ASSERT_TRUE(shadow);
-  EXPECT_FALSE(shadow->GetLayerForTest()->visible());
+  EXPECT_FALSE(shadow);
 }
 
 // Test that a label is created under the window on entering overview mode.

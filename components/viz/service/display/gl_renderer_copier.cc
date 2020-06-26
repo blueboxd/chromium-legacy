@@ -511,9 +511,10 @@ class ReadPixelsWorkflow {
     // Create a buffer for the pixel transfer.
     gl->GenBuffers(1, &transfer_buffer_);
     gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, transfer_buffer_);
-    gl->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                   kRGBABytesPerPixel * result_rect.size().GetArea(), nullptr,
-                   GL_STREAM_READ);
+    gl->BufferData(
+        GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+        (result_rect.size().GetCheckedArea() * kRGBABytesPerPixel).ValueOrDie(),
+        nullptr, GL_STREAM_READ);
 
     // Execute an asynchronous read-pixels operation, with a query that triggers
     // when Finish() should be run.
@@ -752,13 +753,15 @@ class ReadI420PlanesWorkflow
     auto* const gl = context_provider_->ContextGL();
     gl->GenBuffers(1, &transfer_buffer_);
     gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, transfer_buffer_);
-    const int y_plane_bytes = kRGBABytesPerPixel * y_texture_size().GetArea();
-    const int chroma_plane_bytes =
-        kRGBABytesPerPixel * chroma_texture_size().GetArea();
+    base::CheckedNumeric<int> y_plane_bytes =
+        y_texture_size().GetCheckedArea() * kRGBABytesPerPixel;
+    base::CheckedNumeric<int> chroma_plane_bytes =
+        chroma_texture_size().GetCheckedArea() * kRGBABytesPerPixel;
     gl->BufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                   y_plane_bytes + 2 * chroma_plane_bytes, nullptr,
-                   GL_STREAM_READ);
-    data_offsets_ = {0, y_plane_bytes, y_plane_bytes + chroma_plane_bytes};
+                   (y_plane_bytes + chroma_plane_bytes * 2).ValueOrDie(),
+                   nullptr, GL_STREAM_READ);
+    data_offsets_ = {0, y_plane_bytes.ValueOrDie(),
+                     (y_plane_bytes + chroma_plane_bytes).ValueOrDie()};
     gl->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
 
     // Generate the three queries used for determining when each of the plane

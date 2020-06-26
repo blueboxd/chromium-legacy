@@ -10,6 +10,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -648,6 +649,25 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
   EXPECT_EQ(gfx::PointF(300, resize_widget_center.y()),
             window_state_delegate1->GetLocationAndReset());
+}
+
+TEST_F(MultiWindowResizeControllerTest, HiddenInOverview) {
+  // Create two windows side by side, but not overlapping horizontally. Note
+  // that when creating a window, the window is slightly larger than the given
+  // bounds so position |window2| accordingly.
+  auto window1 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
+  auto window2 = CreateAppWindow(gfx::Rect(104, 0, 100, 100));
+
+  // Move the mouse to the middle of the two windows. The multi window resizer
+  // should appear.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(104, 50));
+  EXPECT_TRUE(HasPendingShow());
+  EXPECT_TRUE(IsShowing());
+
+  // Tests that after starting overview, the widget is hidden.
+  Shell::Get()->overview_controller()->StartOverview();
+  EXPECT_FALSE(HasPendingShow());
+  EXPECT_FALSE(IsShowing());
 }
 
 }  // namespace ash

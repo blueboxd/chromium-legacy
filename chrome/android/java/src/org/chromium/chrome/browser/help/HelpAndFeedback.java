@@ -18,6 +18,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.feedback.ChromeFeedbackCollector;
+import org.chromium.chrome.browser.feedback.FeedFeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -88,9 +90,10 @@ public class HelpAndFeedback {
     public void show(final Activity activity, final String helpContext, Profile profile,
             @Nullable String url) {
         RecordUserAction.record("MobileHelpAndFeedback");
-        new FeedbackCollector(activity, profile, url, null /* categoryTag */,
-                null /* description */, helpContext, true /* takeScreenshot */,
-                null /* feed context */, collector -> show(activity, helpContext, collector));
+        new ChromeFeedbackCollector(activity, null /* categoryTag */, null /* description */,
+                true /* takeScreenshot */,
+                new ChromeFeedbackCollector.InitParams(profile, url, helpContext),
+                collector -> show(activity, helpContext, collector));
     }
 
     /**
@@ -104,18 +107,18 @@ public class HelpAndFeedback {
      */
     public void showFeedback(final Activity activity, Profile profile, @Nullable String url,
             @Nullable final String categoryTag) {
-        new FeedbackCollector(activity, profile, url, categoryTag, null /* description */, null,
-                true /* takeScreenshot */, null /* feed context */,
+        new ChromeFeedbackCollector(activity, categoryTag, null /* description */,
+                true /* takeScreenshot */,
+                new ChromeFeedbackCollector.InitParams(profile, url, null),
                 collector -> showFeedback(activity, collector));
     }
 
     /**
-     * Starts an activity prompting the user to enter feedback.
+     * Starts an activity prompting the user to enter feedback for the interest feed.
      *
      * @param activity The activity to use for starting the feedback activity and to take a
      *                 screenshot of.
      * @param profile the current profile.
-     * @param url the current URL. May be null.
      * @param categoryTag The category that this feedback report falls under.
      * @param feedContext Feed specific parameters (url, title, etc) to include with feedback.
      * @param feedbackContext The context that describes the current feature being used.
@@ -123,8 +126,9 @@ public class HelpAndFeedback {
     public void showFeedback(final Activity activity, Profile profile, @Nullable String url,
             @Nullable final String categoryTag, @Nullable final Map<String, String> feedContext,
             @Nullable final String feedbackContext) {
-        new FeedbackCollector(activity, profile, url, categoryTag, null /* description */,
-                feedbackContext, true /* takeScreenshot */, feedContext,
+        new FeedFeedbackCollector(activity, categoryTag, null /* description */, feedbackContext,
+                true /* takeScreenshot */,
+                new FeedFeedbackCollector.InitParams(profile, url, feedContext),
                 collector -> showFeedback(activity, collector));
     }
     /**

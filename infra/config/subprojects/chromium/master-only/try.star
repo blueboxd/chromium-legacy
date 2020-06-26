@@ -504,6 +504,10 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
+    name = 'network_service_linux',
+)
+
+try_.chromium_linux_builder(
     name = 'tricium-metrics-analysis',
     executable = 'recipe:tricium_metrics',
 )
@@ -754,7 +758,15 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = 'chromeos-eve-chrome',
+)
+
+chrome_internal_verifier(
     builder = 'chromeos-eve-compile-chrome',
+)
+
+chrome_internal_verifier(
+    builder = 'chromeos-kevin-chrome',
 )
 
 chrome_internal_verifier(

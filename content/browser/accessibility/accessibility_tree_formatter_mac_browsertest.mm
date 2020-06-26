@@ -266,4 +266,28 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 )~~");
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_TextMarker) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p>Text</p>)~~",
+               {":1;AXIndexForTextMarker({:2, 1, down})=*"},
+               R"~~(AXWebArea AXIndexForTextMarker({:2, 1, down})=1
+++AXGroup
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_TextMarker_WrongParameters) {
+  TestWrongParameters(
+      R"~~(data:text/html,
+                           <p>Text</p>)~~",
+      {"1, 2", "2", "{2, 1, down}", "{:2, NaN, down}", "{:2, 1, hoho}"},
+      ":1;AXIndexForTextMarker(Argument)=*",
+      R"~~(AXWebArea AXIndexForTextMarker(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+++AXGroup
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
 }  // namespace content

@@ -1150,9 +1150,9 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
 }
 #endif  // !defined(OS_MACOSX)
 
-bool PreReadFile(const FilePath& file_path,
-                 bool is_executable,
-                 int64_t max_bytes) {
+PrefetchResult PreReadFile(const FilePath& file_path,
+                           bool is_executable,
+                           int64_t max_bytes) {
   DCHECK_GE(max_bytes, 0);
 
   // ChromeOS is also covered by OS_LINUX.
@@ -1162,19 +1162,23 @@ bool PreReadFile(const FilePath& file_path,
 #if defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
   File file(file_path, File::FLAG_OPEN | File::FLAG_READ);
   if (!file.IsValid())
-    return false;
+    return PrefetchResult{PrefetchResultCode::kInvalidFile};
 
   if (max_bytes == 0) {
     // fadvise() pre-fetches the entire file when given a zero length.
-    return true;
+    return PrefetchResult{PrefetchResultCode::kSuccess};
   }
 
   const PlatformFile fd = file.GetPlatformFile();
   const ::off_t len = base::saturated_cast<::off_t>(max_bytes);
-  return posix_fadvise(fd, /*offset=*/0, len, POSIX_FADV_WILLNEED) == 0;
+  return posix_fadvise(fd, /*offset=*/0, len, POSIX_FADV_WILLNEED) == 0
+             ? PrefetchResult{PrefetchResultCode::kSuccess}
+             : PrefetchResult{PrefetchResultCode::kFastFailed};
 #else
   // TODO(pwnall): Fall back to madvise() for macOS.
-  return internal::PreReadFileSlow(file_path, max_bytes);
+  return internal::PreReadFileSlow(file_path, max_bytes)
+             ? PrefetchResult{PrefetchResultCode::kSlowSuccess}
+             : PrefetchResult{PrefetchResultCode::kSlowFailed};
 #endif  // defined(OS_LINUX) || (defined(OS_ANDROID) && __ANDROID_API__ >= 21)
 }
 

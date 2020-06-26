@@ -41,7 +41,8 @@ TEST(LinkWebBundleTest, ResourcesAttribute) {
   link->setAttribute(html_names::kResourcesAttr, "https://test.example.com");
   EXPECT_EQ("https://test.example.com", resources->value());
   EXPECT_EQ(1u, link->ValidResourceUrls().size());
-  EXPECT_EQ(KURL("https://test.example.com"), link->ValidResourceUrls()[0]);
+  EXPECT_TRUE(
+      link->ValidResourceUrls().Contains(KURL("https://test.example.com")));
 
   // Invalid urls
   link->setAttribute(html_names::kResourcesAttr,
@@ -61,8 +62,10 @@ TEST(LinkWebBundleTest, ResourcesAttribute) {
   link->setAttribute(html_names::kResourcesAttr,
                      "https://test1.example.com https://test2.example.com");
   EXPECT_EQ(2u, link->ValidResourceUrls().size());
-  EXPECT_EQ(KURL("https://test1.example.com"), link->ValidResourceUrls()[0]);
-  EXPECT_EQ(KURL("https://test2.example.com"), link->ValidResourceUrls()[1]);
+  EXPECT_TRUE(
+      link->ValidResourceUrls().Contains(KURL("https://test1.example.com")));
+  EXPECT_TRUE(
+      link->ValidResourceUrls().Contains(KURL("https://test2.example.com")));
 
   // Space-separated valid and invalid urls
   link->setAttribute(html_names::kResourcesAttr,
@@ -73,8 +76,10 @@ TEST(LinkWebBundleTest, ResourcesAttribute) {
       "https://test2.example.com",
       resources->value());
   EXPECT_EQ(2u, link->ValidResourceUrls().size());
-  EXPECT_EQ(KURL("https://test1.example.com"), link->ValidResourceUrls()[0]);
-  EXPECT_EQ(KURL("https://test2.example.com"), link->ValidResourceUrls()[1]);
+  EXPECT_TRUE(
+      link->ValidResourceUrls().Contains(KURL("https://test1.example.com")));
+  EXPECT_TRUE(
+      link->ValidResourceUrls().Contains(KURL("https://test2.example.com")));
 }
 
 }  // namespace blink

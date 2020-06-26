@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/query_tiles/logger.h"
 #include "components/query_tiles/tile.h"
 
 namespace gfx {
@@ -42,6 +43,9 @@ class TileService : public KeyedService, public base::SupportsUserData {
 
   // Cancel any existing scheduled task, and reset backoff.
   virtual void CancelTask() = 0;
+
+  // Used for debugging and testing only. Clear everything in db.
+  virtual void PurgeDb() = 0;
 
   TileService() = default;
   ~TileService() override = default;

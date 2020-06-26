@@ -26,8 +26,7 @@ struct CompositionText;
 class KeyEvent;
 
 namespace ime {
-enum class AssistiveWindowType;
-enum class ButtonId;
+struct AssistiveWindowButton;
 struct InputMethodMenuItem;
 struct SuggestionDetails;
 }  // namespace ime
@@ -104,8 +103,7 @@ class InputMethodEngine : public InputMethodEngineBase,
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void AssistiveWindowButtonClicked(
-      const ui::ime::ButtonId& id,
-      const ui::ime::AssistiveWindowType& type) override;
+      const ui::ime::AssistiveWindowButton& button) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
   ui::InputMethodKeyboardController* GetInputMethodKeyboardController()

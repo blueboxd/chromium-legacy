@@ -103,6 +103,7 @@ component("xprotos") {
   ]
   sources = get_target_outputs(":gen_xprotos") + [
               "xproto_internal.h",
+              "xproto_internal.cc",
               "xproto_types.h",
               "xproto_types.cc",
               "xproto_util.h",
@@ -151,6 +152,7 @@ source_set("unit_test") {
   testonly = true
   sources = [ "connection_unittest.cc" ]
   deps = [
+    "//base",
     "//testing/gtest",
     "//ui/gfx/x",
   ]

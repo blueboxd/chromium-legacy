@@ -23,6 +23,16 @@ public interface SurfaceActionsHandler {
     default void navigateNewTab(String url) {}
 
     /**
+     * Navigate a new incognito tab to a URL.
+     */
+    default void navigateIncognitoTab(String url) {}
+
+    /**
+     * Get an offline page for a URL.
+     */
+    default void downloadLink(String url) {}
+
+    /**
      * Open a bottom sheet with the view as contents.
      */
     default void showBottomSheet(View view) {}

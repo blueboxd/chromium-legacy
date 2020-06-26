@@ -22,10 +22,12 @@
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue_manager.h"
+#include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_controller.h"
 #include "chrome/common/media_router/issue.h"
+#include "chrome/common/media_router/mojom/logger.mojom.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
@@ -336,6 +338,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
       mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
           source_receiver) override;
+  void GetLogger(mojo::PendingReceiver<mojom::Logger> receiver) override;
+  void GetLogsAsString(GetLogsAsStringCallback callback) override;
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
   void GetMirroringServiceHostForTab(
@@ -419,6 +423,10 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   DesktopMediaPickerController desktop_picker_;
 
   base::Optional<PendingStreamRequest> pending_stream_request_;
+
+  // Collects logs from the Media Router and the native Media Route Providers.
+  // TODO(crbug.com/1077138): Limit logging before Media Router usage.
+  LoggerImpl logger_;
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_{this};
 

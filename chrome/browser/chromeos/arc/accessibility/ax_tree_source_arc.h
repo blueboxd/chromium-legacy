@@ -123,7 +123,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // automation.
   bool UpdateAndroidFocusedId(const mojom::AccessibilityEventData& event_data);
 
-  void UpdateAXNameCache(AccessibilityInfoDataWrapper* focused_node,
+  void UpdateAXNameCache(AccessibilityInfoDataWrapper* source_node,
                          const std::vector<std::string>& event_text);
 
   void ApplyCachedProperties();

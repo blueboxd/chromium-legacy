@@ -36,10 +36,12 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private final TasksSurfaceMediator mMediator;
     private MostVisitedListCoordinator mMostVisitedList;
+    private TrendyTermsCoordinator mTrendyTermsCoordinator;
     private final PropertyModel mPropertyModel;
 
     public TasksSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
-            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
+            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles,
+            boolean hasTrendyTerms) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mView.initialize(activity.getLifecycleDispatcher());
         mPropertyModelChangeProcessor =
@@ -75,6 +77,11 @@ public class TasksSurfaceCoordinator implements TasksSurface {
             LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
             mMostVisitedList =
                     new MostVisitedListCoordinator(activity, mvTilesLayout, mPropertyModel);
+        }
+
+        if (hasTrendyTerms) {
+            mTrendyTermsCoordinator = new TrendyTermsCoordinator(
+                    activity, getView().findViewById(R.id.trendy_terms_recycler_view));
         }
     }
 

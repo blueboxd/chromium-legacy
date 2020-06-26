@@ -432,7 +432,6 @@ void ClipboardProvider::ConstructImageMatchCallback(
   match.post_content =
       std::make_unique<TemplateURLRef::PostContent>(post_content);
 
-  match.keyword = default_url->keyword();
   match.transition = ui::PAGE_TRANSITION_GENERATED;
 
   field_trial_triggered_ = true;

@@ -1123,9 +1123,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @return The extra Y offset for the toolbar in pixels.
      */
     private int getToolbarExtraYOffset() {
-        final int stripAndToolbarHeight = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.tab_strip_and_toolbar_height);
-        return mBrowserControlsSizer.getTopControlsHeight() - stripAndToolbarHeight;
+        return mBrowserControlsSizer.getTopControlsHeight()
+                - getControlContainerHeightWithoutShadow();
+    }
+
+    private int getControlContainerHeightWithoutShadow() {
+        final View toolbarShadow = mControlContainer.findViewById(R.id.toolbar_shadow);
+        final int shadowHeight = toolbarShadow != null ? toolbarShadow.getHeight() : 0;
+        return mControlContainer.getHeight() - shadowHeight;
     }
 
     /**

@@ -175,9 +175,7 @@ void FeedStreamSurface::ReportDownloadAction(JNIEnv* env,
 
 void FeedStreamSurface::ReportNavigationStarted(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& url,
-    jboolean in_new_tab) {
+    const JavaParamRef<jobject>& obj) {
   feed_stream_api_->ReportNavigationStarted();
 }
 

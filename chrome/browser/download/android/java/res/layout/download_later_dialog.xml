@@ -72,5 +72,14 @@
             android:text="@string/download_location_dialog_checkbox"
             style="@style/TextAppearance.TextMedium.Tertiary" />
 
+        <TextView
+            android:id="@+id/edit_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
+            android:text="@string/download_later_edit_location"
+            android:visibility="gone" />
+
     </LinearLayout>
 </org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogView>

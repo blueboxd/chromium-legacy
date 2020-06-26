@@ -73,6 +73,8 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
            mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
            mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
                source_receiver));
+  MOCK_METHOD1(GetLogger, void(mojo::PendingReceiver<mojom::Logger> receiver));
+  MOCK_METHOD1(GetLogsAsString, void(GetLogsAsStringCallback callback));
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override {
     GetMediaSinkServiceStatusInternal(callback);

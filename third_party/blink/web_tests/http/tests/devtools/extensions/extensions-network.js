@@ -15,8 +15,8 @@
       function onHAR(result) {
         result.entries.sort(compareEntries);
 
-        for (var i = 0; i < result.entries.length; ++i)
-            output("resource: " + result.entries[i].request.url);
+        for (var i = 0; i < result.entries.length; i += 2)
+          output('resource: ' + result.entries[i].request.url);
       }
       extension_doXHR(function() {
         webInspector.network.getHAR(callbackAndNextTest(onHAR, nextTest));

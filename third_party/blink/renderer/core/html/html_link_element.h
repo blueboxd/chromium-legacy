@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/html/rel_list.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -100,7 +101,9 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   // IDL method.
   DOMTokenList* resources() const;
 
-  const Vector<KURL>& ValidResourceUrls() const { return valid_resource_urls_; }
+  const HashSet<KURL>& ValidResourceUrls() const {
+    return valid_resource_urls_;
+  }
 
   void ScheduleEvent();
 
@@ -181,8 +184,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   LinkRelAttribute rel_attribute_;
   String scope_;
   Member<DOMTokenList> resources_;
-  // TODO(hayato): It might be better to use HashMap. Re-think later.
-  Vector<KURL> valid_resource_urls_;
+  HashSet<KURL> valid_resource_urls_;
 
   bool created_by_parser_;
 };

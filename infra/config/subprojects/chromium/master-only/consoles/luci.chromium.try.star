@@ -143,6 +143,7 @@ luci.list_view(
         'try/linux_upload_clang',
         'try/linux-viz-rel',
         'try/linux-wpt-fyi-rel',
+        'try/network_service_linux',
         'try/ios-device',
         'try/ios-simulator',
         'try/ios-simulator-cronet',

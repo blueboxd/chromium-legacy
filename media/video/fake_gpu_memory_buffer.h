@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
@@ -39,6 +40,7 @@ class FakeGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
  private:
   gfx::Size size_;
   gfx::BufferFormat format_;
+  VideoPixelFormat video_pixel_format_ = PIXEL_FORMAT_UNKNOWN;
   std::vector<uint8_t> data_;
   gfx::GpuMemoryBufferHandle handle_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(FakeGpuMemoryBuffer);

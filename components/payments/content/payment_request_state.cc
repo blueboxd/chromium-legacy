@@ -310,9 +310,11 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
     get_all_payment_apps_error_ = errors::kStrictBasicCardShowReject;
   }
 
+  bool is_in_twa = !payment_request_delegate_->GetTwaPackageName().empty();
   if (!supported && get_all_payment_apps_error_.empty() &&
       base::Contains(spec_->payment_method_identifiers_set(),
-                     methods::kGooglePlayBilling)) {
+                     methods::kGooglePlayBilling) &&
+      !is_in_twa) {
     get_all_payment_apps_error_ = errors::kAppStoreMethodOnlySupportedInTwa;
   }
 

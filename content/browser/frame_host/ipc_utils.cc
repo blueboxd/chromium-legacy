@@ -94,7 +94,7 @@ bool VerifyDownloadUrlParams(SiteInstance* site_instance,
 }
 
 bool VerifyOpenURLParams(SiteInstance* site_instance,
-                         const FrameHostMsg_OpenURL_Params& params,
+                         const mojom::OpenURLParamsPtr& params,
                          GURL* out_validated_url,
                          scoped_refptr<network::SharedURLLoaderFactory>*
                              out_blob_url_loader_factory) {
@@ -106,14 +106,14 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
   int process_id = process->GetID();
 
   // Verify |params.url| and populate |out_validated_url|.
-  *out_validated_url = params.url;
+  *out_validated_url = params->url;
   process->FilterURL(false, out_validated_url);
 
   // Verify |params.blob_url_token| and populate |out_blob_url_loader_factory|.
   mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token(
-      mojo::ScopedMessagePipeHandle(params.blob_url_token),
+      mojo::ScopedMessagePipeHandle(std::move(params->blob_url_token)),
       blink::mojom::BlobURLToken::Version_);
-  if (!VerifyBlobToken(process_id, blob_url_token, params.url))
+  if (!VerifyBlobToken(process_id, blob_url_token, params->url))
     return false;
 
   if (blob_url_token.is_valid()) {
@@ -124,14 +124,14 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
 
   // Verify |params.post_body|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadRequestBody(site_instance, params.post_body)) {
+  if (!policy->CanReadRequestBody(site_instance, params->post_body)) {
     bad_message::ReceivedBadMessage(process,
                                     bad_message::ILLEGAL_UPLOAD_PARAMS);
     return false;
   }
 
   // Verify |params.initiator_origin|.
-  if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
+  if (!VerifyInitiatorOrigin(process_id, params->initiator_origin))
     return false;
 
   // Verification succeeded.

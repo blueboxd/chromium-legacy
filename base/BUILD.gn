@@ -232,6 +232,7 @@ jumbo_component("base") {
     "cpu.cc",
     "cpu.h",
     "critical_closure.h",
+    "dcheck_is_on.h",
     "debug/activity_analyzer.cc",
     "debug/activity_analyzer.h",
     "debug/activity_tracker.cc",

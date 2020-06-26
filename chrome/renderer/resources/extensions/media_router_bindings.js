@@ -973,6 +973,13 @@ MediaRouter.prototype.getMediaSinkServiceStatus = function() {
 }
 
 /**
+ * @return {!Promise<!{status: string}>}
+ */
+MediaRouter.prototype.getLogsAsString = function() {
+  return this.service_.getLogsAsString();
+}
+
+/**
  * @param {int32} target_tab_id
  * @param {!mojo.InterfaceRequest} request
  */

@@ -134,12 +134,7 @@ source_set("gtest") {
     ]
     if (gtest_enable_absl_printers) {
       public_deps += [
-        "//third_party/abseil-cpp/absl/debugging:failure_signal_handler",
-        "//third_party/abseil-cpp/absl/debugging:stacktrace",
-        "//third_party/abseil-cpp/absl/debugging:symbolize",
-        "//third_party/abseil-cpp/absl/strings",
-        "//third_party/abseil-cpp/absl/types:optional",
-        "//third_party/abseil-cpp/absl/types:variant",
+        "//third_party/abseil-cpp:absl",
       ]
     }
   } else {

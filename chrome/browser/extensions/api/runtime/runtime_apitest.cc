@@ -11,7 +11,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -318,8 +318,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_TRUE(extension_service()->IsExtensionEnabled(extension->id()));
 
   // Blacklist extension.
-  extensions::ExtensionPrefs::Get(profile())->SetExtensionBlacklistState(
-      extension->id(), extensions::BlacklistState::BLACKLISTED_MALWARE);
+  extensions::ExtensionPrefs::Get(profile())->SetExtensionBlocklistState(
+      extension->id(), extensions::BlocklistState::BLOCKLISTED_MALWARE);
 
   // Uninstalling a blacklisted extension should not open its uninstall url.
   TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),

@@ -79,7 +79,6 @@ group("gn_all") {
     "//services/service_manager/public/cpp",
     "//skia:skia_unittests",
     "//sql:sql_unittests",
-    "//third_party/abseil-cpp:absl_tests",
     "//third_party/flatbuffers:flatbuffers_unittests",
     "//tools/binary_size:binary_size_trybot_py",
     "//tools/ipc_fuzzer:ipc_fuzzer_all",
@@ -89,6 +88,12 @@ group("gn_all") {
     "//ui/gfx:gfx_unittests",
     "//url:url_unittests",
   ]
+
+  if (!is_component_build) {
+    deps += [
+      "//third_party/abseil-cpp:absl_tests",
+    ]
+  }
 
   if (!is_android && !is_chromecast) {
     deps += [

@@ -138,10 +138,10 @@ void XDragContext::OnSelectionNotify(const x11::SelectionNotifyEvent& event) {
   if (event.property != x11::Atom::None) {
     DCHECK_EQ(property, gfx::GetAtom(kChromiumDragReciever));
 
-    std::vector<uint8_t> data;
+    scoped_refptr<base::RefCountedMemory> data;
     x11::Atom type = x11::Atom::None;
     if (GetRawBytesOfProperty(local_window_, property, &data, &type))
-      fetched_targets_.Insert(target, base::RefCountedBytes::TakeVector(&data));
+      fetched_targets_.Insert(target, data);
   } else {
     // The source failed to convert the drop data to the format (target in X11
     // parlance) that we asked for. This happens, even though we only ask for

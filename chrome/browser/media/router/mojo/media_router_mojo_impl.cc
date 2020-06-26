@@ -942,6 +942,15 @@ void MediaRouterMojoImpl::OnMediaRemoterCreated(
   connector->ConnectToService(std::move(source_receiver), std::move(remoter));
 }
 
+void MediaRouterMojoImpl::GetLogger(
+    mojo::PendingReceiver<mojom::Logger> receiver) {
+  logger_.Bind(std::move(receiver));
+}
+
+void MediaRouterMojoImpl::GetLogsAsString(GetLogsAsStringCallback callback) {
+  std::move(callback).Run(logger_.GetLogsAsJson());
+}
+
 void MediaRouterMojoImpl::GetMediaSinkServiceStatus(
     mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) {
   MediaSinkServiceStatus status;

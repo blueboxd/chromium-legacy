@@ -63,7 +63,7 @@ class ExtensionRegistryObserver {
 
   // Called after an extension is unloaded. The extension no longer exists in
   // the set |ExtensionRegistry::enabled_extensions()|, but it can still be a
-  // member of one of the other sets, like disabled, blacklisted or terminated.
+  // member of one of the other sets, like disabled, blocklisted or terminated.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
                                    const Extension* extension,
                                    UnloadedExtensionReason reason) {}
@@ -73,7 +73,7 @@ class ExtensionRegistryObserver {
   // the name of the extension's previous version.
   // The ExtensionRegistry will not be tracking |extension| at the time this
   // event is fired, but will be immediately afterwards (note: not necessarily
-  // enabled; it might be installed in the disabled or even blacklisted sets,
+  // enabled; it might be installed in the disabled or even blocklisted sets,
   // for example).
   // Note that it's much more common to care about extensions being loaded
   // (OnExtensionLoaded).

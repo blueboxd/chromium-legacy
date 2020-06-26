@@ -75,6 +75,11 @@ void TileServiceImpl::CancelTask() {
   scheduler_->CancelTask();
 }
 
+void TileServiceImpl::PurgeDb() {
+  auto status = tile_manager_->PurgeDb();
+  scheduler_->OnDbPurged(status);
+}
+
 void TileServiceImpl::OnFetchFinished(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,

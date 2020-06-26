@@ -277,7 +277,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
   bool initialize_container_host_only = false;
   LoaderCallback original_callback;
   if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
-      !handle_->context_wrapper()->HasRegistrationForOrigin(
+      !handle_->context_wrapper()->MaybeHasRegistrationForOrigin(
           url::Origin::Create(tentative_resource_request.url))) {
     // We have no registrations, so it's safe to continue the request now
     // without blocking on the IO thread. Give a dummy callback to the

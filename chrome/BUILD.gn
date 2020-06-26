@@ -1443,10 +1443,6 @@ if (is_android) {
     sources = [ "browser/android/bookmarks/partner_bookmarks_reader.h" ]
   }
 
-  java_cpp_enum("payments_journey_logger_enum_javagen") {
-    sources = [ "../components/payments/core/journey_logger.h" ]
-  }
-
   java_cpp_enum("quick_action_category_enum_javagen") {
     sources = [ "browser/android/contextualsearch/resolved_search_term.h" ]
   }

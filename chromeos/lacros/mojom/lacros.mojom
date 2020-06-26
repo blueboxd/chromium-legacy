@@ -4,9 +4,13 @@
 
 module lacros.mojom;
 
+import "chromeos/lacros/mojom/select_file.mojom";
+
 // AshChromeService defines the APIs that live in ash-chrome and are
 // accessed from lacros-chrome.
 interface AshChromeService {
+  // Binds the SelectFile interface for open/save dialogs.
+  BindSelectFile@0(pending_receiver<SelectFile> receiver);
 };
 
 // LacrosChromeService defines the APIs that live in lacros-chrome and

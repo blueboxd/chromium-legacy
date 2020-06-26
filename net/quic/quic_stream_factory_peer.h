@@ -103,6 +103,8 @@ class QuicStreamFactoryPeer {
 
   static int GetNumPushStreamsCreated(QuicStreamFactory* factory);
 
+  static size_t GetNumDegradingSessions(QuicStreamFactory* factory);
+
   static void SetAlarmFactory(
       QuicStreamFactory* factory,
       std::unique_ptr<quic::QuicAlarmFactory> alarm_factory);

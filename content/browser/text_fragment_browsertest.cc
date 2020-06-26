@@ -431,6 +431,21 @@ IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, FragmentAnchorDisabled) {
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
+IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, SameDocumentNavigation) {
+  GURL url(
+      embedded_test_server()->GetURL("/scrollable_page_with_content.html"));
+  WebContents* main_contents = shell()->web_contents();
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(WaitForRenderFrameReady(main_contents->GetMainFrame()));
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+
+  ClickElementWithId(main_contents, "link");
+
+  RunUntilInputProcessed(GetWidgetHost());
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
 IN_PROC_BROWSER_TEST_F(ForceLoadAtTopBrowserTest, TextFragmentAnchorDisabled) {
   GURL url(embedded_test_server()->GetURL(
       "/scrollable_page_with_content.html#:~:text=text"));

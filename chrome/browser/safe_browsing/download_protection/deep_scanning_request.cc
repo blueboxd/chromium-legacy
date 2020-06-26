@@ -344,13 +344,16 @@ void DeepScanningRequest::PrepareLegacyRequest(
 void DeepScanningRequest::PrepareConnectorRequest(
     BinaryUploadService::Request* request,
     Profile* profile) {
-  request->set_device_token(GetDMToken(profile).value());
+  if (trigger_ == DeepScanTrigger::TRIGGER_POLICY)
+    request->set_device_token(GetDMToken(profile).value());
+
   request->set_analysis_connector(enterprise_connectors::FILE_DOWNLOADED);
+
   if (item_->GetURL().is_valid())
     request->set_url(item_->GetURL().spec());
+
   for (const std::string& tag : analysis_settings_.tags)
     request->add_tag(tag);
-  // TODO(crbug.com/1069069): Set CSD field.
 }
 
 void DeepScanningRequest::OnConnectorScanComplete(

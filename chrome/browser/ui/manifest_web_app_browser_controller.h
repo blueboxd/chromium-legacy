@@ -39,7 +39,7 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
   bool ShouldShowCustomTabBar() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
-  std::string GetAppShortName() const override;
+  base::string16 GetAppShortName() const override;
   base::string16 GetFormattedUrlOrigin() const override;
   GURL GetAppLaunchURL() const override;
   bool IsUrlInAppScope(const GURL& url) const override;

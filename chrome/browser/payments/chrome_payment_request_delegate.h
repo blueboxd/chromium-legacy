@@ -56,6 +56,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   bool IsInteractive() const override;
   std::string GetInvalidSslCertificateErrorMessage() override;
   bool SkipUiForBasicCard() const override;
+  std::string GetTwaPackageName() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This

@@ -211,6 +211,8 @@ bool GraphicsLayer::SetChildren(const GraphicsLayerVector& new_children) {
 }
 
 void GraphicsLayer::AddChildInternal(GraphicsLayer* child_layer) {
+  // TODO(szager): Remove CHECK after diagnosing crbug.com/1092673
+  CHECK(child_layer);
   DCHECK_NE(child_layer, this);
 
   if (child_layer->Parent())

@@ -167,6 +167,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void CountExternalRequestsForTest(
       const GURL& url,
       CountExternalRequestsCallback callback) override;
+  bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
+  void WaitForRegistrationsInitializedForTest() override;
+  void AddRegistrationToRegisteredOriginsForTest(
+      const url::Origin& origin) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin, ResultCallback callback) override;
   void PerformStorageCleanup(base::OnceClosure callback) override;
@@ -351,14 +355,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Can be null before/during init, during/after shutdown, and after
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
-
-  // Whether |origin| has any registrations. Uninstalling and uninstalled
-  // registrations do not cause this to return true, that is, only registrations
-  // with status ServiceWorkerRegistration::Status::kIntact are considered, such
-  // as even if the corresponding live registrations may still exist. Must be
-  // called on the UI thread.
-  bool HasRegistrationForOrigin(const url::Origin& origin) const;
-  void WaitForRegistrationsInitializedForTest();
 
   // This must be called on the core thread, and the |callback| also runs on
   // the core thread which can be called with nullptr on failure.

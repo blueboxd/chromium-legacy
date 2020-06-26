@@ -351,7 +351,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SetupOverdrawFeedback();
 
   // Process overdraw feedback from query.
-  void ProcessOverdrawFeedback(int surface_area, unsigned query);
+  void ProcessOverdrawFeedback(base::CheckedNumeric<int> surface_area,
+                               unsigned query);
   bool OverdrawTracingEnabled();
 
   ResourceFormat CurrentRenderPassResourceFormat() const;

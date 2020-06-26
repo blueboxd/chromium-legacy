@@ -51,6 +51,7 @@ class TileServiceImpl : public InitializableTileService {
   void StartFetchForTiles(bool is_from_reduced_mode,
                           BackgroundTaskFinishedCallback callback) override;
   void CancelTask() override;
+  void PurgeDb() override;
 
   // Called when tile manager is initialized.
   void OnTileManagerInitialized(SuccessCallback callback,

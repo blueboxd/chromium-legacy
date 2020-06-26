@@ -99,4 +99,6 @@ void FakeTileService::StartFetchForTiles(
 
 void FakeTileService::CancelTask() {}
 
+void FakeTileService::PurgeDb() {}
+
 }  // namespace query_tiles

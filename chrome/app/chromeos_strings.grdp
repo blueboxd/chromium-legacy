@@ -5447,4 +5447,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_RESTART_TO_POWERWASH" meaning="button label" desc="Button label to restart the device which will result in local data being deleted.">
     Restart to powerwash
   </message>
+
+  <!-- Strings for Custom Tab UI -->
+  <message name="IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME" desc="Accessible name for the overflow menu of the Chrome Custom Tab toolbar.">
+    Action menu button
+  </message>
 </grit-part>

@@ -3138,6 +3138,24 @@
             ]
         }
     ],
+    "HideAutofillSuggestions": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableHideSuggestionsUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "HomepagePromoAndroid": [
         {
             "platforms": [
@@ -4329,6 +4347,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillUpstream"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OfflineCapabilityCheckForInstallablePrompt": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CheckOfflineCapability"
                     ]
                 }
             ]

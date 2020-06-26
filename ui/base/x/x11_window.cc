@@ -1165,16 +1165,9 @@ void XWindow::ProcessEvent(x11::Event* xev) {
       } else if (protocol == gfx::GetAtom("_NET_WM_PING")) {
         x11::ClientMessageEvent reply_event = *client;
         reply_event.window = x_root_window_;
-
-        auto event_bytes = x11::Write(reply_event);
-        DCHECK_EQ(event_bytes.size(), 32ul);
-
-        x11::SendEventRequest request{false, x_root_window_,
-                                      x11::EventMask::SubstructureNotify |
-                                          x11::EventMask::SubstructureRedirect};
-        std::copy(event_bytes.begin(), event_bytes.end(),
-                  request.event.begin());
-        connection_->SendEvent(request);
+        SendEvent(reply_event, x_root_window_,
+                  x11::EventMask::SubstructureNotify |
+                      x11::EventMask::SubstructureRedirect);
       } else if (protocol == gfx::GetAtom("_NET_WM_SYNC_REQUEST")) {
         pending_counter_value_ =
             client->data.data32[2] +

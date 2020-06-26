@@ -36,7 +36,9 @@
         '//tbody/tr/td[position()=1]/@title', dataGrid, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     var outputStrings = [];
 
-    for (var request of SDK.NetworkLog.instance().requests()) {
+    const requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    for (var request of requests) {
       var line = request.displayName + ':' + request.statusCode + ' ' + request.statusText;
       if (request.failed)
         line += '(failed)';

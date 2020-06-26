@@ -277,11 +277,16 @@ void AutocompleteResult::SortAndCull(
     // Skip over default match.
     auto next = std::next(matches_.begin());
     // If it has submatches, skip them too.
-    if (matches_.front().subrelevance != 0) {
+    if (matches_.front().subrelevance != 0 ||
+        AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(
+            matches_.front().type)) {
       while (next != matches_.end() &&
-             AutocompleteMatch::IsSameFamily(matches_.front().subrelevance,
-                                             next->subrelevance))
+             (AutocompleteMatch::IsSameFamily(matches_.front().subrelevance,
+                                              next->subrelevance) ||
+              AutocompleteMatch::ShouldBeSkippedForGroupBySearchVsUrl(
+                  matches_.front().type))) {
         next = std::next(next);
+      }
     }
     GroupSuggestionsBySearchVsURL(next, matches_.end());
   }

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.Event;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 

@@ -57,14 +57,11 @@ class MockAssistantInteractionSubscriber
     : public testing::NiceMock<
           chromeos::assistant::AssistantInteractionSubscriber> {
  public:
-  explicit MockAssistantInteractionSubscriber(Assistant* service)
-      : service_(service) {
-    service_->AddAssistantInteractionSubscriber(this);
+  explicit MockAssistantInteractionSubscriber(Assistant* service) {
+    scoped_subscriber_.Add(service);
   }
 
-  ~MockAssistantInteractionSubscriber() override {
-    service_->RemoveAssistantInteractionSubscriber(this);
-  }
+  ~MockAssistantInteractionSubscriber() override = default;
 
   MOCK_METHOD(void,
               OnInteractionStarted,
@@ -72,7 +69,8 @@ class MockAssistantInteractionSubscriber
               (override));
 
  private:
-  Assistant* service_;
+  chromeos::assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{
+      this};
 };
 
 // ScopedShowUi ----------------------------------------------------------------

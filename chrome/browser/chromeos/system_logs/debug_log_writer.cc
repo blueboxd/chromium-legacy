@@ -119,8 +119,8 @@ void OnCompressArchiveCompleted(const base::FilePath& tar_file_path,
     LOG(ERROR) << "Failed compressing " << compressed_output_path.value();
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-    base::DeleteFile(tar_file_path, false);
-    base::DeleteFile(compressed_output_path, false);
+    base::DeleteFile(tar_file_path);
+    base::DeleteFile(compressed_output_path);
     return;
   }
 
@@ -137,7 +137,7 @@ void CompressArchive(const base::FilePath& tar_file_path,
     LOG(ERROR) << "Failed adding user logs to " << tar_file_path.value();
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-    base::DeleteFile(tar_file_path, false);
+    base::DeleteFile(tar_file_path);
     return;
   }
 

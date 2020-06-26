@@ -148,11 +148,11 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
   } else if (name == "ExtensionGlobalError") {
     extensions::TestBlacklist test_blacklist(
         extensions::Blacklist::Get(profile));
-    extension_registry->AddBlacklisted(test_extension);
+    extension_registry->AddBlocklisted(test_extension);
     // Only BLACKLISTED_MALWARE results in a bubble displaying to the user.
     // Other types are greylisted, not blacklisted.
     test_blacklist.SetBlacklistState(test_extension->id(),
-                                     extensions::BLACKLISTED_MALWARE, true);
+                                     extensions::BLOCKLISTED_MALWARE, true);
     // Ensure ExtensionService::ManageBlacklist() runs, which shows the dialog.
     // (This flow doesn't use OnGlobalErrorsChanged.) This is asynchronous, and
     // using TestBlacklist ensures the tasks run without delay, but some tasks

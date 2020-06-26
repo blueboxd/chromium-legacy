@@ -476,6 +476,9 @@ ci.chromium_builder(
         category = 'android',
         short_name = 'off',
     ),
+    # TODO: Change this back down to something reasonable once these builders
+    # have populated their cached by getting through the compile step
+    execution_timeout = 6 * time.hour,
 )
 
 ci.chromium_builder(
@@ -487,6 +490,9 @@ ci.chromium_builder(
         category = 'fuchsia',
         short_name = 'off',
     ),
+    # TODO: Change this back down to something reasonable once these builders
+    # have populated their cached by getting through the compile step
+    execution_timeout = 6 * time.hour,
 )
 
 ci.chromium_builder(
@@ -498,6 +504,9 @@ ci.chromium_builder(
         category = 'linux',
         short_name = 'off',
     ),
+    # TODO: Change this back down to something reasonable once these builders
+    # have populated their cached by getting through the compile step
+    execution_timeout = 6 * time.hour,
 )
 
 ci.chromiumos_builder(

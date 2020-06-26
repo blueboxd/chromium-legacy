@@ -27,8 +27,6 @@
   NSString* profileId = [[notification userInfo]
       objectForKey:notification_constants::kNotificationProfileId];
 
-  DCHECK([[notification userInfo]
-      objectForKey:notification_constants::kNotificationCreatorPid]);
   NSNumber* creatorPid = [[notification userInfo]
       objectForKey:notification_constants::kNotificationCreatorPid];
 
@@ -93,7 +91,8 @@
     notification_constants::kNotificationId : notificationId,
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
-    notification_constants::kNotificationCreatorPid : creatorPid,
+    notification_constants::kNotificationCreatorPid : creatorPid ? creatorPid
+                                                                 : @0,
     notification_constants::kNotificationType : notificationType,
     notification_constants::
     kNotificationOperation : [NSNumber numberWithInt:operation],

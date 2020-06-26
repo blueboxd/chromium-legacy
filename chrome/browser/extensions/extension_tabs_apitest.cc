@@ -32,15 +32,6 @@ class ExtensionApiTabTest : public extensions::ExtensionApiTest {
   }
 };
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
-// Maximizing/fullscreen popup window doesn't work on aura's managed mode.
-// See bug crbug.com/116305.
-// Mac: http://crbug.com/103912
-#define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
-#else
-#define MAYBE_UpdateWindowShowState UpdateWindowShowState
-#endif  // defined(USE_AURA) || defined(OS_MACOSX)
-
 class ExtensionApiNewTabTest : public ExtensionApiTabTest {
  public:
   ExtensionApiNewTabTest() {}
@@ -142,13 +133,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabCrashBrowser) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crash.html")) << message_;
 }
 
-// Flaky on windows: http://crbug.com/238667
-#if defined(OS_WIN)
-#define MAYBE_TabOpener DISABLED_TabOpener
-#else
-#define MAYBE_TabOpener TabOpener
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabOpener) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabOpener) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "opener.html")) << message_;
 }
 
@@ -264,6 +249,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, FocusWindowDoesNotUnmaximize) {
 }
 #endif  // OS_WIN
 
+#if defined(USE_AURA) || defined(OS_MACOSX)
+// Maximizing/fullscreen popup window doesn't work on aura's managed mode.
+// See bug crbug.com/116305.
+// Mac: http://crbug.com/103912
+#define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
+#else
+#define MAYBE_UpdateWindowShowState UpdateWindowShowState
+#endif  // defined(USE_AURA) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_UpdateWindowShowState) {
   ASSERT_TRUE(RunExtensionTest("window_update/show_state")) << message_;
 }
@@ -281,6 +274,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, GetViewsOfCreatedPopup) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_popup.html"))
       << message_;
 }
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, GetViewsOfCreatedWindow) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;

@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -47,9 +48,11 @@
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -76,6 +79,11 @@ constexpr float kTwoThirdPositionRatio = 0.67f;
 // details.
 constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
+
+// Records the animation smoothness when the divider is released during a resize
+// and animated to a fixed position ratio.
+constexpr char kDividerAnimationSmoothness[] =
+    "Ash.SplitViewResize.AnimationSmoothness.DividerAnimation";
 
 // Histogram names that record presentation time of resize operation with
 // following conditions, a) clamshell split view, empty overview grid,
@@ -281,8 +289,31 @@ class SplitViewController::DividerSnapAnimation
     // in tablet_mode_window_drag_delegate.cc.
     SetSlideDuration(base::TimeDelta::FromMilliseconds(300));
     SetTweenType(gfx::Tween::EASE_IN);
-  }
 
+    aura::Window* window = split_view_controller->left_window()
+                               ? split_view_controller->left_window()
+                               : split_view_controller->right_window();
+    DCHECK(window);
+
+    // |widget| may be null in tests. It will use the default animation
+    // container in this case.
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    if (!widget)
+      return;
+
+    gfx::AnimationContainer* container = new gfx::AnimationContainer();
+    container->SetAnimationRunner(
+        std::make_unique<views::CompositorAnimationRunner>(widget));
+    SetContainer(container);
+
+    tracker_.emplace(widget->GetCompositor()->RequestNewThroughputTracker());
+    tracker_->Start(
+        metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+          UMA_HISTOGRAM_PERCENTAGE(kDividerAnimationSmoothness, smoothness);
+        })));
+  }
+  DividerSnapAnimation(const DividerSnapAnimation&) = delete;
+  DividerSnapAnimation& operator=(const DividerSnapAnimation&) = delete;
   ~DividerSnapAnimation() override = default;
 
   int ending_position() const { return ending_position_; }
@@ -296,6 +327,9 @@ class SplitViewController::DividerSnapAnimation
 
     split_view_controller_->EndResizeImpl();
     split_view_controller_->EndTabletSplitViewAfterResizingIfAppropriate();
+
+    if (tracker_)
+      tracker_->Stop();
   }
 
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -311,9 +345,15 @@ class SplitViewController::DividerSnapAnimation
       split_view_controller_->SetWindowsTransformDuringResizing();
   }
 
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    if (tracker_)
+      tracker_->Cancel();
+  }
+
   SplitViewController* split_view_controller_;
   int starting_position_;
   int ending_position_;
+  base::Optional<ui::ThroughputTracker> tracker_;
 };
 
 // static

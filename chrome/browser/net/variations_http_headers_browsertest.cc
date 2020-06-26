@@ -18,13 +18,19 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -133,6 +139,15 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   }
 
   GURL GetExampleUrl() const { return GetExampleUrlWithPath("/landing.html"); }
+
+  void WaitForRequest(const GURL& url) {
+    auto it = received_headers_.find(url);
+    if (it != received_headers_.end())
+      return;
+    base::RunLoop loop;
+    done_callbacks_.emplace(url, loop.QuitClosure());
+    loop.Run();
+  }
 
   // Returns whether a given |header| has been received for a |url|. If
   // |url| has not been observed, fails an EXPECT and returns false.
@@ -282,6 +297,9 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   // Stores the observed HTTP Request headers.
   std::map<GURL, net::test_server::HttpRequest::HeaderMap> received_headers_;
 
+  // For waiting for requests.
+  std::map<GURL, base::OnceClosure> done_callbacks_;
+
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeadersBrowserTest);
 };
 
@@ -304,6 +322,10 @@ VariationsHttpHeadersBrowserTest::RequestHandler(
 
   // Memorize the request headers for this URL for later verification.
   received_headers_[original_url] = request.headers;
+  auto iter = done_callbacks_.find(original_url);
+  if (iter != done_callbacks_.end()) {
+    std::move(iter->second).Run();
+  }
 
   // Set up a test server that redirects according to the
   // following redirect chain:
@@ -583,4 +605,84 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        DedicatedWorkerScript) {
   WorkerScriptTest("/workers/create_dedicated_worker.html",
                    "/workers/import_scripts_dedicated_worker.js");
+}
+
+namespace {
+
+// A test fixture for testing prefetches from the Loading Predictor.
+class VariationsHttpHeadersBrowserTestWithOptimizationGuide
+    : public VariationsHttpHeadersBrowserTest {
+ public:
+  VariationsHttpHeadersBrowserTestWithOptimizationGuide() {
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams> enabled = {
+        {features::kLoadingPredictorPrefetch, {}},
+        {features::kLoadingPredictorUseOptimizationGuide,
+         {{"use_predictions_for_preconnect", "true"}}},
+        {optimization_guide::features::kOptimizationHints, {}}};
+    std::vector<base::Feature> disabled = {
+        features::kLoadingPredictorUseLocalPredictions};
+    feature_list_.InitWithFeaturesAndParameters(enabled, disabled);
+  }
+
+  std::unique_ptr<content::TestNavigationManager> NavigateToURLAsync(
+      const GURL& url) {
+    chrome::NewTab(browser());
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    DCHECK(tab);
+    auto observer = std::make_unique<content::TestNavigationManager>(tab, url);
+    tab->GetController().LoadURL(url, content::Referrer(),
+                                 ui::PAGE_TRANSITION_TYPED, std::string());
+    return observer;
+  }
+
+  void SetUpOptimizationHint(
+      const GURL& url,
+      const std::vector<std::string>& predicted_subresource_urls) {
+    auto* optimization_guide_keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(
+            browser()->profile());
+    ASSERT_TRUE(optimization_guide_keyed_service);
+
+    optimization_guide::proto::LoadingPredictorMetadata
+        loading_predictor_metadata;
+    for (const auto& subresource_url : predicted_subresource_urls) {
+      loading_predictor_metadata.add_subresources()->set_url(subresource_url);
+    }
+
+    optimization_guide::OptimizationMetadata optimization_metadata;
+    optimization_metadata.set_loading_predictor_metadata(
+        loading_predictor_metadata);
+    optimization_guide_keyed_service->AddHintForTesting(
+        url, optimization_guide::proto::LOADING_PREDICTOR,
+        optimization_metadata);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+}  // namespace
+
+// Verify in an integration test that that the variations header (X-Client-Data)
+// is correctly attached to prefetch requests from the Loading Predictor.
+IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTestWithOptimizationGuide,
+                       Prefetch) {
+  GURL url = server()->GetURL("test.com", "/simple_page.html");
+  GURL google_url = GetGoogleSubresourceUrl();
+  GURL non_google_url = GetExampleUrl();
+
+  // Set up optimization hints.
+  std::vector<std::string> hints = {google_url.spec(), non_google_url.spec()};
+  SetUpOptimizationHint(url, hints);
+
+  // Navigate.
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
+  WaitForRequest(google_url);
+  WaitForRequest(non_google_url);
+
+  // Expect header on google urls only.
+  EXPECT_TRUE(HasReceivedHeader(google_url, "X-Client-Data"));
+  EXPECT_FALSE(HasReceivedHeader(non_google_url, "X-Client-Data"));
 }

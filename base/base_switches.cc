@@ -136,6 +136,10 @@ const char kEnableCrashReporterForTesting[] =
 // Enables the reached code profiler that samples all threads in all processes
 // to determine which functions are almost never executed.
 const char kEnableReachedCodeProfiler[] = "enable-reached-code-profiler";
+
+// Specifies the profiling interval in microseconds for reached code profiler.
+const char kReachedCodeSamplingIntervalUs[] =
+    "reached-code-sampling-interval-us";
 #endif
 
 #if defined(OS_LINUX)

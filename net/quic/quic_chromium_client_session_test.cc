@@ -31,6 +31,7 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
+#include "net/quic/quic_connectivity_monitor.h"
 #include "net/quic/quic_crypto_client_config_handle.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_http_utils.h"
@@ -76,6 +77,9 @@ const IPEndPoint kIpEndPoint = IPEndPoint(IPAddress::IPv4AllZeros(), 0);
 const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;
+
+const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
+const NetworkChangeNotifier::NetworkHandle kNewNetworkForTests = 2;
 
 struct TestParams {
   quic::ParsedQuicVersion version;
@@ -136,6 +140,7 @@ class QuicChromiumClientSessionTest
                      NetworkIsolationKey(),
                      false /* disable_secure_dns */),
         destination_(kServerHostname, kServerPort),
+        default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
         client_maker_(version_,
                       quic::QuicUtils::CreateRandomConnectionId(&random_),
                       &clock_,
@@ -185,8 +190,7 @@ class QuicChromiumClientSessionTest
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), session_key_,
         /*require_confirmation=*/false,
         /*max_allowed_push_id=*/0, migrate_session_early_v2_,
-        /*migrate_session_on_network_change_v2=*/false,
-        /*defaulet_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
+        /*migrate_session_on_network_change_v2=*/false, default_network_,
         quic::QuicTime::Delta::FromMilliseconds(
             kDefaultRetransmittableOnWireTimeout.InMilliseconds()),
         /*migrate_idle_session=*/false, /*allow_port_migration=*/false,
@@ -205,6 +209,10 @@ class QuicChromiumClientSessionTest
         base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, &net_log_));
+    if (connectivity_monitor_) {
+      connectivity_monitor_->SetInitialDefaultNetwork(default_network_);
+      session_->AddConnectivityObserver(connectivity_monitor_.get());
+    }
 
     scoped_refptr<X509Certificate> cert(
         ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem"));
@@ -221,10 +229,13 @@ class QuicChromiumClientSessionTest
   }
 
   void TearDown() override {
-    if (session_)
+    if (session_) {
+      if (connectivity_monitor_)
+        session_->RemoveConnectivityObserver(connectivity_monitor_.get());
       session_->CloseSessionOnError(
           ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
           quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    }
   }
 
   void CompleteCryptoHandshake() {
@@ -284,6 +295,8 @@ class QuicChromiumClientSessionTest
   QuicSessionKey session_key_;
   HostPortPair destination_;
   std::unique_ptr<TestingQuicChromiumClientSession> session_;
+  NetworkChangeNotifier::NetworkHandle default_network_;
+  std::unique_ptr<QuicConnectivityMonitor> connectivity_monitor_;
   TestServerPushDelegate test_push_delegate_;
   quic::QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
@@ -300,8 +313,8 @@ INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
                          ::testing::ValuesIn(GetTestParams()),
                          ::testing::PrintToStringParamName());
 
-// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
-// kAppendInitiatingFrameOriginToNetworkIsolationKey.
+// TODO(crbug.com/950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
 
 // Basic test of ProofVerifyDetailsChromium is converted to SSLInfo retrieved
 // through QuicChromiumClientSession::GetSSLInfo(). Doesn't test some of the
@@ -2187,6 +2200,174 @@ TEST_P(QuicChromiumClientSessionTest, ResetOnEmptyResponseHeaders) {
   quic_data.Resume();
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
+}
+
+// This test verifies that when NetworkHandle is not supported and there is no
+// network change, session reports to the connectivity monitor correctly on path
+// degrading detection and recovery.
+TEST_P(QuicChromiumClientSessionTest,
+       DegradingWithoutNetworkChange_NoNetworkHandle) {
+  // Add a connectivity monitor for testing.
+  default_network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  Initialize();
+
+  // Fire path degrading detection.
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Fire again.
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Close the session but keep the session around, the connectivity monitor
+  // will not remove the tracking immediately.
+  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Delete the session will remove the degrading count in connectivity
+  // monitor.
+  session_.reset();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+}
+
+// This test verifies that when the NetworkHandle is not supported, and there
+// are speculated network change reported via OnIPAddressChange, session
+// still reports to the connectivity monitor correctly on path degrading
+// detection and recovery.
+TEST_P(QuicChromiumClientSessionTest, DegradingWithIPAddressChange) {
+  // Default network is always set to kInvalidNetworkHandle.
+  default_network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  Initialize();
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // When NetworkHandle is not supported, network change is notified via
+  // IP address change.
+  connectivity_monitor_->OnIPAddressChanged();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // When NetworkHandle is not supported and IP address changes,
+  // session either goes away or gets closed. When it goes away,
+  // reporting to connectivity monitor is disabled.
+  connectivity_monitor_->OnSessionGoingAwayOnIPAddressChange(session_.get());
+
+  // Even if session detects recovery or degradation, this session is no longer
+  // on the default network and connectivity monitor will not update.
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_.reset();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+}
+
+// This test verifies that when NetworkHandle is supported but migration is
+// not supported and there's no network change, session reports to
+// connectivity monitor correctly on path degrading detection or recovery.
+// Default network change is currently reported with valid NetworkHandles
+// while session's current network interface is tracked by |default_network_|.
+TEST_P(QuicChromiumClientSessionTest,
+       DegradingOnDeafultNetwork_WithoutMigration) {
+  default_network_ = kDefaultNetworkForTests;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  Initialize();
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+  // Close the session but keep the session around, the connectivity monitor
+  // should not remove the count immediately.
+  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Delete the session will remove the degrading count in connectivity
+  // monitor.
+  session_.reset();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+}
+
+// This test verifies that when NetworkHandle is supported but migrations is not
+// supported and there is network changes, session reports to the connectivity
+// monitor correctly on path degrading detection or recovery.
+TEST_P(QuicChromiumClientSessionTest,
+       DegradingWithDeafultNetworkChange_WithoutMigration) {
+  default_network_ = kDefaultNetworkForTests;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  Initialize();
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Simulate the default network change.
+  connectivity_monitor_->OnDefaultNetworkUpdated(kNewNetworkForTests);
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+  session_->OnNetworkMadeDefault(kNewNetworkForTests);
+
+  // Session stays on the old default network, and recovers.
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Session degrades again on the old default.
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Simulate that default network switches back to the old default.
+  connectivity_monitor_->OnDefaultNetworkUpdated(kDefaultNetworkForTests);
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+  session_->OnNetworkMadeDefault(kDefaultNetworkForTests);
+
+  // Session recovers again on the (old) default.
+  session_->OnForwardProgressMadeAfterPathDegrading();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
+
+  // Session degrades again on the (old) default.
+  session_->ReallyOnPathDegrading();
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+                                quic::ConnectionCloseBehavior::SILENT_CLOSE);
+  EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());
+
+  session_.reset();
+  EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
 }
 
 }  // namespace

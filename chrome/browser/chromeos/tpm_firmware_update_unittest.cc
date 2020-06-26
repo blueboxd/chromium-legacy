@@ -84,7 +84,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
     switch (availability) {
       case Availability::kPending:
       case Availability::kUnavailable:
-        base::DeleteFile(srk_vulnerable_roca_path, false);
+        base::DeleteFile(srk_vulnerable_roca_path);
         break;
       case Availability::kAvailable:
       case Availability::kUnavailableROCAVulnerable:
@@ -99,7 +99,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
         &update_location_path));
     switch (availability) {
       case Availability::kPending:
-        base::DeleteFile(update_location_path, false);
+        base::DeleteFile(update_location_path);
         break;
       case Availability::kUnavailable:
       case Availability::kUnavailableROCAVulnerable:

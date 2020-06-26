@@ -4,6 +4,7 @@
 
 module media_router.mojom;
 
+import "chrome/common/media_router/mojom/logger.mojom";
 import "chrome/common/media_router/mojom/media_controller.mojom";
 import "chrome/common/media_router/mojom/media_status.mojom";
 import "components/mirroring/mojom/mirroring_service_host.mojom";
@@ -597,6 +598,15 @@ interface MediaRouter {
 
   // Returns current status of media sink service in JSON format.
   GetMediaSinkServiceStatus() => (string status);
+
+  // The logger can be used to add entries to logs returned by GetLogs().
+  GetLogger(pending_receiver<Logger> receiver);
+
+  // Returns a JSON array of logs collected by Media Router components.
+  // Serializing the logs requires allocating extra memory, so it should only be
+  // called under limited circumstances, such as when the user is submitting a
+  // feedback report.
+  GetLogsAsString() => (string logs);
 
   // Called to get a mirroring.mojom.MirroringServiceHost. These APIs are used
   // by Media Router extension to start mirroring through the mirroring service.

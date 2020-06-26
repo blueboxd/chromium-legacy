@@ -21,6 +21,10 @@
 
 namespace updater {
 
+const char kPrefQualified[] = "qualified";
+const char kPrefSwapping[] = "swapping";
+const char kPrefActiveVersion[] = "active_version";
+
 UpdaterPrefs::UpdaterPrefs(std::unique_ptr<ScopedPrefsLock> lock,
                            std::unique_ptr<PrefService> prefs)
     : lock_(std::move(lock)), prefs_(std::move(prefs)) {}
@@ -47,6 +51,8 @@ std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs() {
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
+  pref_registry->RegisterBooleanPref(kPrefSwapping, false);
+  pref_registry->RegisterStringPref(kPrefActiveVersion, "0");
 
   return std::make_unique<UpdaterPrefs>(
       std::move(lock), pref_service_factory.Create(pref_registry));
@@ -63,6 +69,7 @@ std::unique_ptr<UpdaterPrefs> CreateLocalPrefs() {
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
+  pref_registry->RegisterBooleanPref(kPrefQualified, false);
 
   return std::make_unique<UpdaterPrefs>(
       nullptr, pref_service_factory.Create(pref_registry));

@@ -22,6 +22,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -54,7 +55,10 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 // reference to the loaded module on success, or null on error.
 HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
-  base::PreReadFile(module, /*is_executable=*/true);
+  const base::PrefetchResult prefetch_result =
+      base::PreReadFile(module, /*is_executable=*/true);
+  base::UmaHistogramEnumeration("Windows.ChromeDllPrefetchResult",
+                                prefetch_result.code_);
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }

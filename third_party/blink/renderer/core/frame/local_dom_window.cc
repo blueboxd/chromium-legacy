@@ -1770,6 +1770,14 @@ void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
   origin_policy_ids_ = ids;
 }
 
+bool LocalDOMWindow::originIsolationRestricted() const {
+  return origin_isolation_restricted_;
+}
+
+void LocalDOMWindow::SetOriginIsolationRestricted(bool value) {
+  origin_isolation_restricted_ = value;
+}
+
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
                                         const IdleRequestOptions* options) {
   if (!GetFrame())

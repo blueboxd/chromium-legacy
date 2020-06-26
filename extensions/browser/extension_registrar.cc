@@ -112,14 +112,14 @@ void ExtensionRegistrar::AddExtension(
 
 void ExtensionRegistrar::AddNewExtension(
     scoped_refptr<const Extension> extension) {
-  if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
+  if (extension_prefs_->IsExtensionBlocklisted(extension->id())) {
     DCHECK(!Manifest::IsComponentLocation(extension->location()));
-    // Only prefs is checked for the blacklist. We rely on callers to check the
-    // blacklist before calling into here, e.g. CrxInstaller checks before
+    // Only prefs is checked for the blocklist. We rely on callers to check the
+    // blocklist before calling into here, e.g. CrxInstaller checks before
     // installation then threads through the install and pending install flow
     // of this class, and ExtensionService checks when loading installed
     // extensions.
-    registry_->AddBlacklisted(extension);
+    registry_->AddBlocklisted(extension);
   } else if (delegate_->ShouldBlockExtension(extension.get())) {
     DCHECK(!Manifest::IsComponentLocation(extension->location()));
     registry_->AddBlocked(extension);
@@ -176,7 +176,7 @@ void ExtensionRegistrar::RemoveExtension(const ExtensionId& extension_id,
     extension_system_->UnregisterExtensionWithRequestContexts(extension_id,
                                                               reason);
   } else {
-    // TODO(michaelpg): The extension may be blocked or blacklisted, in which
+    // TODO(michaelpg): The extension may be blocked or blocklisted, in which
     // case it shouldn't need to be "deactivated". Determine whether the removal
     // notifications are necessary (crbug.com/708230).
     registry_->RemoveEnabled(extension_id);
@@ -199,7 +199,7 @@ void ExtensionRegistrar::EnableExtension(const ExtensionId& extension_id) {
 
   // First, check that the extension can be enabled.
   if (IsExtensionEnabled(extension_id) ||
-      extension_prefs_->IsExtensionBlacklisted(extension_id) ||
+      extension_prefs_->IsExtensionBlocklisted(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return;
   }
@@ -227,7 +227,7 @@ void ExtensionRegistrar::DisableExtension(const ExtensionId& extension_id,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(disable_reason::DISABLE_NONE, disable_reasons);
 
-  if (extension_prefs_->IsExtensionBlacklisted(extension_id))
+  if (extension_prefs_->IsExtensionBlocklisted(extension_id))
     return;
 
   // The extension may have been disabled already. Just add the disable reasons.
@@ -297,11 +297,11 @@ void ExtensionRegistrar::ReloadExtension(
     return;
   }
 
-  // Ignore attempts to reload a blacklisted or blocked extension. Sometimes
+  // Ignore attempts to reload a blocklisted or blocked extension. Sometimes
   // this can happen in a convoluted reload sequence triggered by the
-  // termination of a blacklisted or blocked extension and a naive attempt to
+  // termination of a blocklisted or blocked extension and a naive attempt to
   // reload it. For an example see http://crbug.com/373842.
-  if (registry_->blacklisted_extensions().Contains(extension_id) ||
+  if (registry_->blocklisted_extensions().Contains(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return;
   }
@@ -394,7 +394,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
   }
 
   if (registry_->disabled_extensions().Contains(extension_id) ||
-      registry_->blacklisted_extensions().Contains(extension_id) ||
+      registry_->blocklisted_extensions().Contains(extension_id) ||
       registry_->blocked_extensions().Contains(extension_id)) {
     return false;
   }
@@ -405,7 +405,7 @@ bool ExtensionRegistrar::IsExtensionEnabled(
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
   // enabled unless otherwise noted.
   return !extension_prefs_->IsExtensionDisabled(extension_id) &&
-         !extension_prefs_->IsExtensionBlacklisted(extension_id) &&
+         !extension_prefs_->IsExtensionBlocklisted(extension_id) &&
          !extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 

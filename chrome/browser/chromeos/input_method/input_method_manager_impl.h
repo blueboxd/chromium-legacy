@@ -263,8 +263,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // AssistiveWindowControllerDelegate overrides:
   void AssistiveWindowButtonClicked(
-      ui::ime::ButtonId id,
-      ui::ime::AssistiveWindowType type) const override;
+      const ui::ime::AssistiveWindowButton& button) const override;
 
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.

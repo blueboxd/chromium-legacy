@@ -198,8 +198,11 @@ class FeedStream : public FeedStreamApi,
 
   // Determines if a FeedQuery request can be made. If successful,
   // returns |LoadStreamStatus::kNoStatus| and acquires throttler quota.
-  // Otherwise returns the reason.
-  LoadStreamStatus ShouldMakeFeedQueryRequest(bool is_load_more = false);
+  // Otherwise returns the reason. If |consume_quota| is false, no quota is
+  // consumed. This can be used to predict the likely result on a subsequent
+  // call.
+  LoadStreamStatus ShouldMakeFeedQueryRequest(bool is_load_more = false,
+                                              bool consume_quota = true);
 
   // Unloads the model. Surfaces are not updated, and will remain frozen until a
   // model load is requested.

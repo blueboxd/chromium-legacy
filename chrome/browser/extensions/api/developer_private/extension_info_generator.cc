@@ -470,7 +470,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   if (include_disabled) {
     add_to_list(registry->disabled_extensions(),
                 developer::EXTENSION_STATE_DISABLED);
-    add_to_list(registry->blacklisted_extensions(),
+    add_to_list(registry->blocklisted_extensions(),
                 developer::EXTENSION_STATE_BLACKLISTED);
   }
   if (include_terminated) {
@@ -496,17 +496,17 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
   // Blacklist text.
   int blacklist_text = -1;
-  switch (extension_prefs_->GetExtensionBlacklistState(extension.id())) {
-    case BLACKLISTED_MALWARE:
+  switch (extension_prefs_->GetExtensionBlocklistState(extension.id())) {
+    case BLOCKLISTED_MALWARE:
       blacklist_text = IDS_EXTENSIONS_BLACKLISTED_MALWARE;
       break;
-    case BLACKLISTED_SECURITY_VULNERABILITY:
+    case BLOCKLISTED_SECURITY_VULNERABILITY:
       blacklist_text = IDS_EXTENSIONS_BLACKLISTED_SECURITY_VULNERABILITY;
       break;
-    case BLACKLISTED_CWS_POLICY_VIOLATION:
+    case BLOCKLISTED_CWS_POLICY_VIOLATION:
       blacklist_text = IDS_EXTENSIONS_BLACKLISTED_CWS_POLICY_VIOLATION;
       break;
-    case BLACKLISTED_POTENTIALLY_UNWANTED:
+    case BLOCKLISTED_POTENTIALLY_UNWANTED:
       blacklist_text = IDS_EXTENSIONS_BLACKLISTED_POTENTIALLY_UNWANTED;
       break;
     default:

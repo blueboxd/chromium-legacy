@@ -1739,7 +1739,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
@@ -2687,27 +2686,6 @@ void RenderFrameHostImpl::DidAddContentSecurityPolicies(
     AddContentSecurityPolicy(std::move(policy));
   }
   frame_tree_node()->AddContentSecurityPolicies(std::move(headers));
-}
-
-void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
-  // Verify and unpack IPC payload.
-  GURL validated_url;
-  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
-                           &blob_url_loader_factory)) {
-    return;
-  }
-
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
-               validated_url.possibly_invalid_spec());
-
-  frame_tree_node_->navigator().RequestOpenURL(
-      this, validated_url,
-      GlobalFrameRoutingId(GetProcess()->GetID(), params.initiator_routing_id),
-      params.initiator_origin, params.post_body, params.extra_headers,
-      params.referrer, params.disposition, params.should_replace_current_entry,
-      params.user_gesture, params.triggering_event_info, params.href_translate,
-      std::move(blob_url_loader_factory), params.impression);
 }
 
 void RenderFrameHostImpl::CancelInitialHistoryLoad() {
@@ -4699,6 +4677,28 @@ void RenderFrameHostImpl::UpdateState(const PageState& state) {
   }
 
   delegate_->UpdateStateForFrame(this, state);
+}
+
+void RenderFrameHostImpl::OpenURL(mojom::OpenURLParamsPtr params) {
+  // Verify and unpack the Mojo payload.
+  GURL validated_url;
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
+                           &blob_url_loader_factory)) {
+    return;
+  }
+
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
+               validated_url.possibly_invalid_spec());
+
+  frame_tree_node_->navigator().RequestOpenURL(
+      this, validated_url,
+      GlobalFrameRoutingId(GetProcess()->GetID(), params->initiator_routing_id),
+      params->initiator_origin, params->post_body, params->extra_headers,
+      params->referrer.To<content::Referrer>(), params->disposition,
+      params->should_replace_current_entry, params->user_gesture,
+      params->triggering_event_info, params->href_translate,
+      std::move(blob_url_loader_factory), params->impression);
 }
 
 void RenderFrameHostImpl::GetSavableResourceLinksCallback(

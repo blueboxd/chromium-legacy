@@ -887,6 +887,19 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   VerifyNavigationMetrics({url, url});
 }
 
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       DocWriteAbortsSubframeNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/doc_write_aborts_subframe.html"));
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+  EXPECT_FALSE(waiter->DidObserveInPage(TimingField::kFirstPaint));
+}
+
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

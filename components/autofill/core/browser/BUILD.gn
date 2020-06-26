@@ -169,6 +169,8 @@ jumbo_static_library("browser") {
     "metrics/form_event_logger_base.h",
     "metrics/form_events.h",
     "payments/account_info_getter.h",
+    "payments/autofill_offer_manager.cc",
+    "payments/autofill_offer_manager.h",
     "payments/autofill_wallet_model_type_controller.cc",
     "payments/autofill_wallet_model_type_controller.h",
     "payments/card_unmask_delegate.cc",

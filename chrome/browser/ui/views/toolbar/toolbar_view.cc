@@ -244,14 +244,6 @@ void ToolbarView::Init() {
   if (show_avatar_toolbar_button)
     avatar = std::make_unique<AvatarToolbarButton>(browser_);
 
-  auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
-  app_menu_button->EnableCanvasFlippingForRTLUI(true);
-  app_menu_button->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
-  app_menu_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
-  app_menu_button->SetID(VIEW_ID_APP_MENU);
-
   // Always add children in order from left to right, for accessibility.
   back_ = AddChildView(std::move(back));
   forward_ = AddChildView(std::move(forward));
@@ -280,6 +272,13 @@ void ToolbarView::Init() {
   if (avatar)
     avatar_ = AddChildView(std::move(avatar));
 
+  auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
+  app_menu_button->EnableCanvasFlippingForRTLUI(true);
+  app_menu_button->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_APP));
+  app_menu_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_APPMENU_TOOLTIP));
+  app_menu_button->SetID(VIEW_ID_APP_MENU);
   app_menu_button_ = AddChildView(std::move(app_menu_button));
 
   LoadImages();
@@ -821,7 +820,10 @@ PageActionIconView* ToolbarView::GetPageActionIconView(
 }
 
 AppMenuButton* ToolbarView::GetAppMenuButton() {
-  return app_menu_button_;
+  if (app_menu_button_)
+    return app_menu_button_;
+
+  return custom_tab_bar_ ? custom_tab_bar_->custom_tab_menu_button() : nullptr;
 }
 
 gfx::Rect ToolbarView::GetFindBarBoundingBox(int contents_bottom) {

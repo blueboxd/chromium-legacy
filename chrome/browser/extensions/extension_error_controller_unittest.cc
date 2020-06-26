@@ -126,13 +126,12 @@ void ExtensionErrorControllerUnitTest::SetUp() {
 testing::AssertionResult
 ExtensionErrorControllerUnitTest::AddBlacklistedExtension(
     const Extension* extension) {
-  GetPrefs()->SetExtensionBlacklistState(extension->id(),
-                                         BLACKLISTED_MALWARE);
+  GetPrefs()->SetExtensionBlocklistState(extension->id(), BLOCKLISTED_MALWARE);
   service_->AddExtension(extension);
 
   // Make sure the extension is added to the blacklisted set.
-  if (!ExtensionRegistry::Get(profile())->blacklisted_extensions()
-          .Contains(extension->id())) {
+  if (!ExtensionRegistry::Get(profile())->blocklisted_extensions().Contains(
+          extension->id())) {
     return testing::AssertionFailure()
         << "Failed to add blacklisted extension.";
   }
@@ -168,7 +167,7 @@ TEST_F(ExtensionErrorControllerUnitTest, ClosingAcknowledgesBlacklisted) {
 
   // Close, and verify that the extension ids now acknowledged.
   g_error_ui->CloseUI();
-  EXPECT_TRUE(GetPrefs()->IsBlacklistedExtensionAcknowledged(extension->id()));
+  EXPECT_TRUE(GetPrefs()->IsBlocklistedExtensionAcknowledged(extension->id()));
   // Verify we cleaned up after ourselves.
   EXPECT_FALSE(g_error_ui);
 }
@@ -188,7 +187,7 @@ TEST_F(ExtensionErrorControllerUnitTest, AcceptingAcknowledgesBlacklisted) {
 
   // Accept, and verify that the extension ids now acknowledged.
   g_error_ui->Accept();
-  EXPECT_TRUE(GetPrefs()->IsBlacklistedExtensionAcknowledged(extension->id()));
+  EXPECT_TRUE(GetPrefs()->IsBlocklistedExtensionAcknowledged(extension->id()));
   // Verify we cleaned up after ourselves.
   EXPECT_FALSE(g_error_ui);
 }
@@ -199,7 +198,7 @@ TEST_F(ExtensionErrorControllerUnitTest, DontWarnForAcknowledgedBlacklisted) {
   scoped_refptr<const Extension> extension = BuildExtension();
   ASSERT_TRUE(AddBlacklistedExtension(extension.get()));
 
-  GetPrefs()->AcknowledgeBlacklistedExtension(extension->id());
+  GetPrefs()->AcknowledgeBlocklistedExtension(extension->id());
 
   service_->Init();
 

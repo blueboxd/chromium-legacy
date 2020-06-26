@@ -64,6 +64,7 @@ class PrintCompositeClient
   // when processing the individual pages for preview.
   void DoPrepareForDocumentToPdf(
       int document_cookie,
+      content::RenderFrameHost* render_frame_host,
       mojom::PrintCompositor::PrepareForDocumentToPdfCallback callback);
 
   // Notifies compositor of the total number of pages being concurrently
@@ -122,7 +123,9 @@ class PrintCompositeClient
   // composite request. Launches the compositor in a separate process.
   // If a composite request already exists, it is removed.
   // Returns the created composite request.
-  mojom::PrintCompositor* CreateCompositeRequest(int cookie);
+  mojom::PrintCompositor* CreateCompositeRequest(
+      int cookie,
+      content::RenderFrameHost* initiator_frame);
 
   // Remove the existing composite request.
   void RemoveCompositeRequest(int cookie);
@@ -147,6 +150,10 @@ class PrintCompositeClient
   // pages, so that no separate composite request with full-document blob is
   // required.
   bool is_doc_concurrently_composited_ = false;
+
+  // Stores the the frame that initiated the composite request;
+  // Holds nullptr if no document is being composited.
+  content::RenderFrameHost* initiator_frame_ = nullptr;
 
   // Stores the pending subframes for the composited document.
   base::flat_set<content::RenderFrameHost*> pending_subframes_;

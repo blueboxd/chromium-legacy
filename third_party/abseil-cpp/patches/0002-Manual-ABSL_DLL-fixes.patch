@@ -1,0 +1,53 @@
+From 330cb7c7a62ab3187a6a2a3dc3a7b92f3690677c Mon Sep 17 00:00:00 2001
+From: Mirko Bonadei <mbonadei@chromium.org>
+Date: Wed, 17 Jun 2020 21:37:18 +0200
+Subject: [PATCH] Manual ABSL_DLL fixes.
+
+---
+ third_party/abseil-cpp/absl/base/internal/raw_logging.cc | 2 +-
+ third_party/abseil-cpp/absl/base/internal/raw_logging.h  | 2 +-
+ third_party/abseil-cpp/absl/strings/string_view.h        | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/abseil-cpp/absl/base/internal/raw_logging.cc b/third_party/abseil-cpp/absl/base/internal/raw_logging.cc
+index 40cea5506172..f27e2838d72b 100644
+--- a/third_party/abseil-cpp/absl/base/internal/raw_logging.cc
++++ b/third_party/abseil-cpp/absl/base/internal/raw_logging.cc
+@@ -227,7 +227,7 @@ bool RawLoggingFullySupported() {
+ #endif  // !ABSL_LOW_LEVEL_WRITE_SUPPORTED
+ }
+ 
+-ABSL_DLL ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES
++ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES ABSL_DLL
+     absl::base_internal::AtomicHook<InternalLogFunction>
+         internal_log_function(DefaultInternalLog);
+ 
+diff --git a/third_party/abseil-cpp/absl/base/internal/raw_logging.h b/third_party/abseil-cpp/absl/base/internal/raw_logging.h
+index 418d6c856feb..51551bafff48 100644
+--- a/third_party/abseil-cpp/absl/base/internal/raw_logging.h
++++ b/third_party/abseil-cpp/absl/base/internal/raw_logging.h
+@@ -170,7 +170,7 @@ using InternalLogFunction = void (*)(absl::LogSeverity severity,
+                                      const char* file, int line,
+                                      const std::string& message);
+ 
+-ABSL_DLL ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES extern base_internal::AtomicHook<
++ABSL_INTERNAL_ATOMIC_HOOK_ATTRIBUTES ABSL_DLL extern base_internal::AtomicHook<
+     InternalLogFunction>
+     internal_log_function;
+ 
+diff --git a/third_party/abseil-cpp/absl/strings/string_view.h b/third_party/abseil-cpp/absl/strings/string_view.h
+index 8a9db8c3d796..7fb033300338 100644
+--- a/third_party/abseil-cpp/absl/strings/string_view.h
++++ b/third_party/abseil-cpp/absl/strings/string_view.h
+@@ -586,7 +586,7 @@ constexpr bool operator>=(string_view x, string_view y) noexcept {
+ }
+ 
+ // IO Insertion Operator
+-std::ostream& operator<<(std::ostream& o, string_view piece);
++ABSL_DLL std::ostream& operator<<(std::ostream& o, string_view piece);
+ 
+ ABSL_NAMESPACE_END
+ }  // namespace absl
+-- 
+2.27.0.290.gba653c62da-goog
+

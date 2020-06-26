@@ -183,6 +183,7 @@ class StartSurfaceToolbarMediator {
                     mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
                 }
                 if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS
                         || mShowNewTabAndIdentityDiscAtStart) {
                     mPropertyModel.set(NEW_TAB_BUTTON_AT_START, true);
                 }
@@ -207,7 +208,8 @@ class StartSurfaceToolbarMediator {
         boolean shouldShowLogo =
                 (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
                         || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
-                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY)
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS)
                 && mIsGoogleSearchEngine;
         mPropertyModel.set(LOGO_IS_VISIBLE, shouldShowLogo);
     }
@@ -242,6 +244,7 @@ class StartSurfaceToolbarMediator {
         boolean isShownTabswitcherState = mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TRENDY_TERMS
                 || ChromeAccessibilityUtil.get().isAccessibilityEnabled();
         mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
     }

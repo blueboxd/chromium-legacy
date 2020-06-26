@@ -122,12 +122,16 @@ void FakeVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     state_ = STATE_END_OF_STREAM;
   } else {
     DCHECK(VerifyFakeVideoBufferForTest(*buffer, current_config_));
-    scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateColorFrame(
-        current_config_.coded_size(), 0, 0, 0, buffer->timestamp());
-    decoded_frames_.push_back(video_frame);
+    decoded_frames_.push_back(MakeVideoFrame(*buffer));
   }
 
   RunOrHoldDecode(std::move(wrapped_decode_cb));
+}
+
+scoped_refptr<VideoFrame> FakeVideoDecoder::MakeVideoFrame(
+    const DecoderBuffer& buffer) {
+  return VideoFrame::CreateColorFrame(current_config_.coded_size(), 0, 0, 0,
+                                      buffer.timestamp());
 }
 
 void FakeVideoDecoder::Reset(base::OnceClosure closure) {
@@ -222,7 +226,8 @@ void FakeVideoDecoder::OnFrameDecoded(int buffer_size,
 
   if (status == DecodeStatus::OK) {
     total_bytes_decoded_ += buffer_size;
-    bytes_decoded_cb_.Run(buffer_size);
+    if (bytes_decoded_cb_)
+      bytes_decoded_cb_.Run(buffer_size);
   }
   std::move(decode_cb).Run(status);
 }

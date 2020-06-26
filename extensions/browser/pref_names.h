@@ -58,12 +58,12 @@ extern const char kExtensionManagement[];
 extern const char kInsecureExtensionUpdatesEnabled[];
 
 // A whitelist of extension ids the user can install: exceptions from the
-// following blacklist.
+// following denylist.
 extern const char kInstallAllowList[];
 
-// A blacklist, containing extensions the user cannot install. This list can
+// A denylist, containing extensions the user cannot install. This list can
 // contain "*" meaning all extensions. This list should not be confused with the
-// extension blacklist, which is Google controlled.
+// extension blocklist, which is Google controlled.
 extern const char kInstallDenyList[];
 
 // A list containing extensions that Chrome will silently install

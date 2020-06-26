@@ -40,7 +40,7 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
   gfx::ImageSkia GetWindowIcon() const override;
   base::Optional<SkColor> GetThemeColor() const override;
   base::string16 GetTitle() const override;
-  std::string GetAppShortName() const override;
+  base::string16 GetAppShortName() const override;
   base::string16 GetFormattedUrlOrigin() const override;
   GURL GetAppLaunchURL() const override;
   bool IsUrlInAppScope(const GURL& url) const override;

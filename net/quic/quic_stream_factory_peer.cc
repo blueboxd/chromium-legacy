@@ -185,6 +185,11 @@ int QuicStreamFactoryPeer::GetNumPushStreamsCreated(
   return factory->num_push_streams_created_;
 }
 
+size_t QuicStreamFactoryPeer::GetNumDegradingSessions(
+    QuicStreamFactory* factory) {
+  return factory->connectivity_monitor_.GetNumDegradingSessions();
+}
+
 void QuicStreamFactoryPeer::SetAlarmFactory(
     QuicStreamFactory* factory,
     std::unique_ptr<quic::QuicAlarmFactory> alarm_factory) {

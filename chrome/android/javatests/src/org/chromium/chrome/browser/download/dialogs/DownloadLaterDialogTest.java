@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.download.DownloadLaterPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -60,8 +61,11 @@ public class DownloadLaterDialogTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
+                             .with(DownloadLaterDialogProperties.CONTROLLER, mDialogCoordinator)
                              .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
                                      DownloadLaterDialogChoice.ON_WIFI)
+                             .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
+                                     DownloadLaterPromptStatus.SHOW_INITIAL)
                              .build();
             mDialogCoordinator = new DownloadLaterDialogCoordinator();
             Assert.assertNotNull(mController);
@@ -130,7 +134,8 @@ public class DownloadLaterDialogTest {
             getDownloadLaterDialogView().onCheckedChanged(null, -1);
             clickPositiveButton();
             verify(mController)
-                    .onDownloadLaterDialogComplete(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW));
+                    .onDownloadLaterDialogComplete(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW),
+                            eq(DownloadLaterPromptStatus.DONT_SHOW));
         });
     }
 }

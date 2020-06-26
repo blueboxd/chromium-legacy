@@ -1197,10 +1197,11 @@ TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
     <p id="text">test</p>
   )HTML");
   RunAsyncMatchingTasks();
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
-  Compositor().BeginFrame();
+  EXPECT_FALSE(GetDocument().IsLoadCompleted());
+  EXPECT_TRUE(GetDocument().HasFinishedParsing());
 
   ScrollOffset first_scroll_offset = LayoutViewport()->GetScrollOffset();
   ASSERT_NE(ScrollOffset(), first_scroll_offset);
@@ -1215,7 +1216,12 @@ TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
       <rect fill="green" width="200" height="2000"/>
     </svg>
   )SVG");
+  RunPendingTasks();
+  EXPECT_TRUE(GetDocument().IsLoadCompleted());
+  EXPECT_TRUE(GetDocument().HasFinishedParsing());
+
   RunAsyncMatchingTasks();
+  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   // Ensure the target text is still in view and stayed centered
@@ -1850,6 +1856,8 @@ TEST_F(TextFragmentAnchorTest, NonTextDirectives) {
     <p id="first">This is a test page</p>
     <p id="second">This is some more text</p>
   )HTML");
+  RunPendingTasks();
+
   // Render two frames to handle the async step added by the beforematch event.
   Compositor().BeginFrame();
   Compositor().BeginFrame();

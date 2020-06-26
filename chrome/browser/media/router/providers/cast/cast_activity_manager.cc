@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
+#include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
@@ -28,21 +29,30 @@ using blink::mojom::PresentationConnectionState;
 
 namespace media_router {
 
+namespace {
+
+constexpr char kLoggerComponent[] = "CastActivityManager";
+
+}  // namespace
+
 CastActivityManager::CastActivityManager(
     MediaSinkServiceBase* media_sink_service,
     CastSessionTracker* session_tracker,
     cast_channel::CastMessageHandler* message_handler,
     mojom::MediaRouter* media_router,
+    mojom::Logger* logger,
     const std::string& hash_token)
     : media_sink_service_(media_sink_service),
       session_tracker_(session_tracker),
       message_handler_(message_handler),
       media_router_(media_router),
+      logger_(logger),
       hash_token_(hash_token) {
   DCHECK(media_sink_service_);
+  DCHECK(session_tracker_);
   DCHECK(message_handler_);
   DCHECK(media_router_);
-  DCHECK(session_tracker_);
+  DCHECK(logger_);
   message_handler_->AddObserver(this);
   for (const auto& sink_id_session : session_tracker_->GetSessions()) {
     const MediaSinkInternal* sink =
@@ -106,7 +116,9 @@ void CastActivityManager::LaunchSessionParsed(
     mojom::MediaRouteProvider::CreateRouteCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   if (!cast_source.app_params().empty() && result.error) {
-    DVLOG(1) << "Error parsing JSON data in appParams" << *result.error;
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Error parsing JSON data in appParams" + *result.error,
+                      sink.id(), cast_source.source_id(), "");
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid JSON Format of appParams"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -170,11 +182,6 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
       cast_source.supported_app_types());
   std::string app_id = ChooseAppId(cast_source, params.sink);
 
-  DVLOG(2) << "Launching session with route ID = " << route_id
-           << ", source ID = " << cast_source.source_id()
-           << ", sink ID = " << sink.sink().id() << ", app ID = " << app_id
-           << ", origin = " << params.origin << ", tab ID = " << params.tab_id;
-
   mojom::RoutePresentationConnectionPtr presentation_connection;
 
   ActivityRecord* activity_ptr =
@@ -203,6 +210,9 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
       base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
                      weak_ptr_factory_.GetWeakPtr(), route_id, sink,
                      cast_source));
+  logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
+                   "Launched a session", sink.id(), cast_source.source_id(),
+                   route_id);
 
   std::move(params.callback)
       .Run(route, std::move(presentation_connection),

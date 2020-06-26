@@ -35,7 +35,8 @@
   }
 
   async function step3() {
-    const requests = NetworkTestRunner.networkRequests();
+    var requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
     requests.sort(function(a, b) {
       return a.url().localeCompare(b.url());
     });

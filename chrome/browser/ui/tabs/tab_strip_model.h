@@ -413,7 +413,7 @@ class TabStripModel : public TabGroupController {
   void SelectLastTab(
       UserGestureDetails detail = UserGestureDetails(GestureType::kOther));
 
-  // Swap adjacent tabs.
+  // Moves the active in the specified direction. Respects group boundaries.
   void MoveTabNext();
   void MoveTabPrevious();
 
@@ -685,6 +685,11 @@ class TabStripModel : public TabGroupController {
   // Selects either the next tab (|forward| is true), or the previous tab
   // (|forward| is false).
   void SelectRelativeTab(bool forward, UserGestureDetails detail);
+
+  // Moves the active tabs into the next slot (|forward| is true), or the
+  // previous slot (|forward| is false). Respects group boundaries and creates
+  // movement slots into and out of groups.
+  void MoveTabRelative(bool forward);
 
   // Does the work of MoveWebContentsAt. This has no checks to make sure the
   // position is valid, those are done in MoveWebContentsAt.

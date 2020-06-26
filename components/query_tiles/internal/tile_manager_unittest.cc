@@ -328,6 +328,15 @@ TEST_F(TileManagerTest, GetTilesWithMatchingAcceptLanguages) {
   GetTiles({tile});
 }
 
+TEST_F(TileManagerTest, PurgeDb) {
+  TileGroup group;
+  test::ResetTestGroup(&group);
+  InitWithData(TileGroupStatus::kSuccess, {group});
+  EXPECT_CALL(*tile_store(), Delete(group.id, _));
+  manager()->PurgeDb();
+  GetTiles(std::vector<Tile>() /*expect an empty result*/);
+}
+
 }  // namespace
 
 }  // namespace query_tiles

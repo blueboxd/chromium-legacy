@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "content/common/frame.mojom";
 import "content/common/render_frame_metadata.mojom";
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 
@@ -14,6 +15,9 @@ import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 interface RenderFrameProxyHost {
   // TODO(dtapuska): Keep this interface for now. All methods have moved to
   // blink::RemoteFrameHost but we might still need this.
+
+  // Requests that the given URL be opened in the specified manner.
+  OpenURL(OpenURLParams params);
 };
 
 // Mojo interface for communicating from RenderFrameProxyHost to

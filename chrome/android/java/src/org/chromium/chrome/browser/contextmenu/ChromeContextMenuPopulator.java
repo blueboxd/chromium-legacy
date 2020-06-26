@@ -1016,9 +1016,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             });
         }
 
-        // In Lens Shopping Menu Item experiment, fallback to search image with google lens
-        // When the url is not in domain allowlist.
-        if (LensUtils.enableGoogleLensShoppingFeature()) {
+        // In Lens Shopping Menu Item experiment, fallback to Search image with Google Lens
+        // When the url is not in domain allowlist and AGSA version is equal to or greater than the
+        // minimum shopping supported version.
+        if (LensUtils.enableGoogleLensShoppingFeature()
+                && !GSAState.getInstance(context).isAgsaVersionBelowMinimum(
+                        versionName, LensUtils.getMinimumAgsaVersionForLensShoppingSupport())) {
             if (LensUtils.isInShoppingAllowlist(pageUrl)) {
                 // Hide Search With Google Lens menu item when experiment only with Lens Shopping
                 // menu items.

@@ -236,7 +236,8 @@ DocumentLoader::DocumentLoader(
       initiator_origin_trial_features_(
           CopyInitiatorOriginTrials(params_->initiator_origin_trial_features)),
       force_enabled_origin_trials_(
-          CopyForceEnabledOriginTrials(params_->force_enabled_origin_trials)) {
+          CopyForceEnabledOriginTrials(params_->force_enabled_origin_trials)),
+      origin_isolation_restricted_(params_->origin_isolation_restricted) {
   DCHECK(frame_);
 
   // TODO(nasko): How should this work with OOPIF?
@@ -1670,6 +1671,9 @@ void DocumentLoader::InstallNewDocument(
       frame_->DomWindow()->SetOriginPolicyIds(ids);
     }
   }
+
+  frame_->DomWindow()->SetOriginIsolationRestricted(
+      origin_isolation_restricted_);
 
   WillCommitNavigation();
 

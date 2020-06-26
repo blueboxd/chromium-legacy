@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/lacros/select_file_impl.h"
+#include "chromeos/lacros/mojom/select_file.mojom.h"
 
 namespace chromeos {
 
@@ -19,5 +21,10 @@ AshChromeServiceImpl::AshChromeServiceImpl(
 }
 
 AshChromeServiceImpl::~AshChromeServiceImpl() = default;
+
+void AshChromeServiceImpl::BindSelectFile(
+    mojo::PendingReceiver<lacros::mojom::SelectFile> receiver) {
+  select_file_impl_ = std::make_unique<SelectFileImpl>(std::move(receiver));
+}
 
 }  // namespace chromeos

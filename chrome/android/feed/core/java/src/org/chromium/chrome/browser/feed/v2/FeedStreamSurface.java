@@ -22,6 +22,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.RequestCoordinatorBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
@@ -383,8 +385,10 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
         } else if (slice.hasLoadingSpinnerSlice()) {
             return new FeedListContentManager.NativeViewContent(sliceId, R.layout.feed_spinner);
+        } else if (slice.hasZeroStateSlice()) {
+            // TODO(iwells): Settle on a final layout for zero-state.
+            return new FeedListContentManager.NativeViewContent(sliceId, R.layout.no_content);
         } else {
-            // TODO(jianli): Create native view for ZeroStateSlice.
             TextView view = new TextView(mActivity);
             view.setText(sliceId);
             return new FeedListContentManager.NativeViewContent(sliceId, view);
@@ -393,12 +397,24 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void navigateTab(String url) {
-        openUrl(url, /*inNewTab=*/false);
+        openUrl(url, WindowOpenDisposition.CURRENT_TAB);
     }
 
     @Override
     public void navigateNewTab(String url) {
-        openUrl(url, /*inNewTab=*/true);
+        openUrl(url, WindowOpenDisposition.NEW_FOREGROUND_TAB);
+    }
+
+    @Override
+    public void navigateIncognitoTab(String url) {
+        openUrl(url, WindowOpenDisposition.OFF_THE_RECORD);
+    }
+
+    @Override
+    public void downloadLink(String url) {
+        RequestCoordinatorBridge.getForProfile(Profile.getLastUsedRegularProfile())
+                .savePageLater(url, OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE,
+                        true /* user requested*/);
     }
 
     @Override
@@ -502,19 +518,21 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
     }
 
-    private void openUrl(String url, boolean inNewTab) {
+    private void openUrl(String url, int disposition) {
         LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
         params.setReferrer(
                 new Referrer(SuggestionsConfig.getReferrerUrl(ChromeFeatureList.INTEREST_FEED_V2),
                         ReferrerPolicy.ALWAYS));
-        Tab tab =
-                mPageNavigationDelegate.openUrl(inNewTab ? WindowOpenDisposition.NEW_BACKGROUND_TAB
-                                                         : WindowOpenDisposition.CURRENT_TAB,
-                        params);
+        Tab tab = mPageNavigationDelegate.openUrl(disposition, params);
+
+        boolean inNewTab = (disposition == WindowOpenDisposition.NEW_BACKGROUND_TAB
+                || disposition == WindowOpenDisposition.OFF_THE_RECORD);
 
         FeedStreamSurfaceJni.get().reportNavigationStarted(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, url, inNewTab);
-        tab.addObserver(new FeedTabNavigationObserver(inNewTab));
+                mNativeFeedStreamSurface, FeedStreamSurface.this);
+        if (tab != null) {
+            tab.addObserver(new FeedTabNavigationObserver(inNewTab));
+        }
     }
 
     @NativeMethods
@@ -524,8 +542,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         // TODO(jianli): Call this function at the appropriate time.
         void reportSliceViewed(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);
-        void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller,
-                String url, boolean inNewTab);
+        void reportNavigationStarted(long nativeFeedStreamSurface, FeedStreamSurface caller);
         // TODO(jianli): Call this function at the appropriate time.
         void reportPageLoaded(long nativeFeedStreamSurface, FeedStreamSurface caller, String url,
                 boolean inNewTab);

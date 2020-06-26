@@ -72,7 +72,8 @@ class PrintPreviewMessageHandler
       const PrintHostMsg_PreviewIds& ids);
   void OnDidStartPreview(const mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids);
-  void OnDidPrepareForDocumentToPdf(int document_cookie,
+  void OnDidPrepareForDocumentToPdf(content::RenderFrameHost* render_frame_host,
+                                    int document_cookie,
                                     const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(content::RenderFrameHost* render_frame_host,
                         const PrintHostMsg_DidPreviewPage_Params& params,

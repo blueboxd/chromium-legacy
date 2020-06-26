@@ -143,7 +143,7 @@ constexpr int kWaitForAppInstallerSec = 60;
 constexpr int kWaitForInstallerProgressSec = 1;
 #endif  // OS_WIN
 
-// Errors.
+// Install Errors.
 //
 // Specific install errors for the updater are reported in such a way that
 // their range does not conflict with the range of generic errors defined by
@@ -165,6 +165,13 @@ constexpr int kErrorMissingRunableFile = kCustomInstallErrorBase + 2;
 
 // Running the application installer failed.
 constexpr int kErrorApplicationInstallerFailed = kCustomInstallErrorBase + 3;
+
+// Server Errors.
+//
+// The server process may exit with any of these exit codes.
+constexpr int kErrorOk = 0;
+constexpr int kErrorFailedToLockPrefsMutex = 1;
+constexpr int kErrorFailedToSwap = 2;
 
 // Policy Management constants.
 extern const char kProxyModeDirect[];

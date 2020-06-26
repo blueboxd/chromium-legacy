@@ -11853,6 +11853,7 @@ interface webkitURL
     getter onwebkittransitionend
     getter onwheel
     getter origin
+    getter originIsolationRestricted
     getter originPolicyIds
     getter outerHeight
     getter outerWidth

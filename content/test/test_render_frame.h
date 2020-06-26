@@ -84,6 +84,8 @@ class TestRenderFrame : public RenderFrameImpl {
 
   bool IsPageStateUpdated() const;
 
+  bool IsURLOpened() const;
+
  protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 

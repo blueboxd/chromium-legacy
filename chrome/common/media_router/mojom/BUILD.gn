@@ -26,6 +26,7 @@ mojom("media_router") {
   sources = [ "media_router.mojom" ]
 
   public_deps = [
+    ":logger",
     ":media_controller",
     "//components/mirroring/mojom:host",
     "//media/mojo/mojom:mirror_service_remoting",

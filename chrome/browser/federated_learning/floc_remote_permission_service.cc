@@ -65,11 +65,26 @@ class RequestImpl : public FlocRemotePermissionService::Request {
 
     DCHECK(resource_request->SendsCookies());
 
-    // TODO(yaoxia): Once we have a client, incorporate
-    // |partial_traffic_annotation_| to make an actual
-    // CompleteNetworkTrafficAnnotation.
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::CompleteNetworkTrafficAnnotation("floc_remote_permission_service",
+                                              partial_traffic_annotation_,
+                                              R"(
+          semantics {
+            sender: "Federated Learning of Cohorts Remote Permission Service"
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            chrome_policy {
+              SyncDisabled {
+                SyncDisabled: true
+              }
+            }
+          })");
+
     simple_url_loader_ = network::SimpleURLLoader::Create(
-        std::move(resource_request), MISSING_TRAFFIC_ANNOTATION);
+        std::move(resource_request), traffic_annotation);
     simple_url_loader_->SetRetryOptions(kMaxRetries,
                                         network::SimpleURLLoader::RETRY_ON_5XX);
     simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

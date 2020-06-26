@@ -11,7 +11,7 @@
 
 namespace updater {
 class UpdateService;
-class AppServer;
+class AppServerMac;
 }
 
 @interface CRUUpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate>
@@ -21,7 +21,7 @@ class AppServer;
 // Designated initializer.
 - (instancetype)
     initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer
     NS_DESIGNATED_INITIALIZER;
 
 @end
@@ -34,7 +34,7 @@ class AppServer;
 // Designated initializer.
 - (instancetype)
     initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
-                appServer:(scoped_refptr<updater::AppServer>)appServer
+                appServer:(scoped_refptr<updater::AppServerMac>)appServer
     NS_DESIGNATED_INITIALIZER;
 
 @end

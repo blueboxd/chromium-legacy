@@ -12,14 +12,17 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace x11 {
 
 class Connection;
 class Event;
+struct ReadBuffer;
 
 COMPONENT_EXPORT(X11)
-void ReadEvent(Event* event, Connection* connection, const uint8_t* buffer);
+void ReadEvent(Event* event, Connection* connection, ReadBuffer* buffer);
 
 class COMPONENT_EXPORT(X11) Event {
  public:
@@ -37,6 +40,11 @@ class COMPONENT_EXPORT(X11) Event {
 
   Event();
   Event(xcb_generic_event_t* xcb_event,
+        Connection* connection,
+        bool sequence_valid = true);
+  // |event_bytes| is modified and will not be valid after this call.
+  // A copy is necessary if the original data is still needed.
+  Event(scoped_refptr<base::RefCountedMemory> event_bytes,
         Connection* connection,
         bool sequence_valid = true);
 
@@ -69,7 +77,7 @@ class COMPONENT_EXPORT(X11) Event {
  private:
   friend void ReadEvent(Event* event,
                         Connection* connection,
-                        const uint8_t* buffer);
+                        ReadBuffer* buffer);
 
   void Dealloc();
 

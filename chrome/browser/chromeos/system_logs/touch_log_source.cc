@@ -52,7 +52,7 @@ const int kMaxDeviceTouchEventLogs = 7;
 // Clean up intermediate log files dumped during feedback creation.
 void CleanupEventLog(const std::vector<base::FilePath>& log_paths) {
   for (const base::FilePath& path : log_paths)
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
 }
 
 // Check for all known log paths and find the ones whose filenames match a

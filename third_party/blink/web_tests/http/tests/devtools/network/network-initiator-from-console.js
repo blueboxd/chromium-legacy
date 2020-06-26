@@ -19,7 +19,7 @@
   }
 
   function onRequest(event) {
-    var request = event.data;
+    var request = event.data.request;
     if (/silent_script.js/.test(request.url()))
       step2();
   }

@@ -86,6 +86,18 @@ class TileManagerImpl : public TileManager {
         FROM_HERE, base::BindOnce(std::move(callback), result_tile));
   }
 
+  TileGroupStatus PurgeDb() override {
+    if (!initialized_)
+      return TileGroupStatus::kUninitialized;
+    if (!tile_group_)
+      return TileGroupStatus::kNoTiles;
+    store_->Delete(tile_group_->id,
+                   base::BindOnce(&TileManagerImpl::OnGroupDeleted,
+                                  weak_ptr_factory_.GetWeakPtr()));
+    tile_group_.reset();
+    return TileGroupStatus::kNoTiles;
+  }
+
   void SetAcceptLanguagesForTesting(
       const std::string& accept_languages) override {
     accept_languages_ = accept_languages;

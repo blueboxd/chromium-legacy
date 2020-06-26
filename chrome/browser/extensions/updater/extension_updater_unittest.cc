@@ -465,7 +465,7 @@ class ServiceForManifestTests : public MockService {
     }
     for (ExtensionList::const_iterator it = blacklisted_extensions.begin();
          it != blacklisted_extensions.end(); ++it) {
-      registry_->AddBlacklisted(*it);
+      registry_->AddBlocklisted(*it);
     }
   }
 

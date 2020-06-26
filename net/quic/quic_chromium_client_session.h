@@ -20,6 +20,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
@@ -138,6 +139,25 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       public QuicChromiumPacketWriter::Delegate {
  public:
   class StreamRequest;
+
+  // An interface that when implemented and added via
+  // AddConnectivityObserver(), provides notifications when connectivity
+  // quality changes.
+  class NET_EXPORT_PRIVATE ConnectivityObserver : public base::CheckedObserver {
+   public:
+    // Called when path degrading is detected on |network|.
+    virtual void OnSessionPathDegrading(
+        QuicChromiumClientSession* session,
+        NetworkChangeNotifier::NetworkHandle network) = 0;
+
+    // Called when forward progress is made after path degrading on |network|.
+    virtual void OnSessionResumedPostPathDegrading(
+        QuicChromiumClientSession* session,
+        NetworkChangeNotifier::NetworkHandle network) = 0;
+
+    // Called when |session| is removed.
+    virtual void OnSessionRemoved(QuicChromiumClientSession* session) = 0;
+  };
 
   // Wrapper for interacting with the session in a restricted fashion which
   // hides the details of the underlying session's lifetime. All methods of
@@ -422,6 +442,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void AddHandle(Handle* handle);
   void RemoveHandle(Handle* handle);
 
+  void AddConnectivityObserver(ConnectivityObserver* observer);
+  void RemoveConnectivityObserver(ConnectivityObserver* observer);
+
   // Returns the session's connection migration mode.
   ConnectionMigrationMode connection_migration_mode() const;
 
@@ -523,6 +546,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                         const quic::QuicSocketAddress& peer_address,
                         bool is_connectivity_probe) override;
   void OnPathDegrading() override;
+  void OnForwardProgressMadeAfterPathDegrading() override;
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;
@@ -643,6 +667,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // QUIC packets are sent. This default socket can change, so do not store the
   // returned socket.
   const DatagramClientSocket* GetDefaultSocket() const;
+
+  // Returns the network interface that is currently used to send packets.
+  // If NetworkHandle is not supported, always return
+  // NetworkChangeNotifier::kInvalidNetworkHandle.
+  NetworkChangeNotifier::NetworkHandle GetCurrentNetwork() const;
 
   bool IsAuthorized(const std::string& hostname) override;
 
@@ -806,6 +835,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   std::unique_ptr<quic::QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
+  base::ObserverList<ConnectivityObserver> connectivity_observer_list_;
   std::vector<std::unique_ptr<DatagramClientSocket>> sockets_;
   TransportSecurityState* transport_security_state_;
   SSLConfigService* ssl_config_service_;
@@ -843,7 +873,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // written to an alternate socket when the migration completes and the
   // alternate socket is unblocked.
   scoped_refptr<QuicChromiumPacketWriter::ReusableIOBuffer> packet_;
-  // Stores the latest default network platform marks.
+  // Stores the latest default network platform marks if migration is enabled.
+  // Otherwise, stores the network interface that is used by the connection.
   NetworkChangeNotifier::NetworkHandle default_network_;
   QuicConnectivityProbingManager probing_manager_;
   int retry_migrate_back_count_;

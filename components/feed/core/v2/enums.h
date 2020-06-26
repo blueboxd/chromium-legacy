@@ -40,7 +40,8 @@ enum class LoadStreamStatus {
   kLoadMoreModelIsNotLoaded = 16,
   kLoadNotAllowedDisabledByEnterprisePolicy = 17,
   kNetworkFetchFailed = 18,
-  kMaxValue = kNetworkFetchFailed,
+  kCannotLoadMoreNoNextPageToken = 19,
+  kMaxValue = kCannotLoadMoreNoNextPageToken,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

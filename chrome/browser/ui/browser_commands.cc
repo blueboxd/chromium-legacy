@@ -29,7 +29,6 @@
 #include "chrome/browser/media/router/media_router_dialog_controller.h"  // nogncheck
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -1205,27 +1204,6 @@ void RouteMediaInvokedFromAppMenu(Browser* browser) {
       media_router::MediaRouterDialogOpenOrigin::APP_MENU);
 }
 
-void EmailPageLocation(Browser* browser) {
-  base::RecordAction(UserMetricsAction("EmailPageLocation"));
-  WebContents* wc = browser->tab_strip_model()->GetActiveWebContents();
-  DCHECK(wc);
-
-  std::string title =
-      net::EscapeQueryParamValue(base::UTF16ToUTF8(wc->GetTitle()), false);
-  std::string page_url = net::EscapeQueryParamValue(wc->GetURL().spec(), false);
-  std::string mailto = std::string("mailto:?subject=Fwd:%20") + title +
-                       "&body=%0A%0A" + page_url;
-  platform_util::OpenExternal(browser->profile(), GURL(mailto));
-}
-
-bool CanEmailPageLocation(const Browser* browser) {
-  return browser->location_bar_model()->ShouldDisplayURL() &&
-         browser->tab_strip_model()
-             ->GetActiveWebContents()
-             ->GetURL()
-             .is_valid();
-}
-
 void CutCopyPaste(Browser* browser, int command_id) {
   if (command_id == IDC_CUT)
     base::RecordAction(UserMetricsAction("Cut"));
@@ -1476,7 +1454,6 @@ void CopyURL(Browser* browser) {
 }
 
 Browser* OpenInChrome(Browser* hosted_app_browser) {
-  DCHECK(hosted_app_browser->app_controller());
   // Find a non-incognito browser.
   Browser* target_browser =
       chrome::FindTabbedBrowser(hosted_app_browser->profile(), false);

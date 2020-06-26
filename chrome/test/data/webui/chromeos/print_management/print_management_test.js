@@ -955,4 +955,35 @@ suite('PrintJobEntryTest', () => {
         'print-management:file-generic',
         jobEntryTestElement.$$('#fileIcon').icon);
   });
+
+  test('ensureGoogleFileIconIsShown', () => {
+    jobEntryTestElement.jobEntry = createJobEntry(
+        /*id=*/ '1', /*fileName=*/ '.test - Google Docs',
+        /*date=*/ convertToMojoTime(new Date('February 5, 2020 03:24:00')),
+        /*completedInfo=*/ null,
+        createOngoingPrintJobInfo(
+            /*printedPages=*/ 1,
+            /*printerError=*/ ActivePrintJobState.kStarted));
+
+    flush();
+
+    assertEquals(
+        'print-management:file-gdoc', jobEntryTestElement.$$('#fileIcon').icon);
+  });
+
+  test('ensureGenericFileIconIsShown', () => {
+    jobEntryTestElement.jobEntry = createJobEntry(
+        /*id=*/ '1', /*fileName=*/ '.test',
+        /*date=*/ convertToMojoTime(new Date('February 5, 2020 03:24:00')),
+        /*completedInfo=*/ null,
+        createOngoingPrintJobInfo(
+            /*printedPages=*/ 1,
+            /*printerError=*/ ActivePrintJobState.kStarted));
+
+    flush();
+
+    assertEquals(
+        'print-management:file-generic',
+        jobEntryTestElement.$$('#fileIcon').icon);
+  });
 });

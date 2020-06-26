@@ -41,14 +41,11 @@ constexpr bool kSuccessResult = true;
 class AssistantInteractionSubscriberMock
     : public chromeos::assistant::AssistantInteractionSubscriber {
  public:
-  explicit AssistantInteractionSubscriberMock(Assistant* service)
-      : service_(service) {
-    service_->AddAssistantInteractionSubscriber(this);
+  explicit AssistantInteractionSubscriberMock(Assistant* service) {
+    scoped_subscriber_.Add(service);
   }
 
-  ~AssistantInteractionSubscriberMock() override {
-    service_->RemoveAssistantInteractionSubscriber(this);
-  }
+  ~AssistantInteractionSubscriberMock() override = default;
 
   MOCK_METHOD(void,
               OnInteractionStarted,
@@ -56,7 +53,8 @@ class AssistantInteractionSubscriberMock
               (override));
 
  private:
-  Assistant* const service_;
+  chromeos::assistant::ScopedAssistantInteractionSubscriber scoped_subscriber_{
+      this};
 };
 
 class AssistantInteractionControllerImplTest : public AssistantAshTestBase {

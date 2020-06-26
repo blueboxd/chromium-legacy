@@ -93,7 +93,7 @@ void InstallChromeApp(const std::string& app_id) {
   // or terminated apps, going through the installation flow should re-enable
   // them.
   const extensions::Extension* installed_extension = registry->GetExtensionById(
-      app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::BLACKLISTED);
+      app_id, ExtensionRegistry::ENABLED | ExtensionRegistry::BLOCKLISTED);
   // TODO(jackhou): For installed apps, maybe we should do something better,
   // e.g. show the app list (and re-add it to the taskbar).
   if (installed_extension)

@@ -9,11 +9,13 @@ include_rules = [
     "+media/base",
     "+media/filters",
     "+media/media_buildflags.h",
+    "+media/mojo",
     "+media/renderers",
     "+media/video",
 
     "+third_party/libyuv",
 
+    "+ui/gfx/color_space.h",
     "+ui/gfx/geometry/rect.h",
     "+ui/gfx/geometry/size.h",
 ]
@@ -21,5 +23,10 @@ include_rules = [
 specific_include_rules = {
   "video_track_reader_writer_test\.cc": [
     "+base/run_loop.h",
+  ],
+  "video_decoder_broker_test\.cc": [
+    "+base/run_loop.h",
+    "+base/threading/thread.h",
+    "+gpu/command_buffer/common/mailbox_holder.h",
   ],
 }

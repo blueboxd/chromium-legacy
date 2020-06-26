@@ -15,7 +15,9 @@
   `);
 
   var resultsOutput = [];
-  for (const request of SDK.NetworkLog.instance().requests()) {
+  const requests =
+      NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+  for (const request of requests) {
     const content = await TestRunner.NetworkAgent.getResponseBody(request.requestId());
     var output = [];
     output.push(request.url());

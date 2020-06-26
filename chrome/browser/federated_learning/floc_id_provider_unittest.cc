@@ -38,7 +38,9 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
     return third_party_cookies_allowed_;
   }
 
-  bool IsSwaaNacAccountEnabled() override { return swaa_nac_account_enabled_; }
+  void IsSwaaNacAccountEnabled(CanComputeFlocIdCallback callback) override {
+    std::move(callback).Run(swaa_nac_account_enabled_);
+  }
 
   size_t floc_id_notification_count() const {
     return floc_id_notification_count_;
@@ -82,7 +84,8 @@ class FlocIdProviderUnitTest : public testing::Test {
 
     floc_id_provider_ = std::make_unique<MockFlocIdProvider>(
         test_sync_service_.get(), /*cookie_settings=*/nullptr,
-        history_service_.get(), fake_user_event_service_.get());
+        /*floc_remote_permission_service=*/nullptr, history_service_.get(),
+        fake_user_event_service_.get());
 
     task_environment_.RunUntilIdle();
   }

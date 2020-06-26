@@ -21,11 +21,12 @@ const FEEDBACK_HEIGHT = 610;
  */
 const FEEDBACK_DEFAULT_WINDOW_ID = 'default_window';
 
+// List of extension IDs that are permitted to invoke Feedback.
 // To generate a hashed extension ID, use a sha-1 hash, all in lower case.
 // Example:
 //   echo -n 'abcdefghijklmnopqrstuvwxyzabcdef' | sha1sum | \
 //       awk '{print toupper($1)}'
-const whitelistedExtensionIds = [
+const feedbackCallerExtensions = [
   '12E618C3C6E97495AAECF2AC12DEB082353241C6',  // QuickOffice
   '3727DD3E564B6055387425027AD74C58784ACC15',  // QuickOffice
   '2FC374607C2DF285634B67C64A2E356C607091C3',  // QuickOffice
@@ -221,16 +222,16 @@ class FeedbackRequest {
 }
 
 /**
- * Function to determine whether or not a given extension id is whitelisted to
- * invoke the feedback UI. If the extension is whitelisted, the callback to
- * start the Feedback UI will be called.
+ * Function to determine whether or not a given extension id is allowed to
+ * invoke the feedback UI. If it is, the callback to start the Feedback UI will
+ * be called.
  * @param {string} id the id of the sender extension.
  * @param {Function} startFeedbackCallback The callback function that will
  *     will start the feedback UI.
  * @param {Object} feedbackInfo The feedback info object to pass to the
  *     start feedback UI callback.
  */
-function senderWhitelisted(id, startFeedbackCallback, feedbackInfo) {
+function invokeFeedbackIfPermitted(id, startFeedbackCallback, feedbackInfo) {
   crypto.subtle.digest('SHA-1', new TextEncoder().encode(id))
       .then(function(hashBuffer) {
         let hashString = '';
@@ -240,7 +241,7 @@ function senderWhitelisted(id, startFeedbackCallback, feedbackInfo) {
           hashString += n < 0x10 ? '0' : '';
           hashString += n.toString(16);
         }
-        if (whitelistedExtensionIds.indexOf(hashString.toUpperCase()) != -1) {
+        if (feedbackCallerExtensions.indexOf(hashString.toUpperCase()) != -1) {
           startFeedbackCallback(feedbackInfo);
         }
       });
@@ -267,7 +268,7 @@ function feedbackReadyHandler(request, sender, sendResponse) {
  */
 function requestFeedbackHandler(request, sender, sendResponse) {
   if (request.requestFeedback) {
-    senderWhitelisted(sender.id, startFeedbackUI, request.feedbackInfo);
+    invokeFeedbackIfPermitted(sender.id, startFeedbackUI, request.feedbackInfo);
   }
 }
 

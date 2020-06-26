@@ -8,6 +8,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
@@ -34,6 +35,7 @@ public class ContextualSearchIPH {
     private boolean mIsPositionedByPanel;
     private boolean mHasUserEverEngaged;
     private Point mFloatingBubbleAnchorPoint;
+    private OnDismissListener mDismissListener;
 
     /**
      * Constructs the helper class.
@@ -83,10 +85,13 @@ public class ContextualSearchIPH {
      * @param bubbleAnchorPoint The point where the bubble arrow should be positioned.
      * @param hasUserEverEngaged Whether the user has ever engaged Contextual Search by opening
      *        the panel.
+     * @param dismissListener An {@link OnDismissListener} to call when the bubble is dismissed.
      */
-    void onNonTriggeringTap(Profile profile, Point bubbleAnchorPoint, boolean hasUserEverEngaged) {
+    void onNonTriggeringTap(Profile profile, Point bubbleAnchorPoint, boolean hasUserEverEngaged,
+            OnDismissListener dismissListener) {
         mFloatingBubbleAnchorPoint = bubbleAnchorPoint;
         mHasUserEverEngaged = hasUserEverEngaged;
+        mDismissListener = dismissListener;
         maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE, profile,
                 false);
     }
@@ -164,6 +169,10 @@ public class ContextualSearchIPH {
             mIsShowing = false;
             mHelpBubble = null;
         });
+        if (mDismissListener != null) {
+            mHelpBubble.addOnDismissListener(mDismissListener);
+            mDismissListener = null;
+        }
 
         mHelpBubble.show();
         mIsShowing = true;
@@ -185,6 +194,9 @@ public class ContextualSearchIPH {
         int yInsetPx = mParentView.getResources().getDimensionPixelOffset(
                 R.dimen.contextual_search_bubble_y_inset);
         if (!mIsPositionedByPanel) {
+            // Position the bubble to point to the tap location, since there's no panel, just a
+            // selected word.  It would be better to point to the rectangle of the selected word,
+            // but that's not easy to get.
             return new Rect(mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y,
                     mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y);
         }
@@ -203,6 +215,15 @@ public class ContextualSearchIPH {
         mHelpBubble.dismiss();
 
         mIsShowing = false;
+    }
+
+    /**
+     * @return whether the bubble is currently showing for the tap-where-longpress-needed promo.
+     */
+    boolean isShowingForTappedButShouldLongpress() {
+        return mIsShowing
+                && FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE.equals(
+                        mFeatureName);
     }
 
     /**

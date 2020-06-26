@@ -294,16 +294,22 @@ void SearchResultPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void SearchResultPageView::ReorderSearchResultContainers() {
   int view_offset = 0;
 
-  // Show at most one privacy notice, with priority given to Assistant.
+  // There are two privacy views, which will not both show at the same time. If
+  // both views are available, then show the Assistant view first.
   if (assistant_privacy_info_view_) {
     const bool show_privacy_info =
         view_delegate_->ShouldShowAssistantPrivacyInfo();
-    view_offset = show_privacy_info ? 1 : 0;
+    if (show_privacy_info)
+      view_offset = 1;
     assistant_privacy_info_view_->SetVisible(show_privacy_info);
-  } else if (suggested_content_info_view_) {
+  }
+  if (suggested_content_info_view_) {
+    // Do not show Suggested Content view if the Assistant view is being shown.
     const bool show_suggested_content_info =
-        view_delegate_->ShouldShowSuggestedContentInfo();
-    view_offset = show_suggested_content_info ? 1 : 0;
+        view_delegate_->ShouldShowSuggestedContentInfo() &&
+        !view_delegate_->ShouldShowAssistantPrivacyInfo();
+    if (show_suggested_content_info)
+      view_offset = 1;
     suggested_content_info_view_->SetVisible(show_suggested_content_info);
   }
 

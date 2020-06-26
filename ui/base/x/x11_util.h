@@ -21,6 +21,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto_types.h"
 
 typedef unsigned long Cursor;
 
@@ -142,9 +144,9 @@ bool GetArrayProperty(x11::Window window,
     return false;
 
   DCHECK_EQ(response->format / CHAR_BIT * response->value_len,
-            response->value.size());
+            response->value->size());
   value->resize(response->value_len);
-  memcpy(value->data(), response->value.data(), response->value.size());
+  memcpy(value->data(), response->value->data(), response->value->size());
   if (out_type)
     *out_type = response->type;
   return true;
@@ -173,7 +175,7 @@ void SetArrayProperty(x11::Window window,
        .type = type,
        .format = CHAR_BIT * sizeof(T),
        .data_len = values.size(),
-       .data = data});
+       .data = base::RefCountedBytes::TakeVector(&data)});
 }
 
 template <typename T>
@@ -185,15 +187,20 @@ void SetProperty(x11::Window window,
 }
 
 template <typename T>
-void SendEvent(const T& event, x11::Window target, x11::EventMask mask) {
+x11::Future<void> SendEvent(const T& event,
+                            x11::Window target,
+                            x11::EventMask mask) {
   static_assert(T::type_id > 0, "T must be an x11::*Event type");
-  auto event_bytes = x11::Write(event);
-  DCHECK_LE(event_bytes.size(), 32ul);
-  event_bytes.resize(32);
+  auto write_buffer = x11::Write(event);
+  DCHECK_EQ(write_buffer.GetBuffers().size(), 1ul);
+  auto& first_buffer = write_buffer.GetBuffers()[0];
+  DCHECK_LE(first_buffer->size(), 32ul);
+  std::vector<uint8_t> event_bytes(32);
+  memcpy(event_bytes.data(), first_buffer->data(), first_buffer->size());
 
   x11::SendEventRequest send_event{false, target, mask};
   std::copy(event_bytes.begin(), event_bytes.end(), send_event.event.begin());
-  x11::Connection::Get()->SendEvent(send_event);
+  return x11::Connection::Get()->SendEvent(send_event);
 }
 
 COMPONENT_EXPORT(UI_BASE_X)
@@ -336,7 +343,7 @@ bool PropertyExists(x11::Window window, const std::string& property_name);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetRawBytesOfProperty(x11::Window window,
                            x11::Atom property,
-                           std::vector<uint8_t>* out_data,
+                           scoped_refptr<base::RefCountedMemory>* out_data,
                            x11::Atom* out_type);
 
 // Get the value of an int, int array, atom array or string property.  On

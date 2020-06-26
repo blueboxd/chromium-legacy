@@ -553,6 +553,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1094998")
     public void testStrip_ContinuousDismissCounter() throws Exception {
         // Mock that the tab strip has been dismissed for two continuous sessions.
         ConditionalTabStripUtils.setContinuousDismissCount(2);

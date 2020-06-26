@@ -214,7 +214,7 @@ void ExtensionService::BlacklistExtensionForTest(
   ExtensionIdSet blacklisted;
   blacklisted.insert(extension_id);
   // Don't change existing blocklisted extensions.
-  ExtensionIdSet unchanged = registry_->blacklisted_extensions().GetIDs();
+  ExtensionIdSet unchanged = registry_->blocklisted_extensions().GetIDs();
   UpdateBlacklistedExtensions(blacklisted, unchanged);
 }
 
@@ -551,11 +551,11 @@ void ExtensionService::LoadGreylistFromPrefs() {
       registry_->GenerateInstalledExtensionsSet();
 
   for (const auto& extension : *all_extensions) {
-    const BlacklistState state =
-        extension_prefs_->GetExtensionBlacklistState(extension->id());
-    if (state == BLACKLISTED_SECURITY_VULNERABILITY ||
-        state == BLACKLISTED_POTENTIALLY_UNWANTED ||
-        state == BLACKLISTED_CWS_POLICY_VIOLATION)
+    const BlocklistState state =
+        extension_prefs_->GetExtensionBlocklistState(extension->id());
+    if (state == BLOCKLISTED_SECURITY_VULNERABILITY ||
+        state == BLOCKLISTED_POTENTIALLY_UNWANTED ||
+        state == BLOCKLISTED_CWS_POLICY_VIOLATION)
       greylist_.Insert(extension);
   }
 }
@@ -785,8 +785,8 @@ bool ExtensionService::UninstallExtension(
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
   UnloadExtension(extension->id(), UnloadedExtensionReason::UNINSTALL);
-  if (registry_->blacklisted_extensions().Contains(extension->id()))
-    registry_->RemoveBlacklisted(extension->id());
+  if (registry_->blocklisted_extensions().Contains(extension->id()))
+    registry_->RemoveBlocklisted(extension->id());
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
@@ -861,7 +861,7 @@ void ExtensionService::PerformActionBasedOnOmahaAttributes(
 
   // Add the extension to the blacklisted extensions set.
   UpdateBlacklistedExtensions({extension_id},
-                              registry_->blacklisted_extensions().GetIDs());
+                              registry_->blocklisted_extensions().GetIDs());
   extension_prefs_->AddDisableReason(
       extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
   // Show an error for the newly blacklisted extension.
@@ -878,7 +878,7 @@ void ExtensionService::MaybeEnableRemotelyDisabledExtension(
   extension_prefs_->RemoveDisableReason(
       extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
 
-  ExtensionIdSet unchanged = registry_->blacklisted_extensions().GetIDs();
+  ExtensionIdSet unchanged = registry_->blocklisted_extensions().GetIDs();
   DCHECK(base::Contains(unchanged, extension_id));
   unchanged.erase(extension_id);
   // Remove the extension from the blacklist.
@@ -1584,13 +1584,13 @@ void ExtensionService::OnExtensionInstalled(
     disable_reasons &= ~disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY;
   }
 
-  if (install_flags & kInstallFlagIsBlacklistedForMalware) {
+  if (install_flags & kInstallFlagIsBlocklistedForMalware) {
     // Installation of a blacklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
     // intercept blacklisted extensions earlier (e.g. CrxInstaller, before even
     // showing the install dialogue).
-    extension_prefs_->AcknowledgeBlacklistedExtension(id);
+    extension_prefs_->AcknowledgeBlocklistedExtension(id);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
                               extension->location(), Manifest::NUM_LOCATIONS);
   }
@@ -2138,20 +2138,20 @@ void ExtensionService::ManageBlacklist(
     }
 
     switch (it.second) {
-      case NOT_BLACKLISTED:
+      case NOT_BLOCKLISTED:
         break;
 
-      case BLACKLISTED_MALWARE:
+      case BLOCKLISTED_MALWARE:
         blacklisted.insert(it.first);
         break;
 
-      case BLACKLISTED_SECURITY_VULNERABILITY:
-      case BLACKLISTED_CWS_POLICY_VIOLATION:
-      case BLACKLISTED_POTENTIALLY_UNWANTED:
+      case BLOCKLISTED_SECURITY_VULNERABILITY:
+      case BLOCKLISTED_CWS_POLICY_VIOLATION:
+      case BLOCKLISTED_POTENTIALLY_UNWANTED:
         greylist.insert(it.first);
         break;
 
-      case BLACKLISTED_UNKNOWN:
+      case BLOCKLISTED_UNKNOWN:
         unchanged.insert(it.first);
         break;
     }
@@ -2179,21 +2179,21 @@ void ExtensionService::UpdateBlacklistedExtensions(
     const ExtensionIdSet& blacklisted,
     const ExtensionIdSet& unchanged) {
   ExtensionIdSet not_yet_blocked, no_longer_blocked;
-  Partition(registry_->blacklisted_extensions().GetIDs(), blacklisted,
+  Partition(registry_->blocklisted_extensions().GetIDs(), blacklisted,
             unchanged, &no_longer_blocked, &not_yet_blocked);
 
   for (auto it = no_longer_blocked.begin(); it != no_longer_blocked.end();
        ++it) {
     scoped_refptr<const Extension> extension =
-        registry_->blacklisted_extensions().GetByID(*it);
+        registry_->blocklisted_extensions().GetByID(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " no longer blacklisted, "
                    << "but it was never blacklisted.";
       continue;
     }
-    registry_->RemoveBlacklisted(*it);
-    extension_prefs_->SetExtensionBlacklistState(extension->id(),
-                                                 NOT_BLACKLISTED);
+    registry_->RemoveBlocklisted(*it);
+    extension_prefs_->SetExtensionBlocklistState(extension->id(),
+                                                 NOT_BLOCKLISTED);
     AddExtension(extension.get());
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.UnblacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
@@ -2207,9 +2207,9 @@ void ExtensionService::UpdateBlacklistedExtensions(
                    << "blacklisted, but it's not installed.";
       continue;
     }
-    registry_->AddBlacklisted(extension);
-    extension_prefs_->SetExtensionBlacklistState(extension->id(),
-                                                 BLACKLISTED_MALWARE);
+    registry_->AddBlocklisted(extension);
+    extension_prefs_->SetExtensionBlocklistState(extension->id(),
+                                                 BLOCKLISTED_MALWARE);
     UnloadExtension(*it, UnloadedExtensionReason::BLOCKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
@@ -2235,8 +2235,8 @@ void ExtensionService::UpdateGreylistedExtensions(
     }
 
     greylist_.Remove(*it);
-    extension_prefs_->SetExtensionBlacklistState(extension->id(),
-                                                 NOT_BLACKLISTED);
+    extension_prefs_->SetExtensionBlocklistState(extension->id(),
+                                                 NOT_BLOCKLISTED);
     if (extension_prefs_->GetDisableReasons(extension->id()) &
         disable_reason::DISABLE_GREYLIST)
       EnableExtension(*it);
@@ -2252,7 +2252,7 @@ void ExtensionService::UpdateGreylistedExtensions(
       continue;
     }
     greylist_.Insert(extension);
-    extension_prefs_->SetExtensionBlacklistState(extension->id(),
+    extension_prefs_->SetExtensionBlocklistState(extension->id(),
                                                  state_map.find(*it)->second);
     if (registry_->enabled_extensions().Contains(extension->id()))
       DisableExtension(*it, disable_reason::DISABLE_GREYLIST);

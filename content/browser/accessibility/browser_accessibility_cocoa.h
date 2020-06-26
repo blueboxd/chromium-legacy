@@ -40,6 +40,11 @@ BrowserAccessibilityPosition::AXPositionInstance AXTextMarkerToPosition(id);
 // Returns browser accessibility range for the given AXTextMarkerRange.
 BrowserAccessibilityPosition::AXRangeType AXTextMarkerRangeToRange(id);
 
+// Returns AXTextMarker for the given browser accessibility position.
+id AXTextMarkerFrom(const BrowserAccessibilityCocoa* anchor,
+                    int offset,
+                    ax::mojom::TextAffinity affinity);
+
 }  // namespace content
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility

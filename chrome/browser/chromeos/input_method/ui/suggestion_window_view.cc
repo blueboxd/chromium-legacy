@@ -58,8 +58,9 @@ class SettingLinkView : public views::View {
   views::Link* setting_link_;
 
   void LinkClicked() {
-    delegate_->AssistiveWindowButtonClicked(ButtonId::kSmartInputsSettingLink,
-                                            AssistiveWindowType::kNone);
+    AssistiveWindowButton button;
+    button.id = ButtonId::kSmartInputsSettingLink;
+    delegate_->AssistiveWindowButtonClicked(button);
   }
 
   void Layout() override {

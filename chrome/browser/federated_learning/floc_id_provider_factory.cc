@@ -7,6 +7,8 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/federated_learning/floc_id_provider_impl.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -36,6 +38,7 @@ FlocIdProviderFactory::FlocIdProviderFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(CookieSettingsFactory::GetInstance());
+  DependsOn(FlocRemotePermissionServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
 }
@@ -56,6 +59,11 @@ KeyedService* FlocIdProviderFactory::BuildServiceInstanceFor(
   if (!cookie_settings)
     return nullptr;
 
+  FlocRemotePermissionService* floc_remote_permission_service =
+      FlocRemotePermissionServiceFactory::GetForProfile(profile);
+  if (!floc_remote_permission_service)
+    return nullptr;
+
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
@@ -68,7 +76,8 @@ KeyedService* FlocIdProviderFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new FlocIdProviderImpl(sync_service, std::move(cookie_settings),
-                                history_service, user_event_service);
+                                floc_remote_permission_service, history_service,
+                                user_event_service);
 }
 
 }  // namespace federated_learning

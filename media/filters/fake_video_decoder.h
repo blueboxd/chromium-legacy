@@ -75,13 +75,16 @@ class FakeVideoDecoder : public VideoDecoder {
 
   int total_bytes_decoded() const { return total_bytes_decoded_; }
 
- private:
+ protected:
   enum State {
     STATE_UNINITIALIZED,
     STATE_NORMAL,
     STATE_END_OF_STREAM,
     STATE_ERROR,
   };
+
+  // Derived classes may override to customize the VideoFrame.
+  virtual scoped_refptr<VideoFrame> MakeVideoFrame(const DecoderBuffer& buffer);
 
   // Callback for updating |total_bytes_decoded_|.
   void OnFrameDecoded(int buffer_size, DecodeCB decode_cb, DecodeStatus status);

@@ -74,9 +74,12 @@ void UndoWindow::SetBounds(const gfx::Rect& word_bounds) {
 
 void UndoWindow::ButtonPressed(views::Button* sender, const ui::Event& event) {
   button_pressed_ = sender;
-  if (sender == undo_button_)
-    delegate_->AssistiveWindowButtonClicked(ButtonId::kUndo,
-                                            AssistiveWindowType::kUndoWindow);
+  if (sender == undo_button_) {
+    AssistiveWindowButton button;
+    button.id = ButtonId::kUndo;
+    button.window_type = AssistiveWindowType::kUndoWindow;
+    delegate_->AssistiveWindowButtonClicked(button);
+  }
 }
 
 views::Button* UndoWindow::GetUndoButtonForTesting() {

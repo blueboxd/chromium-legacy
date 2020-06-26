@@ -152,20 +152,6 @@ public class LensUtils {
      * @return The minimum version name string or an empty string if not available.
      */
     public static String getMinimumAgsaVersionForLensSupport() {
-        // Shopping feature AGSA version takes priority over Search with Google Lens
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS)) {
-            final String serverProvidedMinAgsaVersion =
-                    ChromeFeatureList.getFieldTrialParamByFeature(
-                            ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
-                            MIN_AGSA_VERSION_FEATURE_PARAM_NAME);
-            if (TextUtils.isEmpty(serverProvidedMinAgsaVersion)) {
-                // Falls into this block if the user enabled the feature using chrome://flags
-                // and the param was not set by the server.
-                return MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT;
-            }
-            return serverProvidedMinAgsaVersion;
-        }
-
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS)) {
             final String serverProvidedMinAgsaVersion =
                     ChromeFeatureList.getFieldTrialParamByFeature(
@@ -179,6 +165,32 @@ public class LensUtils {
             return serverProvidedMinAgsaVersion;
         }
         // The feature is disabled so no need to return a minimum version.
+        return "";
+    }
+
+    /**
+     * Gets the minimum AGSA version required to support the Lens shopping context menu
+     * integration on this device. Takes the value from a server provided value if a
+     * field trial is active but otherwise will take the value from a client side
+     * default (unless the lens feature is not enabled at all, in which case return
+     * an empty string).
+     *
+     * @return The minimum version name string or an empty string if not available.
+     */
+    public static String getMinimumAgsaVersionForLensShoppingSupport() {
+        // Shopping feature AGSA version takes priority over Search with Google Lens
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS)) {
+            final String serverProvidedMinAgsaVersion =
+                    ChromeFeatureList.getFieldTrialParamByFeature(
+                            ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS,
+                            MIN_AGSA_VERSION_FEATURE_PARAM_NAME);
+            if (TextUtils.isEmpty(serverProvidedMinAgsaVersion)) {
+                // Falls into this block if the user enabled the feature using chrome://flags
+                // and the param was not set by the server.
+                return MIN_AGSA_VERSION_NAME_FOR_LENS_CHROME_SHOPPING_INTENT;
+            }
+            return serverProvidedMinAgsaVersion;
+        }
         return "";
     }
 

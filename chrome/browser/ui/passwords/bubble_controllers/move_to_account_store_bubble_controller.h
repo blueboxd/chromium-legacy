@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_MOVE_TO_ACCOUNT_STORE_BUBBLE_CONTROLLER_H_
 
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/image/image.h"
 
 class PasswordsModelDelegate;
@@ -31,6 +32,9 @@ class MoveToAccountStoreBubbleController : public PasswordBubbleControllerBase {
   // PasswordBubbleControllerBase:
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
+
+  password_manager::metrics_util::UIDismissalReason dismissal_reason_ =
+      password_manager::metrics_util::NO_DIRECT_INTERACTION;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_MOVE_TO_ACCOUNT_STORE_BUBBLE_CONTROLLER_H_

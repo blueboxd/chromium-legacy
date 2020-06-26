@@ -210,7 +210,16 @@ void FeedStream::LoadMore(SurfaceId surface_id,
     DLOG(ERROR) << "Ignoring LoadMore() before the model is loaded";
     return std::move(callback).Run(false);
   }
+  // We want to abort early to avoid showing a loading spinner if it's not
+  // necessary.
+  if (ShouldMakeFeedQueryRequest(/*is_load_more=*/true,
+                                 /*consume_quota=*/false) !=
+      LoadStreamStatus::kNoStatus) {
+    return std::move(callback).Run(false);
+  }
+
   surface_updater_->SetLoadingMore(true);
+
   // Have at most one in-flight LoadMore() request. Send the result to all
   // requestors.
   load_more_complete_callbacks_.push_back(std::move(callback));
@@ -371,7 +380,8 @@ LoadStreamStatus FeedStream::ShouldAttemptLoad(bool model_loading) {
   return LoadStreamStatus::kNoStatus;
 }
 
-LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
+LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more,
+                                                        bool consume_quota) {
   if (!is_load_more) {
     // Time has passed since calling |ShouldAttemptLoad()|, call it again to
     // confirm we should still attempt loading.
@@ -379,6 +389,11 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
         ShouldAttemptLoad(/*model_loading=*/true);
     if (should_not_attempt_reason != LoadStreamStatus::kNoStatus) {
       return should_not_attempt_reason;
+    }
+  } else {
+    // LoadMore requires a next page token.
+    if (!model_ || model_->GetNextPageToken().empty()) {
+      return LoadStreamStatus::kCannotLoadMoreNoNextPageToken;
     }
   }
 
@@ -396,7 +411,8 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
     return LoadStreamStatus::kCannotLoadFromNetworkOffline;
   }
 
-  if (!request_throttler_.RequestQuota(NetworkRequestType::kFeedQuery)) {
+  if (consume_quota &&
+      !request_throttler_.RequestQuota(NetworkRequestType::kFeedQuery)) {
     return LoadStreamStatus::kCannotLoadFromNetworkThrottled;
   }
 

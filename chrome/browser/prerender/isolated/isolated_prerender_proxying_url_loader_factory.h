@@ -23,6 +23,8 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
+class Profile;
+
 // This class is an intermediary URLLoaderFactory between the renderer and
 // network process, AKA proxy which should not be confused with a proxy server.
 //
@@ -74,6 +76,7 @@ class IsolatedPrerenderProxyingURLLoaderFactory
                             public network::mojom::URLLoaderClient {
    public:
     InProgressRequest(
+        Profile* profile,
         IsolatedPrerenderProxyingURLLoaderFactory* parent_factory,
         network::mojom::URLLoaderFactory* target_factory,
         ResourceLoadSuccessfulCallback on_resource_load_successful,
@@ -125,6 +128,8 @@ class IsolatedPrerenderProxyingURLLoaderFactory
     void MaybeReportResourceLoadSuccess(
         const network::URLLoaderCompletionStatus& status);
 
+    Profile* profile_;
+
     // Back pointer to the factory which owns this class.
     IsolatedPrerenderProxyingURLLoaderFactory* const parent_factory_;
 
@@ -163,6 +168,7 @@ class IsolatedPrerenderProxyingURLLoaderFactory
   // Used as a callback for determining the eligibility of a resource to be
   // cached during prerender.
   void OnEligibilityResult(
+      Profile* profile,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       int32_t routing_id,
       int32_t request_id,

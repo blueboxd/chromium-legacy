@@ -488,6 +488,13 @@ const base::Feature kMacSystemScreenCapturePermissionCheck{
     "MacSystemScreenCapturePermissionCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Whether to show the Metered toggle in Settings, allowing users to toggle
+// whether to treat a WiFi or Cellular network as 'metered'.
+const base::Feature kMeteredShowToggle{"MeteredShowToggle",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Sets whether dismissing the new-tab-page override bubble counts as
 // acknowledgement.

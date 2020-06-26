@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
+#include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
@@ -173,12 +174,15 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
   if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-    // App install logs are uploaded via the user's communication channel with
-    // the management server. This channel exists for regular users only.
-    // The |AppInstallEventLogManagerWrapper| manages its own lifetime and
-    // self-destructs on logout.
+    // App install logs for extensions and ARC++ are uploaded via the user's
+    // communication channel with the management server. This channel exists for
+    // regular users only. |AppInstallEventLogManagerWrapper| and
+    // |ExtensionInstallEventLogManagerWrapper| manages their own lifetime and
+    // self-destruct on logout.
     policy::AppInstallEventLogManagerWrapper::CreateForProfile(profile);
+    policy::ExtensionInstallEventLogManagerWrapper::CreateForProfile(profile);
   }
+
   arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
 
   crostini::CrostiniManager* crostini_manager =

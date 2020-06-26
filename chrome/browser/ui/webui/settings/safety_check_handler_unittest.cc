@@ -915,8 +915,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoneBlocklisted) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::NOT_BLACKLISTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::NOT_BLOCKLISTED);
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
@@ -938,8 +938,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedAllDisabled) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::DISABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::BLACKLISTED_MALWARE);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::BLOCKLISTED_MALWARE);
   test_extension_service_.AddExtensionState(extension_id, Enabled(false),
                                             UserCanDisable(false));
   safety_check_->PerformSafetyCheck();
@@ -963,8 +963,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(true));
   safety_check_->PerformSafetyCheck();
@@ -987,8 +987,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByAdmin) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(false));
   safety_check_->PerformSafetyCheck();
@@ -1011,8 +1011,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(true));
 
@@ -1022,8 +1022,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension2.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension2_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension2_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
   test_extension_service_.AddExtensionState(extension2_id, Enabled(true),
                                             UserCanDisable(false));
 
@@ -1050,8 +1050,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension_id, extensions::BLACKLISTED_UNKNOWN);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension_id, extensions::BLOCKLISTED_UNKNOWN);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(true));
 
@@ -1062,8 +1062,8 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_Error) {
   test_extension_prefs_->OnExtensionInstalled(
       extension2.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlacklistState(
-      extension2_id, extensions::BLACKLISTED_POTENTIALLY_UNWANTED);
+  test_extension_prefs_->SetExtensionBlocklistState(
+      extension2_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
   test_extension_service_.AddExtensionState(extension2_id, Enabled(true),
                                             UserCanDisable(false));
 

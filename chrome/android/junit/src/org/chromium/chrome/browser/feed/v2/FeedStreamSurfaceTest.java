@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.feed.v2;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
@@ -19,7 +21,9 @@ import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
@@ -27,13 +31,17 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.XSurfaceSlice;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.Arrays;
 
@@ -42,6 +50,7 @@ import java.util.Arrays;
 @Config(manifest = Config.NONE)
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
+    private static final String TEST_URL = "https://www.chromium.org";
     private FeedStreamSurface mFeedStreamSurface;
     private Activity mActivity;
 
@@ -51,9 +60,15 @@ public class FeedStreamSurfaceTest {
     private FeedActionsHandler.SnackbarController mSnackbarController;
     @Mock
     private BottomSheetController mBottomSheetController;
+    @Mock
+    private NativePageNavigationDelegate mPageNavigationDelegate;
 
     @Rule
     public JniMocker mocker = new JniMocker();
+    // Enable the Features class, so we can call code which checks to see if features are enabled
+    // without crashing.
+    @Rule
+    public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
 
     @Mock
     private FeedStreamSurface.Natives mFeedStreamSurfaceJniMock;
@@ -63,8 +78,8 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(
-                mActivity, false, mSnackbarManager, null, mBottomSheetController);
+        mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
+                mPageNavigationDelegate, mBottomSheetController);
     }
 
     @Test
@@ -358,6 +373,32 @@ public class FeedStreamSurfaceTest {
         assertEquals(headers + 6, contentManager.findContentPositionByKey("i"));
     }
 
+    @Test
+    @SmallTest
+    public void testNavigateTab() {
+        when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
+        mFeedStreamSurface.navigateTab(TEST_URL);
+        verify(mPageNavigationDelegate)
+                .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.CURRENT_TAB), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigateNewTab() {
+        when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
+        mFeedStreamSurface.navigateNewTab(TEST_URL);
+        verify(mPageNavigationDelegate)
+                .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.NEW_FOREGROUND_TAB), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigateIncognitoTab() {
+        when(mPageNavigationDelegate.openUrl(anyInt(), any())).thenReturn(new MockTab(1, false));
+        mFeedStreamSurface.navigateIncognitoTab(TEST_URL);
+        verify(mPageNavigationDelegate)
+                .openUrl(ArgumentMatchers.eq(WindowOpenDisposition.OFF_THE_RECORD), any());
+    }
     @Test
     @SmallTest
     public void testShowSnackbar() {

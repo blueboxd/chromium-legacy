@@ -12,7 +12,8 @@
   TestRunner.networkManager.addEventListener(
     SDK.NetworkManager.Events.RequestFinished, (event) => {
       const request = event.data;
-      const networkRequests = NetworkTestRunner.networkRequests();
+      const networkRequests =
+          NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
       const networkRequest = networkRequests[0];
 
       TestRunner.addResult('networkRequests.length: ' + networkRequests.length);

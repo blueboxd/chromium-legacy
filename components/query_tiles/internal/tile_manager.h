@@ -47,6 +47,9 @@ class TileManager {
   virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,
                          TileGroupStatusCallback callback) = 0;
 
+  // Delete everything in db. Used for debugging and testing only.
+  virtual TileGroupStatus PurgeDb() = 0;
+
   virtual void SetAcceptLanguagesForTesting(
       const std::string& accept_languages) = 0;
 

@@ -371,7 +371,7 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
     AddToDownloader(&registry_->disabled_extensions(), pending_ids, request_id,
                     params.fetch_priority, &update_check_params);
     ExtensionSet remotely_disabled_extensions;
-    for (auto extension : registry_->blacklisted_extensions()) {
+    for (auto extension : registry_->blocklisted_extensions()) {
       if (extension_prefs_->HasDisableReason(
               extension->id(), disable_reason::DISABLE_REMOTELY_FOR_MALWARE))
         remotely_disabled_extensions.Insert(extension);

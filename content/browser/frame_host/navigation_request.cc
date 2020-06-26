@@ -911,7 +911,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
-          std::vector<std::string>() /* force_enabled_origin_trials */);
+          std::vector<std::string>() /* force_enabled_origin_trials */,
+          false /* origin_isolation_restricted */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -998,7 +999,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
-          std::vector<std::string>() /* force_enabled_origin_trials */
+          std::vector<std::string>() /* force_enabled_origin_trials */,
+          false /* origin_isolation_restricted */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -2017,6 +2019,14 @@ void NavigationRequest::DetermineOriginIsolationEndResult(
                     kRequestedViaHeaderButNotIsolated;
       break;
   }
+
+  commit_params_->origin_isolation_restricted =
+      origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kRequestedViaOriginPolicyAndIsolated ||
+      origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kRequestedViaHeaderAndIsolated ||
+      origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kNotRequestedButIsolated;
 }
 
 void NavigationRequest::ProcessOriginIsolationEndResult() {

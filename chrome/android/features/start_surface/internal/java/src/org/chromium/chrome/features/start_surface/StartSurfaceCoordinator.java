@@ -95,13 +95,15 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
                 || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY
+                || mSurfaceMode == SurfaceMode.TRENDY_TERMS
                 || mSurfaceMode == SurfaceMode.NO_START_SURFACE;
+        boolean hasTrendyTerms = mSurfaceMode == SurfaceMode.TRENDY_TERMS;
         if (mSurfaceMode == SurfaceMode.NO_START_SURFACE) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
                     mActivity, mActivity.getCompositorViewHolder(), scrimCoordinator);
         } else {
-            createAndSetStartSurface(excludeMVTiles);
+            createAndSetStartSurface(excludeMVTiles, hasTrendyTerms);
         }
 
         TabSwitcher.Controller controller =
@@ -278,6 +280,8 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         if (feature.equals("omniboxonly")) return SurfaceMode.OMNIBOX_ONLY;
 
+        if (feature.equals("trendyterms")) return SurfaceMode.TRENDY_TERMS;
+
         // Default to SurfaceMode.TASKS_ONLY. This could happen when the start surface has been
         // changed from enabled to disabled in native side, but the cached flag has not been updated
         // yet, so StartSurfaceConfiguration.isStartSurfaceEnabled() above returns true.
@@ -285,7 +289,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         return SurfaceMode.TASKS_ONLY;
     }
 
-    private void createAndSetStartSurface(boolean excludeMVTiles) {
+    private void createAndSetStartSurface(boolean excludeMVTiles, boolean hasTrendyTerms) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(TasksSurfaceProperties.ALL_KEYS));
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
@@ -296,8 +300,9 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue()) {
             tabSwitcherType = TabSwitcherType.SINGLE;
         }
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, mScrimCoordinator, mPropertyModel, tabSwitcherType, !excludeMVTiles);
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
+                mScrimCoordinator, mPropertyModel, tabSwitcherType, !excludeMVTiles,
+                hasTrendyTerms);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
@@ -306,8 +311,10 @@ public class StartSurfaceCoordinator implements StartSurface {
                                 mActivity.getCompositorViewHolder(), mTasksSurface.getView()),
                         TasksSurfaceViewBinder::bind);
 
-        // There is nothing else to do for SurfaceMode.TASKS_ONLY and SurfaceMode.OMNIBOX_ONLY.
-        if (mSurfaceMode == SurfaceMode.TASKS_ONLY || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY) {
+        // There is nothing else to do for SurfaceMode.TASKS_ONLY, SurfaceMode.OMNIBOX_ONLY and
+        // SurfaceMode.TRENDY_TERMS.
+        if (mSurfaceMode == SurfaceMode.TASKS_ONLY || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY
+                || mSurfaceMode == SurfaceMode.TRENDY_TERMS) {
             return;
         }
 
@@ -328,7 +335,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()
                         ? TabSwitcherType.NONE
                         : TabSwitcherType.GRID,
-                false);
+                false, false);
         if (mIsInitializedWithNative) {
             mSecondaryTasksSurface.onFinishNativeInitialization(
                     mActivity, mActivity.getToolbarManager().getFakeboxDelegate());

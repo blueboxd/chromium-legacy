@@ -9376,7 +9376,6 @@ histogram as enum -->
   <int value="503" label="Shelf Alignment Right"/>
   <int value="504" label="Shelf Alignment Bottom"/>
   <int value="505" label="Change Wallpaper"/>
-  <int value="506" label="Display Settings"/>
 </enum>
 
 <enum name="ChromeOSUsbEventTiming">
@@ -20895,6 +20894,7 @@ Called by update_document_policy_enum.py.-->
   <int value="724" label="PluginVmRequiredFreeDiskSpace"/>
   <int value="725" label="UserAgentClientHintsEnabled"/>
   <int value="726" label="SuggestedContentEnabled"/>
+  <int value="727" label="ExtensionInstallEventLoggingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29510,6 +29510,32 @@ Called by update_feature_policy_enum.py.-->
   <int value="2" label="Open"/>
   <int value="3" label="SaveAs"/>
   <int value="4" label="Download"/>
+</enum>
+
+<enum name="FilePrefetchResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Invalid file"/>
+  <int value="2" label="Slow prefetch success">
+    Only slow prefetch was supported.
+  </int>
+  <int value="3" label="Slow prefetch failed">
+    Only slow prefetch was supported, but it failed.
+  </int>
+  <int value="4" label="Memory map failed, slow prefetch used">
+    Mapping file into memory failed; slow prefetch was used as a fallback.
+  </int>
+  <int value="5" label="Memory map failed, slow prefetch failed">
+    Mapping file into memory failed; slow prefetch was attempted as a fallback,
+    but it failed.
+  </int>
+  <int value="6" label="Fast prefetch failed"/>
+  <int value="7" label="Fast prefetch failed, slow prefetch used">
+    Fast prefetch failed; slow prefetch was used as a fallback.
+  </int>
+  <int value="8" label="Fast prefetch failed, slow prefetch failed">
+    Fast prefetch failed; slow prefetch was attempted as a fallback, but it
+    failed.
+  </int>
 </enum>
 
 <enum name="FileReaderLoaderFailureType">
@@ -40762,6 +40788,7 @@ from previous Chrome versions.
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
+  <int value="-491546546" label="MeteredShowToggle:enabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
   <int value="-488779992" label="blink-settings"/>
   <int value="-488449930" label="SafetyCheckAndroid:enabled"/>
@@ -42840,6 +42867,7 @@ from previous Chrome versions.
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
+  <int value="1847658464" label="MeteredShowToggle:disabled"/>
   <int value="1848974467" label="DelayAsyncScriptExecution:disabled"/>
   <int value="1849379463" label="OfflinePagesCTV2:enabled"/>
   <int value="1849580433" label="disable-oop-rasterization"/>

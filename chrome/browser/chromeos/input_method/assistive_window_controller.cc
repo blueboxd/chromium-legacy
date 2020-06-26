@@ -212,15 +212,14 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
 }
 
 void AssistiveWindowController::AssistiveWindowButtonClicked(
-    ui::ime::ButtonId id,
-    ui::ime::AssistiveWindowType type) const {
-  if (id == ui::ime::ButtonId::kSmartInputsSettingLink) {
+    const ui::ime::AssistiveWindowButton& button) const {
+  if (button.id == ui::ime::ButtonId::kSmartInputsSettingLink) {
     base::RecordAction(base::UserMetricsAction("OpenSmartInputsSettings"));
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         ProfileManager::GetActiveUserProfile(),
         chromeos::settings::mojom::kSmartInputsSubpagePath);
   } else {
-    delegate_->AssistiveWindowButtonClicked(id, type);
+    delegate_->AssistiveWindowButtonClicked(button);
   }
 }
 

@@ -43,6 +43,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
@@ -327,6 +328,12 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
 #if defined(OS_ANDROID)
   pref_service_->SetInteger(prefs::kPromptForDownloadAndroid,
                             static_cast<int>(DownloadPromptStatus::DONT_SHOW));
+
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    pref_service_->SetInteger(
+        prefs::kDownloadLaterPromptStatus,
+        static_cast<int>(DownloadLaterPromptStatus::DONT_SHOW));
+  }
 #endif
 }
 

@@ -129,7 +129,8 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
       DisableCompositingQueryAsserts disabler;
       if (inner_compositor->InCompositingMode()) {
         GraphicsLayer* inner_root_layer = inner_compositor->RootGraphicsLayer();
-        DCHECK(inner_root_layer);
+        // TODO(szager): Change to DCHECK after diagnosing crbug.com/1092673
+        CHECK(inner_root_layer);
         layer_vector_for_children->push_back(inner_root_layer);
       }
       inner_compositor->ClearRootLayerAttachmentDirty();

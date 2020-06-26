@@ -156,6 +156,7 @@ IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, MicrotaskRemoval) {
   ASSERT_TRUE(RunSubtest("microtask")) << message_;
 }
 
+// TODO(http://crbug.com/1028308): Flaky on multiple platforms
 // Removes the frame at the frame's first scheduled macrotask.
 IN_PROC_BROWSER_TEST_P(DestructiveScriptTest, DISABLED_MacrotaskRemoval) {
   ASSERT_TRUE(RunSubtest("macrotask")) << message_;

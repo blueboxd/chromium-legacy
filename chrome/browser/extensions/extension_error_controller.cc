@@ -84,7 +84,7 @@ void ExtensionErrorController::OnAlertClosed() {
   for (ExtensionSet::const_iterator iter = blacklisted_extensions_.begin();
        iter != blacklisted_extensions_.end();
        ++iter) {
-    prefs->AcknowledgeBlacklistedExtension((*iter)->id());
+    prefs->AcknowledgeBlocklistedExtension((*iter)->id());
   }
 
   blacklisted_extensions_.Clear();
@@ -103,11 +103,11 @@ void ExtensionErrorController::IdentifyAlertableExtensions() {
   // the first time, grandfather extensions that would have caused
   // notification.
 
-  const ExtensionSet& blacklisted_set = registry->blacklisted_extensions();
+  const ExtensionSet& blacklisted_set = registry->blocklisted_extensions();
   for (ExtensionSet::const_iterator iter = blacklisted_set.begin();
        iter != blacklisted_set.end();
        ++iter) {
-    if (!prefs->IsBlacklistedExtensionAcknowledged((*iter)->id()))
+    if (!prefs->IsBlocklistedExtensionAcknowledged((*iter)->id()))
       blacklisted_extensions_.Insert(*iter);
   }
 
@@ -130,7 +130,7 @@ void ExtensionErrorController::IdentifyAlertableExtensions() {
     // Extensions disabled by policy. Note: this no longer includes blacklisted
     // extensions, though we still show the same UI.
     if (!management_policy->UserMayLoad(extension, NULL /* ignore error */)) {
-      if (!prefs->IsBlacklistedExtensionAcknowledged(extension->id()))
+      if (!prefs->IsBlocklistedExtensionAcknowledged(extension->id()))
         blacklisted_extensions_.Insert(extension);
     }
   }

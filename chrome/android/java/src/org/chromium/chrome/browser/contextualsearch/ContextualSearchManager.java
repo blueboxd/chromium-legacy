@@ -1323,7 +1323,9 @@ public class ContextualSearchManager
                 return;
             }
 
-            if (didSelect) {
+            // Process normally unless something went wrong with the selection or an IPH triggered
+            // on tap when promoting longpress, otherwise just finish up.
+            if (didSelect && !mInProductHelp.isShowingForTappedButShouldLongpress()) {
                 assert mContext != null;
                 mContext.onSelectionAdjusted(startAdjust, endAdjust);
                 // There's a race condition when we select the word between this Ack response and
@@ -1448,7 +1450,6 @@ public class ContextualSearchManager
     public void handleValidTap(int x, int y) {
         if (isSuppressed()) return;
 
-        mInternalStateController.enter(InternalState.TAP_RECOGNIZED);
         if (!mPolicy.isTapSupported() && mPolicy.canResolveLongpress()) {
             // User tapped when Longpress is needed.  Convert location to screen coordinates, and
             // put up some in-product help.
@@ -1457,8 +1458,13 @@ public class ContextualSearchManager
             mParentView.getLocationInWindow(parentScreenXy);
             mInProductHelp.onNonTriggeringTap(Profile.getLastUsedRegularProfile(),
                     new Point(x + parentScreenXy[0], y + yOffset + parentScreenXy[1]),
-                    new CtrSuppression().getPrevious28DayCtr() > 0);
+                    new CtrSuppression().getPrevious28DayCtr() > 0,
+                    () -> mSelectionController.clearSelection());
         }
+
+        // This will synchronously advance to the next state (and possibly others) before
+        // returning.
+        mInternalStateController.enter(InternalState.TAP_RECOGNIZED);
     }
 
     @Override
@@ -1573,7 +1579,11 @@ public class ContextualSearchManager
                 if (isSearchPanelShowing()) {
                     mSearchPanel.closePanel(reason, false);
                 } else {
-                    if (mSelectionController.getSelectionType() == SelectionType.TAP) {
+                    // Also clear any tap-based selection unless the Tap IPH is showing. In the
+                    // latter case we preserve the selection so the help bubble has something to
+                    // point to.
+                    if (mSelectionController.getSelectionType() == SelectionType.TAP
+                            && !mInProductHelp.isShowingForTappedButShouldLongpress()) {
                         mSelectionController.clearSelection();
                     }
                 }
@@ -1625,6 +1635,7 @@ public class ContextualSearchManager
             public void tapGestureCommit() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.TAP_GESTURE_COMMIT);
                 if (!mPolicy.isTapSupported()
+                                && !mInProductHelp.isShowingForTappedButShouldLongpress()
                         || mSelectionController.getSelectionType()
                                 == SelectionType.RESOLVING_LONG_PRESS) {
                     hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -1647,6 +1658,16 @@ public class ContextualSearchManager
             @Override
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
+
+                // We may have gotten here even without Tap being supported if an IPH for Tap
+                // is active.  In that case we want to be sure to show, so skip the suppression
+                // decision.
+                if (mInProductHelp.isShowingForTappedButShouldLongpress()) {
+                    mInternalStateController.notifyFinishedWorkOn(
+                            InternalState.DECIDING_SUPPRESSION);
+                    return;
+                }
+
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
                 mSelectionController.handleShouldSuppressTap(mContext, mInteractionRecorder);
             }

@@ -277,19 +277,19 @@ std::vector<ExtensionInstallProto::DisableReason> GetDisableReasons(
 ExtensionInstallProto::BlacklistState GetBlacklistState(
     const extensions::ExtensionId& id,
     extensions::ExtensionPrefs* prefs) {
-  extensions::BlacklistState state = prefs->GetExtensionBlacklistState(id);
+  extensions::BlocklistState state = prefs->GetExtensionBlocklistState(id);
   switch (state) {
-    case extensions::NOT_BLACKLISTED:
+    case extensions::NOT_BLOCKLISTED:
       return ExtensionInstallProto::NOT_BLACKLISTED;
-    case extensions::BLACKLISTED_MALWARE:
+    case extensions::BLOCKLISTED_MALWARE:
       return ExtensionInstallProto::BLACKLISTED_MALWARE;
-    case extensions::BLACKLISTED_SECURITY_VULNERABILITY:
+    case extensions::BLOCKLISTED_SECURITY_VULNERABILITY:
       return ExtensionInstallProto::BLACKLISTED_SECURITY_VULNERABILITY;
-    case extensions::BLACKLISTED_CWS_POLICY_VIOLATION:
+    case extensions::BLOCKLISTED_CWS_POLICY_VIOLATION:
       return ExtensionInstallProto::BLACKLISTED_CWS_POLICY_VIOLATION;
-    case extensions::BLACKLISTED_POTENTIALLY_UNWANTED:
+    case extensions::BLOCKLISTED_POTENTIALLY_UNWANTED:
       return ExtensionInstallProto::BLACKLISTED_POTENTIALLY_UNWANTED;
-    case extensions::BLACKLISTED_UNKNOWN:
+    case extensions::BLOCKLISTED_UNKNOWN:
       return ExtensionInstallProto::BLACKLISTED_UNKNOWN;
   }
   NOTREACHED();

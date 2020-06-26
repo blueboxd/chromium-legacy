@@ -107,7 +107,7 @@ std::string ZipFiles(
     PLOG(ERROR) << "Failed to read zipped system logs";
     return compressed_logs;
   }
-  base::DeleteFile(zip_file, false);
+  base::DeleteFile(zip_file);
   return compressed_logs;
 }
 

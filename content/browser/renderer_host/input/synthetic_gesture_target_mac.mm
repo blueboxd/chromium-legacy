@@ -141,18 +141,7 @@ void SyntheticGestureTargetMac::DispatchWebMouseWheelEventToPlatform(
       web_wheel.delta_x / ui::kScrollbarPixelsPerCocoaTick;
   wheel_event.wheel_ticks_y =
       web_wheel.delta_y / ui::kScrollbarPixelsPerCocoaTick;
-
-  // Manually route the WebMouseWheelEvent to any open popup window if the
-  // mouse is currently over the pop window, because window-level event routing
-  // on Mac happens at the OS API level which we cannot easily inject the
-  // events into.
-  if (GetView()->PopupChildHostView() &&
-      PointIsWithinContents(GetView()->PopupChildHostView(),
-                            web_wheel.PositionInWidget())) {
-    GetView()->PopupChildHostView()->RouteOrProcessWheelEvent(wheel_event);
-  } else {
-    GetView()->RouteOrProcessWheelEvent(wheel_event);
-  }
+  GetView()->RouteOrProcessWheelEvent(wheel_event);
   if (web_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
     // Send the pending wheel end event immediately. Otherwise, the
     // MouseWheelPhaseHandler will defer the end event in case of momentum
@@ -191,15 +180,6 @@ RenderWidgetHostViewMac* SyntheticGestureTargetMac::GetView() const {
       static_cast<RenderWidgetHostViewMac*>(render_widget_host()->GetView());
   DCHECK(view);
   return view;
-}
-
-bool SyntheticGestureTargetMac::PointIsWithinContents(
-    RenderWidgetHostView* view,
-    const gfx::PointF& point) {
-  gfx::Rect bounds = view->GetViewBounds();
-  gfx::Rect bounds_in_window =
-      bounds - bounds.OffsetFromOrigin();  // Translate the bounds to (0,0).
-  return bounds_in_window.Contains(point.x(), point.y());
 }
 
 }  // namespace content

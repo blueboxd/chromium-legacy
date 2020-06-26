@@ -160,7 +160,7 @@ bool SaveAndDeleteImage(scoped_refptr<base::RefCountedBytes> image_bytes,
     return false;
   }
   if (!old_image_path.empty() && old_image_path != image_path) {
-    if (!base::DeleteFile(old_image_path, false /* recursive */)) {
+    if (!base::DeleteFile(old_image_path)) {
       LOG(ERROR) << "Failed to delete old image: "
                  << old_image_path.AsUTF8Unsafe();
       return false;

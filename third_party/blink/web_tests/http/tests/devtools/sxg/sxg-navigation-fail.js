@@ -9,6 +9,6 @@
   SDK.NetworkLog.instance().reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-invalid-validity-url.sxg');
   await ConsoleTestRunner.dumpConsoleMessages();
-  NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
+  NetowrkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   TestRunner.completeTest();
 })();

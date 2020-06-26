@@ -178,7 +178,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
-  base::string16 GetMessageInfoBarText();
   base::string16 GetMessageInfoBarButtonText();
   void MessageInfoBarButtonPressed();
   bool ShouldShowMessageInfoBarButton();

@@ -45,6 +45,8 @@ class StyleColor {
   StyleColor() : color_keyword_(CSSValueID::kCurrentcolor) {}
   StyleColor(Color color)
       : color_(color), color_keyword_(CSSValueID::kInvalid) {}
+  explicit StyleColor(RGBA32 color)
+      : color_(color), color_keyword_(CSSValueID::kInvalid) {}
   static StyleColor CurrentColor() { return StyleColor(); }
 
   bool IsCurrentColor() const {

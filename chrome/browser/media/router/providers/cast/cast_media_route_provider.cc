@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/media/router/logger_impl.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
@@ -24,6 +25,8 @@
 namespace media_router {
 
 namespace {
+
+constexpr char kLoggerComponent[] = "CastMediaRouteProvider";
 
 // Whitelist of origins allowed to use a PresentationRequest to initiate
 // mirroring.
@@ -81,10 +84,11 @@ void CastMediaRouteProvider::Init(
 
   receiver_.Bind(std::move(receiver));
   media_router_.Bind(std::move(media_router));
+  media_router_->GetLogger(logger_.BindNewPipeAndPassReceiver());
 
   activity_manager_ = std::make_unique<CastActivityManager>(
       media_sink_service_, session_tracker, message_handler_,
-      media_router_.get(), hash_token);
+      media_router_.get(), logger_.get(), hash_token);
 
   // TODO(crbug.com/816702): This needs to be set properly according to sinks
   // discovered.
@@ -109,14 +113,15 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
                                          base::TimeDelta timeout,
                                          bool incognito,
                                          CreateRouteCallback callback) {
-  DVLOG(2) << "CreateRoute with origin: " << origin << " and tab ID " << tab_id;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(https://crbug.com/809249): Handle mirroring routes, including
   // mirror-to-Cast transitions.
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   if (!sink) {
-    DVLOG(2) << "CreateRoute: sink not found";
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to create a route with an invalid sink ID",
+                      sink_id, source_id, "");
     std::move(callback).Run(base::nullopt, nullptr,
                             std::string("Sink not found"),
                             RouteRequestResult::ResultCode::SINK_NOT_FOUND);
@@ -126,7 +131,9 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
   std::unique_ptr<CastMediaSource> cast_source =
       CastMediaSource::FromMediaSourceId(source_id);
   if (!cast_source) {
-    DVLOG(2) << "CreateRoute: invalid source";
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
+                      "Attempted to create a route with an invalid source",
+                      sink_id, source_id, "");
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
@@ -193,7 +200,6 @@ void CastMediaRouteProvider::SendRouteBinaryMessage(
 
 void CastMediaRouteProvider::StartObservingMediaSinks(
     const std::string& media_source) {
-  DVLOG(1) << __func__ << ", media_source: " << media_source;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (base::Contains(sink_queries_, media_source))
     return;
@@ -300,8 +306,6 @@ void CastMediaRouteProvider::GetState(GetStateCallback callback) {
 void CastMediaRouteProvider::OnSinkQueryUpdated(
     const MediaSource::Id& source_id,
     const std::vector<MediaSinkInternal>& sinks) {
-  DVLOG(1) << __func__ << ", source_id: " << source_id
-           << ", #sinks: " << sinks.size();
   media_router_->OnSinksReceived(MediaRouteProviderId::CAST, source_id, sinks,
                                  GetOrigins(source_id));
 }

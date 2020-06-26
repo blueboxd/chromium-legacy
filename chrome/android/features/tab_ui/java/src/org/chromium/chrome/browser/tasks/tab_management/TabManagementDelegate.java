@@ -53,10 +53,12 @@ public interface TabManagementDelegate {
      *         communicate with this surface.
      * @param tabSwitcherType The type of the tab switcher to show.
      * @param hasMVTiles whether has MV tiles on the surface.
+     * @param hasTrendyTerms whether has trendy terms on the surface.
      * @return The {@link TasksSurface}.
      */
     TasksSurface createTasksSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
-            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles);
+            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles,
+            boolean hasTrendyTerms);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.

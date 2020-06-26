@@ -56,9 +56,11 @@ RemoteFontFaceSource::ComputeFontDisplayAutoPeriod() const {
     using Mode = features::AlignFontDisplayAutoTimeoutWithLCPGoalMode;
     Mode mode =
         features::kAlignFontDisplayAutoTimeoutWithLCPGoalModeParam.Get();
-    if (mode == Mode::kToFailurePeriod)
+    if (mode == Mode::kToSwapPeriod)
+      return kSwapPeriod;
+    DCHECK_EQ(Mode::kToFailurePeriod, mode);
+    if (custom_font_data_ && !custom_font_data_->MayBeIconFont())
       return kFailurePeriod;
-    DCHECK_EQ(Mode::kToSwapPeriod, mode);
     return kSwapPeriod;
   }
 

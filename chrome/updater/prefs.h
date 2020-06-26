@@ -13,6 +13,10 @@ namespace updater {
 
 class ScopedPrefsLock;
 
+extern const char kPrefQualified[];
+extern const char kPrefSwapping[];
+extern const char kPrefActiveVersion[];
+
 class UpdaterPrefs {
  public:
   UpdaterPrefs(std::unique_ptr<ScopedPrefsLock> lock,

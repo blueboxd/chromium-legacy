@@ -167,6 +167,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
   void DidRegisterServiceWorker(const SequencedContextId& context_id,
                                 bool success);
   void DidUnregisterServiceWorker(const ExtensionId& extension_id,
+                                  ActivationSequence sequence,
                                   bool success);
 
   void DidStartWorkerForScope(const SequencedContextId& context_id,

@@ -5970,6 +5970,18 @@
     ]
   },
 
+  "ExtensionInstallEventLoggingEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ExtensionInstallEventLoggingEnabled": true
+        },
+        "prefs": { "extensions.install.event_logging_enabled": {} }
+      }
+    ]
+  },
+
   "UsageTimeLimit": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

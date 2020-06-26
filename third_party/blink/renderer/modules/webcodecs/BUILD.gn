@@ -6,6 +6,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("webcodecs") {
   sources = [
+    "decoder_selector.cc",
+    "decoder_selector.h",
     "encoded_video_chunk.cc",
     "encoded_video_chunk.h",
     "encoded_video_metadata.h",
@@ -13,6 +15,8 @@ blink_modules_sources("webcodecs") {
     "image_decoder_external.h",
     "video_decoder.cc",
     "video_decoder.h",
+    "video_decoder_broker.cc",
+    "video_decoder_broker.h",
     "video_encoder.cc",
     "video_encoder.h",
     "video_frame.cc",
@@ -22,12 +26,20 @@ blink_modules_sources("webcodecs") {
     "video_track_writer.cc",
     "video_track_writer.h",
   ]
+  deps = [
+    "//media",
+    "//media/mojo:buildflags",
+    "//media/mojo/clients",
+    "//media/mojo/mojom",
+  ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "decoder_selector_test.cc",
     "encoded_video_chunk_test.cc",
+    "video_decoder_broker_test.cc",
     "video_frame_test.cc",
     "video_track_reader_writer_test.cc",
   ]
@@ -39,6 +51,9 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    "//base/test:test_support",
+    "//gpu/command_buffer/common",
+    "//media:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/modules",

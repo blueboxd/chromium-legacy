@@ -7,8 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -130,15 +128,10 @@ void SuggestionView::SetHighlighted(bool highlighted) {
   highlighted_ = highlighted;
   if (highlighted) {
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, false);
-    ui::NativeTheme* theme = GetNativeTheme();
-    SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
-    SetBorder(views::CreateSolidBorder(
-        1,
-        theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
+    // TODO(crbug/1099044): Use System Color for button highlight.
+    SetBackground(views::CreateSolidBackground(kButtonHighlightColor));
   } else {
     SetBackground(nullptr);
-    SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
   }
   SchedulePaint();
 }

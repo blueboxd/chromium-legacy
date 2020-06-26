@@ -1156,8 +1156,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, RetryOnErrorScreen) {
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
+// Test is flaky: crbug.com/1099402
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       ShowOfflineSetupOptionOnNetworkList) {
+                       DISABLED_ShowOfflineSetupOptionOnNetworkList) {
   auto* const wizard_controller = WizardController::default_controller();
   wizard_controller->SimulateDemoModeSetupForTesting();
   SimulateOfflineEnvironment();

@@ -30,6 +30,10 @@ public abstract class BaseSwitches {
     // Enables the reached code profiler.
     public static final String ENABLE_REACHED_CODE_PROFILER = "enable-reached-code-profiler";
 
+    // Specifies the profiling interval for reached code profiler in microseconds.
+    public static final String REACHED_CODE_SAMPLING_INTERVAL_US =
+            "reached-code-sampling-interval-us";
+
     // Comma-separated list of feature names to enable.
     public static final String ENABLE_FEATURES = "enable-features";
 

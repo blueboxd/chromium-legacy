@@ -11,15 +11,19 @@
 
 namespace chromeos {
 
-// Implements LacrosChromeService.
+// Implements LacrosChromeService, which owns the mojo remote connection to
+// ash-chrome.
 class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
     : public lacros::mojom::LacrosChromeService {
  public:
-  // TODO(hidehiko): Add static getter of the instance.
-  // The instance of this class should be globally unique.
+  static LacrosChromeServiceImpl* Get();
 
   LacrosChromeServiceImpl();
   ~LacrosChromeServiceImpl() override;
+
+  mojo::Remote<lacros::mojom::AshChromeService>& ash_chrome_service() {
+    return ash_chrome_service_;
+  }
 
   // lacros::mojom::LacrosChromeService:
   void RequestAshChromeServiceReceiver(
@@ -27,7 +31,6 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
 
  private:
   // Proxy to AshChromeService in ash-chrome.
-  // TODO(hidehiko): Add getter for Remote<AshChromeService>.
   mojo::Remote<lacros::mojom::AshChromeService> ash_chrome_service_;
 
   // Pending receiver of AshChromeService.

@@ -15,7 +15,7 @@
   const preloadRequestIDs = {};
 
   function onRequestStarted(event) {
-    const request = event.data;
+    const request = event.data.request;
     if (request.initiator().type != 'preload') {
       return;
     }
@@ -25,7 +25,7 @@
   }
 
   function onResponseReceived(event) {
-    const request = event.data;
+    const request = event.data.request;
     if (!preloadRequestIDs[request.requestId()]) {
       return;
     }

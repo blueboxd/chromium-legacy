@@ -4280,6 +4280,9 @@ void Document::write(const String& text,
     return;
   }
 
+  if (entered_document && !entered_document->GetExecutionContext())
+    return;
+
   if (ignore_opens_and_writes_for_abort_)
     return;
 

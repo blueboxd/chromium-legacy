@@ -80,9 +80,7 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
   void ReportDownloadAction(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
   void ReportNavigationStarted(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               const base::android::JavaParamRef<jstring>& url,
-                               jboolean in_new_tab);
+                               const base::android::JavaParamRef<jobject>& obj);
   void ReportPageLoaded(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jstring>& url,

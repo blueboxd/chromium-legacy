@@ -338,6 +338,12 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   }
 
   if (!subframe_info.timing.is_null()) {
+    if (subframe_info.timing->paint_timing->first_paint.has_value()) {
+      builder.SetSubFrame_PaintTiming_NavigationToFirstPaint(
+          subframe_info.timing->paint_timing->first_paint.value()
+              .InMilliseconds());
+    }
+
     if (subframe_info.timing->paint_timing->first_contentful_paint
             .has_value()) {
       builder.SetSubFrame_PaintTiming_NavigationToFirstContentfulPaint(

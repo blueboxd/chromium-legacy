@@ -1119,6 +1119,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSuggestedContentEnabled,
     chromeos::prefs::kSuggestedContentEnabled,
     base::Value::Type::BOOLEAN },
+    { key::kExtensionInstallEventLoggingEnabled,
+    prefs::kExtensionInstallEventLoggingEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kRequiredClientCertificateForUser,
+    prefs::kRequiredClientCertificateForUser,
+    base::Value::Type::LIST },
+  { key::kRequiredClientCertificateForDevice,
+    prefs::kRequiredClientCertificateForDevice,
+    base::Value::Type::LIST },
 
 #else  // defined(OS_CHROMEOS)
   { key::kMetricsReportingEnabled,
@@ -1300,15 +1309,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kAllowNativeNotifications,
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
-  { key::kRequiredClientCertificateForUser,
-    prefs::kRequiredClientCertificateForUser,
-    base::Value::Type::LIST },
-  { key::kRequiredClientCertificateForDevice,
-    prefs::kRequiredClientCertificateForDevice,
-    base::Value::Type::LIST },
-#endif  // defined(OS_CHROMEOS)
 
   { key::kScrollToTextFragmentEnabled,
     prefs::kScrollToTextFragmentEnabled,

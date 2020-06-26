@@ -26,12 +26,12 @@ void BlacklistCheck::Start(ResultCallback callback) {
 }
 
 void BlacklistCheck::OnBlacklistedStateRetrieved(
-    BlacklistState blacklist_state) {
+    BlocklistState blocklist_state) {
   Errors errors;
-  if (blacklist_state == BlacklistState::BLACKLISTED_MALWARE)
-    errors.insert(PreloadCheck::BLACKLISTED_ID);
-  else if (blacklist_state == BlacklistState::BLACKLISTED_UNKNOWN)
-    errors.insert(PreloadCheck::BLACKLISTED_UNKNOWN);
+  if (blocklist_state == BlocklistState::BLOCKLISTED_MALWARE)
+    errors.insert(PreloadCheck::BLOCKLISTED_ID);
+  else if (blocklist_state == BlocklistState::BLOCKLISTED_UNKNOWN)
+    errors.insert(PreloadCheck::BLOCKLISTED_UNKNOWN);
   std::move(callback_).Run(errors);
 }
 

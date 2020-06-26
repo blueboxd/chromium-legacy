@@ -4,9 +4,12 @@
 
 #include "ui/shell_dialogs/select_file_dialog_lacros.h"
 
+#include <utility>
+
 #include "base/bind.h"
-#include "base/notreached.h"
-#include "base/task/thread_pool.h"
+#include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/mojom/select_file.mojom-shared.h"
+#include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 namespace ui {
@@ -23,7 +26,20 @@ ui::SelectFileDialog* SelectFileDialogLacros::Factory::Create(
 SelectFileDialogLacros::SelectFileDialogLacros(
     Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy)
-    : ui::SelectFileDialog(listener, std::move(policy)) {}
+    : ui::SelectFileDialog(listener, std::move(policy)) {
+  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  // TODO(jamescook): Move LacrosChromeServiceImpl construction earlier and
+  // remove these checks. This function is racy with lacros-chrome startup and
+  // the initial mojo connection. In practice, however, the remote is bound
+  // long before the user can trigger a select dialog.
+  if (!lacros_chrome_service ||
+      !lacros_chrome_service->ash_chrome_service().is_bound()) {
+    LOG(ERROR) << "Not connected to ash-chrome.";
+    return;
+  }
+  lacros_chrome_service->ash_chrome_service()->BindSelectFile(
+      select_file_remote_.BindNewPipeAndPassReceiver());
+}
 
 SelectFileDialogLacros::~SelectFileDialogLacros() = default;
 
@@ -44,17 +60,41 @@ void SelectFileDialogLacros::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
-  // TODO(https://crbug.com/1090587): Proxy the request over IPC to ash-chrome.
-  NOTIMPLEMENTED();
-  // Until we have an implementation, pretend the user cancelled the dialog.
-  // Post a task to avoid reentrancy issues. |this| is ref-counted.
-  base::ThreadPool::PostTask(
-      FROM_HERE, base::BindOnce(&SelectFileDialogLacros::Cancel, this, params));
+  params_ = params;
+
+  lacros::mojom::SelectFileOptionsPtr options =
+      lacros::mojom::SelectFileOptions::New();
+  // TODO(jamescook): Correct type.
+  options->type = lacros::mojom::SelectFileDialogType::kOpenFile;
+  options->title = title;
+  options->default_path = default_path;
+
+  // Send request to ash-chrome.
+  select_file_remote_->Select(
+      std::move(options),
+      base::BindOnce(&SelectFileDialogLacros::OnSelected, this));
 }
 
-void SelectFileDialogLacros::Cancel(void* params) {
-  if (listener_)
-    listener_->FileSelectionCanceled(params);
+void SelectFileDialogLacros::OnSelected(
+    lacros::mojom::SelectFileResult result,
+    std::vector<lacros::mojom::SelectedFileInfoPtr> files) {
+  if (!listener_)
+    return;
+  if (files.empty()) {
+    listener_->FileSelectionCanceled(params_);
+    return;
+  }
+  if (files.size() == 1) {
+    // TODO(jamescook): Support correct file filter |index|.
+    // TODO(jamescook): Use FileSelectedWithExtraInfo instead.
+    listener_->FileSelected(files[0]->file_path, /*index=*/0, params_);
+    return;
+  }
+  std::vector<base::FilePath> paths;
+  for (auto& file : files)
+    paths.push_back(std::move(file->file_path));
+  // TODO(jamescook): Use MultiFilesSelectedWithExtraInfo instead.
+  listener_->MultiFilesSelected(paths, params_);
 }
 
 }  // namespace ui

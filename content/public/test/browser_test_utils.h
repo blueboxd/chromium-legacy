@@ -1674,11 +1674,6 @@ class PwnMessageHelper {
                               std::string blob_uuid,
                               int64_t position);
 
-  // Sends FrameHostMsg_OpenURL
-  static void OpenURL(RenderProcessHost* process,
-                      int routing_id,
-                      const GURL& url);
-
  private:
   PwnMessageHelper();  // Not instantiable.
 

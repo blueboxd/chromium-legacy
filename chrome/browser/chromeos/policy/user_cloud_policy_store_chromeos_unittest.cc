@@ -255,7 +255,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
   // Start without any public key to trigger the initial key checks.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file()));
 
   // Make the policy blob contain a new public key.
   policy_.SetDefaultNewSigningKey();
@@ -269,7 +269,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreValidationFail) {
   // Start without any public key to trigger the initial key checks.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file()));
   // Make the policy blob contain a new public key.
   policy_.SetDefaultSigningKey();
   policy_.Build();
@@ -285,7 +285,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreValidationFail) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreMissingSignatureFailure) {
   // Start without any public key to trigger the initial key checks.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file()));
   // Make the policy blob contain a new public key.
   policy_.SetDefaultSigningKey();
   policy_.Build();
@@ -488,7 +488,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadValidationError) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, LoadNoKey) {
   // The loaded policy can't be verified without the public key.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file()));
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(policy_.GetBlob()));
   RunLoopAndExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   VerifyStoreHasValidationError();
@@ -576,7 +576,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadImmediatelyNoUserPolicyKey) {
   session_manager_client_->set_user_policy(cryptohome_id_, policy_.GetBlob());
 
   // Ensure no policy data.
-  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file()));
   EXPECT_FALSE(store_->policy());
 
   EXPECT_CALL(observer_, OnStoreError(store_.get()));

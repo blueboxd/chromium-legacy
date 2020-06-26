@@ -15,7 +15,9 @@
   await TestRunner.reloadPagePromise();
   TestRunner.addResult('');
 
-  for (const request of SDK.NetworkLog.instance().requests()) {
+  const requests =
+      NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+  for (const request of requests) {
     const networkManager = SDK.NetworkManager.forRequest(request);
     TestRunner.addResult('request.url(): ' + request.url());
     TestRunner.addResult(

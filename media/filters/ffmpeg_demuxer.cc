@@ -1522,6 +1522,12 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
   if (glue_->container() == container_names::CONTAINER_AVI)
     format_context->flags |= AVFMT_FLAG_GENPTS;
 
+  // FFmpeg will incorrectly adjust the start time of MP3 files into the future
+  // based on discard samples. We were unable to fix this upstream without
+  // breaking ffmpeg functionality. https://crbug.com/1062037
+  if (glue_->container() == container_names::CONTAINER_MP3)
+    start_time_ = base::TimeDelta();
+
   // For testing purposes, don't overwrite the timeline offset if set already.
   if (timeline_offset_.is_null()) {
     timeline_offset_ =

@@ -26,26 +26,33 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/hit_test_utils.h"
 
-WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view)
+WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view,
+                                   base::string16 accessible_name)
     : AppMenuButton(this), browser_view_(browser_view) {
   views::SetHitTestComponent(this, static_cast<int>(HTMENU));
 
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  // This name is guaranteed not to change during the lifetime of this button.
-  // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
-  // because the menu applies to the entire app.
-  base::string16 app_name = base::UTF8ToUTF16(
-      browser_view->browser()->app_controller()->GetAppShortName());
-  SetAccessibleName(app_name);
-  SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_WEB_APP_MENU_BUTTON_TOOLTIP, app_name));
+  base::string16 application_name = accessible_name;
+  if (application_name.empty() && browser_view->browser()->app_controller()) {
+    application_name =
+        browser_view->browser()->app_controller()->GetAppShortName();
+  }
 
+  // Currently, |accessible_name| is ony set for custom tabs. Skip setting the
+  // tooltip because |IDS_WEB_APP_MENU_BUTTON_TOOLTIP| doesn't make sense
+  // combined with |accessible_name|.
+  if (accessible_name.empty()) {
+    SetTooltipText(l10n_util::GetStringFUTF16(IDS_WEB_APP_MENU_BUTTON_TOOLTIP,
+                                              application_name));
+  }
+
+  SetAccessibleName(application_name);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 }
 
-WebAppMenuButton::~WebAppMenuButton() {}
+WebAppMenuButton::~WebAppMenuButton() = default;
 
 void WebAppMenuButton::SetColor(SkColor color) {
   SetImage(views::Button::STATE_NORMAL,

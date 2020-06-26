@@ -24,8 +24,7 @@ class IMEEngineHandlerInterface;
 class KeyEvent;
 
 namespace ime {
-enum class ButtonId;
-enum class AssistiveWindowType;
+struct AssistiveWindowButton;
 }  // namespace ime
 }  // namespace ui
 
@@ -117,8 +116,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
     // Called when the user clicks on a button in assistive window.
     virtual void OnAssistiveWindowButtonClicked(
-        const ui::ime::ButtonId& id,
-        const ui::ime::AssistiveWindowType& type) {}
+        const ui::ime::AssistiveWindowButton& button) {}
 
     // Called when a menu item for this IME is interacted with.
     virtual void OnMenuItemActivated(const std::string& component_id,

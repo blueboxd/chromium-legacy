@@ -226,9 +226,8 @@ void NativeInputMethodEngine::ImeObserver::OnCandidateClicked(
 }
 
 void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
-    const ui::ime::ButtonId& id,
-    const ui::ime::AssistiveWindowType& type) {
-  base_observer_->OnAssistiveWindowButtonClicked(id, type);
+    const ui::ime::AssistiveWindowButton& button) {
+  base_observer_->OnAssistiveWindowButtonClicked(button);
 }
 
 void NativeInputMethodEngine::ImeObserver::OnMenuItemActivated(

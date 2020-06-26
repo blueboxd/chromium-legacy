@@ -23,6 +23,8 @@ class UserEventService;
 
 namespace federated_learning {
 
+class FlocRemotePermissionService;
+
 // A service that regularly computes the floc id and logs it in a user event.
 //
 // A floc session starts when sync & sync-history is first enabled. We validate
@@ -47,6 +49,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
   FlocIdProviderImpl(
       syncer::SyncService* sync_service,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
+      FlocRemotePermissionService* floc_remote_permission_service,
       history::HistoryService* history_service,
       syncer::UserEventService* user_event_service);
   ~FlocIdProviderImpl() override;
@@ -58,7 +61,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
   virtual void NotifyFlocIdUpdated(EventLoggingAction);
   virtual bool IsSyncHistoryEnabled();
   virtual bool AreThirdPartyCookiesAllowed();
-  virtual bool IsSwaaNacAccountEnabled();
+  virtual void IsSwaaNacAccountEnabled(CanComputeFlocIdCallback callback);
 
  private:
   friend class FlocIdProviderUnitTest;
@@ -84,6 +87,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
 
   syncer::SyncService* sync_service_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  FlocRemotePermissionService* floc_remote_permission_service_;
   history::HistoryService* history_service_;
   syncer::UserEventService* user_event_service_;
 

@@ -141,11 +141,7 @@ void ComServerApp::Stop() {
       }));
 }
 
-void ComServerApp::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
-}
-
-void ComServerApp::FirstTaskRun() {
+void ComServerApp::ActiveDuty() {
   if (!com_initializer_.Succeeded()) {
     PLOG(ERROR) << "Failed to initialize COM";
     Shutdown(-1);
@@ -157,6 +153,15 @@ void ComServerApp::FirstTaskRun() {
   HRESULT hr = RegisterClassObjects();
   if (FAILED(hr))
     Shutdown(hr);
+}
+
+void ComServerApp::UninstallSelf() {
+  // TODO(crbug.com/1098934): Uninstall this candidate version of the updater.
+}
+
+bool ComServerApp::SwapRPCInterfaces() {
+  // TODO(crbug.com/1098935): Update non-side-by-side COM registration.
+  return true;
 }
 
 }  // namespace updater

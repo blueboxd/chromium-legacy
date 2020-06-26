@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/blacklist_state.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
@@ -51,13 +51,13 @@ std::vector<base::string16> GenerateMessage(
   message.reserve(forbidden.size());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
   for (const auto& extension : forbidden) {
-    BlacklistState blacklist_state =
-        prefs->GetExtensionBlacklistState(extension->id());
+    BlocklistState blocklist_state =
+        prefs->GetExtensionBlocklistState(extension->id());
     bool disable_remotely_for_malware = prefs->HasDisableReason(
         extension->id(), disable_reason::DISABLE_REMOTELY_FOR_MALWARE);
     int id = 0;
     if (disable_remotely_for_malware ||
-        (blacklist_state == BlacklistState::BLACKLISTED_MALWARE)) {
+        (blocklist_state == BlocklistState::BLOCKLISTED_MALWARE)) {
       id = forbidden.size() == 1
                ? IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE
                : IDS_EXTENSION_ALERT_ITEM_BLACKLISTED_MALWARE_PLURAL;

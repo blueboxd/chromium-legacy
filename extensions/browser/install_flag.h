@@ -16,8 +16,8 @@ enum InstallFlag {
   // capabilities).
   kInstallFlagHasRequirementErrors = 1 << 0,
 
-  // Extension is blacklisted for being malware.
-  kInstallFlagIsBlacklistedForMalware = 1 << 1,
+  // Extension is blocklisted for being malware.
+  kInstallFlagIsBlocklistedForMalware = 1 << 1,
 
   // This is an ephemeral app.
   kInstallFlagIsEphemeral_Deprecated = 1 << 2,

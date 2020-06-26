@@ -366,26 +366,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(ad_frame_type)
 IPC_STRUCT_TRAITS_END()
 
-// Parameters included with an OpenURL request.
-// |is_history_navigation_in_new_child| is true in the case that the browser
-// process should look for an existing history item for the frame.
-IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
-  IPC_STRUCT_MEMBER(int32_t, initiator_routing_id)
-  IPC_STRUCT_MEMBER(scoped_refptr<network::ResourceRequestBody>, post_body)
-  IPC_STRUCT_MEMBER(std::string, extra_headers)
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
-  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
-  IPC_STRUCT_MEMBER(bool, user_gesture)
-  IPC_STRUCT_MEMBER(blink::TriggeringEventInfo, triggering_event_info)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
-  IPC_STRUCT_MEMBER(std::string, href_translate)
-  IPC_STRUCT_MEMBER(base::Optional<content::Impression>, impression)
-  IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(int32_t, parent_routing_id)
   IPC_STRUCT_MEMBER(blink::mojom::TreeScopeType, scope)
@@ -505,9 +485,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
-
-// Requests that the given URL be opened in the specified manner.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin

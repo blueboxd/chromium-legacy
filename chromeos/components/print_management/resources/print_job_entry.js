@@ -25,6 +25,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import './strings.js';
 
+(function() {
+
+const GENERIC_FILE_EXTENSION_ICON = 'print-management:file-generic';
 
 /**
  * Converts a mojo time to a JS time.
@@ -100,7 +103,7 @@ function getFileExtensionIconName(fileName) {
     case 'xlr':
       return 'print-management:file-excel';
     default:
-      return 'print-management:file-generic';
+      return GENERIC_FILE_EXTENSION_ICON;
   }
 };
 
@@ -376,7 +379,10 @@ Polymer({
    */
   getFileIcon_(fileName) {
     const file_extension = getFileExtensionIconName(fileName);
-    if (file_extension) {
+    // It's valid for a file to have '.' in its name and not be its extension.
+    // If this is the case and we don't have a non-generic file icon, attempt to
+    // see if this is a Google file.
+    if (file_extension && file_extension !== GENERIC_FILE_EXTENSION_ICON) {
       return file_extension;
     }
     const gfile_extension = getGFileIconName(fileName);
@@ -384,7 +390,7 @@ Polymer({
       return gfile_extension;
     }
 
-    return 'print-management:file-generic';
+    return GENERIC_FILE_EXTENSION_ICON;
   },
 
   /**
@@ -426,3 +432,4 @@ Polymer({
     }
   },
 });
+})()

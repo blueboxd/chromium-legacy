@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/app.h"
+#include "chrome/updater/app/app_server.h"
 #include "chrome/updater/update_service.h"
 
 namespace updater {
@@ -39,7 +40,7 @@ class UpdateService;
 //
 // The instance of the this class is managed by a singleton and it leaks at
 // runtime.
-class ComServerApp : public App {
+class ComServerApp : public AppServer {
  public:
   ComServerApp();
 
@@ -53,8 +54,11 @@ class ComServerApp : public App {
 
   // Overrides for App.
   void InitializeThreadPool() override;
-  void Initialize() override;
-  void FirstTaskRun() override;
+
+  // Overrides for AppServer
+  void ActiveDuty() override;
+  bool SwapRPCInterfaces() override;
+  void UninstallSelf() override;
 
   // Registers and unregisters the out-of-process COM class factories.
   HRESULT RegisterClassObjects();

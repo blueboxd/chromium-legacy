@@ -36,6 +36,9 @@ template("chrome_common_shared_library") {
   _collect_inputs_only =
       defined(invoker.collect_inputs_only) && invoker.collect_inputs_only
 
+  # When _collect_inputs_only && !(!_is_webview && enable_vr).
+  not_needed(["_export_java_symbols"])
+
   # Create a partitioned libraries if the build config supports it, and the
   # invoker has supplied module descriptors.
   _generate_partitions = defined(invoker.module_descs) &&

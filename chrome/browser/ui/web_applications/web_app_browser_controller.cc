@@ -168,8 +168,8 @@ base::string16 WebAppBrowserController::GetTitle() const {
   return AppBrowserController::GetTitle();
 }
 
-std::string WebAppBrowserController::GetAppShortName() const {
-  return registrar().GetAppShortName(GetAppId());
+base::string16 WebAppBrowserController::GetAppShortName() const {
+  return base::UTF8ToUTF16(registrar().GetAppShortName(GetAppId()));
 }
 
 base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {

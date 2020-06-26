@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -199,7 +200,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
                         OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -423,69 +423,6 @@ void RenderFrameProxyHost::OnDetach() {
   frame_tree_node_->current_frame_host()->DetachFromProxy();
 }
 
-void RenderFrameProxyHost::OnOpenURL(
-    const FrameHostMsg_OpenURL_Params& params) {
-  // Verify and unpack IPC payload.
-  GURL validated_url;
-  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
-                           &blob_url_loader_factory)) {
-    return;
-  }
-
-  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
-
-  // Only active frames can navigate:
-  // - If the frame is in pending deletion, ignore the navigation, because the
-  // frame is going to disappear soon anyway.
-  // - If the frame is in back-forward cache, it's not allowed to navigate as it
-  // should remain frozen. Ignore the request and evict the document from
-  // back-forward cache.
-  if (current_rfh->IsInactiveAndDisallowReactivation())
-    return;
-
-  // Verify that we are in the same BrowsingInstance as the current
-  // RenderFrameHost.
-  if (!site_instance_->IsRelatedSiteInstance(current_rfh->GetSiteInstance()))
-    return;
-
-  // Since this navigation targeted a specific RenderFrameProxy, it should stay
-  // in the current tab.
-  DCHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params.disposition);
-
-  // Augment |download_policy| for situations that were not covered on the
-  // renderer side, e.g. status not available on remote frame, etc.
-  NavigationDownloadPolicy download_policy = params.download_policy;
-  GetContentClient()->browser()->AugmentNavigationDownloadPolicy(
-      frame_tree_node_->navigator().GetController()->GetWebContents(),
-      current_rfh, params.user_gesture, &download_policy);
-
-  if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
-       network::mojom::WebSandboxFlags::kDownloads) !=
-      network::mojom::WebSandboxFlags::kNone) {
-    if (download_policy.blocking_downloads_in_sandbox_enabled) {
-      download_policy.SetDisallowed(content::NavigationDownloadType::kSandbox);
-    } else {
-      download_policy.SetAllowed(content::NavigationDownloadType::kSandbox);
-    }
-  }
-
-  // TODO(lfg, lukasza): Remove |extra_headers| parameter from
-  // RequestTransferURL method once both RenderFrameProxyHost and
-  // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
-  // See also https://crbug.com/647772.
-  // TODO(clamy): The transition should probably be changed for POST navigations
-  // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
-  frame_tree_node_->navigator().NavigateFromFrameProxy(
-      current_rfh, validated_url,
-      GlobalFrameRoutingId(GetProcess()->GetID(), params.initiator_routing_id),
-      params.initiator_origin, site_instance_.get(), params.referrer,
-      ui::PAGE_TRANSITION_LINK, params.should_replace_current_entry,
-      download_policy, params.post_body ? "POST" : "GET", params.post_body,
-      params.extra_headers, std::move(blob_url_loader_factory),
-      params.user_gesture, params.impression);
-}
-
 void RenderFrameProxyHost::CheckCompleted() {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
   target_rfh->GetAssociatedLocalFrame()->CheckCompleted();
@@ -668,6 +605,69 @@ void RenderFrameProxyHost::RouteMessageEvent(
 
 void RenderFrameProxyHost::FocusPage() {
   frame_tree_node_->current_frame_host()->FocusPage();
+}
+
+void RenderFrameProxyHost::OpenURL(mojom::OpenURLParamsPtr params) {
+  // Verify and unpack IPC payload.
+  GURL validated_url;
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (!VerifyOpenURLParams(GetSiteInstance(), params, &validated_url,
+                           &blob_url_loader_factory)) {
+    return;
+  }
+
+  RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
+
+  // Only active frames can navigate:
+  // - If the frame is in pending deletion, ignore the navigation, because the
+  // frame is going to disappear soon anyway.
+  // - If the frame is in back-forward cache, it's not allowed to navigate as it
+  // should remain frozen. Ignore the request and evict the document from
+  // back-forward cache.
+  if (current_rfh->IsInactiveAndDisallowReactivation())
+    return;
+
+  // Verify that we are in the same BrowsingInstance as the current
+  // RenderFrameHost.
+  if (!site_instance_->IsRelatedSiteInstance(current_rfh->GetSiteInstance()))
+    return;
+
+  // Since this navigation targeted a specific RenderFrameProxy, it should stay
+  // in the current tab.
+  DCHECK_EQ(WindowOpenDisposition::CURRENT_TAB, params->disposition);
+
+  // Augment |download_policy| for situations that were not covered on the
+  // renderer side, e.g. status not available on remote frame, etc.
+  NavigationDownloadPolicy download_policy = params->download_policy;
+  GetContentClient()->browser()->AugmentNavigationDownloadPolicy(
+      frame_tree_node_->navigator().GetController()->GetWebContents(),
+      current_rfh, params->user_gesture, &download_policy);
+
+  if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
+       network::mojom::WebSandboxFlags::kDownloads) !=
+      network::mojom::WebSandboxFlags::kNone) {
+    if (download_policy.blocking_downloads_in_sandbox_enabled) {
+      download_policy.SetDisallowed(content::NavigationDownloadType::kSandbox);
+    } else {
+      download_policy.SetAllowed(content::NavigationDownloadType::kSandbox);
+    }
+  }
+
+  // TODO(lfg, lukasza): Remove |extra_headers| parameter from
+  // RequestTransferURL method once both RenderFrameProxyHost and
+  // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
+  // See also https://crbug.com/647772.
+  // TODO(clamy): The transition should probably be changed for POST navigations
+  // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
+  frame_tree_node_->navigator().NavigateFromFrameProxy(
+      current_rfh, validated_url,
+      GlobalFrameRoutingId(GetProcess()->GetID(), params->initiator_routing_id),
+      params->initiator_origin, site_instance_.get(),
+      params->referrer.To<content::Referrer>(), ui::PAGE_TRANSITION_LINK,
+      params->should_replace_current_entry, download_policy,
+      params->post_body ? "POST" : "GET", params->post_body,
+      params->extra_headers, std::move(blob_url_loader_factory),
+      params->user_gesture, params->impression);
 }
 
 void RenderFrameProxyHost::DidChangeOpener(

@@ -231,9 +231,9 @@ void SafetyCheckHandler::CheckExtensions() {
   int reenabled_by_user = 0;
   int reenabled_by_admin = 0;
   for (auto extension_id : extensions) {
-    extensions::BlacklistState state =
-        extension_prefs_->GetExtensionBlacklistState(extension_id);
-    if (state == extensions::BLACKLISTED_UNKNOWN) {
+    extensions::BlocklistState state =
+        extension_prefs_->GetExtensionBlocklistState(extension_id);
+    if (state == extensions::BLOCKLISTED_UNKNOWN) {
       // If any of the extensions are in the unknown blacklist state, that means
       // there was an error the last time the blacklist was fetched. That means
       // the results cannot be relied upon.
@@ -241,7 +241,7 @@ void SafetyCheckHandler::CheckExtensions() {
                               ReenabledUser(0), ReenabledAdmin(0));
       return;
     }
-    if (state == extensions::NOT_BLACKLISTED) {
+    if (state == extensions::NOT_BLOCKLISTED) {
       continue;
     }
     ++blocklisted;

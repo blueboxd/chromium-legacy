@@ -26,8 +26,15 @@ namespace {
 // Pref key that stores whether the user has already seen the infobar. The pref
 // is initialized as false, and updated to true when LiteMode is enabled and
 // infobar has been shown to user.
-const char kHasSeenInfoBar[] =
+constexpr char kHasSeenInfoBar[] =
     "litemode.https-image-compression.user-has-seen-infobar";
+
+// The time used to compare and identify recent LiteMode users. Users who
+// enabled LiteMode before this time are treated as non-recent and the one-time
+// https image compression InfoBar is shown for them. Set approximate as M85
+// release date, which is the target for https image compression feature.
+constexpr char kRecentLiteModeUserEnableTime[] = "2020-08-25T00:00:01Z";
+
 }  // namespace
 
 HttpsImageCompressionInfoBarDecider::HttpsImageCompressionInfoBarDecider(
@@ -37,11 +44,22 @@ HttpsImageCompressionInfoBarDecider::HttpsImageCompressionInfoBarDecider(
   if (!pref_service_ || !drp_settings)
     return;
   // The infobar only needs to be shown if the user has never seen it before,
-  // and is an existing Data Saver user.
+  // is an existing LiteMode user, and did not recently enable LiteMode.
   need_to_show_infobar_ =
       base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
       drp_settings->IsDataReductionProxyEnabled() &&
       !pref_service_->GetBoolean(kHasSeenInfoBar);
+  if (need_to_show_infobar_) {
+    const auto last_enabled_time = drp_settings->GetLastEnabledTime();
+    if (!last_enabled_time.is_null()) {
+      base::Time recent_lite_mode_user_enable_time;
+      bool success = base::Time::FromUTCString(
+          kRecentLiteModeUserEnableTime, &recent_lite_mode_user_enable_time);
+      DCHECK(success);
+      need_to_show_infobar_ =
+          last_enabled_time < recent_lite_mode_user_enable_time;
+    }
+  }
 }
 
 // static

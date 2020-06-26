@@ -27,6 +27,8 @@ jumbo_source_set("clients") {
 
     # TODO(liberato): can we avoid this?
     "//content/test/*",
+
+    "//third_party/blink/renderer/modules/webcodecs",
   ]
 
   sources = [

@@ -69,11 +69,11 @@ constexpr const char kPrefManifest[] = "manifest";
 // The version number.
 constexpr const char kPrefManifestVersion[] = "manifest.version";
 
-// Indicates whether an extension is blacklisted.
-constexpr const char kPrefBlacklist[] = "blacklist";
+// Indicates whether an extension is blocklisted.
+constexpr const char kPrefBlocklist[] = "blacklist";
 
 // If extension is greylisted.
-constexpr const char kPrefBlacklistState[] = "blacklist_state";
+constexpr const char kPrefBlocklistState[] = "blacklist_state";
 
 // The count of how many times we prompted the user to acknowledge an
 // extension.
@@ -81,7 +81,7 @@ constexpr const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 
 // Indicates whether the user has acknowledged various types of extensions.
 constexpr const char kPrefExternalAcknowledged[] = "ack_external";
-constexpr const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
+constexpr const char kPrefBlocklistAcknowledged[] = "ack_blacklist";
 
 // Indicates whether the external extension was installed during the first
 // run of this profile.
@@ -101,8 +101,8 @@ constexpr const char kLastActivePingDay[] = "last_active_pingday";
 // A bit we use to keep track of whether we need to do an "active" ping.
 constexpr const char kActiveBit[] = "active_bit";
 
-// Path for settings specific to blacklist update.
-constexpr const char kExtensionsBlacklistUpdate[] =
+// Path for settings specific to blocklist update.
+constexpr const char kExtensionsBlocklistUpdate[] =
     "extensions.blacklistupdate";
 
 // Path for the delayed install info dictionary preference. The actual string
@@ -275,12 +275,12 @@ std::string JoinPrefs(const std::vector<base::StringPiece>& parts) {
   return base::JoinString(parts, ".");
 }
 
-// Checks if kPrefBlacklist is set to true in the base::DictionaryValue.
-// Return false if the value is false or kPrefBlacklist does not exist.
-// This is used to decide if an extension is blacklisted.
-bool IsBlacklistBitSet(const base::DictionaryValue* ext) {
+// Checks if kPrefBlocklist is set to true in the base::DictionaryValue.
+// Return false if the value is false or kPrefBlocklist does not exist.
+// This is used to decide if an extension is blocklisted.
+bool IsBlocklistBitSet(const base::DictionaryValue* ext) {
   bool bool_value;
-  return ext->GetBoolean(kPrefBlacklist, &bool_value) && bool_value;
+  return ext->GetBoolean(kPrefBlocklist, &bool_value) && bool_value;
 }
 
 // Whether SetAlertSystemFirstRun() should always return true, so that alerts
@@ -734,15 +734,15 @@ void ExtensionPrefs::AcknowledgeExternalExtension(
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, nullptr);
 }
 
-bool ExtensionPrefs::IsBlacklistedExtensionAcknowledged(
+bool ExtensionPrefs::IsBlocklistedExtensionAcknowledged(
     const std::string& extension_id) const {
-  return ReadPrefAsBooleanAndReturn(extension_id, kPrefBlacklistAcknowledged);
+  return ReadPrefAsBooleanAndReturn(extension_id, kPrefBlocklistAcknowledged);
 }
 
-void ExtensionPrefs::AcknowledgeBlacklistedExtension(
+void ExtensionPrefs::AcknowledgeBlocklistedExtension(
     const std::string& extension_id) {
   DCHECK(crx_file::id_util::IdIsValid(extension_id));
-  UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged,
+  UpdateExtensionPref(extension_id, kPrefBlocklistAcknowledged,
                       std::make_unique<base::Value>(true));
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, nullptr);
 }
@@ -800,7 +800,7 @@ bool ExtensionPrefs::HasDisableReason(
 void ExtensionPrefs::AddDisableReason(
     const std::string& extension_id,
     disable_reason::DisableReason disable_reason) {
-  // TODO(https://crbug.com/1073570): Extensions can be blacklisted but in
+  // TODO(https://crbug.com/1073570): Extensions can be blocklisted but in
   // enabled state. This checks the kPrefState which is the state of the
   // extension.
   DCHECK(!DoesExtensionHaveState(extension_id, Extension::ENABLED) ||
@@ -888,7 +888,7 @@ void ExtensionPrefs::ModifyDisableReasons(const std::string& extension_id,
     observer.OnExtensionDisableReasonsChanged(extension_id, new_value);
 }
 
-std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
+std::set<std::string> ExtensionPrefs::GetBlocklistedExtensions() const {
   std::set<std::string> ids;
 
   const base::DictionaryValue* extensions =
@@ -902,7 +902,7 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
       NOTREACHED() << "Invalid pref for extension " << it.key();
       continue;
     }
-    if (IsBlacklistBitSet(
+    if (IsBlocklistBitSet(
             static_cast<const base::DictionaryValue*>(&it.value()))) {
       ids.insert(it.key());
     }
@@ -911,30 +911,9 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() const {
   return ids;
 }
 
-void ExtensionPrefs::SetExtensionBlacklisted(const std::string& extension_id,
-                                             bool is_blacklisted) {
-  bool currently_blacklisted = IsExtensionBlacklisted(extension_id);
-  if (is_blacklisted == currently_blacklisted)
-    return;
-
-  // Always make sure the "acknowledged" bit is cleared since the blacklist bit
-  // is changing.
-  UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged, nullptr);
-
-  if (is_blacklisted) {
-    UpdateExtensionPref(extension_id, kPrefBlacklist,
-                        std::make_unique<base::Value>(true));
-  } else {
-    UpdateExtensionPref(extension_id, kPrefBlacklist, nullptr);
-    const base::DictionaryValue* dict = GetExtensionPref(extension_id);
-    if (dict && dict->empty())
-      DeleteExtensionPrefs(extension_id);
-  }
-}
-
-bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& id) const {
+bool ExtensionPrefs::IsExtensionBlocklisted(const std::string& id) const {
   const base::DictionaryValue* ext_prefs = GetExtensionPref(id);
-  return ext_prefs && IsBlacklistBitSet(ext_prefs);
+  return ext_prefs && IsBlocklistBitSet(ext_prefs);
 }
 
 namespace {
@@ -995,13 +974,13 @@ void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
   SaveTime(update.Get().get(), kLastPingDay, time);
 }
 
-base::Time ExtensionPrefs::BlacklistLastPingDay() const {
-  return ReadTime(prefs_->GetDictionary(kExtensionsBlacklistUpdate),
+base::Time ExtensionPrefs::BlocklistLastPingDay() const {
+  return ReadTime(prefs_->GetDictionary(kExtensionsBlocklistUpdate),
                   kLastPingDay);
 }
 
-void ExtensionPrefs::SetBlacklistLastPingDay(const base::Time& time) {
-  prefs::ScopedDictionaryPrefUpdate update(prefs_, kExtensionsBlacklistUpdate);
+void ExtensionPrefs::SetBlocklistLastPingDay(const base::Time& time) {
+  prefs::ScopedDictionaryPrefUpdate update(prefs_, kExtensionsBlocklistUpdate);
   SaveTime(update.Get().get(), kLastPingDay, time);
 }
 
@@ -1284,23 +1263,40 @@ void ExtensionPrefs::SetExtensionDisabled(const std::string& extension_id,
     observer.OnExtensionStateChanged(extension_id, false);
 }
 
-void ExtensionPrefs::SetExtensionBlacklistState(const std::string& extension_id,
-                                                BlacklistState state) {
-  SetExtensionBlacklisted(extension_id, state == BLACKLISTED_MALWARE);
-  UpdateExtensionPref(extension_id, kPrefBlacklistState,
+void ExtensionPrefs::SetExtensionBlocklistState(const std::string& extension_id,
+                                                BlocklistState state) {
+  bool currently_blocklisted = IsExtensionBlocklisted(extension_id);
+  bool is_blocklisted = state == BLOCKLISTED_MALWARE;
+  if (is_blocklisted != currently_blocklisted) {
+    // Always make sure the "acknowledged" bit is cleared since the blocklist
+    // bit is changing.
+    UpdateExtensionPref(extension_id, kPrefBlocklistAcknowledged, nullptr);
+
+    if (is_blocklisted) {
+      UpdateExtensionPref(extension_id, kPrefBlocklist,
+                          std::make_unique<base::Value>(true));
+    } else {
+      UpdateExtensionPref(extension_id, kPrefBlocklist, nullptr);
+      const base::DictionaryValue* dict = GetExtensionPref(extension_id);
+      if (dict && dict->empty())
+        DeleteExtensionPrefs(extension_id);
+    }
+  }
+
+  UpdateExtensionPref(extension_id, kPrefBlocklistState,
                       std::make_unique<base::Value>(state));
 }
 
-BlacklistState ExtensionPrefs::GetExtensionBlacklistState(
+BlocklistState ExtensionPrefs::GetExtensionBlocklistState(
     const std::string& extension_id) const {
-  if (IsExtensionBlacklisted(extension_id))
-    return BLACKLISTED_MALWARE;
+  if (IsExtensionBlocklisted(extension_id))
+    return BLOCKLISTED_MALWARE;
   const base::DictionaryValue* ext_prefs = GetExtensionPref(extension_id);
   int int_value = 0;
-  if (ext_prefs && ext_prefs->GetInteger(kPrefBlacklistState, &int_value))
-    return static_cast<BlacklistState>(int_value);
+  if (ext_prefs && ext_prefs->GetInteger(kPrefBlocklistState, &int_value))
+    return static_cast<BlocklistState>(int_value);
 
-  return NOT_BLACKLISTED;
+  return NOT_BLOCKLISTED;
 }
 
 std::string ExtensionPrefs::GetVersionString(
@@ -1991,7 +1987,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
   registry->RegisterBooleanPref(pref_names::kPinnedExtensionsMigrationComplete,
                                 false);
-  registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
+  registry->RegisterDictionaryPref(kExtensionsBlocklistUpdate);
   registry->RegisterListPref(pref_names::kInstallAllowList);
   registry->RegisterListPref(pref_names::kInstallDenyList);
   registry->RegisterDictionaryPref(pref_names::kInstallForceList);
@@ -2074,8 +2070,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
                              extension->was_installed_by_oem());
   extension_dict->SetString(
       kPrefInstallTime, base::NumberToString(install_time.ToInternalValue()));
-  if (install_flags & kInstallFlagIsBlacklistedForMalware)
-    extension_dict->SetBoolean(kPrefBlacklist, true);
+  if (install_flags & kInstallFlagIsBlocklistedForMalware)
+    extension_dict->SetBoolean(kPrefBlocklist, true);
 
   // If |ruleset_checksums| is empty, explicitly remove the
   // |kDNRStaticRulesetPref| entry to ensure any remaining old entries from the

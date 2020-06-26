@@ -92,7 +92,7 @@ class CORE_EXPORT DataObjectItem final
   void Trace(Visitor*) const;
 
  private:
-  enum DataSource {
+  enum class DataSource {
     kClipboardSource,
     kInternalSource,
   };
@@ -109,7 +109,8 @@ class CORE_EXPORT DataObjectItem final
   String title_;
   KURL base_url_;
 
-  uint64_t sequence_number_;  // Only valid when |source_| == PasteboardSource.
+  uint64_t sequence_number_;  // Only valid when |source_| ==
+                              // DataSource::kClipboardSource.
   String file_system_id_;     // Only valid when |file_| is backed by FileEntry.
 
   // Access to the global system clipboard.

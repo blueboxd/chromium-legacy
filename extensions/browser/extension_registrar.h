@@ -90,7 +90,7 @@ class ExtensionRegistrar {
   virtual ~ExtensionRegistrar();
 
   // Adds the extension to the ExtensionRegistry. The extension will be added to
-  // the enabled, disabled, blacklisted or blocked set. If the extension is
+  // the enabled, disabled, blocklisted or blocked set. If the extension is
   // added as enabled, it will be activated.
   void AddExtension(scoped_refptr<const Extension> extension);
 
@@ -98,14 +98,14 @@ class ExtensionRegistrar {
   // enabled and removing references to it from the ExtensionRegistry's
   // enabled or disabled sets.
   // Note: Extensions will not be removed from other sets (terminated,
-  // blacklisted or blocked). ExtensionService handles that, since it also adds
+  // blocklisted or blocked). ExtensionService handles that, since it also adds
   // it to those sets. TODO(michaelpg): Make ExtensionRegistrar the sole mutator
   // of ExtensionRegsitry to simplify this usage.
   void RemoveExtension(const ExtensionId& extension_id,
                        UnloadedExtensionReason reason);
 
   // If the extension is disabled, marks it as enabled and activates it for use.
-  // Otherwise, simply updates the ExtensionPrefs. (Blacklisted or blocked
+  // Otherwise, simply updates the ExtensionPrefs. (Blocklisted or blocked
   // extensions cannot be enabled.)
   void EnableExtension(const ExtensionId& extension_id);
 
@@ -121,7 +121,7 @@ class ExtensionRegistrar {
   void ReloadExtension(const ExtensionId extension_id,
                        LoadErrorBehavior load_error_behavior);
 
-  // TODO(michaelpg): Add methods for blacklisting and blocking extensions.
+  // TODO(michaelpg): Add methods for blocklisting and blocking extensions.
 
   // Deactivates the extension, adding its id to the list of terminated
   // extensions.

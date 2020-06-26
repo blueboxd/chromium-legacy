@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -28,19 +29,14 @@ namespace ash {
 class MultiWindowResizeControllerTest;
 class WorkspaceWindowResizer;
 
-// Two directions resizes happen in.
-enum Direction {
-  TOP_BOTTOM,
-  LEFT_RIGHT,
-};
-
 // MultiWindowResizeController is responsible for determining and showing a
 // widget that allows resizing multiple windows at the same time.
-// MultiWindowResizeController is driven by WorkspaceEventFilter.
+// MultiWindowResizeController is driven by WorkspaceEventHandler.
 class ASH_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
       public aura::WindowObserver,
-      public WindowStateObserver {
+      public WindowStateObserver,
+      public OverviewObserver {
  public:
   MultiWindowResizeController();
   ~MultiWindowResizeController() override;
@@ -63,8 +59,19 @@ class ASH_EXPORT MultiWindowResizeController
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
+  // OverviewObserver:
+  void OnOverviewModeStarting() override;
+
  private:
   friend class MultiWindowResizeControllerTest;
+  class ResizeMouseWatcherHost;
+  class ResizeView;
+
+  // Two directions resizes happen in.
+  enum class Direction {
+    kTopBottom,
+    kLeftRight,
+  };
 
   // Used to track the two resizable windows and direction.
   struct ResizeWindows {
@@ -80,10 +87,10 @@ class ASH_EXPORT MultiWindowResizeController
     bool is_valid() const { return window1 && window2; }
 
     // The left/top window to resize.
-    aura::Window* window1;
+    aura::Window* window1 = nullptr;
 
     // Other window to resize.
-    aura::Window* window2;
+    aura::Window* window2 = nullptr;
 
     // Direction
     Direction direction;
@@ -92,9 +99,6 @@ class ASH_EXPORT MultiWindowResizeController
     // the resize starts.
     std::vector<aura::Window*> other_windows;
   };
-
-  class ResizeMouseWatcherHost;
-  class ResizeView;
 
   void CreateMouseWatcher();
 

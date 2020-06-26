@@ -38,7 +38,8 @@
   async function step2(msg) {
     // inspector-test.js appears in network panel occasionally in Safari on
     // Mac, so checking two last requests.
-    var requests = NetworkTestRunner.networkRequests();
+    var requests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
     var request1 = requests[requests.length - 2];
     var request2 = requests[requests.length - 1];
 

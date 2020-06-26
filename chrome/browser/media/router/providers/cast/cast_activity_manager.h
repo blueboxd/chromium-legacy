@@ -20,6 +20,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_sink.h"
+#include "chrome/common/media_router/mojom/logger.mojom.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -69,6 +70,7 @@ class CastActivityManager : public CastActivityManagerBase,
                       CastSessionTracker* session_tracker,
                       cast_channel::CastMessageHandler* message_handler,
                       mojom::MediaRouter* media_router,
+                      mojom::Logger* logger,
                       const std::string& hash_token);
   ~CastActivityManager() override;
 
@@ -296,6 +298,7 @@ class CastActivityManager : public CastActivityManagerBase,
   CastSessionTracker* const session_tracker_;
   cast_channel::CastMessageHandler* const message_handler_;
   mojom::MediaRouter* const media_router_;
+  mojom::Logger* const logger_;
 
   const std::string hash_token_;
 

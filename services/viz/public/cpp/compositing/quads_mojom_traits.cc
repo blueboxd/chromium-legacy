@@ -234,11 +234,6 @@ bool StructTraits<viz::mojom::DrawQuadDataView, viz::DrawQuad>::Read(
   if (!data.ReadRect(&out->rect) || !data.ReadVisibleRect(&out->visible_rect)) {
     return false;
   }
-  // Reject quads with areas larger than int32.
-  if (!out->rect.size().GetCheckedArea().IsValid()) {
-    viz::SetDeserializationCrashKeyString("Draw quad rect too overflow");
-    return false;
-  }
   if (!out->rect.Contains(out->visible_rect)) {
     viz::SetDeserializationCrashKeyString("Rect does not contain visible rect");
     return false;

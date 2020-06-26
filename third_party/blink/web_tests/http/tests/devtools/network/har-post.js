@@ -32,8 +32,9 @@
   const harString = await new Promise(async resolve => {
     const stream = new TestRunner.StringOutputStream(resolve);
     const progress = new Common.Progress();
-    await Network.HARWriter.write(
-        stream, NetworkTestRunner.networkRequests(), progress);
+    const networkRequests =
+        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    await Network.HARWriter.write(stream, networkRequests, progress);
     progress.done();
     stream.close();
   });

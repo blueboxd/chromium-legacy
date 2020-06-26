@@ -61,6 +61,10 @@ class ServiceWorkerContextAdapter
   void CountExternalRequestsForTest(
       const GURL& origin,
       CountExternalRequestsCallback callback) override;
+  bool MaybeHasRegistrationForOrigin(const url::Origin& origin) override;
+  void WaitForRegistrationsInitializedForTest() override;
+  void AddRegistrationToRegisteredOriginsForTest(
+      const url::Origin& origin) override;
   void GetAllOriginsInfo(GetUsageInfoCallback callback) override;
   void DeleteForOrigin(const GURL& origin_url,
                        ResultCallback callback) override;

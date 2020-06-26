@@ -756,6 +756,15 @@ content::AXTextMarkerRangeToRange(id text_marker_range) {
   return CreateRangeFromTextMarkerRange(text_marker_range);
 }
 
+id content::AXTextMarkerFrom(const BrowserAccessibilityCocoa* anchor,
+                             int offset,
+                             ax::mojom::TextAffinity affinity) {
+  BrowserAccessibility* anchor_node = [anchor owner];
+  BrowserAccessibilityPositionInstance position =
+      CreateTextPosition(*anchor_node, offset, affinity);
+  return CreateTextMarker(std::move(position));
+}
+
 @implementation BrowserAccessibilityCocoa
 
 + (void)initialize {

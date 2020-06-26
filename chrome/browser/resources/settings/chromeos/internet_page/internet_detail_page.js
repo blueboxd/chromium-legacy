@@ -181,6 +181,18 @@ Polymer({
       }
     },
 
+    /**
+     * Whether to show the Metered toggle.
+     * @private
+     */
+    showMeteredToggle_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('showMeteredToggle') &&
+            loadTimeData.getBoolean('showMeteredToggle');
+      }
+    },
+
     /** @private */
     advancedExpanded_: Boolean,
 
@@ -1538,7 +1550,8 @@ Polymer({
    * @private
    */
   showMetered_(managedProperties) {
-    return !!managedProperties && this.isRemembered_(managedProperties) &&
+    return !!this.showMeteredToggle_ && !!managedProperties &&
+        this.isRemembered_(managedProperties) &&
         (managedProperties.type == mojom.NetworkType.kCellular ||
          managedProperties.type == mojom.NetworkType.kWiFi);
   },

@@ -44,7 +44,7 @@ void WriteFile(const base::FilePath& path, base::Optional<std::string> blob) {
 
 // Deletes file at |path|. Prints an error or failure.
 void RemoveFile(const base::FilePath& path) {
-  if (!base::DeleteFile(path, false /* recursive */))
+  if (!base::DeleteFile(path))
     LOG(ERROR) << "Failed to delete file " << path.value();
 }
 

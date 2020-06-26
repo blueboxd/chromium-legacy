@@ -11,6 +11,11 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to add a custom drop interaction to web
+// content.
+extern const char kAddWebContentDropInteractionName[];
+extern const char kAddWebContentDropInteractionDescription[];
+
 // Title and description for the flag to control the autofill query cache.
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];

@@ -40,6 +40,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "add-web-content-drop-interaction",
+    "owners": [ "edchin" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "aggregated-ml-app-ranking",
     "owners": [ "pdyson", "jiameng" ],
     "expiry_milestone": 81
@@ -1485,7 +1490,7 @@
   {
     "name": "enable-desktop-pwas-app-icon-shortcuts-menu",
     "owners": [ "rahsin@microsoft.com", "cmumford@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "enable-desktop-pwas-local-updating",
@@ -1495,7 +1500,7 @@
   {
     "name": "enable-desktop-pwas-run-on-os-login",
     "owners": [ "cafrias@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "enable-desktop-pwas-tab-strip",
@@ -4087,6 +4092,11 @@
     "name": "show-legacy-tls-warnings",
     "owners": [ "cthomp" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "show-metered-toggle",
+    "owners": [ "stevenjb" ],
+    "expiry_milestone": 87
   },
   {
     "name": "show-overdraw-feedback",

@@ -15,11 +15,13 @@
 #include "media/base/video_decoder.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_init.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_decoder_broker.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -62,15 +64,6 @@ media::VideoDecoderConfig ToVideoDecoderConfig(
       media::VideoColorSpace::REC709(), media::kNoTransformation, size,
       gfx::Rect(gfx::Point(), size), size, extra_data,
       media::EncryptionScheme::kUnencrypted);
-}
-
-std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
-    media::MediaLog* media_log) {
-#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
-  return std::make_unique<media::FFmpegVideoDecoder>(media_log);
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 }
 
 }  // namespace
@@ -183,13 +176,9 @@ bool VideoDecoder::ProcessConfigureRequest(Request* request) {
 
   if (!decoder_) {
     media_log_ = std::make_unique<media::NullMediaLog>();
-    decoder_ = CreateVideoDecoder(media_log_.get());
-    if (!decoder_) {
-      // TODO(sandersd): This is a bit awkward because |request| is still in the
-      // queue.
-      HandleError();
-      return false;
-    }
+    decoder_ = std::make_unique<VideoDecoderBroker>(
+        *ExecutionContext::From(script_state_),
+        Platform::Current()->GetGpuFactories());
 
     // Processing continues in OnInitializeDone().
     // TODO(sandersd): OnInitializeDone() may be called reentrantly, in which

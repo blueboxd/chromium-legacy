@@ -99,6 +99,8 @@ class CORE_EXPORT ImeTextSpan {
   Vector<String> suggestions_;
 };
 
+ImeTextSpan::Type ConvertUiTypeToType(ui::ImeTextSpan::Type type);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_H_

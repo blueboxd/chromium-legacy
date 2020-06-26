@@ -30,7 +30,6 @@ class AshChromeServiceImpl : public lacros::mojom::AshChromeService {
  private:
   mojo::Receiver<lacros::mojom::AshChromeService> receiver_;
 
-  // TODO(jamescook): Support more than one select dialog at a time.
   std::unique_ptr<SelectFileImpl> select_file_impl_;
 };
 

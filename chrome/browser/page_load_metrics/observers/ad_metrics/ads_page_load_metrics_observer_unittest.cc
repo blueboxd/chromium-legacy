@@ -423,6 +423,13 @@ class AdsPageLoadMetricsObserverTest
                 &AdsPageLoadMetricsObserverTest::RegisterObservers,
                 base::Unretained(this)));
     ConfigureAsSubresourceFilterOnlyURL(GURL(kAdUrl));
+
+    // Run all sites in dry run mode, so that AdTagging works as expected. In
+    // browser environments, all sites activate with dry run by default.
+    scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
+        subresource_filter::mojom::ActivationLevel::kDryRun,
+        subresource_filter::ActivationScope::ALL_SITES,
+        subresource_filter::ActivationList::SUBRESOURCE_FILTER));
   }
 
   // Returns the final RenderFrameHost after navigation commits.
@@ -1239,9 +1246,40 @@ TEST_F(AdsPageLoadMetricsObserverTest, NoHistogramWithoutCommit) {
                     .size());
 }
 
+TEST_F(AdsPageLoadMetricsObserverTest,
+       SubresourceFilterDisabled_NoAdsDetected) {
+  // Setup the subresource filter as disabled on all sites.
+  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::mojom::ActivationLevel::kDisabled,
+      subresource_filter::ActivationScope::ALL_SITES,
+      subresource_filter::ActivationList::SUBRESOURCE_FILTER));
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  ResourceDataUpdate(main_frame, ResourceCached::kNotCached, 10);
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  TestHistograms(histogram_tester(), test_ukm_recorder(),
+                 std::vector<ExpectedFrameBytes>(), 0 /* non_ad_cached_kb */,
+                 20 /* non_ad_uncached_kb */);
+
+  // Verify that other UMA wasn't written.
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
+}
+
 // Frames that are disallowed (and filtered) by the subresource filter should
 // not be counted.
 TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
+  // Setup the subresource filter in non-dryrun mode to trigger on a site.
+  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::mojom::ActivationLevel::kEnabled,
+      subresource_filter::ActivationScope::ACTIVATION_LIST,
+      subresource_filter::ActivationList::SUBRESOURCE_FILTER));
+
   ConfigureAsSubresourceFilterOnlyURL(GURL(kNonAdUrl));
   NavigateMainFrame(kNonAdUrl);
 

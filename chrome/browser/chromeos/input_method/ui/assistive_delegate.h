@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_UI_ASSISTIVE_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_UI_ASSISTIVE_DELEGATE_H_
 
+#include "base/strings/string16.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 
 namespace ui {
@@ -15,6 +16,7 @@ enum class ButtonId {
   kUndo,
   kAddToDictionary,
   kSmartInputsSettingLink,
+  kSuggestion,
 };
 
 enum class AssistiveWindowType {
@@ -26,6 +28,7 @@ enum class AssistiveWindowType {
 struct AssistiveWindowButton {
   ButtonId id = ButtonId::kNone;
   AssistiveWindowType window_type = AssistiveWindowType::kNone;
+  size_t index = -1;
 };
 
 class UI_CHROMEOS_EXPORT AssistiveDelegate {

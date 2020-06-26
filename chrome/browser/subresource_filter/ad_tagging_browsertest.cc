@@ -8,12 +8,16 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/embedder_support/switches.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
@@ -325,6 +329,32 @@ void AdTaggingBrowserTest::NavigateFrame(
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
+}
+
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
+                       AdContentSettingAllowed_AdTaggingDisabled) {
+  HostContentSettingsMapFactory::GetForProfile(
+      web_contents()->GetBrowserContext())
+      ->SetDefaultContentSetting(ContentSettingsType::ADS,
+                                 CONTENT_SETTING_ALLOW);
+
+  TestSubresourceFilterObserver observer(web_contents());
+  ui_test_utils::NavigateToURL(browser(), GetURL("frame_factory.html"));
+
+  // Create an ad frame.
+  RenderFrameHost* ad_frame =
+      CreateSrcFrame(GetWebContents(), GetURL("frame_factory.html?2&ad=true"));
+
+  // Verify that we are not evaluating subframe navigations.
+  EXPECT_FALSE(observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+
+  // Child frame created by ad script.
+  RenderFrameHost* ad_frame_tagged_by_script = CreateSrcFrameFromAdScript(
+      GetWebContents(), GetURL("frame_factory.html?1"));
+
+  // No frames should be detected by script heuristics.
+  EXPECT_FALSE(observer.GetIsAdSubframe(
+      ad_frame_tagged_by_script->GetFrameTreeNodeId()));
 }
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, FramesByURL) {

@@ -271,6 +271,8 @@ ScriptPromise GlobalNativeFileSystem::chooseFileSystemEntries(
     LocalDOMWindow& window,
     const ChooseFileSystemEntriesOptions* options,
     ExceptionState& exception_state) {
+  UseCounter::Count(window, WebFeature::kFileSystemPickerMethod);
+
   VerifyIsAllowedToShowFilePicker(window, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
@@ -292,6 +294,8 @@ ScriptPromise GlobalNativeFileSystem::showOpenFilePicker(
     LocalDOMWindow& window,
     const OpenFilePickerOptions* options,
     ExceptionState& exception_state) {
+  UseCounter::Count(window, WebFeature::kFileSystemPickerMethod);
+
   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;
   if (options->hasTypes())
     accepts = ConvertAccepts(options->types(), exception_state);
@@ -322,6 +326,8 @@ ScriptPromise GlobalNativeFileSystem::showSaveFilePicker(
     LocalDOMWindow& window,
     const SaveFilePickerOptions* options,
     ExceptionState& exception_state) {
+  UseCounter::Count(window, WebFeature::kFileSystemPickerMethod);
+
   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;
   if (options->hasTypes())
     accepts = ConvertAccepts(options->types(), exception_state);
@@ -349,6 +355,8 @@ ScriptPromise GlobalNativeFileSystem::showDirectoryPicker(
     LocalDOMWindow& window,
     const DirectoryPickerOptions* options,
     ExceptionState& exception_state) {
+  UseCounter::Count(window, WebFeature::kFileSystemPickerMethod);
+
   VerifyIsAllowedToShowFilePicker(window, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();

@@ -19,7 +19,6 @@ class Rect;
 
 namespace content {
 struct ContextMenuParams;
-class FrameTreeNode;
 struct NativeWebKeyboardEvent;
 class RenderFrameHost;
 struct WebPreferences;
@@ -79,9 +78,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // Returns the WebkitPreferences for the page. The preferences are shared
   // between all widgets for the page.
   virtual WebPreferences GetWebkitPreferencesForWidget() = 0;
-
-  // Returns the focused frame.
-  virtual FrameTreeNode* GetFocusedFrame() = 0;
 
   // Shows a context menu that is built using the context information
   // provided in |params|.

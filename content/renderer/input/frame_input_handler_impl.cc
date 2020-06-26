@@ -38,6 +38,47 @@ void FrameInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   }
 }
 
+void FrameInputHandlerImpl::AddImeTextSpansToExistingText(
+    uint32_t start,
+    uint32_t end,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, uint32_t start, uint32_t end,
+         const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        ImeEventGuard guard(widget);
+
+        focused_frame->AddImeTextSpansToExistingText(ui_ime_text_spans, start,
+                                                     end);
+      },
+      widget_, start, end, ui_ime_text_spans));
+}
+
+void FrameInputHandlerImpl::ClearImeTextSpansByType(
+    uint32_t start,
+    uint32_t end,
+    ui::ImeTextSpan::Type type) {
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, uint32_t start, uint32_t end,
+         ui::ImeTextSpan::Type type) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        ImeEventGuard guard(widget);
+
+        focused_frame->ClearImeTextSpansByType(type, start, end);
+      },
+      widget_, start, end, type));
+}
+
 void FrameInputHandlerImpl::SetCompositionFromExistingText(
     int32_t start,
     int32_t end,

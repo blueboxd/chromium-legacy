@@ -221,6 +221,13 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebFrame::TextGranularity = kCharacterGranularity) override;
   void MoveCaretSelection(const gfx::Point&) override;
   bool SetEditableSelectionOffsets(int start, int end) override;
+  bool AddImeTextSpansToExistingText(
+      const WebVector<ui::ImeTextSpan>& ime_text_spans,
+      unsigned text_start,
+      unsigned text_end) override;
+  bool ClearImeTextSpansByType(ui::ImeTextSpan::Type type,
+                               unsigned text_start,
+                               unsigned text_end) override;
   bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,

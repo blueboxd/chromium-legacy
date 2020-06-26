@@ -77,7 +77,8 @@ class SettingLinkView : public views::View {
 };
 
 SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
-                                           AssistiveDelegate* delegate) {
+                                           AssistiveDelegate* delegate)
+    : delegate_(delegate) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
@@ -146,7 +147,7 @@ void SuggestionWindowView::MaybeInitializeSuggestionViews(
     candidate_views_.resize(candidates_size);
 
   while (candidate_views_.size() < candidates_size) {
-    auto new_candidate = std::make_unique<SuggestionView>();
+    auto new_candidate = std::make_unique<SuggestionView>(this);
     candidate_area_->AddChildView(new_candidate.get());
     candidate_views_.push_back(std::move(new_candidate));
   }
@@ -163,6 +164,20 @@ void SuggestionWindowView::HighlightCandidate(int index) {
 
 void SuggestionWindowView::SetBounds(const gfx::Rect& cursor_bounds) {
   SetAnchorRect(cursor_bounds);
+}
+
+// TODO(crbug/1099116): Add test for ButtonPressed.
+void SuggestionWindowView::ButtonPressed(views::Button* sender,
+                                         const ui::Event& event) {
+  for (size_t i = 0; i < candidate_views_.size(); i++) {
+    if (sender == candidate_views_[i].get()) {
+      AssistiveWindowButton button;
+      button.id = ui::ime::ButtonId::kSuggestion;
+      button.index = i;
+      delegate_->AssistiveWindowButtonClicked(button);
+      return;
+    }
+  }
 }
 
 const char* SuggestionWindowView::GetClassName() const {

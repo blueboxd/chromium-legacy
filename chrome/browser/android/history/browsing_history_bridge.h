@@ -22,7 +22,7 @@ class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
  public:
   explicit BrowsingHistoryBridge(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
-                                 bool is_incognito);
+                                 const JavaParamRef<jobject>& j_profile);
   void Destroy(JNIEnv*, const JavaParamRef<jobject>&);
 
   void QueryHistory(JNIEnv* env,

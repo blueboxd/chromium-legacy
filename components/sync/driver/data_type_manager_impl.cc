@@ -459,10 +459,9 @@ void DataTypeManagerImpl::ProcessReconfigure() {
            << " busy.";
 
   // Note: ConfigureImpl is called directly, rather than posted, in order to
-  // ensure that any purging/unapplying/journaling happens while the set of
-  // failed types is still up to date. If stack unwinding were to be done
-  // via PostTask, the failed data types may be reset before the purging was
-  // performed.
+  // ensure that any purging happens while the set of failed types is still up
+  // to date. If stack unwinding were to be done via PostTask, the failed data
+  // types may be reset before the purging was performed.
   state_ = RETRYING;
   needs_reconfigure_ = false;
   ConfigureImpl(last_requested_types_, last_requested_context_);
@@ -558,8 +557,6 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
     ModelTypeConfigurer::ConfigureParams* params) {
   // Divide up the types into their corresponding actions:
   // - Types which are newly enabled are downloaded.
-  // - Types which have encountered a fatal error (fatal_types) are deleted
-  //   from the directory and journaled in the delete journal.
   // - Types which have encountered a cryptographer error (crypto_types) are
   //   unapplied (local state is purged but sync state is not).
   // - All other types not in the routing info (types just disabled) are deleted
@@ -643,14 +640,6 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
     types_to_purge.RemoveAll(unready_types);
   }
 
-  // If a type has already been disabled and unapplied or journaled, it will
-  // not be part of the |types_to_purge| set, and therefore does not need
-  // to be acted on again.
-  ModelTypeSet types_to_journal = Intersection(fatal_types, types_to_purge);
-  ModelTypeSet unapply_types = Union(crypto_types, clean_types);
-  unapply_types.RetainAll(types_to_purge);
-
-  DCHECK(Intersection(downloaded_types_, types_to_journal).Empty());
   DCHECK(Intersection(downloaded_types_, crypto_types).Empty());
   // |downloaded_types_| was already updated to include all enabled types.
   DCHECK(downloaded_types_.HasAll(types_to_download));
@@ -663,8 +652,6 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   params->disabled_types = disabled_types;
   params->to_download = types_to_download;
   params->to_purge = types_to_purge;
-  params->to_journal = types_to_journal;
-  params->to_unapply = unapply_types;
   params->ready_task = base::BindOnce(&DataTypeManagerImpl::DownloadReady,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       download_types_queue_.front());
@@ -673,7 +660,6 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
 
   DCHECK(Intersection(active_types, types_to_purge).Empty());
   DCHECK(Intersection(active_types, fatal_types).Empty());
-  DCHECK(Intersection(active_types, unapply_types).Empty());
   DCHECK(Intersection(active_types, inactive_types).Empty());
   return Difference(active_types, types_to_download);
 }

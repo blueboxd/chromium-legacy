@@ -7,8 +7,7 @@
 
 #include <vector>
 
-#include "chromeos/lacros/mojom/select_file.mojom.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "chromeos/lacros/mojom/select_file.mojom-forward.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
@@ -61,9 +60,6 @@ class SHELL_DIALOGS_EXPORT SelectFileDialogLacros : public SelectFileDialog {
 
   // Cached parameters from the call to SelectFileImpl.
   void* params_ = nullptr;
-
-  // Remote in the ash-chrome process.
-  mojo::Remote<lacros::mojom::SelectFile> select_file_remote_;
 };
 
 }  // namespace ui

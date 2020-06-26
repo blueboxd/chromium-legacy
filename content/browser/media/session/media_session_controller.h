@@ -33,11 +33,6 @@ class CONTENT_EXPORT MediaSessionController
   // Clients must call this after construction and destroy the controller if it
   // returns false.  May be called more than once; does nothing if none of the
   // input parameters have changed since the last call.
-  //
-  // Note: Once a session has been initialized with |has_audio| as true, all
-  // future calls to Initialize() will retain this flag.
-  // TODO(dalecurtis): Delete sticky audio once we're no longer using WMPA and
-  // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
   bool Initialize(bool has_audio,
                   bool is_remote,
                   media::MediaContentType media_content_type,

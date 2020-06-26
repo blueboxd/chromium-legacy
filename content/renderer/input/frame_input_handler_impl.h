@@ -47,6 +47,13 @@ class CONTENT_EXPORT FrameInputHandlerImpl
       scoped_refptr<MainThreadEventQueue> input_event_queue);
   ~FrameInputHandlerImpl() override;
 
+  void AddImeTextSpansToExistingText(
+      uint32_t start,
+      uint32_t end,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans) override;
+  void ClearImeTextSpansByType(uint32_t start,
+                               uint32_t end,
+                               ui::ImeTextSpan::Type type) override;
   void SetCompositionFromExistingText(
       int32_t start,
       int32_t end,

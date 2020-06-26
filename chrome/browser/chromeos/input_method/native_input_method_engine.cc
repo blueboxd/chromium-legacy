@@ -227,7 +227,13 @@ void NativeInputMethodEngine::ImeObserver::OnCandidateClicked(
 
 void NativeInputMethodEngine::ImeObserver::OnAssistiveWindowButtonClicked(
     const ui::ime::AssistiveWindowButton& button) {
-  base_observer_->OnAssistiveWindowButtonClicked(button);
+  if (button.id == ui::ime::ButtonId::kSuggestion) {
+    if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
+      assistive_suggester_->AcceptSuggestion(button.index);
+    }
+  } else {
+    base_observer_->OnAssistiveWindowButtonClicked(button);
+  }
 }
 
 void NativeInputMethodEngine::ImeObserver::OnMenuItemActivated(

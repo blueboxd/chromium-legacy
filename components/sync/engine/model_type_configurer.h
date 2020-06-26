@@ -32,8 +32,6 @@ class ModelTypeConfigurer {
     ModelTypeSet disabled_types;
     ModelTypeSet to_download;
     ModelTypeSet to_purge;
-    ModelTypeSet to_journal;
-    ModelTypeSet to_unapply;
     // Run when configuration is done with the set of all types that failed
     // configuration (if its argument isn't empty, an error was encountered).
     // TODO(akalin): Use a Delegate class with OnConfigureSuccess,

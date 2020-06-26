@@ -89,8 +89,8 @@ void GLOzoneEglCast::TerminateDisplay() {
 scoped_refptr<gl::GLSurface> GLOzoneEglCast::CreateViewGLSurface(
     gfx::AcceleratedWidget widget) {
   // Verify requested widget dimensions match our current display size.
-  DCHECK_EQ(widget >> 16, display_size_.width());
-  DCHECK_EQ(widget & 0xffff, display_size_.height());
+  DCHECK_EQ(static_cast<int>(widget >> 16), display_size_.width());
+  DCHECK_EQ(static_cast<int>(widget & 0xffff), display_size_.height());
 
   return gl::InitializeGLSurface(new GLSurfaceCast(widget, this));
 }

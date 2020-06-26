@@ -106,7 +106,14 @@
     value="[[value.displayName]]" disabled="[[disabled]]" readonly>
   <div id="pre-input-overlay" slot="inline-prefix">
     <div id="pre-input-box">
-      <iron-icon icon="[[destinationIcon]]"></iron-icon>
+      <iron-icon icon="[[destinationIcon]]"
+          hidden="[[shouldShowDestinationPrinterStatusIcon_]]">
+      </iron-icon>
+      <printer-status-icon-cros id="destination-badge"
+          hidden="[[!shouldShowDestinationPrinterStatusIcon_]]"
+          background="grey" state$="[[computePrinterState_(
+                      value.printerStatusReason)]]">
+      </printer-status-icon-cros>
     </div>
   </div>
   <div id="input-overlay" slot="suffix">

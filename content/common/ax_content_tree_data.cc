@@ -15,8 +15,6 @@ std::string AXContentTreeData::ToString() const {
 
   if (routing_id != MSG_ROUTING_NONE)
     result += " routing_id=" + NumberToString(routing_id);
-  if (parent_routing_id != MSG_ROUTING_NONE)
-    result += " parent_routing_id=" + NumberToString(parent_routing_id);
 
   return result;
 }

@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -66,7 +68,7 @@ gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
       gfx::ConvertPointToPixel(GetXDisplayScaleFactor(), point), {});
   return window != x11::Window::None
              ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                   window)
+                   static_cast<gfx::AcceleratedWidget>(window))
              : nullptr;
 }
 
@@ -81,7 +83,7 @@ gfx::NativeWindow DesktopScreenX11::GetLocalProcessWindowAtPoint(
       ignore_widgets);
   return window != x11::Window::None
              ? views::DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                   window)
+                   static_cast<gfx::AcceleratedWidget>(window))
              : nullptr;
 }
 

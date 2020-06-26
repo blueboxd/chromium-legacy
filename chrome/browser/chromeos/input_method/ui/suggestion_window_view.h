@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ui {
 namespace ime {
@@ -22,7 +23,8 @@ struct SuggestionDetails;
 
 // SuggestionWindowView is the main container of the suggestion window UI.
 class UI_CHROMEOS_EXPORT SuggestionWindowView
-    : public views::BubbleDialogDelegateView {
+    : public views::BubbleDialogDelegateView,
+      public views::ButtonListener {
  public:
   SuggestionWindowView(gfx::NativeView parent, AssistiveDelegate* delegate);
   ~SuggestionWindowView() override;
@@ -42,6 +44,9 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
  private:
   friend class SuggestionWindowViewTest;
+
+  // Overridden from views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void MaybeInitializeSuggestionViews(size_t candidates_size);
 

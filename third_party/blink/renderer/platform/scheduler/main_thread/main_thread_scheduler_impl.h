@@ -736,7 +736,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // Notifies the per-agent scheduling strategy that an input event occurred.
   void NotifyAgentSchedulerOnInputEvent();
-  void OnAgentStrategyDelayPassed(const FrameSchedulerImpl*);
+  void OnAgentStrategyDelayPassed(base::WeakPtr<const FrameSchedulerImpl>);
 
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.
@@ -872,7 +872,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
   base::RepeatingClosure notify_agent_strategy_on_input_event_closure_;
-  base::RepeatingCallback<void(const FrameSchedulerImpl*)>
+  base::RepeatingCallback<void(base::WeakPtr<const FrameSchedulerImpl>)>
       agent_strategy_delay_callback_;
 
   QueueingTimeEstimator queueing_time_estimator_;

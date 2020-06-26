@@ -68,7 +68,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   bool OnAssociatedInterfaceRequestForFrame(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFinishLoad() override;
@@ -77,10 +76,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void DidClearWindowObject() override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void OnDestruct() override;
-
-  // IPC handlers
-  void OnSetIsPrerendering(prerender::mojom::PrerenderMode mode,
-                           const std::string& histogram_prefix);
 
   // chrome::mojom::ChromeRenderFrame:
   void SetWindowFeatures(
@@ -97,6 +92,8 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void SetCCTClientHeader(const std::string& header) override;
 #endif
   void GetMediaFeedURL(GetMediaFeedURLCallback callback) override;
+  void SetIsPrerendering(prerender::mojom::PrerenderMode mode,
+                         const std::string& histogram_prefix) override;
 
   // Initialize a |phishing_classifier_delegate_|.
   void SetClientSidePhishingDetection();

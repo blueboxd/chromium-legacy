@@ -264,16 +264,6 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
   Resume();
   EXPECT_TRUE(ReceivedMessagePlay<MediaPlayerDelegateMsg_Play>());
 
-  // Attempt to switch to no audio player, which should do nothing.
-  // TODO(dalecurtis): Delete this test once we're no longer using WMPA and
-  // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-  ASSERT_TRUE(controller_->Initialize(false, false,
-                                      media::MediaContentType::Persistent,
-                                      nullptr, false, false));
-  EXPECT_TRUE(media_session()->IsActive());
-  EXPECT_TRUE(media_session()->IsControllable());
-  EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());
-
   // Switch to a remote player, which should release the session.
   ASSERT_TRUE(controller_->Initialize(
       true, true, media::MediaContentType::Persistent, nullptr, false, false));

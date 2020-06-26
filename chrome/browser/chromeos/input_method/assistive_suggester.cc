@@ -267,6 +267,13 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
   return false;
 }
 
+void AssistiveSuggester::AcceptSuggestion(size_t index) {
+  if (current_suggester_ && current_suggester_->AcceptSuggestion(index)) {
+    RecordAssistiveSuccess(current_suggester_->GetProposeActionType());
+    current_suggester_ = nullptr;
+  }
+}
+
 void AssistiveSuggester::DismissSuggestion() {
   if (current_suggester_)
     current_suggester_->DismissSuggestion();

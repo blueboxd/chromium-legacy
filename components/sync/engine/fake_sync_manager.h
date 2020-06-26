@@ -49,11 +49,6 @@ class FakeSyncManager : public SyncManager {
   // call to GetAndResetPurgedTypes(), or since startup if never called.
   ModelTypeSet GetAndResetPurgedTypes();
 
-  // Returns those types that have been unapplied as part of purging disabled
-  // types since the last call to GetAndResetUnappliedTypes, or since startup if
-  // never called.
-  ModelTypeSet GetAndResetUnappliedTypes();
-
   // Returns those types that have been downloaded since the last call to
   // GetAndResetDownloadedTypes(), or since startup if never called.
   ModelTypeSet GetAndResetDownloadedTypes();
@@ -79,9 +74,7 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet types) override;
   void PurgePartiallySyncedTypes() override;
-  void PurgeDisabledTypes(ModelTypeSet to_purge,
-                          ModelTypeSet to_journal,
-                          ModelTypeSet to_unapply) override;
+  void PurgeDisabledTypes(ModelTypeSet to_purge) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void InvalidateCredentials() override;
   void StartSyncingNormally(base::Time last_poll_time) override;
@@ -135,8 +128,6 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet configure_fail_types_;
   // The set of types that have been purged.
   ModelTypeSet purged_types_;
-  // Subset of |purged_types_| that were unapplied.
-  ModelTypeSet unapplied_types_;
   // The set of types that have been downloaded.
   ModelTypeSet downloaded_types_;
 

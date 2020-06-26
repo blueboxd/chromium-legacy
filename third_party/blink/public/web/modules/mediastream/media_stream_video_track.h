@@ -50,6 +50,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<bool>& noise_reduction,
       bool is_screencast,
       const base::Optional<double>& min_frame_rate,
+      const base::Optional<double>& pan,
+      const base::Optional<double>& tilt,
+      const base::Optional<double>& zoom,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
 
@@ -67,6 +70,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<bool>& noise_reduction,
       bool is_screen_cast,
       const base::Optional<double>& min_frame_rate,
+      const base::Optional<double>& pan,
+      const base::Optional<double>& tilt,
+      const base::Optional<double>& zoom,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   ~MediaStreamVideoTrack() override;
@@ -113,6 +119,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   const VideoTrackAdapterSettings& adapter_settings() const {
     return *adapter_settings_;
   }
+  const base::Optional<double>& pan() const { return pan_; }
+  const base::Optional<double>& tilt() const { return tilt_; }
+  const base::Optional<double>& zoom() const { return zoom_; }
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.
@@ -175,6 +184,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   bool is_screencast_;
   base::Optional<double> min_frame_rate_;
   base::Optional<double> max_frame_rate_;
+  base::Optional<double> pan_;
+  base::Optional<double> tilt_;
+  base::Optional<double> zoom_;
 
   // Weak ref to the source this tracks is connected to.
   base::WeakPtr<MediaStreamVideoSource> source_;

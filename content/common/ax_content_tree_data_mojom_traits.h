@@ -20,9 +20,6 @@ struct StructTraits<ax::mojom::AXContentTreeDataDataView,
   static int32_t routing_id(const content::AXContentTreeData& p) {
     return p.routing_id;
   }
-  static int32_t parent_routing_id(const content::AXContentTreeData& p) {
-    return p.parent_routing_id;
-  }
 
   static bool Read(ax::mojom::AXContentTreeDataDataView data,
                    content::AXContentTreeData* out);

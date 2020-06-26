@@ -447,7 +447,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if ([itemProvider canLoadObjectOfClass:[NSURL class]]) {
     // The parameter type has changed with Xcode 12 SDK.
     // TODO(crbug.com/1098318): Remove this once Xcode 11 support is dropped.
-#if defined(__IPHONE_14_0)
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     using providerType = __kindof id<NSItemProviderReading>;
 #else
     using providerType = id<NSItemProviderReading>;

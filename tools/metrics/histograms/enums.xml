@@ -27992,7 +27992,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3206" label="LegacyLayoutByDetailsMarker"/>
   <int value="3207" label="LegacyLayoutByEditing"/>
   <int value="3208" label="LegacyLayoutByFieldSet"/>
-  <int value="3209" label="LegacyLayoutByFileUploadControl"/>
+  <int value="3209" label="OBSOLETE_LegacyLayoutByFileUploadControl"/>
   <int value="3210" label="LegacyLayoutByFlexBox"/>
   <int value="3211" label="LegacyLayoutByFrameSet"/>
   <int value="3212" label="LegacyLayoutByGrid"/>
@@ -28129,6 +28129,11 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3336" label="InlineOverflowScrollWithInlineEndPadding"/>
   <int value="3337" label="CSSSelectorPseudoWebKitDetailsMarker"/>
   <int value="3338" label="SerialPortGetInfo"/>
+  <int value="3339" label="FileSystemPickerMethod"/>
+  <int value="3340" label="V8Window_ShowOpenFilePicker_Method"/>
+  <int value="3341" label="V8Window_ShowSaveFilePicker_Method"/>
+  <int value="3342" label="V8Window_ShowDirectoryPicker_Method"/>
+  <int value="3343" label="V8Window_GetOriginPrivateDirectory_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

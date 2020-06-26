@@ -24,9 +24,6 @@ struct CONTENT_EXPORT AXContentTreeData : public ui::AXTreeData {
 
   // The routing ID of this frame.
   int routing_id = MSG_ROUTING_NONE;
-
-  // The routing ID of the parent frame.
-  int parent_routing_id = MSG_ROUTING_NONE;
 };
 
 }  // namespace content

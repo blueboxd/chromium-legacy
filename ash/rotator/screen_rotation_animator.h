@@ -27,7 +27,6 @@ class CopyOutputResult;
 }  // namespace cc
 
 namespace ui {
-class AnimationMetricsReporter;
 class LayerTreeOwner;
 class ScopedAnimationDurationScaleMode;
 }  // namespace ui
@@ -185,7 +184,6 @@ class ASH_EXPORT ScreenRotationAnimator {
   // cancel the previous rotation request.
   int64_t rotation_request_id_;
 
-  std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
   // Only set in unittest to disable animation timers.
   bool disable_animation_timers_for_test_;
   base::ObserverList<ScreenRotationAnimatorObserver>::Unchecked

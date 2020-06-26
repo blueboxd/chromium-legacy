@@ -77,4 +77,8 @@ RenderViewHostDelegateView* MockRenderWidgetHostDelegate::GetDelegateView() {
   return &rvh_delegate_view_;
 }
 
+FrameTree* MockRenderWidgetHostDelegate::GetFrameTree() {
+  return frame_tree_;
+}
+
 }  // namespace content

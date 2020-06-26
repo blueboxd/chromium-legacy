@@ -301,6 +301,12 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
         OverlayProcessorInterface::OutputSurfaceOverlayPlane());
   }
 
+  void ScheduleNoPrimaryPlane() {
+    base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
+        no_plane;
+    output_device_->SchedulePrimaryPlane(no_plane);
+  }
+
   void SwapBuffers() {
     auto present_callback =
         base::DoNothing::Once<const gfx::PresentationFeedback&>();
@@ -464,6 +470,55 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckEmptySwap) {
   EXPECT_EQ(1U, swap_completion_callbacks().size());
   PageFlipComplete();
   EXPECT_EQ(0U, swap_completion_callbacks().size());
+}
+
+TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, NoPrimaryPlane) {
+  // Check empty swap flow, in which the damage is empty and BindFramebuffer
+  // might not be called.
+  output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
+                          gfx::OVERLAY_TRANSFORM_NONE);
+
+  // Do a swap and commit overlay planes with no primary plane.
+  for (size_t i = 0; i < 2; ++i) {
+    ScheduleNoPrimaryPlane();
+    EXPECT_EQ(current_image(), nullptr);
+    EXPECT_FALSE(displayed_image());
+    if (i == 0)
+      SwapBuffers();
+    else if (i == 1)
+      CommitOverlayPlanes();
+    EXPECT_FALSE(displayed_image());
+    PageFlipComplete();
+  }
+
+  // Do it again with a paint in between.
+  for (size_t i = 0; i < 2; ++i) {
+    PaintAndSchedulePrimaryPlane();
+    EXPECT_NE(current_image(), nullptr);
+    EXPECT_FALSE(displayed_image());
+    SwapBuffers();
+    PageFlipComplete();
+    EXPECT_TRUE(displayed_image());
+
+    ScheduleNoPrimaryPlane();
+    EXPECT_EQ(current_image(), nullptr);
+    if (i == 0)
+      SwapBuffers();
+    else if (i == 1)
+      CommitOverlayPlanes();
+    EXPECT_TRUE(displayed_image());
+    PageFlipComplete();
+    EXPECT_FALSE(displayed_image());
+  }
+
+  // Do a final commit with no primary.
+  {
+    ScheduleNoPrimaryPlane();
+    EXPECT_EQ(current_image(), nullptr);
+    CommitOverlayPlanes();
+    PageFlipComplete();
+    EXPECT_FALSE(displayed_image());
+  }
 }
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckCorrectBufferOrdering) {

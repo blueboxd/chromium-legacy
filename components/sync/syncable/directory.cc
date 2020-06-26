@@ -12,7 +12,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/files/file_enumerator.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -415,23 +414,6 @@ bool Directory::ReindexParentId(BaseWriteTransaction* trans,
     entry->put(PARENT_ID, new_parent_id);
   }
   return true;
-}
-
-// static
-void Directory::DeleteDirectoryFiles(const base::FilePath& directory_path) {
-  // We assume that the directory database files are all top level files, and
-  // use no folders. We also assume that there might be child folders under
-  // |directory_path| that are used for non-directory things, like storing
-  // ModelTypeStore/LevelDB data, and we expressly do not want to delete those.
-  if (base::DirectoryExists(directory_path)) {
-    base::FileEnumerator fe(directory_path, false, base::FileEnumerator::FILES);
-    for (base::FilePath current = fe.Next(); !current.empty();
-         current = fe.Next()) {
-      if (!base::DeleteFile(current, false)) {
-        LOG(DFATAL) << "Could not delete all sync directory files.";
-      }
-    }
-  }
 }
 
 bool Directory::unrecoverable_error_set(const BaseTransaction* trans) const {

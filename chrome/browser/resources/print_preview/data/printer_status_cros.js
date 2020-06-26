@@ -33,7 +33,7 @@ export const PrinterStatusReason = {
  *  @enum {number}
  */
 export const PrinterStatusSeverity = {
-  UNKOWN_SEVERITY: 0,
+  UNKNOWN_SEVERITY: 0,
   REPORT: 1,
   WARNING: 2,
   ERROR: 3,

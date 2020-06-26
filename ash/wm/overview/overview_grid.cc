@@ -11,7 +11,7 @@
 
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -49,11 +49,13 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
+#include "base/bind.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform_util.h"
@@ -123,74 +125,75 @@ template <const char* clamshell_single_name,
           const char* tablet_name,
           const char* splitview_name,
           const char* tablet_minimized_name>
-class OverviewFpsCounter : public FpsCounter {
+class OverviewMetricsTracker : public OverviewGrid::MetricsTracker {
  public:
-  OverviewFpsCounter(ui::Compositor* compositor,
-                     bool in_split_view,
-                     bool single_animation_in_clamshell,
-                     bool minimized_in_tablet)
-      : FpsCounter(compositor),
-        in_split_view_(in_split_view),
-        single_animation_in_clamshell_(single_animation_in_clamshell),
-        minimized_in_tablet_(minimized_in_tablet) {}
-  ~OverviewFpsCounter() override {
-    int smoothness = ComputeSmoothness();
-    if (smoothness < 0)
-      return;
-    if (single_animation_in_clamshell_)
+  OverviewMetricsTracker(ui::Compositor* compositor,
+                         bool in_split_view,
+                         bool single_animation_in_clamshell,
+                         bool minimized_in_tablet)
+      : tracker_(compositor->RequestNewThroughputTracker()) {
+    tracker_.Start(metrics_util::ForSmoothness(base::BindRepeating(
+        &OverviewMetricsTracker::ReportOverviewSmoothness, in_split_view,
+        single_animation_in_clamshell, minimized_in_tablet)));
+  }
+  OverviewMetricsTracker(const OverviewMetricsTracker&) = delete;
+  OverviewMetricsTracker& operator=(const OverviewMetricsTracker&) = delete;
+  ~OverviewMetricsTracker() override { tracker_.Stop(); }
+
+  static void ReportOverviewSmoothness(bool in_split_view,
+                                       bool single_animation_in_clamshell,
+                                       bool minimized_in_tablet,
+                                       int smoothness) {
+    if (single_animation_in_clamshell)
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_single_name, smoothness);
     else
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_multi_name, smoothness);
 
-    if (minimized_in_tablet_) {
+    if (minimized_in_tablet) {
       UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(
-          in_split_view_, tablet_minimized_name, smoothness);
+          in_split_view, tablet_minimized_name, smoothness);
     } else {
-      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view_,
+      UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view,
                                                        tablet_name, smoothness);
     }
-    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view_, splitview_name,
+    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view, splitview_name,
                                           smoothness);
   }
 
  private:
-  bool in_split_view_;
-
-  // True if only top window animates upon enter/exit overview in clamshell.
-  bool single_animation_in_clamshell_;
-
-  // True if all windows are minimized in tablet.
-  bool minimized_in_tablet_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewFpsCounter);
+  ui::ThroughputTracker tracker_;
 };
 
-using OverviewEnterFpsCounter =
-    OverviewFpsCounter<kOverviewEnterSingleClamshellHistogram,
-                       kOverviewEnterClamshellHistogram,
-                       kOverviewEnterTabletHistogram,
-                       kOverviewEnterSplitViewHistogram,
-                       kOverviewEnterMinimizedTabletHistogram>;
-using OverviewExitFpsCounter =
-    OverviewFpsCounter<kOverviewExitSingleClamshellHistogram,
-                       kOverviewExitClamshellHistogram,
-                       kOverviewExitTabletHistogram,
-                       kOverviewExitSplitViewHistogram,
-                       kOverviewExitMinimizedTabletHistogram>;
+using OverviewEnterMetricsTracker =
+    OverviewMetricsTracker<kOverviewEnterSingleClamshellHistogram,
+                           kOverviewEnterClamshellHistogram,
+                           kOverviewEnterTabletHistogram,
+                           kOverviewEnterSplitViewHistogram,
+                           kOverviewEnterMinimizedTabletHistogram>;
+using OverviewExitMetricsTracker =
+    OverviewMetricsTracker<kOverviewExitSingleClamshellHistogram,
+                           kOverviewExitClamshellHistogram,
+                           kOverviewExitTabletHistogram,
+                           kOverviewExitSplitViewHistogram,
+                           kOverviewExitMinimizedTabletHistogram>;
 
-class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
+class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver {
  public:
-  ShutdownAnimationFpsCounterObserver(ui::Compositor* compositor,
-                                      bool in_split_view,
-                                      bool single_animation,
-                                      bool minimized_in_tablet)
-      : fps_counter_(compositor,
-                     in_split_view,
-                     single_animation,
-                     minimized_in_tablet) {
+  ShutdownAnimationMetricsTrackerObserver(ui::Compositor* compositor,
+                                          bool in_split_view,
+                                          bool single_animation,
+                                          bool minimized_in_tablet)
+      : metrics_tracker_(compositor,
+                         in_split_view,
+                         single_animation,
+                         minimized_in_tablet) {
     Shell::Get()->overview_controller()->AddObserver(this);
   }
-  ~ShutdownAnimationFpsCounterObserver() override {
+  ShutdownAnimationMetricsTrackerObserver(
+      const ShutdownAnimationMetricsTrackerObserver&) = delete;
+  ShutdownAnimationMetricsTrackerObserver& operator=(
+      const ShutdownAnimationMetricsTrackerObserver&) = delete;
+  ~ShutdownAnimationMetricsTrackerObserver() override {
     Shell::Get()->overview_controller()->RemoveObserver(this);
   }
 
@@ -200,9 +203,7 @@ class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
   }
 
  private:
-  OverviewExitFpsCounter fps_counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShutdownAnimationFpsCounterObserver);
+  OverviewExitMetricsTracker metrics_tracker_;
 };
 
 // Creates |drop_target_widget_|. It's created when a window or overview item is
@@ -395,7 +396,7 @@ void OverviewGrid::Shutdown() {
     bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
                                OverviewEnterExitType::kFadeOutExit;
     // The following instance self-destructs when shutdown animation ends.
-    new ShutdownAnimationFpsCounterObserver(
+    new ShutdownAnimationMetricsTrackerObserver(
         root_window_->layer()->GetCompositor(), in_split_view,
         single_animation_in_clamshell, minimized_in_tablet);
   }
@@ -508,13 +509,13 @@ void OverviewGrid::PositionWindows(
         !Shell::Get()->tablet_mode_controller()->InTabletMode();
     bool minimized_in_tablet = overview_session_->enter_exit_overview_type() ==
                                OverviewEnterExitType::kFadeInEnter;
-    fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
+    metrics_tracker_ = std::make_unique<OverviewEnterMetricsTracker>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
         SplitViewController::Get(root_window_)->InSplitViewMode(),
         single_animation_in_clamshell, minimized_in_tablet);
   }
 
-  // Apply the animation after creating fps_counter_ so that unit test
+  // Apply the animation after creating metrics_tracker_ so that unit test
   // can correctly count the measure requests.
   for (size_t i = 0; i < window_list_.size(); ++i) {
     if (rects[i].IsEmpty())
@@ -1000,7 +1001,7 @@ void OverviewGrid::OnWallpaperChanged() {
 }
 
 void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
-  fps_counter_.reset();
+  metrics_tracker_.reset();
   if (canceled)
     return;
 

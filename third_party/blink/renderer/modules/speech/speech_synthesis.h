@@ -131,10 +131,10 @@ class MODULES_EXPORT SpeechSynthesis final
 
   HeapMojoReceiver<mojom::blink::SpeechSynthesisVoiceListObserver,
                    SpeechSynthesis,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   HeapMojoWrapperMode::kForceWithoutContextObserver>
       receiver_;
   HeapMojoRemote<mojom::blink::SpeechSynthesis,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
       mojom_synthesis_;
   HeapVector<Member<SpeechSynthesisVoice>> voice_list_;
   HeapDeque<Member<SpeechSynthesisUtterance>> utterance_queue_;

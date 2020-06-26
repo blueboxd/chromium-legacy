@@ -43,6 +43,7 @@ source_set("web_request") {
   ]
 
   deps = [
+    "//components/ukm/content",
     "//components/web_cache/browser",
     "//content/public/browser",
     "//content/public/common",

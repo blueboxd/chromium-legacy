@@ -201,8 +201,6 @@ TEST_F(WeaknessMarkingTest, TracableEphemeronIsRegsitered) {
   EXPECT_NE(old_ephemeron_count, ephemeron_count);
 }
 
-// TODO(keinakashima): add tests for NewLinkedHashSet after supporting
-// WeakMember
 TEST_F(WeaknessMarkingTest, SwapIntoAlreadyProcessedWeakSet) {
   // Regression test: https://crbug.com/1038623
   //
@@ -218,6 +216,18 @@ TEST_F(WeaknessMarkingTest, SwapIntoAlreadyProcessedWeakSet) {
   driver.FinishSteps();
   holder1->Swap(*holder2.Get());
   driver.FinishGC();
+
+  using NewWeakLinkedSet = HeapNewLinkedHashSet<WeakMember<IntegerObject>>;
+  Persistent<NewWeakLinkedSet> holder3(
+      MakeGarbageCollected<NewWeakLinkedSet>());
+  Persistent<NewWeakLinkedSet> holder4(
+      MakeGarbageCollected<NewWeakLinkedSet>());
+  holder3->insert(MakeGarbageCollected<IntegerObject>(1));
+  IncrementalMarkingTestDriver driver2(ThreadState::Current());
+  driver2.Start();
+  driver2.FinishSteps();
+  holder3->Swap(*holder4.Get());
+  driver2.FinishGC();
 }
 
 TEST_F(WeaknessMarkingTest, EmptyEphemeronCollection) {

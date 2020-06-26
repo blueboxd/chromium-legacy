@@ -110,12 +110,6 @@ typedef struct _AtkObject AtkObject;
 }
 #endif
 
-#if defined(USE_X11)
-namespace x11 {
-enum class Window : uint32_t;
-}
-#endif
-
 namespace gfx {
 
 #if defined(USE_AURA)
@@ -239,10 +233,6 @@ typedef intptr_t NativeViewId;
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = nullptr;
-#elif defined(USE_X11)
-typedef x11::Window AcceleratedWidget;
-constexpr AcceleratedWidget kNullAcceleratedWidget =
-    static_cast<x11::Window>(0);
 #elif defined(OS_IOS)
 typedef UIView* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
@@ -252,8 +242,8 @@ constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)
 typedef ANativeWindow* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
-#elif defined(USE_OZONE)
-typedef int32_t AcceleratedWidget;
+#elif defined(USE_OZONE) || defined(USE_X11)
+typedef uint32_t AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform

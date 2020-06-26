@@ -954,13 +954,11 @@ class NewLinkedHashSet {
                       HashTraits<wtf_size_t>,
                       Allocator>;
   using ListType = VectorBackedLinkedList<Value, Allocator>;
+  using BackingIterator = typename ListType::const_iterator;
+  using BackingReverseIterator = typename ListType::const_reverse_iterator;
+  using BackingConstIterator = typename ListType::const_iterator;
 
  public:
-  using iterator = typename ListType::const_iterator;
-  using reverse_iterator = typename ListType::const_reverse_iterator;
-  using const_iterator = typename ListType::const_iterator;
-  using const_reverse_iterator = typename ListType::const_reverse_iterator;
-
   // TODO(keinakashima): add security check
   struct AddResult final {
     STACK_ALLOCATED();
@@ -971,6 +969,58 @@ class NewLinkedHashSet {
     const Value* stored_value;
     bool is_new_entry;
   };
+
+  template <typename T>
+  class IteratorWrapper {
+   public:
+    const Value& operator*() const { return *(iterator_.Get()); }
+    const Value* operator->() const { return iterator_.Get(); }
+
+    IteratorWrapper& operator++() {
+      ++iterator_;
+      return *this;
+    }
+
+    IteratorWrapper& operator--() {
+      --iterator_;
+      return *this;
+    }
+
+    IteratorWrapper& operator++(int) = delete;
+    IteratorWrapper& operator--(int) = delete;
+
+    bool operator==(const IteratorWrapper& other) const {
+      // No need to compare map_iterator_ here because it is not related to
+      // iterator_'s value but only for strongifying WeakMembers for the
+      // lifetime of this IteratorWrapper.
+      return iterator_ == other.iterator_;
+    }
+
+    bool operator!=(const IteratorWrapper& other) const {
+      return !(*this == other);
+    }
+
+   protected:
+    IteratorWrapper(const T& it, const Map& map)
+        : iterator_(it), map_iterator_(map.begin()) {}
+
+    // NewLinkedHashSet::list_ iterator.
+    T iterator_;
+
+    // This is needed for WeakMember support in NewLinkedHashSet. Holding
+    // value_to_index_'s iterator to map, for the lifetime of this iterator,
+    // will strongify WeakMembers in both value_to_index_ as well as their
+    // copies inside list_. This is necessary to prevent list_'s weak callback
+    // to remove dead weak entries while an active iterator exists.
+    typename Map::const_iterator map_iterator_;
+
+    friend class NewLinkedHashSet<ValueArg, Allocator>;
+  };
+
+  using iterator = IteratorWrapper<BackingIterator>;
+  using const_iterator = IteratorWrapper<BackingIterator>;
+  using reverse_iterator = IteratorWrapper<BackingReverseIterator>;
+  using const_reverse_iterator = IteratorWrapper<BackingReverseIterator>;
 
   typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
 
@@ -984,22 +1034,33 @@ class NewLinkedHashSet {
 
   void Swap(NewLinkedHashSet&);
 
-  wtf_size_t size() const { return list_.size(); }
+  wtf_size_t size() const {
+    DCHECK(value_to_index_.size() == list_.size());
+    return list_.size();
+  }
   bool IsEmpty() const { return list_.empty(); }
 
-  iterator begin() { return list_.begin(); }
-  const_iterator begin() const { return list_.cbegin(); }
-  const_iterator cbegin() const { return list_.cbegin(); }
-  iterator end() { return list_.end(); }
-  const_iterator end() const { return list_.cend(); }
-  const_iterator cend() const { return list_.cend(); }
+  iterator begin() { return MakeIterator(list_.begin()); }
+  const_iterator begin() const { return MakeIterator(list_.cbegin()); }
+  const_iterator cbegin() const { return MakeIterator(list_.cbegin()); }
+  iterator end() { return MakeIterator(list_.end()); }
+  const_iterator end() const { return MakeIterator(list_.cend()); }
+  const_iterator cend() const { return MakeIterator(list_.cend()); }
 
-  reverse_iterator rbegin() { return list_.rbegin(); }
-  const_reverse_iterator rbegin() const { return list_.crbegin(); }
-  const_reverse_iterator crbegin() const { return list_.crbegin(); }
-  reverse_iterator rend() { return list_.rend(); }
-  const_reverse_iterator rend() const { return list_.crend(); }
-  const_reverse_iterator crend() const { return list_.crend(); }
+  reverse_iterator rbegin() { return MakeReverseIterator(list_.rbegin()); }
+  const_reverse_iterator rbegin() const {
+    return MakeReverseIterator(list_.crbegin());
+  }
+  const_reverse_iterator crbegin() const {
+    return MakeReverseIterator(list_.crbegin());
+  }
+  reverse_iterator rend() { return MakeReverseIterator(list_.rend()); }
+  const_reverse_iterator rend() const {
+    return MakeReverseIterator(list_.crend());
+  }
+  const_reverse_iterator crend() const {
+    return MakeReverseIterator(list_.crend());
+  }
 
   const Value& front() const { return list_.front(); }
   const Value& back() const { return list_.back(); }
@@ -1052,6 +1113,14 @@ class NewLinkedHashSet {
   template <typename IncomingValueType>
   AddResult InsertOrMoveBefore(const_iterator, IncomingValueType&&, MoveType);
 
+  iterator MakeIterator(const BackingIterator& it) const {
+    return iterator(it, value_to_index_);
+  }
+
+  reverse_iterator MakeReverseIterator(const BackingReverseIterator& it) const {
+    return reverse_iterator(it, value_to_index_);
+  }
+
   Map value_to_index_;
   ListType list_;
 };
@@ -1078,7 +1147,7 @@ NewLinkedHashSet<T, Allocator>::find(ValuePeekInType value) {
 
   if (it == value_to_index_.end())
     return end();
-  return list_.MakeIterator(it->value);
+  return MakeIterator(list_.MakeIterator(it->value));
 }
 
 template <typename T, typename Allocator>
@@ -1088,7 +1157,7 @@ NewLinkedHashSet<T, Allocator>::find(ValuePeekInType value) const {
 
   if (it == value_to_index_.end())
     return end();
-  return list_.MakeConstIterator(it->value);
+  return MakeIterator(list_.MakeConstIterator(it->value));
 }
 
 template <typename T, typename Allocator>
@@ -1150,7 +1219,7 @@ inline void NewLinkedHashSet<T, Allocator>::erase(const_iterator it) {
   if (it == end())
     return;
   value_to_index_.erase(*it);
-  list_.erase(it);
+  list_.erase(it.iterator_);
 }
 
 template <typename T, typename Allocator>
@@ -1174,19 +1243,19 @@ NewLinkedHashSet<T, Allocator>::InsertOrMoveBefore(const_iterator position,
   typename Map::AddResult result = value_to_index_.insert(value, kNotFound);
 
   if (result.is_new_entry) {
-    const_iterator stored_position_iterator =
-        list_.insert(position, std::forward<IncomingValueType>(value));
+    BackingConstIterator stored_position_iterator = list_.insert(
+        position.iterator_, std::forward<IncomingValueType>(value));
     result.stored_value->value = stored_position_iterator.GetIndex();
     return AddResult(stored_position_iterator.Get(), true);
   }
 
-  const_iterator stored_position_iterator =
+  BackingConstIterator stored_position_iterator =
       list_.MakeConstIterator(result.stored_value->value);
   if (type == MoveType::kDontMove)
     return AddResult(stored_position_iterator.Get(), false);
 
-  const_iterator moved_position_iterator =
-      list_.MoveTo(stored_position_iterator, position);
+  BackingConstIterator moved_position_iterator =
+      list_.MoveTo(stored_position_iterator, position.iterator_);
   return AddResult(moved_position_iterator.Get(), false);
 }
 

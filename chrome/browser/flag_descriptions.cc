@@ -77,7 +77,8 @@ const char kConditionalTabStripAndroidDescription[] =
 
 const char kConversionMeasurementApiName[] = "Conversion Measurement API";
 const char kConversionMeasurementApiDescription[] =
-    "Enables usage of the Conversion Measurement API.";
+    "Enables usage of the Conversion Measurement API. Requires "
+    "#enable-experimental-web-platform-features to be enabled.";
 
 const char kConversionMeasurementDebugModeName[] =
     "Conversion Measurement Debug Mode";

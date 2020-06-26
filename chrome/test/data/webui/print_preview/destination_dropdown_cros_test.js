@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, PrinterState, PrinterStatusReason, PrinterStatusSeverity} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn, move} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -22,6 +22,9 @@ destination_dropdown_cros_test.TestNames = {
   EnterOpensCloses: 'enter opens and closes dropdown',
   SelectedFollowsMouse: 'selected follows mouse',
   Disabled: 'disabled',
+  HiddenDestinationBadge: 'hidden destination badge',
+  NewStatusUpdatesDestinationIcon: 'new status updates destination icon',
+  ChangingDestinationUpdatesIcon: 'changing destination updates icon',
 };
 
 suite(destination_dropdown_cros_test.suiteName, function() {
@@ -77,12 +80,13 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
   /**
    * @param {string} displayName
+   * @param {!DestinationOrigin} destinationOrigin
    * @return {!Destination}
    */
-  function createDestination(displayName) {
+  function createDestination(displayName, destinationOrigin) {
     return new Destination(
-        displayName, DestinationType.LOCAL, DestinationOrigin.LOCAL,
-        displayName, DestinationConnectionStatus.ONLINE);
+        displayName, DestinationType.LOCAL, destinationOrigin, displayName,
+        DestinationConnectionStatus.ONLINE);
   }
 
   /** @override */
@@ -100,8 +104,9 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       assert(destination_dropdown_cros_test.TestNames.CorrectListItems),
       function() {
         setItemList([
-          createDestination('One'), createDestination('Two'),
-          createDestination('Three')
+          createDestination('One', DestinationOrigin.CROS),
+          createDestination('Two', DestinationOrigin.CROS),
+          createDestination('Three', DestinationOrigin.CROS)
         ]);
 
         const itemList = getList();
@@ -114,8 +119,10 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   test(
       assert(destination_dropdown_cros_test.TestNames.ClickRemovesSelected),
       function() {
-        setItemList([createDestination('One'), createDestination('Two')]);
-        dropdown.destination = createDestination('One');
+        setItemList([
+          createDestination('One', DestinationOrigin.CROS),
+          createDestination('Two', DestinationOrigin.CROS)
+        ]);
 
         getList()[1].setAttribute('selected_', '');
         assertTrue(getList()[1].hasAttribute('selected_'));
@@ -126,7 +133,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
   test(
       assert(destination_dropdown_cros_test.TestNames.ClickCloses), function() {
-        setItemList([createDestination('One')]);
+        setItemList([createDestination('One', DestinationOrigin.CROS)]);
         const ironDropdown = dropdown.$$('iron-dropdown');
 
         pointerDown(dropdown.$$('#dropdownInput'));
@@ -144,7 +151,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       });
 
   test(assert(destination_dropdown_cros_test.TestNames.TabCloses), function() {
-    setItemList([createDestination('One')]);
+    setItemList([createDestination('One', DestinationOrigin.CROS)]);
     const ironDropdown = dropdown.$$('iron-dropdown');
 
     pointerDown(dropdown.$$('#dropdownInput'));
@@ -157,7 +164,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   test(
       assert(destination_dropdown_cros_test.TestNames.SelectedAfterUpDown),
       function() {
-        setItemList([createDestination('One')]);
+        setItemList([createDestination('One', DestinationOrigin.CROS)]);
 
         pointerDown(dropdown.$$('#dropdownInput'));
 
@@ -185,7 +192,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   test(
       assert(destination_dropdown_cros_test.TestNames.EnterOpensCloses),
       function() {
-        setItemList([createDestination('One')]);
+        setItemList([createDestination('One', DestinationOrigin.CROS)]);
 
         assertFalse(dropdown.$$('iron-dropdown').opened);
         enter();
@@ -198,8 +205,9 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       assert(destination_dropdown_cros_test.TestNames.SelectedFollowsMouse),
       function() {
         setItemList([
-          createDestination('One'), createDestination('Two'),
-          createDestination('Three')
+          createDestination('One', DestinationOrigin.CROS),
+          createDestination('Two', DestinationOrigin.CROS),
+          createDestination('Three', DestinationOrigin.CROS)
         ]);
 
         pointerDown(dropdown.$$('#dropdownInput'));
@@ -220,7 +228,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       });
 
   test(assert(destination_dropdown_cros_test.TestNames.Disabled), function() {
-    setItemList([createDestination('One')]);
+    setItemList([createDestination('One', DestinationOrigin.CROS)]);
     dropdown.disabled = true;
 
     pointerDown(dropdown.$$('#dropdownInput'));
@@ -230,4 +238,70 @@ suite(destination_dropdown_cros_test.suiteName, function() {
     pointerDown(dropdown.$$('#dropdownInput'));
     assertTrue(dropdown.$$('iron-dropdown').opened);
   });
+
+  test(
+      assert(destination_dropdown_cros_test.TestNames.HiddenDestinationBadge),
+      function() {
+        setItemList([
+          createDestination('One', DestinationOrigin.CROS),
+          createDestination('Two', DestinationOrigin.PRIVET)
+        ]);
+
+        // A DestinationOrigin.CROS printer destination.
+        dropdown.value = dropdown.itemList[0];
+        assertFalse(dropdown.$$('#destination-badge').hidden);
+        assertTrue(dropdown.$$('iron-icon').hidden);
+
+        // A non-local printer destination that should not have a printer status
+        // icon.
+        dropdown.value = dropdown.itemList[1];
+        assertTrue(dropdown.$$('#destination-badge').hidden);
+        assertFalse(dropdown.$$('iron-icon').hidden);
+      });
+
+  test(
+      assert(destination_dropdown_cros_test.TestNames
+                 .NewStatusUpdatesDestinationIcon),
+      function() {
+        const destinationBadge = dropdown.$$('#destination-badge');
+        dropdown.value = createDestination('One', DestinationOrigin.CROS);
+
+        dropdown.value.printerStatusReason = PrinterStatusReason.NO_ERROR;
+        dropdown.notifyPath(`value.printerStatusReason`);
+        assertEquals(PrinterState.GOOD, destinationBadge.state);
+
+        dropdown.value.printerStatusReason = PrinterStatusReason.OUT_OF_INK;
+        dropdown.notifyPath(`value.printerStatusReason`);
+        assertEquals(PrinterState.ERROR, destinationBadge.state);
+
+        dropdown.value.printerStatusReason = PrinterStatusReason.UNKNOWN_REASON;
+        dropdown.notifyPath(`value.printerStatusReason`);
+        assertEquals(PrinterState.UNKNOWN, destinationBadge.state);
+      });
+
+  test(
+      assert(destination_dropdown_cros_test.TestNames
+                 .ChangingDestinationUpdatesIcon),
+      function() {
+        const goodDestination =
+            createDestination('One', DestinationOrigin.CROS);
+        goodDestination.printerStatusReason = PrinterStatusReason.NO_ERROR;
+        const errorDestination =
+            createDestination('Two', DestinationOrigin.CROS);
+        errorDestination.printerStatusReason = PrinterStatusReason.OUT_OF_INK;
+        const unknownDestination =
+            createDestination('Three', DestinationOrigin.CROS);
+        unknownDestination.printerStatusReason =
+            PrinterStatusReason.UNKNOWN_REASON;
+        const destinationBadge = dropdown.$$('#destination-badge');
+
+        dropdown.value = goodDestination;
+        assertEquals(PrinterState.GOOD, destinationBadge.state);
+
+        dropdown.value = errorDestination;
+        assertEquals(PrinterState.ERROR, destinationBadge.state);
+
+        dropdown.value = unknownDestination;
+        assertEquals(PrinterState.UNKNOWN, destinationBadge.state);
+      });
 });

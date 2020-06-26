@@ -50,8 +50,8 @@ TEST(GLContextGLXTest, MAYBE_DoNotDestroyOnFailedMakeCurrent) {
   XSync(xdisplay, x11::False);
 
   GLImageTestSupport::InitializeGL(base::nullopt);
-  auto surface =
-      gl::InitializeGLSurface(base::MakeRefCounted<GLSurfaceGLXX11>(xwindow));
+  auto surface = gl::InitializeGLSurface(base::MakeRefCounted<GLSurfaceGLXX11>(
+      static_cast<gfx::AcceleratedWidget>(xwindow)));
   scoped_refptr<GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), GLContextAttribs());
 

@@ -346,7 +346,8 @@
     },
     {
       name: "ConversionMeasurement",
-      status: "test",
+      origin_trial_feature_name: "ConversionMeasurement",
+      status: "experimental",
     },
     {
       name: "CookieDeprecationMessages",

@@ -50,19 +50,6 @@ bool MediaSessionController::Initialize(
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     static uint32_t player_id = 0;
     player_id_ = static_cast<int>(player_id++);
-  } else {
-    // WebMediaPlayerAndroid does not have an accurate sense of audio presence,
-    // only the MediaPlayerManager does, so WMPA never reports audio unless it's
-    // sure (no video stream).  This leads to issues when Initialize() is called
-    // by WMPA (reporting no audio and subsequently releasing the session) after
-    // the manager accurately reported audio.
-    //
-    // To workaround this, |has_audio| is sticky; I.e., once a session has been
-    // created with audio all future sessions will also have audio.
-    //
-    // TODO(dalecurtis): Delete sticky audio once we're no longer using WMPA and
-    // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
-    has_audio_ = true;
   }
 
   // Don't bother with a MediaSession for remote players or without audio.  If

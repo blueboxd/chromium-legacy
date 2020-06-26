@@ -1765,6 +1765,7 @@ jumbo_component("base") {
         "allocator/partition_allocator/partition_oom.h",
         "allocator/partition_allocator/partition_page.cc",
         "allocator/partition_allocator/partition_page.h",
+        "allocator/partition_allocator/partition_tag.h",
         "allocator/partition_allocator/random.cc",
         "allocator/partition_allocator/random.h",
         "allocator/partition_allocator/spin_lock.cc",

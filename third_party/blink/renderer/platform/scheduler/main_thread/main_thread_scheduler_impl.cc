@@ -2283,14 +2283,17 @@ void MainThreadSchedulerImpl::OnSetTimer(
   helper_.CheckOnValidThread();
   control_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(agent_strategy_delay_callback_, &frame_scheduler), delay);
+      base::BindOnce(agent_strategy_delay_callback_,
+                     frame_scheduler.GetWeakPtr()),
+      delay);
 }
 
 void MainThreadSchedulerImpl::OnAgentStrategyDelayPassed(
-    const FrameSchedulerImpl* frame_scheduler) {
+    base::WeakPtr<const FrameSchedulerImpl> frame_scheduler) {
   helper_.CheckOnValidThread();
-  if (agent_scheduling_strategy_->OnDelayPassed(*frame_scheduler) ==
-      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+  if (frame_scheduler &&
+      agent_scheduling_strategy_->OnDelayPassed(*frame_scheduler) ==
+          AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
     ForceUpdatePolicy();
   }
 }

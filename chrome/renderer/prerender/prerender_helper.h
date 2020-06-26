@@ -48,14 +48,13 @@ class PrerenderHelper
   }
   std::string histogram_prefix() const { return histogram_prefix_; }
 
+  void SetIsPrerendering(prerender::mojom::PrerenderMode mode,
+                         const std::string& histogram_prefix);
+
  private:
   // RenderFrameObserver implementation.
   void DidFinishDocumentLoad() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
-
-  void OnSetIsPrerendering(prerender::mojom::PrerenderMode mode,
-                           const std::string& histogram_prefix);
 
   void AddThrottle(const base::WeakPtr<PrerenderURLLoaderThrottle>& throttle);
   void OnThrottleDestroyed();

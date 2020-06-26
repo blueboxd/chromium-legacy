@@ -87,6 +87,10 @@ class ConversionsBrowserTest : public ContentBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kConversionsDebugMode);
+
+    // Sets up the blink runtime feature for ConversionMeasurement.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   void SetUpOnMainThread() override {

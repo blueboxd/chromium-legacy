@@ -445,18 +445,11 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
     tree_data->sel_focus_affinity = focus_affinity;
   }
 
-  // Get the tree ID for this frame and the parent frame.
+  // Get the tree ID for this frame.
   WebLocalFrame* web_frame = document().GetFrame();
   if (web_frame) {
     RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
     tree_data->routing_id = render_frame->GetRoutingID();
-
-    // Get the tree ID for the parent frame.
-    blink::WebFrame* parent_web_frame = web_frame->Parent();
-    if (parent_web_frame) {
-      tree_data->parent_routing_id =
-          RenderFrame::GetRoutingIdForWebFrame(parent_web_frame);
-    }
   }
 
   tree_data->root_scroller_id = root().RootScroller().AxID();

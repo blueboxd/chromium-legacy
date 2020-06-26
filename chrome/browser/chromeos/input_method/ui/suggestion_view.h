@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/chromeos/ui_chromeos_export.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
@@ -34,9 +35,9 @@ constexpr SkColor kButtonHighlightColor =
     SkColorSetA(SK_ColorBLACK, 0x0F);  // 6% Black.
 
 // SuggestionView renders a suggestion.
-class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
+class UI_CHROMEOS_EXPORT SuggestionView : public views::Button {
  public:
-  SuggestionView();
+  explicit SuggestionView(views::ButtonListener* listener);
   ~SuggestionView() override;
 
   void SetView(const SuggestionDetails& details);

@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,12 +125,9 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
     return SuggestionStatus::kNotHandled;
   SuggestionStatus status = SuggestionStatus::kNotHandled;
   std::string error;
-  if (event.key == "Enter" && candidate_id_ != -1) {
-    suggestion_shown_ = false;
-    engine_->AcceptSuggestionCandidate(context_id_, candidates_[candidate_id_],
-                                       &error);
-    RecordAcceptanceIndex(candidate_id_);
-    status = SuggestionStatus::kAccept;
+  if (event.key == "Enter") {
+    if (AcceptSuggestion(candidate_id_))
+      status = SuggestionStatus::kAccept;
   } else if (event.key == "Down") {
     candidate_id_ < static_cast<int>(candidates_.size()) - 1
         ? candidate_id_++
@@ -146,10 +144,15 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
     DismissSuggestion();
     suggestion_shown_ = false;
     status = SuggestionStatus::kDismiss;
+  } else if (last_event_key_ == "Down") {
+    int choice = 0;
+    if (base::StringToInt(event.key, &choice) && AcceptSuggestion(choice - 1))
+      status = SuggestionStatus::kAccept;
   }
   if (!error.empty()) {
     LOG(ERROR) << "Fail to handle event. " << error;
   }
+  last_event_key_ = event.key;
   return status;
 }
 
@@ -168,10 +171,13 @@ bool EmojiSuggester::Suggest(const base::string16& text) {
 void EmojiSuggester::ShowSuggestion(const std::string& text) {
   if (ChromeKeyboardControllerClient::Get()->is_keyboard_enabled())
     return;
+
+  ResetState();
+
   std::string error;
+  // TODO(crbug/1099495): Move suggestion_show_ after checking for error and fix
+  // tests.
   suggestion_shown_ = true;
-  candidates_.clear();
-  candidate_id_ = -1;
   candidates_ = emoji_map_.at(text);
   properties_.visible = true;
   properties_.candidates = candidates_;
@@ -180,6 +186,22 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
+}
+
+bool EmojiSuggester::AcceptSuggestion(size_t index) {
+  if (index < 0 || index >= candidates_.size())
+    return false;
+
+  std::string error;
+  engine_->AcceptSuggestionCandidate(context_id_, candidates_[index], &error);
+
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to accept suggestion. " << error;
+  }
+
+  suggestion_shown_ = false;
+  RecordAcceptanceIndex(index);
+  return true;
 }
 
 void EmojiSuggester::DismissSuggestion() {
@@ -191,6 +213,12 @@ void EmojiSuggester::DismissSuggestion() {
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
   }
+}
+
+void EmojiSuggester::ResetState() {
+  candidates_.clear();
+  candidate_id_ = -1;
+  last_event_key_ = base::EmptyString();
 }
 
 AssistiveType EmojiSuggester::GetProposeActionType() {

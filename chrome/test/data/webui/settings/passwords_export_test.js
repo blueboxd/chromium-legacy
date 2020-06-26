@@ -29,6 +29,7 @@ export function runExportFlowFastTest(exportDialog, passwordManager, done) {
 
   assertTrue(exportDialog.$$('#dialog_start').open);
   exportDialog.$$('#exportPasswordsButton').click();
+  flush();
   assertTrue(exportDialog.$$('#dialog_start').open);
   progressCallback(
       {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
@@ -123,25 +124,30 @@ export function runExportFlowSlowTest(exportDialog, passwordManager, done) {
   // in-progress state.
   assertTrue(exportDialog.$$('#dialog_start').open);
   exportDialog.$$('#exportPasswordsButton').click();
+  flush();
   assertTrue(exportDialog.$$('#dialog_start').open);
   progressCallback(
       {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+  flush();
   assertTrue(exportDialog.$$('#dialog_start').open);
 
   // After 100ms of not having completed, the dialog switches to the
   // progress bar. Chrome will continue to show the progress bar for 1000ms,
   // despite a completion event.
   mockTimer.tick(99);
+  flush();
   assertTrue(exportDialog.$$('#dialog_start').open);
   mockTimer.tick(1);
   flush();
   assertTrue(exportDialog.$$('#dialog_progress').open);
   progressCallback(
       {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+  flush();
   assertTrue(exportDialog.$$('#dialog_progress').open);
 
   // After 1000ms, Chrome will display the completion event.
   mockTimer.tick(999);
+  flush();
   assertTrue(exportDialog.$$('#dialog_progress').open);
   mockTimer.tick(1);
   flush();

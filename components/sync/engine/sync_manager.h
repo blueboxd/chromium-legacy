@@ -54,11 +54,6 @@ class SyncCycleSnapshot;
 class SyncStatusObserver;
 class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
-struct UserShare;
-
-namespace syncable {
-class NigoriHandler;
-}  // namespace syncable
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
@@ -232,13 +227,7 @@ class SyncManager {
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
 
     // Must outlive SyncManager.
-    UserShare* user_share;
-
-    // Must outlive SyncManager.
     SyncEncryptionHandler* encryption_handler;
-
-    // Must outlive SyncManager.
-    syncable::NigoriHandler* nigori_handler;
 
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::RepeatingClosure report_unrecoverable_error_function;
@@ -287,13 +276,8 @@ class SyncManager {
   // Returns false if an error occurred, true otherwise.
   virtual void PurgePartiallySyncedTypes() = 0;
 
-  // Purge those disabled types as specified by |to_purge|. |to_journal| and
-  // |to_unapply| specify subsets that require special handling. |to_journal|
-  // types are saved into the delete journal, while |to_unapply| have only
-  // their local data deleted, while their server data is preserved.
-  virtual void PurgeDisabledTypes(ModelTypeSet to_purge,
-                                  ModelTypeSet to_journal,
-                                  ModelTypeSet to_unapply) = 0;
+  // Purge those disabled types as specified by |to_purge|.
+  virtual void PurgeDisabledTypes(ModelTypeSet to_purge) = 0;
 
   // Update tokens that we're using in Sync. Email must stay the same.
   virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;

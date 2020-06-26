@@ -16,7 +16,6 @@ include_rules = [
   "+components/sync/model_impl",
   "+components/sync/nigori",
   "+components/sync/protocol",
-  "+components/sync/syncable",
   "+components/sync/test",
   "+components/sync_preferences",
   "+google/cacheinvalidation",

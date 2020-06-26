@@ -82,22 +82,12 @@ void PrerenderHelper::DidFinishDocumentLoad() {
     SendPrefetchFinished();
 }
 
-bool PrerenderHelper::OnMessageReceived(
-    const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PrerenderHelper, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
-  IPC_END_MESSAGE_MAP()
-  // Return false on PrerenderMsg_SetIsPrerendering so other observers can see
-  // the message.
-  return false;
-}
-
 void PrerenderHelper::OnDestruct() {
   delete this;
 }
 
-void PrerenderHelper::OnSetIsPrerendering(prerender::mojom::PrerenderMode mode,
-                                          const std::string& histogram_prefix) {
+void PrerenderHelper::SetIsPrerendering(prerender::mojom::PrerenderMode mode,
+                                        const std::string& histogram_prefix) {
   // Immediately after construction, |this| may receive the message that
   // triggered its creation.  If so, ignore it.
   if (mode != prerender::mojom::PrerenderMode::kNoPrerender)

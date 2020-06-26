@@ -176,9 +176,8 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
 
 void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
   sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoPurgeDisabledTypes, backend_,
-                     params.to_purge, params.to_journal, params.to_unapply));
+      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoPurgeDisabledTypes,
+                                backend_, params.to_purge));
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoConfigureSyncer, backend_,
                                 std::move(params)));

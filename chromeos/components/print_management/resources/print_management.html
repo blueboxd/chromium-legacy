@@ -10,13 +10,20 @@
     min-height: var(--cr-section-min-height);
   }
 
+  .delete-enabled {
+    --iron-icon-fill-color: rgb(26,115,232);
+  }
+
+  .delete-disabled {
+    --iron-icon-fill-color: var(--google-grey-500);
+  }
+
   .main-container {
     --cr-centered-card-max-width: 960px;
   }
 
   #clearAllButton {
     @apply --print-management-button-font;
-    color: var(--print-management-button-text-color);
   }
 
   #clearAllContainer {
@@ -83,8 +90,7 @@
         </cr-policy-indicator>
       </template>
       <cr-button id="clearAllButton" on-click="onClearHistoryClicked_"
-          disabled="[[shouldDisableClearAllButton_(printJobs_,
-                      deletePrintJobHistoryAllowedByPolicy_)]]"
+          disabled="[[shouldDisableClearAllButton_]]"
           hidden="[[!showClearAllButton_]]">
         <iron-icon id="deleteIcon" icon="print-management:delete"></iron-icon>
         [[i18n('clearAllHistoryLabel')]]

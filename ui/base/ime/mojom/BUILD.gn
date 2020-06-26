@@ -44,6 +44,10 @@ mojom("mojom") {
           cpp = "::ui::ImeTextSpan::Thickness"
         },
         {
+          mojom = "ui.mojom.ImeTextSpanType"
+          cpp = "::ui::ImeTextSpan::Type"
+        },
+        {
           mojom = "ui.mojom.ImeTextSpanUnderlineStyle"
           cpp = "::ui::ImeTextSpan::UnderlineStyle"
         },

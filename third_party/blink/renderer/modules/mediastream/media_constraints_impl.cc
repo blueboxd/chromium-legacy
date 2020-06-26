@@ -862,6 +862,27 @@ DoubleOrConstrainDoubleRange ConvertDouble(
   return output_union;
 }
 
+BooleanOrDoubleOrConstrainDoubleRange ConvertBooleanOrDouble(
+    const DoubleConstraint& input,
+    NakedValueDisposition naked_treatment) {
+  BooleanOrDoubleOrConstrainDoubleRange output_union;
+  if (UseNakedNumeric(input, naked_treatment)) {
+    output_union.SetDouble(GetNakedValue<double>(input, naked_treatment));
+  } else if (!input.IsEmpty()) {
+    ConstrainDoubleRange* output = ConstrainDoubleRange::Create();
+    if (input.HasExact())
+      output->setExact(input.Exact());
+    if (input.HasIdeal())
+      output->setIdeal(input.Ideal());
+    if (input.HasMin())
+      output->setMin(input.Min());
+    if (input.HasMax())
+      output->setMax(input.Max());
+    output_union.SetConstrainDoubleRange(output);
+  }
+  return output_union;
+}
+
 StringOrStringSequence ConvertStringSequence(
     const WebVector<WebString>& input) {
   StringOrStringSequence the_strings;
@@ -961,6 +982,12 @@ void ConvertConstraintSet(const MediaTrackConstraintSetPlatform& input,
     output->setGroupId(ConvertString(input.group_id, naked_treatment));
   if (!input.video_kind.IsEmpty())
     output->setVideoKind(ConvertString(input.video_kind, naked_treatment));
+  if (!input.pan.IsEmpty())
+    output->setPan(ConvertBooleanOrDouble(input.pan, naked_treatment));
+  if (!input.tilt.IsEmpty())
+    output->setTilt(ConvertBooleanOrDouble(input.tilt, naked_treatment));
+  if (!input.zoom.IsEmpty())
+    output->setZoom(ConvertBooleanOrDouble(input.zoom, naked_treatment));
   // TODO(hta): Decide the future of the nonstandard constraints.
   // If they go forward, they need to be added here.
   // https://crbug.com/605673
@@ -975,6 +1002,8 @@ MediaTrackConstraints* ConvertConstraints(const MediaConstraints& input) {
 
   HeapVector<Member<MediaTrackConstraintSet>> advanced_vector;
   for (const auto& it : input.Advanced()) {
+    if (it.IsEmpty())
+      continue;
     MediaTrackConstraintSet* element = MediaTrackConstraintSet::Create();
     ConvertConstraintSet(it, NakedValueDisposition::kTreatAsExact, element);
     advanced_vector.push_back(element);

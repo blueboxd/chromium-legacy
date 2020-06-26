@@ -135,6 +135,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
                              const SchedulingPolicy& policy) override;
 
   base::WeakPtr<FrameScheduler> GetWeakPtr() override;
+  base::WeakPtr<const FrameSchedulerImpl> GetWeakPtr() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
@@ -361,7 +362,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // and documents.
   base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_{this};
 
-  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_{this};
+  mutable base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };

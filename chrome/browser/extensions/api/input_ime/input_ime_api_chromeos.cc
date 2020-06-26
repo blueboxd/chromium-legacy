@@ -117,6 +117,7 @@ input_ime::AssistiveWindowButton ConvertAssistiveWindowButton(
   switch (id) {
     case ui::ime::ButtonId::kNone:
     case ui::ime::ButtonId::kSmartInputsSettingLink:
+    case ui::ime::ButtonId::kSuggestion:
       return input_ime::ASSISTIVE_WINDOW_BUTTON_NONE;
     case ui::ime::ButtonId::kUndo:
       return input_ime::ASSISTIVE_WINDOW_BUTTON_UNDO;

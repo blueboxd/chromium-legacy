@@ -506,9 +506,8 @@ class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
   DISALLOW_NEW();
 
   static void CheckType() {
-    // TODO(keinakashima): support WeakMember<T>
-    static_assert(internal::IsMember<ValueArg>,
-                  "HeapNewLinkedHashSet supports only Member.");
+    static_assert(internal::IsMemberOrWeakMemberType<ValueArg>,
+                  "HeapNewLinkedHashSet supports only Member and WeakMember.");
     // If not trivially destructible, we have to add a destructor which will
     // hinder performance.
     static_assert(std::is_trivially_destructible<HeapNewLinkedHashSet>::value,
@@ -527,7 +526,10 @@ class HeapNewLinkedHashSet : public NewLinkedHashSet<ValueArg, HeapAllocator> {
     return ThreadHeap::Allocate<HeapNewLinkedHashSet<ValueArg>>(size);
   }
 
-  HeapNewLinkedHashSet() { CheckType(); }
+  HeapNewLinkedHashSet() {
+    DCHECK(!ThreadState::Current()->IsOnStack(reinterpret_cast<Address>(this)));
+    CheckType();
+  }
 };
 
 template <typename T>
@@ -734,6 +736,20 @@ struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
   static const bool kCanMoveWithMemcpy = true;
 
   static constexpr bool kCanTraceConcurrently = true;
+};
+
+// These traits are used in VectorBackedLinkedList to support WeakMember in
+// HeapNewLinkedHashSet though HeapVector<WeakMember> usage is still banned.
+// (See the discussion in https://crrev.com/c/2246014)
+template <typename T>
+struct VectorTraits<blink::WeakMember<T>>
+    : VectorTraitsBase<blink::WeakMember<T>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool kNeedsDestruction = false;
+  static const bool kCanInitializeWithMemset = true;
+  static const bool kCanClearUnusedSlotsWithMemset = true;
+  static const bool kCanCopyWithMemcpy = true;
+  static const bool kCanMoveWithMemcpy = true;
 };
 
 template <typename T>

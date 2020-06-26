@@ -698,6 +698,10 @@ base::WeakPtr<FrameScheduler> FrameSchedulerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+base::WeakPtr<const FrameSchedulerImpl> FrameSchedulerImpl::GetWeakPtr() const {
+  return weak_factory_.GetWeakPtr();
+}
+
 void FrameSchedulerImpl::OnAddedAggressiveThrottlingOptOut() {
   ++aggressive_throttling_opt_out_count;
   opted_out_from_aggressive_throttling_ =

@@ -13,6 +13,7 @@
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/random.h"
 #include "base/check_op.h"
 #include "base/thread_annotations.h"
@@ -247,7 +248,7 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
   }
 
   // If these asserts fire, you probably corrupted memory.
-  PartitionCookieCheckValue(ptr);
+  PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + kPartitionTagSize);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
 

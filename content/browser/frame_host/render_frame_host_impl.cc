@@ -5256,6 +5256,7 @@ void RenderFrameHostImpl::HandleAXEvents(
       dst_update->has_tree_data = true;
       ax_content_tree_data_ = src_update.tree_data;
       AXContentTreeDataToAXTreeData(&dst_update->tree_data);
+      dst_update->tree_data.parent_tree_id = GetParentAXTreeID();
     }
     dst_update->root_id = src_update.root_id;
     dst_update->node_id_to_clear = src_update.node_id_to_clear;
@@ -6712,6 +6713,7 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
   detail.updates.resize(1);
   detail.updates[0].has_tree_data = true;
   AXContentTreeDataToAXTreeData(&detail.updates[0].tree_data);
+  detail.updates[0].tree_data.parent_tree_id = GetParentAXTreeID();
 
   SendAccessibilityEventsToManager(detail);
   delegate_->AccessibilityEventReceived(detail);
@@ -7043,12 +7045,6 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   if (src.routing_id != MSG_ROUTING_NONE)
     dst->tree_id = RoutingIDToAXTreeID(src.routing_id);
 
-  if (src.parent_routing_id != MSG_ROUTING_NONE)
-    dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
-
-  if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
-    dst->parent_tree_id = browser_plugin_embedder_ax_tree_id_;
-
   // If this is not the root frame tree node, we're done.
   if (!is_main_frame())
     return;
@@ -7059,6 +7055,16 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   if (!focused_frame)
     return;
   dst->focused_tree_id = focused_frame->GetAXTreeID();
+}
+
+ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
+  if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
+    return browser_plugin_embedder_ax_tree_id_;
+
+  if (!frame_tree_node_->IsMainFrame())
+    return GetParent()->GetAXTreeID();
+
+  return ui::AXTreeIDUnknown();
 }
 
 void RenderFrameHostImpl::AccessibilityHitTestCallback(
@@ -7115,6 +7121,7 @@ void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
   if (snapshot.has_tree_data) {
     ax_content_tree_data_ = snapshot.tree_data;
     AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
+    dst_snapshot.tree_data.parent_tree_id = GetParentAXTreeID();
     dst_snapshot.has_tree_data = true;
   }
   std::move(callback).Run(dst_snapshot);

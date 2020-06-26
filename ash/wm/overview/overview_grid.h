@@ -31,7 +31,6 @@ class Widget;
 namespace ash {
 
 class DesksBarView;
-class FpsCounter;
 class OverviewGridEventHandler;
 class OverviewItem;
 class PresentationTimeRecorder;
@@ -58,6 +57,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                                 public ScreenRotationAnimatorObserver,
                                 public WallpaperControllerObserver {
  public:
+  class MetricsTracker {
+   public:
+    MetricsTracker() = default;
+    virtual ~MetricsTracker() = default;
+  };
+
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
                OverviewSession* overview_session);
@@ -488,7 +493,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   std::vector<NudgeData> nudge_data_;
 
   // Measures the animation smoothness of overview animation.
-  std::unique_ptr<FpsCounter> fps_counter_;
+  std::unique_ptr<MetricsTracker> metrics_tracker_;
 
   // True to skip |PositionWindows()|. Used to avoid O(n^2) layout when
   // reposition windows in tablet overview mode.

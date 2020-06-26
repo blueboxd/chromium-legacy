@@ -9,26 +9,75 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
-import android.util.Pair;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.base.task.TaskTraits;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.RejectedExecutionException;
 
+// TODO: This class needs tests. https://crbug.com/1099271
+
 /**
- * Provide the enterprise information for the current device.
- * Currently only contains one function to record the histogram for "EnterpriseCheck.IsManaged".
+ * Provide the enterprise information for the current device and profile.
  */
 public final class EnterpriseInfo {
-    public static void logDeviceEnterpriseInfo() {
-        assert BrowserStartupController.getInstance().isFullBrowserStarted();
+    private static final String TAG = "EnterpriseInfo";
 
+    // Only ever read/written on the UI thread.
+    private static OwnedState sOwnedState = null;
+    private static Queue<Callback<OwnedState>> sCallbackList =
+            new LinkedList<Callback<OwnedState>>();
+
+    private static class OwnedState {
+        boolean mDeviceOwned;
+        boolean mProfileOwned;
+
+        public OwnedState(boolean isDeviceOwned, boolean isProfileOwned) {
+            mDeviceOwned = isDeviceOwned;
+            mProfileOwned = isProfileOwned;
+        }
+    }
+
+    /**
+     * Records metrics regarding whether the device has a device owner or a profile owner.
+     */
+    public static void logDeviceEnterpriseInfo() {
+        Callback<OwnedState> callback = (result) -> {
+            recordManagementHistograms(result);
+        };
+
+        getDeviceEnterpriseInfo(callback);
+    }
+
+    private static void getDeviceEnterpriseInfo(Callback<OwnedState> callback) {
+        // AsyncTask requires being called from UI thread.
+        ThreadUtils.assertOnUiThread();
+        assert callback != null;
+
+        if (sOwnedState != null) {
+            callback.onResult(sOwnedState);
+            return;
+        }
+
+        sCallbackList.add(callback);
+
+        if (sCallbackList.size() > 1) {
+            // A pending callback is already being worked on, no need to start up a new thread.
+            return;
+        }
+
+        // This is the first request, spin up a thread.
         try {
-            new AsyncTask<Pair<Boolean, Boolean>>() {
-                private Pair<Boolean, Boolean> calculateIsRunningOnManagedProfile(Context context) {
+            new AsyncTask<OwnedState>() {
+                // TODO: Unit test this function. https://crbug.com/1099262
+                private OwnedState calculateIsRunningOnManagedProfile(Context context) {
                     long startTime = SystemClock.elapsedRealtime();
                     boolean hasProfileOwnerApp = false;
                     boolean hasDeviceOwnerApp = false;
@@ -53,28 +102,43 @@ public final class EnterpriseInfo {
                             "EnterpriseCheck.IsRunningOnManagedProfileDuration",
                             endTime - startTime);
 
-                    return new Pair<>(hasProfileOwnerApp, hasDeviceOwnerApp);
+                    return new OwnedState(hasDeviceOwnerApp, hasProfileOwnerApp);
                 }
 
                 @Override
-                protected Pair<Boolean, Boolean> doInBackground() {
+                protected OwnedState doInBackground() {
                     Context context = ContextUtils.getApplicationContext();
-
                     return calculateIsRunningOnManagedProfile(context);
                 }
 
                 @Override
-                protected void onPostExecute(Pair<Boolean, Boolean> isManagedDevice) {
-                    assert isManagedDevice != null;
+                protected void onPostExecute(OwnedState result) {
+                    // This is run on the UI thread.
+                    assert result != null;
 
-                    RecordHistogram.recordBooleanHistogram(
-                            "EnterpriseCheck.IsManaged", isManagedDevice.first);
-                    RecordHistogram.recordBooleanHistogram(
-                            "EnterpriseCheck.IsFullyManaged", isManagedDevice.second);
+                    sOwnedState = result;
+                    // Notify every waiting callback.
+                    while (sCallbackList.size() > 0) {
+                        sCallbackList.remove().onResult(sOwnedState);
+                    }
                 }
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }.executeWithTaskTraits(TaskTraits.USER_VISIBLE);
         } catch (RejectedExecutionException e) {
-            // Fail silently here since this is not a critical task.
+            // This is an extreme edge case, but if it does happen then return null to indicate we
+            // couldn't execute.
+            Log.w(TAG, "Thread limit reached, unable to determine managed state.");
+
+            // There will only ever be a single item in the queue as we only try()/catch() on the
+            // first item.
+            sCallbackList.remove().onResult(null);
         }
+    }
+
+    private static void recordManagementHistograms(OwnedState state) {
+        if (state == null) return;
+
+        RecordHistogram.recordBooleanHistogram("EnterpriseCheck.IsManaged", state.mProfileOwned);
+        RecordHistogram.recordBooleanHistogram(
+                "EnterpriseCheck.IsFullyManaged", state.mDeviceOwned);
     }
 }

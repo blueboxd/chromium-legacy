@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
@@ -439,7 +440,9 @@ void ImageCapture::SetMediaTrackConstraints(
   }
 
   auto settings = media::mojom::blink::PhotoSettings::New();
-  MediaTrackConstraintSet* temp_constraints = current_constraints_;
+  MediaTrackConstraintSet* temp_constraints =
+      current_constraints_ ? current_constraints_.Get()
+                           : MediaTrackConstraintSet::Create();
 
   // TODO(mcasas): support other Mode types beyond simple string i.e. the
   // equivalents of "sequence<DOMString>"" or "ConstrainDOMStringParameters".
@@ -693,12 +696,79 @@ void ImageCapture::SetMediaTrackConstraints(
                 WrapPersistent(resolver), false /* trigger_take_photo */));
 }
 
+void ImageCapture::SetPanTiltZoomSettingsFromTrack(
+    media::mojom::blink::PhotoStatePtr photo_state) {
+  UpdateMediaTrackCapabilities(std::move(photo_state));
+
+  MediaStreamVideoTrack* video_track =
+      MediaStreamVideoTrack::GetVideoTrack(stream_track_->Component());
+  DCHECK(video_track);
+
+  base::Optional<double> pan = video_track->pan();
+  base::Optional<double> tilt = video_track->tilt();
+  base::Optional<double> zoom = video_track->zoom();
+
+  if (!pan.has_value() && !tilt.has_value() && !zoom.has_value())
+    return;
+
+  ExecutionContext* context = GetExecutionContext();
+  if (pan.has_value())
+    UseCounter::Count(context, WebFeature::kImageCapturePan);
+  if (tilt.has_value())
+    UseCounter::Count(context, WebFeature::kImageCaptureTilt);
+  if (zoom.has_value())
+    UseCounter::Count(context, WebFeature::kImageCaptureZoom);
+
+  if (!HasPanTiltZoomPermissionGranted())
+    return;
+
+  if (!capabilities_->hasPan() && !capabilities_->hasTilt() &&
+      !capabilities_->hasZoom()) {
+    return;
+  }
+
+  if (!service_.is_bound())
+    return;
+
+  auto settings = media::mojom::blink::PhotoSettings::New();
+
+  if (capabilities_->hasPan() && pan.has_value() &&
+      pan.value() >= capabilities_->pan()->min() &&
+      pan.value() <= capabilities_->pan()->max()) {
+    settings->has_pan = true;
+    settings->pan = pan.value();
+  }
+  if (capabilities_->hasTilt() && tilt.has_value() &&
+      tilt.value() >= capabilities_->tilt()->min() &&
+      tilt.value() <= capabilities_->tilt()->max()) {
+    settings->has_tilt = true;
+    settings->tilt = tilt.value();
+  }
+  if (capabilities_->hasZoom() && zoom.has_value() &&
+      zoom.value() >= capabilities_->zoom()->min() &&
+      zoom.value() <= capabilities_->zoom()->max()) {
+    settings->has_zoom = true;
+    settings->zoom = zoom.value();
+  }
+
+  service_->SetOptions(
+      stream_track_->Component()->Source()->Id(), std::move(settings),
+      WTF::Bind(&ImageCapture::OnSetPanTiltZoomSettingsFromTrack,
+                WrapPersistent(this)));
+}
+
+void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(bool result) {
+  service_->GetPhotoState(stream_track_->Component()->Source()->Id(),
+                          WTF::Bind(&ImageCapture::UpdateMediaTrackCapabilities,
+                                    WrapPersistent(this)));
+}
+
 const MediaTrackConstraintSet* ImageCapture::GetMediaTrackConstraints() const {
   return current_constraints_;
 }
 
 void ImageCapture::ClearMediaTrackConstraints() {
-  current_constraints_ = MediaTrackConstraintSet::Create();
+  current_constraints_ = nullptr;
 
   // TODO(mcasas): Clear also any PhotoSettings that the device might have got
   // configured, for that we need to know a "default" state of the device; take
@@ -769,7 +839,6 @@ ImageCapture::ImageCapture(ExecutionContext* context,
       permission_observer_receiver_(this, context),
       capabilities_(MediaTrackCapabilities::Create()),
       settings_(MediaTrackSettings::Create()),
-      current_constraints_(MediaTrackConstraintSet::Create()),
       photo_settings_(PhotoSettings::Create()) {
   DCHECK(stream_track_);
   DCHECK(!service_.is_bound());
@@ -789,9 +858,10 @@ ImageCapture::ImageCapture(ExecutionContext* context,
 
   // Launch a retrieval of the current photo state, which arrive asynchronously
   // to avoid blocking the main UI thread.
-  service_->GetPhotoState(stream_track_->Component()->Source()->Id(),
-                          WTF::Bind(&ImageCapture::UpdateMediaTrackCapabilities,
-                                    WrapPersistent(this)));
+  service_->GetPhotoState(
+      stream_track_->Component()->Source()->Id(),
+      WTF::Bind(&ImageCapture::SetPanTiltZoomSettingsFromTrack,
+                WrapPersistent(this)));
 
   ConnectToPermissionService(
       context, permission_service_.BindNewPipeAndPassReceiver(

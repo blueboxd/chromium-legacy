@@ -3812,6 +3812,20 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Extensions.WebRequest.KeepaliveRequestFinished">
+  <owner>yhirano@chromium.org</owner>
+  <owner>kinuko@chromium.org</owner>
+  <summary>
+    Whether and how keepalive requests are blocked. Recorded when a keepalive
+    request finishes.
+  </summary>
+  <metric name="State" enum="ExtensionInProgressRequestState">
+    <summary>
+      The final state of the request.
+    </summary>
+  </metric>
+</event>
+
 <event name="FontMatchAttempts">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>

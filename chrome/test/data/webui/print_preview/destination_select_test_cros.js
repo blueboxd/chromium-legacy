@@ -37,7 +37,7 @@ suite(printer_status_test_cros.suiteName, function() {
        printerId: 'ID1',
        statusReasons: [{
          reason: PrinterStatusReason.NO_ERROR,
-         severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+         severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
        }],
      },
      {
@@ -45,11 +45,11 @@ suite(printer_status_test_cros.suiteName, function() {
        statusReasons: [
          {
            reason: PrinterStatusReason.NO_ERROR,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          },
          {
            reason: PrinterStatusReason.LOW_ON_PAPER,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          }
        ],
      },
@@ -58,7 +58,7 @@ suite(printer_status_test_cros.suiteName, function() {
        statusReasons: [
          {
            reason: PrinterStatusReason.NO_ERROR,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          },
          {
            reason: PrinterStatusReason.LOW_ON_PAPER,
@@ -71,7 +71,7 @@ suite(printer_status_test_cros.suiteName, function() {
        statusReasons: [
          {
            reason: PrinterStatusReason.NO_ERROR,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          },
          {
            reason: PrinterStatusReason.LOW_ON_PAPER,
@@ -84,7 +84,7 @@ suite(printer_status_test_cros.suiteName, function() {
        statusReasons: [
          {
            reason: PrinterStatusReason.NO_ERROR,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          },
          {
            reason: PrinterStatusReason.LOW_ON_PAPER,
@@ -97,7 +97,7 @@ suite(printer_status_test_cros.suiteName, function() {
        statusReasons: [
          {
            reason: PrinterStatusReason.DEVICE_ERROR,
-           severity: PrinterStatusSeverity.UNKOWN_SEVERITY
+           severity: PrinterStatusSeverity.UNKNOWN_SEVERITY
          },
          {
            reason: PrinterStatusReason.PRINTER_QUEUE_FULL,

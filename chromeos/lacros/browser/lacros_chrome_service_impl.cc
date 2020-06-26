@@ -23,6 +23,10 @@ LacrosChromeServiceImpl* LacrosChromeServiceImpl::Get() {
 LacrosChromeServiceImpl::LacrosChromeServiceImpl()
     : pending_ash_chrome_service_receiver_(
           ash_chrome_service_.BindNewPipeAndPassReceiver()) {
+  // Bind remote interfaces in ash-chrome.
+  ash_chrome_service_->BindSelectFile(
+      select_file_remote_.BindNewPipeAndPassReceiver());
+
   DCHECK(!g_instance);
   g_instance = this;
 }

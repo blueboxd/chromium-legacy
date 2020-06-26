@@ -1025,11 +1025,10 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   promise_image_access_helper_.EndAccess();
   scoped_output_device_paint_.reset();
 
-  if (output_surface_plane_) {
+  if (output_surface_plane_)
     DCHECK(output_device_->IsPrimaryPlaneOverlay());
-    output_device_->SchedulePrimaryPlane(output_surface_plane_.value());
-    output_surface_plane_.reset();
-  }
+  output_device_->SchedulePrimaryPlane(output_surface_plane_);
+  output_surface_plane_.reset();
 
   if (frame.sub_buffer_rect) {
     if (capabilities().supports_post_sub_buffer) {

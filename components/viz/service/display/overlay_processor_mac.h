@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_MAC_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -68,6 +69,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorMac
   const bool could_overlay_;
   const bool enable_ca_overlay_;
   gfx::Rect ca_overlay_damage_rect_;
+  gfx::Rect previous_frame_full_bounding_rect_;
 
  protected:
   // Protected for testing.

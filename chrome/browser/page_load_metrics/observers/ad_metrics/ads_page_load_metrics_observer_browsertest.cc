@@ -482,13 +482,23 @@ IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
       OriginStatus::kUnknown, OriginStatusWithThrottling::kUnknownAndThrottled);
 }
 
+// Flakily fails on Windows only. https://crbug.com/1099545
+#if defined(OS_WIN)
+#define MAYBE_CreativeOriginStatusWithThrottlingNestedUnthrottled \
+  DISABLED_CreativeOriginStatusWithThrottlingNestedUnthrottled
+#else
+#define MAYBE_CreativeOriginStatusWithThrottlingNestedUnthrottled \
+  CreativeOriginStatusWithThrottlingNestedUnthrottled
+#endif
+
 // Test that an ad creative with a different origin as the main page,
 // but nested in a same-origin root ad frame, such that its root ad frame
 // is outside the main frame but not throttled (because the root is
 // same-origin), will be marked as having unknown creative origin status
 // (since there will be no FCP) and being unthrottled.
-IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
-                       CreativeOriginStatusWithThrottlingNestedUnthrottled) {
+IN_PROC_BROWSER_TEST_F(
+    CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+    MAYBE_CreativeOriginStatusWithThrottlingNestedUnthrottled) {
   TestCreativeOriginStatus(
       MakeFrame(
           "a",

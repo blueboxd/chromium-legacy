@@ -10,5 +10,4 @@ import "ui/accessibility/mojom/ax_tree_data.mojom";
 struct AXContentTreeData {
   ax.mojom.AXTreeData tree_data;
   int32 routing_id;
-  int32 parent_routing_id;
 };

@@ -13,7 +13,7 @@ namespace test {
 
 void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
   XDisplay* xdisplay = gfx::GetXDisplay();
-  x11::Window xwindow = host->GetAcceleratedWidget();
+  x11::Window xwindow = static_cast<x11::Window>(host->GetAcceleratedWidget());
   XEvent event = xevent;
   event.xany.display = xdisplay;
   event.xany.window = static_cast<uint32_t>(xwindow);

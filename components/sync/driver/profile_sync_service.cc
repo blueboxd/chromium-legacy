@@ -30,6 +30,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/bind_to_task_runner.h"
+#include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
@@ -48,7 +49,6 @@
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/sync_error.h"
-#include "components/sync/syncable/directory.h"
 #include "components/version_info/version_info_values.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -689,7 +689,7 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
       if (backend_task_runner_) {
         backend_task_runner_->PostTask(
             FROM_HERE,
-            base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
+            base::BindOnce(&DeleteLegacyDirectoryFilesAndNigoriStorage,
                            sync_client_->GetSyncDataPath()));
       }
       sync_prefs_.ClearLocalSyncTransportData();

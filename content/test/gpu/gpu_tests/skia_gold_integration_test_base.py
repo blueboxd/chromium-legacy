@@ -414,9 +414,13 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     use_luci = not (gold_properties.local_pixel_tests
                     or gold_properties.no_luci_auth)
 
-    status, error = gold_session.RunComparison(name=image_name,
-                                               png_file=png_temp_file,
-                                               use_luci=use_luci)
+    inexact_matching_args = page.matching_algorithm.GetCmdline()
+
+    status, error = gold_session.RunComparison(
+        name=image_name,
+        png_file=png_temp_file,
+        inexact_matching_args=inexact_matching_args,
+        use_luci=use_luci)
     if not status:
       return
 

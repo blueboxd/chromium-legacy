@@ -285,7 +285,10 @@ void TestMoveLoop::EndMoveLoop() {
 SimpleTestDragDropClient::SimpleTestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
-    : ui::XDragDropClient(this, window->GetHost()->GetAcceleratedWidget()) {}
+    : ui::XDragDropClient(
+          this,
+          static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
+}
 
 SimpleTestDragDropClient::~SimpleTestDragDropClient() = default;
 
@@ -390,7 +393,9 @@ TestDragDropClient::TestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
     : SimpleTestDragDropClient(window, cursor_manager),
-      source_window_(window->GetHost()->GetAcceleratedWidget()) {}
+      source_window_(
+          static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
+}
 
 TestDragDropClient::~TestDragDropClient() = default;
 

@@ -104,11 +104,13 @@ class SkiaOutputDevice {
   // Whether the output device's primary plane is an overlay. This returns true
   // is the SchedulePrimaryPlane function is implemented.
   virtual bool IsPrimaryPlaneOverlay() const;
+
   // Schedule the output device's back buffer as an overlay plane. The scheduled
   // primary plane will be on screen when SwapBuffers() or PostSubBuffer() is
   // called.
   virtual void SchedulePrimaryPlane(
-      const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane);
+      const base::Optional<
+          OverlayProcessorInterface::OutputSurfaceOverlayPlane>& plane);
 
   // Schedule overlays which will be on screen when SwapBuffers() or
   // PostSubBuffer() is called.

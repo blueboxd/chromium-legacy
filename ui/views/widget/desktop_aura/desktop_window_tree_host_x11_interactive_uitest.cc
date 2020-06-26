@@ -143,8 +143,8 @@ class DesktopWindowTreeHostX11Test : public test::DesktopWidgetTestInteractive {
 TEST_F(DesktopWindowTreeHostX11Test, Deactivate) {
   std::unique_ptr<Widget> widget(CreateWidget(gfx::Rect(100, 100, 100, 100)));
 
-  ActivationWaiter waiter(
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ActivationWaiter waiter(static_cast<x11::Window>(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget()));
   widget->Show();
   widget->Activate();
   waiter.Wait();
@@ -244,8 +244,8 @@ TEST_F(DesktopWindowTreeHostX11Test, InputMethodFocus) {
 
   // Waiter should be created as early as possible so that PropertyNotify has
   // time to be set before widget is activated.
-  ActivationWaiter waiter(
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ActivationWaiter waiter(static_cast<x11::Window>(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget()));
 
   std::unique_ptr<Textfield> textfield(new Textfield);
   textfield->SetBounds(0, 0, 200, 20);

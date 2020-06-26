@@ -64,6 +64,7 @@
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_page.h"
+#include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/base_export.h"
 #include "base/bits.h"
@@ -460,26 +461,42 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     PA_DCHECK(raw_size == size);
     new_slot_size = raw_size;
   }
-  size_t no_cookie_size =
-      internal::PartitionCookieSizeAdjustSubtract(new_slot_size);
-  char* char_ret = static_cast<char*>(ret);
+  // Layout inside the slot: |tag|cookie|object|[empty]|cookie|
+  //                                    <--a--->
+  //                                    <------b------->
+  //                         <---------------c---------------->
+  //   a: size
+  //   b: size_with_no_extras
+  //   c: new_slot_size
+  // Note, empty space occurs if the slot size is larger than needed to
+  // accommodate the request.
+  size_t size_with_no_extras = internal::PartitionTagSizeAdjustSubtract(
+      internal::PartitionCookieSizeAdjustSubtract(new_slot_size));
+  char* char_ret = static_cast<char*>(ret) + internal::kPartitionTagSize;
   // The value given to the application is actually just after the cookie.
   ret = char_ret + internal::kCookieSize;
 
   // Fill the region kUninitializedByte or 0, and surround it with 2 cookies.
   internal::PartitionCookieWriteValue(char_ret);
   if (!zero_fill) {
-    memset(ret, kUninitializedByte, no_cookie_size);
+    memset(ret, kUninitializedByte, size_with_no_extras);
   } else if (!is_already_zeroed) {
-    memset(ret, 0, no_cookie_size);
+    memset(ret, 0, size_with_no_extras);
   }
   internal::PartitionCookieWriteValue(char_ret + internal::kCookieSize +
-                                      no_cookie_size);
+                                      size_with_no_extras);
 #else
-  if (ret && zero_fill && !is_already_zeroed) {
-    memset(ret, 0, size);
+  if (!ret)
+    return nullptr;
+
+  ret = static_cast<char*>(ret) + internal::kPartitionTagSize;
+  if (zero_fill && !is_already_zeroed) {
+    memset(ret, 0, internal::PartitionTagSizeAdjustSubtract(size));
   }
 #endif
+  // TODO(tasak): initialize tag randomly. Temporarily use
+  // kTagTemporaryInitialValue to initialize the tag.
+  internal::PartitionTagSetValue(ret, internal::kTagTemporaryInitialValue);
 
   return ret;
 }
@@ -500,7 +517,10 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
       return;
   }
 
+  // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
+  internal::PartitionTagSetValue(ptr, 0);
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  ptr = internal::PartitionTagFreePointerAdjust(ptr);
   Page* page = Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   PA_DCHECK(IsValidPage(page));
@@ -616,8 +636,12 @@ PartitionAllocGetPageForSize(void* ptr) {
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  ptr = internal::PartitionTagFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
-  return internal::PartitionCookieSizeAdjustSubtract(page->bucket->slot_size);
+  size_t size =
+      internal::PartitionCookieSizeAdjustSubtract(page->bucket->slot_size);
+  size = internal::PartitionTagSizeAdjustSubtract(size);
+  return size;
 }
 
 // Gets the offset from the beginning of the allocated slot, adjusted for cookie
@@ -628,6 +652,7 @@ template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   PA_DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  ptr = internal::PartitionTagFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t slot_size = page->bucket->slot_size;
 
@@ -687,6 +712,10 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   }
   size_t requested_size = size;
   size = internal::PartitionCookieSizeAdjustAdd(size);
+  size = internal::PartitionTagSizeAdjustAdd(size);
+#if ENABLE_CHECKED_PTR
+  PA_CHECK(size >= requested_size);
+#endif
   auto* bucket = SizeToBucket(size);
   PA_DCHECK(bucket);
   {
@@ -730,6 +759,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
 #else
   PA_DCHECK(PartitionRoot<thread_safe>::initialized);
   size = internal::PartitionCookieSizeAdjustAdd(size);
+  size = internal::PartitionTagSizeAdjustAdd(size);
   auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
@@ -738,7 +768,9 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   } else {
     size = Bucket::get_direct_map_size(size);
   }
-  return internal::PartitionCookieSizeAdjustSubtract(size);
+  size = internal::PartitionCookieSizeAdjustSubtract(size);
+  size = internal::PartitionTagSizeAdjustSubtract(size);
+  return size;
 #endif
 }
 

@@ -257,8 +257,8 @@ class ProfileSyncService : public SyncService,
 
  private:
   // Passed as an argument to StopImpl to control whether or not the sync
-  // engine should clear its data directory when it shuts down. See StopImpl
-  // for more information.
+  // engine should clear its data when it shuts down. See StopImpl for more
+  // information.
   enum SyncStopDataFate {
     KEEP_DATA,
     CLEAR_DATA,

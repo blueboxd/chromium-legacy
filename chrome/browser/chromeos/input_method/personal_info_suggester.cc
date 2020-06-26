@@ -133,10 +133,11 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
     const InputMethodEngineBase::KeyboardEvent& event) {
   if (suggestion_shown_) {
     if (event.key == "Tab" || event.key == "Right") {
-      AcceptSuggestion();
-      IncrementPrefValueTilCapped(kPersonalInfoSuggesterTabAcceptanceCount,
-                                  kMaxTabAcceptanceCount);
-      return SuggestionStatus::kAccept;
+      if (AcceptSuggestion()) {
+        IncrementPrefValueTilCapped(kPersonalInfoSuggesterTabAcceptanceCount,
+                                    kMaxTabAcceptanceCount);
+        return SuggestionStatus::kAccept;
+      }
     } else if (event.key == "Esc") {
       DismissSuggestion();
       return SuggestionStatus::kDismiss;
@@ -290,15 +291,20 @@ AssistiveType PersonalInfoSuggester::GetProposeActionType() {
   return proposed_action_type_;
 }
 
-void PersonalInfoSuggester::AcceptSuggestion() {
+bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {
   std::string error;
-  suggestion_shown_ = false;
   suggestion_handler_->AcceptSuggestion(context_id_, &error);
+
   if (!error.empty()) {
     LOG(ERROR) << "Failed to accept suggestion. " << error;
+    return false;
   }
+
+  suggestion_shown_ = false;
   tts_handler_->Announce(base::StringPrintf(
       "Inserted suggestion %s.", base::UTF16ToUTF8(suggestion_).c_str()));
+
+  return true;
 }
 
 void PersonalInfoSuggester::DismissSuggestion() {

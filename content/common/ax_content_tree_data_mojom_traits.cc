@@ -17,8 +17,6 @@ bool StructTraits<
     return false;
 
   out->routing_id = data.routing_id();
-  out->parent_routing_id = data.parent_routing_id();
-
   return true;
 }
 

@@ -37,6 +37,7 @@
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
@@ -51,6 +52,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/text_input_manager.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -58,6 +60,7 @@
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/fake_frame_widget.h"
@@ -477,8 +480,14 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     auto* widget_host = MockRenderWidgetHostImpl::Create(
         delegates_.back().get(), process_host_, routing_id);
     delegates_.back()->set_widget_host(widget_host);
+    delegates_.back()->set_frame_tree(GetFrameTree());
     widget_host->Init();
     return new FakeRenderWidgetHostViewAura(widget_host);
+  }
+
+  FrameTree* GetFrameTree() {
+    DCHECK(web_contents_);
+    return static_cast<WebContentsImpl*>(web_contents_.get())->GetFrameTree();
   }
 
   void DestroyView(FakeRenderWidgetHostViewAura* view) {
@@ -504,11 +513,15 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
     sink_ = &process_host_->sink();
 
+    web_contents_ = WebContents::Create(WebContents::CreateParams(
+        browser_context_.get(), SiteInstance::Create(browser_context_.get())));
+
     int32_t routing_id = process_host_->GetNextRoutingID();
     delegates_.push_back(std::make_unique<MockRenderWidgetHostDelegate>());
     parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                     process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
+    delegates_.back()->set_frame_tree(GetFrameTree());
     parent_view_ = new RenderWidgetHostViewAura(parent_host_);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
@@ -531,6 +544,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_view_->Destroy();
     delete parent_host_;
 
+    web_contents_.reset();
     browser_context_.reset();
     aura_test_helper_->TearDown();
 
@@ -611,6 +625,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
+  std::unique_ptr<WebContents> web_contents_;
   std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;
   MockRenderProcessHost* process_host_;
 
@@ -3198,6 +3213,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                 process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
+    delegates_.back()->set_frame_tree(GetFrameTree());
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
     // Prevent frames from being skipped due to resize, this test does not
@@ -3312,6 +3328,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
     hosts[i] = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                 process_host_, routing_id);
     delegates_.back()->set_widget_host(hosts[i]);
+    delegates_.back()->set_frame_tree(GetFrameTree());
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
     views[i]->InitAsChild(nullptr);

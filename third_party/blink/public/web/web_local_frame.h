@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "v8/include/v8.h"
 
 namespace gfx {
@@ -492,6 +493,13 @@ class WebLocalFrame : public WebFrame {
   virtual void MoveCaretSelection(const gfx::Point&) = 0;
 
   virtual bool SetEditableSelectionOffsets(int start, int end) = 0;
+  virtual bool AddImeTextSpansToExistingText(
+      const WebVector<ui::ImeTextSpan>& ime_text_spans,
+      unsigned text_start,
+      unsigned text_end) = 0;
+  virtual bool ClearImeTextSpansByType(ui::ImeTextSpan::Type type,
+                                       unsigned text_start,
+                                       unsigned text_end) = 0;
   virtual bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,

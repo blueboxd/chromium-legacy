@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -79,9 +80,9 @@ class ImpressionObserver : public TestNavigationObserver {
   base::RunLoop impression_loop_;
 };
 
-class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
+class ImpressionDisabledBrowserTest : public ContentBrowserTest {
  public:
-  ImpressionDeclarationBrowserTest() {
+  ImpressionDisabledBrowserTest() {
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
     ConversionManagerImpl::RunInMemoryForTesting();
   }
@@ -112,6 +113,37 @@ class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+};
+
+// Verifies that impressions are not logged when the Runtime feature isn't
+// enabled.
+IN_PROC_BROWSER_TEST_F(ImpressionDisabledBrowserTest,
+                       ImpressionWithoutFeatureEnabled_NotReceived) {
+  ImpressionObserver impression_observer(web_contents());
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
+
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTag("link",
+                        "page_with_conversion_redirect.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick(\'link\');"));
+
+  // No impression should be observed.
+  EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+}
+
+class ImpressionDeclarationBrowserTest : public ImpressionDisabledBrowserTest {
+ public:
+  ImpressionDeclarationBrowserTest() = default;
+
+  // Sets up the blink runtime feature for ConversionMeasurement.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,

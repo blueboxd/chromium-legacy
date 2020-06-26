@@ -1181,6 +1181,27 @@ TEST_F('PrintPreviewDestinationDropdownCrosTest', 'Disabled', function() {
   this.runMochaTest(destination_dropdown_cros_test.TestNames.Disabled);
 });
 
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'HiddenDestinationBadge',
+    function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.HiddenDestinationBadge);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest',
+    'NewStatusUpdatesDestinationIcon', function() {
+      this.runMochaTest(destination_dropdown_cros_test.TestNames
+                            .NewStatusUpdatesDestinationIcon);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'ChangingDestinationUpdatesIcon',
+    function() {
+      this.runMochaTest(destination_dropdown_cros_test.TestNames
+                            .ChangingDestinationUpdatesIcon);
+    });
+
 GEN('#else');
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {

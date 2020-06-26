@@ -933,8 +933,11 @@ TEST_F(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
   Swap<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
-// TODO(keinakashima): add tests for NewLinkedHashSet after supporting
-// WeakMember
+TEST_F(IncrementalMarkingTest, HeapNewLinkedHashSetSwap) {
+  Swap<HeapNewLinkedHashSet<Member<Object>>>();
+  // Weak references are strongified for the current cycle.
+  Swap<HeapNewLinkedHashSet<WeakMember<Object>>>();
+}
 
 // =============================================================================
 // HeapHashCountedSet support. =================================================
@@ -1849,8 +1852,8 @@ class NewLinkedHashSetWrapper final
   void Trace(Visitor* v) const { v->Trace(hash_set_); }
 
   void Swap() {
-    HashType hash_set;
-    hash_set_.Swap(hash_set);
+    HashType* hash_set = MakeGarbageCollected<HashType>();
+    hash_set_.Swap(*hash_set);
   }
 
   HashType hash_set_;

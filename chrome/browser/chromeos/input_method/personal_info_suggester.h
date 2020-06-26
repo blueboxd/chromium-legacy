@@ -77,6 +77,8 @@ class PersonalInfoSuggester : public Suggester {
   SuggestionStatus HandleKeyEvent(
       const InputMethodEngineBase::KeyboardEvent& event) override;
   bool Suggest(const base::string16& text) override;
+  // index defaults to 0 as not required for this suggester.
+  bool AcceptSuggestion(size_t index = 0) override;
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
 
@@ -86,8 +88,6 @@ class PersonalInfoSuggester : public Suggester {
 
   void ShowSuggestion(const base::string16& text,
                       const size_t confirmed_length);
-
-  void AcceptSuggestion();
 
   int GetPrefValue(const std::string& pref_name);
 

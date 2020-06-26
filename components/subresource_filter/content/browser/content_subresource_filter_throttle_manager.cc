@@ -259,15 +259,26 @@ void ContentSubresourceFilterThrottleManager::OnPageActivationComputed(
     const mojom::ActivationState& activation_state) {
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted());
-  // Do not notify the throttle if activation is disabled.
-  if (activation_state.activation_level == mojom::ActivationLevel::kDisabled)
-    return;
 
   auto it = ongoing_activation_throttles_.find(navigation_handle);
-  if (it != ongoing_activation_throttles_.end()) {
-    it->second->NotifyPageActivationWithRuleset(EnsureRulesetHandle(),
-                                                activation_state);
+  if (it == ongoing_activation_throttles_.end())
+    return;
+
+  // The subresource filter normally operates in DryRun mode, disabled
+  // activation should only be supplied in cases where DryRun mode is not
+  // otherwise preferable. If the activation level is disabled, we do not want
+  // to run any portion of the subresource filter on this navigation/frame. By
+  // deleting the activation throttle, we prevent an associated
+  // DocumentSubresourceFilter from being created at commit time. This
+  // intentionally disables AdTagging and all dependent features for this
+  // navigation/frame.
+  if (activation_state.activation_level == mojom::ActivationLevel::kDisabled) {
+    ongoing_activation_throttles_.erase(it);
+    return;
   }
+
+  it->second->NotifyPageActivationWithRuleset(EnsureRulesetHandle(),
+                                              activation_state);
 }
 
 void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(

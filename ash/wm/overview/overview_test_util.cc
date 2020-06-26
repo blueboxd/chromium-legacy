@@ -4,15 +4,36 @@
 
 #include "ash/wm/overview/overview_test_util.h"
 
+#include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
+
+namespace {
+
+void WaitForOverviewAnimationState(OverviewAnimationState state) {
+  // Early out if animations are disabled.
+  if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
+    return;
+  }
+
+  base::RunLoop run_loop;
+  OverviewTestApi().WaitForOverviewState(
+      state, base::BindLambdaForTesting([&](bool) { run_loop.Quit(); }));
+  run_loop.Run();
+}
+
+}  // namespace
 
 // TODO(sammiequon): Consider adding an overload for this function to trigger
 // the key event |count| times.
@@ -50,6 +71,15 @@ void ToggleOverview(OverviewEnterExitType type) {
     overview_controller->EndOverview(type);
   else
     overview_controller->StartOverview(type);
+}
+
+void WaitForOverviewEnterAnimation() {
+  WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+}
+
+void WaitForOverviewExitAnimation() {
+  WaitForOverviewAnimationState(OverviewAnimationState::kExitAnimationComplete);
 }
 
 OverviewSession* GetOverviewSession() {

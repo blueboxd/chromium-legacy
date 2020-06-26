@@ -191,7 +191,9 @@ class UIControlsX11 : public UIControlsAura {
   void RunClosureAfterAllPendingUIEvents(base::OnceClosure closure) {
     if (closure.is_null())
       return;
-    ui::XEventWaiter::Create(host_->GetAcceleratedWidget(), std::move(closure));
+    ui::XEventWaiter::Create(
+        static_cast<x11::Window>(host_->GetAcceleratedWidget()),
+        std::move(closure));
   }
 
  private:

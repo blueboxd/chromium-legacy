@@ -125,11 +125,12 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 || ChromeAccessibilityUtil.isHardwareKeyboardAttached(
                         mActivity.getResources().getConfiguration());
 
+        Profile profile = Profile.getLastUsedRegularProfile();
+        if (isIncognito) profile = profile.getOffTheRecordProfile();
         mSelectionDelegate = new SelectionDelegate<>();
         mSelectionDelegate.addObserver(this);
         mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this,
-                sProviderForTests != null ? sProviderForTests
-                                          : new BrowsingHistoryBridge(isIncognito));
+                sProviderForTests != null ? sProviderForTests : new BrowsingHistoryBridge(profile));
 
         // 1. Create SelectableListLayout.
         mSelectableListLayout =

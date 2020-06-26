@@ -28,19 +28,12 @@
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_status_observer.h"
-#include "components/sync/syncable/user_share.h"
 #include "url/gurl.h"
 
 namespace syncer {
 
 class ModelTypeController;
 class SyncEngineImpl;
-
-namespace syncable {
-
-class NigoriHandlerProxy;
-
-}  // namespace syncable
 
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
                           public base::trace_event::MemoryDumpProvider,
@@ -141,16 +134,14 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // The shutdown order is a bit complicated:
   // 1) Call ShutdownOnUIThread() from |frontend_loop_| to request sync manager
   //    to stop as soon as possible.
-  // 2) Post DoShutdown() to sync loop to clean up backend state, save
-  //    directory and destroy sync manager.
+  // 2) Post DoShutdown() to sync loop to clean up backend state and destroy
+  //    sync manager.
   void ShutdownOnUIThread();
   void DoShutdown(ShutdownReason reason);
   void DoDestroySyncManager();
 
   // Configuration methods that must execute on sync loop.
-  void DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
-                            const ModelTypeSet& to_journal,
-                            const ModelTypeSet& to_unapply);
+  void DoPurgeDisabledTypes(const ModelTypeSet& to_purge);
   void DoConfigureSyncer(ModelTypeConfigurer::ConfigureParams params);
   void DoFinishConfigureDataTypes(
       ModelTypeSet types_to_config,
@@ -227,16 +218,8 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Our encryptor, which uses Chrome's encryption functions.
   SystemEncryptor encryptor_;
 
-  // We hold |user_share_| here as a dependency for |sync_encryption_handler_|.
-  // Should outlive |sync_encryption_handler_| and |sync_manager_|.
-  UserShare user_share_;
-
-  // Points to either SyncEncryptionHandlerImpl or NigoriSyncBridgeImpl
-  // depending on whether USS implementation of Nigori is enabled or not.
   // Should outlive |sync_manager_|.
   std::unique_ptr<SyncEncryptionHandler> sync_encryption_handler_;
-
-  std::unique_ptr<syncable::NigoriHandlerProxy> nigori_handler_proxy_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   std::unique_ptr<SyncManager> sync_manager_;

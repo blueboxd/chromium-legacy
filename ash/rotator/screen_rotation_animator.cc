@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
@@ -23,6 +24,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -183,20 +185,12 @@ ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
     : root_window_(root_window),
       screen_rotation_state_(IDLE),
       rotation_request_id_(0),
-      metrics_reporter_(std::make_unique<ui::HistogramPercentageMetricsReporter<
-                            kRotationAnimationSmoothness>>()),
       disable_animation_timers_for_test_(false) {}
 
 ScreenRotationAnimator::~ScreenRotationAnimator() {
   // To prevent a call to |AnimationEndedCallback()| from calling a method on
   // the |animator_|.
   weak_factory_.InvalidateWeakPtrs();
-
-  // Explicitly reset the |old_layer_tree_owner_| and |metrics_reporter_| in
-  // order to make sure |metrics_reporter_| outlives the attached animation
-  // sequence.
-  old_layer_tree_owner_.reset();
-  metrics_reporter_.reset();
 }
 
 void ScreenRotationAnimator::StartRotationAnimation(
@@ -462,8 +456,11 @@ void ScreenRotationAnimator::AnimateRotation(
       new_layer_animator->set_disable_timer_for_test(true);
     old_layer_animator->set_disable_timer_for_test(true);
   }
-  old_layer_animation_sequence->SetAnimationMetricsReporter(
-      metrics_reporter_.get());
+  ui::AnimationThroughputReporter reporter(
+      old_layer_animator,
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        UMA_HISTOGRAM_PERCENTAGE(kRotationAnimationSmoothness, smoothness);
+      })));
 
   // Add an observer so that the cloned/copied layers can be cleaned up with the
   // animation completes/aborts.

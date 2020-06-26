@@ -2057,6 +2057,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // AXTreeData structure.
   void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
 
+  // Returns the AXTreeID of the parent when the current frame is a child frame
+  // (i.e. not a main frame) or when it's an embedded browser plugin guest, or
+  // ui::AXTreeIDUnknown() otherwise.
+  ui::AXTreeID GetParentAXTreeID();
+
   // Callback in response to an accessibility hit test triggered by
   // AccessibilityHitTest.
   void AccessibilityHitTestCallback(

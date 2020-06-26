@@ -931,6 +931,7 @@ test("content_browsertests") {
     "../browser/conversions/conversion_internals_browsertest.cc",
     "../browser/conversions/conversion_registration_browsertest.cc",
     "../browser/conversions/conversions_browsertest.cc",
+    "../browser/conversions/conversions_origin_trial_browsertest.cc",
     "../browser/conversions/impression_declaration_browsertest.cc",
     "../browser/cross_origin_opener_policy_browsertest.cc",
     "../browser/cross_site_transfer_browsertest.cc",

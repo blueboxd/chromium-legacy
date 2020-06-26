@@ -541,8 +541,9 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   // Only attach impressions for main frame navigations.
-  if (RuntimeEnabledFeatures::ConversionMeasurementEnabled() && target_frame &&
-      target_frame->IsMainFrame() && request.HasUserGesture() &&
+  if (RuntimeEnabledFeatures::ConversionMeasurementEnabled(
+          GetExecutionContext()) &&
+      target_frame && target_frame->IsMainFrame() && request.HasUserGesture() &&
       HasImpression()) {
     base::Optional<WebImpression> impression = GetImpressionForNavigation();
     if (impression)

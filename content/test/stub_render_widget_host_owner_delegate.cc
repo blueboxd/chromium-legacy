@@ -30,8 +30,4 @@ StubRenderWidgetHostOwnerDelegate::GetWebkitPreferencesForWidget() {
   return {};
 }
 
-FrameTreeNode* StubRenderWidgetHostOwnerDelegate::GetFocusedFrame() {
-  return nullptr;
-}
-
 }  // namespace content

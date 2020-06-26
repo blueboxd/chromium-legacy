@@ -71,7 +71,12 @@ class SkiaGoldSession(object):
     self._authenticated = False
     self._initialized = False
 
-  def RunComparison(self, name, png_file, output_manager, use_luci=True):
+  def RunComparison(self,
+                    name,
+                    png_file,
+                    output_manager,
+                    inexact_matching_args=None,
+                    use_luci=True):
     """Helper method to run all steps to compare a produced image.
 
     Handles authentication, itnitialization, comparison, and, if necessary,
@@ -80,10 +85,13 @@ class SkiaGoldSession(object):
     Args:
       name: The name of the image being compared.
       png_file: A path to a PNG file containing the image to be compared.
-       output_manager: An output manager to use to store diff links. The
+      output_manager: An output manager to use to store diff links. The
           argument's type depends on what type a subclasses' _StoreDiffLinks
           implementation expects. Can be None even if _StoreDiffLinks expects
           a valid input, but will fail if it ever actually needs to be used.
+      inexact_matching_args: A list of strings containing extra command line
+          arguments to pass to Gold for inexact matching. Can be omitted to use
+          exact matching.
       use_luci: If true, authentication will use the service account provided by
           the LUCI context. If false, will attempt to use whatever is set up in
           gsutil, which is only supported for local runs.
@@ -101,7 +109,10 @@ class SkiaGoldSession(object):
     if init_rc:
       return self.StatusCodes.INIT_FAILURE, init_stdout
 
-    compare_rc, compare_stdout = self.Compare(name=name, png_file=png_file)
+    compare_rc, compare_stdout = self.Compare(
+        name=name,
+        png_file=png_file,
+        inexact_matching_args=inexact_matching_args)
     if not compare_rc:
       return self.StatusCodes.SUCCESS, None
 
@@ -210,7 +221,7 @@ class SkiaGoldSession(object):
       self._initialized = True
     return rc, stdout
 
-  def Compare(self, name, png_file):
+  def Compare(self, name, png_file, inexact_matching_args=None):
     """Compares the given image to images known to Gold.
 
     Triage links can later be retrieved using GetTriageLink().
@@ -218,6 +229,9 @@ class SkiaGoldSession(object):
     Args:
       name: The name of the image being compared.
       png_file: A path to a PNG file containing the image to be compared.
+      inexact_matching_args: A list of strings containing extra command line
+          arguments to pass to Gold for inexact matching. Can be omitted to use
+          exact matching.
 
     Returns:
       A tuple (return_code, output). |return_code| is the return code of the
@@ -242,6 +256,10 @@ class SkiaGoldSession(object):
     ]
     if self._gold_properties.local_pixel_tests:
       compare_cmd.append('--dryrun')
+    if inexact_matching_args:
+      logging.info('Using inexact matching arguments for image %s: %s', name,
+                   inexact_matching_args)
+      compare_cmd.extend(inexact_matching_args)
 
     self._ClearTriageLinkFile()
     rc, stdout = self._RunCmdForRcAndOutput(compare_cmd)

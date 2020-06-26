@@ -60,6 +60,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -224,6 +226,15 @@ class SplitViewControllerTest : public MultiDisplayOverviewAndSplitViewTest {
                                        std::vector<int>&& enter_counts,
                                        std::vector<int>&& exit_counts) {
     CheckForDuplicateTraceName(trace);
+
+    // Overview histograms recorded via ui::ThroughputTracker is reported
+    // on the next frame presented after animation stops. Wait for the next
+    // frame with a 100ms timeout for the report, regardless of whether there
+    // is a next frame.
+    ignore_result(ui::WaitForNextFrameToBePresented(
+        Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
+        base::TimeDelta::FromMilliseconds(100)));
+
     {
       SCOPED_TRACE(trace + std::string(".Enter"));
       CheckOverviewHistogram("Ash.Overview.AnimationSmoothness.Enter",
@@ -562,6 +573,9 @@ TEST_P(SplitViewControllerTest, WindowActivationTest) {
 // screen is occupied by the overview windows grid, the next activatable window
 // will be picked to snap when exiting the overview mode.
 TEST_P(SplitViewControllerTest, ExitOverviewTest) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -569,6 +583,7 @@ TEST_P(SplitViewControllerTest, ExitOverviewTest) {
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
 
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   CheckOverviewEnterExitHistogram("EnterInTablet", {1, 0}, {0, 0});
 
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -581,6 +596,7 @@ TEST_P(SplitViewControllerTest, ExitOverviewTest) {
   wm::ActivateWindow(window1.get());
 
   ToggleOverview();
+  WaitForOverviewExitAnimation();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   EXPECT_EQ(split_view_controller()->right_window(), window3.get());
@@ -592,6 +608,9 @@ TEST_P(SplitViewControllerTest, ExitOverviewTest) {
 // windows grid should show in the non-default side of the screen, and the
 // default snapped window should not be shown in the overview window grid.
 TEST_P(SplitViewControllerTest, EnterOverviewModeTest) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -605,6 +624,7 @@ TEST_P(SplitViewControllerTest, EnterOverviewModeTest) {
   EXPECT_EQ(split_view_controller()->GetDefaultSnappedWindow(), window1.get());
 
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   CheckOverviewEnterExitHistogram("EnterInSplitView", {0, 1}, {0, 0});
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kLeftSnapped);
@@ -613,6 +633,7 @@ TEST_P(SplitViewControllerTest, EnterOverviewModeTest) {
                      split_view_controller()->GetDefaultSnappedWindow()));
 
   ToggleOverview();
+  WaitForOverviewExitAnimation();
   CheckOverviewEnterExitHistogram("ExitInSplitView", {0, 1}, {0, 1});
 }
 
@@ -1416,7 +1437,11 @@ TEST_P(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
 // Verify that split view mode get activated when long pressing on the overview
 // button while in overview mode iff we have at least one window.
 TEST_P(SplitViewControllerTest, LongPressInOverviewMode) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
   CheckOverviewEnterExitHistogram("EnterInTablet", {0, 0}, {0, 0});
@@ -1433,6 +1458,7 @@ TEST_P(SplitViewControllerTest, LongPressInOverviewMode) {
   CheckOverviewEnterExitHistogram("ExitByActivation", {0, 0}, {0, 0});
 
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   CheckOverviewEnterExitHistogram("EnterInTablet2", {1, 0}, {0, 0});
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
@@ -2143,6 +2169,9 @@ TEST_P(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
 // overview to end overview causes a window to snap, we should not have the
 // exiting animation.
 TEST_P(SplitViewControllerTest, OverviewExitAnimationTest) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2153,16 +2182,20 @@ TEST_P(SplitViewControllerTest, OverviewExitAnimationTest) {
   std::unique_ptr<OverviewStatesObserver> overview_observer =
       std::make_unique<OverviewStatesObserver>(window1->GetRootWindow());
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ToggleOverview();
+  WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("NormalEnterExit", {1, 0}, {1, 0});
 
   // 2) If overview is ended because of activating a window:
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   // It will end overview.
   wm::ActivateWindow(window1.get());
+  WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("EnterExitByActivation", {2, 0}, {2, 0});
@@ -2173,6 +2206,7 @@ TEST_P(SplitViewControllerTest, OverviewExitAnimationTest) {
   // to ShellObserver list after SplitViewController.
   overview_observer.reset(new OverviewStatesObserver(window1->GetRootWindow()));
   ToggleOverview();  // Start overview.
+  WaitForOverviewEnterAnimation();
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   // Test |overview_animate_when_exiting_| has been properly reset.
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
@@ -2180,18 +2214,21 @@ TEST_P(SplitViewControllerTest, OverviewExitAnimationTest) {
 
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
+  WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("ExitBySnap", {2, 1}, {2, 1});
 
   // 4) If ending overview causes a window to snap:
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   // Test |overview_animate_when_exiting_| has been properly reset.
   EXPECT_TRUE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("EnterInSplitView2", {2, 2}, {2, 1});
 
   ToggleOverview();
+  WaitForOverviewExitAnimation();
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(overview_observer->overview_animate_when_exiting());
   CheckOverviewEnterExitHistogram("ExitInSplitView", {2, 2}, {2, 2});
@@ -3158,6 +3195,9 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
 // the overview mode is not active). See the expected behaviors described in
 // go/tab-dragging-in-tablet-mode.
 TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -3197,6 +3237,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   // be put back to its original position. Overview mode will be ended.
   DragWindowWithOffset(resizer.get(), 10, 10);
   CompleteDrag(std::move(resizer));
+  WaitForOverviewExitAnimation();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
@@ -3228,6 +3269,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   CheckOverviewEnterExitHistogram("DoNotExitInSplitViewByDrag", {0, 0}, {0, 1});
   // Snap |window2| again to test 1.c.
   split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+  WaitForOverviewExitAnimation();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   CheckOverviewEnterExitHistogram("ExitInSplitViewBySnap", {0, 0}, {0, 2});
@@ -3255,6 +3297,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   window1.reset(CreateWindowWithType(bounds, AppType::BROWSER));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
+  WaitForOverviewExitAnimation();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());
@@ -3336,6 +3379,9 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
 // overview grid is open on the other side of the screen. See the expected
 // behaviors described in go/tab-dragging-in-tablet-mode.
 TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
+  ui::ScopedAnimationDurationScaleMode anmatin_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -3350,6 +3396,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kLeftSnapped);
@@ -3377,6 +3424,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
             GetWindowDraggingState(resizer.get()));
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   CompleteDrag(std::move(resizer));
+  WaitForOverviewExitAnimation();
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMaximized());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -3390,6 +3438,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
   ToggleOverview();
+  WaitForOverviewEnterAnimation();
   CheckOverviewEnterExitHistogram("EnterInSplitView2", {0, 2}, {1, 0});
 
   resizer = StartDrag(window1.get(), window1.get());
@@ -3469,6 +3518,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
             GetWindowDraggingState(resizer.get()));
   CompleteDrag(std::move(resizer));
+  WaitForOverviewExitAnimation();
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window2.get());

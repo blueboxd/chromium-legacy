@@ -12,6 +12,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
+#include "chrome/renderer/prerender/prerender_observer.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
 #include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/renderer/context_menu_client.h"
@@ -24,6 +25,7 @@ class ChromePluginPlaceholder final
       public content::RenderThreadObserver,
       public content::ContextMenuClient,
       public chrome::mojom::PluginRenderer,
+      public prerender::PrerenderObserver,
       public gin::Wrappable<ChromePluginPlaceholder> {
  public:
   static gin::WrapperInfo kWrapperInfo;
@@ -86,9 +88,8 @@ class ChromePluginPlaceholder final
   void UpdateSuccess() override;
   void UpdateFailure() override;
 
-  // IPC message handlers:
-  void OnSetPrerenderMode(prerender::mojom::PrerenderMode mode,
-                          const std::string& histogram_prefix);
+  // prerender::PrerenderObserver methods:
+  void SetIsPrerendering(bool is_prerendering) override;
 
   chrome::mojom::PluginStatus status_;
 

@@ -22,6 +22,7 @@
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "chrome/renderer/prerender/prerender_observer_list.h"
 #include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "components/prerender/common/prerender_messages.h"
 #include "components/strings/grit/components_strings.h"
@@ -71,10 +72,14 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
       title_(title),
       context_menu_request_id_(0) {
   RenderThread::Get()->AddObserver(this);
+  prerender::PrerenderObserverList::AddObserverForFrame(render_frame, this);
 }
 
 ChromePluginPlaceholder::~ChromePluginPlaceholder() {
   RenderThread::Get()->RemoveObserver(this);
+  prerender::PrerenderObserverList::RemoveObserverForFrame(render_frame(),
+                                                           this);
+
   if (context_menu_request_id_ && render_frame())
     render_frame()->CancelContextMenu(context_menu_request_id_);
 }
@@ -180,7 +185,6 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   // We don't swallow these messages because multiple blocked plugins and other
   // objects have an interest in them.
   IPC_BEGIN_MESSAGE_MAP(ChromePluginPlaceholder, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetPrerenderMode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
   IPC_END_MESSAGE_MAP()
 
@@ -211,10 +215,8 @@ void ChromePluginPlaceholder::UpdateFailure() {
                                         plugin_name_));
 }
 
-void ChromePluginPlaceholder::OnSetPrerenderMode(
-    prerender::mojom::PrerenderMode mode,
-    const std::string& histogram_prefix) {
-  OnSetIsPrerendering(mode != prerender::mojom::PrerenderMode::kNoPrerender);
+void ChromePluginPlaceholder::SetIsPrerendering(bool is_prerendering) {
+  OnSetIsPrerendering(is_prerendering);
 }
 
 void ChromePluginPlaceholder::PluginListChanged() {

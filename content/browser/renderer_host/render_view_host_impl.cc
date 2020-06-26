@@ -524,10 +524,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {
   return GetWebkitPreferences();
 }
 
-FrameTreeNode* RenderViewHostImpl::GetFocusedFrame() {
-  return GetDelegate()->GetFrameTree()->GetFocusedFrame();
-}
-
 void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
                                          const ContextMenuParams& params) {
   GetDelegate()->GetDelegateView()->ShowContextMenu(render_frame_host, params);

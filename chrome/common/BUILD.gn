@@ -730,6 +730,7 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
+    "//components/prerender/common:mojo_bindings",
     "//content/public/common:client_hints_mojom",
     "//content/public/common:interfaces",
     "//mojo/public/mojom/base",

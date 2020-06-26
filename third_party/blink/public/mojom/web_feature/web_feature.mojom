@@ -2543,7 +2543,6 @@ enum WebFeature {
   kLegacyLayoutByDetailsMarker = 3206,
   kLegacyLayoutByEditing = 3207,
   kLegacyLayoutByFieldSet = 3208,
-  kLegacyLayoutByFileUploadControl = 3209,
   kLegacyLayoutByFlexBox = 3210,
   kLegacyLayoutByFrameSet = 3211,
   kLegacyLayoutByGrid = 3212,
@@ -2673,6 +2672,11 @@ enum WebFeature {
   kInlineOverflowScrollWithInlineEndPadding = 3336,
   kCSSSelectorPseudoWebKitDetailsMarker = 3337,
   kSerialPortGetInfo = 3338,
+  kFileSystemPickerMethod = 3339,
+  kV8Window_ShowOpenFilePicker_Method = 3340,
+  kV8Window_ShowSaveFilePicker_Method = 3341,
+  kV8Window_ShowDirectoryPicker_Method = 3342,
+  kV8Window_GetOriginPrivateDirectory_Method = 3343,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

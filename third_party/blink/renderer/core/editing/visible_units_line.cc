@@ -65,6 +65,11 @@ static PositionWithAffinity AdjustForSoftLineWrap(
     return position;
   const NGOffsetMapping* mapping =
       NGOffsetMapping::GetFor(position.GetPosition());
+  if (!mapping) {
+    // When |line_box| width has numeric overflow, |position| doesn't have
+    // mapping. See http://crbug.com/1098795
+    return position;
+  }
   const auto offset = mapping->GetTextContentOffset(position.GetPosition());
   if (offset == mapping->GetText().length())
     return position;

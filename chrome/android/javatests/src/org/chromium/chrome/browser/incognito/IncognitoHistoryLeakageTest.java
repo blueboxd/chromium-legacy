@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.TestParams;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -91,12 +92,16 @@ public class IncognitoHistoryLeakageTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    // TODO(crbug.com/1060940) : Passing a boolean is not sufficient because it can't differentiate
-    // between the history returned for incognito tab and CCT when they have isolated profiles.
-    private static List<HistoryItem> getBrowsingHistory(boolean incognito) throws TimeoutException {
+    /**
+     * Returns browsing history for the profile related to |tab|. If |tab| is
+     * null, the regular profile is used.
+     */
+    private static List<HistoryItem> getBrowsingHistory(Tab tab) throws TimeoutException {
         final TestBrowsingHistoryObserver historyObserver = new TestBrowsingHistoryObserver();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(incognito);
+            Profile profile = (tab == null) ? Profile.getLastUsedRegularProfile()
+                                            : Profile.fromWebContents(tab.getWebContents());
+            BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(profile);
             historyService.setObserver(historyObserver);
             String historyQueryFilter = "";
             historyService.queryHistory(historyQueryFilter);
@@ -135,24 +140,24 @@ public class IncognitoHistoryLeakageTest {
         Tab tab1 = incognitoActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage1);
 
-        List<HistoryItem> historyEntriesOfIncognitoMode = getBrowsingHistory(true);
+        List<HistoryItem> historyEntriesOfIncognitoMode = getBrowsingHistory(tab1);
         assertTrue(historyEntriesOfIncognitoMode.isEmpty());
 
         // History from regular should also be empty as well, as currently, incognito and regular
         // both share the same history service.
-        assertTrue(getBrowsingHistory(false).isEmpty());
+        assertTrue(getBrowsingHistory(null).isEmpty());
 
         // We visit mTestPage2 from regular
         Tab tab2 = regularActivity.launchUrl(
                 mChromeActivityTestRule, mCustomTabActivityTestRule, mTestPage2);
 
-        List<HistoryItem> regularBrowsingHistory = getBrowsingHistory(false);
+        List<HistoryItem> regularBrowsingHistory = getBrowsingHistory(tab2);
         assertEquals(1, regularBrowsingHistory.size());
         assertEquals(mTestPage2, regularBrowsingHistory.get(0).getUrl());
 
         // Since the history service is shared with incognito, getting browsing history for
         // incognito should return that of regular.
-        List<HistoryItem> incognitoBrowsingHistory = getBrowsingHistory(true);
+        List<HistoryItem> incognitoBrowsingHistory = getBrowsingHistory(tab1);
         assertEquals(1, incognitoBrowsingHistory.size());
         assertEquals(mTestPage2, incognitoBrowsingHistory.get(0).getUrl());
     }

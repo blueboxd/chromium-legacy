@@ -1398,6 +1398,50 @@ bool WebLocalFrameImpl::SetEditableSelectionOffsets(int start, int end) {
       PlainTextRange(start, end));
 }
 
+bool WebLocalFrameImpl::AddImeTextSpansToExistingText(
+    const WebVector<ui::ImeTextSpan>& ime_text_spans,
+    unsigned text_start,
+    unsigned text_end) {
+  TRACE_EVENT0("blink", "WebLocalFrameImpl::AddImeTextSpansToExistingText");
+
+  if (!GetFrame()->GetEditor().CanEdit())
+    return false;
+
+  InputMethodController& input_method_controller =
+      GetFrame()->GetInputMethodController();
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kEditing);
+
+  input_method_controller.AddImeTextSpansToExistingText(
+      ImeTextSpanVectorBuilder::Build(ime_text_spans), text_start, text_end);
+
+  return true;
+}
+bool WebLocalFrameImpl::ClearImeTextSpansByType(ui::ImeTextSpan::Type type,
+                                                unsigned text_start,
+                                                unsigned text_end) {
+  TRACE_EVENT0("blink", "WebLocalFrameImpl::ClearImeTextSpansByType");
+
+  if (!GetFrame()->GetEditor().CanEdit())
+    return false;
+
+  InputMethodController& input_method_controller =
+      GetFrame()->GetInputMethodController();
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kEditing);
+
+  input_method_controller.ClearImeTextSpansByType(ConvertUiTypeToType(type),
+                                                  text_start, text_end);
+
+  return true;
+}
+
 bool WebLocalFrameImpl::SetCompositionFromExistingText(
     int composition_start,
     int composition_end,

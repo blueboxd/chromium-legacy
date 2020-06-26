@@ -283,7 +283,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool IsMainFrameActive() override;
   bool IsNeverComposited() override;
   WebPreferences GetWebkitPreferencesForWidget() override;
-  FrameTreeNode* GetFocusedFrame() override;
 
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;

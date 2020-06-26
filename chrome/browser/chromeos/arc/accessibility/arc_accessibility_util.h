@@ -18,6 +18,8 @@
 
 namespace arc {
 class AccessibilityInfoDataWrapper;
+// This function is only called when EventType is WINDOW_STATE_CHANGED or
+// WINDOW_CONTENT_CHANGED.
 base::Optional<ax::mojom::Event> FromContentChangeTypesToAXEvent(
     const std::vector<int>& arc_content_change_types,
     const AccessibilityInfoDataWrapper& source_node);

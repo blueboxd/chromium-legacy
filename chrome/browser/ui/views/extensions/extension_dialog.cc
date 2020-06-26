@@ -202,10 +202,13 @@ ExtensionDialog::ExtensionDialog(
   gfx::Rect screen_rect = display::Screen::GetScreen()
                               ->GetDisplayNearestWindow(parent_window)
                               .work_area();
-  gfx::Rect bounds =
-      parent_window ? views::Widget::GetWidgetForNativeWindow(parent_window)
-                          ->GetWindowBoundsInScreen()
-                    : screen_rect;
+  gfx::Rect bounds = screen_rect;
+  if (parent_window) {
+    views::Widget* parent_widget =
+        views::Widget::GetWidgetForNativeWindow(parent_window);
+    if (parent_widget)
+      bounds = parent_widget->GetWindowBoundsInScreen();
+  }
   bounds.ClampToCenteredSize(init_params.size);
 
   // Make sure bounds is larger than {min_size}.

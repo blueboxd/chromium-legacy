@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
@@ -88,7 +89,8 @@ class AXTreeSnapshotter {
 // navigation. It provides communication with a corresponding RenderFrameHost
 // in the browser process.
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
-                                   public IPC::Sender {
+                                   public IPC::Sender,
+                                   public base::SupportsUserData {
  public:
   // These numeric values are used in UMA logs; do not change them.
   enum PeripheralContentStatus {

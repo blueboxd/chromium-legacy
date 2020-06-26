@@ -42,12 +42,6 @@ ModelTypeSet FakeSyncManager::GetAndResetPurgedTypes() {
   return purged_types;
 }
 
-ModelTypeSet FakeSyncManager::GetAndResetUnappliedTypes() {
-  ModelTypeSet unapplied_types = unapplied_types_;
-  unapplied_types_.Clear();
-  return unapplied_types;
-}
-
 ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
   ModelTypeSet downloaded_types = downloaded_types_;
   downloaded_types_.Clear();
@@ -106,16 +100,11 @@ void FakeSyncManager::PurgePartiallySyncedTypes() {
   purged_types_.PutAll(partial_types);
 }
 
-void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
-                                         ModelTypeSet to_journal,
-                                         ModelTypeSet to_unapply) {
+void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge) {
   // Simulate cleaning up disabled types.
   purged_types_.PutAll(to_purge);
-  unapplied_types_.PutAll(to_unapply);
-  // Types from |to_unapply| should retain their server data and progress
-  // markers.
-  initial_sync_ended_types_.RemoveAll(Difference(to_purge, to_unapply));
-  progress_marker_types_.RemoveAll(Difference(to_purge, to_unapply));
+  initial_sync_ended_types_.RemoveAll(to_purge);
+  progress_marker_types_.RemoveAll(to_purge);
 }
 
 void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {

@@ -102,6 +102,12 @@ class MODULES_EXPORT ImageCapture final
                         bool result);
   void OnMojoTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
 
+  // If getUserMedia contains either pan, tilt, or zoom constraints, the
+  // corresponding settings will be set when image capture is created.
+  void SetPanTiltZoomSettingsFromTrack(
+      media::mojom::blink::PhotoStatePtr photo_state);
+  void OnSetPanTiltZoomSettingsFromTrack(bool result);
+
   void UpdateMediaTrackCapabilities(media::mojom::blink::PhotoStatePtr);
   void OnServiceConnectionError();
 

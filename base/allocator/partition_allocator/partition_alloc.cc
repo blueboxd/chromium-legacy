@@ -303,6 +303,7 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
   PA_DCHECK(page->bucket->is_direct_mapped());
 
   raw_size = internal::PartitionCookieSizeAdjustAdd(raw_size);
+  raw_size = internal::PartitionTagSizeAdjustAdd(raw_size);
 
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
@@ -388,8 +389,8 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
         &actual_old_size, ptr);
   }
   if (LIKELY(!overridden)) {
-    auto* page =
-        Page::FromPointer(internal::PartitionCookieFreePointerAdjust(ptr));
+    auto* page = Page::FromPointer(internal::PartitionTagFreePointerAdjust(
+        internal::PartitionCookieFreePointerAdjust(ptr)));
     bool success = false;
     {
       internal::ScopedGuard<thread_safe> guard{lock_};
@@ -421,7 +422,9 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
       // Trying to allocate a block of size |new_size| would give us a block of
       // the same size as the one we've already got, so re-use the allocation
       // after updating statistics (and cookies, if present).
-      page->set_raw_size(internal::PartitionCookieSizeAdjustAdd(new_size));
+      size_t new_raw_size = internal::PartitionCookieSizeAdjustAdd(new_size);
+      new_raw_size = internal::PartitionTagSizeAdjustAdd(new_raw_size);
+      page->set_raw_size(new_raw_size);
 #if DCHECK_IS_ON()
       // Write a new trailing cookie when it is possible to keep track of
       // |new_size| via the raw size pointer.

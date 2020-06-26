@@ -7,6 +7,9 @@
 #ifndef MEDIA_CAPTURE_VIDEO_WIN_VIDEO_CAPTURE_DEVICE_FACTORY_WIN_H_
 #define MEDIA_CAPTURE_VIDEO_WIN_VIDEO_CAPTURE_DEVICE_FACTORY_WIN_H_
 
+// Avoid including strsafe.h via dshow as it will cause build warnings.
+#define NO_DSHOW_STRSAFE
+#include <dshow.h>
 #include <mfidl.h>
 #include <windows.devices.enumeration.h>
 
@@ -30,13 +33,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   VideoCaptureDeviceFactoryWin();
   ~VideoCaptureDeviceFactoryWin() override;
 
-  using MFEnumDeviceSourcesFunc = decltype(&MFEnumDeviceSources);
-  using DirectShowEnumDevicesFunc =
-      base::RepeatingCallback<HRESULT(IEnumMoniker**)>;
-  using GetSupportedFormatsFunc =
-      base::RepeatingCallback<void(const VideoCaptureDeviceDescriptor&,
-                                   VideoCaptureFormats*)>;
-
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
   void GetDeviceDescriptors(
@@ -51,22 +47,31 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   void set_use_media_foundation_for_testing(bool use) {
     use_media_foundation_ = use;
   }
-  void set_mf_enum_device_sources_func_for_testing(
-      MFEnumDeviceSourcesFunc func) {
-    mf_enum_device_sources_func_ = func;
-  }
-  void set_direct_show_enum_devices_func_for_testing(
-      DirectShowEnumDevicesFunc func) {
-    direct_show_enum_devices_func_ = func;
-  }
-  void set_mf_get_supported_formats_func_for_testing(
-      GetSupportedFormatsFunc func) {
-    mf_get_supported_formats_func_ = func;
-  }
-  void set_direct_show_get_supported_formats_func_for_testing(
-      GetSupportedFormatsFunc func) {
-    direct_show_get_supported_formats_func_ = func;
-  }
+
+ protected:
+  // Protected and virtual for testing.
+  virtual bool CreateDeviceEnumMonikerDirectShow(IEnumMoniker** enum_moniker);
+  virtual bool CreateDeviceFilterDirectShow(const std::string& device_id,
+                                            IBaseFilter** capture_filter);
+  virtual bool CreateDeviceFilterDirectShow(
+      Microsoft::WRL::ComPtr<IMoniker> moniker,
+      IBaseFilter** capture_filter);
+  virtual bool CreateDeviceSourceMediaFoundation(const std::string& device_id,
+                                                 VideoCaptureApi capture_api,
+                                                 IMFMediaSource** source);
+  virtual bool CreateDeviceSourceMediaFoundation(
+      Microsoft::WRL::ComPtr<IMFAttributes> attributes,
+      IMFMediaSource** source);
+  virtual bool EnumerateDeviceSourcesMediaFoundation(
+      Microsoft::WRL::ComPtr<IMFAttributes> attributes,
+      IMFActivate*** devices,
+      UINT32* count);
+  virtual void GetSupportedFormatsDirectShow(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
+      VideoCaptureFormats* supported_formats);
+  virtual void GetSupportedFormatsMediaFoundation(
+      const VideoCaptureDeviceDescriptor& device_descriptor,
+      VideoCaptureFormats* supported_formats);
 
  private:
   void EnumerateDevicesUWP(
@@ -83,10 +88,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       VideoCaptureDeviceDescriptors* device_descriptors);
   void AugmentDescriptorListWithDirectShowOnlyDevices(
       VideoCaptureDeviceDescriptors* device_descriptors);
-  bool EnumerateVideoDevicesMediaFoundation(
-      const std::vector<std::pair<GUID, GUID>>& attributes_data,
-      IMFActivate*** devices,
-      UINT32* count);
   void GetDeviceDescriptorsDirectShow(
       VideoCaptureDeviceDescriptors* device_descriptors);
   int GetNumberOfSupportedFormats(const VideoCaptureDeviceDescriptor& device);
@@ -96,14 +97,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
 
   bool use_media_foundation_;
   MFSessionLifetime session_;
-  // In production code, when Media Foundation libraries are available,
-  // |mf_enum_device_sources_func_| points to MFEnumDeviceSources. It enables
-  // mock of Media Foundation API in unit tests.
-  MFEnumDeviceSourcesFunc mf_enum_device_sources_func_ = nullptr;
-  DirectShowEnumDevicesFunc direct_show_enum_devices_func_;
-
-  GetSupportedFormatsFunc mf_get_supported_formats_func_;
-  GetSupportedFormatsFunc direct_show_get_supported_formats_func_;
 
   // For calling WinRT methods on a COM initiated thread.
   base::Thread com_thread_;

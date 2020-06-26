@@ -25,6 +25,8 @@ extern const base::Feature kForceWebRequestProxyForTest;
 
 extern const base::Feature kAllowWithholdingExtensionPermissionsOnInstall;
 
+extern const base::Feature kReportKeepaliveUkm;
+
 }  // namespace extensions_features
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_FEATURES_H_

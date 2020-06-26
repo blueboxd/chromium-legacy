@@ -94,8 +94,8 @@ inline bool IsVisibleToPaint(const NGFragmentItem& item,
          style.Visibility() == EVisibility::kVisible;
 }
 
-inline bool IsVisibleToHitTest(const HitTestRequest& request,
-                               const ComputedStyle& style) {
+inline bool IsVisibleToHitTest(const ComputedStyle& style,
+                               const HitTestRequest& request) {
   return request.IgnorePointerEventsNone() ||
          style.PointerEvents() != EPointerEvents::kNone;
 }
@@ -103,14 +103,14 @@ inline bool IsVisibleToHitTest(const HitTestRequest& request,
 inline bool IsVisibleToHitTest(const NGFragmentItem& item,
                                const HitTestRequest& request) {
   const ComputedStyle& style = item.Style();
-  return IsVisibleToPaint(item, style) && IsVisibleToHitTest(request, style);
+  return IsVisibleToPaint(item, style) && IsVisibleToHitTest(style, request);
 }
 
-bool FragmentVisibleToHitTestRequest(const NGPhysicalFragment& fragment,
-                                     const HitTestRequest& request) {
+inline bool IsVisibleToHitTest(const NGPhysicalFragment& fragment,
+                               const HitTestRequest& request) {
   const ComputedStyle& style = fragment.Style();
   return IsVisibleToPaint(fragment, style) &&
-         IsVisibleToHitTest(request, style);
+         IsVisibleToHitTest(style, request);
 }
 
 // Hit tests inline ancestor elements of |fragment| who do not have their own
@@ -1860,7 +1860,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(const HitTestContext& hit_test,
 
   // Now hit test ourselves.
   if (hit_test_self &&
-      VisibleToHitTestRequest(hit_test.result->GetHitTestRequest())) {
+      IsVisibleToHitTest(box_fragment_, hit_test.result->GetHitTestRequest())) {
     PhysicalRect bounds_rect(physical_offset, size);
     if (UNLIKELY(hit_test.result->GetHitTestRequest().GetType() &
                  HitTestRequest::kHitTestVisualOverflow)) {
@@ -1933,11 +1933,6 @@ bool NGBoxFragmentPainter::HitTestAllPhases(
   return inside;
 }
 
-bool NGBoxFragmentPainter::VisibleToHitTestRequest(
-    const HitTestRequest& request) const {
-  return FragmentVisibleToHitTestRequest(box_fragment_, request);
-}
-
 bool NGBoxFragmentPainter::HitTestTextFragment(
     const HitTestContext& hit_test,
     const NGInlineBackwardCursor& cursor,
@@ -1949,8 +1944,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   DCHECK(text_paint_fragment);
   const auto& text_fragment =
       To<NGPhysicalTextFragment>(text_paint_fragment->PhysicalFragment());
-  if (!FragmentVisibleToHitTestRequest(text_fragment,
-                                       hit_test.result->GetHitTestRequest()))
+  if (!IsVisibleToHitTest(text_fragment, hit_test.result->GetHitTestRequest()))
     return false;
 
   // TODO(layout-dev): Clip to line-top/bottom.
@@ -2008,7 +2002,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   if (hit_test.action != kHitTestForeground)
     return false;
 
-  if (!VisibleToHitTestRequest(hit_test.result->GetHitTestRequest()))
+  if (!IsVisibleToHitTest(box_fragment_, hit_test.result->GetHitTestRequest()))
     return false;
 
   const PhysicalOffset overflow_location =

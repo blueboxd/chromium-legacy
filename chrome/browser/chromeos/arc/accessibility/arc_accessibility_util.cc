@@ -26,10 +26,14 @@ base::Optional<ax::mojom::Event> FromContentChangeTypesToAXEvent(
     return base::nullopt;
   }
   const AXNodeInfoData* node_ptr = source_node.GetNode();
-  if (node_ptr && node_ptr->range_info) {
+  // Source node should be node, not window, when event type is not
+  // WINDOW_CHANGED.
+  DCHECK(node_ptr);
+
+  if (node_ptr->range_info) {
     return ax::mojom::Event::kValueChanged;
   } else {
-    return base::nullopt;
+    return ax::mojom::Event::kAriaAttributeChanged;
   }
 }
 

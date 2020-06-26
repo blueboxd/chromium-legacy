@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/BrowsingHistoryBridge_jni.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/history/core/browser/browsing_history_service.h"
@@ -24,18 +25,11 @@ using history::BrowsingHistoryService;
 
 const int kMaxQueryCount = 150;
 
-BrowsingHistoryBridge::BrowsingHistoryBridge(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj,
-                                             bool is_incognito) {
-  Profile* last_profile = ProfileManager::GetLastUsedProfile();
-  // We cannot trust GetLastUsedProfile() to return the original or incognito
-  // profile. Instead the boolean |is_incognito| is passed to track this choice.
-  // As of writing GetLastUsedProfile() will always return the original profile,
-  // but to be more defensive, manually grab the original profile anyway. Note
-  // that while some platforms might not open history when incognito, Android
-  // does, but only shows local history.
-  profile_ = is_incognito ? last_profile->GetOffTheRecordProfile()
-                          : last_profile->GetOriginalProfile();
+BrowsingHistoryBridge::BrowsingHistoryBridge(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile) {
+  profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
 
   history::HistoryService* local_history = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -164,10 +158,11 @@ Profile* BrowsingHistoryBridge::GetProfile() {
   return profile_;
 }
 
-static jlong JNI_BrowsingHistoryBridge_Init(JNIEnv* env,
-                                            const JavaParamRef<jobject>& obj,
-                                            jboolean is_incognito) {
+static jlong JNI_BrowsingHistoryBridge_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile) {
   BrowsingHistoryBridge* bridge =
-      new BrowsingHistoryBridge(env, obj, is_incognito);
+      new BrowsingHistoryBridge(env, obj, j_profile);
   return reinterpret_cast<intptr_t>(bridge);
 }

@@ -30,6 +30,8 @@
 #include "components/sync/js/js_backend.h"
 #include "components/sync/syncable/change_reorder_buffer.h"
 #include "components/sync/syncable/directory_change_delegate.h"
+#include "components/sync/syncable/nigori_handler_proxy.h"
+#include "components/sync/syncable/user_share.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace syncer {
@@ -38,7 +40,6 @@ class Cryptographer;
 class ModelTypeRegistry;
 class SyncCycleContext;
 class TypeDebugInfoObserver;
-struct UserShare;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
@@ -71,9 +72,7 @@ class SyncManagerImpl
   ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
       ModelTypeSet types) override;
   void PurgePartiallySyncedTypes() override;
-  void PurgeDisabledTypes(ModelTypeSet to_purge,
-                          ModelTypeSet to_journal,
-                          ModelTypeSet to_unapply) override;
+  void PurgeDisabledTypes(ModelTypeSet to_purge) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void InvalidateCredentials() override;
   void StartSyncingNormally(base::Time last_poll_time) override;
@@ -235,6 +234,10 @@ class SyncManagerImpl
 
   const std::string name_;
 
+  UserShare user_share_;
+
+  syncable::NigoriHandlerProxy nigori_handler_proxy_;
+
   network::NetworkConnectionTracker* network_connection_tracker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -249,10 +252,6 @@ class SyncManagerImpl
   // HandleCalculateChangesChangeEventFromSyncApi() and we'd pass it a
   // WeakHandle when we construct it.
   WeakHandle<SyncManagerImpl> weak_handle_this_;
-
-  // We give a handle to share_ to clients of the API for use when constructing
-  // any transaction type.
-  UserShare* share_;
 
   // This can be called from any thread, but only between calls to
   // OpenDirectory() and ShutdownOnSyncThread().

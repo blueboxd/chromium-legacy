@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,9 @@ public class BrowsingHistoryBridge implements HistoryProvider {
     private boolean mRemovingItems;
     private boolean mHasPendingRemoveRequest;
 
-    public BrowsingHistoryBridge(boolean isIncognito) {
+    public BrowsingHistoryBridge(Profile profile) {
         mNativeHistoryBridge =
-                BrowsingHistoryBridgeJni.get().init(BrowsingHistoryBridge.this, isIncognito);
+                BrowsingHistoryBridgeJni.get().init(BrowsingHistoryBridge.this, profile);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class BrowsingHistoryBridge implements HistoryProvider {
 
     @NativeMethods
     interface Natives {
-        long init(BrowsingHistoryBridge caller, boolean isIncognito);
+        long init(BrowsingHistoryBridge caller, Profile profile);
         void destroy(long nativeBrowsingHistoryBridge, BrowsingHistoryBridge caller);
         void queryHistory(long nativeBrowsingHistoryBridge, BrowsingHistoryBridge caller,
                 List<HistoryItem> historyItems, String query);

@@ -43,4 +43,8 @@ const base::Feature kAllowWithholdingExtensionPermissionsOnInstall{
     "AllowWithholdingExtensionPermissionsOnInstall",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
+const base::Feature kReportKeepaliveUkm{"ReportKeepaliveUkm",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace extensions_features

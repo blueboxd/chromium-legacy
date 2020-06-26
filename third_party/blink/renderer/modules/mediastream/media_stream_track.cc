@@ -185,7 +185,8 @@ void CloneNativeVideoMediaStreamTrack(MediaStreamComponent* original,
   clone->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
-      original_track->min_frame_rate(),
+      original_track->min_frame_rate(), original_track->pan(),
+      original_track->tilt(), original_track->zoom(),
       MediaStreamVideoSource::ConstraintsOnceCallback(), clone->Enabled()));
 }
 
@@ -525,36 +526,18 @@ MediaTrackConstraints* MediaStreamTrack::getConstraints() const {
   if (!image_capture_)
     return constraints;
 
-  HeapVector<Member<MediaTrackConstraintSet>> vector;
-  if (constraints->hasAdvanced())
-    vector = constraints->advanced();
-  // TODO(mcasas): consider consolidating this code in MediaContraintsImpl.
-  MediaTrackConstraintSet* image_capture_constraints =
+  MediaTrackConstraintSet* image_capture_advanced_constraints =
       const_cast<MediaTrackConstraintSet*>(
           image_capture_->GetMediaTrackConstraints());
-  // TODO(mcasas): add |torch|, https://crbug.com/700607.
-  if (image_capture_constraints->hasWhiteBalanceMode() ||
-      image_capture_constraints->hasExposureMode() ||
-      image_capture_constraints->hasFocusMode() ||
-      image_capture_constraints->hasExposureCompensation() ||
-      image_capture_constraints->hasExposureTime() ||
-      image_capture_constraints->hasColorTemperature() ||
-      image_capture_constraints->hasIso() ||
-      image_capture_constraints->hasBrightness() ||
-      image_capture_constraints->hasContrast() ||
-      image_capture_constraints->hasSaturation() ||
-      image_capture_constraints->hasSharpness() ||
-      image_capture_constraints->hasFocusDistance() ||
-      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
-       image_capture_constraints->hasPan()) ||
-      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
-       image_capture_constraints->hasTilt()) ||
-      image_capture_constraints->hasZoom()) {
-    // Add image capture constraints, if any, as another entry to advanced().
-    vector.push_back(image_capture_constraints);
-    constraints->setAdvanced(vector);
-  }
-  return constraints;
+  if (!image_capture_advanced_constraints)
+    return constraints;
+
+  MediaTrackConstraints* image_capture_constraints =
+      MediaTrackConstraints::Create();
+  HeapVector<Member<MediaTrackConstraintSet>> vector;
+  vector.push_back(image_capture_advanced_constraints);
+  image_capture_constraints->setAdvanced(vector);
+  return image_capture_constraints;
 }
 
 MediaTrackSettings* MediaStreamTrack::getSettings() const {

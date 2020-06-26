@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_BUFFER_QUEUE_H_
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/output_presenter.h"
@@ -49,7 +53,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
 
   bool IsPrimaryPlaneOverlay() const override;
   void SchedulePrimaryPlane(
-      const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane)
+      const base::Optional<
+          OverlayProcessorInterface::OutputSurfaceOverlayPlane>& plane)
       override;
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays) override;
 
@@ -98,6 +103,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   std::vector<OutputPresenter::OverlayData> pending_overlays_;
   // Committed overlays for the last SwapBuffers call.
   std::vector<OutputPresenter::OverlayData> committed_overlays_;
+  // Set to true if no image is to be used for the primary plane of this frame.
+  bool current_frame_has_no_primary_plane_ = false;
 };
 
 }  // namespace viz

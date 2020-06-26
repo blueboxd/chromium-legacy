@@ -163,11 +163,11 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
   // NULL if the topmost window does not have an associated aura::Window.
   aura::Window* FindTopmostLocalProcessWindowAt(int screen_x, int screen_y) {
     ui::X11TopmostWindowFinder finder;
-    auto widget =
-        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {});
+    auto widget = static_cast<gfx::AcceleratedWidget>(
+        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), {}));
     return widget != gfx::kNullAcceleratedWidget
                ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                     static_cast<gfx::AcceleratedWidget>(widget))
+                     widget)
                : nullptr;
   }
 
@@ -182,10 +182,11 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
     ignore.insert(ignore_window->GetHost()->GetAcceleratedWidget());
     ui::X11TopmostWindowFinder finder;
     auto widget =
-        finder.FindLocalProcessWindowAt(gfx::Point(screen_x, screen_y), ignore);
+        static_cast<gfx::AcceleratedWidget>(finder.FindLocalProcessWindowAt(
+            gfx::Point(screen_x, screen_y), ignore));
     return widget != gfx::kNullAcceleratedWidget
                ? DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
-                     static_cast<gfx::AcceleratedWidget>(widget))
+                     widget)
                : nullptr;
   }
 
@@ -200,14 +201,16 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 200, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
-  x11::Window x11_window1 = window1->GetHost()->GetAcceleratedWidget();
+  x11::Window x11_window1 =
+      static_cast<x11::Window>(window1->GetHost()->GetAcceleratedWidget());
 
   x11::Window x11_window2 = CreateAndShowXWindow(gfx::Rect(200, 100, 100, 200));
 
   std::unique_ptr<Widget> widget3(
       CreateAndShowWidget(gfx::Rect(100, 190, 200, 110)));
   aura::Window* window3 = widget3->GetNativeWindow();
-  x11::Window x11_window3 = window3->GetHost()->GetAcceleratedWidget();
+  x11::Window x11_window3 =
+      static_cast<x11::Window>(window3->GetHost()->GetAcceleratedWidget());
 
   x11::Window windows[] = {x11_window1, x11_window2, x11_window3};
   StackingClientListWaiter waiter(windows, base::size(windows));
@@ -249,7 +252,8 @@ TEST_F(X11TopmostWindowFinderTest, Minimized) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   aura::Window* window1 = widget1->GetNativeWindow();
-  x11::Window x11_window1 = window1->GetHost()->GetAcceleratedWidget();
+  x11::Window x11_window1 =
+      static_cast<x11::Window>(window1->GetHost()->GetAcceleratedWidget());
   x11::Window x11_window2 = CreateAndShowXWindow(gfx::Rect(300, 100, 100, 100));
 
   x11::Window windows[] = {x11_window1, x11_window2};
@@ -287,8 +291,8 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
 
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 =
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  x11::Window window1 = static_cast<x11::Window>(
+      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
   auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back(0, 10, 10, 90);
   shape1->emplace_back(10, 0, 90, 100);
@@ -331,8 +335,8 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
 
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 =
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  x11::Window window1 = static_cast<x11::Window>(
+      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
   auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back();
   // Widget takes ownership of |shape1|.
@@ -353,8 +357,8 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
 
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
-  x11::Window window1 =
-      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  x11::Window window1 = static_cast<x11::Window>(
+      widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
   auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back();
   widget1->SetShape(std::move(shape1));

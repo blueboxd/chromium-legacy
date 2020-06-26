@@ -98,14 +98,20 @@ bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
 }
 
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
-    const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
-  // If the current_image_ is nullptr, it means there is no change on the
-  // primary plane. So we just need to schedule the last submitted image.
-  auto* image = current_image_ ? current_image_ : submitted_image_;
-  DCHECK(image);
+    const base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
+        plane) {
+  if (plane) {
+    // If the current_image_ is nullptr, it means there is no change on the
+    // primary plane. So we just need to schedule the last submitted image.
+    auto* image = current_image_ ? current_image_ : submitted_image_;
+    DCHECK(image);
 
-  image->BeginPresent();
-  presenter_->SchedulePrimaryPlane(plane, image, image == submitted_image_);
+    image->BeginPresent();
+    presenter_->SchedulePrimaryPlane(plane.value(), image,
+                                     image == submitted_image_);
+  } else {
+    current_frame_has_no_primary_plane_ = true;
+  }
 }
 
 void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
@@ -119,9 +125,15 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
 
-  DCHECK(current_image_);
-  submitted_image_ = current_image_;
-  current_image_ = nullptr;
+  if (current_frame_has_no_primary_plane_) {
+    DCHECK(!current_image_);
+    submitted_image_ = nullptr;
+    current_frame_has_no_primary_plane_ = false;
+  } else {
+    DCHECK(current_image_);
+    submitted_image_ = current_image_;
+    current_image_ = nullptr;
+  }
 
   // Cancelable callback uses weak ptr to drop this task upon destruction.
   // Thus it is safe to use |base::Unretained(this)|.
@@ -131,7 +143,8 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
           base::Unretained(this), image_size_, std::move(latency_info),
-          submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
+          submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
+          std::move(committed_overlays_))));
   presenter_->SwapBuffers(swap_completion_callbacks_.back()->callback(),
                           std::move(feedback));
   committed_overlays_.clear();
@@ -144,11 +157,17 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
 
-  if (current_image_) {
-    submitted_image_ = current_image_;
-    current_image_ = nullptr;
+  if (current_frame_has_no_primary_plane_) {
+    DCHECK(!current_image_);
+    submitted_image_ = nullptr;
+    current_frame_has_no_primary_plane_ = false;
+  } else {
+    if (current_image_) {
+      submitted_image_ = current_image_;
+      current_image_ = nullptr;
+    }
+    DCHECK(submitted_image_);
   }
-  DCHECK(submitted_image_);
 
   // Cancelable callback uses weak ptr to drop this task upon destruction.
   // Thus it is safe to use |base::Unretained(this)|.
@@ -158,7 +177,8 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
           base::Unretained(this), image_size_, std::move(latency_info),
-          submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
+          submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
+          std::move(committed_overlays_))));
   presenter_->PostSubBuffer(rect, swap_completion_callbacks_.back()->callback(),
                             std::move(feedback));
 
@@ -173,8 +193,12 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
 
   // There is no drawing for this frame on the main buffer.
   DCHECK(!current_image_);
-  // A main buffer has to be submitted for previous frames.
-  DCHECK(submitted_image_);
+  if (current_frame_has_no_primary_plane_) {
+    submitted_image_ = nullptr;
+    current_frame_has_no_primary_plane_ = false;
+  } else {
+    DCHECK(submitted_image_);
+  }
 
   // Cancelable callback uses weak ptr to drop this task upon destruction.
   // Thus it is safe to use |base::Unretained(this)|.
@@ -184,7 +208,8 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
           base::Unretained(this), image_size_, std::move(latency_info),
-          submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
+          submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
+          std::move(committed_overlays_))));
   presenter_->CommitOverlayPlanes(swap_completion_callbacks_.back()->callback(),
                                   std::move(feedback), std::move(latency_info));
 

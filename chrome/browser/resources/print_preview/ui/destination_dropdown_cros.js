@@ -12,7 +12,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Destination} from '../data/destination.js';
+import {Destination, DestinationOrigin} from '../data/destination.js';
 import {PrinterStatusReason} from '../data/printer_status_cros.js';
 
 import {PrinterState} from './printer_status_icon_cros.js';
@@ -47,6 +47,12 @@ Polymer({
     pdfDestinationKey: String,
 
     destinationIcon: String,
+
+    /** @private */
+    shouldShowDestinationPrinterStatusIcon_: {
+      type: Boolean,
+      computed: 'computeShouldShowDestinationPrinterStatusIcon_(value)',
+    },
   },
 
   listeners: {
@@ -269,5 +275,15 @@ Polymer({
       return PrinterState.GOOD;
     }
     return PrinterState.ERROR;
+  },
+
+  /**
+   * Only show the printer status badge if the currently selected destination is
+   * a CrOS local printer.
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowDestinationPrinterStatusIcon_: function() {
+    return this.value && this.value.origin === DestinationOrigin.CROS;
   },
 });

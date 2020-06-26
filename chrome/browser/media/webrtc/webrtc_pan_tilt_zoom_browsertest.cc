@@ -14,20 +14,28 @@
 
 namespace {
 
-struct TestConfig {
+struct PermissionTestConfig {
   const char* constraints;
   const char* expected_microphone;
   const char* expected_camera;
   const char* expected_pan_tilt_zoom;
 };
 
+struct TrackTestConfig {
+  const char* constraints;
+  const double expected_pan;
+  const double expected_tilt;
+  const double expected_zoom;
+  const char* expected_constraints;
+};
+
 static const char kMainHtmlPage[] = "/webrtc/webrtc_pan_tilt_zoom_test.html";
 
 }  // namespace
 
-class WebRtcPanTiltZoomBrowserTest
+class WebRtcPanTiltZoomPermissionBrowserTest
     : public WebRtcTestBase,
-      public testing::WithParamInterface<TestConfig> {
+      public testing::WithParamInterface<PermissionTestConfig> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -39,7 +47,7 @@ class WebRtcPanTiltZoomBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomPermissionBrowserTest,
                        TestRequestPanTiltZoomPermission) {
   ASSERT_TRUE(embedded_test_server()->Start());
   content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
@@ -69,120 +77,345 @@ IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(
     RequestPanTiltZoomPermission,
-    WebRtcPanTiltZoomBrowserTest,
+    WebRtcPanTiltZoomPermissionBrowserTest,
     testing::Values(
         // no pan, tilt, zoom in audio and video constraints
-        TestConfig{"{ video: true }", "prompt", "granted", "prompt"},
-        TestConfig{"{ audio: true }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: true, video: true }", "granted", "granted",
-                   "prompt"},
+        PermissionTestConfig{"{ video: true }", "prompt", "granted", "prompt"},
+        PermissionTestConfig{"{ audio: true }", "granted", "prompt", "prompt"},
+        PermissionTestConfig{"{ audio: true, video: true }", "granted",
+                             "granted", "prompt"},
         // pan, tilt, zoom in audio constraints
-        TestConfig{"{ audio: { pan : false } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { tilt : false } }", "granted", "prompt",
-                   "prompt"},
-        TestConfig{"{ audio: { zoom : false } }", "granted", "prompt",
-                   "prompt"},
-        TestConfig{"{ audio: { pan : {} } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { tilt : {} } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { zoom : {} } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { pan : 1 } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { tilt : 1 } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { zoom : 1 } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { pan : true } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { tilt : true } }", "granted", "prompt", "prompt"},
-        TestConfig{"{ audio: { zoom : true } }", "granted", "prompt", "prompt"},
+        PermissionTestConfig{"{ audio: { pan : false } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { tilt : false } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { zoom : false } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { pan : {} } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { tilt : {} } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { zoom : {} } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { pan : 1 } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { tilt : 1 } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { zoom : 1 } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { pan : true } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { tilt : true } }", "granted", "prompt",
+                             "prompt"},
+        PermissionTestConfig{"{ audio: { zoom : true } }", "granted", "prompt",
+                             "prompt"},
         // pan, tilt, zoom in basic video constraints if no audio
-        TestConfig{"{ video: { pan : false } }", "prompt", "granted", "prompt"},
-        TestConfig{"{ video: { tilt : false } }", "prompt", "granted",
-                   "prompt"},
-        TestConfig{"{ video: { zoom : false } }", "prompt", "granted",
-                   "prompt"},
-        TestConfig{"{ video: { pan : {} } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { tilt : {} } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { zoom : {} } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { pan : 1 } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { tilt : 1 } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { zoom : 1 } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { pan : true } }", "prompt", "granted", "granted"},
-        TestConfig{"{ video: { tilt : true } }", "prompt", "granted",
-                   "granted"},
-        TestConfig{"{ video: { zoom : true } }", "prompt", "granted",
-                   "granted"},
+        PermissionTestConfig{"{ video: { pan : false } }", "prompt", "granted",
+                             "prompt"},
+        PermissionTestConfig{"{ video: { tilt : false } }", "prompt", "granted",
+                             "prompt"},
+        PermissionTestConfig{"{ video: { zoom : false } }", "prompt", "granted",
+                             "prompt"},
+        PermissionTestConfig{"{ video: { pan : {} } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { tilt : {} } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { zoom : {} } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { pan : 1 } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { tilt : 1 } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { zoom : 1 } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { pan : true } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { tilt : true } }", "prompt", "granted",
+                             "granted"},
+        PermissionTestConfig{"{ video: { zoom : true } }", "prompt", "granted",
+                             "granted"},
         // pan, tilt, zoom in advanced video constraints if no audio
-        TestConfig{"{ video: { advanced: [{ pan : false }] } }", "prompt",
-                   "granted", "prompt"},
-        TestConfig{"{ video: { advanced: [{ tilt : false }] } }", "prompt",
-                   "granted", "prompt"},
-        TestConfig{"{ video: { advanced: [{ zoom : false }] } }", "prompt",
-                   "granted", "prompt"},
-        TestConfig{"{ video: { advanced: [{ pan : {} }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ tilt : {} }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ zoom : {} }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ pan : 1 }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ tilt : 1 }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ zoom : 1 }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ pan : true }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ tilt : true }] } }", "prompt",
-                   "granted", "granted"},
-        TestConfig{"{ video: { advanced: [{ zoom : true }] } }", "prompt",
-                   "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ pan : false }] } }",
+                             "prompt", "granted", "prompt"},
+        PermissionTestConfig{"{ video: { advanced: [{ tilt : false }] } }",
+                             "prompt", "granted", "prompt"},
+        PermissionTestConfig{"{ video: { advanced: [{ zoom : false }] } }",
+                             "prompt", "granted", "prompt"},
+        PermissionTestConfig{"{ video: { advanced: [{ pan : {} }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ tilt : {} }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ zoom : {} }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ pan : 1 }] } }", "prompt",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ tilt : 1 }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ zoom : 1 }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ pan : true }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ tilt : true }] } }",
+                             "prompt", "granted", "granted"},
+        PermissionTestConfig{"{ video: { advanced: [{ zoom : true }] } }",
+                             "prompt", "granted", "granted"},
         // pan, tilt, zoom in basic video constraints if audio
-        TestConfig{"{ audio: true, video: { pan : false } }", "granted",
-                   "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { tilt : false } }", "granted",
-                   "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { zoom : false } }", "granted",
-                   "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { pan : {} } }", "granted", "granted",
-                   "granted"},
-        TestConfig{"{ audio: true, video: { tilt : {} } }", "granted",
-                   "granted", "granted"},
-        TestConfig{"{ audio: true, video: { zoom : {} } }", "granted",
-                   "granted", "granted"},
-        TestConfig{"{ audio: true, video: { pan : 1 } }", "granted", "granted",
-                   "granted"},
-        TestConfig{"{ audio: true, video: { tilt : 1 } }", "granted", "granted",
-                   "granted"},
-        TestConfig{"{ audio: true, video: { zoom : 1 } }", "granted", "granted",
-                   "granted"},
-        TestConfig{"{ audio: true, video: { pan : true } }", "granted",
-                   "granted", "granted"},
-        TestConfig{"{ audio: true, video: { tilt : true } }", "granted",
-                   "granted", "granted"},
-        TestConfig{"{ audio: true, video: { zoom : true } }", "granted",
-                   "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { pan : false } }",
+                             "granted", "granted", "prompt"},
+        PermissionTestConfig{"{ audio: true, video: { tilt : false } }",
+                             "granted", "granted", "prompt"},
+        PermissionTestConfig{"{ audio: true, video: { zoom : false } }",
+                             "granted", "granted", "prompt"},
+        PermissionTestConfig{"{ audio: true, video: { pan : {} } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { tilt : {} } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { zoom : {} } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { pan : 1 } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { tilt : 1 } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { zoom : 1 } }", "granted",
+                             "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { pan : true } }",
+                             "granted", "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { tilt : true } }",
+                             "granted", "granted", "granted"},
+        PermissionTestConfig{"{ audio: true, video: { zoom : true } }",
+                             "granted", "granted", "granted"},
         // pan, tilt, zoom in advanced video constraints if audio
-        TestConfig{"{ audio: true, video: { advanced: [{ pan : false }] } }",
-                   "granted", "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { advanced: [{ tilt : false }] } }",
-                   "granted", "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { advanced: [{ zoom : false }] } }",
-                   "granted", "granted", "prompt"},
-        TestConfig{"{ audio: true, video: { advanced: [{ pan : {} }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ tilt : {} }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ zoom : {} }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ pan : 1 }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ tilt : 1 }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ zoom : 1 }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ pan : true }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ tilt : true }] } }",
-                   "granted", "granted", "granted"},
-        TestConfig{"{ audio: true, video: { advanced: [{ zoom : true }] } }",
-                   "granted", "granted", "granted"}));
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ pan : false }] } }",
+            "granted", "granted", "prompt"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ tilt : false }] } }",
+            "granted", "granted", "prompt"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ zoom : false }] } }",
+            "granted", "granted", "prompt"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ pan : {} }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ tilt : {} }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ zoom : {} }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ pan : 1 }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ tilt : 1 }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ zoom : 1 }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ pan : true }] } }", "granted",
+            "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ tilt : true }] } }",
+            "granted", "granted", "granted"},
+        PermissionTestConfig{
+            "{ audio: true, video: { advanced: [{ zoom : true }] } }",
+            "granted", "granted", "granted"}));
+
+class WebRtcPanTiltZoomTrackBrowserTest
+    : public WebRtcTestBase,
+      public testing::WithParamInterface<TrackTestConfig> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    DetectErrorsInJavaScript();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomTrackBrowserTest,
+                       TestTrackFromGetUserMedia) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("runGetUserMedia(%s);", GetParam().constraints),
+      &result));
+  EXPECT_EQ(result, "runGetUserMedia-success");
+
+  std::string pan_tilt_zoom;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "getPanTiltZoomPermission();", &pan_tilt_zoom));
+  EXPECT_EQ(pan_tilt_zoom, "granted");
+
+  double pan;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+      tab->GetMainFrame(), "getTrackSetting('pan');", &pan));
+  EXPECT_EQ(pan, GetParam().expected_pan);
+
+  double tilt;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+      tab->GetMainFrame(), "getTrackSetting('tilt');", &tilt));
+  EXPECT_EQ(tilt, GetParam().expected_tilt);
+
+  double zoom;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractDouble(
+      tab->GetMainFrame(), "getTrackSetting('zoom');", &zoom));
+  EXPECT_EQ(zoom, GetParam().expected_zoom);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("checkConstraints(%s);",
+                         GetParam().expected_constraints),
+      &result));
+  EXPECT_EQ(result, "checkConstraints-success");
+}
+
+// Default PTZ value is 100, min is 100, max is 400 as defined in fake video
+// capture config at media/capture/video/fake_video_capture_device.cc and
+// media/capture/video/fake_video_capture_device_factory.cc
+INSTANTIATE_TEST_SUITE_P(
+    TrackFromGetUserMedia,
+    WebRtcPanTiltZoomTrackBrowserTest,
+    testing::Values(
+        // pan, tilt, zoom in basic video constraints with valid values
+        TrackTestConfig{"{ video: { pan : 101 } }", 101, 100, 100,
+                        "{ pan : 101 }"},
+        TrackTestConfig{"{ video: { tilt : 102 } }", 100, 102, 100,
+                        "{ tilt : 102 }"},
+        TrackTestConfig{"{ video: { zoom : 103 } }", 100, 100, 103,
+                        "{ zoom : 103 }"},
+        TrackTestConfig{"{ video: { pan: 101, tilt: 102, zoom: 103 } }", 101,
+                        102, 103, "{ pan: 101, tilt: 102, zoom: 103 }"},
+        // pan, tilt, zoom in advanced video constraints with valid values
+        TrackTestConfig{"{ video: { advanced: [{ pan : 101 }] } }", 101, 100,
+                        100, "{ advanced: [{ pan : 101 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ tilt : 102 }] } }", 100, 102,
+                        100, "{ advanced: [{ tilt : 102 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ zoom : 103 }] } }", 100, 100,
+                        103, "{ advanced: [{ zoom : 103 }] }"},
+        TrackTestConfig{
+            "{ video: { advanced: [{ pan : 101, tilt : 102, zoom : 103 }] } }",
+            101, 102, 103,
+            "{ advanced: [{ pan: 101, tilt: 102, zoom: 103 }] }"},
+        // pan, tilt, zoom in basic video constraints with invalid values
+        TrackTestConfig{"{ video: { pan : 99 } }", 100, 100, 100,
+                        "{ pan: 99 }"},
+        TrackTestConfig{"{ video: { tilt : 99 } }", 100, 100, 100,
+                        "{ tilt: 99 }"},
+        TrackTestConfig{"{ video: { zoom : 99 } }", 100, 100, 100,
+                        "{ zoom: 99 }"},
+        TrackTestConfig{"{ video: { pan : 401 } }", 100, 100, 100,
+                        "{ pan: 401 }"},
+        TrackTestConfig{"{ video: { tilt : 401 } }", 100, 100, 100,
+                        "{ tilt: 401 }"},
+        TrackTestConfig{"{ video: { zoom : 401 } }", 100, 100, 100,
+                        "{ zoom: 401 }"},
+        // pan, tilt, zoom in advanced video constraints with invalid values
+        TrackTestConfig{"{ video: { advanced: [{ pan : 99 }] } }", 100, 100,
+                        100, "{ advanced: [{ pan : 99 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ tilt : 99 }] } }", 100, 100,
+                        100, "{ advanced: [{ tilt : 99 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ zoom : 99 }] } }", 100, 100,
+                        100, "{ advanced: [{ zoom : 99 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ pan : 401 }] } }", 100, 100,
+                        100, "{ advanced: [{ pan : 401 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ tilt : 401 }] } }", 100, 100,
+                        100, "{ advanced: [{ tilt : 401 }] }"},
+        TrackTestConfig{"{ video: { advanced: [{ zoom : 401 }] } }", 100, 100,
+                        100, "{ advanced: [{ zoom : 401 }] }"}));
+
+class WebRtcPanTiltZoomConstraintsBrowserTest
+    : public WebRtcTestBase,
+      public ::testing::WithParamInterface<std::string> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+  const char* Constraint() { return GetParam().c_str(); }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    DetectErrorsInJavaScript();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomConstraintsBrowserTest,
+                       TestConstraintsFromGetUserMedia) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("runGetUserMedia({ video: { width: 640, %s: 101 } });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "runGetUserMedia-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("checkConstraints({ width: 640, %s: 101 });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "checkConstraints-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("applyConstraints({ advanced: [{ %s: 102 }] });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "applyConstraints-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("checkConstraints({ advanced: [{ %s: 102 }] });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "checkConstraints-success");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcPanTiltZoomConstraintsBrowserTest,
+                       TestUnconstrainedConstraintsFromGetUserMedia) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("runGetUserMedia({ video: { width: 640, %s: 101 } });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "runGetUserMedia-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("checkConstraints({ width: 640, %s: 101 });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "checkConstraints-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      base::StringPrintf("runGetUserMedia({ video: { %s: true } });",
+                         Constraint()),
+      &result));
+  EXPECT_EQ(result, "runGetUserMedia-success");
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "checkConstraints({});", &result));
+  EXPECT_EQ(result, "checkConstraints-success");
+}
+
+INSTANTIATE_TEST_SUITE_P(ConstraintsFromGetUserMedia,
+                         WebRtcPanTiltZoomConstraintsBrowserTest,
+                         testing::Values("pan", "tilt", "zoom"));
 
 class WebRtcPanTiltZoomPermissionRequestBrowserTest
     : public WebRtcTestBase,

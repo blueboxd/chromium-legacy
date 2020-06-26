@@ -94,8 +94,10 @@ bool SkiaOutputDevice::IsPrimaryPlaneOverlay() const {
 }
 
 void SkiaOutputDevice::SchedulePrimaryPlane(
-    const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
-  NOTIMPLEMENTED();
+    const base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
+        plane) {
+  if (plane)
+    NOTIMPLEMENTED();
 }
 
 void SkiaOutputDevice::ScheduleOverlays(

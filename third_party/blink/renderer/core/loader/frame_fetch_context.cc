@@ -1019,11 +1019,13 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
     const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
     ReportingDisposition reporting_disposition) const {
-  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled())
-    return false;
-
   if (GetResourceFetcherProperties().IsDetached())
     return false;
+
+  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(
+          document_->domWindow())) {
+    return false;
+  }
 
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);

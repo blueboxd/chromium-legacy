@@ -29,6 +29,8 @@ jumbo_static_library("base") {
     "invalidation_helper.h",
     "invalidation_interface.cc",
     "invalidation_interface.h",
+    "legacy_directory_deletion.cc",
+    "legacy_directory_deletion.h",
     "logging.cc",
     "logging.h",
     "model_type.cc",

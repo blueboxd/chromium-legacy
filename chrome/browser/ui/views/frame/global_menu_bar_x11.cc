@@ -210,7 +210,7 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
     : browser_(browser_view->browser()),
       profile_(browser_->profile()),
       browser_view_(browser_view),
-      window_(host->GetAcceleratedWidget()),
+      window_(static_cast<x11::Window>(host->GetAcceleratedWidget())),
       tab_restore_service_(nullptr),
       last_command_id_(kFirstUnreservedCommandId - 1) {
   GlobalMenuBarRegistrarX11::GetInstance()->OnMenuBarCreated(this);

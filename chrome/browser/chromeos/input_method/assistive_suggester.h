@@ -47,6 +47,9 @@ class AssistiveSuggester {
   // Returns true if suggester handles the event and it should stop propagate.
   bool OnKeyEvent(const InputMethodEngineBase::KeyboardEvent& event);
 
+  // Accepts the suggestion at a given index if a suggester is currently active.
+  void AcceptSuggestion(size_t index);
+
  private:
   // Returns if any suggestion text should be displayed according to the
   // surrounding text information.

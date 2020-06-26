@@ -148,6 +148,37 @@ class SkiaGoldSessionRunComparisonTest(fake_filesystem_unittest.TestCase):
   @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Compare')
   @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Initialize')
   @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Authenticate')
+  def test_compareInexactMatching(self, auth_mock, init_mock, compare_mock,
+                                  diff_mock):
+    auth_mock.return_value = (0, None)
+    init_mock.return_value = (0, None)
+    compare_mock.return_value = (0, None)
+    diff_mock.return_value = (0, None)
+    args = createSkiaGoldArgs(local_pixel_tests=False)
+    sgp = skia_gold_properties.SkiaGoldProperties(args)
+    keys_file = os.path.join(self._working_dir, 'keys.json')
+    with open(os.path.join(self._working_dir, 'keys.json'), 'w') as f:
+      json.dump({}, f)
+    session = skia_gold_session.SkiaGoldSession(self._working_dir, sgp,
+                                                keys_file, None, None)
+    status, _ = session.RunComparison(None,
+                                      None,
+                                      None,
+                                      inexact_matching_args=['--inexact'])
+    self.assertEqual(status,
+                     skia_gold_session.SkiaGoldSession.StatusCodes.SUCCESS)
+    self.assertEqual(auth_mock.call_count, 1)
+    self.assertEqual(init_mock.call_count, 1)
+    self.assertEqual(compare_mock.call_count, 1)
+    self.assertEqual(diff_mock.call_count, 0)
+    compare_mock.assert_called_with(name=None,
+                                    png_file=mock.ANY,
+                                    inexact_matching_args=['--inexact'])
+
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Diff')
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Compare')
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Initialize')
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, 'Authenticate')
   def test_diffFailure(self, auth_mock, init_mock, compare_mock, diff_mock):
     auth_mock.return_value = (0, None)
     init_mock.return_value = (0, None)
@@ -472,6 +503,17 @@ class SkiaGoldSessionCompareTest(fake_filesystem_unittest.TestCase):
                                                 None, None)
     session.Compare(None, None)
     self.assertNotIn('--dryrun', cmd_mock.call_args[0][0])
+
+  @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
+  def test_commandWithInexactArgs(self, cmd_mock):
+    cmd_mock.return_value = (None, None)
+    args = createSkiaGoldArgs(git_revision='a')
+    sgp = skia_gold_properties.SkiaGoldProperties(args)
+    session = skia_gold_session.SkiaGoldSession(self._working_dir, sgp, None,
+                                                None, None)
+    session.Compare(None, None, inexact_matching_args=['--inexact', 'foobar'])
+    self.assertIn('--inexact', cmd_mock.call_args[0][0])
+    self.assertIn('foobar', cmd_mock.call_args[0][0])
 
   @mock.patch.object(skia_gold_session.SkiaGoldSession, '_RunCmdForRcAndOutput')
   def test_commandCommonArgs(self, cmd_mock):

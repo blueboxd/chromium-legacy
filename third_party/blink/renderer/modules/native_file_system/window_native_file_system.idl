@@ -13,16 +13,16 @@
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options = {});
 
-    [CallWith=ScriptState, RaisesException]
+    [CallWith=ScriptState, RaisesException, Measure]
     Promise<sequence<FileSystemFileHandle>> showOpenFilePicker(
         optional OpenFilePickerOptions options = {});
-    [CallWith=ScriptState, RaisesException]
+    [CallWith=ScriptState, RaisesException, Measure]
     Promise<FileSystemFileHandle> showSaveFilePicker(
         optional SaveFilePickerOptions options = {});
-    [CallWith=ScriptState, RaisesException]
+    [CallWith=ScriptState, RaisesException, Measure]
     Promise<FileSystemDirectoryHandle> showDirectoryPicker(
         optional DirectoryPickerOptions options = {});
 
-    [CallWith=ScriptState, RaisesException]
+    [CallWith=ScriptState, RaisesException, Measure]
     Promise<FileSystemDirectoryHandle> getOriginPrivateDirectory();
 };

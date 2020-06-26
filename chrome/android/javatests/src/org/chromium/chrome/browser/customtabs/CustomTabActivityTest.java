@@ -96,6 +96,7 @@ import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -1773,7 +1774,8 @@ public class CustomTabActivityTest {
         Assert.assertFalse(
                 mCustomTabActivityTestRule.getActivity().getActivityTab().canGoForward());
 
-        List<HistoryItem> history = getHistory();
+        List<HistoryItem> history =
+                getHistory(mCustomTabActivityTestRule.getActivity().getActivityTab());
         assertEquals(1, history.size());
         assertEquals(mTestPage, history.get(0).getUrl());
     }
@@ -2341,7 +2343,7 @@ public class CustomTabActivityTest {
         Assert.assertTrue(tab.canGoBack());
         Assert.assertFalse(tab.canGoForward());
 
-        List<HistoryItem> history = getHistory();
+        List<HistoryItem> history = getHistory(tab);
         assertEquals(2, history.size());
         assertEquals(mTestPage2, history.get(0).getUrl());
         assertEquals(mTestPage, history.get(1).getUrl());
@@ -2435,7 +2437,7 @@ public class CustomTabActivityTest {
         Assert.assertFalse(tab.canGoBack());
         Assert.assertFalse(tab.canGoForward());
 
-        List<HistoryItem> history = getHistory();
+        List<HistoryItem> history = getHistory(tab);
         assertEquals(1, history.size());
         assertEquals(navigationUrl, history.get(0).getUrl());
     }
@@ -2707,10 +2709,11 @@ public class CustomTabActivityTest {
         }
     }
 
-    private static List<HistoryItem> getHistory() throws TimeoutException {
+    private static List<HistoryItem> getHistory(Tab tab) throws TimeoutException {
         final TestBrowsingHistoryObserver historyObserver = new TestBrowsingHistoryObserver();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(false);
+            Profile profile = Profile.fromWebContents(tab.getWebContents());
+            BrowsingHistoryBridge historyService = new BrowsingHistoryBridge(profile);
             historyService.setObserver(historyObserver);
             String historyQueryFilter = "";
             historyService.queryHistory(historyQueryFilter);

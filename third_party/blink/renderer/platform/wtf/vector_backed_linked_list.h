@@ -54,7 +54,9 @@ class VectorBackedLinkedListNode {
   template <typename VisitorDispathcer, typename A = Allocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(
       VisitorDispathcer visitor) const {
-    visitor->Trace(value_);
+    if (!WTF::IsWeak<ValueType>::value) {
+      visitor->Trace(value_);
+    }
   }
 
   // Those indices can be initialized with |kNotFound| (not with 0), since
@@ -187,6 +189,11 @@ class VectorBackedLinkedList {
   std::enable_if_t<A::kIsGarbageCollected> Trace(
       VisitorDispatcher visitor) const {
     nodes_.Trace(visitor);
+    if (WTF::IsWeak<ValueType>::value) {
+      visitor->template RegisterWeakCallbackMethod<
+          VectorBackedLinkedList,
+          &VectorBackedLinkedList::ProcessCustomWeakness>(this);
+    }
   }
 
 #if DCHECK_IS_ON()
@@ -229,6 +236,22 @@ class VectorBackedLinkedList {
   bool IsAnchor(wtf_size_t index) const { return index == anchor_index_; }
 
   void Unlink(const Node&);
+
+  template <typename A = Allocator>
+  std::enable_if_t<A::kIsGarbageCollected> ProcessCustomWeakness(
+      const typename A::LivenessBroker& broker) {
+    auto it = begin();
+    while (it != end()) {
+      if (!broker.IsHeapObjectAlive(it->Get())) {
+        // Calling erase() during the iteration is fine because this just
+        // invokes (Weak)Member's destructor and is guaranteed not to reenter
+        // the iteration.
+        it = erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 
   VectorType nodes_;
   static constexpr wtf_size_t anchor_index_ = 0;

@@ -251,9 +251,11 @@ void TestMoveLoop::EndMoveLoop() {
 SimpleTestDragDropClient::SimpleTestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
-    : DesktopDragDropClientAuraX11(window,
-                                   cursor_manager,
-                                   window->GetHost()->GetAcceleratedWidget()) {}
+    : DesktopDragDropClientAuraX11(
+          window,
+          cursor_manager,
+          static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
+}
 
 SimpleTestDragDropClient::~SimpleTestDragDropClient() = default;
 
@@ -283,7 +285,9 @@ TestDragDropClient::TestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
     : SimpleTestDragDropClient(window, cursor_manager),
-      source_window_(window->GetHost()->GetAcceleratedWidget()) {}
+      source_window_(
+          static_cast<x11::Window>(window->GetHost()->GetAcceleratedWidget())) {
+}
 
 TestDragDropClient::~TestDragDropClient() = default;
 
@@ -591,8 +595,8 @@ void ChromeSourceTargetStep2(SimpleTestDragDropClient* client,
   aura::client::SetDragDropDelegate(target_widget->GetNativeWindow(),
                                     delegate.get());
 
-  client->SetTopmostXWindow(
-      target_widget->GetNativeView()->GetHost()->GetAcceleratedWidget());
+  client->SetTopmostXWindow(static_cast<x11::Window>(
+      target_widget->GetNativeView()->GetHost()->GetAcceleratedWidget()));
 
   gfx::Rect target_widget_bounds_in_screen =
       target_widget->GetWindowBoundsInScreen();

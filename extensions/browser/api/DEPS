@@ -1,6 +1,8 @@
 include_rules = [
   "+components/device_event_log",
+  "+components/ukm",
   "+services/device/public",
+  "+services/metrics/public/cpp",
   "+storage/browser/file_system",
   "+storage/common/file_system",
   "+third_party/openscreen/src/cast/common/certificate/proto",

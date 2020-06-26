@@ -34,6 +34,10 @@ class Suggester {
   // information.
   virtual bool Suggest(const base::string16& text) = 0;
 
+  // Accepts the suggestion at a given index, index can be made default if
+  // unnecessary. Returns true if suggestion is accepted successfully.
+  virtual bool AcceptSuggestion(size_t index) = 0;
+
   virtual void DismissSuggestion() = 0;
 
   // Return the propose assistive action type.

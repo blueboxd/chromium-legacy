@@ -17,6 +17,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
+#include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -35,10 +36,6 @@
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_storage_impl.h"
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/nigori_handler_proxy.h"
-#include "components/sync/syncable/syncable_read_transaction.h"
-#include "components/sync/syncable/user_share.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -149,8 +146,7 @@ void SyncEngineBackend::OnInitializationComplete(
   ModelTypeSet types_to_purge =
       Difference(ModelTypeSet::All(), GetRoutingInfoTypes(routing_info));
 
-  sync_manager_->PurgeDisabledTypes(types_to_purge, ModelTypeSet(),
-                                    ModelTypeSet());
+  sync_manager_->PurgeDisabledTypes(types_to_purge);
   sync_manager_->ConfigureSyncer(
       reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
       base::BindOnce(&SyncEngineBackend::DoInitialProcessControlTypes,
@@ -311,9 +307,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
       &encryptor_, base::BindRepeating(&Nigori::GenerateScryptSalt),
       params.restored_key_for_bootstrapping,
       params.restored_keystore_key_for_bootstrapping);
-  nigori_handler_proxy_ =
-      std::make_unique<syncable::NigoriHandlerProxy>(&user_share_);
-  sync_encryption_handler_->AddObserver(nigori_handler_proxy_.get());
 
   sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
@@ -332,9 +325,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.authenticated_account_id = params.authenticated_account_id;
   args.invalidator_client_id = params.invalidator_client_id;
   args.engine_components_factory = std::move(params.engine_components_factory);
-  args.user_share = &user_share_;
   args.encryption_handler = sync_encryption_handler_.get();
-  args.nigori_handler = nigori_handler_proxy_.get();
   args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
       params.report_unrecoverable_error_function;
@@ -446,9 +437,6 @@ void SyncEngineBackend::ShutdownOnUIThread() {
 void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (nigori_handler_proxy_) {
-    sync_encryption_handler_->RemoveObserver(nigori_handler_proxy_.get());
-  }
   // Having no |sync_manager_| means that initialization was failed and NIGORI
   // wasn't connected and started.
   // TODO(crbug.com/922900): this logic seems fragile, maybe initialization and
@@ -462,9 +450,7 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
   registrar_ = nullptr;
 
   if (reason == DISABLE_SYNC) {
-    // TODO(crbug.com/922900): We may want to remove Nigori data from the
-    // storage if USS Nigori implementation is enabled.
-    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
+    DeleteLegacyDirectoryFilesAndNigoriStorage(sync_data_folder_);
   }
 
   host_.Reset();
@@ -484,11 +470,9 @@ void SyncEngineBackend::DoDestroySyncManager() {
   }
 }
 
-void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge,
-                                             const ModelTypeSet& to_journal,
-                                             const ModelTypeSet& to_unapply) {
+void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->PurgeDisabledTypes(to_purge, to_journal, to_unapply);
+  sync_manager_->PurgeDisabledTypes(to_purge);
   if (to_purge.Has(NIGORI)) {
     // We are using USS implementation of Nigori and someone asked us to purge
     // it's data. For regular datatypes it's controlled DataTypeManager, but

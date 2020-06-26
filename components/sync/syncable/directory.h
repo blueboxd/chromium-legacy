@@ -490,12 +490,6 @@ class Directory {
   Kernel* kernel();
   const Kernel* kernel() const;
 
-  // Delete the directory database files from the sync data folder to cleanup
-  // backend data. This should happen the first time sync is enabled for a user,
-  // to prevent accidentally reusing old sync data, as well as shutdown when the
-  // user is no longer syncing.
-  static void DeleteDirectoryFiles(const base::FilePath& directory_path);
-
  private:
   friend class SyncableDirectoryTest;
   friend class syncer::TestUserShare;

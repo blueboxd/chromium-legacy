@@ -134,8 +134,8 @@ SyncManagerImpl::SyncManagerImpl(
     const std::string& name,
     network::NetworkConnectionTracker* network_connection_tracker)
     : name_(name),
+      nigori_handler_proxy_(&user_share_),
       network_connection_tracker_(network_connection_tracker),
-      share_(nullptr),
       change_delegate_(nullptr),
       initialized_(false),
       observing_network_connectivity_changes_(false),
@@ -275,9 +275,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
   report_unrecoverable_error_function_ =
       args->report_unrecoverable_error_function;
 
-  DCHECK(args->user_share);
-  share_ = args->user_share;
-
   DCHECK(args->encryption_handler);
   sync_encryption_handler_ = args->encryption_handler;
 
@@ -286,6 +283,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   // handler in order to receive notifications triggered during encryption
   // startup.
   sync_encryption_handler_->AddObserver(this);
+  sync_encryption_handler_->AddObserver(&nigori_handler_proxy_);
   sync_encryption_handler_->AddObserver(encryption_observer_proxy_.get());
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
@@ -301,9 +299,9 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   DCHECK(backing_store);
 
-  share_->directory = std::make_unique<syncable::Directory>(
+  user_share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_, args->nigori_handler);
+      report_unrecoverable_error_function_, &nigori_handler_proxy_);
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -345,7 +343,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   }
 
   model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-      args->workers, share_, this, args->cancelation_signal,
+      args->workers, &user_share_, this, args->cancelation_signal,
       sync_encryption_handler_->GetKeystoreKeysHandler());
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
 
@@ -456,8 +454,7 @@ void SyncManagerImpl::StartConfiguration() {
 }
 
 syncable::Directory* SyncManagerImpl::directory() {
-  DCHECK(share_);
-  return share_->directory.get();
+  return user_share_.directory.get();
 }
 
 bool SyncManagerImpl::OpenDirectory(const InitArgs* args) {
@@ -509,18 +506,13 @@ void SyncManagerImpl::PurgePartiallySyncedTypes() {
                                       ModelTypeSet());
 }
 
-void SyncManagerImpl::PurgeDisabledTypes(ModelTypeSet to_purge,
-                                         ModelTypeSet to_journal,
-                                         ModelTypeSet to_unapply) {
+void SyncManagerImpl::PurgeDisabledTypes(ModelTypeSet to_purge) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(initialized_);
   DVLOG(1) << "Purging disabled types:\n\t"
-           << "types to purge: " << ModelTypeSetToString(to_purge) << "\n\t"
-           << "types to journal: " << ModelTypeSetToString(to_journal) << "\n\t"
-           << "types to unapply: " << ModelTypeSetToString(to_unapply);
-  DCHECK(to_purge.HasAll(to_journal));
-  DCHECK(to_purge.HasAll(to_unapply));
-  directory()->PurgeEntriesWithTypeIn(to_purge, to_journal, to_unapply);
+           << "types to purge: " << ModelTypeSetToString(to_purge);
+  directory()->PurgeEntriesWithTypeIn(to_purge, /*to_journal=*/ModelTypeSet(),
+                                      /*to_unapply=*/ModelTypeSet());
 }
 
 void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
@@ -594,10 +586,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
     directory()->SaveChanges();
   }
 
-  // TODO(crbug.com/922900): can this be replaced with DCHECK(share_)?
-  if (share_) {
-    share_->directory.reset();
-  }
+  user_share_.directory.reset();
 
   change_delegate_ = nullptr;
 
@@ -926,8 +915,7 @@ void SyncManagerImpl::SaveChanges() {
 
 UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
-  DCHECK(share_);
-  return share_;
+  return &user_share_;
 }
 
 ModelTypeConnector* SyncManagerImpl::GetModelTypeConnector() {

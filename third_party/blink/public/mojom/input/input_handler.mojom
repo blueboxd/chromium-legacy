@@ -245,6 +245,16 @@ interface WidgetInputHandlerHost {
 // should be fetched via the associated interface request so that input calls
 // remain in order. See https://goo.gl/x4ee8A for more details.
 interface FrameWidgetInputHandler {
+  // Adds text decorations between a given valid start and end offsets in the
+  // currently focused editable field.
+  AddImeTextSpansToExistingText(
+    uint32 start, uint32 end, array<ui.mojom.ImeTextSpan> ime_text_spans);
+
+  // Clears text decorations type between a given valid start and end offsets
+  // in the currently focused editable field.
+  ClearImeTextSpansByType(
+    uint32 start, uint32 end, ui.mojom.ImeTextSpanType type);
+
   // Sets the text composition to be between the given start and end offsets in
   // the currently focused editable field.
   SetCompositionFromExistingText(

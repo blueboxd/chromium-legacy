@@ -1164,6 +1164,7 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
   range_widget->range_info = AXRangeInfoData::New();
   range_widget->id = 10;
 
+  // State description changed event from range widget.
   std::vector<int> content_change_types = {
       static_cast<int>(mojom::ContentChangeType::TEXT),
       static_cast<int>(mojom::ContentChangeType::STATE_DESCRIPTION)};
@@ -1175,7 +1176,22 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
   event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(ax::mojom::Event::kValueChanged, last_dispatched_event_type());
-  // TODO(sahok): add test when source_node is not a range widget.
+
+  // State description changed event from non range widget.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* not_range_widget = event->node_data.back().get();
+  not_range_widget->id = 11;
+
+  event->source_id = 11;
+  event->event_type = AXEventType::WINDOW_STATE_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            last_dispatched_event_type());
+
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            last_dispatched_event_type());
 }
 
 TEST_F(AXTreeSourceArcTest, EventWithWrongSourceId) {

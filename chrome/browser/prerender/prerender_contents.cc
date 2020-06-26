@@ -26,6 +26,7 @@
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/prerender_util.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/prerender/common/prerender_final_status.h"
@@ -46,6 +47,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -435,9 +437,11 @@ void PrerenderContents::RenderFrameCreated(
   // new RenderFrame it's being used for prerendering before any navigations
   // occur.  Note that this is always triggered before the first navigation, so
   // there's no need to send the message just after the WebContents is created.
-  render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
-      render_frame_host->GetRoutingID(), prerender_mode_,
-      PrerenderHistograms::GetHistogramPrefix(origin_)));
+  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &chrome_render_frame);
+  chrome_render_frame->SetIsPrerendering(
+      prerender_mode_, PrerenderHistograms::GetHistogramPrefix(origin_));
 }
 
 void PrerenderContents::DidStopLoading() {
@@ -632,9 +636,15 @@ void PrerenderContents::PrepareForUse() {
   SetFinalStatus(FINAL_STATUS_USED);
 
   if (prerender_contents_.get()) {
-    prerender_contents_->SendToAllFrames(new PrerenderMsg_SetIsPrerendering(
-        MSG_ROUTING_NONE, prerender::mojom::PrerenderMode::kNoPrerender,
-        std::string()));
+    auto frames = prerender_contents_->GetAllFrames();
+    for (auto* frame : frames) {
+      mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame>
+          chrome_render_frame;
+      frame->GetRemoteAssociatedInterfaces()->GetInterface(
+          &chrome_render_frame);
+      chrome_render_frame->SetIsPrerendering(
+          prerender::mojom::PrerenderMode::kNoPrerender, std::string());
+    }
   }
 
   NotifyPrerenderStop();

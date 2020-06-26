@@ -123,12 +123,21 @@ Polymer({
       type: Boolean,
       value: true,
     },
+
+    /** @private */
+    shouldDisableClearAllButton_: {
+      type: Boolean,
+      computed: 'computeShouldDisableClearAllButton_(printJobs_,' +
+          'deletePrintJobHistoryAllowedByPolicy_)',
+    }
   },
 
   listeners: {
     'all-history-cleared': 'getPrintJobs_',
     'remove-print-job' : 'removePrintJob_',
   },
+
+  observers: ['onClearAllButtonUpdated_(shouldDisableClearAllButton_)'],
 
   /** @override */
   created() {
@@ -298,8 +307,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldDisableClearAllButton_() {
+  computeShouldDisableClearAllButton_() {
     return !this.deletePrintJobHistoryAllowedByPolicy_ ||
         !this.printJobs_.length;
   },
+
+  /** @private */
+  onClearAllButtonUpdated_() {
+    this.$.deleteIcon.classList.toggle(
+        'delete-enabled', !this.shouldDisableClearAllButton_);
+    this.$.deleteIcon.classList.toggle(
+        'delete-disabled', this.shouldDisableClearAllButton_);
+  }
 });

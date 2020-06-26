@@ -66,7 +66,8 @@ std::unique_ptr<views::Label> CreateAnnotationLabel() {
 
 }  // namespace
 
-SuggestionView::SuggestionView() {
+SuggestionView::SuggestionView(views::ButtonListener* listener)
+    : views::Button(listener) {
   index_label_ = AddChildView(CreateIndexLabel());
   index_label_->SetVisible(false);
   suggestion_label_ = AddChildView(CreateSuggestionLabel());

@@ -678,6 +678,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     // Reset the layout size as we've effectively laid out a different size.
     // This ensures a layout happens after the drag is done.
     tab_strip_->last_layout_size_ = gfx::Size();
+    if (views.at(0)->group().has_value())
+      tab_strip_->UpdateTabGroupVisuals(views.at(0)->group().value());
   }
 
   void StartedDragging(const std::vector<TabSlotView*>& views) override {

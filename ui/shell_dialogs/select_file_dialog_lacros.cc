@@ -7,12 +7,35 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/notreached.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
-#include "chromeos/lacros/mojom/select_file.mojom-shared.h"
 #include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 namespace ui {
+namespace {
+
+lacros::mojom::SelectFileDialogType GetMojoType(SelectFileDialog::Type type) {
+  switch (type) {
+    case SelectFileDialog::Type::SELECT_FOLDER:
+      return lacros::mojom::SelectFileDialogType::kFolder;
+    case SelectFileDialog::Type::SELECT_UPLOAD_FOLDER:
+      return lacros::mojom::SelectFileDialogType::kUploadFolder;
+    case SelectFileDialog::Type::SELECT_EXISTING_FOLDER:
+      return lacros::mojom::SelectFileDialogType::kExistingFolder;
+    case SelectFileDialog::Type::SELECT_OPEN_FILE:
+      return lacros::mojom::SelectFileDialogType::kOpenFile;
+    case SelectFileDialog::Type::SELECT_OPEN_MULTI_FILE:
+      return lacros::mojom::SelectFileDialogType::kOpenMultiFile;
+    case SelectFileDialog::Type::SELECT_SAVEAS_FILE:
+      return lacros::mojom::SelectFileDialogType::kSaveAsFile;
+    case SelectFileDialog::Type::SELECT_NONE:
+      NOTREACHED();
+      return lacros::mojom::SelectFileDialogType::kOpenFile;
+  }
+}
+
+}  // namespace
 
 SelectFileDialogLacros::Factory::Factory() = default;
 SelectFileDialogLacros::Factory::~Factory() = default;
@@ -26,20 +49,7 @@ ui::SelectFileDialog* SelectFileDialogLacros::Factory::Create(
 SelectFileDialogLacros::SelectFileDialogLacros(
     Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy)
-    : ui::SelectFileDialog(listener, std::move(policy)) {
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
-  // TODO(jamescook): Move LacrosChromeServiceImpl construction earlier and
-  // remove these checks. This function is racy with lacros-chrome startup and
-  // the initial mojo connection. In practice, however, the remote is bound
-  // long before the user can trigger a select dialog.
-  if (!lacros_chrome_service ||
-      !lacros_chrome_service->ash_chrome_service().is_bound()) {
-    LOG(ERROR) << "Not connected to ash-chrome.";
-    return;
-  }
-  lacros_chrome_service->ash_chrome_service()->BindSelectFile(
-      select_file_remote_.BindNewPipeAndPassReceiver());
-}
+    : ui::SelectFileDialog(listener, std::move(policy)) {}
 
 SelectFileDialogLacros::~SelectFileDialogLacros() = default;
 
@@ -62,15 +72,25 @@ void SelectFileDialogLacros::SelectFileImpl(
     void* params) {
   params_ = params;
 
+  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  // TODO(https://crbug.com/1090587): Move LacrosChromeServiceImpl construction
+  // earlier and remove these checks. This function is racy with lacros-chrome
+  // startup. In practice, however, the remote is bound long before the user
+  // can trigger a select dialog.
+  if (!lacros_chrome_service ||
+      !lacros_chrome_service->select_file_remote().is_bound()) {
+    LOG(ERROR) << "Not connected to ash-chrome.";
+    return;
+  }
+
   lacros::mojom::SelectFileOptionsPtr options =
       lacros::mojom::SelectFileOptions::New();
-  // TODO(jamescook): Correct type.
-  options->type = lacros::mojom::SelectFileDialogType::kOpenFile;
+  options->type = GetMojoType(type);
   options->title = title;
   options->default_path = default_path;
 
   // Send request to ash-chrome.
-  select_file_remote_->Select(
+  lacros_chrome_service->select_file_remote()->Select(
       std::move(options),
       base::BindOnce(&SelectFileDialogLacros::OnSelected, this));
 }

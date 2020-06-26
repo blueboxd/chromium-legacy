@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -689,11 +690,11 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
   if (!MayHaveProxies()) {
     bool skip_proxy = true;
     // There are a few internal WebUIs that use WebView tag that are whitelisted
     // for webRequest.
-    auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
     if (web_contents && WebViewGuest::IsGuest(web_contents)) {
       auto* guest_web_contents =
           WebViewGuest::GetTopLevelWebContents(web_contents);
@@ -742,12 +743,15 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
          (browser_context->IsOffTheRecord() &&
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
+  const ukm::SourceId ukm_source_id =
+      web_contents ? ukm::GetSourceIdForWebContentsDocument(web_contents)
+                   : ukm::kInvalidSourceId;
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
       &request_id_generator_, std::move(navigation_ui_data),
       std::move(navigation_id), std::move(proxied_receiver),
       std::move(target_factory_remote), std::move(header_client_receiver),
-      proxies_.get(), type);
+      proxies_.get(), type, ukm_source_id);
   return true;
 }
 

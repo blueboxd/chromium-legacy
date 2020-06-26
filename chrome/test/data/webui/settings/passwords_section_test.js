@@ -156,6 +156,8 @@ function simulateAccountStorageUser(passwordManager) {
     email: 'john@gmail.com',
   }]);
   passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+
+  flush();
 }
 
 suite('PasswordsSection', function() {
@@ -513,7 +515,6 @@ suite('PasswordsSection', function() {
 
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
-    flush();
 
     getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     flush();
@@ -529,7 +530,6 @@ suite('PasswordsSection', function() {
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
-    flush();
 
     getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     flush();
@@ -588,6 +588,7 @@ suite('PasswordsSection', function() {
 
     // Simulate removal of three.com/show
     passwordList.splice(2, 1);
+    flush();
 
     expectedList = [
       createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
@@ -720,10 +721,10 @@ suite('PasswordsSection', function() {
 
     // Simulate 'mail.com' being removed from the list.
     passwordsSection.splice('passwordExceptions', 1, 1);
+    flush();
     assertFalse(exceptionsListContainsUrl(
         passwordsSection.passwordExceptions, 'mail.com'));
     assertFalse(exceptionsListContainsUrl(exceptionList, 'mail.com'));
-    flush();
 
     const expectedExceptionList = [
       createExceptionEntry({url: 'docs.google.com', id: 0}),
@@ -810,8 +811,6 @@ suite('PasswordsSection', function() {
         {federationText: 'with chromium.org', username: 'bart', deviceId: 42});
     const passwordDialog = elementFactory.createPasswordEditDialog(item);
 
-    flush();
-
     assertEquals(item.federationText, passwordDialog.$.passwordInput.value);
     // Text should be readable.
     assertEquals('text', passwordDialog.$.passwordInput.type);
@@ -825,7 +824,6 @@ suite('PasswordsSection', function() {
         {url: 'goo.gl', username: 'bart', accountId: 42});
     const accountPasswordDialog =
         elementFactory.createPasswordEditDialog(accountPassword);
-    flush();
 
     // By default no message is displayed.
     assertTrue(accountPasswordDialog.$.storageDetails.hidden);
@@ -846,7 +844,6 @@ suite('PasswordsSection', function() {
         {url: 'goo.gl', username: 'bart', deviceId: 42});
     const devicePasswordDialog =
         elementFactory.createPasswordEditDialog(devicePassword);
-    flush();
 
     // By default no message is displayed.
     assertTrue(devicePasswordDialog.$.storageDetails.hidden);
@@ -868,7 +865,6 @@ suite('PasswordsSection', function() {
             {url: 'goo.gl', username: 'bart', deviceId: 42, accountId: 43});
         const accountAndDevicePasswordDialog =
             elementFactory.createPasswordEditDialog(accountAndDevicePassword);
-        flush();
 
         // By default no message is displayed.
         assertTrue(accountAndDevicePasswordDialog.$.storageDetails.hidden);
@@ -973,7 +969,7 @@ suite('PasswordsSection', function() {
         });
   });
 
-  test('closingPasswordsSectionHidesUndoToast', function(done) {
+  test('closingPasswordsSectionHidesUndoToast', function() {
     const passwordEntry =
         createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -990,13 +986,12 @@ suite('PasswordsSection', function() {
     // Remove the passwords section from the DOM and check that this closes
     // the undo toast.
     document.body.removeChild(passwordsSection);
+    flush();
     assertFalse(toastManager.open);
-
-    done();
   });
 
   // Chrome offers the export option when there are passwords.
-  test('offerExportWhenPasswords', function(done) {
+  test('offerExportWhenPasswords', function() {
     const passwordList = [
       createPasswordEntry({url: 'googoo.com', username: 'Larry'}),
     ];
@@ -1005,19 +1000,17 @@ suite('PasswordsSection', function() {
 
     validatePasswordList(passwordsSection, passwordList);
     assertFalse(passwordsSection.$.menuExportPassword.hidden);
-    done();
   });
 
   // Chrome shouldn't offer the option to export passwords if there are no
   // passwords.
-  test('noExportIfNoPasswords', function(done) {
+  test('noExportIfNoPasswords', function() {
     const passwordList = [];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
 
     validatePasswordList(passwordsSection, passwordList);
     assertTrue(passwordsSection.$.menuExportPassword.hidden);
-    done();
   });
 
   // Test that clicking the Export Passwords menu item opens the export
@@ -1122,6 +1115,7 @@ suite('PasswordsSection', function() {
         email: 'john@gmail.com',
       }]);
       passwordManager.setIsOptedInForAccountStorageAndNotify(false);
+      flush();
       assertTrue(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertTrue(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
@@ -1131,6 +1125,7 @@ suite('PasswordsSection', function() {
 
       // Opt in.
       passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+      flush();
       assertTrue(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertFalse(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
@@ -1176,6 +1171,7 @@ suite('PasswordsSection', function() {
       flush();
 
       passwordManager.setIsOptedInForAccountStorageAndNotify(false);
+      flush();
       assertEquals('john@gmail.com', passwordsSection.$.accountEmail.innerText);
       const bg = passwordsSection.$.profileIcon.style.backgroundImage;
       assertTrue(bg.includes(iconDataUrl));
@@ -1190,14 +1186,7 @@ suite('PasswordsSection', function() {
       const passwordsSection =
           elementFactory.createPasswordsSection(passwordManager, [], []);
 
-      simulateSyncStatus({signedIn: false});
-      simulateStoredAccounts([{
-        fullName: 'john doe',
-        givenName: 'john',
-        email: 'john@gmail.com',
-      }]);
-      passwordManager.setIsOptedInForAccountStorageAndNotify(true);
-
+      simulateAccountStorageUser(passwordManager);
       const isDisplayed = element => !!element && !element.hidden;
       assertTrue(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
@@ -1230,6 +1219,7 @@ suite('PasswordsSection', function() {
       // Opting in still doesn't display it because the user has no device
       // passwords yet.
       passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+      flush();
       assertTrue(passwordsSection.$.devicePasswordsLink.hidden);
 
       // Add a device password. The button shows up, with the text in singular
@@ -1377,7 +1367,7 @@ suite('PasswordsSection', function() {
   }
 
   // The export dialog is dismissable.
-  test('exportDismissable', function(done) {
+  test('exportDismissable', function() {
     const exportDialog =
         elementFactory.createExportPasswordsDialog(passwordManager);
 
@@ -1385,8 +1375,6 @@ suite('PasswordsSection', function() {
     exportDialog.$$('#cancelButton').click();
     flush();
     assertFalse(!!exportDialog.$$('#dialog_start'));
-
-    done();
   });
 
   test('fires close event when canceled', () => {
@@ -1633,8 +1621,8 @@ suite('PasswordsSection', function() {
       assertFalse(passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
       assertFalse(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
       assertTrue(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
+
       simulateSyncStatus({signedIn: false});
-      flush();
       assertTrue(passwordsSection.$$('#checkPasswordsBannerContainer').hidden);
       assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
       assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);

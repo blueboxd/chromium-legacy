@@ -385,7 +385,7 @@ def make_dict_member_get(cg_context):
 if ({has}()) {{
   return {get}();
 }}
-return std::move(fallback_value);""",
+return fallback_value;""",
                     has=blink_member_name.has_api,
                     get=blink_member_name.get_api))
         func_def.body.append(body_node)
@@ -685,7 +685,8 @@ def make_fill_with_own_dict_members_func(cg_context):
         expr = _format("ToV8({}(), creation_context, isolate)", get_api)
         if member_type.is_nullable and member_type.unwrap().is_string:
             expr = _format(
-                "({get_api}().IsNull() ? v8::Null(isolate) : {to_v8})",
+                "({get_api}().IsNull() ? v8::Null(isolate).As<v8::Value>() "
+                ": {to_v8})",
                 get_api=get_api,
                 to_v8=expr)
         return expr

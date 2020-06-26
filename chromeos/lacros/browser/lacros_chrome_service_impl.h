@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "chromeos/lacros/mojom/lacros.mojom.h"
+#include "chromeos/lacros/mojom/select_file.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -21,8 +22,8 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
   LacrosChromeServiceImpl();
   ~LacrosChromeServiceImpl() override;
 
-  mojo::Remote<lacros::mojom::AshChromeService>& ash_chrome_service() {
-    return ash_chrome_service_;
+  mojo::Remote<lacros::mojom::SelectFile>& select_file_remote() {
+    return select_file_remote_;
   }
 
   // lacros::mojom::LacrosChromeService:
@@ -42,6 +43,9 @@ class COMPONENT_EXPORT(CHROMEOS_LACROS) LacrosChromeServiceImpl
   // should be available.
   mojo::PendingReceiver<lacros::mojom::AshChromeService>
       pending_ash_chrome_service_receiver_;
+
+  // Proxy to SelectFile interface in ash-chrome.
+  mojo::Remote<lacros::mojom::SelectFile> select_file_remote_;
 };
 
 }  // namespace chromeos

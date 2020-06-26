@@ -34,16 +34,25 @@ TEST(ArcAccessibilityUtilTest, FromContentChangeTypesToAXEvent) {
 
   std::vector<int32_t> state_description = {
       static_cast<int32_t>(mojom::ContentChangeType::STATE_DESCRIPTION)};
-  // TODO(sahok): add test when source_node is not a range widget.
   EXPECT_EQ(
       ax::mojom::Event::kValueChanged,
       FromContentChangeTypesToAXEvent(state_description, source_node_range));
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            FromContentChangeTypesToAXEvent(state_description,
+                                            source_node_not_range));
+
   EXPECT_EQ(ax::mojom::Event::kValueChanged,
             ToAXEvent(AXEventType::WINDOW_STATE_CHANGED, state_description,
                       &source_node_range, &source_node_range));
   EXPECT_EQ(ax::mojom::Event::kValueChanged,
             ToAXEvent(AXEventType::WINDOW_CONTENT_CHANGED, state_description,
                       &source_node_range, &source_node_range));
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            ToAXEvent(AXEventType::WINDOW_STATE_CHANGED, state_description,
+                      &source_node_not_range, &source_node_not_range));
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            ToAXEvent(AXEventType::WINDOW_CONTENT_CHANGED, state_description,
+                      &source_node_not_range, &source_node_not_range));
 
   std::vector<int32_t> without_state_description = {
       static_cast<int32_t>(mojom::ContentChangeType::TEXT)};
@@ -56,10 +65,13 @@ TEST(ArcAccessibilityUtilTest, FromContentChangeTypesToAXEvent) {
   std::vector<int32_t> include_state_description = {
       static_cast<int32_t>(mojom::ContentChangeType::TEXT),
       static_cast<int32_t>(mojom::ContentChangeType::STATE_DESCRIPTION)};
-  // TODO(sahok): add test when source_node is not a range widget.
   EXPECT_EQ(ax::mojom::Event::kValueChanged,
             FromContentChangeTypesToAXEvent(include_state_description,
                                             source_node_range));
+  EXPECT_EQ(ax::mojom::Event::kAriaAttributeChanged,
+            FromContentChangeTypesToAXEvent(include_state_description,
+                                            source_node_not_range));
+
   EXPECT_EQ(
       ax::mojom::Event::kValueChanged,
       ToAXEvent(AXEventType::WINDOW_STATE_CHANGED, include_state_description,
@@ -68,6 +80,14 @@ TEST(ArcAccessibilityUtilTest, FromContentChangeTypesToAXEvent) {
       ax::mojom::Event::kValueChanged,
       ToAXEvent(AXEventType::WINDOW_CONTENT_CHANGED, include_state_description,
                 &source_node_range, &source_node_range));
+  EXPECT_EQ(
+      ax::mojom::Event::kAriaAttributeChanged,
+      ToAXEvent(AXEventType::WINDOW_STATE_CHANGED, include_state_description,
+                &source_node_not_range, &source_node_not_range));
+  EXPECT_EQ(
+      ax::mojom::Event::kAriaAttributeChanged,
+      ToAXEvent(AXEventType::WINDOW_CONTENT_CHANGED, include_state_description,
+                &source_node_not_range, &source_node_not_range));
 
   std::vector<int32_t> not_enum_value = {111};
   EXPECT_EQ(base::nullopt,

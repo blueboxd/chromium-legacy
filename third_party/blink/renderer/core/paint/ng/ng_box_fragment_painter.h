@@ -21,7 +21,6 @@ namespace blink {
 class BoxDecorationData;
 class FillLayer;
 class HitTestLocation;
-class HitTestRequest;
 class HitTestResult;
 class NGFragmentItems;
 class NGInlineCursor;
@@ -183,8 +182,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                const DisplayItemClient& background_client);
 
   bool ShouldRecordHitTestData(const PaintInfo&);
-
-  bool VisibleToHitTestRequest(const HitTestRequest&) const;
 
   // This struct has common data needed while traversing trees for the hit
   // testing.

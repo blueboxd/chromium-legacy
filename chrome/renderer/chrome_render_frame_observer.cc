@@ -25,6 +25,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/media/media_feeds.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/prerender/prerender_observer_list.h"
 #include "chrome/renderer/web_apps.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -126,6 +127,7 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
                  base::Unretained(this)));
+
   // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())
     return;
@@ -169,28 +171,6 @@ bool ChromeRenderFrameObserver::OnAssociatedInterfaceRequestForFrame(
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle* handle) {
   return associated_interfaces_.TryBindInterface(interface_name, handle);
-}
-
-bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
-  // Filter only.
-  bool handled = true;
-  // Messages in this message map have multiple handlers. Please do not add more
-  // messages here.
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return false;
-
-  // Normal message handlers. Legacy IPC is deprecated, but leaving this as a
-  // placeholder in case new messages are added before legacy IPC handling is
-  // wholly removed from this class.
-  IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 void ChromeRenderFrameObserver::ReadyToCommitNavigation(
@@ -306,21 +286,28 @@ void ChromeRenderFrameObserver::OnDestruct() {
   delete this;
 }
 
-void ChromeRenderFrameObserver::OnSetIsPrerendering(
+void ChromeRenderFrameObserver::SetIsPrerendering(
     prerender::mojom::PrerenderMode mode,
     const std::string& histogram_prefix) {
-  if (mode != prerender::mojom::PrerenderMode::kNoPrerender) {
+  bool is_prerendering = mode != prerender::mojom::PrerenderMode::kNoPrerender;
+  if (is_prerendering) {
     // If the PrerenderHelper for this frame already exists, don't create it. It
     // can already be created for subframes during handling of
     // RenderFrameCreated, if the parent frame was prerendering at time of
     // subframe creation.
-    if (prerender::PrerenderHelper::Get(render_frame()))
-      return;
+    auto* prerender_helper = prerender::PrerenderHelper::Get(render_frame());
+    if (!prerender_helper) {
+      // The PrerenderHelper will destroy itself either after recording
+      // histograms or on destruction of the RenderView.
+      prerender_helper = new prerender::PrerenderHelper(render_frame(), mode,
+                                                        histogram_prefix);
+    }
 
-    // The PrerenderHelper will destroy itself either after recording histograms
-    // or on destruction of the RenderView.
-    new prerender::PrerenderHelper(render_frame(), mode, histogram_prefix);
+    prerender_helper->SetIsPrerendering(mode, histogram_prefix);
   }
+
+  prerender::PrerenderObserverList::SetIsPrerenderingForFrame(render_frame(),
+                                                              is_prerendering);
 }
 
 void ChromeRenderFrameObserver::SetWindowFeatures(

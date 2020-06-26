@@ -3716,6 +3716,7 @@ crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Ti
 crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 
 crbug.com/1002377 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Pass Timeout ]
+crbug.com/1073296 external/wpt/service-workers/service-worker/activation.https.html [ Pass Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 

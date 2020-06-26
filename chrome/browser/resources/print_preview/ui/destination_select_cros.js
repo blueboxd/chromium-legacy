@@ -62,7 +62,7 @@ Polymer({
     /** @type {!Destination} */
     destination: {
       type: Object,
-      observer: 'updateStatusText_',
+      observer: 'onDestinationChange_',
     },
 
 
@@ -284,9 +284,11 @@ Polymer({
     // dropdown printer status icons to recalculate their badge color.
     this.notifyPath(`recentDestinationList.${indexFound}.printerStatusReason`);
 
-    // Update the status text if this printer status is for the
-    // currently selected printer.
+    // If |printerStatus| is for the currently selected printer, use notifyPath
+    // to trigger the destination printer status icon to recalculate its badge
+    // color. Next update the destination error status text.
     if (this.destination && this.destination.key === destinationKey) {
+      this.notifyPath(`destination.printerStatusReason`);
       this.updateStatusText_();
     }
   },
@@ -327,6 +329,11 @@ Polymer({
     }
     return seenNoErrorReason ? PrinterStatusReason.NO_ERROR :
                                PrinterStatusReason.UNKNOWN_REASON;
+  },
+
+  /** @private */
+  onDestinationChange_: function() {
+    this.updateStatusText_();
   },
 
   /**

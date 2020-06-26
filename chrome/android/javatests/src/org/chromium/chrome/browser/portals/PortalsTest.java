@@ -153,10 +153,11 @@ public class PortalsTest {
         swapWaiter.waitForCallback(currSwapCount, 1);
     }
 
-    private List<HistoryItem> getBrowsingHistory() throws TimeoutException {
+    private List<HistoryItem> getBrowsingHistory(Tab tab) throws TimeoutException {
         TestBrowsingHistoryObserver observer = new TestBrowsingHistoryObserver();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowsingHistoryBridge provider = new BrowsingHistoryBridge(/* isIncognito */ false);
+            Profile profile = Profile.fromWebContents(tab.getWebContents());
+            BrowsingHistoryBridge provider = new BrowsingHistoryBridge(profile);
             provider.setObserver(observer);
             provider.queryHistory(/* query */ "");
         });
@@ -482,7 +483,7 @@ public class PortalsTest {
 
         // Content loaded in a portal should not be considered a page visit by the
         // user.
-        List<HistoryItem> history = getBrowsingHistory();
+        List<HistoryItem> history = getBrowsingHistory(tab);
         Assert.assertEquals(1, history.size());
         Assert.assertEquals(mainUrl, history.get(0).getUrl());
         Assert.assertEquals(mainTitle, history.get(0).getTitle());
@@ -491,7 +492,7 @@ public class PortalsTest {
 
         // Now that the portal has activated, its contents are presented to the user
         // as a navigation in the tab, so this should be considered a page visit.
-        history = getBrowsingHistory();
+        history = getBrowsingHistory(tab);
         Assert.assertEquals(2, history.size());
         Assert.assertEquals(portalUrl, history.get(0).getUrl());
         Assert.assertEquals(portalTitle, history.get(0).getTitle());

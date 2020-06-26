@@ -315,7 +315,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
 
     // Then invoke the process() method to perform JS buffer manipulation. The
     // output buffer should contain a constant value of 2.
-    processor->Process(&input_buses, &output_buses, &param_data_map);
+    processor->Process(input_buses, output_buses, param_data_map);
     for (unsigned i = 0; i < output_channel->length(); ++i) {
       EXPECT_EQ(output_channel->Data()[i], 2);
     }

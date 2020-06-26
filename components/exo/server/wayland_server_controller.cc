@@ -44,12 +44,10 @@ WaylandServerController::WaylandServerController(
     std::unique_ptr<FileHelper> file_helper,
     std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
     std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager)
-    : wm_helper_(std::make_unique<WMHelperChromeOS>()),
-      notification_surface_manager_(std::move(notification_surface_manager)),
-      input_method_surface_manager_(std::move(input_method_surface_manager)) {
+    : wm_helper_(std::make_unique<WMHelperChromeOS>()) {
   WMHelper::SetInstance(wm_helper_.get());
-  display_ = std::make_unique<Display>(notification_surface_manager_.get(),
-                                       input_method_surface_manager_.get(),
+  display_ = std::make_unique<Display>(std::move(notification_surface_manager),
+                                       std::move(input_method_surface_manager),
                                        std::move(file_helper));
   wayland_server_ = wayland::Server::Create(display_.get());
   // Wayland server creation can fail if XDG_RUNTIME_DIR is not set correctly.

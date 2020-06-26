@@ -93,9 +93,6 @@ js_type_check("closure_compile") {
 
   if (is_chromeos) {
     deps += [
-      #":cr_policy_network_behavior_mojo_tests",
-      #":cr_policy_network_indicator_mojo_tests",
-      #":cr_policy_network_indicator_tests",
       #":cr_searchable_drop_down_tests",
     ]
   }

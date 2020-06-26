@@ -280,7 +280,7 @@ TEST_F(SaveUpdateBubbleControllerTest, ClickSave) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, ClickSaveInUpdateState) {
@@ -297,7 +297,7 @@ TEST_F(SaveUpdateBubbleControllerTest, ClickSaveInUpdateState) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, ClickNever) {
@@ -325,7 +325,7 @@ TEST_F(SaveUpdateBubbleControllerTest, ClickUpdate) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, ClickUpdateInSaveState) {
@@ -342,7 +342,7 @@ TEST_F(SaveUpdateBubbleControllerTest, ClickUpdateInSaveState) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, GetInitialUsername_MatchedUsername) {
@@ -409,7 +409,7 @@ TEST_F(SaveUpdateBubbleControllerTest, SignInPromoCancel) {
   DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
-      password_manager::metrics_util::CLICKED_SAVE, 1);
+      password_manager::metrics_util::CLICKED_ACCEPT, 1);
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, SignInPromoDismiss) {
@@ -424,7 +424,7 @@ TEST_F(SaveUpdateBubbleControllerTest, SignInPromoDismiss) {
   DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
-      password_manager::metrics_util::CLICKED_SAVE, 1);
+      password_manager::metrics_util::CLICKED_ACCEPT, 1);
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }

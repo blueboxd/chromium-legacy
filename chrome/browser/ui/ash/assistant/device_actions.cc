@@ -177,7 +177,7 @@ void DeviceActions::SetSwitchAccessEnabled(bool enabled) {
 
 bool DeviceActions::OpenAndroidApp(const AndroidAppInfo& app_info) {
   auto status = delegate_->GetAndroidAppStatus(app_info.package_name);
-  if (status != AppStatus::AVAILABLE)
+  if (status != AppStatus::kAvailable)
     return false;
 
   auto* app = ARC_GET_INSTANCE_FOR_METHOD(
@@ -230,7 +230,7 @@ void DeviceActions::RemoveAppListEventSubscriber(
 base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
     const AndroidAppInfo& app_info) {
   auto status = delegate_->GetAndroidAppStatus(app_info.package_name);
-  if (status != AppStatus::AVAILABLE)
+  if (status != AppStatus::kAvailable)
     return base::nullopt;
 
   return GetLaunchIntent(std::move(app_info));

@@ -3716,7 +3716,7 @@
   {
     "name": "print-job-management-app",
     "owners": [ "jimmyxgong", "cros-peripherals@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "print-with-reduced-rasterization",
@@ -3726,7 +3726,7 @@
   {
     "name": "printer-status",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "privacy-elevated-android",

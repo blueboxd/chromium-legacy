@@ -58,10 +58,9 @@ class FakeDesktopSession : public DesktopSession {
 
 class MockDaemonProcess : public DaemonProcess {
  public:
-  MockDaemonProcess(
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const base::Closure& stopped_callback);
+  MockDaemonProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+                    base::OnceClosure stopped_callback);
   ~MockDaemonProcess() override;
 
   std::unique_ptr<DesktopSession> DoCreateDesktopSession(
@@ -95,9 +94,10 @@ FakeDesktopSession::~FakeDesktopSession() = default;
 MockDaemonProcess::MockDaemonProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback)
-    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback) {
-}
+    base::OnceClosure stopped_callback)
+    : DaemonProcess(caller_task_runner,
+                    io_task_runner,
+                    std::move(stopped_callback)) {}
 
 MockDaemonProcess::~MockDaemonProcess() = default;
 

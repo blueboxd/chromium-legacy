@@ -235,6 +235,12 @@ void SystemClipboard::CommitWrite() {
   clipboard_->CommitWrite();
 }
 
+void SystemClipboard::CopyToFindPboard(const String& text) {
+#if defined(OS_MACOSX)
+  clipboard_->WriteStringToFindPboard(text);
+#endif
+}
+
 void SystemClipboard::Trace(Visitor* visitor) const {
   visitor->Trace(clipboard_);
 }

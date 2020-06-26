@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/exo/display.h"
 
 namespace exo {
 
@@ -16,7 +17,6 @@ class Server;
 class WaylandWatcher;
 }  // namespace wayland
 
-class Display;
 class FileHelper;
 class WMHelper;
 class NotificationSurfaceManager;
@@ -37,7 +37,7 @@ class WaylandServerController {
   ~WaylandServerController();
 
   InputMethodSurfaceManager* input_method_surface_manager() {
-    return input_method_surface_manager_.get();
+    return display_->input_method_surface_manager();
   }
 
   WaylandServerController(
@@ -50,8 +50,6 @@ class WaylandServerController {
   std::unique_ptr<Display> display_;
   std::unique_ptr<wayland::Server> wayland_server_;
   std::unique_ptr<wayland::WaylandWatcher> wayland_watcher_;
-  std::unique_ptr<NotificationSurfaceManager> notification_surface_manager_;
-  std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandServerController);
 };

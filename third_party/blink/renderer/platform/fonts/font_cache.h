@@ -189,7 +189,7 @@ class PLATFORM_EXPORT FontCache {
   static const AtomicString& LegacySystemFontFamily();
 #endif
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
   static void SetSystemFontFamily(const AtomicString&);
 #endif
 

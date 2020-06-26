@@ -51,9 +51,11 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
   void PostRequestCompleteCallback(std::unique_ptr<std::string> response_body,
                                    int net_error,
                                    const std::string& header_etag,
+                                   const std::string& header_x_cup_server_proof,
                                    int64_t xheader_retry_after_sec) {
     EXPECT_EQ(net_error, 0);
-    EXPECT_GT(header_etag.length(), 0u);
+    EXPECT_STREQ(header_etag.c_str(), "Wfhw789h");
+    EXPECT_STREQ(header_x_cup_server_proof.c_str(), "server-proof");
     EXPECT_EQ(xheader_retry_after_sec, 67);
     PostRequestCompleted();
   }
@@ -75,6 +77,7 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
     http_response->set_content_type("text/plain");
     http_response->AddCustomHeader("X-Retry-After", "67");
     http_response->AddCustomHeader("ETag", "Wfhw789h");
+    http_response->AddCustomHeader("X-Cup-Server-Proof", "server-proof");
     return http_response;
   }
 

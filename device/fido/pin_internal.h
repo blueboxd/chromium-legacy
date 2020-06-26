@@ -65,14 +65,15 @@ base::Optional<bssl::UniquePtr<EC_POINT>> PointFromKeyAgreementResponse(
     const EC_GROUP* group,
     const KeyAgreementResponse& response);
 
+// MakePinAuth returns a PIN protocol v1 authentication tag for |data|.
+std::vector<uint8_t> MakePinAuth(base::span<const uint8_t> secret,
+                                 base::span<const uint8_t> data);
+
 // CalculateSharedKey writes the CTAP2 shared key between |key| and |peers_key|
 // to |out_shared_key|.
 void CalculateSharedKey(const EC_KEY* key,
                         const EC_POINT* peers_key,
                         uint8_t out_shared_key[SHA256_DIGEST_LENGTH]);
-
-// EncodeCOSEPublicKey returns the public part of |key| as a COSE structure.
-cbor::Value::MapValue EncodeCOSEPublicKey(const EC_KEY* key);
 
 // Encrypt encrypts |plaintext| using |key|, writing the ciphertext to
 // |out_ciphertext|. |plaintext| must be a whole number of AES blocks.

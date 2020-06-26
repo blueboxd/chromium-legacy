@@ -23,10 +23,9 @@ class OptimizationGuideBridge {
   OptimizationGuideBridge(const OptimizationGuideBridge&) = delete;
   OptimizationGuideBridge& operator=(const OptimizationGuideBridge&) = delete;
   void Destroy(JNIEnv* env);
-  void RegisterOptimizationTypesAndTargets(
+  void RegisterOptimizationTypes(
       JNIEnv* env,
-      const base::android::JavaParamRef<jintArray>& joptimization_types,
-      const base::android::JavaParamRef<jintArray>& joptimization_targets);
+      const base::android::JavaParamRef<jintArray>& joptimization_types);
   void CanApplyOptimization(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& url,

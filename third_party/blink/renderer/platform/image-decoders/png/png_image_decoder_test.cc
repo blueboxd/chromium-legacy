@@ -1364,7 +1364,7 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
        4u, 160u},
 
       {"/images/resources/png-simple.png", 1u, 700u},
-      {"/images/resources/lenna.png", 1u, 40000u},
+      {"/images/resources/gracehopper.png", 1u, 40000u},
   };
   for (const auto& rec : g_recs) {
     scoped_refptr<SharedBuffer> full_data = ReadFile(rec.name);

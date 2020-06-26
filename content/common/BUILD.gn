@@ -58,8 +58,6 @@ source_set("common") {
     "appcache_interfaces.h",
     "ax_content_node_data.cc",
     "ax_content_node_data.h",
-    "ax_content_tree_data.cc",
-    "ax_content_tree_data.h",
     "ax_content_tree_update.h",
     "ax_serialization_utils.cc",
     "ax_serialization_utils.h",
@@ -126,7 +124,6 @@ source_set("common") {
     "input/gesture_event_stream_validator.cc",
     "input/gesture_event_stream_validator.h",
     "input/input_event_ack_state.cc",
-    "input/input_event_dispatch_type.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
     "input/synthetic_gesture_params.cc",
@@ -438,7 +435,6 @@ mojom("mojo_bindings") {
   sources = [
     "associated_interfaces.mojom",
     "ax_content_node_data.mojom",
-    "ax_content_tree_data.mojom",
     "ax_content_tree_update.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
@@ -490,23 +486,6 @@ mojom("mojo_bindings") {
           [ "//content/common/ax_content_node_data_mojom_traits.h" ]
       traits_sources =
           [ "//content/common/ax_content_node_data_mojom_traits.cc" ]
-      traits_public_deps = [
-        ":mojo_bindings_shared",
-        "//ui/accessibility",
-      ]
-      traits_deps = [ "//ui/accessibility/mojom" ]
-    },
-    {
-      types = [
-        {
-          mojom = "ax.mojom.AXContentTreeData"
-          cpp = "::content::AXContentTreeData"
-        },
-      ]
-      traits_headers =
-          [ "//content/common/ax_content_tree_data_mojom_traits.h" ]
-      traits_sources =
-          [ "//content/common/ax_content_tree_data_mojom_traits.cc" ]
       traits_public_deps = [
         ":mojo_bindings_shared",
         "//ui/accessibility",

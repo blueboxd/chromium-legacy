@@ -93,10 +93,8 @@ void SecurityTokenOperationBridge::SignDigest(
                             base::nullopt);
     return;
   }
-  certificate_provider_service_->RequestSignatureBySpki(
-      subject_public_key_info, crypto_algorithm.value(), data, base::nullopt,
-      base::BindOnce(&SecurityTokenOperationBridge::OnSignCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  // TODO(b/119914122): Call RequestSignatureBySpki().
+  std::move(callback).Run(mojom::SignatureResult::kFailed, base::nullopt);
 }
 
 void SecurityTokenOperationBridge::OnSignCompleted(

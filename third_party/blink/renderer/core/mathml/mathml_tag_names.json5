@@ -28,6 +28,14 @@
       interfaceName: "MathMLRowElement",
     },
     {
+      name: "mroot",
+      interfaceName: "MathMLRadicalElement",
+    },
+    {
+      name: "msqrt",
+      interfaceName: "MathMLRadicalElement",
+    },
+    {
       name: "merror",
       interfaceName: "MathMLRowElement",
     },

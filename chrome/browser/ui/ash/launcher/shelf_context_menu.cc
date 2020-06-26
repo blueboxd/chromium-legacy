@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/metrics/user_metrics.h"
@@ -307,7 +308,9 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   const gfx::VectorIcon& icon = GetCommandIdVectorIcon(type, string_id);
   if (!icon.is_empty()) {
     menu_model->AddItemWithStringIdAndIcon(
-        type, string_id, ui::ImageModel::FromVectorIcon(icon));
+        type, string_id,
+        ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+                                       ash::kAppContextMenuIconSize));
     return;
   }
   // If the MenuType is a check item.

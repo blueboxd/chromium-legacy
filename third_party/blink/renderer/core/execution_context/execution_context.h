@@ -131,7 +131,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   static ExecutionContext* ForRelevantRealm(
       const v8::FunctionCallbackInfo<v8::Value>&);
 
-  virtual bool IsDocument() const { return false; }
+  virtual bool IsWindow() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }
   virtual bool IsWorkerGlobalScope() const { return false; }
   virtual bool IsWorkletGlobalScope() const { return false; }

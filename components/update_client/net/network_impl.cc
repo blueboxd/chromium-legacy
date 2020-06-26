@@ -139,6 +139,7 @@ void NetworkFetcherImpl::PostRequest(
             std::move(post_request_complete_callback)
                 .Run(std::move(response_body), simple_url_loader->NetError(),
                      GetStringHeader(simple_url_loader, kHeaderEtag),
+                     GetStringHeader(simple_url_loader, kHeaderXCupServerProof),
                      GetInt64Header(simple_url_loader, kHeaderXRetryAfter));
           },
           simple_url_loader_.get(), std::move(post_request_complete_callback)),

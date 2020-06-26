@@ -29,8 +29,11 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate), connection_(connection) {}
 
 WaylandWindow::~WaylandWindow() {
+  shutting_down_ = true;
+  RemoveSurfaceListener();
+
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  if (surface())
+  if (wayland_surface_)
     connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
   if (parent_window_)
@@ -80,8 +83,10 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
 }
 
 gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
-  return wayland_surface_.GetWidget();
+  DCHECK(wayland_surface_);
+  return wayland_surface_->GetWidget();
 }
+
 void WaylandWindow::SetPointerFocus(bool focus) {
   has_pointer_focus_ = focus;
 
@@ -316,6 +321,12 @@ void WaylandWindow::SetBoundsDip(const gfx::Rect& bounds_dip) {
 }
 
 bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+  wayland_surface_ = std::make_unique<WaylandSurface>(connection_, this);
+  if (!surface()) {
+    LOG(ERROR) << "Failed to create wl_surface";
+    return false;
+  }
+
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
   // changes.
@@ -324,13 +335,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   opacity_ = properties.opacity;
   type_ = properties.type;
 
-  wayland_surface_.surface_ = connection_->CreateSurface();
-  wayland_surface_.root_window_ = this;
-  if (!surface()) {
-    LOG(ERROR) << "Failed to create wl_surface";
-    return false;
-  }
-  wl_surface_set_user_data(surface(), this);
   AddSurfaceListener();
 
   connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
@@ -350,14 +354,16 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   return true;
 }
 
+// TODO(crbug.com/1099838): Move wl_surface calls to WaylandSurface
 void WaylandWindow::SetBufferScale(int32_t new_scale, bool update_bounds) {
   DCHECK_GT(new_scale, 0);
+  DCHECK(wayland_surface_);
 
   if (new_scale == buffer_scale())
     return;
 
   auto old_scale = buffer_scale();
-  wayland_surface_.buffer_scale_ = new_scale;
+  wayland_surface_->set_buffer_scale(new_scale);
   if (update_bounds)
     SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / old_scale));
 
@@ -392,12 +398,21 @@ WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
 }
 
+// TODO(crbug.com/1099838): Move wl_surface calls to WaylandSurface
 void WaylandWindow::AddSurfaceListener() {
   static struct wl_surface_listener surface_listener = {
       &WaylandWindow::Enter,
       &WaylandWindow::Leave,
   };
-  wl_surface_add_listener(surface(), &surface_listener, this);
+  wl_surface_add_listener(surface(), &surface_listener, nullptr);
+  wl_surface_set_user_data(surface(), this);
+}
+
+void WaylandWindow::RemoveSurfaceListener() {
+  if (surface()) {
+    wl_surface_add_listener(surface(), nullptr, nullptr);
+    wl_surface_set_user_data(surface(), nullptr);
+  }
 }
 
 void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
@@ -483,6 +498,7 @@ void WaylandWindow::MaybeUpdateOpaqueRegion() {
   wl::Object<wl_region> region(
       wl_compositor_create_region(connection_->compositor()));
   wl_region_add(region.get(), 0, 0, bounds_px_.width(), bounds_px_.height());
+
   wl_surface_set_opaque_region(surface(), region.get());
 
   connection_->ScheduleFlush();
@@ -508,22 +524,22 @@ uint32_t WaylandWindow::DispatchEventToDelegate(
 void WaylandWindow::Enter(void* data,
                           struct wl_surface* wl_surface,
                           struct wl_output* output) {
-  auto* window = static_cast<WaylandWindow*>(data);
-  if (window) {
-    DCHECK(window->surface() == wl_surface);
+  if (auto* window = FromSurface(wl_surface))
     window->AddEnteredOutputId(output);
-  }
 }
 
 // static
 void WaylandWindow::Leave(void* data,
                           struct wl_surface* wl_surface,
                           struct wl_output* output) {
-  auto* window = static_cast<WaylandWindow*>(data);
-  if (window) {
-    DCHECK(window->surface() == wl_surface);
+  if (auto* window = FromSurface(wl_surface))
     window->RemoveEnteredOutputId(output);
-  }
+}
+
+std::unique_ptr<WaylandSurface> WaylandWindow::TakeWaylandSurface() {
+  DCHECK(shutting_down_);
+  DCHECK(wayland_surface_);
+  return std::move(wayland_surface_);
 }
 
 }  // namespace ui

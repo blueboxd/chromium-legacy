@@ -190,12 +190,17 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
     return nullptr;
   }
 
-  const bool bookmarks_full_title_reuploaded =
-      model_metadata.bookmarks_full_title_reuploaded();
+  auto tracker =
+      CreateEmpty(std::move(*model_metadata.mutable_model_type_state()));
 
-  auto tracker = base::WrapUnique(new SyncedBookmarkTracker(
-      std::move(*model_metadata.mutable_model_type_state()),
-      bookmarks_full_title_reuploaded));
+  // When the reupload feature is enabled and disabled again, there may occur
+  // new entities which weren't reuploaded.
+  const bool bookmarks_full_title_reuploaded =
+      model_metadata.bookmarks_full_title_reuploaded() &&
+      base::FeatureList::IsEnabled(switches::kSyncReuploadBookmarkFullTitles);
+  if (bookmarks_full_title_reuploaded) {
+    tracker->SetBookmarksFullTitleReuploaded();
+  }
 
   const CorruptionReason corruption_reason =
       tracker->InitEntitiesFromModelAndMetadata(model,
@@ -214,6 +219,10 @@ SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
 }
 
 SyncedBookmarkTracker::~SyncedBookmarkTracker() = default;
+
+void SyncedBookmarkTracker::SetBookmarksFullTitleReuploaded() {
+  bookmarks_full_title_reuploaded_ = true;
+}
 
 const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
     const std::string& sync_id) const {

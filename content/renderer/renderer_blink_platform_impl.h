@@ -108,6 +108,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   bool IsThreadedAnimationEnabled() override;
   bool IsGpuCompositingDisabled() override;
+#if defined(OS_ANDROID)
+  bool IsSynchronousCompositingEnabled() override;
+#endif
   double AudioHardwareSampleRate() override;
   size_t AudioHardwareBufferSize() override;
   unsigned AudioHardwareOutputChannels() override;

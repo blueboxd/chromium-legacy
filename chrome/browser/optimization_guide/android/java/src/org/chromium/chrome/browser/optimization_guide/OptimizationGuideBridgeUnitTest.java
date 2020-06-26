@@ -29,7 +29,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto.OptimizationType;
-import org.chromium.components.optimization_guide.proto.ModelsProto.OptimizationTarget;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import java.util.Arrays;
@@ -58,54 +57,31 @@ public class OptimizationGuideBridgeUnitTest {
 
     @Test
     @Feature({"OptimizationHints"})
-    public void testRegisterOptimizationTypesAndTargets() {
+    public void testRegisterOptimizationTypes() {
         OptimizationGuideBridge bridge = new OptimizationGuideBridge(1);
-        bridge.registerOptimizationTypesAndTargets(
-                Arrays.asList(new OptimizationType[] {
-                        OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}),
-                Arrays.asList(new OptimizationTarget[] {
-                        OptimizationTarget.OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD}));
+        bridge.registerOptimizationTypes(Arrays.asList(new OptimizationType[] {
+                OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}));
         verify(mOptimizationGuideBridgeJniMock, times(1))
-                .registerOptimizationTypesAndTargets(
-                        eq(1L), aryEq(new int[] {6, 5}), aryEq(new int[] {1}));
+                .registerOptimizationTypes(eq(1L), aryEq(new int[] {6, 5}));
     }
 
     @Test
     @Feature({"OptimizationHints"})
-    public void testRegisterOptimizationTypesAndTargets_withoutNativeBridge() {
+    public void testRegisterOptimizationTypes_withoutNativeBridge() {
         OptimizationGuideBridge bridge = new OptimizationGuideBridge(0);
-        bridge.registerOptimizationTypesAndTargets(
-                Arrays.asList(new OptimizationType[] {
-                        OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}),
-                Arrays.asList(new OptimizationTarget[] {
-                        OptimizationTarget.OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD}));
+        bridge.registerOptimizationTypes(Arrays.asList(new OptimizationType[] {
+                OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}));
         verify(mOptimizationGuideBridgeJniMock, never())
-                .registerOptimizationTypesAndTargets(anyLong(), any(int[].class), any(int[].class));
+                .registerOptimizationTypes(anyLong(), any(int[].class));
     }
 
     @Test
     @Feature({"OptimizationHints"})
-    public void testRegisterOptimizationTypesAndTargets_noOptimizationTypes() {
+    public void testRegisterOptimizationTypes_noOptimizationTypes() {
         OptimizationGuideBridge bridge = new OptimizationGuideBridge(1);
-        bridge.registerOptimizationTypesAndTargets(null,
-                Arrays.asList(new OptimizationTarget[] {
-                        OptimizationTarget.OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD}));
+        bridge.registerOptimizationTypes(null);
         verify(mOptimizationGuideBridgeJniMock, times(1))
-                .registerOptimizationTypesAndTargets(
-                        eq(1L), aryEq(new int[0]), aryEq(new int[] {1}));
-    }
-
-    @Test
-    @Feature({"OptimizationHints"})
-    public void testRegisterOptimizationTypesAndTargets_noOptimizationTargets() {
-        OptimizationGuideBridge bridge = new OptimizationGuideBridge(1);
-        bridge.registerOptimizationTypesAndTargets(
-                Arrays.asList(new OptimizationType[] {
-                        OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}),
-                null);
-        verify(mOptimizationGuideBridgeJniMock, times(1))
-                .registerOptimizationTypesAndTargets(
-                        eq(1L), aryEq(new int[] {6, 5}), aryEq(new int[0]));
+                .registerOptimizationTypes(eq(1L), aryEq(new int[0]));
     }
 
     @Test

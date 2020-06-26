@@ -381,7 +381,7 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
     PasswordFormMetricsRecorder::BubbleDismissalReason expected_metric_value;
   } kTests[] = {
       {metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING,
-       metrics_util::CLICKED_SAVE, UkmEntry::kSaving_Prompt_InteractionName,
+       metrics_util::CLICKED_ACCEPT, UkmEntry::kSaving_Prompt_InteractionName,
        PasswordFormMetricsRecorder::BubbleDismissalReason::kAccepted},
       {metrics_util::MANUAL_WITH_PASSWORD_PENDING, metrics_util::CLICKED_CANCEL,
        UkmEntry::kSaving_Prompt_InteractionName,
@@ -438,12 +438,12 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
     recorder->RecordPasswordBubbleShown(
         metrics_util::CredentialSourceType::kPasswordManager,
         metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING);
-    recorder->RecordUIDismissalReason(metrics_util::CLICKED_SAVE);
+    recorder->RecordUIDismissalReason(metrics_util::CLICKED_ACCEPT);
     // Open and confirm a manually triggered update prompt.
     recorder->RecordPasswordBubbleShown(
         metrics_util::CredentialSourceType::kPasswordManager,
         metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE);
-    recorder->RecordUIDismissalReason(metrics_util::CLICKED_SAVE);
+    recorder->RecordUIDismissalReason(metrics_util::CLICKED_ACCEPT);
   }
   // Verify recorded UKM data.
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);

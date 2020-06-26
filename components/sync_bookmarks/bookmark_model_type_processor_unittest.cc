@@ -68,6 +68,7 @@ syncer::UpdateResponseData CreateUpdateResponseData(
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_guid(guid);
   bookmark_specifics->set_legacy_canonicalized_title(bookmark_info.title);
+  bookmark_specifics->set_full_title(bookmark_info.title);
   if (bookmark_info.url.empty()) {
     data.is_folder = true;
   } else {
@@ -691,11 +692,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldReuploadLegacyBookmarksOnStart) {
   sync_pb::BookmarkModelMetadata model_metadata =
       BuildBookmarkModelMetadataWithoutFullTitles();
   // Ensure that bookmark is legacy.
-  ASSERT_FALSE(model_metadata.bookmarks_full_title_reuploaded());
-  ASSERT_TRUE(processor()
-                  ->GetTrackerForTest()
-                  ->GetEntitiesWithLocalChanges(/*max_entries=*/1)
-                  .empty());
+  model_metadata.clear_bookmarks_full_title_reuploaded();
+  ASSERT_FALSE(processor()->GetTrackerForTest()->HasLocalChanges());
 
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(switches::kSyncReuploadBookmarkFullTitles);

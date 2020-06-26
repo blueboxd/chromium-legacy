@@ -171,7 +171,8 @@ class ResourceFetcherTest : public testing::Test {
       FetchContext* context) {
     return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         properties.MakeDetachable(), context, CreateTaskRunner(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+        MakeGarbageCollected<TestLoaderFactory>(
+            platform_->GetURLLoaderMockFactory())));
   }
 
   ResourceFetcher* CreateFetcher(
@@ -379,9 +380,11 @@ class RequestSameResourceOnComplete
   USING_GARBAGE_COLLECTED_MIXIN(RequestSameResourceOnComplete);
 
  public:
-  explicit RequestSameResourceOnComplete(FetchParameters& params,
-                                         ResourceFetcher* fetcher)
-      : notify_finished_called_(false),
+  RequestSameResourceOnComplete(WebURLLoaderMockFactory* mock_factory,
+                                FetchParameters& params,
+                                ResourceFetcher* fetcher)
+      : mock_factory_(mock_factory),
+        notify_finished_called_(false),
         source_origin_(fetcher->GetProperties()
                            .GetFetchClientSettingsObject()
                            .GetSecurityOrigin()) {
@@ -393,10 +396,10 @@ class RequestSameResourceOnComplete
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(source_origin_);
     MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
-    auto* fetcher2 = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(properties->MakeDetachable(), context,
-                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    auto* fetcher2 = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context,
+        base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+        MakeGarbageCollected<TestLoaderFactory>(mock_factory_)));
     ResourceRequest resource_request2(GetResource()->Url());
     resource_request2.SetCacheMode(mojom::FetchCacheMode::kValidateCache);
     FetchParameters fetch_params2(std::move(resource_request2));
@@ -414,6 +417,7 @@ class RequestSameResourceOnComplete
   String DebugName() const override { return "RequestSameResourceOnComplete"; }
 
  private:
+  WebURLLoaderMockFactory* mock_factory_;
   bool notify_finished_called_;
   scoped_refptr<const SecurityOrigin> source_origin_;
 };
@@ -437,8 +441,8 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   request1.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   FetchParameters fetch_params1(std::move(request1));
   Persistent<RequestSameResourceOnComplete> client =
-      MakeGarbageCollected<RequestSameResourceOnComplete>(fetch_params1,
-                                                          fetcher1);
+      MakeGarbageCollected<RequestSameResourceOnComplete>(
+          platform_->GetURLLoaderMockFactory(), fetch_params1, fetcher1);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(client->NotifyFinishedCalled());
 }
@@ -559,7 +563,7 @@ class ScopedMockRedirectRequester {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     auto* fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
         properties->MakeDetachable(), context_, task_runner_,
-        MakeGarbageCollected<TestLoaderFactory>()));
+        MakeGarbageCollected<TestLoaderFactory>(mock_factory_)));
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
     FetchParameters fetch_params(std::move(resource_request));
@@ -1113,10 +1117,11 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
 TEST_F(ResourceFetcherTest, Detach) {
   DetachableResourceFetcherProperties& properties =
       MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable();
-  auto* const fetcher =
-      MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-          properties, MakeGarbageCollected<MockFetchContext>(),
-          CreateTaskRunner(), MakeGarbageCollected<TestLoaderFactory>()));
+  auto* const fetcher = MakeGarbageCollected<ResourceFetcher>(
+      ResourceFetcherInit(properties, MakeGarbageCollected<MockFetchContext>(),
+                          CreateTaskRunner(),
+                          MakeGarbageCollected<TestLoaderFactory>(
+                              platform_->GetURLLoaderMockFactory())));
 
   EXPECT_EQ(&properties, &fetcher->GetProperties());
   EXPECT_FALSE(properties.IsDetached());

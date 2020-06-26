@@ -33,7 +33,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
     START_ERROR,
   };
 
-  typedef base::Callback<void(Result)> CompletionCallback;
+  typedef base::OnceCallback<void(Result)> CompletionCallback;
 
   ~HostStarter() override;
 

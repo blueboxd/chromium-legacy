@@ -7,27 +7,45 @@
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#include "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/net/protocol_handler_util.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/net_errors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Creates a PolicyDecision that cancels a navigation to show a lookalike
+// error.
+web::WebStatePolicyDecider::PolicyDecision CreateLookalikeErrorDecision() {
+  return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
+      [NSError errorWithDomain:kLookalikeUrlErrorDomain
+                          code:kLookalikeUrlErrorCode
+                      userInfo:nil]);
+}
+
+// Creates a PolicyDecision that allows the navigation.
+web::WebStatePolicyDecider::PolicyDecision CreateAllowDecision() {
+  return web::WebStatePolicyDecider::PolicyDecision::Allow();
+}
+}  // namespace
 
 LookalikeUrlTabHelper::~LookalikeUrlTabHelper() = default;
 
 LookalikeUrlTabHelper::LookalikeUrlTabHelper(web::WebState* web_state)
     : web::WebStatePolicyDecider(web_state) {}
 
-web::WebStatePolicyDecider::PolicyDecision
-LookalikeUrlTabHelper::ShouldAllowRequest(
-    NSURLRequest* request,
-    const web::WebStatePolicyDecider::RequestInfo& request_info) {
+void LookalikeUrlTabHelper::ShouldAllowResponse(
+    NSURLResponse* response,
+    bool for_main_frame,
+    base::OnceCallback<void(web::WebStatePolicyDecider::PolicyDecision)>
+        callback) {
   // Ignore subframe navigations.
-  if (!request_info.target_frame_is_main) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  if (!for_main_frame) {
+    std::move(callback).Run(CreateAllowDecision());
+    return;
   }
 
   // Get stored interstitial parameters early. Doing so ensures that a
@@ -45,25 +63,28 @@ LookalikeUrlTabHelper::ShouldAllowRequest(
   std::unique_ptr<LookalikeUrlContainer::InterstitialParams>
       interstitial_params = lookalike_container->ReleaseInterstitialParams();
 
-  GURL request_url = net::GURLWithNSURL(request.URL);
+  GURL response_url = net::GURLWithNSURL(response.URL);
 
   // If the URL is not an HTTP or HTTPS page, don't show any warning.
-  if (!request_url.SchemeIsHTTPOrHTTPS()) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  if (!response_url.SchemeIsHTTPOrHTTPS()) {
+    std::move(callback).Run(CreateAllowDecision());
+    return;
   }
 
   // If the URL is in the allowlist, don't show any warning.
   LookalikeUrlTabAllowList* allow_list =
       LookalikeUrlTabAllowList::FromWebState(web_state());
-  if (allow_list->IsDomainAllowed(request_url.host())) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  if (allow_list->IsDomainAllowed(response_url.host())) {
+    std::move(callback).Run(CreateAllowDecision());
+    return;
   }
 
-  const DomainInfo navigated_domain = GetDomainInfo(request_url);
+  const DomainInfo navigated_domain = GetDomainInfo(response_url);
   // Empty domain_and_registry happens on private domains.
   if (navigated_domain.domain_and_registry.empty() ||
       IsTopDomain(navigated_domain)) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+    std::move(callback).Run(CreateAllowDecision());
+    return;
   }
 
   // TODO(crbug.com/1058898): After site engagement has been componentized,
@@ -80,7 +101,8 @@ LookalikeUrlTabHelper::ShouldAllowRequest(
       });
   if (!GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
                          &matched_domain, &match_type)) {
-    return web::WebStatePolicyDecider::PolicyDecision::Allow();
+    std::move(callback).Run(CreateAllowDecision());
+    return;
   }
   DCHECK(!matched_domain.empty());
 
@@ -92,18 +114,13 @@ LookalikeUrlTabHelper::ShouldAllowRequest(
     GURL::Replacements replace_host;
     replace_host.SetHostStr(suggested_domain);
     const GURL suggested_url =
-        request_url.ReplaceComponents(replace_host).GetWithEmptyPath();
+        response_url.ReplaceComponents(replace_host).GetWithEmptyPath();
 
-    // TODO(crbug.com/1058898): Instead of a net error, pass a custom NSError
-    // for lookalikes. GetErrorPage will first need to be updated to accept
-    // non-net errors.
-    return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
-        [NSError errorWithDomain:net::kNSErrorDomain
-                            code:net::ERR_BLOCKED_BY_CLIENT
-                        userInfo:nil]);
+    std::move(callback).Run(CreateLookalikeErrorDecision());
+    return;
   }
 
-  return web::WebStatePolicyDecider::PolicyDecision::Allow();
+  std::move(callback).Run(CreateAllowDecision());
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(LookalikeUrlTabHelper)

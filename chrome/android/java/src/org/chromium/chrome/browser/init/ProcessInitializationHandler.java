@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
+import org.chromium.chrome.browser.policy.EnterpriseInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -435,6 +436,7 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(
                 () -> SharedClipboardShareActivity.updateComponentEnabledState());
         deferredStartupHandler.addDeferredTask(() -> ExploreOfflineStatusProvider.getInstance());
+        deferredStartupHandler.addDeferredTask(() -> EnterpriseInfo.logDeviceEnterpriseInfo());
     }
 
     private void initChannelsAsync() {

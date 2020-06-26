@@ -14,8 +14,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -27,14 +27,6 @@ namespace {
 // Generates a new unique StoragePartition name.
 std::string GeneratePartitionName() {
   return base::GenerateGUID();
-}
-
-// Creates the URL for a guest site. Assumes that the StoragePartition is not
-// persistent.
-GURL GetGuestSiteURL(const std::string& partition_domain,
-                     const std::string& partition_name) {
-  return extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
-      partition_domain, partition_name, true /* in_memory */);
 }
 
 // Clears data from the passed storage partition. |partition_data_cleared|
@@ -99,12 +91,11 @@ void SigninPartitionManager::StartSigninSession(
       embedder_web_contents->GetLastCommittedURL().host();
   current_storage_partition_name_ = GeneratePartitionName();
 
-  GURL guest_site = GetGuestSiteURL(storage_partition_domain_,
-                                    current_storage_partition_name_);
-
-  current_storage_partition_ =
-      content::BrowserContext::GetStoragePartitionForSite(browser_context_,
-                                                          guest_site, true);
+  auto storage_partition_config = content::StoragePartitionConfig::Create(
+      storage_partition_domain_, current_storage_partition_name_,
+      true /*in_memory */);
+  current_storage_partition_ = content::BrowserContext::GetStoragePartition(
+      browser_context_, storage_partition_config, true);
   if (on_create_new_storage_partition_) {
     on_create_new_storage_partition_.Run(current_storage_partition_);
   }

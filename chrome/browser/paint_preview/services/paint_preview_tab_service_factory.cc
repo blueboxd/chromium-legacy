@@ -12,7 +12,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/android/chrome_jni_headers/PaintPreviewTabServiceFactory_jni.h"
+#include "chrome/browser/paint_preview/android/jni_headers/PaintPreviewTabServiceFactory_jni.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #endif  // defined(OS_ANDROID)

@@ -15,12 +15,20 @@
 #include <limits>
 #include <string>
 
+#if __x86_64__
 #define ABORT()                                                                \
   {                                                                            \
     asm volatile(                                                              \
         "int3; ud2; push %0;" ::"i"(static_cast<unsigned char>(__COUNTER__))); \
     __builtin_unreachable();                                                   \
   }
+#elif __arm64__
+#define ABORT()                                                             \
+  {                                                                         \
+    asm volatile("udf %0;" ::"i"(static_cast<unsigned char>(__COUNTER__))); \
+    __builtin_unreachable();                                                \
+  }
+#endif
 
 extern "C" {
 void abort_report_np(const char*, ...);

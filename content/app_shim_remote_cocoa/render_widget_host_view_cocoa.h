@@ -198,6 +198,7 @@ struct DidOverscrollParams;
   bool _has_pen_contact;
 
   bool _mouse_locked;
+  bool _mouse_lock_unaccelerated_movement;
   gfx::PointF _last_mouse_screen_position;
   gfx::PointF _mouse_locked_screen_position;
 
@@ -262,6 +263,7 @@ struct DidOverscrollParams;
 
 // Cursorlock methods.
 - (void)setCursorLocked:(BOOL)locked;
+- (void)setCursorLockedUnacceleratedMovement:(BOOL)unaccelerated;
 
 // Sets |accessibilityParent| as the object returned when the
 // receiver is queried for its accessibility parent.

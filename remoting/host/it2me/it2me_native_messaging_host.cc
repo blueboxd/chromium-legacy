@@ -212,8 +212,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
   if (!policy_received_) {
     DCHECK(!pending_connect_);
     pending_connect_ =
-        base::Bind(&It2MeNativeMessagingHost::ProcessConnect, weak_ptr_,
-                   base::Passed(&message), base::Passed(&response));
+        base::BindOnce(&It2MeNativeMessagingHost::ProcessConnect, weak_ptr_,
+                       base::Passed(&message), base::Passed(&response));
     return;
   }
 
@@ -446,8 +446,8 @@ void It2MeNativeMessagingHost::OnStateChanged(It2MeHostState state,
 }
 
 void It2MeNativeMessagingHost::SetPolicyErrorClosureForTesting(
-    const base::Closure& closure) {
-  policy_error_closure_for_testing_ = closure;
+    base::OnceClosure closure) {
+  policy_error_closure_for_testing_ = std::move(closure);
 }
 
 void It2MeNativeMessagingHost::OnNatPolicyChanged(bool nat_traversal_enabled) {
@@ -526,7 +526,7 @@ void It2MeNativeMessagingHost::OnPolicyError() {
   policy_received_ = true;
 
   if (policy_error_closure_for_testing_) {
-    policy_error_closure_for_testing_.Run();
+    std::move(policy_error_closure_for_testing_).Run();
   }
 
   if (it2me_host_) {

@@ -93,6 +93,7 @@ paddedGrid{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutGrid",
     "showAccessibilityInfo": true
   },
   "gridInfo": [
@@ -322,6 +323,7 @@ nestedGrid{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutGrid",
     "showAccessibilityInfo": true
   },
   "gridInfo": [

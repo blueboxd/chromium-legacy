@@ -155,6 +155,12 @@ using DownloadToFileCompleteCallback =
   if ([headers objectForKey:headerEtag]) {
     etag = [headers objectForKey:headerEtag];
   }
+  NSString* headerXCupServerProof = base::SysUTF8ToNSString(
+      update_client::NetworkFetcher::kHeaderXCupServerProof);
+  NSString* cupServerProof = @"";
+  if ([headers objectForKey:headerXCupServerProof]) {
+    cupServerProof = [headers objectForKey:headerXCupServerProof];
+  }
   int64_t retryAfterResult = -1;
   NSString* xRetryAfter = [headers
       objectForKey:base::SysUTF8ToNSString(
@@ -173,8 +179,8 @@ using DownloadToFileCompleteCallback =
       base::BindOnce(
           std::move(_postRequestCompleteCallback),
           std::make_unique<std::string>(base::SysNSStringToUTF8(dataToUse)),
-          error.code, std::string(base::SysNSStringToUTF8(etag)),
-          retryAfterResult));
+          error.code, base::SysNSStringToUTF8(etag),
+          base::SysNSStringToUTF8(cupServerProof), retryAfterResult));
 }
 
 @end

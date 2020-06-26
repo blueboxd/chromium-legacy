@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -68,6 +69,24 @@ class WebAppDatabaseTest : public WebAppTest {
     }
 
     return file_handlers;
+  }
+
+  static std::vector<apps::ProtocolHandlerInfo> CreateProtocolHandlers(
+      int suffix) {
+    std::vector<apps::ProtocolHandlerInfo> protocol_handlers;
+
+    for (unsigned int i = 0; i < 5; ++i) {
+      std::string suffix_str =
+          base::NumberToString(suffix) + base::NumberToString(i);
+
+      apps::ProtocolHandlerInfo protocol_handler;
+      protocol_handler.protocol = "web+test" + suffix_str;
+      protocol_handler.url = GURL("https://example.com/%s");
+
+      protocol_handlers.push_back(std::move(protocol_handler));
+    }
+
+    return protocol_handlers;
   }
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
@@ -130,6 +149,7 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetDownloadedIconSizes({size});
 
     app->SetFileHandlers(CreateFileHandlers(suffix));
+    app->SetProtocolHandlers(CreateProtocolHandlers(suffix));
 
     const int num_additional_search_terms = suffix & 7;
     std::vector<std::string> additional_search_terms(
@@ -350,6 +370,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->sync_fallback_data().icon_infos.empty());
   EXPECT_TRUE(app->file_handlers().empty());
   EXPECT_TRUE(app->additional_search_terms().empty());
+  EXPECT_TRUE(app->protocol_handlers().empty());
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
   controller().RegisterApp(std::move(app));
@@ -398,6 +419,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->sync_fallback_data().icon_infos.empty());
   EXPECT_TRUE(app_copy->file_handlers().empty());
   EXPECT_TRUE(app_copy->additional_search_terms().empty());
+  EXPECT_TRUE(app_copy->protocol_handlers().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

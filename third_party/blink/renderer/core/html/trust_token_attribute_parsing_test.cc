@@ -229,5 +229,15 @@ TEST(TrustTokenAttributeParsing, TypeUnsafeAdditionalSignedHeader) {
   ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
 }
 
+// Test that the parser requires that additionalSigningData be a string.
+TEST(TrustTokenAttributeParsing, TypeUnsafeAdditionalSigningData) {
+  auto json = ParseJSON(R"(
+    { "type": "token-request",
+      "additionalSigningData": 15 }
+  )");
+  ASSERT_TRUE(json);
+  ASSERT_FALSE(TrustTokenParamsFromJson(std::move(json)));
+}
+
 }  // namespace internal
 }  // namespace blink

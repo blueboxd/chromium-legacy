@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -51,7 +52,7 @@ public class RestoreMigrateTest {
                                 .listData;
                     }
                 });
-        File f = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File f = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(new File(
@@ -133,7 +134,7 @@ public class RestoreMigrateTest {
                 ChromePreferenceKeys.TABMODEL_HAS_RUN_FILE_MIGRATION, false));
 
         // Check that the files were moved.
-        File newDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File newDir = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         File newStateFile = new File(newDir, TabbedModeTabPersistencePolicy.getStateFileName(0));
         File newTab0 = new File(newDir, TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File newTab1 = new File(newDir, TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
@@ -182,7 +183,7 @@ public class RestoreMigrateTest {
         Assert.assertTrue("Could not create tab 3 file", tab3.createNewFile());
 
         // Write new state files
-        File newDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File newDir = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         File newStateFile = new File(newDir, TabbedModeTabPersistencePolicy.getStateFileName(0));
         File newTab4 = new File(newDir, TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "4");
 
@@ -241,7 +242,7 @@ public class RestoreMigrateTest {
         Assert.assertTrue("Could not find other file", otherFile.exists());
 
         // Check that the files were moved.
-        File newDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File newDir = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         File newStateFile = new File(newDir, TabbedModeTabPersistencePolicy.getStateFileName(0));
         File newTab0 = new File(newDir, TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File newOtherFile = new File(newDir, "other.file");

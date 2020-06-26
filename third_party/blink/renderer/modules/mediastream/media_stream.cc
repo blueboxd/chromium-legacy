@@ -92,15 +92,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
                                  MediaStreamDescriptor* stream_descriptor) {
-  return MakeGarbageCollected<MediaStream>(context, stream_descriptor,
-                                           /*pan_tilt_zoom_allowed=*/false);
-}
-
-MediaStream* MediaStream::Create(ExecutionContext* context,
-                                 MediaStreamDescriptor* stream_descriptor,
-                                 bool pan_tilt_zoom_allowed) {
-  return MakeGarbageCollected<MediaStream>(context, stream_descriptor,
-                                           pan_tilt_zoom_allowed);
+  return MakeGarbageCollected<MediaStream>(context, stream_descriptor);
 }
 
 MediaStream* MediaStream::Create(ExecutionContext* context,
@@ -112,8 +104,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
 }
 
 MediaStream::MediaStream(ExecutionContext* context,
-                         MediaStreamDescriptor* stream_descriptor,
-                         bool pan_tilt_zoom_allowed)
+                         MediaStreamDescriptor* stream_descriptor)
     : ExecutionContextClient(context),
       descriptor_(stream_descriptor),
       scheduled_event_timer_(
@@ -135,7 +126,7 @@ MediaStream::MediaStream(ExecutionContext* context,
   video_tracks_.ReserveCapacity(number_of_video_tracks);
   for (uint32_t i = 0; i < number_of_video_tracks; i++) {
     auto* new_track = MakeGarbageCollected<MediaStreamTrack>(
-        context, descriptor_->VideoComponent(i), pan_tilt_zoom_allowed);
+        context, descriptor_->VideoComponent(i));
     new_track->RegisterMediaStream(this);
     video_tracks_.push_back(new_track);
   }

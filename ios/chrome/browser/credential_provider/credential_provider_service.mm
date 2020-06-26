@@ -65,8 +65,9 @@ void SyncASIdentityStore(ArchivableCredentialStore* credential_store) {
                                        initWithCredential:credential]];
       }
       auto replaceCompletion = ^(BOOL success, NSError* error) {
-        DCHECK(success) << "Failed to update store, error: "
-                        << base::SysNSStringToUTF8(error.description);
+        DCHECK(success) << "Failed to update store, error description: "
+                        << base::SysNSStringToUTF8(error.localizedDescription)
+                        << ", error code: " << error.code;
         NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
         NSString* key =
             kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted;

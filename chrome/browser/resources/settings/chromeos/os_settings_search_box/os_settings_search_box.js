@@ -473,5 +473,13 @@ Polymer({
       return;
     }
   },
+
+  /* @private */
+  onSearchIconClicked_() {
+    this.$.search.getSearchInput().select();
+    if (this.getCurrentQuery_()) {
+      this.shouldShowDropdown_ = true;
+    }
+  },
 });
 })();

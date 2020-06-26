@@ -76,10 +76,10 @@ namespace {
 const CSSValue* ParseCSSValue(const ExecutionContext* context,
                               const String& value,
                               AtRuleDescriptorID descriptor_id) {
+  auto* window = DynamicTo<LocalDOMWindow>(context);
   CSSParserContext* parser_context =
-      context->IsDocument() ? MakeGarbageCollected<CSSParserContext>(
-                                  *To<LocalDOMWindow>(context)->document())
-                            : MakeGarbageCollected<CSSParserContext>(*context);
+      window ? MakeGarbageCollected<CSSParserContext>(*window->document())
+             : MakeGarbageCollected<CSSParserContext>(*context);
   return AtRuleDescriptorParser::ParseFontFaceDescriptor(descriptor_id, value,
                                                          *parser_context);
 }

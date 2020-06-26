@@ -26,6 +26,10 @@ network::OptionalTrustTokenParams ConvertTrustTokenParams(
   for (const String& additional_header : in.additional_signed_headers) {
     out->additional_signed_headers.push_back(additional_header.Latin1());
   }
+  if (!in.possibly_unsafe_additional_signing_data.IsNull()) {
+    out->possibly_unsafe_additional_signing_data =
+        in.possibly_unsafe_additional_signing_data.Utf8();
+  }
 
   return network::OptionalTrustTokenParams(std::move(out));
 }

@@ -47,7 +47,7 @@ math[display="block"] {
     outline: auto 1px -webkit-focus-ring-color;
 }
 
-maction, merror, mfrac, mphantom, mrow, mspace, mstyle, msub, msup, msubsup, munder, mover, munderover
+maction, merror, mfrac, mphantom, mrow, mspace, mstyle, msub, msup, msubsup, munder, mover, munderover, msqrt, mroot
 {
     display: math;
 }
@@ -86,6 +86,13 @@ mfrac > :nth-child(2) {
 }
 
 /* Other rules for scriptlevel, displaystyle and math-superscript-shift-style */
+mroot > :not(:first-child) {
+    font-size: scriptlevel(add(2));
+    math-style: inline;
+}
+mroot, msqrt {
+    math-superscript-shift-style: inline;
+}
 msub > :not(:first-child),
 msup > :not(:first-child),
 msubsup > :not(:first-child),

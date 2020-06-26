@@ -160,6 +160,10 @@ if (!use_static_angle) {
     if (is_linux && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
+
+    if (use_ozone) {
+      deps += [ "//ui/base:features" ]
+    }
   }
 }  # if (!use_static_angle)
 
@@ -698,7 +702,10 @@ test("gpu_perftests") {
   ]
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
 
   data_deps = [
@@ -732,7 +739,10 @@ test("command_buffer_perftests") {
   ]
 
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
 
   data_deps = [

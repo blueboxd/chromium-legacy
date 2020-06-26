@@ -16,6 +16,10 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"  // nogncheck
+#endif
+
 namespace gpu {
 
 namespace {
@@ -457,6 +461,7 @@ bool VulkanSwapChain::AcquireNextImage() {
     VkSemaphore vk_semaphore = CreateSemaphore(device);
     DCHECK(vk_semaphore != VK_NULL_HANDLE);
 
+    uint64_t kTimeout = UINT64_MAX;
 #if defined(USE_X11)
     // The xserver should still composite windows with a 1Hz fake vblank when
     // screen is off or the window is offscreen. However there is an xserver
@@ -466,9 +471,10 @@ bool VulkanSwapChain::AcquireNextImage() {
     // vkAcquireNextImageKHR(). When timeout happens, we consider the swapchain
     // hang happened, and then make the surface lost, so a new swapchain will
     // be recreated.
-    constexpr uint64_t kTimeout = base::Time::kNanosecondsPerSecond * 2;
-#else
-    constexpr uint64_t kTimeout = UINT64_MAX;
+    //
+    // TODO(https://crbug.com/1098237): set correct timeout for ozone/x11.
+    if (!features::IsUsingOzonePlatform())
+      kTimeout = base::Time::kNanosecondsPerSecond * 2;
 #endif
     // Acquire the next image.
     uint32_t next_image;

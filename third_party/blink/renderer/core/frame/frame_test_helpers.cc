@@ -278,9 +278,10 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         widget_client.get(), frame, frame_widget_host.Unbind(),
         std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
         std::move(widget_receiver));
-    widget_client->SetFrameWidget(frame_widget);
+    widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
     // The WebWidget requires the compositor to be set before it is used.
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+        false, widget_client->main_thread_scheduler(),
         widget_client->task_graph_runner(),
         GetSynchronousSingleThreadLayerTreeSettings(),
         std::make_unique<cc::TestUkmRecorderFactory>()));
@@ -292,9 +293,10 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         widget_client.get(), frame, frame_widget_host.Unbind(),
         std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
         std::move(widget_receiver));
-    widget_client->SetFrameWidget(frame_widget);
+    widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
     // The WebWidget requires the compositor to be set before it is used.
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+        false, widget_client->main_thread_scheduler(),
         widget_client->task_graph_runner(),
         GetSynchronousSingleThreadLayerTreeSettings(),
         std::make_unique<cc::TestUkmRecorderFactory>()));
@@ -357,8 +359,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
       std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
-  widget_client->SetFrameWidget(frame_widget);
+  widget_client->SetFrameWidget(frame_widget, std::move(widget_remote));
   widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
+      false, widget_client->main_thread_scheduler(),
       widget_client->task_graph_runner(),
       GetSynchronousSingleThreadLayerTreeSettings(),
       std::make_unique<cc::TestUkmRecorderFactory>()));
@@ -443,8 +446,9 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       std::move(frame_widget_receiver),
       test_web_widget_client_->BindNewWidgetHost(), std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
-  test_web_widget_client_->SetFrameWidget(widget);
+  test_web_widget_client_->SetFrameWidget(widget, std::move(widget_remote));
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
+      false, test_web_widget_client_->main_thread_scheduler(),
       test_web_widget_client_->task_graph_runner(),
       GetSynchronousSingleThreadLayerTreeSettings(),
       std::make_unique<cc::TestUkmRecorderFactory>()));
@@ -724,8 +728,21 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
 
 TestWebWidgetClient::TestWebWidgetClient() = default;
 
-void TestWebWidgetClient::SetFrameWidget(WebFrameWidget* widget) {
+void TestWebWidgetClient::SetFrameWidget(
+    WebFrameWidget* widget,
+    mojo::AssociatedRemote<mojom::blink::Widget> widget_remote) {
   frame_widget_ = widget;
+
+  mojo::Remote<mojom::blink::WidgetInputHandler> input_handler;
+  widget_remote->GetWidgetInputHandler(
+      input_handler.BindNewPipeAndPassReceiver(),
+      GetInputHandlerHost()->BindNewRemote());
+}
+
+TestWidgetInputHandlerHost* TestWebWidgetClient::GetInputHandlerHost() {
+  if (!widget_input_handler_host_)
+    widget_input_handler_host_ = std::make_unique<TestWidgetInputHandlerHost>();
+  return widget_input_handler_host_.get();
 }
 
 mojo::PendingAssociatedRemote<mojom::blink::WidgetHost>
@@ -741,11 +758,6 @@ void TestWebWidgetClient::SetPageScaleStateAndLimits(
     float maximum) {
   layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
                                                  maximum);
-}
-
-void TestWebWidgetClient::QueueSyntheticEvent(
-    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
-  injected_scroll_events_.push_back(std::move(event));
 }
 
 bool TestWebWidgetClient::HaveScrollEventHandlers() const {
@@ -776,6 +788,12 @@ void TestWebWidgetClient::RequestNewLayerTreeFrameSink(
   // Make a valid LayerTreeFrameSink so the compositor will generate begin main
   // frames.
   std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
+}
+
+void TestWebWidgetClient::WillQueueSyntheticEvent(
+    const WebCoalescedInputEvent& event) {
+  injected_scroll_events_.push_back(
+      std::make_unique<WebCoalescedInputEvent>(event));
 }
 
 void TestWebWidgetClient::SetCursor(const ui::Cursor& cursor) {}
@@ -811,6 +829,34 @@ WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
   child_web_views_.push_back(std::move(webview_helper));
   return result;
 }
+
+mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost>
+TestWidgetInputHandlerHost::BindNewRemote() {
+  receiver_.reset();
+  return receiver_.BindNewPipeAndPassRemote();
+}
+
+void TestWidgetInputHandlerHost::SetTouchActionFromMain(
+    cc::TouchAction touch_action) {}
+
+void TestWidgetInputHandlerHost::DidOverscroll(
+    mojom::blink::DidOverscrollParamsPtr params) {}
+
+void TestWidgetInputHandlerHost::DidStartScrollingViewport() {}
+
+void TestWidgetInputHandlerHost::ImeCancelComposition() {}
+
+void TestWidgetInputHandlerHost::ImeCompositionRangeChanged(
+    const gfx::Range& range,
+    const WTF::Vector<gfx::Rect>& bounds) {}
+
+void TestWidgetInputHandlerHost::SetMouseCapture(bool capture) {}
+
+void TestWidgetInputHandlerHost::RequestMouseLock(
+    bool from_user_gesture,
+    bool privileged,
+    bool unadjusted_movement,
+    RequestMouseLockCallback callback) {}
 
 }  // namespace frame_test_helpers
 }  // namespace blink

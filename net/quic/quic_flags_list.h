@@ -309,7 +309,7 @@ QUIC_FLAG(bool,
           true)
 
 // If true, enables support for TLS resumption in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption_v2, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)

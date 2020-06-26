@@ -22,6 +22,10 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace gpu {
 
 template <typename GpuMemoryBufferFactoryType>
@@ -70,11 +74,11 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
     for (auto usage : usages) {
 #if defined(USE_X11)
       // On X11, we require GPUInfo to determine configuration support.
-      continue;
-#else
-      if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
+      if (!features::IsUsingOzonePlatform())
         continue;
 #endif
+      if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
+        continue;
 
       gfx::GpuMemoryBufferHandle handle =
           TestFixture::factory_.CreateGpuMemoryBuffer(kBufferId, buffer_size,

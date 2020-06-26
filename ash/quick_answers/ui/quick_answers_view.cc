@@ -277,6 +277,7 @@ void QuickAnswersView::ShowRetryView() {
           /*listener=*/this, base::UTF8ToUTF16(kDefaultRetryStr)));
   retry_label_->SetEnabledTextColors(gfx::kGoogleBlue600);
   retry_label_->SetFocusForPlatform();
+  retry_label_->set_request_focus_on_press(true);
   SetButtonNotifyActionToOnPress(retry_label_);
 }
 
@@ -389,6 +390,9 @@ void QuickAnswersView::UpdateBounds() {
 
 void QuickAnswersView::UpdateQuickAnswerResult(
     const QuickAnswer& quick_answer) {
+  // Check if the view (or any of its children) had focus before resetting the
+  // view, so it can be restored for the updated view.
+  bool pane_already_had_focus = Contains(GetFocusManager()->GetFocusedView());
   ResetContentView();
 
   // Add title.
@@ -425,6 +429,10 @@ void QuickAnswersView::UpdateQuickAnswerResult(
       first_answer_label_->SetMaxLines(kMaxRows - /*exclude title*/ 1);
     }
   }
+
+  // Restore focus if the view had one prior to updating the answer.
+  if (pane_already_had_focus)
+    RequestFocus();
 }
 
 void QuickAnswersView::SetBackgroundState(bool highlight) {

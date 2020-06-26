@@ -145,7 +145,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
                                          &ignoring_domain_reasons);
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
       content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::BLACKLIST));
+          content::BrowsingDataFilterBuilder::Mode::kPreserve));
   for (const std::string& domain : excluding_domains) {
     filter_builder->AddRegisterableDomain(domain);
   }

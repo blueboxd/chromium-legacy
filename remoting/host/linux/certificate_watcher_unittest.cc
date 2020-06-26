@@ -101,7 +101,7 @@ class CertificateWatcherTest : public testing::Test {
   int restart_count_ = 0;
   base::TimeDelta loop_wait_ =
       base::TimeDelta::FromMilliseconds(kMessageLoopWaitMsecs);
-  base::Closure quit_loop_closure_;
+  base::RepeatingClosure quit_loop_closure_;
 
  private:
   void OnRestart() {

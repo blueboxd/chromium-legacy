@@ -218,10 +218,7 @@ template("write_ssargs_trichrome") {
     "# Written by build target \"${target_name}.\"",
     "Library -f ${invoker.trichrome_library_basename}",
     "Chrome -f ${invoker.trichrome_chrome_basename}",
-
-    # WebView has no .so files. --java-only is needed to prevent SuperSize
-    # from failing.
-    "WebView -f ${invoker.trichrome_webview_basename} --java-only",
+    "WebView -f ${invoker.trichrome_webview_basename}",
   ]
 
   write_file(invoker.ssargs_path, ssargs_lines)

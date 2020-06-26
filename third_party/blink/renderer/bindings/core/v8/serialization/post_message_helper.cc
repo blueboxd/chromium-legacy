@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -106,11 +105,11 @@ PostMessageHelper::CreateUserActivationSnapshot(
 // static
 scoped_refptr<const SecurityOrigin> PostMessageHelper::GetTargetOrigin(
     const WindowPostMessageOptions* options,
-    const Document& source_document,
+    const ExecutionContext& context,
     ExceptionState& exception_state) {
   const String& target_origin = options->targetOrigin();
   if (target_origin == "/")
-    return source_document.GetSecurityOrigin();
+    return context.GetSecurityOrigin();
   if (target_origin == "*")
     return nullptr;
   scoped_refptr<const SecurityOrigin> target =

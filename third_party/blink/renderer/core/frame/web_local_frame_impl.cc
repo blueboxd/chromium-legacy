@@ -691,6 +691,11 @@ bool WebLocalFrameImpl::UsePrintingLayout() const {
   return print_context_ ? print_context_->use_printing_layout() : false;
 }
 
+void WebLocalFrameImpl::CopyToFindPboard() {
+  if (HasSelection())
+    GetFrame()->GetSystemClipboard()->CopyToFindPboard(SelectionAsText());
+}
+
 WebSize WebLocalFrameImpl::GetScrollOffset() const {
   if (ScrollableArea* scrollable_area = LayoutViewport())
     return scrollable_area->ScrollOffsetInt();

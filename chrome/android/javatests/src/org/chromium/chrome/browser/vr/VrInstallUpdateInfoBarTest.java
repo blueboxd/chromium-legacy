@@ -28,12 +28,13 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.vr.mock.MockVrCoreVersionChecker;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
-import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -64,13 +65,36 @@ public class VrInstallUpdateInfoBarTest {
     }
 
     /**
+     * Creates and sets a MockVrCoreVersionCheckerImpl as the VrShellDelegate's VrCoreVersionChecker
+     * instance.
+     *
+     * @param compatibility An int corresponding to a VrCoreCompatibility value that the mock
+     *        version checker will return.
+     * @return The MockVrCoreVersionCheckerImpl that was set as VrShellDelegate's
+     *        VrCoreVersionChecker instance.
+     */
+    private static MockVrCoreVersionChecker setVrCoreCompatibility(int compatibility) {
+        final MockVrCoreVersionChecker mockChecker = new MockVrCoreVersionChecker();
+        mockChecker.setMockReturnValue(new VrCoreInfo(null, compatibility));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { VrCoreInstallUtils.overrideVrCoreVersionChecker(mockChecker); });
+        Assert.assertEquals("Overriding VrCoreVersionChecker failed", compatibility,
+                mockChecker.getLastReturnValue().compatibility);
+        return mockChecker;
+    }
+
+    /**
      * Helper function to run the tests checking for the upgrade/install InfoBar being present since
      * all that differs is the value returned by VrCoreVersionChecker and a couple asserts.
      *
      * @param checkerReturnCompatibility The compatibility to have the VrCoreVersionChecker return.
      */
     private void infoBarTestHelper(final int checkerReturnCompatibility) {
-        VrShellDelegateUtils.setVrCoreCompatibility(checkerReturnCompatibility);
+        VrCoreInstallUtils vrCoreInstallUtils = VrCoreInstallUtils.create(0);
+        setVrCoreCompatibility(checkerReturnCompatibility);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            vrCoreInstallUtils.requestInstallVrCore(mVrTestRule.getActivity().getActivityTab());
+        });
         View decorView = mVrTestRule.getActivity().getWindow().getDecorView();
         if (checkerReturnCompatibility == VrCoreCompatibility.VR_READY) {
             VrInfoBarUtils.expectInfoBarPresent(mVrTestRule, false);
@@ -103,7 +127,7 @@ public class VrInstallUpdateInfoBarTest {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
                     + String.valueOf(checkerReturnCompatibility));
         }
-        VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(null);
+        VrCoreInstallUtils.overrideVrCoreVersionChecker(null);
     }
 
     /**

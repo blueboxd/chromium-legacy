@@ -2021,8 +2021,6 @@ test("content_unittests") {
     "../renderer/categorized_worker_pool_unittest.cc",
     "../renderer/child_frame_compositing_helper_unittest.cc",
     "../renderer/frame_swap_message_queue_unittest.cc",
-    "../renderer/input/input_event_prediction_unittest.cc",
-    "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/loader/navigation_body_loader_unittest.cc",
     "../renderer/loader/resource_dispatcher_unittest.cc",
     "../renderer/loader/sync_load_context_unittest.cc",

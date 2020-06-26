@@ -63,14 +63,33 @@ std::unique_ptr<LoopbackServerEntity> BookmarkEntityBuilder::BuildBookmark(
   sync_pb::EntitySpecifics entity_specifics =
       CreateBaseEntitySpecifics(is_legacy);
   entity_specifics.mutable_bookmark()->set_url(url.spec());
-  const bool kIsNotFolder = false;
-  return Build(entity_specifics, kIsNotFolder);
+  return Build(entity_specifics, /*is_folder=*/false);
+}
+
+std::unique_ptr<syncer::LoopbackServerEntity>
+BookmarkEntityBuilder::BuildBookmarkWithoutFullTitle(const GURL& url) {
+  if (!url.is_valid()) {
+    return nullptr;
+  }
+
+  sync_pb::EntitySpecifics entity_specifics =
+      CreateBaseEntitySpecifics(/*is_legacy=*/false);
+  entity_specifics.mutable_bookmark()->set_url(url.spec());
+  entity_specifics.mutable_bookmark()->clear_full_title();
+  return Build(entity_specifics, /*is_folder=*/false);
 }
 
 std::unique_ptr<LoopbackServerEntity> BookmarkEntityBuilder::BuildFolder(
     bool is_legacy) {
-  const bool kIsFolder = true;
-  return Build(CreateBaseEntitySpecifics(is_legacy), kIsFolder);
+  return Build(CreateBaseEntitySpecifics(is_legacy), /*is_folder=*/true);
+}
+
+std::unique_ptr<LoopbackServerEntity>
+BookmarkEntityBuilder::BuildFolderWithoutFullTitle() {
+  sync_pb::EntitySpecifics entity_specifics =
+      CreateBaseEntitySpecifics(/*is_legacy=*/false);
+  entity_specifics.mutable_bookmark()->clear_full_title();
+  return Build(entity_specifics, /*is_folder=*/true);
 }
 
 sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics(
@@ -81,6 +100,7 @@ sync_pb::EntitySpecifics BookmarkEntityBuilder::CreateBaseEntitySpecifics(
 
   if (!is_legacy) {
     bookmark_specifics->set_legacy_canonicalized_title(title_);
+    bookmark_specifics->set_full_title(title_);
     bookmark_specifics->set_guid(originator_client_item_id_);
   }
 

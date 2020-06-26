@@ -252,20 +252,36 @@ class MediaNotificationContainerImplViewOverlayControlsTest
     MediaNotificationContainerImplViewTest::SetUp();
   }
 
-  void SimulateMouseDrag(gfx::Vector2d drag_distance) {
+  void SimulateMouseDragAndRelease(gfx::Vector2d drag_distance) {
     gfx::Rect start_bounds = notification_container()->bounds();
     gfx::Point drag_start = start_bounds.CenterPoint();
     gfx::Point drag_end = drag_start + drag_distance;
 
+    SimulateMousePressed(drag_start);
+    SimulateMouseDragged(drag_end);
+    SimulateMouseReleased(drag_end);
+  }
+
+  void SimulateMousePressed(gfx::Point point) {
     notification_container()->OnMousePressed(
-        ui::MouseEvent(ui::ET_MOUSE_PRESSED, drag_start, drag_start,
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  void SimulateMouseDragged(gfx::Point point) {
     notification_container()->OnMouseDragged(
-        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, drag_end, drag_end,
+        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  void SimulateMouseReleased(gfx::Point point) {
     notification_container()->OnMouseReleased(
-        ui::MouseEvent(ui::ET_MOUSE_RELEASED, drag_end, drag_end,
+        ui::MouseEvent(ui::ET_MOUSE_RELEASED, point, point,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
+  views::Widget* GetDragImageWidget() {
+    return notification_container()->drag_image_widget_for_testing();
   }
 
  private:
@@ -393,7 +409,7 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
       .Times(0);
-  SimulateMouseDrag(gfx::Vector2d(1, 1));
+  SimulateMouseDragAndRelease(gfx::Vector2d(1, 1));
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
@@ -405,7 +421,7 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _))
       .Times(0);
-  SimulateMouseDrag(gfx::Vector2d(20, 20));
+  SimulateMouseDragAndRelease(gfx::Vector2d(20, 20));
   testing::Mock::VerifyAndClearExpectations(&observer());
 }
 
@@ -416,7 +432,24 @@ TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,
   // |OnContainerDraggedOut()| notification.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId)).Times(0);
   EXPECT_CALL(observer(), OnContainerDraggedOut(kTestNotificationId, _));
-  SimulateMouseDrag(
+  SimulateMouseDragAndRelease(
       notification_container()->bounds().bottom_right().OffsetFromOrigin());
   testing::Mock::VerifyAndClearExpectations(&observer());
+}
+
+TEST_F(MediaNotificationContainerImplViewOverlayControlsTest, DragImage) {
+  gfx::Point start_point =
+      notification_container()->GetBoundsInScreen().CenterPoint();
+  gfx::Point end_point = start_point + gfx::Vector2d(50, 50);
+
+  EXPECT_EQ(GetDragImageWidget(), nullptr);
+
+  SimulateMousePressed(start_point);
+  SimulateMouseDragged(end_point);
+  EXPECT_NE(GetDragImageWidget(), nullptr);
+  EXPECT_EQ(GetDragImageWidget()->GetWindowBoundsInScreen().CenterPoint(),
+            end_point);
+
+  SimulateMouseReleased(end_point);
+  EXPECT_EQ(GetDragImageWidget(), nullptr);
 }

@@ -10,12 +10,16 @@ import android.text.TextUtils.TruncateAt;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.view.AccessibilityDelegateCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat;
 import androidx.core.widget.TextViewCompat;
 
 import org.chromium.chrome.R;
@@ -68,6 +72,30 @@ public class HeaderView extends SimpleHorizontalLayoutView {
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_action_icon_width),
                 LayoutParams.MATCH_PARENT));
         addView(mHeaderIcon);
+
+        ViewCompat.setAccessibilityDelegate(this, new AccessibilityDelegateCompat() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(
+                    View host, AccessibilityNodeInfoCompat info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                AccessibilityActionCompat action = mIsExpanded
+                        ? AccessibilityActionCompat.ACTION_COLLAPSE
+                        : AccessibilityActionCompat.ACTION_EXPAND;
+
+                info.addAction(new AccessibilityActionCompat(
+                        AccessibilityEvent.TYPE_VIEW_CLICKED, action.getLabel()));
+                info.addAction(action);
+            }
+
+            @Override
+            public boolean performAccessibilityAction(View host, int action, Bundle arguments) {
+                if (action == AccessibilityNodeInfoCompat.ACTION_EXPAND
+                        || action == AccessibilityNodeInfoCompat.ACTION_COLLAPSE) {
+                    return performClick();
+                }
+                return super.performAccessibilityAction(host, action, arguments);
+            }
+        });
     }
 
     /** Return ImageView used to present group header chevron. */
@@ -117,21 +145,5 @@ public class HeaderView extends SimpleHorizontalLayoutView {
     @Override
     public boolean isFocused() {
         return super.isFocused() || (isSelected() && !isInTouchMode());
-    }
-
-    @Override
-    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        super.onInitializeAccessibilityNodeInfo(info);
-        info.addAction(mIsExpanded ? AccessibilityAction.ACTION_COLLAPSE
-                                   : AccessibilityAction.ACTION_EXPAND);
-    }
-
-    @Override
-    public boolean performAccessibilityAction(int action, Bundle arguments) {
-        if (action == AccessibilityNodeInfo.ACTION_EXPAND
-                || action == AccessibilityNodeInfo.ACTION_COLLAPSE) {
-            return performClick();
-        }
-        return super.performAccessibilityAction(action, arguments);
     }
 }

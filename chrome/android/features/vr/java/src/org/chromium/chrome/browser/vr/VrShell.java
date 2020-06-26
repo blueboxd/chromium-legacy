@@ -1040,7 +1040,7 @@ public class VrShell extends GvrLayout
 
     @CalledByNative
     public boolean hasDaydreamSupport() {
-        return mDelegate.hasDaydreamSupport();
+        return VrCoreInstallUtils.hasDaydreamSupport();
     }
 
     public void requestToExitVr(@UiUnsupportedMode int reason, boolean showExitPromptBeforeDoff) {

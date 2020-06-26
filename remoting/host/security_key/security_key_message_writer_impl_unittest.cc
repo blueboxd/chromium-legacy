@@ -37,7 +37,7 @@ class SecurityKeyMessageWriterImplTest : public testing::Test {
   std::string ReadMessage(int payload_length_bytes);
 
   // Called back once the read operation has completed.
-  void OnReadComplete(const base::Closure& done_callback,
+  void OnReadComplete(base::OnceClosure done_callback,
                       const std::string& result);
 
  protected:
@@ -82,10 +82,10 @@ std::string SecurityKeyMessageWriterImplTest::ReadMessage(
 }
 
 void SecurityKeyMessageWriterImplTest::OnReadComplete(
-    const base::Closure& done_callback,
+    base::OnceClosure done_callback,
     const std::string& result) {
   message_result_ = result;
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
 void SecurityKeyMessageWriterImplTest::SetUp() {

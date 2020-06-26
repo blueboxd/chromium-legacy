@@ -68,7 +68,7 @@ void Remove(uint64_t remove_mask,
   uint64_t filterable_mask = 0;
   uint64_t nonfilterable_mask = remove_mask;
 
-  if (!filter_builder->IsEmptyBlacklist()) {
+  if (!filter_builder->MatchesAllOriginsAndDomains()) {
     filterable_mask =
         remove_mask &
         ChromeBrowsingDataRemoverDelegate::IMPORTANT_SITES_DATA_TYPES;

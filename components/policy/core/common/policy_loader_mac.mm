@@ -89,7 +89,7 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
     managed_policy_file_exists = true;
   }
 
-  base::UmaHistogramBoolean("EnterpriseCheck.IsManaged",
+  base::UmaHistogramBoolean("EnterpriseCheck.IsManaged2",
                             managed_policy_file_exists);
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
                             base::IsMachineExternallyManaged());

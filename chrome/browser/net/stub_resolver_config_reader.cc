@@ -36,6 +36,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "chrome/browser/enterprise/util/android_enterprise_info.h"
 #endif
 
 #if defined(OS_WIN)
@@ -172,7 +173,16 @@ StubResolverConfigReader::StubResolverConfigReader(PrefService* local_state,
       FROM_HERE, kParentalControlsCheckDelay,
       base::BindOnce(&StubResolverConfigReader::OnParentalControlsDelayTimer,
                      base::Unretained(this)));
+
+#if defined(OS_ANDROID)
+  chrome::enterprise_util::AndroidEnterpriseInfo::GetInstance()
+      ->GetAndroidEnterpriseInfoState(base::BindOnce(
+          &StubResolverConfigReader::OnAndroidOwnedStateCheckComplete,
+          weak_factory_.GetWeakPtr()));
+#endif
 }
+
+StubResolverConfigReader::~StubResolverConfigReader() = default;
 
 // static
 void StubResolverConfigReader::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -201,12 +211,23 @@ void StubResolverConfigReader::UpdateNetworkService(bool record_metrics) {
 }
 
 bool StubResolverConfigReader::ShouldDisableDohForManaged() {
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  if (g_browser_process->browser_policy_connector()->HasMachineLevelPolicies())
+// This function ignores cloud policies which are loaded on a per-profile basis.
+#if defined(OS_ANDROID)
+  // Check for MDM/management/owner apps. android_has_owner_ is true if either a
+  // device or policy owner app is discovered by
+  // GetAndroidEnterpriseInfoState(). If android_has_owner_ is nullopt, take a
+  // value of false so that we don't disable DoH during the async check.
+
+  // Because Android policies can only be loaded with owner apps this is
+  // sufficient to check for the prescences of policies as well.
+  if (android_has_owner_.value_or(false))
+    return true;
+#elif defined(OS_WIN)
+  if (base::IsMachineExternallyManaged())
     return true;
 #endif
-#if defined(OS_WIN)
-  if (base::IsMachineExternallyManaged())
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  if (g_browser_process->browser_policy_connector()->HasMachineLevelPolicies())
     return true;
 #endif
   return false;
@@ -242,6 +263,8 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
     bool force_check_parental_controls_for_automatic_mode,
     bool record_metrics,
     bool update_network_service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   net::DnsConfig::SecureDnsMode secure_dns_mode;
   SecureDnsModeDetailsForHistogram mode_details;
   SecureDnsConfig::ManagementMode forced_management_mode =
@@ -367,3 +390,15 @@ SecureDnsConfig StubResolverConfigReader::GetAndUpdateConfiguration(
   return SecureDnsConfig(secure_dns_mode, std::move(dns_over_https_servers),
                          forced_management_mode);
 }
+
+#if defined(OS_ANDROID)
+void StubResolverConfigReader::OnAndroidOwnedStateCheckComplete(
+    bool has_profile_owner,
+    bool has_device_owner) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  android_has_owner_ = has_profile_owner || has_device_owner;
+  // update the network service if the actual result is "true" to save time.
+  if (android_has_owner_.value())
+    UpdateNetworkService(false /* record_metrics */);
+}
+#endif

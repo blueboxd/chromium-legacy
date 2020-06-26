@@ -64,7 +64,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
     } else {
       std::unique_ptr<content::BrowsingDataFilterBuilder> google_tld_filter =
           content::BrowsingDataFilterBuilder::Create(
-              content::BrowsingDataFilterBuilder::WHITELIST);
+              content::BrowsingDataFilterBuilder::Mode::kDelete);
 
       // TODO(msramek): BrowsingDataFilterBuilder was not designed for
       // large filters. Optimize it.

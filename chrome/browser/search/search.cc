@@ -35,6 +35,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #endif
 
 namespace search {
@@ -262,9 +263,16 @@ bool IsNTPOrRelatedURL(const GURL& url, Profile* profile) {
 }
 
 bool IsNTPURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeSearchScheme) &&
-         (url.host_piece() == chrome::kChromeSearchRemoteNtpHost ||
-          url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+  if (url.SchemeIs(chrome::kChromeSearchScheme) &&
+      (url.host_piece() == chrome::kChromeSearchRemoteNtpHost ||
+       url.host_piece() == chrome::kChromeSearchLocalNtpHost)) {
+    return true;
+  }
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return NewTabPageUI::IsNewTabPageOrigin(url);
+#endif
 }
 
 bool IsInstantNTP(content::WebContents* contents) {

@@ -180,6 +180,12 @@ class WebFrameWidget : public WebWidget {
   // Clear any active edit commands that are pending.
   virtual void ClearEditCommands() = 0;
 
+  // If the widget is currently handling a paste.
+  virtual bool IsPasting() = 0;
+
+  // If the widget is currently selecting a range.
+  virtual bool HandlingSelectRange() = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

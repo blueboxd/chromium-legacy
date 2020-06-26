@@ -97,7 +97,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
 
       BrowsingDataFilterBuilderImpl filter_builder(
-          BrowsingDataFilterBuilder::WHITELIST);
+          BrowsingDataFilterBuilder::Mode::kDelete);
       filter_builder.AddRegisterableDomain(origin.host());
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
                  kOriginTypeMask, &filter_builder);
@@ -108,7 +108,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
           (cache ? BrowsingDataRemover::DATA_TYPE_CACHE : 0);
 
       BrowsingDataFilterBuilderImpl filter_builder(
-          BrowsingDataFilterBuilder::WHITELIST);
+          BrowsingDataFilterBuilder::Mode::kDelete);
       filter_builder.AddOrigin(origin);
       ExpectCall(base::Time(), base::Time::Max(), data_type_mask,
                  kOriginTypeMask, &filter_builder);

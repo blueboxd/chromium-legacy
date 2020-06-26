@@ -36,6 +36,7 @@
 #include <stdint.h>
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -120,7 +121,8 @@ int ModifiersFromEvent(NSEvent* event) {
 
 void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
                                         NSEvent* event,
-                                        NSView* view) {
+                                        NSView* view,
+                                        bool unacceleratedMovement = false) {
   NSPoint screen_local = ui::ConvertPointFromWindowToScreen(
       [view window], [event locationInWindow]);
   NSScreen* primary_screen = ([[NSScreen screens] count] > 0)
@@ -138,8 +140,27 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
   result->SetPositionInWidget(content_local.x,
                               [view frame].size.height - content_local.y);
 
-  result->movement_x = [event deltaX];
-  result->movement_y = [event deltaY];
+  CGEventRef cgEvent = nullptr;
+  if (unacceleratedMovement && (cgEvent = [event CGEvent]) != nullptr) {
+    // The caller should have already validated that we are running on a
+    // compatible OS before asking for unaccelerated movement.
+    // See RenderWidgetHostViewMac::IsUnadjustedMouseMovementSupported
+    // for the OS validation.
+#if DCHECK_IS_ON()
+    if (@available(macOS 10.15.1, *)) { /* nop */
+    } else {
+      NOTREACHED();
+    }
+#endif
+    result->movement_x = CGEventGetIntegerValueField(
+        cgEvent, kCGEventUnacceleratedPointerMovementX);
+    result->movement_y = CGEventGetIntegerValueField(
+        cgEvent, kCGEventUnacceleratedPointerMovementY);
+    result->is_raw_movement_event = true;
+  } else {
+    result->movement_x = [event deltaX];
+    result->movement_y = [event deltaY];
+  }
 }
 
 bool IsSystemKeyEvent(const blink::WebKeyboardEvent& event) {
@@ -319,7 +340,8 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event,
 blink::WebMouseEvent WebMouseEventBuilder::Build(
     NSEvent* event,
     NSView* view,
-    blink::WebPointerProperties::PointerType pointerType) {
+    blink::WebPointerProperties::PointerType pointerType,
+    bool unacceleratedMovement) {
   ui::ComputeEventLatencyOS(event);
   base::TimeTicks now = ui::EventTimeForNow();
   base::TimeTicks hardware_timestamp =
@@ -400,7 +422,8 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
                               0);
   result.click_count = click_count;
   result.button = button;
-  SetWebEventLocationFromEventInView(&result, event, view);
+  SetWebEventLocationFromEventInView(&result, event, view,
+                                     unacceleratedMovement);
 
   result.pointer_type = pointerType;
   if ((type == NSMouseExited || type == NSMouseEntered) ||

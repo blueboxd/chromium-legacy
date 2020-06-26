@@ -79,6 +79,9 @@ enum CommandId {
   COMMAND_ID_COUNT
 };
 
+// The size of app context menu items' icons.
+constexpr int kAppContextMenuIconSize = 20;
+
 // Minimum padding for children of NotificationMenuView in dips.
 constexpr int kNotificationHorizontalPadding = 16;
 constexpr int kNotificationVerticalPadding = 8;

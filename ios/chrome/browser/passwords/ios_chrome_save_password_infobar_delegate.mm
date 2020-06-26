@@ -203,7 +203,7 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
 bool IOSChromeSavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save());
   form_to_save()->Save();
-  set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
+  set_infobar_response(password_manager::metrics_util::CLICKED_ACCEPT);
   password_update_ = true;
   current_password_saved_ = true;
   return true;

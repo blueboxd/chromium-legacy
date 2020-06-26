@@ -54,6 +54,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     layout_object_ = layout_object;
   }
 
+  NGBoxFragmentBuilder(const NGBoxFragmentBuilder& other)
+      : NGContainerFragmentBuilder(other) {}
+
   void SetInitialFragmentGeometry(
       const NGFragmentGeometry& initial_fragment_geometry) {
     initial_fragment_geometry_ = &initial_fragment_geometry;
@@ -374,16 +377,25 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       scoped_refptr<const ShapeResultView> operator_shape_result_view,
       LayoutUnit operator_inline_size,
       LayoutUnit operator_ascent,
-      LayoutUnit operator_descent) {
+      LayoutUnit operator_descent,
+      const LayoutUnit* radical_operator_inline_offset,
+      const NGBoxStrut* radical_base_margins) {
     if (!mathml_paint_info_)
       mathml_paint_info_ = std::make_unique<NGMathMLPaintInfo>();
 
+    mathml_paint_info_->operator_character = operator_character;
     mathml_paint_info_->operator_shape_result_view =
         std::move(operator_shape_result_view);
 
     mathml_paint_info_->operator_inline_size = operator_inline_size;
     mathml_paint_info_->operator_ascent = operator_ascent;
     mathml_paint_info_->operator_descent = operator_descent;
+    if (radical_base_margins)
+      mathml_paint_info_->radical_base_margins = *radical_base_margins;
+    if (radical_operator_inline_offset) {
+      mathml_paint_info_->radical_operator_inline_offset =
+          *radical_operator_inline_offset;
+    }
   }
 
   void SetBorderEdges(NGBorderEdges border_edges) {

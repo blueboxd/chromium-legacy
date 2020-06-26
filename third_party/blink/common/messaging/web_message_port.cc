@@ -51,6 +51,7 @@ WebMessagePort::WebMessagePort(WebMessagePort&& other) {
 }
 
 WebMessagePort& WebMessagePort::operator=(WebMessagePort&& other) {
+  CloseIfNecessary();
   Take(std::move(other));
   return *this;
 }

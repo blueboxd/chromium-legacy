@@ -40,6 +40,21 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
     bool reject_all_extensions = false;
   };
 
+  // HMACSecret contains the inputs to the hmac-secret extension:
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#sctn-hmac-secret-extension
+  struct HMACSecret {
+    HMACSecret(base::span<const uint8_t, kP256X962Length> public_key_x962,
+               base::span<const uint8_t> encrypted_salts,
+               base::span<const uint8_t> salts_auth);
+    HMACSecret(const HMACSecret&);
+    ~HMACSecret();
+    HMACSecret& operator=(const HMACSecret&);
+
+    std::array<uint8_t, kP256X962Length> public_key_x962;
+    std::vector<uint8_t> encrypted_salts;
+    std::vector<uint8_t> salts_auth;
+  };
+
   // Decodes a CTAP2 authenticatorGetAssertion request message. The request's
   // |client_data_json| will be empty and |client_data_hash| will be set.
   //
@@ -73,6 +88,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::string> app_id;
   base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter;
+  base::Optional<HMACSecret> hmac_secret;
 
   bool is_incognito_mode = false;
   bool is_u2f_only = false;

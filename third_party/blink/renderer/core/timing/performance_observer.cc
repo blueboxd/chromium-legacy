@@ -57,7 +57,7 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   // The list of supported types, in alphabetical order.
   Vector<AtomicString> supportedEntryTypes;
   auto* execution_context = ExecutionContext::From(script_state);
-  if (execution_context->IsDocument()) {
+  if (execution_context->IsWindow()) {
     supportedEntryTypes.push_back(performance_entry_names::kElement);
     if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
@@ -69,7 +69,7 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
   }
   supportedEntryTypes.push_back(performance_entry_names::kMark);
   supportedEntryTypes.push_back(performance_entry_names::kMeasure);
-  if (execution_context->IsDocument()) {
+  if (execution_context->IsWindow()) {
     supportedEntryTypes.push_back(performance_entry_names::kNavigation);
     supportedEntryTypes.push_back(performance_entry_names::kPaint);
   }

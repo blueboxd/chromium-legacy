@@ -24,9 +24,10 @@ class LookalikeUrlTabHelper
   WEB_STATE_USER_DATA_KEY_DECL();
 
   // web::WebStatePolicyDecider implementation
-  web::WebStatePolicyDecider::PolicyDecision ShouldAllowRequest(
-      NSURLRequest* request,
-      const web::WebStatePolicyDecider::RequestInfo& request_info) override;
+  void ShouldAllowResponse(
+      NSURLResponse* response,
+      bool for_main_frame,
+      web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
 };
 
 #endif  // IOS_COMPONENTS_SECURITY_INTERSTITIALS_LOOKALIKES_LOOKALIKE_URL_TAB_HELPER_H_

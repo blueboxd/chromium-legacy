@@ -12,19 +12,23 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/aura/window.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/webview.h"
@@ -240,4 +244,34 @@ TEST_F(ImmersiveModeControllerAshTest, LayeredSpinners) {
 
   ToggleFullscreen();
   EXPECT_TRUE(tabstrip->CanPaintThrobberToLayer());
+}
+
+// Ensures the WebUI tab strip can be opened during immersive reveal.
+// Regression test for crbug.com/1096569 where it couldn't be opened.
+TEST_F(ImmersiveModeControllerAshTest, WebUITabStripCanOpen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebUITabStrip);
+
+  AddTab(browser(), GURL("about:blank"));
+
+  // The WebUI tab strip is only used in touch mode.
+  ui::TouchUiController::TouchUiScoperForTesting touch_mode_override(true);
+
+  WebUITabStripContainerView* const webui_tab_strip =
+      browser_view()->webui_tab_strip();
+  ASSERT_TRUE(webui_tab_strip);
+  EXPECT_FALSE(webui_tab_strip->GetVisible());
+
+  ToggleFullscreen();
+  EXPECT_FALSE(webui_tab_strip->GetVisible());
+
+  AttemptReveal();
+  EXPECT_FALSE(webui_tab_strip->GetVisible());
+
+  webui_tab_strip->SetVisibleForTesting(true);
+
+  // The WebUITabStrip should be layed out.
+  browser_view()->GetWidget()->LayoutRootViewIfNecessary();
+  EXPECT_TRUE(webui_tab_strip->GetVisible());
+  EXPECT_FALSE(webui_tab_strip->size().IsEmpty());
 }

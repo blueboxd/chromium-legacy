@@ -77,7 +77,7 @@ content::WebContents* LocationBarModelAndroid::GetActiveWebContents() const {
   return content::WebContents::FromJavaWebContents(jweb_contents);
 }
 
-bool LocationBarModelAndroid::IsInstantNTP() const {
+bool LocationBarModelAndroid::IsNewTabPage() const {
   GURL url;
   if (!GetURL(&url))
     return false;

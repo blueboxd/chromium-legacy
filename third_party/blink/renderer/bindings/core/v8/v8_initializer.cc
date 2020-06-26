@@ -365,7 +365,7 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
-    DCHECK(execution_context->IsDocument() ||
+    DCHECK(execution_context->IsWindow() ||
            execution_context->IsMainThreadWorkletGlobalScope());
 
     v8::Context::Scope scope(context);

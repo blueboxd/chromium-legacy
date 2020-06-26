@@ -171,6 +171,23 @@ MockCdmSessionPromise::~MockCdmSessionPromise() {
   MarkPromiseSettled();
 }
 
+MockCdmKeyStatusPromise::MockCdmKeyStatusPromise(
+    bool expect_success,
+    CdmKeyInformation::KeyStatus* key_status) {
+  if (expect_success) {
+    EXPECT_CALL(*this, resolve(_)).WillOnce(SaveArg<0>(key_status));
+    EXPECT_CALL(*this, reject(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*this, resolve(_)).Times(0);
+    EXPECT_CALL(*this, reject(_, _, NotEmpty()));
+  }
+}
+
+MockCdmKeyStatusPromise::~MockCdmKeyStatusPromise() {
+  // The EXPECT calls will verify that the promise is in fact fulfilled.
+  MarkPromiseSettled();
+}
+
 MockCdm::MockCdm(const std::string& key_system,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,

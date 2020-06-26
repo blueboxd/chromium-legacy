@@ -11,6 +11,7 @@
 namespace blink {
 
 struct LogicalSize;
+struct MinMaxSizes;
 class NGBlockNode;
 class NGConstraintSpace;
 class NGLayoutInputNode;
@@ -27,6 +28,7 @@ NGLayoutInputNode NextSiblingInFlow(const NGBlockNode&);
 
 bool IsValidMathMLFraction(const NGBlockNode&);
 bool IsValidMathMLScript(const NGBlockNode&);
+bool IsValidMathMLRadical(const NGBlockNode&);
 
 inline float RuleThicknessFallback(const ComputedStyle& style) {
   // This function returns a value for the default rule thickness (TeX's
@@ -44,11 +46,37 @@ inline base::Optional<float> MathConstant(
       constant);
 }
 
-LayoutUnit FractionLineThickness(const ComputedStyle& style);
+LayoutUnit FractionLineThickness(const ComputedStyle&);
 
 inline bool HasDisplayStyle(const ComputedStyle& style) {
   return style.MathStyle() == EMathStyle::kDisplay;
 }
+
+// Get parameters for horizontal positioning of mroot.
+// The parameters are defined here:
+// https://mathml-refresh.github.io/mathml-core/#layout-constants-mathconstants
+struct RadicalHorizontalParameters {
+  LayoutUnit kern_before_degree;
+  LayoutUnit kern_after_degree;
+};
+RadicalHorizontalParameters GetRadicalHorizontalParameters(
+    const ComputedStyle&);
+
+// Get parameters for vertical positioning of msqrt/mroot.
+// The parameters are defined here:
+// https://mathml-refresh.github.io/mathml-core/#layout-constants-mathconstants
+struct RadicalVerticalParameters {
+  LayoutUnit vertical_gap;
+  LayoutUnit rule_thickness;
+  LayoutUnit extra_ascender;
+  float degree_bottom_raise_percent;
+};
+RadicalVerticalParameters GetRadicalVerticalParameters(const ComputedStyle&,
+                                                       bool has_index);
+
+// https://mathml-refresh.github.io/mathml-core/#dfn-preferred-inline-size-of-a-glyph-stretched-along-the-block-axis
+MinMaxSizes GetMinMaxSizesForVerticalStretchyOperator(const ComputedStyle&,
+                                                      UChar character);
 
 }  // namespace blink
 

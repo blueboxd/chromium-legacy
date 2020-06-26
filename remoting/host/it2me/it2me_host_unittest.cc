@@ -144,7 +144,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   void SetUp() override;
   void TearDown() override;
 
-  void OnValidationComplete(const base::Closure& resume_callback,
+  void OnValidationComplete(base::OnceClosure resume_callback,
                             ValidationResult validation_result);
 
  protected:
@@ -173,7 +173,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
-  base::Closure state_change_callback_;
+  base::OnceClosure state_change_callback_;
 
   It2MeHostState last_host_state_ = It2MeHostState::kDisconnected;
 
@@ -185,7 +185,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   scoped_refptr<It2MeHost> it2me_host_;
 
  private:
-  void StartupHostStateHelper(const base::Closure& quit_closure);
+  void StartupHostStateHelper(const base::RepeatingClosure& quit_closure);
 
   base::test::TaskEnvironment task_environment_;
 
@@ -235,11 +235,11 @@ void It2MeHostTest::TearDown() {
   run_loop_->Run();
 }
 
-void It2MeHostTest::OnValidationComplete(const base::Closure& resume_callback,
+void It2MeHostTest::OnValidationComplete(base::OnceClosure resume_callback,
                                          ValidationResult validation_result) {
   validation_result_ = validation_result;
 
-  ui_task_runner_->PostTask(FROM_HERE, resume_callback);
+  ui_task_runner_->PostTask(FROM_HERE, std::move(resume_callback));
 }
 
 void It2MeHostTest::SetPolicies(
@@ -254,7 +254,8 @@ void It2MeHostTest::SetPolicies(
   }
 }
 
-void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
+void It2MeHostTest::StartupHostStateHelper(
+    const base::RepeatingClosure& quit_closure) {
   if (last_host_state_ == It2MeHostState::kRequestedAccessCode) {
     network_task_runner_->PostTask(
         FROM_HERE,
@@ -264,8 +265,9 @@ void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
     quit_closure.Run();
     return;
   }
-  state_change_callback_ = base::Bind(&It2MeHostTest::StartupHostStateHelper,
-                                      base::Unretained(this), quit_closure);
+  state_change_callback_ =
+      base::BindOnce(&It2MeHostTest::StartupHostStateHelper,
+                     base::Unretained(this), quit_closure);
 }
 
 void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
@@ -310,8 +312,8 @@ void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
 
   base::RunLoop run_loop;
   state_change_callback_ =
-      base::Bind(&It2MeHostTest::StartupHostStateHelper, base::Unretained(this),
-                 run_loop.QuitClosure());
+      base::BindOnce(&It2MeHostTest::StartupHostStateHelper,
+                     base::Unretained(this), run_loop.QuitClosure());
   run_loop.Run();
 }
 

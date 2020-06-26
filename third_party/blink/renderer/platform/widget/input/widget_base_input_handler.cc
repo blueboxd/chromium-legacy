@@ -568,7 +568,7 @@ void WidgetBaseInputHandler::InjectGestureScrollEvent(
     std::unique_ptr<WebCoalescedInputEvent> web_scoped_gesture_event =
         std::make_unique<WebCoalescedInputEvent>(std::move(gesture_event),
                                                  ui::LatencyInfo());
-    widget_->client()->QueueSyntheticEvent(std::move(web_scoped_gesture_event));
+    widget_->QueueSyntheticEvent(std::move(web_scoped_gesture_event));
   }
 }
 

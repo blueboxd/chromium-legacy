@@ -795,11 +795,13 @@ static const ComputedStyle* CachedAnimationBaseComputedStyle(
 }
 
 static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
-                                             StyleCascade* cascade) {
+                                             StyleCascade* cascade,
+                                             bool forced_update) {
   if (!state.GetAnimatingElement())
     return;
 
-  state.GetAnimatingElement()->EnsureElementAnimations();
+  if (forced_update)
+    state.GetAnimatingElement()->EnsureElementAnimations();
 
   ElementAnimations* element_animations =
       state.GetAnimatingElement()->GetElementAnimations();
@@ -1365,8 +1367,10 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   DCHECK(animating_element == &element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
-  if (!HasAnimationsOrTransitions(state))
+  if (!HasAnimationsOrTransitions(state)) {
+    UpdateAnimationBaseComputedStyle(state, cascade, false);
     return false;
+  }
 
   if (!state.IsAnimationInterpolationMapReady() ||
       RuntimeEnabledFeatures::CSSCascadeEnabled()) {
@@ -1383,10 +1387,11 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   CSSAnimations::SnapshotCompositorKeyframes(
       element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
 
-  if (state.AnimationUpdate().IsEmpty())
-    return false;
+  bool has_update = !state.AnimationUpdate().IsEmpty();
+  UpdateAnimationBaseComputedStyle(state, cascade, has_update);
 
-  UpdateAnimationBaseComputedStyle(state, cascade);
+  if (!has_update)
+    return false;
 
   const ActiveInterpolationsMap& standard_animations =
       state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();

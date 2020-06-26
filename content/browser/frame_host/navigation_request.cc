@@ -1144,7 +1144,9 @@ NavigationRequest::NavigationRequest(
 
   // Let the NTP override the navigation params and pretend that this is a
   // browser-initiated, bookmark-like navigation.
-  if (!browser_initiated_ && source_site_instance_) {
+  // TODO(crbug.com/1099431): determine why some link navigations on chrome://
+  //     pages have |browser_initiated_| set to true and others set to false.
+  if (source_site_instance_) {
     bool is_renderer_initiated = !browser_initiated_;
     Referrer referrer(*common_params_->referrer);
     GetContentClient()->browser()->OverrideNavigationParams(

@@ -20,9 +20,9 @@ AppStatus DeviceActionsDelegateImpl::GetAndroidAppStatus(
       ArcAppListPrefs::Get(ProfileManager::GetActiveUserProfile());
   if (!prefs) {
     LOG(ERROR) << "ArcAppListPrefs is not available.";
-    return AppStatus::UNKNOWN;
+    return AppStatus::kUnknown;
   }
   std::string app_id = prefs->GetAppIdByPackageName(package_name);
 
-  return app_id.empty() ? AppStatus::UNAVAILABLE : AppStatus::AVAILABLE;
+  return app_id.empty() ? AppStatus::kUnavailable : AppStatus::kAvailable;
 }

@@ -92,6 +92,7 @@ big-grid{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutGrid",
     "showAccessibilityInfo": true
   },
   "gridInfo": [

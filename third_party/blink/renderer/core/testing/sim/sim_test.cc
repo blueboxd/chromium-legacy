@@ -68,6 +68,7 @@ void SimTest::TearDown() {
   compositor_.reset();
   network_.reset();
   local_frame_root_ = nullptr;
+  test::RunPendingTasks();
 }
 
 void SimTest::InitializeRemote() {

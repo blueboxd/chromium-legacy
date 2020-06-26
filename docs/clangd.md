@@ -16,8 +16,8 @@ See [instructions](https://clang.llvm.org/extra/clangd/Installation.html#install
 Alternative: download clangd from the official [Releases](https://github.com/clangd/clangd/releases)
 page.
 
-Note: clangd 10.0.0 does not work with Chromium; use one of the pre-release
-versions lower down on the Releases page until a newer version is released.
+Note: clangd 10.0.0 does not work with Chromium; use one of the more recent
+pre-release versions of 11 or later on the Releases page.
 
 If you prefer to build clangd locally, use the following command to build from
 LLVM source, and you will get the binary at

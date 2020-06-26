@@ -15,6 +15,8 @@
 
 namespace vr {
 
+class VrCoreInstallHelper;
+
 class VR_EXPORT GvrInstallHelper : public content::XrInstallHelper {
  public:
   GvrInstallHelper();
@@ -29,11 +31,14 @@ class VR_EXPORT GvrInstallHelper : public content::XrInstallHelper {
       base::OnceCallback<void(bool)> install_callback) override;
 
  private:
-  void OnModuleInstalled(bool success);
+  void OnModuleInstalled(int render_process_id,
+                         int render_frame_id,
+                         bool success);
   void RunInstallFinishedCallback(bool succeeded);
 
   base::OnceCallback<void(bool)> install_finished_callback_;
   std::unique_ptr<VrModuleProvider> module_delegate_;
+  std::unique_ptr<VrCoreInstallHelper> vrcore_installer_;
 
   base::WeakPtrFactory<GvrInstallHelper> weak_ptr_{this};
 };

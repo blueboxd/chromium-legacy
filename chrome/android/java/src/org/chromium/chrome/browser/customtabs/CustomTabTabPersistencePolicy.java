@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
-import android.os.StrictMode;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 
@@ -30,6 +29,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -52,7 +52,6 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
-    static final String SAVED_STATE_DIRECTORY = "custom_tabs";
 
     /** Threshold where old state files should be deleted (30 days). */
     protected static final long STATE_EXPIRY_THRESHOLD = 30L * 24 * 60 * 60 * 1000;
@@ -62,39 +61,13 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
 
     private static final String TAG = "tabmodel";
 
-    /** Prevents two state directories from getting created simultaneously. */
-    private static final Object DIR_CREATION_LOCK = new Object();
-
     /**
      * Prevents two clean up tasks from getting created simultaneously. Also protects against
      * incorrectly interleaving create/run/cancel on the task.
      */
     private static final Object CLEAN_UP_TASK_LOCK = new Object();
 
-    private static File sStateDirectory;
     private static AsyncTask<Void> sCleanupTask;
-
-    /**
-     * The folder where the state should be saved to.
-     * @return A file representing the directory that contains TabModelSelector states.
-     */
-    public static File getOrCreateCustomTabModeStateDirectory() {
-        synchronized (DIR_CREATION_LOCK) {
-            if (sStateDirectory == null) {
-                sStateDirectory = new File(
-                        TabPersistentStore.getOrCreateBaseStateDirectory(), SAVED_STATE_DIRECTORY);
-                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-                try {
-                    if (!sStateDirectory.exists() && !sStateDirectory.mkdirs()) {
-                        Log.e(TAG, "Failed to create state folder: " + sStateDirectory);
-                    }
-                } finally {
-                    StrictMode.setThreadPolicy(oldPolicy);
-                }
-            }
-        }
-        return sStateDirectory;
-    }
 
     private final int mTaskId;
     private final boolean mShouldRestore;
@@ -124,7 +97,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public File getOrCreateStateDirectory() {
-        return getOrCreateCustomTabModeStateDirectory();
+        return TabStateDirectory.getOrCreateCustomTabModeStateDirectory();
     }
 
     @Override

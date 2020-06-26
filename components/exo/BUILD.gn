@@ -97,6 +97,12 @@ static_library("exo") {
     "//ui/wm/public",
   ]
 
+  assert_no_deps = [
+    "//components/arc",
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+
   public_deps = [
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",

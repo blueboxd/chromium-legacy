@@ -96,6 +96,17 @@ bool Scorer::GetMatchingVisualTargets(const SkBitmap& bitmap,
     }
   }
 
+  if (model_.has_vision_model()) {
+    // Populate these fields for telementry purposes. They will be filtered in
+    // the browser process if they are not needed.
+    VisualFeatures::BlurredImage blurred_image;
+    if (visual_utils::GetBlurredImage(bitmap, &blurred_image)) {
+      request->set_screenshot_phash(
+          visual_utils::GetHashFromBlurredImage(blurred_image));
+      request->set_phash_dimension_size(48);
+    }
+  }
+
   return has_match;
 }
 

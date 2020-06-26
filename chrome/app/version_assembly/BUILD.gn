@@ -18,7 +18,8 @@ process_version("chrome_exe_version_manifest") {
 }
 
 # Generates the manifest for chrome.exe. This is the normal manifest stuff plus
-# the version information.
+# opting in to the segment heap (Windows 10 2004 and above), and the version
+# information.
 windows_manifest("chrome_exe_manifest") {
   sources = [
     as_invoker_manifest,

@@ -21,6 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -338,17 +339,17 @@ public class MultiInstanceMigrationTest {
                 createCustomTabsDir ? numRegularDirsToCreate + 1 : numRegularDirsToCreate;
         File[] stateDirs = new File[numDirsToCreate];
         for (int i = 0; i < numRegularDirsToCreate; i++) {
-            stateDirs[i] = new File(TabPersistentStore.getOrCreateBaseStateDirectory(),
-                    Integer.toString(i));
+            stateDirs[i] = new File(
+                    TabStateDirectory.getOrCreateBaseStateDirectory(), Integer.toString(i));
             if (!stateDirs[i].exists()) {
                 Assert.assertTrue("Could not create state dir " + i, stateDirs[i].mkdir());
             }
         }
 
         if (createCustomTabsDir) {
-            stateDirs[numDirsToCreate - 1] = new File(
-                    TabPersistentStore.getOrCreateBaseStateDirectory(),
-                    Integer.toString(TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX));
+            stateDirs[numDirsToCreate - 1] =
+                    new File(TabStateDirectory.getOrCreateBaseStateDirectory(),
+                            Integer.toString(TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX));
             if (!stateDirs[numDirsToCreate - 1].exists()) {
                 Assert.assertTrue("Could not create custom tab state dir",
                         stateDirs[numDirsToCreate - 1].mkdir());

@@ -96,9 +96,6 @@ def interface_global_type_check_method(interface_info):
     if not interface_info.is_global:
         return None
 
-    if interface_info.name == 'Window':
-        return 'IsDocument'
-
     return 'Is%s' % interface_info.name
 
 

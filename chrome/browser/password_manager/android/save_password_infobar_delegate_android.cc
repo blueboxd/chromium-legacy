@@ -101,7 +101,7 @@ base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
 bool SavePasswordInfoBarDelegate::Accept() {
   DCHECK(form_to_save_.get());
   form_to_save_->Save();
-  infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
+  infobar_response_ = password_manager::metrics_util::CLICKED_ACCEPT;
   return true;
 }
 

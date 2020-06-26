@@ -2354,6 +2354,11 @@ const char kTabStripStackedLayout[] = "tab-strip-stacked-layout";
 // Indicates that factory reset was requested from options page or reset screen.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
 
+// Indicates that when a factory reset is requested by setting
+// |kFactoryResetRequested|, the user should only have the option to powerwash
+// and cannot cancel the dialog otherwise.
+const char kForceFactoryReset[] = "ForceFactoryReset";
+
 // Presence of this value indicates that a TPM firmware update has been
 // requested. The value indicates the requested update mode.
 const char kFactoryResetTPMFirmwareUpdateMode[] =
@@ -3007,13 +3012,13 @@ const char kKnownInterceptionDisclosureInfobarLastShown[] =
 #endif
 
 #if defined(OS_CHROMEOS)
-extern const char kRequiredClientCertificateForUser[] =
+const char kRequiredClientCertificateForUser[] =
     "required_client_certificate_for_user";
-extern const char kRequiredClientCertificateForDevice[] =
+const char kRequiredClientCertificateForDevice[] =
     "required_client_certificate_for_device";
-extern const char kCertificateProvisioningStateForUser[] =
+const char kCertificateProvisioningStateForUser[] =
     "cert_provisioning_user_state";
-extern const char kCertificateProvisioningStateForDevice[] =
+const char kCertificateProvisioningStateForDevice[] =
     "cert_provisioning_device_state";
 #endif
 
@@ -3028,5 +3033,22 @@ const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
 // In particular, this sets the AppcacheRequireOriginTrial feature to false.
 // TODO(enne): Remove this once AppCache has been removed.
 const char kAppCacheForceEnabled[] = "app_cache_force_enabled";
+
+#if defined(OS_CHROMEOS)
+// Boolean pref indicating whether the notification informing the user that
+// adb sideloading had been disabled by their admin was shown.
+const char kAdbSideloadingDisallowedNotificationShown[] =
+    "adb_sideloading_disallowed_notification_shown";
+// Int64 pref indicating the time in microseconds since Windows epoch
+// (1601-01-01 00:00:00 UTC) when the notification informing the user about a
+// change in adb sideloading policy that will clear all user data was shown.
+// If the notification was not yet shown the pref holds the value Time::Min().
+const char kAdbSideloadingPowerwashPlannedNotificationShownTime[] =
+    "adb_sideloading_powerwash_planned_notification_shown_time";
+// Boolean pref indicating whether the notification informing the user about a
+// change in adb sideloading policy that will clear all user data was shown.
+const char kAdbSideloadingPowerwashOnNextRebootNotificationShown[] =
+    "adb_sideloading_powerwash_on_next_reboot_notification_shown";
+#endif
 
 }  // namespace prefs

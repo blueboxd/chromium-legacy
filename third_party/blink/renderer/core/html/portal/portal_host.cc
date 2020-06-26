@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -83,8 +82,8 @@ void PortalHost::postMessage(ScriptState* script_state,
   }
 
   scoped_refptr<const SecurityOrigin> target_origin =
-      PostMessageHelper::GetTargetOrigin(
-          options, *GetSupplementable()->document(), exception_state);
+      PostMessageHelper::GetTargetOrigin(options, *GetSupplementable(),
+                                         exception_state);
   if (exception_state.HadException())
     return;
 

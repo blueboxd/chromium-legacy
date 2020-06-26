@@ -174,7 +174,8 @@
     </template>
     <cr-icon-button id="icon" iron-icon="cr:search" title="[[label]]" dir="ltr"
         tabindex$="[[computeIconTabIndex_(narrow, hasSearchText)]]"
-        aria-hidden$="[[computeIconAriaHidden_(narrow, hasSearchText)]]">
+        aria-hidden$="[[computeIconAriaHidden_(narrow, hasSearchText)]]"
+        on-click="onSearchIconClicked_">
     </cr-icon-button>
     <div id="searchTerm">
       <label id="prompt" for="searchInput" aria-hidden="true">[[label]]</label>

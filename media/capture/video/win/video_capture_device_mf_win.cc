@@ -129,33 +129,32 @@ class MFPhotoCallback final
 // and automatically unlocks the buffer when destroyed.
 class ScopedBufferLock {
  public:
-  ScopedBufferLock(ComPtr<IMFMediaBuffer> buffer) : buffer_(std::move(buffer)) {
+  explicit ScopedBufferLock(ComPtr<IMFMediaBuffer> buffer)
+      : buffer_(std::move(buffer)) {
     if (FAILED(buffer_.As(&buffer_2d_))) {
       LockSlow();
       return;
     }
     // Try lock methods from fastest to slowest: Lock2DSize(), then Lock2D(),
     // then finally LockSlow().
-    if ((Lock2DSize() || Lock2D()) && !UnlockedNoncontiguousBuffer())
-      return;
+    if (Lock2DSize() || Lock2D()) {
+      if (IsContiguous())
+        return;
+      buffer_2d_->Unlock2D();
+    }
     // Fall back to LockSlow() if 2D buffer was unsupported or noncontiguous.
     buffer_2d_ = nullptr;
     LockSlow();
   }
 
-  // Unlocks |buffer_2d_| and returns true if |buffer_2d_| is non-contiguous or
-  // has negative pitch. If |buffer_2d_| is contiguous with positive pitch,
-  // i.e., the buffer format that the surrounding code expects, returns false.
-  bool UnlockedNoncontiguousBuffer() {
+  // Returns whether |buffer_2d_| is contiguous with positive pitch, i.e., the
+  // buffer format that the surrounding code expects.
+  bool IsContiguous() {
     BOOL is_contiguous;
-    if (pitch_ > 0 &&
-        SUCCEEDED(buffer_2d_->IsContiguousFormat(&is_contiguous)) &&
-        is_contiguous &&
-        (length_ || SUCCEEDED(buffer_2d_->GetContiguousLength(&length_)))) {
-      return false;
-    }
-    buffer_2d_->Unlock2D();
-    return true;
+    return pitch_ > 0 &&
+           SUCCEEDED(buffer_2d_->IsContiguousFormat(&is_contiguous)) &&
+           is_contiguous &&
+           (length_ || SUCCEEDED(buffer_2d_->GetContiguousLength(&length_)));
   }
 
   bool Lock2DSize() {

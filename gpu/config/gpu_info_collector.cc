@@ -35,6 +35,7 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"  // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_visual_picker_glx.h"
@@ -497,6 +498,8 @@ bool CollectGpuExtraInfo(GpuExtraInfo* gpu_extra_info,
   }
 
 #if defined(USE_X11)
+  if (features::IsUsingOzonePlatform())
+    return true;
   // Create the GLVisualPickerGLX singleton now while the GbmSupportX11
   // singleton is busy being created on another thread.
   gl::GLVisualPickerGLX* visual_picker;

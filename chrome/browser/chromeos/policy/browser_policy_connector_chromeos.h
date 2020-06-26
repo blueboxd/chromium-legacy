@@ -37,6 +37,7 @@ class AttestationFlow;
 
 namespace policy {
 
+class AdbSideloadingAllowanceModePolicyHandler;
 class AffiliatedCloudPolicyInvalidator;
 class AffiliatedInvalidationServiceProvider;
 class AffiliatedRemoteCommandsInvalidator;
@@ -179,6 +180,11 @@ class BrowserPolicyConnectorChromeOS
     return hostname_handler_.get();
   }
 
+  AdbSideloadingAllowanceModePolicyHandler*
+  GetAdbSideloadingAllowanceModePolicyHandler() const {
+    return adb_sideloading_allowance_mode_policy_handler_.get();
+  }
+
   // Return a pointer to the device-wide client certificate provisioning
   // scheduler. The callers do not take ownership of that pointer.
   chromeos::cert_provisioning::CertProvisioningScheduler*
@@ -273,6 +279,8 @@ class BrowserPolicyConnectorChromeOS
   std::vector<std::unique_ptr<policy::DeviceCloudExternalDataPolicyHandler>>
       device_cloud_external_data_policy_handlers_;
   std::unique_ptr<SystemProxyManager> system_proxy_manager_;
+  std::unique_ptr<AdbSideloadingAllowanceModePolicyHandler>
+      adb_sideloading_allowance_mode_policy_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy

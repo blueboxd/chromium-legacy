@@ -41,20 +41,20 @@ class PasswordsCounterTest : public InProcessBrowserTest {
 
   void AddLogin(const std::string& origin,
                 const std::string& username,
-                bool blacklisted) {
+                bool blocklisted) {
     // Add login and wait until the password store actually changes.
     // on the database thread.
     passwords_helper::AddLogin(
-        store_.get(), CreateCredentials(origin, username, blacklisted));
+        store_.get(), CreateCredentials(origin, username, blocklisted));
   }
 
   void RemoveLogin(const std::string& origin,
                    const std::string& username,
-                   bool blacklisted) {
+                   bool blocklisted) {
     // Remove login and wait until the password store actually changes
     // on the database thread.
     passwords_helper::RemoveLogin(
-        store_.get(), CreateCredentials(origin, username, blacklisted));
+        store_.get(), CreateCredentials(origin, username, blocklisted));
   }
 
   void SetPasswordsDeletionPref(bool value) {
@@ -122,13 +122,13 @@ class PasswordsCounterTest : public InProcessBrowserTest {
  private:
   PasswordForm CreateCredentials(const std::string& origin,
                                  const std::string& username,
-                                 bool blacklisted) {
+                                 bool blocklisted) {
     PasswordForm result;
     result.signon_realm = origin;
     result.url = GURL(origin);
     result.username_value = base::ASCIIToUTF16(username);
     result.password_value = base::ASCIIToUTF16("hunter2");
-    result.blacklisted_by_user = blacklisted;
+    result.blacklisted_by_user = blocklisted;
     result.date_created = time_;
     result.times_used = times_used_;
     return result;
@@ -171,8 +171,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   EXPECT_EQ(5u, GetResult());
 }
 
-// Tests that the counter doesn't count blacklisted entries.
-IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
+// Tests that the counter doesn't count blocklisted entries.
+IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, blocklisted) {
   AddLogin("https://www.google.com", "user1", false);
   AddLogin("https://www.google.com", "user2", true);
   AddLogin("https://www.chrome.com", "user3", true);

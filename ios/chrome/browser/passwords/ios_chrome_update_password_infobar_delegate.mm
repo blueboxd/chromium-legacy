@@ -126,6 +126,6 @@ bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {
       selected_account_, form_to_save()->GetPendingCredentials().password_value,
       form_to_save());
   form_to_save()->Save();
-  set_infobar_response(password_manager::metrics_util::CLICKED_SAVE);
+  set_infobar_response(password_manager::metrics_util::CLICKED_ACCEPT);
   return true;
 }

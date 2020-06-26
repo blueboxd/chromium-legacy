@@ -72,10 +72,9 @@ const char* kCopiedSwitchNames[] = {switches::kV, switches::kVModule,
 
 class DaemonProcessWin : public DaemonProcess {
  public:
-  DaemonProcessWin(
-      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const base::Closure& stopped_callback);
+  DaemonProcessWin(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                   scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+                   base::OnceClosure stopped_callback);
   ~DaemonProcessWin() override;
 
   // WorkerProcessIpcDelegate implementation.
@@ -128,8 +127,10 @@ class DaemonProcessWin : public DaemonProcess {
 DaemonProcessWin::DaemonProcessWin(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback)
-    : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback),
+    base::OnceClosure stopped_callback)
+    : DaemonProcess(caller_task_runner,
+                    io_task_runner,
+                    std::move(stopped_callback)),
       ipc_support_(io_task_runner->task_runner(),
                    mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST) {}
 
@@ -230,9 +231,9 @@ void DaemonProcessWin::LaunchNetworkProcess() {
 std::unique_ptr<DaemonProcess> DaemonProcess::Create(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback) {
+    base::OnceClosure stopped_callback) {
   std::unique_ptr<DaemonProcessWin> daemon_process(new DaemonProcessWin(
-      caller_task_runner, io_task_runner, stopped_callback));
+      caller_task_runner, io_task_runner, std::move(stopped_callback)));
   daemon_process->Initialize();
   return std::move(daemon_process);
 }

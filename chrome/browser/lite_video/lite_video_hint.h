@@ -16,15 +16,15 @@ class LiteVideoHint {
                 int kilobytes_to_buffer_before_throttle);
   ~LiteVideoHint() = default;
 
-  int target_downlink_bandwidth_kbps() {
+  int target_downlink_bandwidth_kbps() const {
     return target_downlink_bandwidth_kbps_;
   }
 
-  int target_downlink_rtt_latency_ms() {
+  int target_downlink_rtt_latency_ms() const {
     return target_downlink_rtt_latency_ms_;
   }
 
-  int kilobytes_to_buffer_before_throttle() {
+  int kilobytes_to_buffer_before_throttle() const {
     return kilobytes_to_buffer_before_throttle_;
   }
 

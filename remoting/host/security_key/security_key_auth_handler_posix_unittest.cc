@@ -188,7 +188,6 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath socket_path_;
-  base::Closure accept_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SecurityKeyAuthHandlerPosixTest);

@@ -23,6 +23,7 @@ bool IsLiteVideoEnabled() {
 base::Optional<base::Value> GetLiteVideoOriginHintsFromFieldTrial() {
   if (!IsLiteVideoEnabled())
     return base::nullopt;
+
   const std::string lite_video_origin_hints_json =
       base::GetFieldTrialParamValueByFeature(::features::kLiteVideo,
                                              "lite_video_origin_hints");

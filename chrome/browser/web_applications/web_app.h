@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/sync/model/string_ordinal.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -94,6 +95,10 @@ class WebApp {
     return additional_search_terms_;
   }
 
+  const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers() const {
+    return protocol_handlers_;
+  }
+
   // While local |name| and |theme_color| may vary from device to device, the
   // synced copies of these fields are replicated to all devices. The synced
   // copies are read by a device to generate a placeholder icon (if needed). Any
@@ -167,6 +172,8 @@ class WebApp {
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
+  void SetProtocolHandlers(
+      std::vector<apps::ProtocolHandlerInfo> protocol_handlers);
   void SetLastLaunchTime(const base::Time& time);
   void SetInstallTime(const base::Time& time);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
@@ -206,6 +213,7 @@ class WebApp {
   std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;
+  std::vector<apps::ProtocolHandlerInfo> protocol_handlers_;
   base::Time last_launch_time_;
   base::Time install_time_;
   SyncFallbackData sync_fallback_data_;

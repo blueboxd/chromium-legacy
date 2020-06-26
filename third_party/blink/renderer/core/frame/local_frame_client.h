@@ -57,7 +57,6 @@
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
@@ -84,7 +83,6 @@ enum class WebFeature : int32_t;
 
 class AssociatedInterfaceProvider;
 class ContentSecurityPolicy;
-class Document;
 class DocumentLoader;
 class HTMLFormElement;
 class HTMLFrameOwnerElement;
@@ -93,6 +91,7 @@ class HTMLPortalElement;
 class HTMLPlugInElement;
 class HistoryItem;
 class KURL;
+class LocalDOMWindow;
 class WebPluginContainerImpl;
 class ResourceError;
 class ResourceRequest;
@@ -143,7 +142,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void BeginNavigation(
       const ResourceRequest&,
       mojom::RequestContextFrameType,
-      Document* origin_document,
+      LocalDOMWindow* origin_window,
       DocumentLoader*,
       WebNavigationType,
       NavigationPolicy,

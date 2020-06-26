@@ -36,7 +36,8 @@ class CONTENT_EXPORT WebMouseEventBuilder {
       NSEvent* event,
       NSView* view,
       blink::WebPointerProperties::PointerType pointerType =
-          blink::WebPointerProperties::PointerType::kMouse);
+          blink::WebPointerProperties::PointerType::kMouse,
+      bool unacceleratedMovement = false);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {

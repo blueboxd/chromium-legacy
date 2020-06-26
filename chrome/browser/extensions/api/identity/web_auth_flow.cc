@@ -139,8 +139,8 @@ void WebAuthFlow::DetachDelegateAndDelete() {
 }
 
 content::StoragePartition* WebAuthFlow::GetGuestPartition() {
-  return content::BrowserContext::GetStoragePartitionForSite(
-      profile_, GetWebViewSiteURL(partition_));
+  return content::BrowserContext::GetStoragePartition(
+      profile_, GetWebViewPartitionConfig(partition_));
 }
 
 const std::string& WebAuthFlow::GetAppWindowKey() const {
@@ -148,8 +148,9 @@ const std::string& WebAuthFlow::GetAppWindowKey() const {
 }
 
 // static
-GURL WebAuthFlow::GetWebViewSiteURL(Partition partition) {
-  return extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
+content::StoragePartitionConfig WebAuthFlow::GetWebViewPartitionConfig(
+    Partition partition) {
+  return content::StoragePartitionConfig::Create(
       extension_misc::kIdentityApiUiAppId, GetPartitionName(partition),
       /*in_memory=*/true);
 }

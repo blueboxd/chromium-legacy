@@ -23,6 +23,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -538,15 +539,29 @@ void TabRestoreServiceHelper::PopulateTab(Tab* tab,
                                           int index,
                                           LiveTabContext* context,
                                           LiveTab* live_tab) {
-  int entry_count =
+  int max_entry_count =
       live_tab->IsInitialBlankNavigation() ? 0 : live_tab->GetEntryCount();
-  tab->navigations.resize(static_cast<int>(entry_count));
-  for (int i = 0; i < entry_count; ++i) {
+  tab->navigations.resize(static_cast<int>(max_entry_count));
+  int actual_entry_count = 0;
+  int current_navigation_index = live_tab->GetCurrentEntryIndex();
+  for (int i = 0; i < max_entry_count; ++i) {
     SerializedNavigationEntry entry = live_tab->GetEntryAtIndex(i);
-    tab->navigations[i] = entry;
+    // Reader Mode is meant to be considered a "mode" that users can only enter
+    // using a button in the omnibox, so it does not show up in recently closed
+    // tabs, session sync, or chrome://history. Remove Reader Mode pages from
+    // the navigations.
+    if (!entry.virtual_url().SchemeIs(dom_distiller::kDomDistillerScheme)) {
+      tab->navigations[actual_entry_count++] = entry;
+    } else if (current_navigation_index >= i) {
+      // The page removed was behind the current navigation index, so
+      // decrement the current navigation index.
+      current_navigation_index--;
+    }
   }
+  if (actual_entry_count != max_entry_count)
+    tab->navigations.resize(static_cast<int>(actual_entry_count));
   tab->timestamp = TimeNow();
-  tab->current_navigation_index = live_tab->GetCurrentEntryIndex();
+  tab->current_navigation_index = current_navigation_index;
   tab->tabstrip_index = index;
 
   tab->extension_app_id = client_->GetExtensionAppIDForTab(live_tab);

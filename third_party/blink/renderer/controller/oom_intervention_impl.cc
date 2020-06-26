@@ -15,8 +15,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
@@ -60,6 +60,23 @@ void UpdateStateCrashKey(OomInterventionState next_state) {
       break;
   }
 }
+
+void NavigateLocalAdsFrames(LocalFrame* frame) {
+  // This navigates all the frames detected as an advertisement to about:blank.
+  DCHECK(frame);
+  for (Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().TraverseNext(frame)) {
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
+      if (child_local_frame->IsAdSubframe()) {
+        FrameLoadRequest request(nullptr, ResourceRequest(BlankURL()));
+        child_local_frame->Navigate(request, WebFrameLoadType::kStandard);
+      }
+    }
+    // TODO(yuzus): Once AdsTracker for remote frames is implemented and OOPIF
+    // is enabled on low-end devices, navigate remote ads as well.
+  }
+}
+
 }  // namespace
 
 // static
@@ -148,7 +165,7 @@ void OomInterventionImpl::Check(MemoryUsage usage) {
           if (!local_frame)
             continue;
           if (navigate_ads_enabled_)
-            local_frame->GetDocument()->NavigateLocalAdsFrames();
+            NavigateLocalAdsFrames(local_frame);
           if (purge_v8_memory_enabled_)
             local_frame->ForciblyPurgeV8Memory();
         }

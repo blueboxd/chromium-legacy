@@ -133,6 +133,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // munderover).
   MathScriptType ScriptType() const;
 
+  // Find out if the radical has an index.
+  bool HasIndex() const;
+
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<const NGLayoutResult> LayoutAtomicInline(
       const NGConstraintSpace& parent_constraint_space,

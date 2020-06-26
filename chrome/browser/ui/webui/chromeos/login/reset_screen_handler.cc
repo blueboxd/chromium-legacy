@@ -161,6 +161,10 @@ void ResetScreenHandler::SetScreenState(State value) {
   CallJS("login.ResetScreen.setScreenState", static_cast<int>(value));
 }
 
+void ResetScreenHandler::SetIsForcedPowerwash(bool value) {
+  CallJS("login.ResetScreen.setIsForcedPowerwash", value);
+}
+
 ResetView::State ResetScreenHandler::GetScreenState() {
   return state_;
 }

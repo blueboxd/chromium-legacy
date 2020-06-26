@@ -174,11 +174,11 @@ void DaemonControllerDelegateLinux::CheckPermission(
 void DaemonControllerDelegateLinux::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,
-    const DaemonController::CompletionCallback& done) {
+    DaemonController::CompletionCallback done) {
   // Add the user to chrome-remote-desktop group first.
   if (!RunHostScript({"--add-user"})) {
     LOG(ERROR) << "Failed to add user to chrome-remote-desktop group.";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
@@ -189,7 +189,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
     if (!base::CreateDirectoryAndGetError(config_dir, &error)) {
       LOG(ERROR) << "Failed to create config directory " << config_dir.value()
                  << ", error: " << base::File::ErrorToString(error);
-      done.Run(DaemonController::RESULT_FAILED);
+      std::move(done).Run(DaemonController::RESULT_FAILED);
       return;
     }
   }
@@ -197,7 +197,7 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   // Write config.
   if (!HostConfigToJsonFile(*config, GetConfigPath())) {
     LOG(ERROR) << "Failed to update config file.";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
@@ -209,19 +209,19 @@ void DaemonControllerDelegateLinux::SetConfigAndStart(
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
-  done.Run(result);
+  std::move(done).Run(result);
 }
 
 void DaemonControllerDelegateLinux::UpdateConfig(
     std::unique_ptr<base::DictionaryValue> config,
-    const DaemonController::CompletionCallback& done) {
+    DaemonController::CompletionCallback done) {
   std::unique_ptr<base::DictionaryValue> new_config(
       HostConfigFromJsonFile(GetConfigPath()));
   if (new_config)
     new_config->MergeDictionary(config.get());
   if (!new_config || !HostConfigToJsonFile(*new_config, GetConfigPath())) {
     LOG(ERROR) << "Failed to update config file.";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
@@ -231,18 +231,18 @@ void DaemonControllerDelegateLinux::UpdateConfig(
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
-  done.Run(result);
+  std::move(done).Run(result);
 }
 
 void DaemonControllerDelegateLinux::Stop(
-    const DaemonController::CompletionCallback& done) {
+    DaemonController::CompletionCallback done) {
   std::vector<std::string> args = {"--stop",
                                    "--config=" + GetConfigPath().value()};
   DaemonController::AsyncResult result = DaemonController::RESULT_FAILED;
   if (RunHostScript(args))
     result = DaemonController::RESULT_OK;
 
-  done.Run(result);
+  std::move(done).Run(result);
 }
 
 DaemonController::UsageStatsConsent

@@ -163,7 +163,7 @@ bool RunHelperAsRoot(const std::string& command,
 }
 
 void ElevateAndSetConfig(const base::DictionaryValue& config,
-                         const DaemonController::CompletionCallback& done) {
+                         DaemonController::CompletionCallback done) {
   // Find out if the host service is running.
   pid_t job_pid = base::mac::PIDForJob(remoting::kServiceName);
   bool service_running = (job_pid > 0);
@@ -172,7 +172,7 @@ void ElevateAndSetConfig(const base::DictionaryValue& config,
   std::string input_data = HostConfigToJson(config);
   if (!RunHelperAsRoot(command, input_data)) {
     LOG(ERROR) << "Failed to run the helper tool.";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
@@ -181,17 +181,17 @@ void ElevateAndSetConfig(const base::DictionaryValue& config,
         base::mac::MessageForJob(remoting::kServiceName, LAUNCH_KEY_STARTJOB));
     if (!response.is_valid()) {
       LOG(ERROR) << "Failed to send STARTJOB to launchd";
-      done.Run(DaemonController::RESULT_FAILED);
+      std::move(done).Run(DaemonController::RESULT_FAILED);
       return;
     }
   }
-  done.Run(DaemonController::RESULT_OK);
+  std::move(done).Run(DaemonController::RESULT_OK);
 }
 
-void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
+void ElevateAndStopHost(DaemonController::CompletionCallback done) {
   if (!RunHelperAsRoot("--disable", std::string())) {
     LOG(ERROR) << "Failed to run the helper tool.";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
@@ -201,10 +201,10 @@ void ElevateAndStopHost(const DaemonController::CompletionCallback& done) {
       base::mac::MessageForJob(remoting::kServiceName, LAUNCH_KEY_STOPJOB));
   if (!response.is_valid()) {
     LOG(ERROR) << "Failed to send STOPJOB to launchd";
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
-  done.Run(DaemonController::RESULT_OK);
+  std::move(done).Run(DaemonController::RESULT_OK);
 }
 
 }  // namespace
@@ -262,29 +262,29 @@ void DaemonControllerDelegateMac::CheckPermission(
 void DaemonControllerDelegateMac::SetConfigAndStart(
     std::unique_ptr<base::DictionaryValue> config,
     bool consent,
-    const DaemonController::CompletionCallback& done) {
+    DaemonController::CompletionCallback done) {
   config->SetBoolean(kUsageStatsConsentConfigPath, consent);
-  ElevateAndSetConfig(*config, done);
+  ElevateAndSetConfig(*config, std::move(done));
 }
 
 void DaemonControllerDelegateMac::UpdateConfig(
     std::unique_ptr<base::DictionaryValue> config,
-    const DaemonController::CompletionCallback& done) {
+    DaemonController::CompletionCallback done) {
   base::FilePath config_file_path(kHostConfigFilePath);
   std::unique_ptr<base::DictionaryValue> host_config(
       HostConfigFromJsonFile(config_file_path));
   if (!host_config) {
-    done.Run(DaemonController::RESULT_FAILED);
+    std::move(done).Run(DaemonController::RESULT_FAILED);
     return;
   }
 
   host_config->MergeDictionary(config.get());
-  ElevateAndSetConfig(*host_config, done);
+  ElevateAndSetConfig(*host_config, std::move(done));
 }
 
 void DaemonControllerDelegateMac::Stop(
-    const DaemonController::CompletionCallback& done) {
-  ElevateAndStopHost(done);
+    DaemonController::CompletionCallback done) {
+  ElevateAndStopHost(std::move(done));
 }
 
 DaemonController::UsageStatsConsent

@@ -134,14 +134,6 @@ class PLATFORM_EXPORT FontPlatformData {
                    float device_scale_factor = 1,
                    const Font* = nullptr) const;
 
-#if defined(OS_WIN)
-  enum Flags {
-    kAntiAlias = 1 << 0,
-    kSubpixelsAntiAlias = 1 << 1,
-  };
-  int FontFlags() const { return font_flags_; }
-#endif
-
  private:
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
   WebFontRenderStyle QuerySystemRenderStyle(const std::string& family,
@@ -151,7 +143,7 @@ class PLATFORM_EXPORT FontPlatformData {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/808221): Remove and use QuerySystemRenderStyle()
   // instead.
-  void QuerySystemForRenderStyle();
+  WebFontRenderStyle QuerySystemForRenderStyle();
 #endif
 
   sk_sp<SkTypeface> typeface_;
@@ -167,16 +159,12 @@ class PLATFORM_EXPORT FontPlatformData {
   FontOrientation orientation_;
 
  private:
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
   WebFontRenderStyle style_;
 #endif
 
   mutable scoped_refptr<HarfBuzzFace> harfbuzz_face_;
   bool is_hash_table_deleted_value_;
-#if defined(OS_WIN)
-  // TODO(https://crbug.com/808221): Replace |font_flags_| with |style_|.
-  int font_flags_;
-#endif
 };
 
 }  // namespace blink

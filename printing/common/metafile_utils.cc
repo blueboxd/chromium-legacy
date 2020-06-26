@@ -241,18 +241,73 @@ sk_sp<SkPicture> DeserializeOopPicture(const void* data,
   return iter->second;
 }
 
-SkSerialProcs SerializationProcs(PictureSerializationContext* picture_ctx) {
+sk_sp<SkData> SerializeOopTypeface(SkTypeface* typeface, void* ctx) {
+  auto* context = reinterpret_cast<TypefaceSerializationContext*>(ctx);
+  SkFontID typeface_id = typeface->uniqueID();
+  bool data_included = context->insert(typeface_id).second;
+
+  // Need the typeface ID to identify the desired typeface.  Include an
+  // indicator for when typeface data actually follows vs. when the typeface
+  // should already exist in a cache when deserializing.
+  SkDynamicMemoryWStream stream;
+  stream.write32(typeface_id);
+  stream.writeBool(data_included);
+  if (data_included) {
+    typeface->serialize(&stream, SkTypeface::SerializeBehavior::kDoIncludeData);
+  }
+  return stream.detachAsData();
+}
+
+sk_sp<SkTypeface> DeserializeOopTypeface(const void* data,
+                                         size_t length,
+                                         void* ctx) {
+  SkStream* stream = *(reinterpret_cast<SkStream**>(const_cast<void*>(data)));
+  if (length < sizeof(stream)) {
+    NOTREACHED();  // Should not happen if the content is as written.
+    return nullptr;
+  }
+
+  SkFontID id;
+  if (!stream->readU32(&id)) {
+    return nullptr;
+  }
+  bool data_included;
+  if (!stream->readBool(&data_included)) {
+    return nullptr;
+  }
+
+  auto* context = reinterpret_cast<TypefaceDeserializationContext*>(ctx);
+  auto iter = context->find(id);
+  if (iter != context->end()) {
+    DCHECK(!data_included);
+    return iter->second;
+  }
+
+  // Typeface not encountered before, expect it to be present in the stream.
+  DCHECK(data_included);
+  sk_sp<SkTypeface> typeface = SkTypeface::MakeDeserialize(stream);
+  context->emplace(id, typeface);
+  return typeface;
+}
+
+SkSerialProcs SerializationProcs(PictureSerializationContext* picture_ctx,
+                                 TypefaceSerializationContext* typeface_ctx) {
   SkSerialProcs procs;
   procs.fPictureProc = SerializeOopPicture;
   procs.fPictureCtx = picture_ctx;
+  procs.fTypefaceProc = SerializeOopTypeface;
+  procs.fTypefaceCtx = typeface_ctx;
   return procs;
 }
 
 SkDeserialProcs DeserializationProcs(
-    PictureDeserializationContext* picture_ctx) {
+    PictureDeserializationContext* picture_ctx,
+    TypefaceDeserializationContext* typeface_ctx) {
   SkDeserialProcs procs;
   procs.fPictureProc = DeserializeOopPicture;
   procs.fPictureCtx = picture_ctx;
+  procs.fTypefaceProc = DeserializeOopTypeface;
+  procs.fTypefaceCtx = typeface_ctx;
   return procs;
 }
 

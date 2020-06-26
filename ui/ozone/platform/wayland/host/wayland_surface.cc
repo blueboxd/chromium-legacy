@@ -4,11 +4,15 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
 
-WaylandSurface::WaylandSurface() = default;
+WaylandSurface::WaylandSurface(WaylandConnection* connection,
+                               WaylandWindow* root_window)
+    : root_window_(root_window), surface_(connection->CreateSurface()) {}
+
 WaylandSurface::~WaylandSurface() = default;
 
 gfx::AcceleratedWidget WaylandSurface::GetWidget() const {

@@ -97,4 +97,26 @@ AuthenticatorGetAssertionResponse::SetNumCredentials(uint8_t num_credentials) {
   return *this;
 }
 
+base::Optional<base::span<const uint8_t>>
+AuthenticatorGetAssertionResponse::hmac_secret() const {
+  if (hmac_secret_) {
+    return *hmac_secret_;
+  }
+  return base::nullopt;
+}
+
+void AuthenticatorGetAssertionResponse::set_hmac_secret(
+    std::vector<uint8_t> hmac_secret) {
+  hmac_secret_ = std::move(hmac_secret);
+}
+
+bool AuthenticatorGetAssertionResponse::hmac_secret_not_evaluated() const {
+  return hmac_secret_not_evaluated_;
+}
+
+void AuthenticatorGetAssertionResponse::set_hmac_secret_not_evaluated(
+    bool value) {
+  hmac_secret_not_evaluated_ = value;
+}
+
 }  // namespace device

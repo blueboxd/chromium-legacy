@@ -12,10 +12,12 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/optional_trust_token_params.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/test/trust_token_test_util.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
@@ -161,6 +163,45 @@ TEST_F(TrustTokenRequestHelperFactoryTest,
   params->issuer = UnsuitableNonHttpNonHttpsOrigin();
   EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
             mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest,
+       WontCreateSigningHelperWithOverlongAdditionalData) {
+  auto request = CreateSuitableRequest();
+
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+  params->possibly_unsafe_additional_signing_data =
+      std::string(kTrustTokenAdditionalSigningDataMaxSizeBytes + 1, 'a');
+
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest,
+       WontCreateSigningHelperWithUnsafeAdditionalData) {
+  auto request = CreateSuitableRequest();
+
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+  params->possibly_unsafe_additional_signing_data = "\r";
+
+  EXPECT_EQ(CreateHelperAndWaitForResult(*request, *params).status(),
+            mojom::TrustTokenOperationStatus::kInvalidArgument);
+}
+
+TEST_F(TrustTokenRequestHelperFactoryTest,
+       WillCreateSigningHelperWithAcceptablyShortAdditionalData) {
+  auto request = CreateSuitableRequest();
+
+  auto params = suitable_params().Clone();
+  params->type = mojom::TrustTokenOperationType::kSigning;
+  params->possibly_unsafe_additional_signing_data =
+      std::string(kTrustTokenAdditionalSigningDataMaxSizeBytes, 'a');
+
+  auto result = CreateHelperAndWaitForResult(suitable_request(), *params);
+  ASSERT_TRUE(result.ok());
+  EXPECT_TRUE(result.TakeOrCrash());
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest, CreatesSigningHelper) {

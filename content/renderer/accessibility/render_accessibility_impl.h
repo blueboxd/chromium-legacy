@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_data.h"
 #include "content/common/ax_content_tree_update.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
@@ -26,6 +25,7 @@
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -49,8 +49,8 @@ class AXImageAnnotator;
 class RenderFrameImpl;
 class RenderAccessibilityManager;
 
-using BlinkAXTreeSerializer = ui::
-    AXTreeSerializer<blink::WebAXObject, AXContentNodeData, AXContentTreeData>;
+using BlinkAXTreeSerializer =
+    ui::AXTreeSerializer<blink::WebAXObject, AXContentNodeData, ui::AXTreeData>;
 
 class AXTreeSnapshotterImpl : public AXTreeSnapshotter {
  public:

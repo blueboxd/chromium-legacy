@@ -94,6 +94,8 @@ namespace certificateProvider {
 
   callback StopPinRequestCallback = void ();
 
+  callback SetCertificatesCallback = void ();
+
   // The callback provided by the extension that Chrome uses to report back
   // rejected certificates. See <code>CertificatesCallback</code>.
   callback ResultCallback = void (ArrayBuffer[] rejectedCertificates);
@@ -154,5 +156,12 @@ namespace certificateProvider {
     // their request to close PIN dialog for user.
     static void stopPinRequest(StopPinRequestDetails details,
                                StopPinRequestCallback callback);
+
+    // Sets a list of certificates to use in the browser.
+    // |certificates|: The list of certificates to set. Invalid certificates
+    // will be ignored.
+    // |callback|: Called upon completion.
+    static void setCertificates(CertificateInfo[] certificates,
+                                optional SetCertificatesCallback callback);
   };
 };

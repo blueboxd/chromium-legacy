@@ -435,8 +435,8 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   GetFrame()->Loader().RecordLatestRequiredCSP();
   GetFrame()->Loader().ModifyRequestForCSP(
       resource_request,
-      &GetResourceFetcherProperties().GetFetchClientSettingsObject(), document_,
-      mojom::RequestContextFrameType::kNone);
+      &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
+      document_->domWindow(), mojom::blink::RequestContextFrameType::kNone);
 }
 
 void FrameFetchContext::AddClientHintsIfNecessary(

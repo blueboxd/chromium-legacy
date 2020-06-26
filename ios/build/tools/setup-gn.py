@@ -304,6 +304,9 @@ def Main(args):
   parser.add_argument(
       '--import', action='append', dest='import_rules', default=[],
       help='path to file defining default gn variables')
+  parser.add_argument(
+      '--gn-path', default=None,
+      help='path to gn binary (default: look up in $PATH)')
   args = parser.parse_args(args)
 
   # Load configuration (first global and then any user overrides).
@@ -328,11 +331,14 @@ def Main(args):
         settings.getstring('build', 'arch'))
     sys.exit(1)
 
-  # Find gn binary in PATH.
-  gn_path = FindGn()
-  if gn_path is None:
-    sys.stderr.write('ERROR: cannot find gn in PATH\n')
-    sys.exit(1)
+  # Find path to gn binary either from command-line or in PATH.
+  if args.gn_path:
+    gn_path = args.gn_path
+  else:
+    gn_path = FindGn()
+    if gn_path is None:
+      sys.stderr.write('ERROR: cannot find gn in PATH\n')
+      sys.exit(1)
 
   out_dir = os.path.join(args.root, 'out')
   if not os.path.isdir(out_dir):

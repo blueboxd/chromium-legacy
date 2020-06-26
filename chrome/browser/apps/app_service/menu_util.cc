@@ -173,8 +173,10 @@ bool PopulateNewItemFromMojoMenuItems(
     case apps::mojom::MenuItemType::kCommand: {
       const gfx::VectorIcon& icon =
           std::move(get_vector_icon).Run(item->command_id, item->string_id);
-      model->AddItemWithStringIdAndIcon(item->command_id, item->string_id,
-                                        ui::ImageModel::FromVectorIcon(icon));
+      model->AddItemWithStringIdAndIcon(
+          item->command_id, item->string_id,
+          ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+                                         ash::kAppContextMenuIconSize));
       break;
     }
     case apps::mojom::MenuItemType::kSubmenu:
@@ -184,7 +186,8 @@ bool PopulateNewItemFromMojoMenuItems(
             std::move(get_vector_icon).Run(item->command_id, item->string_id);
         model->AddActionableSubmenuWithStringIdAndIcon(
             item->command_id, item->string_id, submenu,
-            ui::ImageModel::FromVectorIcon(icon));
+            ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+                                           ash::kAppContextMenuIconSize));
       }
       break;
     case apps::mojom::MenuItemType::kRadio:

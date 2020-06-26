@@ -451,7 +451,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     scoped_refptr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
     WebFrameLoadType type,
-    Document* initiating_document) {
+    bool is_content_initiated) {
   SinglePageAppNavigationType single_page_app_navigation_type =
       CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
   UMA_HISTOGRAM_ENUMERATION(
@@ -485,7 +485,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   if (is_client_redirect_)
     redirect_chain_.push_back(old_url);
   redirect_chain_.push_back(new_url);
-  last_same_document_navigation_was_browser_initiated_ = !initiating_document;
+  last_same_document_navigation_was_browser_initiated_ = !is_content_initiated;
 
   SetHistoryItemStateForCommit(
       history_item_.Get(), type,
@@ -503,7 +503,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       FrameScheduler::NavigationType::kSameDocument);
 
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
-      history_item_.Get(), commit_type, initiating_document);
+      history_item_.Get(), commit_type, is_content_initiated);
   probe::DidNavigateWithinDocument(frame_);
   if (!was_loading) {
     GetLocalFrameClient().DidStopLoading();
@@ -916,38 +916,6 @@ void DocumentLoader::HandleResponse() {
     frame_->Owner()->RenderFallbackContent(frame_);
 }
 
-void DocumentLoader::CommitNavigation() {
-  CHECK_GE(state_, kCommitted);
-
-  // Prepare a DocumentInit before clearing the frame, because it may need to
-  // inherit an aliased security context.
-  Document* owner_document = nullptr;
-  scoped_refptr<const SecurityOrigin> initiator_origin = requestor_origin_;
-
-  // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
-  // origin is inherited from the document that loaded the URL.
-  if (IsJavaScriptURLOrXSLTCommit()) {
-    owner_document = frame_->GetDocument();
-  } else if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
-    Frame* owner_frame = frame_->Tree().Parent();
-    if (!owner_frame)
-      owner_frame = frame_->Loader().Opener();
-    if (auto* owner_local_frame = DynamicTo<LocalFrame>(owner_frame)) {
-      owner_document = owner_local_frame->GetDocument();
-      initiator_origin = owner_document->GetSecurityOrigin();
-    }
-  }
-  DCHECK(frame_->GetPage());
-
-  InstallNewDocument(Url(), initiator_origin, owner_document, MimeType());
-
-  if (response_.IsHTTP() && navigation_timing_info_) {
-    // The response is being copied here to pass the ServerTiming info.
-    // TODO(yoav): copy the ServerTiming info directly.
-    navigation_timing_info_->SetFinalResponse(response_);
-  }
-}
-
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
   TRACE_EVENT1("loading", "DocumentLoader::CommitData", "length", length);
 
@@ -970,7 +938,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect_policy,
-    Document* origin_document,
+    LocalDOMWindow* origin_window,
     bool has_event,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(!IsReloadLoadType(frame_load_type));
@@ -996,20 +964,19 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   // If the requesting document is cross-origin, perform the navigation
   // asynchronously to minimize the navigator's ability to execute timing
   // attacks.
-  if (origin_document && !origin_document->GetSecurityOrigin()->CanAccess(
-                             frame_->GetDocument()->GetSecurityOrigin())) {
+  if (origin_window && !origin_window->GetSecurityOrigin()->CanAccess(
+                           frame_->GetDocument()->GetSecurityOrigin())) {
     frame_->GetTaskRunner(TaskType::kInternalLoading)
         ->PostTask(
             FROM_HERE,
             WTF::Bind(&DocumentLoader::CommitSameDocumentNavigationInternal,
                       WrapWeakPersistent(this), url, frame_load_type,
                       WrapPersistent(history_item), client_redirect_policy,
-                      WrapPersistent(origin_document), has_event,
-                      std::move(extra_data)));
+                      !!origin_window, has_event, std::move(extra_data)));
   } else {
-    CommitSameDocumentNavigationInternal(
-        url, frame_load_type, history_item, client_redirect_policy,
-        origin_document, has_event, std::move(extra_data));
+    CommitSameDocumentNavigationInternal(url, frame_load_type, history_item,
+                                         client_redirect_policy, origin_window,
+                                         has_event, std::move(extra_data));
   }
   return mojom::CommitResult::Ok;
 }
@@ -1019,7 +986,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect,
-    Document* initiating_document,
+    bool is_content_initiated,
     bool has_event,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   // If this function was scheduled to run asynchronously, this DocumentLoader
@@ -1067,7 +1034,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     GetLocalFrameClient().UpdateDocumentLoader(this, std::move(extra_data));
   UpdateForSameDocumentNavigation(url, kSameDocumentNavigationDefault, nullptr,
                                   kScrollRestorationAuto, frame_load_type,
-                                  initiating_document);
+                                  is_content_initiated);
 
   initial_scroll_state_.was_scrolled_by_user = false;
 
@@ -1541,13 +1508,25 @@ void MergeFeaturesFromOriginPolicy(WTF::StringBuilder& feature_policy,
   }
 }
 
-void DocumentLoader::InstallNewDocument(
-    const KURL& url,
-    const scoped_refptr<const SecurityOrigin> initiator_origin,
-    Document* owner_document,
-    const AtomicString& mime_type) {
+void DocumentLoader::CommitNavigation() {
+  CHECK_GE(state_, kCommitted);
+  DCHECK(frame_->GetPage());
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->IsActive());
   DCHECK_EQ(frame_->Tree().ChildCount(), 0u);
+
+  // Prepare a DocumentInit before clearing the frame, because it may need to
+  // inherit an aliased security context.
+  Document* owner_document = nullptr;
+
+  // TODO(dcheng): This differs from the behavior of both IE and Firefox: the
+  // origin is inherited from the document that loaded the URL.
+  if (Document::ShouldInheritSecurityOriginFromOwner(Url())) {
+    Frame* owner_frame = frame_->Tree().Parent();
+    if (!owner_frame)
+      owner_frame = frame_->Loader().Opener();
+    if (auto* owner_local_frame = DynamicTo<LocalFrame>(owner_frame))
+      owner_document = owner_local_frame->GetDocument();
+  }
 
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
@@ -1575,10 +1554,16 @@ void DocumentLoader::InstallNewDocument(
   DocumentInit init =
       DocumentInit::Create()
           .WithDocumentLoader(this, content_security_policy_.Get())
-          .WithURL(url)
-          .WithTypeFrom(mime_type)
+          .WithURL(Url())
+          .WithTypeFrom(MimeType())
           .WithOwnerDocument(owner_document)
-          .WithInitiatorOrigin(initiator_origin)
+          // Initiator origin will be unused if owner_document is non-null.
+          // WithInitiatorOrigin() does some DCHECKs that the initiator origin
+          // and owner document origin match, but it can mismatch in certain
+          // cases, e.g. a subframe is navigated to about:blank by a frame other
+          // than its parent.
+          .WithInitiatorOrigin(owner_document ? nullptr
+                                              : requestor_origin_.get())
           .WithOriginToCommit(origin_to_commit_)
           .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
@@ -1618,7 +1603,7 @@ void DocumentLoader::InstallNewDocument(
                         kPropagatesToAuxiliaryBrowsingContexts));
     init = init.WithSandboxFlags(flags);
   } else if (commit_reason_ == CommitReason::kXSLT) {
-    init = init.WithSandboxFlags(owner_document->GetSandboxFlags());
+    init = init.WithSandboxFlags(frame_->DomWindow()->GetSandboxFlags());
   }
 
   // We've not set the requisite state on the DocumentInit. Calculate the origin
@@ -1635,10 +1620,7 @@ void DocumentLoader::InstallNewDocument(
         FrameLoaderStateMachine::kCommittedFirstRealLoad);
   }
 
-  const SecurityOrigin* previous_security_origin = nullptr;
-  if (frame_->GetDocument()) {
-    previous_security_origin = frame_->GetDocument()->GetSecurityOrigin();
-  }
+  Document* previous_document = frame_->GetDocument();
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -1695,10 +1677,10 @@ void DocumentLoader::InstallNewDocument(
   }
 
   bool should_clear_window_name =
-      previous_security_origin && frame_->IsMainFrame() &&
+      previous_document && frame_->IsMainFrame() &&
       !frame_->Loader().Opener() &&
       !document->GetSecurityOrigin()->IsSameOriginWith(
-          previous_security_origin);
+          previous_document->GetSecurityOrigin());
   if (should_clear_window_name) {
     // TODO(andypaicu): experimentalSetNullName will just record the fact
     // that the name would be nulled and if the name is accessed after we will
@@ -1714,7 +1696,7 @@ void DocumentLoader::InstallNewDocument(
   }
 
   if (commit_reason_ == CommitReason::kXSLT)
-    DocumentXSLT::From(*document).SetTransformSourceDocument(owner_document);
+    DocumentXSLT::From(*document).SetTransformSourceDocument(previous_document);
 
   DidInstallNewDocument(document);
 
@@ -1722,12 +1704,12 @@ void DocumentLoader::InstallNewDocument(
   // will use stale values from HTMLParserOption.
   DidCommitNavigation();
 
-  if (initiator_origin) {
+  if (requestor_origin_) {
     const scoped_refptr<const SecurityOrigin> url_origin =
         SecurityOrigin::Create(Url());
 
     is_same_origin_navigation_ =
-        initiator_origin->IsSameOriginWith(url_origin.get()) &&
+        requestor_origin_->IsSameOriginWith(url_origin.get()) &&
         Url().ProtocolIsInHTTPFamily();
   }
 
@@ -1776,6 +1758,12 @@ void DocumentLoader::InstallNewDocument(
   // console messages will be properly displayed.
   frame_->Console().ReportResourceResponseReceived(
       this, main_resource_identifier_, response_);
+
+  if (response_.IsHTTP() && navigation_timing_info_) {
+    // The response is being copied here to pass the ServerTiming info.
+    // TODO(yoav): copy the ServerTiming info directly.
+    navigation_timing_info_->SetFinalResponse(response_);
+  }
 }
 
 void DocumentLoader::CreateParserPostCommit() {

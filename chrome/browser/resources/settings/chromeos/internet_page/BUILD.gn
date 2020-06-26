@@ -69,8 +69,8 @@ js_library("internet_detail_page") {
     "..:metrics_recorder",
     "..:os_route",
     "../..:router",
+    "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -84,9 +84,9 @@ js_library("internet_detail_page") {
 js_library("internet_known_networks_page") {
   deps = [
     "..:metrics_recorder",
+    "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
@@ -101,9 +101,9 @@ js_library("internet_subpage") {
     "..:route_origin_behavior",
     "../..:router",
     "../localized_link:localized_link",
+    "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -117,9 +117,9 @@ js_library("network_proxy_section") {
     "../..:router",
     "../../controls:settings_toggle_button",
     "../../prefs:prefs_behavior",
+    "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/cr_components/chromeos/network:network_proxy",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
@@ -137,8 +137,8 @@ js_library("network_summary") {
 
 js_library("network_summary_item") {
   deps = [
+    "//ui/webui/resources/cr_components/chromeos/network:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]

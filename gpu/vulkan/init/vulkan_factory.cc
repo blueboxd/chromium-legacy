@@ -20,6 +20,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -41,6 +42,14 @@ std::unique_ptr<VulkanImplementation> CreateVulkanImplementation(
       << "Protected memory is not supported on this platform.";
 #endif  // !defined(OS_FUCHSIA)
 #if defined(USE_X11)
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()
+        ->GetSurfaceFactoryOzone()
+        ->CreateVulkanImplementation(allow_protected_memory,
+                                     enforce_protected_memory);
+  }
+#endif
   return std::make_unique<VulkanImplementationX11>(use_swiftshader);
 #elif defined(OS_ANDROID)
   return std::make_unique<VulkanImplementationAndroid>();

@@ -30,7 +30,7 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     const String& scope,
     ExceptionState& exception_state) {
   bool process_scope = scope == "process";
-  if (process_scope && !context->IsDocument()) {
+  if (process_scope && !context->IsWindow()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "\"process\" scope interception is unavailable outside a Document.");

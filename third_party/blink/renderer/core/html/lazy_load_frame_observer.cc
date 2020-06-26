@@ -180,7 +180,7 @@ void LazyLoadFrameObserver::LoadImmediately() {
 
   // Note that calling FrameLoader::StartNavigation() causes the
   // |lazy_load_intersection_observer_| to be disconnected.
-  FrameLoadRequest request(&element_->GetDocument(),
+  FrameLoadRequest request(element_->GetDocument().domWindow(),
                            scoped_request_info->resource_request);
   To<LocalFrame>(element_->ContentFrame())
       ->Loader()

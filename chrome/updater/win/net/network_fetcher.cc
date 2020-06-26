@@ -66,7 +66,8 @@ void NetworkFetcher::PostRequestComplete() {
   std::move(post_request_complete_callback_)
       .Run(std::make_unique<std::string>(network_fetcher_->GetResponseBody()),
            network_fetcher_->GetNetError(), network_fetcher_->GetHeaderETag(),
-           network_fetcher_->GetXHeaderRetryAfterSec());
+           network_fetcher_->GetHeaderXCupServerProof(),
+           network_fetcher_->GetHeaderXRetryAfterSec());
 }
 
 void NetworkFetcher::DownloadToFileComplete() {

@@ -11,6 +11,11 @@
 
 namespace network {
 
+// Note: Some of the constants in this file might spiritually be part of the
+// network service public API and belong in the corresponding
+// services/network/public file; just because they're currently here, not there,
+// doesn't mean there's necessarily a reason they can't be moved.
+
 // Priority for running blocking Trust Tokens database IO. This is given value
 // USER_VISIBLE because Trust Tokens DB operations can sometimes be in the
 // loading critical path, but generally only for subresources.
@@ -47,14 +52,6 @@ constexpr size_t kTrustTokenKeyCommitmentRegistryMaxSizeBytes = 1 << 22;
 //
 // 500 is chosen as a high-but-not-excessive value for initial experimentation.
 constexpr int kTrustTokenPerIssuerTokenCapacity = 500;
-
-// The maximum number of trust token issuers allowed to be associated with a
-// given top-level origin.
-//
-// This value is quite low because registering additional issuers with an origin
-// has a number of privacy risks (for instance, whether or not a user has any
-// tokens issued by a given issuer reveals one bit of identifying information).
-constexpr int kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers = 2;
 
 // The maximum Trust Tokens batch size (i.e., number of tokens to request from
 // an issuer).

@@ -395,6 +395,10 @@ cr.define('settings', function() {
      * @private
      */
     getResultInnerHtml_() {
+      if (!this.searchResult.wasGeneratedFromTextMatch) {
+        return this.resultText_;
+      }
+
       if (this.resultText_.match(/\s/) ||
           this.resultText_.toLocaleLowerCase() !=
               this.resultText_.toLocaleUpperCase()) {

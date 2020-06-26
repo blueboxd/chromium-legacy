@@ -131,9 +131,9 @@ bool AomContentAxTree::ComputeAccessibilityTree() {
   RenderAccessibilityImpl::SnapshotAccessibilityTree(
       render_frame_, &content_tree_update, ui::kAXModeComplete);
 
-  // Hack to convert between AXContentNodeData and AXContentTreeData to just
-  // AXNodeData and AXTreeData to preserve content specific attributes while
-  // still being able to use AXTree's Unserialize method.
+  // Hack to convert between AXContentNodeData to just AXNodeData to preserve
+  // content specific attributes while still being able to use AXTree's
+  // Unserialize method.
   ui::AXTreeUpdate tree_update;
   tree_update.has_tree_data = content_tree_update.has_tree_data;
   ui::AXTreeData* tree_data = &(content_tree_update.tree_data);

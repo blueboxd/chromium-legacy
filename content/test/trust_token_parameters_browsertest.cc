@@ -122,6 +122,7 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
       monitor.GetRequestInfo(trust_token_url);
   ASSERT_TRUE(request);
   ASSERT_TRUE(request->trust_token_params);
+
   EXPECT_TRUE(request->trust_token_params.as_ptr().Equals(
       expected_params_and_serialization.params));
 }
@@ -157,6 +158,7 @@ IN_PROC_BROWSER_TEST_P(TrustTokenParametersBrowsertest,
   base::Optional<network::ResourceRequest> request =
       monitor.GetRequestInfo(trust_token_url);
   ASSERT_TRUE(request);
+
   EXPECT_TRUE(request->trust_token_params.as_ptr().Equals(
       expected_params_and_serialization.params));
 }

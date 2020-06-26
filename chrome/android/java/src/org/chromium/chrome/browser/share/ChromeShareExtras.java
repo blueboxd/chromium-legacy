@@ -31,11 +31,17 @@ public class ChromeShareExtras {
      */
     private final boolean mIsUrlOfVisiblePage;
 
-    private ChromeShareExtras(
-            boolean saveLastUsed, boolean shareDirectly, boolean isUrlOfVisiblePage) {
+    /**
+     * Source URL of the image.
+     */
+    private final String mImageSrcUrl;
+
+    private ChromeShareExtras(boolean saveLastUsed, boolean shareDirectly,
+            boolean isUrlOfVisiblePage, String imageSrcUrl) {
         mSaveLastUsed = saveLastUsed;
         mShareDirectly = shareDirectly;
         mIsUrlOfVisiblePage = isUrlOfVisiblePage;
+        mImageSrcUrl = imageSrcUrl;
     }
 
     /**
@@ -61,12 +67,20 @@ public class ChromeShareExtras {
     }
 
     /**
+     * @return Source URL of the image.
+     */
+    public String getImageSrcUrl() {
+        return mImageSrcUrl;
+    }
+
+    /**
      * The builder for {@link ChromeShareExtras} objects.
      */
     public static class Builder {
         private boolean mSaveLastUsed;
         private boolean mShareDirectly;
         private boolean mIsUrlOfVisiblePage;
+        private String mImageSrcUrl;
 
         /**
          * Sets whether to save the chosen activity for future direct sharing.
@@ -93,8 +107,17 @@ public class ChromeShareExtras {
             return this;
         }
 
+        /**
+         * Sets source URL of the image.
+         */
+        public Builder setImageSrcUrl(String imageSrcUrl) {
+            mImageSrcUrl = imageSrcUrl;
+            return this;
+        }
+
         public ChromeShareExtras build() {
-            return new ChromeShareExtras(mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage);
+            return new ChromeShareExtras(
+                    mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage, mImageSrcUrl);
         }
     }
 }

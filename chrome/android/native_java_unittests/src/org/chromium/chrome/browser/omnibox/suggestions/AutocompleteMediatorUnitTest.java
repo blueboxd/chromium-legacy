@@ -9,6 +9,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -119,6 +120,7 @@ public class AutocompleteMediatorUnitTest {
                 });
 
         mSuggestionsList = buildDummySuggestionsList(10, "Suggestion");
+        when(mAutocompleteDelegate.isKeyboardActive()).thenReturn(true);
     }
 
     /**
@@ -204,20 +206,24 @@ public class AutocompleteMediatorUnitTest {
     }
 
     @CalledByNativeJavaTest
-    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
-    public void updateSuggestionsList_defersKeyboardPopupWhenHaveLotsOfSuggestionsToShow() {
+    @NativeJavaTestFeatures.Enable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_defersKeyboardPopupWhenHaveLotsOfSuggestionsToShow() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
+        Assert.assertTrue(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
     }
 
     @CalledByNativeJavaTest
-    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
-    public void updateSuggestionsList_showsKeyboardWhenHaveFewSuggestionsToShow() {
+    @NativeJavaTestFeatures.Enable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_showsKeyboardWhenHaveFewSuggestionsToShow() {
         mMediator.onNativeInitialized();
         mMediator.signalPendingKeyboardShowDecision();
         mMediator.onSuggestionsReceived(
@@ -229,36 +235,102 @@ public class AutocompleteMediatorUnitTest {
     }
 
     @CalledByNativeJavaTest
-    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
-    public void updateSuggestionsList_doesNotShowKeyboardAfterReceivingSubsequentSuggestionLists() {
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_scrolEventsWithConcealedItemsTogglesKeyboardVisibility() {
         mMediator.onNativeInitialized();
-        mMediator.signalPendingKeyboardShowDecision();
+
+        final int heightWithOneConcealedItem =
+                (mSuggestionsList.size() - 2) * SUGGESTION_MIN_HEIGHT;
+
+        mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
         mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
-        mMediator.onSuggestionsReceived(
-                new AutocompleteResult(mSuggestionsList.subList(0, 1), null), "");
+        Assert.assertTrue(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
+
+        // With fully concealed elements, scroll should trigger keyboard hide.
+        reset(mAutocompleteDelegate);
+        mMediator.onSuggestionDropdownScroll();
         verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
         verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
+
+        // Pretend that the user scrolled back to top with an overscroll.
+        // This should bring back the soft keyboard.
+        reset(mAutocompleteDelegate);
+        mMediator.onSuggestionDropdownOverscrolledToTop();
+        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(true));
+        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(false));
     }
 
     @CalledByNativeJavaTest
-    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
-    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
-    public void updateSuggestionsList_hidesKeyboardOnScrollWithLotsOfSuggestions() {
-        // It is quite important that we hide keyboard every time the user initiates scroll.
-        // The reason for this is that the keyboard could be requested by the user when they press
-        // the omnibox field. This is beyond our control.
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_updateHeightWhenHardwareKeyboardIsConnected() {
+        // Simulates behavior of physical keyboard being attached to the device.
+        // In this scenario, requesting keyboard to come up will not result with an actual
+        // keyboard showing on the screen. As a result, the updated height should be used
+        // when estimating presence of fully concealed items on the suggestions list.
+        //
+        // Attaching and detaching physical keyboard will affect the space on the screen, but since
+        // the list of suggestions does not change, we are keeping them in exactly the same order
+        // (and keep the grouping prior to the change).
+        // The grouping is only affected, when the new list is provided (as a result of user's
+        // input).
         mMediator.onNativeInitialized();
-        mMediator.signalPendingKeyboardShowDecision();
+
+        final int heightOfOAllSuggestions = mSuggestionsList.size() * SUGGESTION_MIN_HEIGHT;
+        final int heightWithOneConcealedItem =
+                (mSuggestionsList.size() - 1) * SUGGESTION_MIN_HEIGHT;
+
+        // This will request keyboard to show up upon receiving next suggestions list.
+        when(mAutocompleteDelegate.isKeyboardActive()).thenReturn(true);
+        // Report the height of the suggestions list, indicating that the keyboard is not visible.
+        // In both cases, the updated suggestions list height should be used to estimate presence of
+        // fully concealed items on the suggestions list.
+        mMediator.onSuggestionDropdownHeightChanged(heightOfOAllSuggestions);
         mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
-        verify(mAutocompleteDelegate, times(1)).setKeyboardVisibility(eq(false));
-        // Should request keyboard hide.
-        mMediator.onSuggestionDropdownScroll();
-        verify(mAutocompleteDelegate, times(2)).setKeyboardVisibility(eq(false));
-        // Should also request keyboard hide.
-        mMediator.onSuggestionDropdownScroll();
-        verify(mAutocompleteDelegate, times(3)).setKeyboardVisibility(eq(false));
-        verify(mAutocompleteDelegate, never()).setKeyboardVisibility(eq(true));
+        Assert.assertFalse(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
+
+        // Build separate list of suggestions so that these are accepted as a new set.
+        // We want to follow the same restrictions as the original list (specifically: have a
+        // resulting list of suggestions taller than the space in dropdown view), so make sure
+        // the list sizes are same.
+        List<OmniboxSuggestion> newList =
+                buildDummySuggestionsList(mSuggestionsList.size(), "SuggestionB");
+        mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
+        mMediator.onSuggestionsReceived(new AutocompleteResult(newList, null), "");
+        Assert.assertTrue(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP)
+    public void updateSuggestionsList_rejectsHeightUpdatesWhenKeyboardIsHidden() {
+        // Simulates scenario where we receive dropdown height update after software keyboard is
+        // explicitly hidden. In this scenario the updates should be rejected when estimating
+        // presence of fully concealed items on the suggestions list.
+        mMediator.onNativeInitialized();
+
+        final int heightOfOAllSuggestions = mSuggestionsList.size() * SUGGESTION_MIN_HEIGHT;
+        final int heightWithOneConcealedItem =
+                (mSuggestionsList.size() - 1) * SUGGESTION_MIN_HEIGHT;
+
+        // Report height change with keyboard visible
+        mMediator.onSuggestionDropdownHeightChanged(heightWithOneConcealedItem);
+        mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
+        Assert.assertTrue(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
+
+        // "Hide keyboard", report larger area and re-evaluate the results. We should see no
+        // difference, as the logic should only evaluate presence of items concealed when keyboard
+        // is active.
+        when(mAutocompleteDelegate.isKeyboardActive()).thenReturn(false);
+        mMediator.onSuggestionDropdownHeightChanged(heightOfOAllSuggestions);
+        mMediator.onSuggestionsReceived(new AutocompleteResult(mSuggestionsList, null), "");
+        Assert.assertTrue(
+                mMediator.getDropdownItemViewInfoListBuilderForTest().hasFullyConcealedElements());
     }
 
     @CalledByNativeJavaTest

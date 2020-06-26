@@ -2051,14 +2051,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
                                      ui::AXNodeData* dst);
 
-  // Convert the content-layer-specific AXContentTreeData to a general-purpose
-  // AXTreeData structure.
-  void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
-
   // Returns the AXTreeID of the parent when the current frame is a child frame
   // (i.e. not a main frame) or when it's an embedded browser plugin guest, or
   // ui::AXTreeIDUnknown() otherwise.
   ui::AXTreeID GetParentAXTreeID();
+
+  // Returns the AXTreeID of the currently focused frame in the frame tree if
+  // the current frame is the root frame, or ui::AXTreeIDUnknown otherwise.
+  ui::AXTreeID GetFocusedAXTreeID();
+
+  // Returns the AXTreeData associated to the current frame, ensuring that the
+  // AXTreeIDs values for the current, parent and focused frames are up to date.
+  ui::AXTreeData GetAXTreeData();
 
   // Callback in response to an accessibility hit test triggered by
   // AccessibilityHitTest.
@@ -2585,8 +2589,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // we don't keep trying to reset forever.
   int accessibility_reset_count_;
 
-  // The last AXContentTreeData for this frame received from the RenderFrame.
-  AXContentTreeData ax_content_tree_data_;
+  // The last AXTreeData for this frame received from the RenderFrame.
+  ui::AXTreeData ax_tree_data_;
 
   // The AX tree ID of the embedder, if this is a browser plugin guest.
   ui::AXTreeID browser_plugin_embedder_ax_tree_id_;

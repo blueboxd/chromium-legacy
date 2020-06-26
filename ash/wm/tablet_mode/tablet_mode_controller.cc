@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
@@ -292,34 +292,14 @@ const char* ToString(TabletMode tablet_mode) {
   return "";
 }
 
+void ReportTrasitionSmoothness(bool enter_tablet_mode, int smoothness) {
+  if (enter_tablet_mode)
+    UMA_HISTOGRAM_PERCENTAGE(kTabletModeEnterHistogram, smoothness);
+  else
+    UMA_HISTOGRAM_PERCENTAGE(kTabletModeExitHistogram, smoothness);
+}
+
 }  // namespace
-
-// Class which records animation smoothness when entering or exiting tablet
-// mode. No stats should be recorded if no windows are animated.
-class TabletModeController::TabletModeTransitionFpsCounter : public FpsCounter {
- public:
-  TabletModeTransitionFpsCounter(ui::Compositor* compositor,
-                                 bool enter_tablet_mode)
-      : FpsCounter(compositor), enter_tablet_mode_(enter_tablet_mode) {}
-  ~TabletModeTransitionFpsCounter() override = default;
-
-  void LogUma() {
-    int smoothness = ComputeSmoothness();
-    if (smoothness < 0)
-      return;
-
-    if (enter_tablet_mode_)
-      UMA_HISTOGRAM_PERCENTAGE(kTabletModeEnterHistogram, smoothness);
-    else
-      UMA_HISTOGRAM_PERCENTAGE(kTabletModeExitHistogram, smoothness);
-  }
-
-  bool enter_tablet_mode() const { return enter_tablet_mode_; }
-
- private:
-  bool enter_tablet_mode_;
-  DISALLOW_COPY_AND_ASSIGN(TabletModeTransitionFpsCounter);
-};
 
 // An observer that observes the destruction of the |window_| and executes the
 // callback. Used to run cleanup when the window is destroyed in the middle of
@@ -523,9 +503,9 @@ void TabletModeController::StopObservingAnimation(bool record_stats,
     }
   }
 
-  if (record_stats && fps_counter_)
-    fps_counter_->LogUma();
-  fps_counter_.reset();
+  if (record_stats && transition_tracker_)
+    transition_tracker_->Stop();
+  transition_tracker_.reset();
 
   // Stop other animations (STEP_END), then update the tablet mode ui.
   if (tablet_mode_window_manager_ && delete_screenshot)
@@ -757,7 +737,7 @@ void TabletModeController::OnLayerAnimationStarted(
 
 void TabletModeController::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
-  if (!fps_counter_ || !ShouldObserveSequence(sequence))
+  if (!transition_tracker_ || !ShouldObserveSequence(sequence))
     return;
 
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
@@ -768,9 +748,9 @@ void TabletModeController::OnLayerAnimationEnded(
   // This may be called before |OnLayerAnimationScheduled()| if tablet is
   // entered/exited while an animation is in progress, so we won't get
   // stats/screenshot in those cases.
-  // TODO(sammiequon): We may want to remove the |fps_counter_| check and
+  // TODO(sammiequon): We may want to remove the |transition_tracker_| check and
   // simplify things since those are edge cases.
-  if (!fps_counter_ || !ShouldObserveSequence(sequence))
+  if (!transition_tracker_ || !ShouldObserveSequence(sequence))
     return;
 
   StopObservingAnimation(/*record_stats=*/true, /*delete_screenshot=*/true);
@@ -781,10 +761,11 @@ void TabletModeController::OnLayerAnimationScheduled(
   if (!ShouldObserveSequence(sequence))
     return;
 
-  if (!fps_counter_) {
-    fps_counter_ = std::make_unique<TabletModeTransitionFpsCounter>(
-        animating_layer_->GetCompositor(),
-        state_ == State::kEnteringTabletMode);
+  if (!transition_tracker_) {
+    transition_tracker_ =
+        animating_layer_->GetCompositor()->RequestNewThroughputTracker();
+    transition_tracker_->Start(metrics_util::ForSmoothness(base::BindRepeating(
+        &ReportTrasitionSmoothness, state_ == State::kEnteringTabletMode)));
     return;
   }
 

@@ -1471,9 +1471,20 @@ jumbo_component("platform") {
     "widget/input/elastic_overscroll_controller.cc",
     "widget/input/event_with_callback.cc",
     "widget/input/event_with_callback.h",
+    "widget/input/frame_widget_input_handler_impl.cc",
+    "widget/input/frame_widget_input_handler_impl.h",
+    "widget/input/ime_event_guard.cc",
+    "widget/input/ime_event_guard.h",
+    "widget/input/input_event_prediction.cc",
+    "widget/input/input_event_prediction.h",
     "widget/input/input_handler_proxy.cc",
     "widget/input/input_scroll_elasticity_controller.cc",
     "widget/input/input_scroll_elasticity_controller.h",
+    "widget/input/main_thread_event_queue.cc",
+    "widget/input/main_thread_event_queue.h",
+    "widget/input/main_thread_event_queue_task.h",
+    "widget/input/main_thread_event_queue_task_list.cc",
+    "widget/input/main_thread_event_queue_task_list.h",
     "widget/input/momentum_scroll_jank_tracker.cc",
     "widget/input/momentum_scroll_jank_tracker.h",
     "widget/input/overscroll_bounce_controller.cc",
@@ -1505,6 +1516,10 @@ jumbo_component("platform") {
     "widget/input/scroll_predictor.h",
     "widget/input/widget_base_input_handler.cc",
     "widget/input/widget_base_input_handler.h",
+    "widget/input/widget_input_handler_impl.cc",
+    "widget/input/widget_input_handler_impl.h",
+    "widget/input/widget_input_handler_manager.cc",
+    "widget/input/widget_input_handler_manager.h",
     "widget/widget_base.cc",
     "widget/widget_base.h",
     "widget/widget_base_client.h",
@@ -1522,6 +1537,14 @@ jumbo_component("platform") {
     if (get_path_info(_output, "extension") != "pickle") {
       sources += [ _output ]
     }
+  }
+
+  if (is_android) {
+    sources += [
+      "widget/input/synchronous_compositor_proxy.cc",
+      "widget/input/synchronous_compositor_proxy.h",
+      "widget/input/synchronous_compositor_registry.h",
+    ]
   }
 
   if (is_win) {
@@ -1636,9 +1659,6 @@ jumbo_component("platform") {
 
   if (is_win) {
     sources -= [
-      # TODO(https://crbug.com/808221): Use WebFontRenderStyle on Windows.
-      "fonts/web_font_render_style.cc",
-
       # Uses LocaleWin instead.
       "text/locale_icu.cc",
       "text/locale_icu.h",
@@ -2013,8 +2033,10 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "webrtc/webrtc_video_frame_adapter_test.cc",
     "widget/compositing/layer_tree_view_unittest.cc",
     "widget/compositing/test/stub_layer_tree_view_delegate.h",
+    "widget/input/input_event_prediction_unittest.cc",
     "widget/input/input_handler_proxy_unittest.cc",
     "widget/input/input_scroll_elasticity_controller_unittest.cc",
+    "widget/input/main_thread_event_queue_unittest.cc",
     "widget/input/overscroll_bounce_controller_unittest.cc",
     "widget/input/prediction/empty_filter_unittests.cc",
     "widget/input/prediction/filter_factory_unittests.cc",

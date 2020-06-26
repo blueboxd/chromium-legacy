@@ -1027,8 +1027,7 @@ void ChromeClientImpl::SetNeedsLowLatencyInput(LocalFrame* frame,
   if (!widget)
     return;
 
-  if (WebWidgetClient* client = widget->Client())
-    client->SetNeedsLowLatencyInput(needs_low_latency);
+  widget->SetNeedsLowLatencyInput(needs_low_latency);
 }
 
 void ChromeClientImpl::SetNeedsUnbufferedInputForDebugger(LocalFrame* frame,
@@ -1039,8 +1038,7 @@ void ChromeClientImpl::SetNeedsUnbufferedInputForDebugger(LocalFrame* frame,
   if (!widget)
     return;
 
-  if (WebWidgetClient* client = widget->Client())
-    client->SetNeedsUnbufferedInputForDebugger(unbuffered);
+  widget->SetNeedsUnbufferedInputForDebugger(unbuffered);
 }
 
 void ChromeClientImpl::RequestUnbufferedInputEvents(LocalFrame* frame) {
@@ -1050,8 +1048,7 @@ void ChromeClientImpl::RequestUnbufferedInputEvents(LocalFrame* frame) {
   if (!widget)
     return;
 
-  if (WebWidgetClient* client = widget->Client())
-    client->RequestUnbufferedInputEvents();
+  widget->RequestUnbufferedInputEvents();
 }
 
 void ChromeClientImpl::SetTouchAction(LocalFrame* frame,

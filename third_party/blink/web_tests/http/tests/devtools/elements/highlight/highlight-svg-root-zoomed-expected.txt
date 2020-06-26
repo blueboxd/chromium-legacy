@@ -92,6 +92,7 @@ svg-root{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "",
+    "layoutObjectName": "LayoutSVGRoot",
     "showAccessibilityInfo": true
   }
 }

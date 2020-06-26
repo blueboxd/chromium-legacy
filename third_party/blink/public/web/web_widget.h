@@ -33,6 +33,7 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/paint/element_id.h"
@@ -40,7 +41,10 @@
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -66,10 +70,12 @@ class LatencyInfo;
 }
 
 namespace blink {
+class SynchronousCompositorRegistry;
 class WebCoalescedInputEvent;
 
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
+class WebThreadScheduler;
 }
 
 class WebWidget {
@@ -78,6 +84,8 @@ class WebWidget {
   // allocate a frame sink or begin producing frames until SetCompositorVisible
   // is called.
   virtual cc::LayerTreeHost* InitializeCompositing(
+      bool never_composited,
+      scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) = 0;
@@ -86,8 +94,7 @@ class WebWidget {
   // provided it should run on the |cleanup_runner| after the WebWidget has
   // added its own tasks to the |cleanup_runner|.
   virtual void Close(
-      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner = nullptr,
-      base::OnceCallback<void()> cleanup_task = base::OnceCallback<void()>()) {}
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner = nullptr) {}
 
   // Set the compositor as visible. If |visible| is true, then the compositor
   // will request a new layer frame sink and begin producing frames from the
@@ -142,11 +149,11 @@ class WebWidget {
     return WebInputEventResult::kNotHandled;
   }
 
-  // Called to inform the WebWidget of the mouse cursor's visibility.
-  virtual void SetCursorVisibilityState(bool is_visible) {}
-
   // Called to inform the WebWidget that mouse capture was lost.
   virtual void MouseCaptureLost() {}
+
+  // Called to inform the WebWidget of the mouse cursor's visibility.
+  virtual void SetCursorVisibilityState(bool is_visible) {}
 
   // Called to inform the WebWidget that it has gained or lost keyboard focus.
   virtual void SetFocus(bool) {}
@@ -225,15 +232,22 @@ class WebWidget {
   // updated state will be sent to the browser.
   virtual void UpdateTextInputState() = 0;
 
-  // Requests the text input state be updated. An updated state will always be
-  // sent to the browser.
-  virtual void ForceTextInputStateUpdate() = 0;
+  // Request Mouse Lock. This can be removed eventually when the mouse lock
+  // dispatcher is moved into blink.
+  virtual void RequestMouseLock(
+      bool has_transient_user_activation,
+      bool priviledged,
+      bool request_unadjusted_movement,
+      base::OnceCallback<
+          void(mojom::PointerLockResult,
+               CrossVariantMojoRemote<mojom::PointerLockContextInterfaceBase>)>
+          callback) = 0;
 
-  // Checks if the composition range or composition character bounds have been
-  // changed. If they are changed, the new value will be sent to the browser
-  // process. This method does nothing when the browser process is not able to
-  // handle composition range and composition character bounds.
-  virtual void UpdateCompositionInfo() = 0;
+  // Flush any pending input.
+  virtual void FlushInputProcessedCallback() = 0;
+
+  // Cancel the current composition.
+  virtual void CancelCompositionForPepper() = 0;
 
   // Requests the selection bounds be updated.
   virtual void UpdateSelectionBounds() = 0;
@@ -241,9 +255,10 @@ class WebWidget {
   // Request the virtual keyboard be shown.
   virtual void ShowVirtualKeyboard() = 0;
 
-  // Request composition updates be sent to the browser.
-  virtual void RequestCompositionUpdates(bool immediate_request,
-                                         bool monitor_updates) = 0;
+#if defined(OS_ANDROID)
+  // Return the synchronous compositor registry.
+  virtual SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() = 0;
+#endif
 
  protected:
   ~WebWidget() = default;

@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 class SkDocument;
@@ -125,6 +126,8 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
   // between content id and its actual content.
   using PictureDeserializationContext =
       base::flat_map<uint32_t, sk_sp<SkPicture>>;
+  using TypefaceDeserializationContext =
+      base::flat_map<uint32_t, sk_sp<SkTypeface>>;
 
   // Base structure to store a frame's content and its subframe
   // content information.
@@ -142,6 +145,9 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
     // Subframe content id and its corresponding frame guid.
     ContentToFrameMap subframe_content_map;
+
+    // Typefaces used within scope of this frame.
+    TypefaceDeserializationContext typefaces;
   };
 
   // Other than content, it also stores the status during frame composition.
@@ -235,6 +241,9 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
   // Keep track of all frames' information indexed by frame id.
   FrameMap frame_info_map_;
+
+  // Context for dealing with all typefaces encountered across multiple pages.
+  TypefaceDeserializationContext typefaces_;
 
   std::vector<std::unique_ptr<RequestInfo>> requests_;
   std::unique_ptr<DocumentInfo> docinfo_;

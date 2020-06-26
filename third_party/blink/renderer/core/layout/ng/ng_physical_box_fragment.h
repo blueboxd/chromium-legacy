@@ -173,6 +173,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   bool HasExtraMathMLPainting() const {
     return IsMathMLFraction() || ink_overflow_computed_or_mathml_paint_info_;
   }
+  const NGMathMLPaintInfo& GetMathMLPaintInfo() const {
+    return *ComputeMathMLPaintInfoAddress();
+  }
 
  private:
   const NGFragmentItems* ComputeItemsAddress() const {

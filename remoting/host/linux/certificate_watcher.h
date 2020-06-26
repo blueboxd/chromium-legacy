@@ -33,7 +33,7 @@ class CertDbContentWatcher;
 class CertificateWatcher : public remoting::HostStatusObserver {
  public:
   CertificateWatcher(
-      const base::Closure& restart_action,
+      const base::RepeatingClosure& restart_action,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // The message loop of io_task_runner MUST be running after the destructor is
@@ -72,7 +72,7 @@ class CertificateWatcher : public remoting::HostStatusObserver {
   scoped_refptr<HostStatusMonitor> monitor_;
 
   // Called when a restart is scheduled.
-  base::Closure restart_action_;
+  base::RepeatingClosure restart_action_;
 
   // The runner that runs everything other than the file watcher.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;

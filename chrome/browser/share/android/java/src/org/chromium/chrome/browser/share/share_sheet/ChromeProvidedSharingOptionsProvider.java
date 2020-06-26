@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.text.TextUtils;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
@@ -42,8 +44,7 @@ import java.util.Set;
 /**
  * Provides {@code PropertyModel}s of Chrome-provided sharing options.
  */
-// TODO(crbug/1022172): Should be package-protected once modularization is complete.
-public class ChromeProvidedSharingOptionsProvider {
+class ChromeProvidedSharingOptionsProvider {
     private final Activity mActivity;
     private final Supplier<Tab> mTabProvider;
     private final BottomSheetController mBottomSheetController;
@@ -55,6 +56,7 @@ public class ChromeProvidedSharingOptionsProvider {
     private final List<FirstPartyOption> mOrderedFirstPartyOptions;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private ScreenshotCoordinator mScreenshotCoordinator;
+    private final String mUrl;
 
     /**
      * Constructs a new {@link ChromeProvidedSharingOptionsProvider}.
@@ -67,16 +69,17 @@ public class ChromeProvidedSharingOptionsProvider {
      * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides printing
      * preferences.
      * @param shareParams The {@link ShareParams} for the current share.
+     * @param chromeShareExtras The {@link ChromeShareExtras} for the current share.
      * @param printTab A {@link Callback} that will print a given Tab.
      * @param shareStartTime The start time of the current share.
      * @param chromeOptionShareCallback A ChromeOptionShareCallback that can be used by
-     *         Chrome-provdied sharing options.
+     * Chrome-provided sharing options.
      */
     ChromeProvidedSharingOptionsProvider(Activity activity, Supplier<Tab> tabProvider,
             BottomSheetController bottomSheetController,
             ShareSheetBottomSheetContent bottomSheetContent, PrefServiceBridge prefServiceBridge,
-            ShareParams shareParams, Callback<Tab> printTab, long shareStartTime,
-            ChromeOptionShareCallback chromeOptionShareCallback) {
+            ShareParams shareParams, ChromeShareExtras chromeShareExtras, Callback<Tab> printTab,
+            long shareStartTime, ChromeOptionShareCallback chromeOptionShareCallback) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
@@ -88,6 +91,7 @@ public class ChromeProvidedSharingOptionsProvider {
         mOrderedFirstPartyOptions = new ArrayList<>();
         initializeFirstPartyOptionsInOrder();
         mChromeOptionShareCallback = chromeOptionShareCallback;
+        mUrl = getUrlToShare(shareParams, chromeShareExtras);
     }
 
     /**
@@ -241,16 +245,19 @@ public class ChromeProvidedSharingOptionsProvider {
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
-                    SendTabToSelfShareActivity.actionHandler(mActivity,
+                    SendTabToSelfShareActivity.actionHandler(mActivity, mUrl,
+                            mShareParams.getTitle(),
                             mTabProvider.get()
                                     .getWebContents()
                                     .getNavigationController()
-                                    .getVisibleEntry(),
-                            mBottomSheetController, mTabProvider.get().getWebContents());
+                                    .getVisibleEntry()
+                                    .getTimestamp(),
+                            mBottomSheetController);
                 },
                 /*isFirstParty=*/true);
         return new FirstPartyOption(propertyModel,
-                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
+                        ContentType.IMAGE));
     }
 
     private FirstPartyOption createQrCodeFirstPartyOption() {
@@ -289,5 +296,20 @@ public class ChromeProvidedSharingOptionsProvider {
                 /*isFirstParty=*/true);
         return new FirstPartyOption(
                 propertyModel, Collections.singleton(ContentType.LINK_PAGE_VISIBLE));
+    }
+
+    /**
+     * Returns the url to share.
+     *
+     * <p>This prioritizes the URL in {@link ShareParams}, but if it does not exist, we look for an
+     * image source URL from {@link ChromeShareExtras}. The image source URL is not contained in
+     * {@link ShareParams#getUrl()} because we do not want to share the image URL with the image
+     * file in third-party app shares.
+     */
+    static String getUrlToShare(ShareParams shareParams, ChromeShareExtras chromeShareExtras) {
+        if (!TextUtils.isEmpty(shareParams.getUrl())) {
+            return shareParams.getUrl();
+        }
+        return chromeShareExtras.getImageSrcUrl();
     }
 }

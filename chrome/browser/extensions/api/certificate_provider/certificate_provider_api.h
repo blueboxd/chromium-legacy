@@ -35,10 +35,6 @@ class CertificateProviderInternalReportCertificatesFunction
   ~CertificateProviderInternalReportCertificatesFunction() override;
   ResponseAction Run() override;
 
-  bool ParseCertificateInfo(
-      const api::certificate_provider::CertificateInfo& info,
-      chromeos::certificate_provider::CertificateInfo* out_info);
-
   DECLARE_EXTENSION_FUNCTION("certificateProviderInternal.reportCertificates",
                              CERTIFICATEPROVIDERINTERNAL_REPORTCERTIFICATES)
 };
@@ -79,6 +75,16 @@ class CertificateProviderStopPinRequestFunction : public ExtensionFunction {
 
   DECLARE_EXTENSION_FUNCTION("certificateProvider.stopPinRequest",
                              CERTIFICATEPROVIDER_STOPPINREQUEST)
+};
+
+class CertificateProviderSetCertificatesFunction : public ExtensionFunction {
+ private:
+  // ExtensionFunction:
+  ~CertificateProviderSetCertificatesFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("certificateProvider.setCertificates",
+                             CERTIFICATEPROVIDER_SETCERTIFICATES)
 };
 
 }  // namespace extensions

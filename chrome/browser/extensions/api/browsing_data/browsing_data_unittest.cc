@@ -620,24 +620,24 @@ TEST_F(BrowsingDataApiTest, SettingsFunctionAssorted) {
 
 TEST_F(BrowsingDataApiTest, RemoveWithoutFilter) {
   auto filter_builder = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::BLACKLIST);
-  ASSERT_TRUE(filter_builder->IsEmptyBlacklist());
+      content::BrowsingDataFilterBuilder::Mode::kPreserve);
+  ASSERT_TRUE(filter_builder->MatchesAllOriginsAndDomains());
 
   VerifyFilterBuilder("{}", filter_builder.get());
 }
 
-TEST_F(BrowsingDataApiTest, RemoveWithWhitelistFilter) {
+TEST_F(BrowsingDataApiTest, RemoveWithDeleteListFilter) {
   auto filter_builder = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::WHITELIST);
+      content::BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(url::Origin::Create(GURL("http://example.com")));
 
   VerifyFilterBuilder(R"({"origins": ["http://example.com"]})",
                       filter_builder.get());
 }
 
-TEST_F(BrowsingDataApiTest, RemoveWithBlacklistFilter) {
+TEST_F(BrowsingDataApiTest, RemoveWithPreserveListFilter) {
   auto filter_builder = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::BLACKLIST);
+      content::BrowsingDataFilterBuilder::Mode::kPreserve);
   filter_builder->AddOrigin(url::Origin::Create(GURL("http://example.com")));
 
   VerifyFilterBuilder(R"({"excludeOrigins": ["http://example.com"]})",
@@ -646,7 +646,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithBlacklistFilter) {
 
 TEST_F(BrowsingDataApiTest, RemoveWithSpecialUrlFilter) {
   auto filter_builder = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::BLACKLIST);
+      content::BrowsingDataFilterBuilder::Mode::kPreserve);
   filter_builder->AddOrigin(url::Origin::Create(GURL("file:///")));
   filter_builder->AddOrigin(url::Origin::Create(GURL("http://example.com")));
 
@@ -658,7 +658,7 @@ TEST_F(BrowsingDataApiTest, RemoveWithSpecialUrlFilter) {
 
 TEST_F(BrowsingDataApiTest, RemoveCookiesWithFilter) {
   auto filter_builder = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::BLACKLIST);
+      content::BrowsingDataFilterBuilder::Mode::kPreserve);
   filter_builder->AddRegisterableDomain("example.com");
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),
                          content::BrowsingDataRemover::DATA_TYPE_COOKIES,
@@ -678,14 +678,14 @@ TEST_F(BrowsingDataApiTest, RemoveCookiesWithFilter) {
 // are passed with a filter.
 TEST_F(BrowsingDataApiTest, RemoveCookiesAndStorageWithFilter) {
   auto filter_builder1 = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::WHITELIST);
+      content::BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder1->AddRegisterableDomain("example.com");
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),
                          content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                          UNPROTECTED_WEB, filter_builder1.get());
 
   auto filter_builder2 = content::BrowsingDataFilterBuilder::Create(
-      content::BrowsingDataFilterBuilder::WHITELIST);
+      content::BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder2->AddOrigin(
       url::Origin::Create(GURL("http://www.example.com")));
   delegate()->ExpectCall(base::Time::UnixEpoch(), base::Time::Max(),

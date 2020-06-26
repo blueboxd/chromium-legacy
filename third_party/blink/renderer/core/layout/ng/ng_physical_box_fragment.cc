@@ -57,7 +57,7 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
                      sizeof(NGLink) * builder->children_.size() +
                      (borders.IsZero() ? 0 : sizeof(borders)) +
                      (padding.IsZero() ? 0 : sizeof(padding)) +
-                     (mathml_paint_info ? sizeof(NGMathMLPaintInfo*) : 0);
+                     (mathml_paint_info ? sizeof(*mathml_paint_info) : 0);
   if (const NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     // Omit |NGFragmentItems| if there were no items; e.g., display-lock.
     if (items_builder->Size())

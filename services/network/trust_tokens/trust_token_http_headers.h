@@ -44,6 +44,11 @@ constexpr char kTrustTokensRequestHeaderSecSignedRedemptionRecord[] =
 // header denotes an empty list.
 constexpr char kTrustTokensRequestHeaderSignedHeaders[] = "Signed-Headers";
 
+// As a request header, provides optional additional client-specified signing
+// data alongside signed requests.
+constexpr char kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData[] =
+    "Sec-Trust-Tokens-Additional-Signing-Data";
+
 // Returns a view of all of the Trust Tokens-internal request headers.
 // This vector contains all of the headers that clients must not provide on
 // requests bearing Trust Tokens operations, because they are added internally

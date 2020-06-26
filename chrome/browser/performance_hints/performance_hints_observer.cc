@@ -117,7 +117,7 @@ PerformanceHintsObserver::PerformanceHintsObserver(
     opts.push_back(optimization_guide::proto::FAST_HOST_HINTS);
   }
   if (optimization_guide_decider_) {
-    optimization_guide_decider_->RegisterOptimizationTypesAndTargets(opts, {});
+    optimization_guide_decider_->RegisterOptimizationTypes(opts);
   }
 
   rewrite_handler_ =

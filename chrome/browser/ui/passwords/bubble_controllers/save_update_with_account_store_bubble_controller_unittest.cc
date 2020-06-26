@@ -291,7 +291,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSaveInLocalStore) {
   EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword)
       .Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
@@ -314,7 +314,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
   EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword)
       .Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
@@ -336,7 +336,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
                                pending_password().username_value,
                                pending_password().password_value));
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSaveInUpdateState) {
@@ -353,7 +353,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSaveInUpdateState) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickNever) {
@@ -381,7 +381,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickUpdate) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickUpdateInSaveState) {
@@ -398,7 +398,7 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickUpdateInSaveState) {
   EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
   EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
   controller()->OnSaveClicked();
-  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,

@@ -478,6 +478,15 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    if (!IsExtendedReportingEnabled(*profile->GetPrefs()) &&
+        !IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
+      // These fields should only be set for SBER users.
+      verdict->clear_screenshot_phash();
+      verdict->clear_phash_dimension_size();
+    }
+
     // We only send phishing verdict to the server if the verdict is phishing or
     // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
     // phishing interstitial was shown but the user clicked

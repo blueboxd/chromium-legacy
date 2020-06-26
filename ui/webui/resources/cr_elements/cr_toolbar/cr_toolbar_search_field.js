@@ -73,6 +73,11 @@ Polymer({
   },
 
   /** @private */
+  onSearchIconClicked_() {
+    this.fire('search-icon-clicked');
+  },
+
+  /** @private */
   focus_() {
     this.getSearchInput().focus();
   },

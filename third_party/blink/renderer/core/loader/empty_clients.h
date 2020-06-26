@@ -257,7 +257,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void BeginNavigation(
       const ResourceRequest&,
       mojom::RequestContextFrameType,
-      Document* origin_document,
+      LocalDOMWindow*,
       DocumentLoader*,
       WebNavigationType,
       NavigationPolicy,

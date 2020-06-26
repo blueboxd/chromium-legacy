@@ -18,7 +18,7 @@ class CORE_EXPORT MathMLRowElement : public MathMLElement {
 
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) final;
+                                   LegacyLayout legacy) override;
 };
 }  // namespace blink
 

@@ -107,10 +107,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_MACOSX)
-#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
@@ -656,7 +652,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       override;
-  void SetMouseCapture(bool capture) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;
   void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
@@ -744,6 +739,13 @@ class CONTENT_EXPORT RenderFrameImpl
                             int aggregated_percent,
                             int impl_percent,
                             base::Optional<int> main_percent) override;
+  // Dispatches the current state of selection on the webpage to the browser if
+  // it has changed.
+  // TODO(varunjain): delete this method once we figure out how to keep
+  // selection handles in sync with the webpage.
+  void SyncSelectionIfRequired() override;
+  void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect) override;
+  void ResetHasScrolledFocusedEditableIntoView() override;
 
   // Binds to the fullscreen service in the browser.
   void BindFullscreen(
@@ -835,20 +837,6 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif  // ENABLE_PLUGINS
 
   const blink::mojom::RendererPreferences& GetRendererPreferences() const;
-
-#if defined(OS_MACOSX)
-  void OnCopyToFindPboard();
-  void OnClipboardHostError();
-#endif
-
-  // Dispatches the current state of selection on the webpage to the browser if
-  // it has changed.
-  // TODO(varunjain): delete this method once we figure out how to keep
-  // selection handles in sync with the webpage.
-  void SyncSelectionIfRequired();
-
-  void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
-  void ResetHasScrolledFocusedEditableIntoView();
 
   // Called when an ongoing renderer-initiated navigation was dropped by the
   // browser.
@@ -1472,11 +1460,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used for tracking a frame's main frame document intersection and
   // and replicating it to the browser when it changes.
   base::Optional<blink::WebRect> mainframe_document_intersection_rect_;
-
-#if defined(OS_MACOSX)
-  // Return the mojo interface for making ClipboardHost calls.
-  mojo::Remote<blink::mojom::ClipboardHost> clipboard_host_;
-#endif
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;

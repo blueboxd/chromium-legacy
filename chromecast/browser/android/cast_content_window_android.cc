@@ -37,6 +37,9 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaWindow(
 
 constexpr char kContextInteractionId[] = "interactionId";
 constexpr char kContextConversationId[] = "conversationId";
+constexpr char kGestureConsumedCallbackClassName[] =
+    "org/chromium/chromecast/shell/"
+    "CastWebContentsComponent.GestureHandledCallback";
 
 // Wraps the JNI gesture consumption handled callback for invocation from C++.
 class GestureConsumedCallbackWrapper {
@@ -45,10 +48,8 @@ class GestureConsumedCallbackWrapper {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& callback)
       : env_(env), callback_(callback) {
-    class_ = base::android::ScopedJavaLocalRef<jclass>(base::android::GetClass(
-        env_,
-        "org.chromium.chromecast.shell."
-        "CastWebContentsComponent.GestureHandledCallback"));
+    class_ = base::android::ScopedJavaLocalRef<jclass>(
+        base::android::GetClass(env_, kGestureConsumedCallbackClassName));
     callback_method_id_ =
         base::android::MethodID::Get<base::android::MethodID::TYPE_INSTANCE>(
             env_, class_.obj(), "invoke", "(Z;)V");

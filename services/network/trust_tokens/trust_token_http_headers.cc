@@ -13,7 +13,8 @@ const std::vector<base::StringPiece>& TrustTokensRequestHeaders() {
   static base::NoDestructor<std::vector<base::StringPiece>> headers{
       {kTrustTokensRequestHeaderSecSignature,
        kTrustTokensRequestHeaderSecSignedRedemptionRecord,
-       kTrustTokensRequestHeaderSecTime, kTrustTokensSecTrustTokenHeader}};
+       kTrustTokensRequestHeaderSecTime, kTrustTokensSecTrustTokenHeader,
+       kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData}};
   return *headers;
 }
 

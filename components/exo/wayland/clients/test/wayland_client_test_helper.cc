@@ -18,6 +18,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
+#include "components/exo/input_method_surface_manager.h"
+#include "components/exo/notification_surface_manager.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "ui/aura/window_tree_host.h"

@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
@@ -17,6 +18,10 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations(
 
 #if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_ANDROID)
+#if defined(USE_OZONE)
+  if (!features::IsUsingOzonePlatform())
+    return configurations;
+#endif
   const gfx::BufferFormat kBufferFormats[] = {
       gfx::BufferFormat::R_8,          gfx::BufferFormat::R_16,
       gfx::BufferFormat::RG_88,        gfx::BufferFormat::BGR_565,

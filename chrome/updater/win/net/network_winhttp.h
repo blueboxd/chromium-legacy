@@ -66,7 +66,8 @@ class NetworkFetcherWinHTTP
   std::string GetResponseBody() const;
   HRESULT GetNetError() const;
   std::string GetHeaderETag() const;
-  int64_t GetXHeaderRetryAfterSec() const;
+  std::string GetHeaderXCupServerProof() const;
+  int64_t GetHeaderXRetryAfterSec() const;
   base::FilePath GetFilePath() const;
 
   // Returns the number of bytes retrieved from the network. This may be
@@ -133,8 +134,9 @@ class NetworkFetcherWinHTTP
   base::string16 content_type_;
   WriteDataCallback write_data_callback_;
   HRESULT net_error_ = S_OK;
-  std::string etag_;
-  int64_t xheader_retry_after_sec_ = -1;
+  std::string header_etag_;
+  std::string header_x_cup_server_proof_;
+  int64_t header_x_retry_after_sec_ = -1;
   std::vector<char> read_buffer_;
   std::string post_response_body_;
   base::FilePath file_path_;

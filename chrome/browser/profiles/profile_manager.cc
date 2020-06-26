@@ -43,6 +43,8 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/lite_video/lite_video_keyed_service.h"
+#include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -1336,6 +1338,13 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   chromeos::AccountManagerPolicyControllerFactory::GetForBrowserContext(
       profile);
 #endif
+
+  // Creates the LiteVideo Keyed Service and begins loading the
+  // hint cache and user blocklist.
+  auto* lite_video_keyed_service =
+      LiteVideoKeyedServiceFactory::GetForProfile(profile);
+  if (lite_video_keyed_service)
+    lite_video_keyed_service->Initialize(profile->GetPath());
 
   // TODO(crbug.com/1031477): Remove once getting this created with the browser
   // context does not change dependency initialization order to cause crashes.

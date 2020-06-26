@@ -172,11 +172,11 @@ void DaemonProcess::CloseDesktopSession(int terminal_id) {
 DaemonProcess::DaemonProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const base::Closure& stopped_callback)
+    base::OnceClosure stopped_callback)
     : caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       next_terminal_id_(0),
-      stopped_callback_(stopped_callback),
+      stopped_callback_(std::move(stopped_callback)),
       status_monitor_(new HostStatusMonitor()),
       current_process_stats_("DaemonProcess") {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
@@ -277,7 +277,7 @@ void DaemonProcess::Stop() {
 
   OnWorkerProcessStopped();
 
-  if (!stopped_callback_.is_null()) {
+  if (stopped_callback_) {
     std::move(stopped_callback_).Run();
   }
 }

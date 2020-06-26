@@ -36,8 +36,8 @@ static bool HasAtLeastFourCodepoints(const std::string& pin) {
 }
 
 // MakePinAuth returns `LEFT(HMAC-SHA-256(secret, data), 16)`.
-static std::vector<uint8_t> MakePinAuth(base::span<const uint8_t> secret,
-                                        base::span<const uint8_t> data) {
+std::vector<uint8_t> MakePinAuth(base::span<const uint8_t> secret,
+                                 base::span<const uint8_t> data) {
   std::vector<uint8_t> pin_auth;
   pin_auth.resize(SHA256_DIGEST_LENGTH);
   unsigned hmac_bytes;
@@ -203,6 +203,16 @@ base::Optional<KeyAgreementResponse> KeyAgreementResponse::ParseFromCOSE(
   return ret;
 }
 
+std::array<uint8_t, kP256X962Length> KeyAgreementResponse::X962() const {
+  std::array<uint8_t, kP256X962Length> ret;
+  static_assert(ret.size() == 1 + sizeof(this->x) + sizeof(this->y),
+                "Bad length for return type");
+  ret[0] = POINT_CONVERSION_UNCOMPRESSED;
+  memcpy(&ret[1], this->x, sizeof(this->x));
+  memcpy(&ret[1 + sizeof(this->x)], this->y, sizeof(this->y));
+  return ret;
+}
+
 SetRequest::SetRequest(const std::string& pin,
                        const KeyAgreementResponse& peer_key)
     : peer_key_(peer_key) {
@@ -235,23 +245,16 @@ void CalculateSharedKey(const EC_KEY* key,
                             key, SHA256KDF));
 }
 
-// EncodeCOSEPublicKey returns the public part of |key| as a COSE structure.
-cbor::Value::MapValue EncodeCOSEPublicKey(const EC_KEY* key) {
-  // X9.62 is the standard for serialising elliptic-curve points.
-  uint8_t x962[1 /* type byte */ + 32 /* x */ + 32 /* y */];
-  CHECK_EQ(
-      sizeof(x962),
-      EC_POINT_point2oct(EC_KEY_get0_group(key), EC_KEY_get0_public_key(key),
-                         POINT_CONVERSION_UNCOMPRESSED, x962, sizeof(x962),
-                         nullptr /* BN_CTX */));
-
+// EncodeCOSEPublicKey converts an X9.62 public key into a COSE structure.
+cbor::Value::MapValue EncodeCOSEPublicKey(
+    base::span<const uint8_t, kP256X962Length> x962) {
   cbor::Value::MapValue cose_key;
   cose_key.emplace(1 /* key type */, 2 /* uncompressed elliptic curve */);
   cose_key.emplace(3 /* algorithm */,
                    -25 /* ECDH, ephemeral–static, HKDF-SHA-256 */);
   cose_key.emplace(-1 /* curve */, 1 /* P-256 */);
-  cose_key.emplace(-2 /* x */, base::span<const uint8_t>(x962 + 1, 32));
-  cose_key.emplace(-3 /* y */, base::span<const uint8_t>(x962 + 33, 32));
+  cose_key.emplace(-2 /* x */, x962.subspan(1, 32));
+  cose_key.emplace(-3 /* y */, x962.subspan(33, 32));
 
   return cose_key;
 }
@@ -259,7 +262,7 @@ cbor::Value::MapValue EncodeCOSEPublicKey(const EC_KEY* key) {
 // GenerateSharedKey generates and returns an ephemeral key, and writes the
 // shared key between that ephemeral key and the authenticator's ephemeral key
 // (from |peers_key|) to |out_shared_key|.
-static cbor::Value::MapValue GenerateSharedKey(
+static std::array<uint8_t, kP256X962Length> GenerateSharedKey(
     const KeyAgreementResponse& peers_key,
     uint8_t out_shared_key[SHA256_DIGEST_LENGTH]) {
   bssl::UniquePtr<EC_KEY> key(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
@@ -267,7 +270,14 @@ static cbor::Value::MapValue GenerateSharedKey(
   auto peers_point =
       PointFromKeyAgreementResponse(EC_KEY_get0_group(key.get()), peers_key);
   CalculateSharedKey(key.get(), peers_point->get(), out_shared_key);
-  return EncodeCOSEPublicKey(key.get());
+  std::array<uint8_t, kP256X962Length> x962;
+  CHECK_EQ(x962.size(),
+           EC_POINT_point2oct(EC_KEY_get0_group(key.get()),
+                              EC_KEY_get0_public_key(key.get()),
+                              POINT_CONVERSION_UNCOMPRESSED, x962.data(),
+                              x962.size(), nullptr /* BN_CTX */));
+
+  return x962;
 }
 
 // Encrypt encrypts |plaintext| using |key|, writing the ciphertext to
@@ -392,7 +402,8 @@ AsCTAPRequestValuePair(const SetRequest& request) {
   // See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#settingNewPin
   uint8_t shared_key[SHA256_DIGEST_LENGTH];
-  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
+  auto cose_key =
+      EncodeCOSEPublicKey(GenerateSharedKey(request.peer_key_, shared_key));
 
   static_assert((sizeof(request.pin_) % AES_BLOCK_SIZE) == 0,
                 "pin_ is not a multiple of the AES block size");
@@ -422,7 +433,8 @@ AsCTAPRequestValuePair(const ChangeRequest& request) {
   // See
   // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#changingExistingPin
   uint8_t shared_key[SHA256_DIGEST_LENGTH];
-  auto cose_key = GenerateSharedKey(request.peer_key_, shared_key);
+  auto cose_key =
+      EncodeCOSEPublicKey(GenerateSharedKey(request.peer_key_, shared_key));
 
   static_assert((sizeof(request.new_pin_) % AES_BLOCK_SIZE) == 0,
                 "new_pin_ is not a multiple of the AES block size");
@@ -465,7 +477,7 @@ AsCTAPRequestValuePair(const ResetRequest&) {
 }
 
 TokenRequest::TokenRequest(const KeyAgreementResponse& peer_key)
-    : cose_key_(GenerateSharedKey(peer_key, shared_key_.data())) {
+    : public_key_(GenerateSharedKey(peer_key, shared_key_.data())) {
   DCHECK_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), shared_key_.size());
 }
 
@@ -501,7 +513,7 @@ AsCTAPRequestValuePair(const PinTokenRequest& request) {
       Subcommand::kGetPINToken,
       [&request, &encrypted_pin](cbor::Value::MapValue* map) {
         map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(request.cose_key_));
+                     EncodeCOSEPublicKey(request.public_key_));
         map->emplace(
             static_cast<int>(RequestKey::kPINHashEnc),
             base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
@@ -527,7 +539,7 @@ AsCTAPRequestValuePair(const PinTokenWithPermissionsRequest& request) {
       Subcommand::kGetPinUvAuthTokenUsingPinWithPermissions,
       [&request, encrypted_pin](cbor::Value::MapValue* map) {
         map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(request.cose_key_));
+                     EncodeCOSEPublicKey(request.public_key_));
         map->emplace(
             static_cast<int>(RequestKey::kPINHashEnc),
             base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
@@ -559,7 +571,7 @@ AsCTAPRequestValuePair(const UvTokenRequest& request) {
   return EncodePINCommand(
       Subcommand::kGetUvToken, [&request](cbor::Value::MapValue* map) {
         map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
-                     std::move(request.cose_key_));
+                     EncodeCOSEPublicKey(request.public_key_));
         map->emplace(static_cast<int>(RequestKey::kPermissions),
                      static_cast<uint8_t>(Permissions::kMakeCredential) |
                          static_cast<uint8_t>(Permissions::kGetAssertion));

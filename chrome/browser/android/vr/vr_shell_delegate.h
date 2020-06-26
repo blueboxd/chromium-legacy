@@ -27,14 +27,6 @@ class GvrDevice;
 
 namespace vr {
 
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr
-enum class VrSupportLevel : int {
-  kVrDisabled = 0,
-  kVrNeedsUpdate = 1,  // VR Support is available, but needs update.
-  kVrCardboard = 2,
-  kVrDaydream = 3,  // Supports both Cardboard and Daydream viewer.
-};
-
 class VrShell;
 
 class VrShellDelegate : public device::GvrDelegateProvider,

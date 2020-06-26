@@ -62,31 +62,47 @@ using blink::test::RunPendingTasks;
 
 namespace blink {
 
-class TouchActionTrackingWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
+class TouchActionWidgetInputHandlerHost
+    : public frame_test_helpers::TestWidgetInputHandlerHost {
  public:
-  TouchActionTrackingWebWidgetClient()
-      : action_set_count_(0), action_(TouchAction::kAuto) {}
-
-  // WebWidgetClient methods
-  void SetTouchAction(TouchAction touch_action) override {
+  void SetTouchActionFromMain(TouchAction touch_action) override {
     action_set_count_++;
     action_ = touch_action;
   }
 
-  // Local methods
-  void Reset() {
+  void ResetTouchAction() {
     action_set_count_ = 0;
     action_ = TouchAction::kAuto;
   }
 
-  int TouchActionSetCount() { return action_set_count_; }
+  int action_set_count() const { return action_set_count_; }
 
-  TouchAction LastTouchAction() { return action_; }
+  TouchAction action() const { return action_; }
 
  private:
-  int action_set_count_;
-  TouchAction action_;
+  int action_set_count_ = 0;
+  TouchAction action_ = TouchAction::kAuto;
+};
+
+class TouchActionTrackingWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
+ public:
+  TouchActionTrackingWebWidgetClient() = default;
+
+  frame_test_helpers::TestWidgetInputHandlerHost* GetInputHandlerHost()
+      override {
+    return &input_handler_host_;
+  }
+
+  // Local methods
+  void Reset() { input_handler_host_.ResetTouchAction(); }
+
+  int TouchActionSetCount() { return input_handler_host_.action_set_count(); }
+
+  TouchAction LastTouchAction() { return input_handler_host_.action(); }
+
+ private:
+  TouchActionWidgetInputHandlerHost input_handler_host_;
 };
 
 class TouchActionTest : public testing::Test {
@@ -338,6 +354,7 @@ void TouchActionTest::RunTestOnTree(
 
       // Now send the touch event and check any touch action result.
       SendTouchEvent(web_view, WebInputEvent::Type::kPointerDown, window_point);
+      RunPendingTasks();
 
       AtomicString expected_action = element->getAttribute("expected-action");
       // Should have received exactly one touch action, even for auto.

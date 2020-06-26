@@ -18,7 +18,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -49,6 +48,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -111,7 +111,6 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
     MultiDisplayOverviewAndSplitViewTest::SetUp();
     AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
-    FpsCounter::SetForceReportZeroAnimationForTest(true);
 
     // Set the first display to be the internal display for the accelerometer
     // screen rotation tests.
@@ -129,7 +128,6 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
   }
 
   void TearDown() override {
-    FpsCounter::SetForceReportZeroAnimationForTest(false);
     AccelerometerReader::GetInstance()->AddObserver(tablet_mode_controller());
     MultiDisplayOverviewAndSplitViewTest::TearDown();
   }
@@ -212,6 +210,23 @@ class TabletModeControllerTest : public MultiDisplayOverviewAndSplitViewTest {
     WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
     WindowState::Get(window.get())->OnWMEvent(&snap_to_right);
     return window;
+  }
+
+  // Waits for |window|'s animation to finish.
+  void WaitForWindowAnimation(aura::Window* window) {
+    auto* compositor = window->layer()->GetCompositor();
+
+    while (window->layer()->GetAnimator()->is_animating())
+      EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  }
+
+  // Wait one more frame presented for the metrics to get recorded.
+  // ignore_result() and timeout is because the frame could already be
+  // presented.
+  void WaitForSmoothnessMetrics() {
+    ignore_result(ui::WaitForNextFrameToBePresented(
+        Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
+        base::TimeDelta::FromMilliseconds(100)));
   }
 
  private:
@@ -1530,6 +1545,7 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
     tablet_mode_controller()->SetEnabledForTest(true);
     tablet_mode_controller()->SetEnabledForTest(false);
+    WaitForSmoothnessMetrics();
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
   }
@@ -1549,10 +1565,12 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
     window->layer()->GetAnimator()->StopAnimating();
     tablet_mode_controller()->SetEnabledForTest(true);
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+    WaitForSmoothnessMetrics();
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
     tablet_mode_controller()->SetEnabledForTest(false);
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+    WaitForSmoothnessMetrics();
     histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
     histogram_tester.ExpectTotalCount(kExitHistogram, 0);
   }
@@ -1573,8 +1591,9 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  layer->GetAnimator()->StopAnimating();
-  layer2->GetAnimator()->StopAnimating();
+  WaitForWindowAnimation(window.get());
+  WaitForWindowAnimation(window2.get());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 
@@ -1583,8 +1602,8 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
   tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(layer->GetAnimator()->is_animating());
   EXPECT_TRUE(layer2->GetAnimator()->is_animating());
-  layer->GetAnimator()->StopAnimating();
-  layer2->GetAnimator()->StopAnimating();
+  WaitForWindowAnimation(window2.get());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
   histogram_tester.ExpectTotalCount(kExitHistogram, 1);
 }
@@ -1604,6 +1623,7 @@ TEST_P(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
+  WaitForSmoothnessMetrics();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
 }

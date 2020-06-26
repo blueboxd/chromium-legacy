@@ -157,7 +157,7 @@ SaveUpdateWithAccountStoreBubbleController::
 void SaveUpdateWithAccountStoreBubbleController::OnSaveClicked() {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
-  dismissal_reason_ = metrics_util::CLICKED_SAVE;
+  dismissal_reason_ = metrics_util::CLICKED_ACCEPT;
   if (delegate_) {
     CleanStatisticsForSite(GetProfile(), origin_);
     if (!IsUsingAccountStore() ||

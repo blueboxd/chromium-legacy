@@ -171,7 +171,7 @@ class CORE_EXPORT FrameLoader final {
   void ModifyRequestForCSP(
       ResourceRequest&,
       const FetchClientSettingsObject* fetch_client_settings_object,
-      Document* document_for_logging,
+      LocalDOMWindow* window_for_logging,
       mojom::RequestContextFrameType) const;
   void ReportLegacyTLSVersion(const KURL& url,
                               bool is_subresource,
@@ -242,7 +242,7 @@ class CORE_EXPORT FrameLoader final {
   bool AllowRequestForThisFrame(const FrameLoadRequest&);
   WebFrameLoadType DetermineFrameLoadType(const KURL& url,
                                           const AtomicString& http_method,
-                                          Document* origin_document,
+                                          bool has_origin_window,
                                           const KURL& failing_url,
                                           WebFrameLoadType);
 
@@ -329,7 +329,7 @@ class CORE_EXPORT FrameLoader final {
   // The CSP of the latest document that has initiated a navigation in this
   // frame. TODO(arthursonzogni): This looks fragile. The FrameLoader might be
   // confused by several navigations submitted in a row.
-  Member<ContentSecurityPolicy> last_origin_document_csp_;
+  Member<ContentSecurityPolicy> last_origin_window_csp_;
 
   AtomicString required_csp_;
 

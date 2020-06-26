@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/test/test_server_handler_registration.h"
 #include "services/network/trust_tokens/test/trust_token_request_handler.h"
@@ -393,6 +394,122 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
   EXPECT_THAT(monitor.GetRequestInfo(issuance_url),
               Optional(Field(&network::ResourceRequest::trust_token_params,
                              IsFalse())));
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, AdditionalSigningData) {
+  base::RunLoop run_loop;
+  GetNetworkService()->SetTrustTokenKeyCommitments(
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string cmd = R"(
+  (async () => {
+    await fetch("/issue", {trustToken: {type: 'token-request'}});
+    await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
+    await fetch("/sign", {trustToken: {type: 'send-srr',
+      signRequestData: 'include',
+      issuer: $1,
+      additionalSigningData: 'some additional data to sign'}});
+    return "Success"; })(); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ(
+      "Success",
+      EvalJs(
+          shell(),
+          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize())));
+
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OverlongAdditionalSigningData) {
+  base::RunLoop run_loop;
+  GetNetworkService()->SetTrustTokenKeyCommitments(
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string cmd = R"(
+  (async () => {
+    await fetch("/issue", {trustToken: {type: 'token-request'}});
+    await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
+    return "Success"; })(); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ("Success", EvalJs(shell(), cmd));
+
+  // Even though this contains fewer than
+  // network::kTrustTokenAdditionalSigningDataMaxSizeBytes code units, once it's
+  // converted to UTF-8 it will contain more than that many bytes, so we expect
+  // that it will get rejected by the network service.
+  base::string16 overlong_signing_data(
+      network::kTrustTokenAdditionalSigningDataMaxSizeBytes,
+      u'€' /* char16 literal */);
+  ASSERT_LE(overlong_signing_data.size(),
+            network::kTrustTokenAdditionalSigningDataMaxSizeBytes);
+
+  cmd = R"(
+    fetch("/sign", {trustToken: {type: 'send-srr',
+      signRequestData: 'include',
+      issuer: $1,
+      additionalSigningData: $2}}).then(()=>"Success").catch(e=>e.name);)";
+
+  EXPECT_THAT(
+      EvalJs(shell(),
+             JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize(),
+                       overlong_signing_data))
+          .ExtractString(),
+      HasSubstr("OperationError"));
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       AdditionalSigningDataNotAValidHeader) {
+  base::RunLoop run_loop;
+  GetNetworkService()->SetTrustTokenKeyCommitments(
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(
+  (async () => {
+    await fetch("/issue", {trustToken: {type: 'token-request'}});
+    await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
+    return "Success"; })(); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ("Success", EvalJs(shell(), command));
+
+  command = R"(
+    fetch("/sign", {trustToken: {type: 'send-srr',
+      signRequestData: 'include',
+      issuer: $1,
+      additionalSigningData: '\r'}}).then(()=>"Success").catch(e=>e.name);)";
+
+  EXPECT_THAT(
+      EvalJs(shell(),
+             JsReplace(command,
+                       url::Origin::Create(server_.base_url()).Serialize()))
+          .ExtractString(),
+      HasSubstr("OperationError"));
 }
 
 }  // namespace content

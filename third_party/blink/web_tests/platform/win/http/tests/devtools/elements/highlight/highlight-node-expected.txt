@@ -92,6 +92,7 @@ inspectedElement{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutNGBlockFlow",
     "showAccessibilityInfo": true
   }
 }
@@ -187,6 +188,7 @@ inspectedElement with RGB format{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutNGBlockFlow",
     "showAccessibilityInfo": true
   }
 }
@@ -282,6 +284,7 @@ inspectedElement with HSL format{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutNGBlockFlow",
     "showAccessibilityInfo": true
   }
 }

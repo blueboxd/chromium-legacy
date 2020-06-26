@@ -199,6 +199,13 @@ void FontCache::AddSideloadedFontForTesting(sk_sp<SkTypeface> typeface) {
   sideloaded_fonts_->Set(name_wtf, std::move(typeface));
 }
 
+//static
+void FontCache::SetSystemFontFamily(const AtomicString&) {
+  // TODO(https://crbug.com/808221) Use this instead of
+  // SetMenuFontMetrics for the system font family.
+  NOTREACHED();
+}
+
 // static
 const AtomicString& FontCache::SystemFontFamily() {
   return MenuFontFamily();

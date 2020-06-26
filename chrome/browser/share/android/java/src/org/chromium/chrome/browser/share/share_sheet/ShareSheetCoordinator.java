@@ -77,7 +77,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         Set<Integer> contentTypes = ShareSheetPropertyModelBuilder.getContentTypes(
                 params, chromeShareExtras.isUrlOfVisiblePage());
         List<PropertyModel> chromeFeatures =
-                createTopRowPropertyModels(activity, params, contentTypes);
+                createTopRowPropertyModels(activity, params, chromeShareExtras, contentTypes);
         List<PropertyModel> thirdPartyApps = createBottomRowPropertyModels(
                 activity, params, contentTypes, chromeShareExtras.saveLastUsed());
 
@@ -99,15 +99,15 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         showShareSheet(params, chromeShareExtras, shareStartTime);
     }
 
-    List<PropertyModel> createTopRowPropertyModels(
-            Activity activity, ShareParams shareParams, Set<Integer> contentTypes) {
+    List<PropertyModel> createTopRowPropertyModels(Activity activity, ShareParams shareParams,
+            ChromeShareExtras chromeShareExtras, Set<Integer> contentTypes) {
         if (mExcludeFirstParty) {
             return new ArrayList<>();
         }
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
                         mBottomSheetController, mBottomSheet, mPrefServiceBridge, shareParams,
-                        mPrintTabCallback, mShareStartTime, this);
+                        chromeShareExtras, mPrintTabCallback, mShareStartTime, this);
 
         return chromeProvidedSharingOptionsProvider.getPropertyModels(contentTypes);
     }

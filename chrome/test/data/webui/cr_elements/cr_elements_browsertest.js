@@ -253,57 +253,6 @@ TEST_F('CrElementsPolicyPrefIndicatorTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_CHROMEOS)');
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
-function CrPolicyNetworkBehaviorMojoTest() {}
-
-CrPolicyNetworkBehaviorMojoTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_policy_strings.js',
-    'cr_policy_network_behavior_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrPolicyNetworkBehaviorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
-function CrElementsPolicyNetworkIndicatorMojoTest() {}
-
-CrElementsPolicyNetworkIndicatorMojoTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://os-settings/chromeos/internet_page/internet_page.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_policy_strings.js',
-    'cr_policy_network_indicator_mojo_tests.js',
-  ]),
-};
-
-TEST_F('CrElementsPolicyNetworkIndicatorMojoTest', 'All', function() {
-  mocha.run();
-});
-
-GEN('#endif');
-
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}

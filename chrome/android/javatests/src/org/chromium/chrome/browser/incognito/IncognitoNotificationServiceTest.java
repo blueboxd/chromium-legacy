@@ -25,9 +25,9 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -144,7 +144,7 @@ public class IncognitoNotificationServiceTest {
             tabbedModeDirectory.writeTabStateFile(incognitoInfo);
         }
 
-        TabPersistentStore.setBaseStateDirectoryForTests(tabbedModeDirectory.getBaseDirectory());
+        TabStateDirectory.setBaseStateDirectoryForTests(tabbedModeDirectory.getBaseDirectory());
 
         File[] tabbedModeFiles = tabbedModeDirectory.getDataDirectory().listFiles();
         Assert.assertNotNull(tabbedModeFiles);

@@ -382,6 +382,12 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         final List<Pair<OmniboxSuggestion, SuggestionProcessor>> list =
                 Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
         Assert.assertEquals(5, mBuilder.getVisibleSuggestionsCount(list));
+
+        // Same, with a shorter list of suggestions; in this case we don't know the height of the
+        // dropdown view, so we assume we can comfortably fit 5 suggestions.
+        final List<Pair<OmniboxSuggestion, SuggestionProcessor>> shortList =
+                Arrays.asList(pair, pair, pair, pair, pair);
+        Assert.assertEquals(5, mBuilder.getVisibleSuggestionsCount(shortList));
     }
 
     @CalledByNativeJavaTest
@@ -395,13 +401,13 @@ public class DropdownItemViewInfoListBuilderUnitTest {
                 Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
 
         when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(10);
-        mBuilder.setDropdownHeight(60);
+        mBuilder.setDropdownHeightWithKeyboardActive(60);
         Assert.assertEquals(6, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(90);
+        mBuilder.setDropdownHeightWithKeyboardActive(90);
         Assert.assertEquals(9, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(30);
+        mBuilder.setDropdownHeightWithKeyboardActive(30);
         Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
     }
 
@@ -416,10 +422,10 @@ public class DropdownItemViewInfoListBuilderUnitTest {
                 Arrays.asList(pair, pair, pair, pair, pair, pair, pair, pair, pair, pair);
 
         when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(10);
-        mBuilder.setDropdownHeight(45);
+        mBuilder.setDropdownHeightWithKeyboardActive(45);
         Assert.assertEquals(5, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(51);
+        mBuilder.setDropdownHeightWithKeyboardActive(51);
         Assert.assertEquals(6, mBuilder.getVisibleSuggestionsCount(list));
     }
 
@@ -445,22 +451,56 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         when(mockProcessor1.getMinimumViewHeight()).thenReturn(20);
         when(mockProcessor2.getMinimumViewHeight()).thenReturn(30);
 
-        mBuilder.setDropdownHeight(90); // fits all three suggestions and then some.
+        mBuilder.setDropdownHeightWithKeyboardActive(
+                90); // fits all three suggestions and then some.
         Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(45); // fits 2 suggestions fully, and 3rd partially.
+        mBuilder.setDropdownHeightWithKeyboardActive(
+                45); // fits 2 suggestions fully, and 3rd partially.
         Assert.assertEquals(3, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(30); // fits only 2 suggestions.
+        mBuilder.setDropdownHeightWithKeyboardActive(30); // fits only 2 suggestions.
         Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(20); // fits one suggestion fully and one partially.
+        mBuilder.setDropdownHeightWithKeyboardActive(
+                20); // fits one suggestion fully and one partially.
         Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(10); // fits only one suggestion.
+        mBuilder.setDropdownHeightWithKeyboardActive(10); // fits only one suggestion.
         Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(list));
 
-        mBuilder.setDropdownHeight(5); // fits one suggestion partiall.
+        mBuilder.setDropdownHeightWithKeyboardActive(5); // fits one suggestion partiall.
         Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(list));
+    }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void visibleSuggestions_calculatesPresenceOfConcealedSuggestionsFromDropdownHeight() {
+        mBuilder.onNativeInitialized();
+        final OmniboxSuggestion suggestion =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .build();
+        final int viewHeight = 20;
+
+        final AutocompleteResult result =
+                new AutocompleteResult(Arrays.asList(suggestion, suggestion, suggestion), null);
+        when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(viewHeight);
+
+        mBuilder.setDropdownHeightWithKeyboardActive(3 * viewHeight);
+        mBuilder.buildDropdownViewInfoList(result);
+        Assert.assertFalse(mBuilder.hasFullyConcealedElements());
+
+        mBuilder.setDropdownHeightWithKeyboardActive(2 * viewHeight);
+        mBuilder.buildDropdownViewInfoList(result);
+        Assert.assertTrue(mBuilder.hasFullyConcealedElements());
+
+        // Third suggestion is partially visible, so counts as visible.
+        mBuilder.setDropdownHeightWithKeyboardActive(3 * viewHeight - 1);
+        mBuilder.buildDropdownViewInfoList(result);
+        Assert.assertFalse(mBuilder.hasFullyConcealedElements());
+
+        mBuilder.setDropdownHeightWithKeyboardActive(2 * viewHeight + 1);
+        mBuilder.buildDropdownViewInfoList(result);
+        Assert.assertFalse(mBuilder.hasFullyConcealedElements());
     }
 }

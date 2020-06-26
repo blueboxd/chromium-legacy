@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/notreached.h"
@@ -30,9 +31,10 @@
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "content/common/android/sync_compositor_statics.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/frame_swap_message_queue.h"
-#include "content/renderer/input/synchronous_compositor_registry.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -152,7 +154,7 @@ SynchronousLayerTreeFrameSinkImpl::SynchronousLayerTreeFrameSinkImpl(
     IPC::Sender* sender,
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<viz::BeginFrameSource> synthetic_begin_frame_source,
-    SynchronousCompositorRegistry* registry,
+    blink::SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     mojo::PendingRemote<viz::mojom::CompositorFrameSink>
         compositor_frame_sink_remote,
@@ -171,7 +173,9 @@ SynchronousLayerTreeFrameSinkImpl::SynchronousLayerTreeFrameSinkImpl(
       unbound_client_(std::move(client_receiver)),
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       viz_frame_submission_enabled_(
-          features::IsUsingVizFrameSubmissionForWebView()) {
+          features::IsUsingVizFrameSubmissionForWebView()),
+      use_zero_copy_sw_draw_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess)) {
   DCHECK(registry_);
   DCHECK(sender_);
   thread_checker_.DetachFromThread();
@@ -183,7 +187,7 @@ SynchronousLayerTreeFrameSinkImpl::~SynchronousLayerTreeFrameSinkImpl() =
     default;
 
 void SynchronousLayerTreeFrameSinkImpl::SetSyncClient(
-    SynchronousLayerTreeFrameSinkClient* compositor) {
+    blink::SynchronousLayerTreeFrameSinkClient* compositor) {
   sync_client_ = compositor;
 }
 
@@ -459,6 +463,11 @@ void SynchronousLayerTreeFrameSinkImpl::DemandDrawHw(
   InvokeComposite(gfx::Transform(), gfx::Rect(viewport_size));
 }
 
+void SynchronousLayerTreeFrameSinkImpl::DemandDrawSwZeroCopy() {
+  DCHECK(use_zero_copy_sw_draw_);
+  DemandDrawSw(SynchronousCompositorGetSkCanvas());
+}
+
 void SynchronousLayerTreeFrameSinkImpl::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
@@ -483,6 +492,10 @@ void SynchronousLayerTreeFrameSinkImpl::DemandDrawSw(SkCanvas* canvas) {
 void SynchronousLayerTreeFrameSinkImpl::WillSkipDraw() {
   client_->OnDraw(gfx::Transform(), gfx::Rect(), in_software_draw_,
                   true /*skip_draw*/);
+}
+
+bool SynchronousLayerTreeFrameSinkImpl::UseZeroCopySoftwareDraw() {
+  return use_zero_copy_sw_draw_;
 }
 
 void SynchronousLayerTreeFrameSinkImpl::InvokeComposite(

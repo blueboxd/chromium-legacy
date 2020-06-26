@@ -26,6 +26,11 @@ message WebAppFileHandlerProto {
   repeated WebAppFileHandlerAcceptProto accept = 2;
 }
 
+message WebAppProtocolHandler {
+  required string protocol = 1;
+  required string url = 2;
+}
+
 // A set to track simultaneous installs and uninstalls from multiple install
 // sources.
 message SourcesProto {
@@ -96,4 +101,7 @@ message WebAppProto {
   // Time the app is installed.
   // ms since the Unix epoch. See sync/base/time.h.
   optional int64 install_time = 16;
+
+  // A list of protocol handlers.
+  repeated WebAppProtocolHandler protocol_handlers = 17;
 }

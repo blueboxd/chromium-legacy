@@ -40,7 +40,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
       PasswordFormMetricsRecorder::BubbleDismissalReason;
   switch (ui_dismissal_reason) {
     // Accepted by user.
-    case metrics_util::CLICKED_SAVE:
+    case metrics_util::CLICKED_ACCEPT:
       return BubbleDismissalReason::kAccepted;
 
     // Declined by user.

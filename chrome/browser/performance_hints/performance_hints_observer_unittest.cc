@@ -42,10 +42,9 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
       : OptimizationGuideKeyedService(browser_context) {}
   ~MockOptimizationGuideKeyedService() override = default;
 
-  MOCK_METHOD2(
-      RegisterOptimizationTypesAndTargets,
-      void(const std::vector<optimization_guide::proto::OptimizationType>&,
-           const std::vector<optimization_guide::proto::OptimizationTarget>&));
+  MOCK_METHOD1(
+      RegisterOptimizationTypes,
+      void(const std::vector<optimization_guide::proto::OptimizationType>&));
   MOCK_METHOD3(CanApplyOptimizationAsync,
                void(content::NavigationHandle*,
                     optimization_guide::proto::OptimizationType,
@@ -133,11 +132,9 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(PerformanceHintsObserverTest, RegisterPerformanceHints) {
   EXPECT_CALL(*mock_optimization_guide_keyed_service_,
-              RegisterOptimizationTypesAndTargets(
-                  testing::UnorderedElementsAre(
-                      optimization_guide::proto::PERFORMANCE_HINTS,
-                      optimization_guide::proto::FAST_HOST_HINTS),
-                  testing::IsEmpty()));
+              RegisterOptimizationTypes(testing::UnorderedElementsAre(
+                  optimization_guide::proto::PERFORMANCE_HINTS,
+                  optimization_guide::proto::FAST_HOST_HINTS)));
 
   PerformanceHintsObserver::CreateForWebContents(web_contents());
 }
@@ -383,10 +380,8 @@ class FastHostHintsDisabledPerformanceHintsObserverTest
 TEST_F(FastHostHintsDisabledPerformanceHintsObserverTest,
        FastHostHintsDisabled) {
   EXPECT_CALL(*mock_optimization_guide_keyed_service_,
-              RegisterOptimizationTypesAndTargets(
-                  testing::UnorderedElementsAre(
-                      optimization_guide::proto::PERFORMANCE_HINTS),
-                  testing::IsEmpty()));
+              RegisterOptimizationTypes(testing::UnorderedElementsAre(
+                  optimization_guide::proto::PERFORMANCE_HINTS)));
 
   PerformanceHintsObserver::CreateForWebContents(web_contents());
   CallDidFinishNavigation(web_contents());

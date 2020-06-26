@@ -922,7 +922,7 @@ base::circular_deque<Vp9Parser::FrameInfo> Vp9Parser::ParseSVCFrame() {
     DVLOG(1) << "Frame " << i << ", size: " << size;
   }
 
-  DCHECK(!frames_.empty());
+  DCHECK(!frames.empty());
 
   gfx::Size max_frame_size;
 

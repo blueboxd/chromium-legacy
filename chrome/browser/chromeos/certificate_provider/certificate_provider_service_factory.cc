@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -28,6 +30,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_private_key.h"
+#include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace chromeos {
@@ -56,7 +59,7 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
       int request_id,
       uint16_t algorithm,
       const scoped_refptr<net::X509Certificate>& certificate,
-      base::span<const uint8_t> digest) override;
+      base::span<const uint8_t> input) override;
 
   // extensions::EventRouter::Observer:
   void OnListenerAdded(const extensions::EventListenerInfo& details) override {}
@@ -68,57 +71,34 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
                            extensions::UnloadedExtensionReason reason) override;
 
  private:
+  // Returns extension IDs that currently have event listeners for the given
+  // event,
+  base::flat_set<std::string> GetSubscribedExtensions(
+      const std::string& event_name);
+
   CertificateProviderService* const service_;
   extensions::ExtensionRegistry* const registry_;
   extensions::EventRouter* const event_router_;
 };
 
-DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
-                                 extensions::ExtensionRegistry* registry,
-                                 extensions::EventRouter* event_router)
-    : service_(service), registry_(registry), event_router_(event_router) {
-  DCHECK(service_);
-  registry_->AddObserver(this);
-  event_router_->RegisterObserver(this,
-                                  api_cp::OnCertificatesRequested::kEventName);
-}
-
-DefaultDelegate::~DefaultDelegate() {
-  event_router_->UnregisterObserver(this);
-  registry_->RemoveObserver(this);
-}
-
-std::vector<std::string> DefaultDelegate::CertificateProviderExtensions() {
-  const std::string event_name(api_cp::OnCertificatesRequested::kEventName);
-  std::vector<std::string> ids;
-  for (const auto& listener :
-       event_router_->listeners().GetEventListenersByName(event_name)) {
-    ids.push_back(listener->extension_id());
-  }
-  return ids;
-}
-
-void DefaultDelegate::BroadcastCertificateRequest(int request_id) {
-  const std::string event_name(api_cp::OnCertificatesRequested::kEventName);
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
-  internal_args->AppendInteger(request_id);
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
+// Constructs the "onCertificatesRequested" event.
+std::unique_ptr<extensions::Event> BuildOnCertificatesRequestedEvent(
+    int request_id) {
+  auto event_args = std::make_unique<base::ListValue>();
+  event_args->Append(request_id);
+  return std::make_unique<extensions::Event>(
       extensions::events::CERTIFICATEPROVIDER_ON_CERTIFICATES_REQUESTED,
-      event_name, std::move(internal_args)));
-  event_router_->BroadcastEvent(std::move(event));
+      api_cp::OnCertificatesRequested::kEventName, std::move(event_args));
 }
 
-bool DefaultDelegate::DispatchSignRequestToExtension(
-    const std::string& extension_id,
+// Constructs the "onSignDigestRequested" event.
+std::unique_ptr<extensions::Event> BuildOnSignDigestRequestedEvent(
     int request_id,
     uint16_t algorithm,
     const scoped_refptr<net::X509Certificate>& certificate,
-    base::span<const uint8_t> digest) {
-  const std::string event_name(api_cp::OnSignDigestRequested::kEventName);
-  if (!event_router_->ExtensionHasEventListener(extension_id, event_name))
-    return false;
-
+    base::span<const uint8_t> input) {
   api_cp::SignRequest request;
+
   request.sign_request_id = request_id;
   switch (algorithm) {
     case SSL_SIGN_RSA_PKCS1_MD5_SHA1:
@@ -138,22 +118,74 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
       break;
     default:
       LOG(ERROR) << "Unknown signature algorithm";
-      return false;
+      return nullptr;
   }
-  request.digest.assign(digest.begin(), digest.end());
   base::StringPiece cert_der =
       net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer());
   request.certificate.assign(cert_der.begin(), cert_der.end());
 
-  std::unique_ptr<base::ListValue> internal_args(new base::ListValue);
-  internal_args->AppendInteger(request_id);
-  internal_args->Append(request.ToValue());
+  // The extension expects the input to be hashed ahead of time.
+  request.digest.resize(EVP_MAX_MD_SIZE);
+  const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+  unsigned digest_len;
+  if (!md || !EVP_Digest(input.data(), input.size(), request.digest.data(),
+                         &digest_len, md, /*ENGINE *impl=*/nullptr)) {
+    return nullptr;
+  }
+  request.digest.resize(digest_len);
 
-  event_router_->DispatchEventToExtension(
-      extension_id,
-      std::make_unique<extensions::Event>(
-          extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
-          event_name, std::move(internal_args)));
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue);
+  event_args->AppendInteger(request_id);
+  event_args->Append(request.ToValue());
+
+  return std::make_unique<extensions::Event>(
+      extensions::events::CERTIFICATEPROVIDER_ON_SIGN_DIGEST_REQUESTED,
+      api_cp::OnSignDigestRequested::kEventName, std::move(event_args));
+}
+
+DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
+                                 extensions::ExtensionRegistry* registry,
+                                 extensions::EventRouter* event_router)
+    : service_(service), registry_(registry), event_router_(event_router) {
+  DCHECK(service_);
+  registry_->AddObserver(this);
+  event_router_->RegisterObserver(this,
+                                  api_cp::OnCertificatesRequested::kEventName);
+}
+
+DefaultDelegate::~DefaultDelegate() {
+  event_router_->UnregisterObserver(this);
+  registry_->RemoveObserver(this);
+}
+
+std::vector<std::string> DefaultDelegate::CertificateProviderExtensions() {
+  const base::flat_set<std::string> ids =
+      GetSubscribedExtensions(api_cp::OnCertificatesRequested::kEventName);
+  return std::vector<std::string>(ids.begin(), ids.end());
+}
+
+void DefaultDelegate::BroadcastCertificateRequest(int request_id) {
+  for (const std::string& extension_id :
+       GetSubscribedExtensions(api_cp::OnCertificatesRequested::kEventName)) {
+    event_router_->DispatchEventToExtension(
+        extension_id, BuildOnCertificatesRequestedEvent(request_id));
+  }
+}
+
+bool DefaultDelegate::DispatchSignRequestToExtension(
+    const std::string& extension_id,
+    int request_id,
+    uint16_t algorithm,
+    const scoped_refptr<net::X509Certificate>& certificate,
+    base::span<const uint8_t> input) {
+  if (!event_router_->ExtensionHasEventListener(
+          extension_id, api_cp::OnSignDigestRequested::kEventName))
+    return false;
+  std::unique_ptr<extensions::Event> event = BuildOnSignDigestRequestedEvent(
+      request_id, algorithm, certificate, input);
+  if (!event)
+    return false;
+  event_router_->DispatchEventToExtension(extension_id, std::move(event));
   return true;
 }
 
@@ -169,6 +201,16 @@ void DefaultDelegate::OnExtensionUnloaded(
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
   service_->OnExtensionUnloaded(extension->id());
+}
+
+base::flat_set<std::string> DefaultDelegate::GetSubscribedExtensions(
+    const std::string& event_name) {
+  std::vector<std::string> ids;
+  for (const std::unique_ptr<extensions::EventListener>& listener :
+       event_router_->listeners().GetEventListenersByName(event_name)) {
+    ids.push_back(listener->extension_id());
+  }
+  return base::flat_set<std::string>(ids.begin(), ids.end());
 }
 
 }  // namespace

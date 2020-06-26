@@ -90,10 +90,9 @@ void OptimizationGuideBridge::Destroy(JNIEnv* env) {
   delete this;
 }
 
-void OptimizationGuideBridge::RegisterOptimizationTypesAndTargets(
+void OptimizationGuideBridge::RegisterOptimizationTypes(
     JNIEnv* env,
-    const JavaParamRef<jintArray>& joptimization_types,
-    const JavaParamRef<jintArray>& joptimization_targets) {
+    const JavaParamRef<jintArray>& joptimization_types) {
   // Convert optimization types to proto.
   std::vector<int> joptimization_types_vector;
   JavaIntArrayToIntVector(env, joptimization_types,
@@ -105,20 +104,8 @@ void OptimizationGuideBridge::RegisterOptimizationTypesAndTargets(
             joptimization_type));
   }
 
-  // Convert optimization targets to proto.
-  std::vector<int> joptimization_targets_vector;
-  JavaIntArrayToIntVector(env, joptimization_targets,
-                          &joptimization_targets_vector);
-  std::vector<optimization_guide::proto::OptimizationTarget>
-      optimization_targets;
-  for (const int joptimization_target : joptimization_targets_vector) {
-    optimization_targets.push_back(
-        static_cast<optimization_guide::proto::OptimizationTarget>(
-            joptimization_target));
-  }
-
-  optimization_guide_keyed_service_->RegisterOptimizationTypesAndTargets(
-      optimization_types, optimization_targets);
+  optimization_guide_keyed_service_->RegisterOptimizationTypes(
+      optimization_types);
 }
 
 void OptimizationGuideBridge::CanApplyOptimization(

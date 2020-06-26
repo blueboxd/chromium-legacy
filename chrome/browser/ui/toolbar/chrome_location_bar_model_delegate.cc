@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -195,11 +196,26 @@ bool ChromeLocationBarModelDelegate::IsOfflinePage() const {
 #endif
 }
 
-bool ChromeLocationBarModelDelegate::IsInstantNTP() const {
-  return search::IsInstantNTP(GetActiveWebContents());
+bool ChromeLocationBarModelDelegate::IsNewTabPage() const {
+  content::NavigationEntry* const entry = GetNavigationEntry();
+  if (!entry)
+    return false;
+
+  Profile* const profile = GetProfile();
+  if (!profile)
+    return false;
+
+  if (!search::DefaultSearchProviderIsGoogle(profile))
+    return false;
+
+  GURL ntp_url(base::FeatureList::IsEnabled(ntp_features::kWebUI)
+                   ? chrome::kChromeUINewTabPageURL
+                   : chrome::kChromeSearchLocalNtpUrl);
+  return ntp_url.scheme_piece() == entry->GetURL().scheme_piece() &&
+         ntp_url.host_piece() == entry->GetURL().host_piece();
 }
 
-bool ChromeLocationBarModelDelegate::IsNewTabPage(const GURL& url) const {
+bool ChromeLocationBarModelDelegate::IsNewTabPageURL(const GURL& url) const {
   return url.spec() == chrome::kChromeUINewTabURL;
 }
 

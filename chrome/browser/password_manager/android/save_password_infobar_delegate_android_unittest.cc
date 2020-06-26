@@ -249,7 +249,7 @@ TEST_F(SavePasswordInfoBarDelegateTest, RecordsSaveAfterUnblacklisting) {
   infobar.reset();
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting",
-      password_manager::metrics_util::CLICKED_SAVE, 1);
+      password_manager::metrics_util::CLICKED_ACCEPT, 1);
 }
 
 TEST_F(SavePasswordInfoBarDelegateTest, RecordNeverAfterUnblacklisting) {

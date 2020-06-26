@@ -175,9 +175,6 @@
       <message name="IDS_WEBLAYER_BOTTOM_BAR_SCREEN_POSITION" desc="Accessibility label to inform users about the InfoBar location">
         Options available near bottom of the screen
       </message>
-      <message name="IDS_WEBLAYER_INFOBAR_CLOSE" desc="Accessibility label for the dismiss infobar Button">
-        Close
-      </message>
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_ERROR">
         Oops. This page could not be translated.

@@ -77,7 +77,8 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
            SuitableTrustTokenOrigin toplevel,
            std::vector<std::string> additional_headers_to_sign,
            bool should_add_timestamp,
-           mojom::TrustTokenSignRequestData sign_request_data);
+           mojom::TrustTokenSignRequestData sign_request_data,
+           base::Optional<std::string> additional_signing_data);
 
     // Minimal convenience constructor. Other fields have reasonable defaults,
     // but it's necessary to have |issuer| and |toplevel| at construction time
@@ -119,6 +120,13 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
     // kHeadersOnly, the request's headers will be the only request data used.
     // If it is kOmit, no signature will be attached.
     mojom::TrustTokenSignRequestData sign_request_data;
+
+    // |additional_signing_data| stores the contents of arbitrary extra
+    // client-provided data to include in the outgoing request's
+    // Sec-Trust-Tokens-Additional-Signing-Data header. When this argument is
+    // populated, the additional data header's name should be added to the list
+    // of headers to sign.
+    base::Optional<std::string> additional_signing_data;
   };
 
   // Class Signer is responsible for the actual generation of signatures over

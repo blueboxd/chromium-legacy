@@ -280,6 +280,18 @@
                type="chrome_html" />
 
     <!-- Used to render network-list and related subcomponents. -->
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_CR_POLICY_NETWORK_BEHAVIOR_MOJO_HTML"
+               file="cr_components/chromeos/network/cr_policy_network_behavior_mojo.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_CR_POLICY_NETWORK_BEHAVIOR_MOJO_JS"
+               file="cr_components/chromeos/network/cr_policy_network_behavior_mojo.js"
+               type="chrome_html" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_CR_POLICY_NETWORK_INDICATOR_MOJO_HTML"
+               file="cr_components/chromeos/network/cr_policy_network_indicator_mojo.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_CR_POLICY_NETWORK_INDICATOR_MOJO_JS"
+               file="cr_components/chromeos/network/cr_policy_network_indicator_mojo.js"
+               type="chrome_html" />
     <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_ICON_HTML"
                file="cr_components/chromeos/network/network_icon.html"
                type="chrome_html" />

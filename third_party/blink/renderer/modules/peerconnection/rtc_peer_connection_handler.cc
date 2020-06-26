@@ -1836,16 +1836,17 @@ void RTCPeerConnectionHandler::AddTransceiverWithMediaTypeOnSignalingThread(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-RTCPeerConnectionHandler::AddTrack(MediaStreamComponent* component,
-                                   const Vector<WebMediaStream>& streams) {
+RTCPeerConnectionHandler::AddTrack(
+    MediaStreamComponent* component,
+    const MediaStreamDescriptorVector& descriptors) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
       track_ref = track_adapter_map_->GetOrCreateLocalTrackAdapter(component);
-  std::vector<std::string> stream_ids(streams.size());
-  for (WTF::wtf_size_t i = 0; i < streams.size(); ++i)
-    stream_ids[i] = streams[i].Id().Utf8();
+  std::vector<std::string> stream_ids(descriptors.size());
+  for (WTF::wtf_size_t i = 0; i < descriptors.size(); ++i)
+    stream_ids[i] = descriptors[i]->Id().Utf8();
 
   // Invoke native AddTrack() on the signaling thread and surface the resulting
   // transceiver (Plan B: sender only).

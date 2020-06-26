@@ -2012,7 +2012,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
 
   WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
 
-  FrameLoadRequest frame_request(incumbent_window->document(),
+  FrameLoadRequest frame_request(incumbent_window,
                                  ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
 

@@ -36,6 +36,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
@@ -351,7 +352,6 @@
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/widevine/cdm/buildflags.h"
-#include "ui/base/buildflags.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -625,7 +625,7 @@
 #include "chrome/browser/vr/chrome_xr_integration_client.h"
 #endif
 
-#if BUILDFLAG(LACROS)
+#if BUILDFLAG(IS_LACROS)
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
 #include "chromeos/lacros/mojom/lacros.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -5791,7 +5791,7 @@ bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
 
 void ChromeContentBrowserClient::BindBrowserControlInterface(
     mojo::GenericPendingReceiver receiver) {
-#if BUILDFLAG(LACROS)
+#if BUILDFLAG(IS_LACROS)
   if (auto r = receiver.As<lacros::mojom::LacrosChromeService>()) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<chromeos::LacrosChromeServiceImpl>(), std::move(r));

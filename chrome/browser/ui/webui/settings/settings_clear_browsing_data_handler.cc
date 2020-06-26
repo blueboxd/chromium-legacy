@@ -235,7 +235,7 @@ ClearBrowsingDataHandler::ProcessInstalledApps(
 
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder(
       content::BrowsingDataFilterBuilder::Create(
-          content::BrowsingDataFilterBuilder::BLACKLIST));
+          content::BrowsingDataFilterBuilder::Mode::kPreserve));
   for (const std::string& domain : excluded_domains)
     filter_builder->AddRegisterableDomain(domain);
   return filter_builder;

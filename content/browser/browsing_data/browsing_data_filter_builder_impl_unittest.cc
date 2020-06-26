@@ -122,10 +122,9 @@ TEST(BrowsingDataFilterBuilderImplTest, Noop) {
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainGURLWhitelist) {
+TEST(BrowsingDataFilterBuilderImplTest, RegistrableDomainGURLDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -167,10 +166,9 @@ TEST(BrowsingDataFilterBuilderImplTest,
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainGURLBlacklist) {
+TEST(BrowsingDataFilterBuilderImplTest, RegistrableDomainGURLPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -213,9 +211,9 @@ TEST(BrowsingDataFilterBuilderImplTest,
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesCookiesWhitelist) {
+     RegistrableDomainMatchesCookiesDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -263,9 +261,9 @@ TEST(BrowsingDataFilterBuilderImplTest,
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesCookiesBlacklist) {
+     RegistrableDomainMatchesCookiesPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -312,10 +310,10 @@ TEST(BrowsingDataFilterBuilderImplTest,
     RunTestCase(test_case, builder.BuildCookieDeletionFilter());
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterWhitelist) {
+TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
-  ASSERT_EQ(BrowsingDataFilterBuilderImpl::WHITELIST, builder.GetMode());
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
+  ASSERT_EQ(BrowsingDataFilterBuilderImpl::Mode::kDelete, builder.GetMode());
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -331,10 +329,10 @@ TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterWhitelist) {
   EXPECT_TRUE(filter->origins.empty());
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterBlacklist) {
+TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
-  ASSERT_EQ(BrowsingDataFilterBuilderImpl::BLACKLIST, builder.GetMode());
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
+  ASSERT_EQ(BrowsingDataFilterBuilderImpl::Mode::kPreserve, builder.GetMode());
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -351,9 +349,9 @@ TEST(BrowsingDataFilterBuilderImplTest, NetworkServiceFilterBlacklist) {
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesPluginSitesWhitelist) {
+     RegistrableDomainMatchesPluginSitesDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -375,7 +373,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
       {"192.168.1.1", true},
       {"fileserver", true},
 
-      // Sites not in the whitelist are not matched.
+      // Sites not added to the filter are not matched.
       {"example.com", false},
       {"192.168.1.2", false},
       {"website.fileserver", false},
@@ -386,9 +384,9 @@ TEST(BrowsingDataFilterBuilderImplTest,
 }
 
 TEST(BrowsingDataFilterBuilderImplTest,
-     RegistrableDomainMatchesPluginSitesBlacklist) {
+     RegistrableDomainMatchesPluginSitesPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
@@ -410,7 +408,7 @@ TEST(BrowsingDataFilterBuilderImplTest,
       {"192.168.1.1", false},
       {"fileserver", false},
 
-      // Sites not in the blacklist are matched.
+      // Sites not added to the list of origins to preserve are matched.
       {"example.com", true},
       {"192.168.1.2", true},
       {"website.fileserver", true},
@@ -420,109 +418,108 @@ TEST(BrowsingDataFilterBuilderImplTest,
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, OriginWhitelist) {
+TEST(BrowsingDataFilterBuilderImplTest, OriginDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
   builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
   builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
   base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
-      // Whitelist matches any URL on the specified origins.
-      { "https://www.google.com", true },
-      { "https://www.google.com/?q=test", true },
-      { "http://www.example.com", true },
-      { "http://www.example.com/index.html", true },
-      { "http://www.example.com/foo/bar", true },
+      // A kDelete filter matches any URL on the specified origins.
+      {"https://www.google.com", true},
+      {"https://www.google.com/?q=test", true},
+      {"http://www.example.com", true},
+      {"http://www.example.com/index.html", true},
+      {"http://www.example.com/foo/bar", true},
 
       // Subdomains are different origins.
-      { "https://test.www.google.com", false },
+      {"https://test.www.google.com", false},
 
       // Different scheme or port is a different origin.
-      { "https://www.google.com:8000", false },
-      { "https://www.example.com/index.html", false },
+      {"https://www.google.com:8000", false},
+      {"https://www.example.com/index.html", false},
 
       // Different host is a different origin.
-      { "https://www.youtube.com", false },
-      { "https://www.chromium.org", false },
+      {"https://www.youtube.com", false},
+      {"https://www.chromium.org", false},
   };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, OriginBlacklist) {
+TEST(BrowsingDataFilterBuilderImplTest, OriginPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
   builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
   builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
   base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // URLS on explicitly specified origins are not matched.
-      { "https://www.google.com", false },
-      { "https://www.google.com/?q=test", false },
-      { "http://www.example.com", false },
-      { "http://www.example.com/index.html", false },
-      { "http://www.example.com/foo/bar", false },
+      {"https://www.google.com", false},
+      {"https://www.google.com/?q=test", false},
+      {"http://www.example.com", false},
+      {"http://www.example.com/index.html", false},
+      {"http://www.example.com/foo/bar", false},
 
       // Subdomains are different origins.
-      { "https://test.www.google.com", true },
+      {"https://test.www.google.com", true},
 
-      // The same hosts but with different schemes and ports
-      // are not blacklisted.
-      { "https://www.google.com:8000", true },
-      { "https://www.example.com/index.html", true },
+      // The same hosts but with different schemes and ports are not preserved.
+      {"https://www.google.com:8000", true},
+      {"https://www.example.com/index.html", true},
 
-      // Different hosts are not blacklisted.
-      { "https://www.chrome.com", true },
-      { "https://www.youtube.com", true },
+      // Different hosts are not preserved.
+      {"https://www.chrome.com", true},
+      {"https://www.youtube.com", true},
   };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, CombinedWhitelist) {
+TEST(BrowsingDataFilterBuilderImplTest, CombinedDeleteList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::WHITELIST);
+      BrowsingDataFilterBuilderImpl::Mode::kDelete);
   builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
   base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
-      // Whitelist matches any URL on the specified origins.
-      { "https://google.com/foo/bar", true },
-      { "https://example.com/?q=test", true },
+      // Deletelist matches any URL on the specified origins.
+      {"https://google.com/foo/bar", true},
+      {"https://example.com/?q=test", true},
 
       // Since www.google.com was added as an origin, its subdomains are not
       // matched. However, example.com was added as a registrable domain,
       // so its subdomains are matched.
-      { "https://www.google.com/foo/bar", false },
-      { "https://www.example.com/?q=test", true },
+      {"https://www.google.com/foo/bar", false},
+      {"https://www.example.com/?q=test", true},
   };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, CombinedBlacklist) {
+TEST(BrowsingDataFilterBuilderImplTest, CombinedPreserveList) {
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::BLACKLIST);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
   builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
   base::RepeatingCallback<bool(const GURL&)> filter = builder.BuildUrlFilter();
 
   TestCase test_cases[] = {
       // URLS on explicitly specified origins are not matched.
-      { "https://google.com/foo/bar", false },
-      { "https://example.com/?q=test", false },
+      {"https://google.com/foo/bar", false},
+      {"https://example.com/?q=test", false},
 
-      // Since www.google.com was added as an origin, its subdomains are
-      // not in the blacklist. However, example.com was added as a registrable
-      // domain, so its subdomains are also blacklisted.
-      { "https://www.google.com/foo/bar", true },
-      { "https://www.example.com/?q=test", false },
+      // Since www.google.com was added as an origin, its subdomains are not
+      // preserved. However, example.com was added as a registrable domain, so
+      // its subdomains are also preserved.
+      {"https://www.google.com/foo/bar", true},
+      {"https://www.example.com/?q=test", false},
   };
 
   for (TestCase test_case : test_cases)

@@ -83,12 +83,18 @@ CookieListItem* CookieChangeEvent::ToCookieListItem(
 
   // The domain of host-only cookies is the host name, without a dot (.) prefix.
   String cookie_domain = canonical_cookie.Domain();
-  if (cookie_domain.StartsWith("."))
+  if (cookie_domain.StartsWith(".")) {
     list_item->setDomain(cookie_domain.Substring(1));
+  } else {
+    list_item->setDomain(String());
+  }
 
   if (!is_deleted) {
     list_item->setValue(canonical_cookie.Value());
-    if (!canonical_cookie.ExpiryDate().is_null()) {
+    if (canonical_cookie.ExpiryDate().is_null()) {
+      // TODO(crbug.com/1070871): Use base::nullopt instead.
+      list_item->setExpiresToNull();
+    } else {
       list_item->setExpires(ConvertSecondsToDOMTimeStamp(
           canonical_cookie.ExpiryDate().ToDoubleT()));
     }

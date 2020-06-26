@@ -537,8 +537,7 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
                                         ->tab_strip_model()
                                         ->GetActiveWebContents()
                                         ->GetBrowserContext()))
-        ->RegisterOptimizationTypesAndTargets(
-            {optimization_guide::proto::NOSCRIPT}, {});
+        ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
 
     HintsFetcherDisabledBrowserTest::SetUpOnMainThread();
   }
@@ -1402,8 +1401,8 @@ IN_PROC_BROWSER_TEST_F(
                                       ->tab_strip_model()
                                       ->GetActiveWebContents()
                                       ->GetBrowserContext()))
-      ->RegisterOptimizationTypesAndTargets(
-          {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES}, {});
+      ->RegisterOptimizationTypes(
+          {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
 
   // Navigate again to the same webpage, the race should occur because the
   // hints have been cleared.
@@ -1496,8 +1495,8 @@ IN_PROC_BROWSER_TEST_F(
                                       ->tab_strip_model()
                                       ->GetActiveWebContents()
                                       ->GetBrowserContext()))
-      ->RegisterOptimizationTypesAndTargets(
-          {optimization_guide::proto::DEFER_ALL_SCRIPT}, {});
+      ->RegisterOptimizationTypes(
+          {optimization_guide::proto::DEFER_ALL_SCRIPT});
 
   // Navigate again to the same webpage, no race should occur.
   {

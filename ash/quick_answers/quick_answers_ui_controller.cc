@@ -120,6 +120,11 @@ bool QuickAnswersUiController::CloseUserConsentView() {
 void QuickAnswersUiController::OnConsentGrantedButtonPressed() {
   DCHECK(user_consent_view_);
   controller_->OnUserConsentGranted();
+
+  // The Quick-Answer displayed should gain focus if it is created when this
+  // button is pressed.
+  if (quick_answers_view_)
+    quick_answers_view_->RequestFocus();
 }
 
 void QuickAnswersUiController::OnManageSettingsButtonPressed() {

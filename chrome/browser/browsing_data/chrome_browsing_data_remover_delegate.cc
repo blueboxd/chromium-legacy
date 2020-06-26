@@ -365,7 +365,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   DCHECK(((remove_mask &
            ~content::BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS &
            ~FILTERABLE_DATA_TYPES) == 0) ||
-         filter_builder->IsEmptyBlacklist());
+         filter_builder->MatchesAllOriginsAndDomains());
   DCHECK(!should_clear_password_account_storage_settings_);
 
   TRACE_EVENT0("browsing_data",
@@ -428,12 +428,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
   base::RepeatingCallback<bool(const GURL&)> nullable_filter =
-      filter_builder->IsEmptyBlacklist()
+      filter_builder->MatchesAllOriginsAndDomains()
           ? base::RepeatingCallback<bool(const GURL&)>()
           : filter;
 
   HostContentSettingsMap::PatternSourcePredicate website_settings_filter =
-      filter_builder->IsEmptyBlacklist()
+      filter_builder->MatchesAllOriginsAndDomains()
           ? HostContentSettingsMap::PatternSourcePredicate()
           : base::BindRepeating(&WebsiteSettingsFilterAdapter, filter);
 
@@ -496,10 +496,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     // Clear launch times as they are a form of history.
     // BrowsingDataFilterBuilder currently doesn't support extension origins.
-    // Therefore, clearing history for a small set of origins (WHITELIST) should
-    // never delete any extension launch times, while clearing for almost all
-    // origins (BLACKLIST) should always delete all of extension launch times.
-    if (filter_builder->IsEmptyBlacklist()) {
+    // Therefore, clearing history for a small set of origins (deletelist)
+    // should never delete any extension launch times, while clearing for almost
+    // all origins (preservelist) should always delete all of extension launch
+    // times.
+    if (filter_builder->MatchesAllOriginsAndDomains()) {
       extensions::ExtensionPrefs* extension_prefs =
           extensions::ExtensionPrefs::Get(profile_);
       extension_prefs->ClearLastLaunchTimes();
@@ -622,7 +623,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // Rename the method to indicate its more general usage.
     if (profile_->GetSSLHostStateDelegate()) {
       profile_->GetSSLHostStateDelegate()->Clear(
-          filter_builder->IsEmptyBlacklist()
+          filter_builder->MatchesAllOriginsAndDomains()
               ? base::RepeatingCallback<bool(const std::string&)>()
               : filter_builder->BuildPluginFilter());
     }
@@ -715,7 +716,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       }
     }
 
-    if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    if (filter_builder->GetMode() ==
+        BrowsingDataFilterBuilder::Mode::kPreserve) {
       MediaDeviceIDSalt::Reset(profile_->GetPrefs());
 
 #if defined(OS_ANDROID)
@@ -1083,7 +1085,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
-    if (filter_builder->IsEmptyBlacklist()) {
+    if (filter_builder->MatchesAllOriginsAndDomains()) {
       DCHECK(!plugin_data_remover_);
       plugin_data_remover_.reset(
           content::PluginDataRemover::Create(profile_));
@@ -1118,7 +1120,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if BUILDFLAG(ENABLE_PLUGINS)
     // Flash does not support filtering by domain, so skip this if clearing only
     // a specified set of sites.
-    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::Mode::kDelete) {
       // Will be completed in OnDeauthorizeFlashContentLicensesCompleted()
       OnTaskStarted(TracingDataType::kFlashDeauthorization);
       if (!pepper_flash_settings_manager_.get()) {
@@ -1134,7 +1136,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // On Chrome OS, delete any content protection platform keys.
     // Platform keys do not support filtering by domain, so skip this if
     // clearing only a specified set of sites.
-    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::WHITELIST) {
+    if (filter_builder->GetMode() != BrowsingDataFilterBuilder::Mode::kDelete) {
       const user_manager::User* user =
           chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
       if (!user) {
@@ -1241,7 +1243,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // Remove data for this profile contained in any snapshots.
   if (remove_mask &&
-      filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      filter_builder->GetMode() == BrowsingDataFilterBuilder::Mode::kPreserve) {
     base::ThreadPool::PostTaskAndReply(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(&downgrade::RemoveDataForProfile, delete_begin_,

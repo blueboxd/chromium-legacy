@@ -37,7 +37,8 @@ class ActivityRecordFactoryForTest {
       const std::string& app_id) = 0;
   virtual std::unique_ptr<MirroringActivityRecord> MakeMirroringActivityRecord(
       const MediaRoute& route,
-      const std::string& app_id) = 0;
+      const std::string& app_id,
+      base::OnceClosure on_stop) = 0;
 };
 
 class ActivityRecord {
@@ -143,6 +144,13 @@ class ActivityRecord {
     client_factory_for_test_ = factory;
   }
 
+  void SetSessionAndSinkForTest(const CastSession& session,
+                                const MediaSinkInternal& sink,
+                                const std::string& hash_code) {
+    session_id_ = session.session_id();
+    sink_ = sink;
+  }
+
  protected:
   using ClientMap =
       base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
@@ -178,8 +186,6 @@ class ActivityRecord {
   ClientMap connected_clients_;
 
  private:
-  friend class CastActivityRecordTest;
-
   static CastSessionClientFactoryForTest* client_factory_for_test_;
 };
 

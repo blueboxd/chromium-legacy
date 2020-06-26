@@ -112,7 +112,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void Trace(Visitor*) const override;
 
   // ExecutionContext overrides:
-  bool IsDocument() const final { return true; }
+  bool IsWindow() const final { return true; }
   bool IsContextThread() const final;
   bool ShouldInstallV8Extensions() const final;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld() final;
@@ -489,7 +489,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 template <>
 struct DowncastTraits<LocalDOMWindow> {
   static bool AllowFrom(const ExecutionContext& context) {
-    return context.IsDocument();
+    return context.IsWindow();
   }
   static bool AllowFrom(const DOMWindow& window) {
     return window.IsLocalDOMWindow();

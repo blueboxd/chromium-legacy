@@ -99,6 +99,7 @@ sync_pb::BookmarkModelMetadata CreateMetadataForPermanentNodes(
     const bookmarks::BookmarkModel* bookmark_model) {
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  model_metadata.set_bookmarks_full_title_reuploaded(true);
 
   *model_metadata.add_bookmarks_metadata() =
       CreateNodeMetadata(bookmark_model->bookmark_bar_node()->id(),
@@ -109,6 +110,7 @@ sync_pb::BookmarkModelMetadata CreateMetadataForPermanentNodes(
   *model_metadata.add_bookmarks_metadata() =
       CreateNodeMetadata(bookmark_model->other_node()->id(),
                          /*server_id=*/kOtherBookmarksId);
+
   return model_metadata;
 }
 
@@ -132,6 +134,7 @@ syncer::UpdateResponseData CreateUpdateResponseData(
         data.specifics.mutable_bookmark();
     bookmark_specifics->set_guid(guid);
     bookmark_specifics->set_legacy_canonicalized_title(title);
+    bookmark_specifics->set_full_title(title);
   }
   data.is_folder = true;
   syncer::UpdateResponseData response_data;
@@ -1732,8 +1735,10 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   std::unique_ptr<SyncedBookmarkTracker> tracker =
       SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
           bookmark_model(), std::move(model_metadata));
+
   ASSERT_THAT(tracker, NotNull());
   ASSERT_EQ(5u, tracker->GetAllEntities().size());
+  ASSERT_FALSE(tracker->GetEntityForSyncId(kLocalId)->IsUnsynced());
 
   // Generate an update with two different ids.
   syncer::UpdateResponseDataList updates;
@@ -1888,7 +1893,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       /*server_id=*/kServerId,
       /*parent_id=*/kBookmarkBarId,
       /*guid=*/kLocalId,
-      /*title=*/"",
+      /*title=*/"Title",
       /*is_deletion=*/true,
       /*version=*/1,
       /*unique_position=*/

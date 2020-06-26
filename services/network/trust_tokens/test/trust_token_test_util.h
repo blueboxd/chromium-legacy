@@ -109,7 +109,8 @@ struct TrustTokenTestParameters final {
       base::Optional<mojom::TrustTokenSignRequestData> sign_request_data,
       base::Optional<bool> include_timestamp_header,
       base::Optional<std::string> issuer_spec,
-      base::Optional<std::vector<std::string>> additional_signed_headers);
+      base::Optional<std::vector<std::string>> additional_signed_headers,
+      base::Optional<std::string> possibly_unsafe_additional_signing_data);
 
   ~TrustTokenTestParameters();
 
@@ -125,6 +126,7 @@ struct TrustTokenTestParameters final {
   // in the test.
   base::Optional<std::string> issuer_spec;
   base::Optional<std::vector<std::string>> additional_signed_headers;
+  base::Optional<std::string> possibly_unsafe_additional_signing_data;
 };
 
 // Serializes the value of a Trust Tokens enum parameter to its JS string
@@ -172,6 +174,7 @@ const TrustTokenTestParameters kIssuanceTrustTokenTestParameters[]{
                              base::nullopt,
                              base::nullopt,
                              base::nullopt,
+                             base::nullopt,
                              base::nullopt)};
 
 const TrustTokenTestParameters kRedemptionTrustTokenTestParameters[]{
@@ -182,14 +185,17 @@ const TrustTokenTestParameters kRedemptionTrustTokenTestParameters[]{
                              base::nullopt,
                              base::nullopt,
                              base::nullopt,
+                             base::nullopt,
                              base::nullopt),
     TrustTokenTestParameters(mojom::TrustTokenOperationType::kRedemption,
                              mojom::TrustTokenRefreshPolicy::kUseCached,
                              base::nullopt,
                              base::nullopt,
                              base::nullopt,
+                             base::nullopt,
                              base::nullopt),
     TrustTokenTestParameters(mojom::TrustTokenOperationType::kRedemption,
+                             base::nullopt,
                              base::nullopt,
                              base::nullopt,
                              base::nullopt,
@@ -198,8 +204,8 @@ const TrustTokenTestParameters kRedemptionTrustTokenTestParameters[]{
 
 const TrustTokenTestParameters kSigningTrustTokenTestParameters[]{
     // Signing's inputs are issuer, signRequestData, additionalSignedHeaders,
-    // and includeTimestampHeader; "issuer" has no default and must always be
-    // a secure origin.
+    // includeTimestampHeader, and additionalSigningData; "issuer" has no
+    // default and must always be a secure origin.
     TrustTokenTestParameters(
         mojom::TrustTokenOperationType::kSigning,
         base::nullopt,
@@ -207,18 +213,21 @@ const TrustTokenTestParameters kSigningTrustTokenTestParameters[]{
         /*include_timestamp_header=*/true,
         "https://issuer.example",
         std::vector<std::string>{"one additional header's name",
-                                 "another additional header's name"}),
+                                 "another additional header's name"},
+        "some additional data to sign"),
     TrustTokenTestParameters(mojom::TrustTokenOperationType::kSigning,
                              base::nullopt,
                              mojom::TrustTokenSignRequestData::kHeadersOnly,
                              /*include_timestamp_header=*/false,
                              "https://issuer.example",
+                             base::nullopt,
                              base::nullopt),
     TrustTokenTestParameters(mojom::TrustTokenOperationType::kSigning,
                              base::nullopt,
                              mojom::TrustTokenSignRequestData::kInclude,
                              /*include_timestamp_header=*/base::nullopt,
                              "https://issuer.example",
+                             base::nullopt,
                              base::nullopt),
 };
 

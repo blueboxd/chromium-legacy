@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
+#include "chrome/browser/chromeos/policy/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/affiliated_invalidation_service_provider_impl.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/chromeos/ui/adb_sideloading_policy_change_notification.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -282,6 +284,11 @@ void BrowserPolicyConnectorChromeOS::Init(
   }
   system_proxy_manager_ = std::make_unique<SystemProxyManager>(
       chromeos::CrosSettings::Get(), local_state);
+
+  adb_sideloading_allowance_mode_policy_handler_ =
+      std::make_unique<AdbSideloadingAllowanceModePolicyHandler>(
+          chromeos::CrosSettings::Get(), local_state,
+          new chromeos::AdbSideloadingPolicyChangeNotification());
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

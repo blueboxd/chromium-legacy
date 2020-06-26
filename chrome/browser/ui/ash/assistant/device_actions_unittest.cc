@@ -31,8 +31,8 @@ constexpr char kUnregisteredAppName[] = "unregistered_app_name";
 
 class FakeDeviceActionsDelegate : public DeviceActionsDelegate {
   AppStatus GetAndroidAppStatus(const std::string& package_name) override {
-    return apps_.find(package_name) != apps_.end() ? AppStatus::AVAILABLE
-                                                   : AppStatus::UNAVAILABLE;
+    return apps_.find(package_name) != apps_.end() ? AppStatus::kAvailable
+                                                   : AppStatus::kUnavailable;
   }
 
  private:
@@ -71,18 +71,18 @@ class DeviceActionsTest : public ChromeAshTestBase {
 };
 
 TEST_F(DeviceActionsTest, RegisteredAppShouldBeAvailable) {
-  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
+  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::kAvailable);
 }
 
 TEST_F(DeviceActionsTest, UnregisteredAppShouldBeUnavailable) {
-  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
+  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::kUnavailable);
 }
 
 TEST_F(DeviceActionsTest, UnknownAppShouldBeUnknown) {
 }
 
 TEST_F(DeviceActionsTest, MultipleAppsShouldBeVerifiedCorrectly) {
-  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::AVAILABLE);
-  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::UNAVAILABLE);
-  ASSERT_EQ(GetAppStatus(kOtherRegisteredAppName), AppStatus::AVAILABLE);
+  ASSERT_EQ(GetAppStatus(kRegisteredAppName), AppStatus::kAvailable);
+  ASSERT_EQ(GetAppStatus(kUnregisteredAppName), AppStatus::kUnavailable);
+  ASSERT_EQ(GetAppStatus(kOtherRegisteredAppName), AppStatus::kAvailable);
 }

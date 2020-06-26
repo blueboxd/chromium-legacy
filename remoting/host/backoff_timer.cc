@@ -16,7 +16,7 @@ BackoffTimer::~BackoffTimer() = default;
 void BackoffTimer::Start(const base::Location& posted_from,
                          base::TimeDelta delay,
                          base::TimeDelta max_delay,
-                         const base::Closure& user_task) {
+                         const base::RepeatingClosure& user_task) {
   backoff_policy_.multiply_factor = 2;
   backoff_policy_.initial_delay_ms = delay.InMilliseconds();
   backoff_policy_.maximum_backoff_ms = max_delay.InMilliseconds();
@@ -52,7 +52,7 @@ void BackoffTimer::OnTimerFired() {
 
   // Running the user task may destroy this object, so don't reference
   // any fields of this object after running it.
-  base::Closure user_task(user_task_);
+  base::RepeatingClosure user_task(user_task_);
   user_task.Run();
 }
 

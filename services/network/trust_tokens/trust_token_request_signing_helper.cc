@@ -76,6 +76,7 @@ base::Optional<std::vector<std::string>> ParseTrustTokenSignedHeadersHeader(
 const char* const TrustTokenRequestSigningHelper::kSignableRequestHeaders[]{
     kTrustTokensRequestHeaderSecSignedRedemptionRecord,
     kTrustTokensRequestHeaderSecTime,
+    kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData,
 };
 
 constexpr char
@@ -205,12 +206,14 @@ Params::Params(SuitableTrustTokenOrigin issuer,
                SuitableTrustTokenOrigin toplevel,
                std::vector<std::string> additional_headers_to_sign,
                bool should_add_timestamp,
-               mojom::TrustTokenSignRequestData sign_request_data)
+               mojom::TrustTokenSignRequestData sign_request_data,
+               base::Optional<std::string> additional_signing_data)
     : issuer(std::move(issuer)),
       toplevel(std::move(toplevel)),
       additional_headers_to_sign(std::move(additional_headers_to_sign)),
       should_add_timestamp(should_add_timestamp),
-      sign_request_data(sign_request_data) {}
+      sign_request_data(sign_request_data),
+      additional_signing_data(additional_signing_data) {}
 
 Params::Params(SuitableTrustTokenOrigin issuer,
                SuitableTrustTokenOrigin toplevel)
@@ -277,6 +280,24 @@ void TrustTokenRequestSigningHelper::Begin(
     LogOutcome(net_log_, "No SRR for this (issuer, top-level context) pair");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
+  }
+
+  if (params_.additional_signing_data) {
+    // |request| is guaranteed to not have
+    // kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData because
+    // network::TrustTokenRequestHeaders() contains this header name, so the
+    // request would have been rejected as failing a precondition if the header
+    // were present.
+    DCHECK(!request->extra_request_headers().HasHeader(
+        kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData));
+
+    request->SetExtraRequestHeaderByName(
+        kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData,
+        *params_.additional_signing_data,
+        /*overwrite=*/true);
+
+    params_.additional_headers_to_sign.push_back(
+        kTrustTokensRequestHeaderSecTrustTokensAdditionalSigningData);
   }
 
   base::Optional<std::vector<std::string>> maybe_headers_to_sign =

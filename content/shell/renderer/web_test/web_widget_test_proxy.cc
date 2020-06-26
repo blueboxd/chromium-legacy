@@ -5,7 +5,6 @@
 #include "content/shell/renderer/web_test/web_widget_test_proxy.h"
 
 #include "content/renderer/compositor/compositor_dependencies.h"
-#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/test_interfaces.h"
@@ -179,7 +178,7 @@ blink::WebFrameWidget* WebWidgetTestProxy::GetWebFrameWidget() {
 void WebWidgetTestProxy::Reset() {
   event_sender_.Reset();
   // Ends any synthetic gestures started in |event_sender_|.
-  widget_input_handler_manager()->InvokeInputProcessedCallback();
+  GetWebWidget()->FlushInputProcessedCallback();
 
   // Reset state in the RenderWidget base class.
   GetWebFrameWidget()->ClearEditCommands();

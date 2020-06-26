@@ -59,6 +59,7 @@ class DropdownItemViewInfoListBuilder {
     @Px
     private int mDropdownHeight;
     private boolean mEnableAdaptiveSuggestionsCount;
+    private boolean mBuiltListHasFullyConcealedElements;
 
     DropdownItemViewInfoListBuilder() {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
@@ -190,7 +191,7 @@ class DropdownItemViewInfoListBuilder {
      *
      * @param dropdownHeight Updated height of the dropdown item list.
      */
-    void setDropdownHeight(@Px int dropdownHeight) {
+    void setDropdownHeightWithKeyboardActive(@Px int dropdownHeight) {
         mDropdownHeight = dropdownHeight;
     }
 
@@ -251,6 +252,8 @@ class DropdownItemViewInfoListBuilder {
         // When Adaptive Suggestions are set, perform partial grouping by search vs url.
         if (mEnableAdaptiveSuggestionsCount) {
             int numVisibleSuggestions = getVisibleSuggestionsCount(suggestionsPairedWithProcessors);
+            mBuiltListHasFullyConcealedElements =
+                    (numVisibleSuggestions < suggestionsPairedWithProcessors.size());
             // TODO(crbug.com/1073169): this should either infer the count from UI height or supply
             // the default value if height is not known. For the time being we group the entire list
             // to mimic the native behavior.
@@ -265,7 +268,7 @@ class DropdownItemViewInfoListBuilder {
             final OmniboxSuggestion suggestion = suggestionAndProcessorPair.first;
             final SuggestionProcessor processor = suggestionAndProcessorPair.second;
 
-            if (suggestion.getGroupId() != currentGroup) {
+            if (currentGroup != suggestion.getGroupId()) {
                 currentGroup = suggestion.getGroupId();
                 final PropertyModel model = mHeaderProcessor.createModel();
                 mHeaderProcessor.populateModel(model, currentGroup,
@@ -295,6 +298,7 @@ class DropdownItemViewInfoListBuilder {
 
         @Px
         int calculatedSuggestionsHeight = 0;
+        int currentGroup = OmniboxSuggestion.INVALID_GROUP;
         int lastVisibleIndex;
         for (lastVisibleIndex = 0; lastVisibleIndex < suggestionsPairedWithProcessors.size();
                 lastVisibleIndex++) {
@@ -302,18 +306,33 @@ class DropdownItemViewInfoListBuilder {
 
             final Pair<OmniboxSuggestion, SuggestionProcessor> pair =
                     suggestionsPairedWithProcessors.get(lastVisibleIndex);
+            final OmniboxSuggestion suggestion = pair.first;
+
+            // Include the height of the group header view.
+            if (currentGroup != suggestion.getGroupId()) {
+                currentGroup = suggestion.getGroupId();
+                calculatedSuggestionsHeight += mHeaderProcessor.getMinimumViewHeight();
+            }
+
+            // Include the height of the suggestion view.
             final SuggestionProcessor processor = pair.second;
             calculatedSuggestionsHeight += processor.getMinimumViewHeight();
         }
+
         return lastVisibleIndex;
+    }
+
+    /** @return Whether built list contains fully concealed elements. */
+    boolean hasFullyConcealedElements() {
+        return mBuiltListHasFullyConcealedElements;
     }
 
     /**
      * Group suggestions in-place by Search vs URL.
      * Creates two subgroups:
      * - Group 1 contains items visible, or partially visible to the user,
-     * - Group 2 contains items that are not visible at the time user interacts with the suggestions
-     *   list.
+     * - Group 2 contains items that are not visible at the time user interacts with the
+     * suggestions list.
      *
      * @param suggestionsPairedWithProcessors List of suggestions and their matching processors.
      * @param numVisibleSuggestions Number of suggestions that are visible to the user.
@@ -322,10 +341,10 @@ class DropdownItemViewInfoListBuilder {
     void groupSuggestionsBySearchVsURL(
             List<Pair<OmniboxSuggestion, SuggestionProcessor>> suggestionsPairedWithProcessors,
             int numVisibleSuggestions) {
-        // Native counterpart ensures that suggestion with group headers always end up at the end of
-        // the list. This guarantees that these suggestions are both grouped at the end of the list
-        // and that there's nothing more we should do about them.
-        // See AutocompleteController::UpdateHeaders().
+        // Native counterpart ensures that suggestion with group headers always end up at the
+        // end of the list. This guarantees that these suggestions are both grouped at the end
+        // of the list and that there's nothing more we should do about them. See
+        // AutocompleteController::UpdateHeaders().
         int firstIndexWithHeader;
         for (firstIndexWithHeader = 0;
                 firstIndexWithHeader < suggestionsPairedWithProcessors.size();

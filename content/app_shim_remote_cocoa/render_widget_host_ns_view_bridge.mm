@@ -234,6 +234,11 @@ void RenderWidgetHostNSViewBridge::SetCursorLocked(bool locked) {
   [cocoa_view_ setCursorLocked:locked];
 }
 
+void RenderWidgetHostNSViewBridge::SetCursorLockedUnacceleratedMovement(
+    bool unaccelerated) {
+  [cocoa_view_ setCursorLockedUnacceleratedMovement:unaccelerated];
+}
+
 void RenderWidgetHostNSViewBridge::ShowDictionaryOverlayForSelection() {
   NSRange selection_range = [cocoa_view_ selectedRange];
   [cocoa_view_ showLookUpDictionaryOverlayFromRange:selection_range];

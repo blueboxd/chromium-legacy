@@ -59,7 +59,7 @@ class DaemonProcess
   static std::unique_ptr<DaemonProcess> Create(
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const base::Closure& stopped_callback);
+      const base::OnceClosure stopped_callback);
 
   // ConfigWatcher::Delegate
   void OnConfigUpdated(const std::string& serialized_config) override;
@@ -92,7 +92,7 @@ class DaemonProcess
  protected:
   DaemonProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
                 scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-                const base::Closure& stopped_callback);
+                base::OnceClosure stopped_callback);
 
   // Creates a desktop session and assigns a unique ID to it.
   void CreateDesktopSession(int terminal_id,
@@ -194,7 +194,7 @@ class DaemonProcess
   base::ObserverList<HostStatusObserver>::Unchecked status_observers_;
 
   // Invoked to ask the owner to delete |this|.
-  base::Closure stopped_callback_;
+  base::OnceClosure stopped_callback_;
 
   // Writes host status updates to the system event log.
   std::unique_ptr<HostEventLogger> host_event_logger_;

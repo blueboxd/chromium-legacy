@@ -60,10 +60,11 @@ void MockBrowsingDataRemoverDelegate::ExpectCallDontCareAboutFilterBuilder(
     const base::Time& delete_end,
     uint64_t remove_mask,
     uint64_t origin_type_mask) {
-  expected_calls_.emplace_back(
-      delete_begin, delete_end, remove_mask, origin_type_mask,
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST),
-      false /* should_compare_filter */);
+  expected_calls_.emplace_back(delete_begin, delete_end, remove_mask,
+                               origin_type_mask,
+                               BrowsingDataFilterBuilder::Create(
+                                   BrowsingDataFilterBuilder::Mode::kPreserve),
+                               false /* should_compare_filter */);
 }
 
 void MockBrowsingDataRemoverDelegate::VerifyAndClearExpectations() {
@@ -125,8 +126,17 @@ std::ostream& operator<<(
   os << "  remove_mask: " << p.remove_mask_ << std::endl;
   os << "  origin_type_mask: " << p.origin_type_mask_ << std::endl;
   if (p.should_compare_filter_) {
+    std::string mode_string;
+    switch (p.filter_builder_->GetMode()) {
+      case BrowsingDataFilterBuilder::Mode::kDelete:
+        mode_string = "delete";
+        break;
+      case BrowsingDataFilterBuilder::Mode::kPreserve:
+        mode_string = "preserve";
+        break;
+    }
     os << "  filter_builder: " << std::endl;
-    os << "    mode: " << p.filter_builder_->GetMode() << std::endl;
+    os << "    mode: " << mode_string << std::endl;
   }
   return os;
 }

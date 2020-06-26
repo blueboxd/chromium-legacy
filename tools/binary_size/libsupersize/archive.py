@@ -42,9 +42,14 @@ import zip_util
 sys.path.insert(1, os.path.join(path_util.TOOLS_SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
 
+_METADATA_FILENAME = 'METADATA.chromium'
+_METADATA_COMPONENT_REGEX = re.compile(r'^\s*component:\s*"(.*?)"',
+                                       re.MULTILINE)
 _OWNERS_FILENAME = 'OWNERS'
-_COMPONENT_REGEX = re.compile(r'\s*#\s*COMPONENT\s*:\s*(\S+)')
-_FILE_PATH_REGEX = re.compile(r'\s*file://(\S+)')
+_OWNERS_COMPONENT_REGEX = re.compile(r'^\s*#\s*COMPONENT:\s*(\S+)',
+                                     re.MULTILINE)
+_OWNERS_FILE_PATH_REGEX = re.compile(r'^\s*file://(\S+)', re.MULTILINE)
+
 _UNCOMPRESSED_COMPRESSION_RATIO_THRESHOLD = 0.9
 _APKS_MAIN_APK = 'splits/base-master.apk'
 
@@ -131,6 +136,8 @@ class ContainerArchiveOptions:
 
     self.analyze_java = not (sub_args.native_only or sub_args.no_java
                              or self.relocations_mode)
+    # This may be further disabled downstream, e.g., for the case where an APK
+    # is specified, but it contains no .so files.
     self.analyze_native = not (sub_args.java_only or sub_args.no_native)
 
 
@@ -534,90 +541,104 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   return ret
 
 
-def _ParseComponentFromOwners(filename, opts):
-  """Searches an OWNERS file for lines that start with `# COMPONENT:`.
+def _ParseComponentFromMetadata(path):
+  """Extracts Component from METADATA.chromium."""
+  try:
+    with open(path) as f:
+      data = f.read()
 
-  If an OWNERS file has no COMPONENT but references exactly one other OWNERS
-  file, follows the reference and checks that file instead.
-
-  Args:
-    filename: Path to the file to parse.
-    opts: Instance of ContainerArchiveOptions.
-  Returns:
-    The text that follows the `# COMPONENT:` prefix, such as 'component>name'.
-    Empty string if no component found or the file doesn't exist.
-  """
-  seen = set()
-  while True:
-    seen.add(filename)
-    reference_paths = []
-    try:
-      with open(filename) as f:
-        for line in f:
-          component_matches = _COMPONENT_REGEX.match(line)
-          path_matches = _FILE_PATH_REGEX.match(line)
-          if component_matches:
-            return component_matches.group(1)
-          elif path_matches:
-            reference_paths.append(path_matches.group(1))
-    except IOError:
-      break
-    if len(reference_paths) != 1:
-      break
-    filename = os.path.join(opts.src_root, reference_paths[0])
-    if filename in seen:
-      logging.warning('OWNER dependence loop found for %s' % filename)
-      break
+    m = _METADATA_COMPONENT_REGEX.search(data)
+    if m:
+      return m.group(1)
+  except IOError:
+    # Need to catch both FileNotFoundError and NotADirectoryError since
+    # source_paths for .aar files look like: /path/to/lib.aar/path/within/zip
+    pass
   return ''
 
 
-def _FindComponentRoot(start_path, cache, opts):
+def _ParseComponentFromOwners(path):
+  """Extracts COMPONENT and file:// from an OWNERS file.
+
+  Args:
+    path: Path to the file to parse.
+
+  Returns:
+    (component, None) if COMPONENT: line was found.
+    ('', path) if a single file:// was found.
+    ('', None) if neither was found.
+  """
+  try:
+    with open(path) as f:
+      data = f.read()
+
+    m = _OWNERS_COMPONENT_REGEX.search(data)
+    if m:
+      return m.group(1), None
+    aliases = _OWNERS_FILE_PATH_REGEX.findall(data)
+    if len(aliases) == 1:
+      return '', aliases[0]
+  except IOError:
+    # Need to catch both FileNotFoundError and NotADirectoryError since
+    # source_paths for .aar files look like: /path/to/lib.aar/path/within/zip
+    pass
+  return '', None
+
+
+def _FindComponentRoot(path, cache, src_root):
   """Searches all parent directories for COMPONENT in OWNERS files.
 
   Args:
-    start_path: Path of directory to start searching from. Must be relative to
-      |opts.src_root|.
+    path: Path of directory to start searching from. Must be relative to
+      |src_root|.
     cache: Dict of OWNERS paths. Used instead of filesystem if paths are present
       in the dict.
-    opts: Instance of ContainerArchiveOptions.
+    src_root: Directory to use as the root.
 
   Returns:
-    COMPONENT belonging to |start_path|, or empty string if not found.
+    COMPONENT belonging to |path|, or empty string if not found.
   """
-  prev_dir = None
-  test_dir = start_path
-  # This loop will traverse the directory structure upwards until reaching
-  # |opts.src_root|, where |test_dir| and |prev_dir| will both equal an empty
-  # string.
-  while test_dir != prev_dir:
-    cached_component = cache.get(test_dir)
-    if cached_component:
-      return cached_component
-    if cached_component is None:  # Excludes ''.
-      owners_path = os.path.join(opts.src_root, test_dir, _OWNERS_FILENAME)
-      component = _ParseComponentFromOwners(owners_path, opts)
-      cache[test_dir] = component
-      if component:
-        return component
-    prev_dir = test_dir
-    test_dir = os.path.dirname(test_dir)
-  return ''
+  assert not os.path.isabs(path)
+  component = cache.get(path)
+  if component is not None:
+    return component
+
+  metadata_path = os.path.join(src_root, path, _METADATA_FILENAME)
+  component = _ParseComponentFromMetadata(metadata_path)
+  if not component:
+    owners_path = os.path.join(src_root, path, _OWNERS_FILENAME)
+    component, path_alias = _ParseComponentFromOwners(owners_path)
+
+  if not component:
+    # Store in cache before recursing to prevent cycles.
+    cache[path] = ''
+    if path_alias:
+      alias_dir = os.path.dirname(path_alias)
+      component = _FindComponentRoot(alias_dir, cache, src_root)
+
+  if not component:
+    parent_path = os.path.dirname(path)
+    if parent_path:
+      component = _FindComponentRoot(parent_path, cache, src_root)
+
+  cache[path] = component
+  return component
 
 
-def _PopulateComponents(raw_symbols, opts):
+def _PopulateComponents(raw_symbols, src_root):
   """Populates the |component| field based on |source_path|.
 
   Symbols without a |source_path| are skipped.
 
   Args:
     raw_symbols: list of Symbol objects.
-    opts: Instance of ContainerArchiveOptions.
+    src_root: Directory to use as the root.
   """
   seen_paths = {}
   for symbol in raw_symbols:
     if symbol.source_path:
       folder_path = os.path.dirname(symbol.source_path)
-      symbol.component = _FindComponentRoot(folder_path, seen_paths, opts)
+      symbol.component = _FindComponentRoot(folder_path, seen_paths, src_root)
 
 
 def _UpdateSymbolNamesFromNm(raw_symbols, names_by_address):
@@ -1467,7 +1488,7 @@ def CreateContainerAndSymbols(knobs=None,
     raw_symbols is a list of Symbol objects.
   """
   knobs = knobs or SectionSizeKnobs()
-  if apk_path and elf_path:
+  if apk_path and apk_so_path:
     # Extraction takes around 1 second, so do it in parallel.
     apk_elf_result = parallel.ForkAndCall(_ElfInfoFromApk,
                                           (apk_path, apk_so_path, tool_prefix))
@@ -1580,7 +1601,7 @@ def CreateContainerAndSymbols(knobs=None,
             models.Symbol(
                 models.SECTION_DEX,
                 unattributed_dex,
-                full_name='** .dex (unattributed)'))
+                full_name='** .dex (unattributed - includes string literals)'))
 
     raw_symbols.extend(other_symbols)
 
@@ -1605,7 +1626,7 @@ def CreateContainerAndSymbols(knobs=None,
     raw_symbols.extend(pak_raw_symbols)
 
   _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
-  _PopulateComponents(raw_symbols, opts)
+  _PopulateComponents(raw_symbols, opts.src_root)
   logging.info('Converting excessive aliases into shared-path symbols')
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
   logging.debug('Connecting nm aliases')
@@ -1943,7 +1964,9 @@ def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
           f for f in z.infolist()
           if f.filename.endswith('.so') and f.file_size > 0
       ]
-    assert lib_infos, 'APK has no .so files.'
+    if not lib_infos:
+      return None, map_path, None
+
     # TODO(agrieve): Add support for multiple .so files, and take into account
     #     secondary architectures.
     apk_so_path = max(lib_infos, key=lambda x: x.file_size).filename
@@ -2071,6 +2094,9 @@ def _DeduceMainPaths(args, on_config_error):
       elf_path, map_path, apk_so_path = _DeduceNativeInfo(
           output_directory, apk_path, sub_args.elf_file
           or sub_args.aux_elf_file, sub_args.map_file, on_config_error)
+      if not (elf_path or map_path or apk_so_path):
+        opts.analyze_native = False
+    if opts.analyze_native:
       if map_path:
         linker_name = _DetectLinkerName(map_path)
         logging.info('Linker name: %s' % linker_name)

@@ -338,13 +338,8 @@ void CastActivityManager::JoinSession(
                           base::nullopt, RouteRequestResult::ResultCode::OK);
 }
 
-// TODO(jrw): Can this be merged with HandleStopSessionResponse?
-void CastActivityManager::RemoveActivityByRouteId(const std::string& route_id) {
-  auto it = activities_.find(route_id);
-  if (it != activities_.end()) {
-    RemoveActivity(it, PresentationConnectionState::TERMINATED,
-                   PresentationConnectionCloseReason::CLOSED);
-  }
+void CastActivityManager::OnActivityStopped(const std::string& route_id) {
+  TerminateSession(route_id, base::DoNothing());
 }
 
 void CastActivityManager::RemoveActivity(
@@ -449,8 +444,9 @@ CastActivityRecord* CastActivityManager::AddCastActivityRecord(
     const MediaRoute& route,
     const std::string& app_id) {
   std::unique_ptr<CastActivityRecord> activity(
-      activity_record_factory_
-          ? activity_record_factory_->MakeCastActivityRecord(route, app_id)
+      activity_record_factory_for_test_
+          ? activity_record_factory_for_test_->MakeCastActivityRecord(route,
+                                                                      app_id)
           : std::make_unique<CastActivityRecord>(
                 route, app_id, message_handler_, session_tracker_));
   auto* const activity_ptr = activity.get();
@@ -464,18 +460,18 @@ ActivityRecord* CastActivityManager::AddMirroringActivityRecord(
     const std::string& app_id,
     const int tab_id,
     const CastSinkExtraData& cast_data) {
+  // NOTE(jrw): We could theoretically use base::Unretained() below instead of
+  // GetWeakPtr(), but that seems like an unnecessary optimization here.
+  auto on_stop =
+      base::BindOnce(&CastActivityManager::OnActivityStopped,
+                     weak_ptr_factory_.GetWeakPtr(), route.media_route_id());
   auto activity =
-      activity_record_factory_
-          ? activity_record_factory_->MakeMirroringActivityRecord(route, app_id)
+      activity_record_factory_for_test_
+          ? activity_record_factory_for_test_->MakeMirroringActivityRecord(
+                route, app_id, std::move(on_stop))
           : std::make_unique<MirroringActivityRecord>(
                 route, app_id, message_handler_, session_tracker_, tab_id,
-                cast_data,
-                // NOTE(jrw): We could theoretically use base::Unretained()
-                // below instead of GetWeakPtr(), but that seems like an
-                // unnecessary optimization here.
-                base::BindOnce(&CastActivityManager::RemoveActivityByRouteId,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               route.media_route_id()));
+                cast_data, std::move(on_stop));
   if (route.is_local())
     activity->CreateMojoBindings(media_router_);
   auto* const activity_ptr = activity.get();
@@ -834,7 +830,7 @@ CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
 CastActivityManager::DoLaunchSessionParams::~DoLaunchSessionParams() = default;
 
 // static
-ActivityRecordFactoryForTest* CastActivityManager::activity_record_factory_ =
-    nullptr;
+ActivityRecordFactoryForTest*
+    CastActivityManager::activity_record_factory_for_test_ = nullptr;
 
 }  // namespace media_router

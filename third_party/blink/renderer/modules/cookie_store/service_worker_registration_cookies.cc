@@ -49,7 +49,7 @@ class ServiceWorkerRegistrationCookiesImpl final
 
       // TODO(crbug.com/839117): Remove once Expose on partial interface is
       // supported or Origin Trial as ended.
-      if (!execution_context->IsDocument() &&
+      if (!execution_context->IsWindow() &&
           !execution_context->IsServiceWorkerGlobalScope()) {
         return nullptr;
       }

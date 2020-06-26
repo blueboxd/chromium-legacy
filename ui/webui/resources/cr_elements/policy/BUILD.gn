@@ -14,12 +14,6 @@ js_type_check("closure_compile") {
     ":cr_policy_pref_indicator",
     ":cr_tooltip_icon",
   ]
-  if (is_chromeos) {
-    deps += [
-      ":cr_policy_network_behavior_mojo",
-      ":cr_policy_network_indicator_mojo",
-    ]
-  }
 }
 
 js_library("cr_policy_indicator") {
@@ -40,26 +34,6 @@ js_library("cr_policy_pref_behavior") {
 js_library("cr_policy_pref_indicator") {
   deps = [ ":cr_policy_indicator_behavior" ]
   externs_list = [ "$externs_path/settings_private.js" ]
-}
-
-if (is_chromeos) {
-  # TODO(jonmann): These cr_policy_network_* libs should be moved to cr_components.
-  js_library("cr_policy_network_behavior_mojo") {
-    deps = [
-      ":cr_policy_indicator_behavior",
-      "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
-      "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
-      "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    ]
-  }
-
-  js_library("cr_policy_network_indicator_mojo") {
-    deps = [
-      ":cr_policy_indicator_behavior",
-      ":cr_policy_network_behavior_mojo",
-      ":cr_tooltip_icon",
-    ]
-  }
 }
 
 js_library("cr_tooltip_icon") {

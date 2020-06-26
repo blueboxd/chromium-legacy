@@ -68,8 +68,10 @@ class BookmarkModelMerger {
     // |updates_per_parent_id| must not be null. All updates
     // |*updates_per_parent_id| must represent valid updates. Updates
     // corresponding from descendant nodes are moved away from
-    // |*updates_per_parent_id|.
+    // |*updates_per_parent_id|. |max_depth| is the max tree depth to sync
+    // after which content is silently ignored.
     static RemoteTreeNode BuildTree(syncer::UpdateResponseData update,
+                                    size_t max_depth,
                                     UpdatesPerParentId* updates_per_parent_id);
 
     ~RemoteTreeNode();

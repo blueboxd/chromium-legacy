@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -35,8 +34,8 @@ KURL ClearUrlRef(const KURL& input_url) {
 }
 
 void RestartNavigation(LocalFrame* frame) {
-  Document* document = frame->GetDocument();
-  FrameLoadRequest request(document, ResourceRequest(document->Url()));
+  LocalDOMWindow* window = frame->DomWindow();
+  FrameLoadRequest request(window, ResourceRequest(window->Url()));
   request.SetClientRedirectReason(ClientNavigationReason::kReload);
   frame->Navigate(request, WebFrameLoadType::kReplaceCurrentItem);
 }

@@ -40,7 +40,7 @@ enum UIDismissalReason {
   // We use this to mean both "Bubble lost focus" and "No interaction with the
   // infobar".
   NO_DIRECT_INTERACTION = 0,
-  CLICKED_SAVE,
+  CLICKED_ACCEPT,
   CLICKED_CANCEL,
   CLICKED_NEVER,
   CLICKED_MANAGE,

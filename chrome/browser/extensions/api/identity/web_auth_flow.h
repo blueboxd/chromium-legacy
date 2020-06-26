@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/gfx/geometry/rect.h"
@@ -101,9 +102,10 @@ class WebAuthFlow : public content::NotificationObserver,
   // Returns an ID string attached to the window. Can override for testing.
   virtual const std::string& GetAppWindowKey() const;
 
-  // Returns the URL used by the SiteInstance associated with the WebViewGuest
-  // with given |partition| used in the WebAuthFlow.
-  static GURL GetWebViewSiteURL(Partition partition);
+  // Returns the StoragePartitionConfig for a given |partition| used in the
+  // WebAuthFlow.
+  static content::StoragePartitionConfig GetWebViewPartitionConfig(
+      Partition partition);
 
  private:
   friend class ::WebAuthFlowTest;

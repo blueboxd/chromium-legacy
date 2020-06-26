@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_BASE_H_
 
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
@@ -157,6 +158,62 @@ class CORE_EXPORT WebFrameWidgetBase
                                   bool* is_anchor_first) override;
   void ClearTextInputState() override;
 
+  bool SetComposition(const String& text,
+                      const Vector<ui::ImeTextSpan>& ime_text_spans,
+                      const gfx::Range& replacement_range,
+                      int selection_start,
+                      int selection_end) override;
+  void CommitText(const String& text,
+                  const Vector<ui::ImeTextSpan>& ime_text_spans,
+                  const gfx::Range& replacement_range,
+                  int relative_cursor_pos) override;
+  void FinishComposingText(bool keep_selection) override;
+  bool IsProvisional() override;
+  uint64_t GetScrollableContainerIdAt(const gfx::PointF& point) override;
+  void SetEditCommandsForNextKeyEvent(
+      Vector<mojom::blink::EditCommandPtr> edit_commands) override;
+
+  void AddImeTextSpansToExistingText(
+      uint32_t start,
+      uint32_t end,
+      const Vector<ui::ImeTextSpan>& ime_text_spans) override;
+  void ClearImeTextSpansByType(uint32_t start,
+                               uint32_t end,
+                               ui::ImeTextSpan::Type type) override;
+  void SetCompositionFromExistingText(
+      int32_t start,
+      int32_t end,
+      const Vector<ui::ImeTextSpan>& ime_text_spans) override;
+  void ExtendSelectionAndDelete(int32_t before, int32_t after) override;
+  void DeleteSurroundingText(int32_t before, int32_t after) override;
+  void DeleteSurroundingTextInCodePoints(int32_t before,
+                                         int32_t after) override;
+  void SetEditableSelectionOffsets(int32_t start, int32_t end) override;
+  void ExecuteEditCommand(const String& command, const String& value) override;
+  void Undo() override;
+  void Redo() override;
+  void Cut() override;
+  void Copy() override;
+  void CopyToFindPboard() override;
+  void Paste() override;
+  void PasteAndMatchStyle() override;
+  void Delete() override;
+  void SelectAll() override;
+  void CollapseSelection() override;
+  void Replace(const String& word) override;
+  void ReplaceMisspelling(const String& word) override;
+  void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
+  void AdjustSelectionByCharacterOffset(
+      int32_t start,
+      int32_t end,
+      mojom::blink::SelectionMenuBehavior behavior) override;
+  void MoveRangeSelectionExtent(const gfx::Point& extent) override;
+  void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
+  void MoveCaret(const gfx::Point& point) override;
+#if defined(OS_ANDROID)
+  void SelectWordAroundCaret(SelectWordAroundCaretCallback callback) override;
+#endif
+
   // WebFrameWidget implementation.
   WebLocalFrame* LocalRoot() const override;
   WebDragOperation DragTargetDragEnter(const WebDragData&,
@@ -189,6 +246,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void AddEditCommandForNextKeyEvent(const WebString& name,
                                      const WebString& value) override;
   void ClearEditCommands() override;
+  bool IsPasting() override;
+  bool HandlingSelectRange() override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,
@@ -203,11 +262,13 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // WebWidget methods.
   cc::LayerTreeHost* InitializeCompositing(
+      bool never_composited,
+      scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
-  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-             base::OnceCallback<void()> cleanup_task) override;
+  void Close(
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   void DidAcquirePointerLock() override;
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
@@ -221,22 +282,30 @@ class CORE_EXPORT WebFrameWidgetBase
   void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
                                       HandledEventCallback) override;
   void UpdateTextInputState() override;
-  void ForceTextInputStateUpdate() override;
-  void UpdateCompositionInfo() override;
   void UpdateSelectionBounds() override;
   void ShowVirtualKeyboard() override;
-  void RequestCompositionUpdates(bool immediate_request,
-                                 bool monitor_updates) override;
   bool HasFocus() override;
   void SetFocus(bool focus) override;
+  void FlushInputProcessedCallback() override;
+  void CancelCompositionForPepper() override;
+  void RequestMouseLock(
+      bool has_transient_user_activation,
+      bool priviledged,
+      bool request_unadjusted_movement,
+      base::OnceCallback<
+          void(mojom::blink::PointerLockResult,
+               CrossVariantMojoRemote<
+                   mojom::blink::PointerLockContextInterfaceBase>)>) override;
+#if defined(OS_ANDROID)
+  SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() override;
+#endif
 
   // WidgetBaseClient methods.
-  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
+  void RecordDispatchRafAlignedInputTime(
+      base::TimeTicks raf_aligned_input_start_time) override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidCommitAndDrawCompositorFrame() override;
-  void OnDeferMainFrameUpdatesChanged(bool defer) override;
-  void OnDeferCommitsChanged(bool defer) override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCompletePageScaleAnimation() override;
@@ -259,17 +328,10 @@ class CORE_EXPORT WebFrameWidgetBase
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override { return true; }
   void DidHandleKeyEvent() override;
-  void QueueSyntheticEvent(
-      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   WebTextInputType GetTextInputType() override;
-  void GetWidgetInputHandler(
-      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
-      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
-  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
   blink::FrameWidget* FrameWidget() override { return this; }
-  void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override;
+  void ScheduleAnimation() override;
+  bool ShouldAckSyntheticInputImmediately() override;
   void ScheduleAnimationForWebTests() override;
 
   // mojom::blink::FrameWidget methods.
@@ -382,6 +444,26 @@ class CORE_EXPORT WebFrameWidgetBase
   // Called when a gesture event has been processed.
   void DidHandleGestureEvent(const WebGestureEvent& event,
                              bool event_cancelled);
+
+  // Called to update if pointerrawupdate events should be sent.
+  void SetHasPointerRawUpdateEventHandlers(bool);
+
+  // Called to update whether low latency input mode is enabled or not.
+  void SetNeedsLowLatencyInput(bool);
+
+  // Requests unbuffered (ie. low latency) input until a pointerup
+  // event occurs.
+  void RequestUnbufferedInputEvents();
+
+  // Requests unbuffered (ie. low latency) input due to debugger being
+  // attached. Debugger needs to paint when stopped in the event handler.
+  void SetNeedsUnbufferedInputForDebugger(bool);
+
+  // Called when the main frame navigates.
+  void DidNavigate();
+
+  // Called when the widget should get targeting input.
+  void SetMouseCapture(bool capture);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

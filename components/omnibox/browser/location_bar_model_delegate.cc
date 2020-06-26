@@ -39,11 +39,11 @@ bool LocationBarModelDelegate::IsOfflinePage() const {
   return false;
 }
 
-bool LocationBarModelDelegate::IsInstantNTP() const {
+bool LocationBarModelDelegate::IsNewTabPage() const {
   return false;
 }
 
-bool LocationBarModelDelegate::IsNewTabPage(const GURL& url) const {
+bool LocationBarModelDelegate::IsNewTabPageURL(const GURL& url) const {
   return false;
 }
 

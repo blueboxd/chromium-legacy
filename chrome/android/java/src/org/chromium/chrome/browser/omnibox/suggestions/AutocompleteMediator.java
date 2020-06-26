@@ -76,7 +76,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                                       OmniboxSuggestionsDropdown.Observer, SuggestionHost {
     private static final String TAG = "Autocomplete";
     private static final int SUGGESTION_NOT_FOUND = -1;
-    private static final int MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW = 5;
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
@@ -822,9 +821,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @return True if soft keyboard should be shown.
      */
     private boolean shouldShowSoftKeyboard() {
-        return !mEnableDeferredKeyboardPopup
-                || mDropdownViewInfoListManager.getSuggestionsCount()
-                <= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW;
+        return !(mEnableDeferredKeyboardPopup
+                && mDropdownViewInfoListBuilder.hasFullyConcealedElements());
     }
 
     @Override
@@ -1116,12 +1114,18 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     @Override
     public void onSuggestionDropdownHeightChanged(@Px int newHeight) {
-        mDropdownViewInfoListBuilder.setDropdownHeight(newHeight);
+        // Report the dropdown height whenever we intend to - or do show soft keyboard. This
+        // addresses cases where hardware keyboard is attached to a device, or where user explicitly
+        // called the keyboard back after we hid it.
+        if (mDelegate.isKeyboardActive()) {
+            mDropdownViewInfoListBuilder.setDropdownHeightWithKeyboardActive(newHeight);
+        }
     }
 
     @Override
     public void onSuggestionDropdownScroll() {
-        if (!shouldShowSoftKeyboard()) {
+        if (mEnableAdaptiveSuggestionsCount
+                && mDropdownViewInfoListBuilder.hasFullyConcealedElements()) {
             mDelegate.setKeyboardVisibility(false);
         }
     }
@@ -1149,5 +1153,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mAutocomplete.onSuggestionSelected(matchPosition, disposition, suggestion.hashCode(),
                 suggestion.getType(), currentPageUrl, pageClassification, elapsedTimeSinceModified,
                 autocompleteLength, webContents);
+    }
+
+    @Override
+    public void onSuggestionDropdownOverscrolledToTop() {
+        if (mEnableAdaptiveSuggestionsCount) {
+            mDelegate.setKeyboardVisibility(true);
+        }
     }
 }

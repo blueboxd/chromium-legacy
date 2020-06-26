@@ -84,8 +84,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:
-  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-             base::OnceCallback<void()> cleanup_task) override;
+  void Close(
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
   void DidEnterFullscreen() override;
@@ -129,6 +129,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // FrameWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
+  bool ShouldHandleImeEvents() override;
 
   // WidgetBaseClient overrides:
   void BeginMainFrame(base::TimeTicks last_frame_time) override;

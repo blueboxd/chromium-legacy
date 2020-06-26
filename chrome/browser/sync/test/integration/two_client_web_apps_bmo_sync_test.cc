@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -54,8 +55,9 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
     info.title = base::UTF8ToUTF16(url.spec());
     info.app_url = url;
     AppId dummy_app_id = InstallApp(info, profile1);
-    EXPECT_EQ(WebAppInstallObserver(profile2, dummy_app_id).AwaitNextInstall(),
-              dummy_app_id);
+    EXPECT_EQ(
+        WebAppInstallObserver(profile2, {dummy_app_id}).AwaitNextInstall(),
+        dummy_app_id);
     return dummy_app_id;
   }
 
@@ -180,8 +182,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 }
 
+// Flakily fails on Linux TSAN only (crbug.com/1099847)
+#if defined(OS_LINUX)
+#define MAYBE_SyncDoubleInstallationDifferentNames \
+  DISABLED_SyncDoubleInstallationDifferentNames
+#else
+#define MAYBE_SyncDoubleInstallationDifferentNames \
+  SyncDoubleInstallationDifferentNames
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
-                       SyncDoubleInstallationDifferentNames) {
+                       MAYBE_SyncDoubleInstallationDifferentNames) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
 
@@ -425,7 +435,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingSynced) {
             GetAppSorting(GetProfile(1))->GetAppLaunchOrdinal(app_id));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingFixCollisions) {
+// Flakily fails on Windows only (crbug.com/1099816)
+#if defined(OS_WIN)
+#define MAYBE_AppSortingFixCollisions DISABLED_AppSortingFixCollisions
+#else
+#define MAYBE_AppSortingFixCollisions AppSortingFixCollisions
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
+                       MAYBE_AppSortingFixCollisions) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -436,15 +453,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingFixCollisions) {
       GetProfile(0), WebappInstallSource::OMNIBOX_INSTALL_ICON,
       GetUserInitiatedAppURL2());
 
-  // Wait for both installs.
-  EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id1).AwaitNextInstall(),
-            app_id1);
-  EXPECT_EQ(WebAppInstallObserver(GetProfile(1), app_id2).AwaitNextInstall(),
-            app_id2);
+  ASSERT_NE(app_id1, app_id2);
+
+  // Wait for both of the webapps to be installed on profile 1.
+  WebAppInstallObserver(GetProfile(1), {app_id1, app_id2}).AwaitNextInstall();
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 
   syncer::StringOrdinal page_ordinal =
-      GetAppSorting(GetProfile(0))->GetNaturalAppPageOrdinal();
+      GetAppSorting(GetProfile(0))->CreateFirstAppPageOrdinal();
   syncer::StringOrdinal launch_ordinal =
       GetAppSorting(GetProfile(0))->CreateNextAppLaunchOrdinal(page_ordinal);
 

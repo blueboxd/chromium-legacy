@@ -14,6 +14,7 @@
 #if defined(USE_OZONE)
 #include "base/message_loop/message_pump_type.h"
 #include "mojo/public/cpp/base/message_pump_type_mojom_traits.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace mojo {

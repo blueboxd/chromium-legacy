@@ -45,6 +45,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::ByRef;
 using testing::ElementsAre;
+using testing::Invoke;
 using testing::IsEmpty;
 using testing::Not;
 using testing::Return;
@@ -102,14 +103,15 @@ using MockCastActivityRecordCallback =
 class MockMirroringActivityRecord : public MirroringActivityRecord {
  public:
   MockMirroringActivityRecord(const MediaRoute& route,
-                              const std::string& app_id)
+                              const std::string& app_id,
+                              OnStopCallback on_stop)
       : MirroringActivityRecord(route,
                                 app_id,
                                 nullptr,
                                 nullptr,
                                 0,
                                 CastSinkExtraData(),
-                                base::DoNothing()) {}
+                                std::move(on_stop)) {}
 
   void set_session_id(const std::string& new_id) {
     if (!session_id_)
@@ -179,12 +181,10 @@ class CastActivityManagerTest : public testing::Test,
       const MediaRoute& route,
       const std::string& app_id) override {
     auto activity = std::make_unique<MockCastActivityRecord>(route, app_id);
-    auto* activity_ptr = activity.get();
-    std::string route_id = route.media_route_id();
     ON_CALL(*activity, SetOrUpdateSession)
-        .WillByDefault(WithArg<0>([activity_ptr](const auto& session) {
-          activity_ptr->set_session_id(session.session_id());
-        }));
+        .WillByDefault(
+            Invoke(activity.get(), &ActivityRecord::SetSessionAndSinkForTest));
+    auto* activity_ptr = activity.get();
     cast_activities_.push_back(activity_ptr);
     activity_record_callback_.Run(activity_ptr);
     return activity;
@@ -193,14 +193,13 @@ class CastActivityManagerTest : public testing::Test,
   // from ActivityRecordFactoryForTest
   std::unique_ptr<MirroringActivityRecord> MakeMirroringActivityRecord(
       const MediaRoute& route,
-      const std::string& app_id) override {
-    auto activity =
-        std::make_unique<MockMirroringActivityRecord>(route, app_id);
-    auto* activity_ptr = activity.get();
+      const std::string& app_id,
+      MirroringActivityRecord::OnStopCallback on_stop) override {
+    auto activity = std::make_unique<MockMirroringActivityRecord>(
+        route, app_id, std::move(on_stop));
     ON_CALL(*activity, SetOrUpdateSession)
-        .WillByDefault(WithArg<0>([activity_ptr](const auto& session) {
-          activity_ptr->set_session_id(session.session_id());
-        }));
+        .WillByDefault(
+            Invoke(activity.get(), &ActivityRecord::SetSessionAndSinkForTest));
     mirroring_activity_ = activity.get();
     return activity;
   }
@@ -421,6 +420,20 @@ TEST_F(CastActivityManagerTest, LaunchCastAppSessionWithAppParams) {
 TEST_F(CastActivityManagerTest, LaunchMirroringSession) {
   CallLaunchSession(kCastStreamingAppId);
   EXPECT_EQ(RouteControllerType::kMirroring, route_->controller_type());
+}
+
+TEST_F(CastActivityManagerTest, MirroringSessionStopped) {
+  CallLaunchSession(kCastStreamingAppId);
+  auto response = GetSuccessLaunchResponse();
+
+  SetSessionForTest(route_->media_sink_id(),
+                    CastSession::From(sink_, *response.receiver_status));
+  std::move(launch_session_callback_).Run(std::move(response));
+  RunUntilIdle();
+
+  ASSERT_TRUE(mirroring_activity_);
+  EXPECT_CALL(message_handler_, StopSession).Times(1);
+  mirroring_activity_->DidStop();
 }
 
 TEST_F(CastActivityManagerTest, LaunchSessionFails) {

@@ -7,6 +7,9 @@
 
 #include "third_party/blink/public/web/web_external_widget.h"
 
+#include "build/build_config.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -29,12 +32,14 @@ class WebExternalWidgetImpl : public WebExternalWidget,
 
   // WebWidget overrides:
   cc::LayerTreeHost* InitializeCompositing(
+      bool never_composited,
+      scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
   void SetCompositorVisible(bool visible) override;
-  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-             base::OnceCallback<void()> cleanup_task) override;
+  void Close(
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
   WebURL GetURLForDebugTrace() override;
   WebSize Size() override;
@@ -55,20 +60,26 @@ class WebExternalWidgetImpl : public WebExternalWidget,
       const gfx::PointF& position_in_viewport,
       const gfx::Vector2dF& velocity_in_viewport) override;
   void UpdateTextInputState() override;
-  void UpdateCompositionInfo() override;
   void UpdateSelectionBounds() override;
   void ShowVirtualKeyboard() override;
-  void ForceTextInputStateUpdate() override;
-  void RequestCompositionUpdates(bool immediate_request,
-                                 bool monitor_updates) override;
   bool HasFocus() override;
   void SetFocus(bool focus) override;
+  void RequestMouseLock(
+      bool has_transient_user_activation,
+      bool priviledged,
+      bool request_unadjusted_movement,
+      base::OnceCallback<
+          void(mojom::blink::PointerLockResult,
+               CrossVariantMojoRemote<
+                   mojom::blink::PointerLockContextInterfaceBase>)>) override;
+#if defined(OS_ANDROID)
+  SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() override;
+#endif
 
   // WebExternalWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
 
   // WidgetBaseClient overrides:
-  void DispatchRafAlignedInput(base::TimeTicks frame_time) override {}
   void BeginMainFrame(base::TimeTicks last_frame_time) override {}
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -84,16 +95,9 @@ class WebExternalWidgetImpl : public WebExternalWidget,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override;
-  void QueueSyntheticEvent(
-      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
-  void GetWidgetInputHandler(
-      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
-      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
-  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
-  void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override;
   void FocusChanged(bool enabled) override;
+  void FlushInputProcessedCallback() override;
+  void CancelCompositionForPepper() override;
 
  private:
   WebExternalWidgetClient* const client_;

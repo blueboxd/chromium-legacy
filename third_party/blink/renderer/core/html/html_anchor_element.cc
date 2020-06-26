@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
@@ -454,8 +455,8 @@ void HTMLAnchorElement::SendPings(const KURL& destination_url) const {
 void HTMLAnchorElement::HandleClick(Event& event) {
   event.SetDefaultHandled();
 
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (!frame)
+  LocalDOMWindow* window = GetDocument().domWindow();
+  if (!window)
     return;
 
   if (!isConnected()) {
@@ -490,6 +491,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   // Ignore the download attribute if we either can't read the content, or
   // the event is an alt-click or similar.
+  LocalFrame* frame = window->GetFrame();
   if (FastHasAttribute(html_names::kDownloadAttr) &&
       NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
       GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
@@ -506,7 +508,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(frame));
   const AtomicString& target = FastGetAttribute(html_names::kTargetAttr);
-  FrameLoadRequest frame_request(&GetDocument(), request);
+  FrameLoadRequest frame_request(window, request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   frame_request.SetClientRedirectReason(ClientNavigationReason::kAnchorClick);
   if (HasRel(kRelationNoReferrer)) {

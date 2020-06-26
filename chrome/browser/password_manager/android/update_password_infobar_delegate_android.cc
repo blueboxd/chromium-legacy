@@ -143,7 +143,7 @@ void UpdatePasswordInfoBarDelegate::InfoBarDismissed() {
 }
 
 bool UpdatePasswordInfoBarDelegate::Accept() {
-  infobar_response_ = password_manager::metrics_util::CLICKED_SAVE;
+  infobar_response_ = password_manager::metrics_util::CLICKED_ACCEPT;
   UpdatePasswordInfoBar* update_password_infobar =
       static_cast<UpdatePasswordInfoBar*>(infobar());
   password_manager::PasswordFormManagerForUI* form_manager =

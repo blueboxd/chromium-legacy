@@ -4,11 +4,6 @@
 
 import("//build_overrides/build.gni")
 
-declare_args() {
-  # If true, it assumes that //third_party/abseil-cpp is an available dependency.
-  gtest_enable_absl_printers = false
-}
-
 config("gtest_config") {
   visibility = [ ":*" ]  # gmock also shares this config.
 

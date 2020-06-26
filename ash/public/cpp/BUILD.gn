@@ -274,6 +274,12 @@ component("cpp") {
 
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]
 
+  assert_no_deps = [
+    "//ash/public/cpp/external_arc",
+    "//components/arc",
+    "//components/exo",
+  ]
+
   deps = [
     "//ash/public/cpp/vector_icons",
     "//chromeos/constants",

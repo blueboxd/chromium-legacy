@@ -21,15 +21,15 @@ PASS Border properties on mpadded
 PASS Border properties on mpadded (rtl)
 PASS Border properties on mphantom
 PASS Border properties on mphantom (rtl)
-FAIL Border properties on mroot assert_true: mroot is supported expected true got false
-FAIL Border properties on mroot (rtl) assert_true: mroot is supported expected true got false
+PASS Border properties on mroot
+PASS Border properties on mroot (rtl)
 PASS Border properties on mrow
 PASS Border properties on mrow (rtl)
 PASS Border properties on ms
 PASS Border properties on ms (rtl)
 PASS Border properties on mspace
-FAIL Border properties on msqrt assert_true: msqrt is supported expected true got false
-FAIL Border properties on msqrt (rtl) assert_true: msqrt is supported expected true got false
+PASS Border properties on msqrt
+PASS Border properties on msqrt (rtl)
 PASS Border properties on mstyle
 PASS Border properties on mstyle (rtl)
 PASS Border properties on msub

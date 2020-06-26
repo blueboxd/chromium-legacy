@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -24,9 +25,11 @@ BasicVulkanTest::~BasicVulkanTest() {}
 void BasicVulkanTest::SetUp() {
   bool supports_swapchain = true;
 #if defined(USE_OZONE)
-  supports_swapchain = ui::OzonePlatform::GetInstance()
-                           ->GetPlatformProperties()
-                           .supports_vulkan_swap_chain;
+  if (features::IsUsingOzonePlatform()) {
+    supports_swapchain = ui::OzonePlatform::GetInstance()
+                             ->GetPlatformProperties()
+                             .supports_vulkan_swap_chain;
+  }
 #endif
 
   bool use_swiftshader =

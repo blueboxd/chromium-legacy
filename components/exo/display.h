@@ -55,9 +55,10 @@ class Display {
   Display();
 
 #if defined(OS_CHROMEOS)
-  Display(NotificationSurfaceManager* notification_surface_manager,
-          InputMethodSurfaceManager* input_method_surface_manager,
-          std::unique_ptr<FileHelper> file_helper);
+  Display(
+      std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
+      std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+      std::unique_ptr<FileHelper> file_helper);
 #endif  // defined(OS_CHROMEOS)
 
   ~Display();
@@ -115,10 +116,16 @@ class Display {
   // Obtains seat instance.
   Seat* seat() { return &seat_; }
 
+#if defined(OS_CHROMEOS)
+  InputMethodSurfaceManager* input_method_surface_manager() {
+    return input_method_surface_manager_.get();
+  }
+#endif
+
  private:
 #if defined(OS_CHROMEOS)
-  NotificationSurfaceManager* notification_surface_manager_ = nullptr;
-  InputMethodSurfaceManager* input_method_surface_manager_ = nullptr;
+  std::unique_ptr<NotificationSurfaceManager> notification_surface_manager_;
+  std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager_;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<FileHelper> file_helper_;

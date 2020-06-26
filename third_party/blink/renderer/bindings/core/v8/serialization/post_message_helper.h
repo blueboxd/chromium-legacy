@@ -13,7 +13,6 @@
 
 namespace blink {
 
-class Document;
 class ExecutionContext;
 class ExceptionState;
 class PostMessageOptions;
@@ -51,7 +50,7 @@ class CORE_EXPORT PostMessageHelper {
   // provided is an invalid URL.
   static scoped_refptr<const SecurityOrigin> GetTargetOrigin(
       const WindowPostMessageOptions* options,
-      const Document& document,
+      const ExecutionContext& context,
       ExceptionState& state);
 };
 

@@ -36,6 +36,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
@@ -109,7 +110,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/chrome_android_metrics_provider.h"
@@ -138,7 +138,7 @@
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
-#if BUILDFLAG(LACROS)
+#if BUILDFLAG(IS_LACROS)
 #include "chrome/browser/metrics/lacros_metrics_provider.h"
 #endif
 
@@ -697,10 +697,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::unique_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-#if BUILDFLAG(LACROS)
+#if BUILDFLAG(IS_LACROS)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<LacrosMetricsProvider>());
-#endif  // BUILDFLAG(LACROS)
+#endif  // BUILDFLAG(IS_LACROS)
 
 #if defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(

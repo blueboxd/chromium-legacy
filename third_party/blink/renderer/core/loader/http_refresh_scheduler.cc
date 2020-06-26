@@ -96,7 +96,8 @@ void HttpRefreshScheduler::NavigateTask() {
   DCHECK(document_->GetFrame());
   std::unique_ptr<ScheduledHttpRefresh> refresh(refresh_.release());
 
-  FrameLoadRequest request(document_, ResourceRequest(refresh->url));
+  FrameLoadRequest request(document_->domWindow(),
+                           ResourceRequest(refresh->url));
   request.SetInputStartTime(refresh->input_timestamp);
   request.SetClientRedirectReason(refresh->reason);
 

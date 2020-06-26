@@ -92,12 +92,17 @@ HRESULT NetworkFetcherWinHTTP::GetNetError() const {
 
 std::string NetworkFetcherWinHTTP::GetHeaderETag() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return etag_;
+  return header_etag_;
 }
 
-int64_t NetworkFetcherWinHTTP::GetXHeaderRetryAfterSec() const {
+std::string NetworkFetcherWinHTTP::GetHeaderXCupServerProof() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return xheader_retry_after_sec_;
+  return header_x_cup_server_proof_;
+}
+
+int64_t NetworkFetcherWinHTTP::GetHeaderXRetryAfterSec() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return header_x_retry_after_sec_;
 }
 
 base::FilePath NetworkFetcherWinHTTP::GetFilePath() const {
@@ -299,7 +304,16 @@ void NetworkFetcherWinHTTP::HeadersAvailable() {
   base::string16 etag;
   if (SUCCEEDED(QueryHeadersString(request_handle_.get(), WINHTTP_QUERY_ETAG,
                                    WINHTTP_HEADER_NAME_BY_INDEX, &etag))) {
-    etag_ = base::SysWideToUTF8(etag);
+    header_etag_ = base::SysWideToUTF8(etag);
+  }
+
+  base::string16 xheader_cup_server_proof;
+  if (SUCCEEDED(QueryHeadersString(
+          request_handle_.get(), WINHTTP_QUERY_CUSTOM,
+          base::SysUTF8ToWide(
+              update_client::NetworkFetcher::kHeaderXCupServerProof),
+          &xheader_cup_server_proof))) {
+    header_x_cup_server_proof_ = base::SysWideToUTF8(xheader_cup_server_proof);
   }
 
   int xheader_retry_after_sec = 0;
@@ -308,7 +322,7 @@ void NetworkFetcherWinHTTP::HeadersAvailable() {
           base::SysUTF8ToWide(
               update_client::NetworkFetcher::kHeaderXRetryAfter),
           &xheader_retry_after_sec))) {
-    xheader_retry_after_sec_ = xheader_retry_after_sec;
+    header_x_retry_after_sec_ = xheader_retry_after_sec;
   }
 
   std::move(fetch_started_callback_).Run(response_code, content_length);

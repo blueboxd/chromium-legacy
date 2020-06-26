@@ -65,9 +65,9 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
     return state;
   }
 
-  bool IsInstantNTP() const override { return false; }
+  bool IsNewTabPage() const override { return false; }
 
-  bool IsNewTabPage(const GURL& url) const override { return false; }
+  bool IsNewTabPageURL(const GURL& url) const override { return false; }
 
   bool IsHomePage(const GURL& url) const override { return false; }
 

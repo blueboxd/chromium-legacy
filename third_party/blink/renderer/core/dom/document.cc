@@ -162,7 +162,6 @@
 #include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -7155,13 +7154,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
       GetSecurityContext().AddInsecureNavigationUpgrade(to_upgrade);
   }
 
-  bool inherit_cookie_url_from_owner = initializer.IsSrcdocDocument() ||
-                                       url_.IsAboutBlankURL() ||
-                                       !initializer.OriginToCommit();
-
-  cookie_url_ = inherit_cookie_url_from_owner && initializer.OwnerDocument()
-                    ? initializer.OwnerDocument()->CookieURL()
-                    : url_;
+  cookie_url_ = initializer.GetCookieUrl();
 
   GetSecurityContext().SetAddressSpace(initializer.GetIPAddressSpace());
 }
@@ -8202,7 +8195,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(policy_);
   visitor->Trace(slot_assignment_engine_);
   visitor->Trace(viewport_data_);
-  visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
@@ -8238,22 +8230,6 @@ bool Document::CurrentFrameHadRAF() const {
 
 bool Document::NextFrameHasPendingRAF() const {
   return scripted_animation_controller_->NextFrameHasPendingRAF();
-}
-
-void Document::NavigateLocalAdsFrames() {
-  // This navigates all the frames detected as an advertisement to about:blank.
-  DCHECK(GetFrame());
-  for (Frame* child = GetFrame()->Tree().FirstChild(); child;
-       child = child->Tree().TraverseNext(GetFrame())) {
-    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
-      if (child_local_frame->IsAdSubframe()) {
-        FrameLoadRequest request(this, ResourceRequest(BlankURL()));
-        child_local_frame->Navigate(request, WebFrameLoadType::kStandard);
-      }
-    }
-    // TODO(yuzus): Once AdsTracker for remote frames is implemented and OOPIF
-    // is enabled on low-end devices, navigate remote ads as well.
-  }
 }
 
 SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
@@ -8300,14 +8276,6 @@ bool Document::IsFocusAllowed() const {
     return true;
   return GetExecutionContext()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation);
-}
-
-NavigationInitiatorImpl& Document::NavigationInitiator() {
-  if (!navigation_initiator_) {
-    navigation_initiator_ =
-        MakeGarbageCollected<NavigationInitiatorImpl>(*this);
-  }
-  return *navigation_initiator_;
 }
 
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {

@@ -26,7 +26,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   // BrowsingDataFilterBuilder implementation:
   void AddOrigin(const url::Origin& origin) override;
   void AddRegisterableDomain(const std::string& registrable_domain) override;
-  bool IsEmptyBlacklist() override;
+  bool MatchesAllOriginsAndDomains() override;
   base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter() override;
   network::mojom::ClearDataFilterPtr BuildNetworkServiceFilter() override;
   network::mojom::CookieDeletionFilterPtr BuildCookieDeletionFilter() override;

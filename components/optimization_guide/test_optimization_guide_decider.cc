@@ -11,8 +11,7 @@ namespace optimization_guide {
 TestOptimizationGuideDecider::TestOptimizationGuideDecider() = default;
 TestOptimizationGuideDecider::~TestOptimizationGuideDecider() = default;
 
-void TestOptimizationGuideDecider::RegisterOptimizationTypesAndTargets(
-    const std::vector<proto::OptimizationType>& optimization_types,
+void TestOptimizationGuideDecider::RegisterOptimizationTargets(
     const std::vector<proto::OptimizationTarget>& optimization_targets) {}
 
 OptimizationGuideDecision TestOptimizationGuideDecider::ShouldTargetNavigation(
@@ -20,6 +19,9 @@ OptimizationGuideDecision TestOptimizationGuideDecider::ShouldTargetNavigation(
     proto::OptimizationTarget optimization_target) {
   return OptimizationGuideDecision::kFalse;
 }
+
+void TestOptimizationGuideDecider::RegisterOptimizationTypes(
+    const std::vector<proto::OptimizationType>& optimization_types) {}
 
 void TestOptimizationGuideDecider::CanApplyOptimizationAsync(
     content::NavigationHandle* navigation_handle,

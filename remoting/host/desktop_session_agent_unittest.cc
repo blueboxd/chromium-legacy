@@ -53,7 +53,7 @@ FakeDelegate::FakeDelegate(scoped_refptr<base::SingleThreadTaskRunner> runner)
 
 class ProcessStatsListener : public IPC::Listener {
  public:
-  ProcessStatsListener(base::Closure action_after_received)
+  ProcessStatsListener(base::RepeatingClosure action_after_received)
       : action_after_received_(action_after_received) {}
 
   ~ProcessStatsListener() override = default;
@@ -65,7 +65,7 @@ class ProcessStatsListener : public IPC::Listener {
   void OnProcessResourceUsage(
       const remoting::protocol::AggregatedProcessResourceUsage& usage);
 
-  const base::Closure action_after_received_;
+  const base::RepeatingClosure action_after_received_;
 };
 
 bool ProcessStatsListener::OnMessageReceived(const IPC::Message& message) {

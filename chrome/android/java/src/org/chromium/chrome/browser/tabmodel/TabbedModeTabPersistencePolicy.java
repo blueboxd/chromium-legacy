@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.os.StrictMode;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 
@@ -26,6 +25,7 @@ import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -47,14 +47,8 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     @VisibleForTesting
     static final String LEGACY_SAVED_STATE_FILE = "tab_state";
 
-    /** The name of the directory where the state is saved. */
-    @VisibleForTesting
-    static final String SAVED_STATE_DIRECTORY = "0";
-
     /** Prevents two copies of the Migration task from being created. */
     private static final Object MIGRATION_LOCK = new Object();
-    /** Prevents two state directories from getting created simultaneously. */
-    private static final Object DIR_CREATION_LOCK = new Object();
     /**
      * Prevents two clean up tasks from getting created simultaneously. Also protects against
      * incorrectly interleaving create/run/cancel on the task.
@@ -67,8 +61,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     private static AsyncTask<Void> sMigrationTask;
     private static AsyncTask<Void> sCleanupTask;
-
-    private static File sStateDirectory;
 
     private final int mSelectorIndex;
     private final int mOtherSelectorIndex;
@@ -92,7 +84,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public File getOrCreateStateDirectory() {
-        return getOrCreateTabbedModeStateDirectory();
+        return TabStateDirectory.getOrCreateTabbedModeStateDirectory();
     }
 
     @Override
@@ -122,28 +114,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     @VisibleForTesting
     public static String getStateFileName(int selectorIndex) {
         return TabPersistentStore.getStateFileName(Integer.toString(selectorIndex));
-    }
-
-    /**
-     * The folder where the state should be saved to.
-     * @return A file representing the directory that contains TabModelSelector states.
-     */
-    public static File getOrCreateTabbedModeStateDirectory() {
-        synchronized (DIR_CREATION_LOCK) {
-            if (sStateDirectory == null) {
-                sStateDirectory = new File(
-                        TabPersistentStore.getOrCreateBaseStateDirectory(), SAVED_STATE_DIRECTORY);
-                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-                try {
-                    if (!sStateDirectory.exists() && !sStateDirectory.mkdirs()) {
-                        Log.e(TAG, "Failed to create state folder: " + sStateDirectory);
-                    }
-                } finally {
-                    StrictMode.setThreadPolicy(oldPolicy);
-                }
-            }
-        }
-        return sStateDirectory;
     }
 
     @Override
@@ -245,7 +215,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             if (i == 0) continue;
 
             File otherStateDir = new File(
-                    TabPersistentStore.getOrCreateBaseStateDirectory(), Integer.toString(i));
+                    TabStateDirectory.getOrCreateBaseStateDirectory(), Integer.toString(i));
             if (otherStateDir == null || !otherStateDir.exists()) continue;
 
             // Rename tab state file.

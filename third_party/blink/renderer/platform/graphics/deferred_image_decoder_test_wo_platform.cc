@@ -85,7 +85,7 @@ TEST(DeferredImageDecoderTestWoPlatform, mixImagesWebp) {
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesBmp) {
-  MixImages("/images/resources/lenna.bmp", 122u, 0u);
+  MixImages("/images/resources/gracehopper.bmp", 122u, 0u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco) {
@@ -98,7 +98,7 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
       "/images/resources/mu.png",
       "/images/resources/2-dht.jpg",
       "/images/resources/webp-animated.webp",
-      "/images/resources/lenna.bmp",
+      "/images/resources/gracehopper.bmp",
       "/images/resources/wrong-frame-dimensions.ico",
   };
 

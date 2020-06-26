@@ -155,7 +155,7 @@ LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
 
   if (focus_source == OmniboxFocusSource::SEARCH_BUTTON)
     return OmniboxEventProto::SEARCH_BUTTON_AS_STARTING_FOCUS;
-  if (delegate_->IsInstantNTP()) {
+  if (delegate_->IsNewTabPage()) {
     // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
     // i.e., if input isn't actually in progress.
     return (focus_source == OmniboxFocusSource::FAKEBOX)
@@ -164,7 +164,7 @@ LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
   }
   if (!gurl.is_valid())
     return OmniboxEventProto::INVALID_SPEC;
-  if (delegate_->IsNewTabPage(gurl))
+  if (delegate_->IsNewTabPageURL(gurl))
     return OmniboxEventProto::NTP;
   if (gurl.spec() == url::kAboutBlankURL)
     return OmniboxEventProto::BLANK;

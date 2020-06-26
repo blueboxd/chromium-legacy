@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -22,7 +23,6 @@
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/embedder/switches.h"
-#include "ui/base/buildflags.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "components/upload_list/crash_upload_list.h"
@@ -107,7 +107,7 @@ void ChromeCrashReporterClient::GetProductNameAndVersion(
   *product_name = "Chrome_Android";
 #elif defined(OS_CHROMEOS)
   *product_name = "Chrome_ChromeOS";
-#elif BUILDFLAG(LACROS)
+#elif BUILDFLAG(IS_LACROS)
   *product_name = "Chrome_Lacros";
 #else  // OS_LINUX
 #if !defined(ADDRESS_SANITIZER)

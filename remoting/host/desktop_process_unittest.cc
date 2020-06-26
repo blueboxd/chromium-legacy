@@ -248,12 +248,13 @@ void DesktopProcessTest::PostDisconnectChannels() {
 
 void DesktopProcessTest::RunDesktopProcess() {
   base::RunLoop run_loop;
-  base::Closure quit_ui_task_runner =
-      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-                 task_environment_.GetMainThreadTaskRunner(), FROM_HERE,
-                 run_loop.QuitClosure());
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      task_environment_.GetMainThreadTaskRunner(), quit_ui_task_runner);
+  base::OnceClosure quit_ui_task_runner = base::BindOnce(
+      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+      task_environment_.GetMainThreadTaskRunner(), FROM_HERE,
+      run_loop.QuitClosure());
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner =
+      new AutoThreadTaskRunner(task_environment_.GetMainThreadTaskRunner(),
+                               std::move(quit_ui_task_runner));
 
   io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
                                                base::MessagePumpType::IO);

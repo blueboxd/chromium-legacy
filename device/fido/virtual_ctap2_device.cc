@@ -1031,6 +1031,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   }
 
   registration.protection = cred_protect;
+
+  if (request.hmac_secret) {
+    registration.hmac_key.emplace();
+    RAND_bytes(registration.hmac_key->first.data(),
+               registration.hmac_key->first.size());
+    RAND_bytes(registration.hmac_key->second.data(),
+               registration.hmac_key->second.size());
+  }
+
   StoreNewKey(key_handle, std::move(registration));
   return CtapDeviceResponseCode::kSuccess;
 }
@@ -1152,13 +1161,57 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
   }
 
-  base::Optional<cbor::Value> extensions;
-  cbor::Value::MapValue extensions_map;
-  if (config_.add_extra_extension) {
-    extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
-  }
-  if (!extensions_map.empty()) {
-    extensions = cbor::Value(std::move(extensions_map));
+  base::Optional<std::array<uint8_t, SHA256_DIGEST_LENGTH>> hmac_shared_key;
+  base::Optional<std::array<uint8_t, 32>> hmac_salt1;
+  base::Optional<std::array<uint8_t, 32>> hmac_salt2;
+
+  if (request.hmac_secret) {
+    if (!mutable_state()->ecdh_key) {
+      // Platform did not fetch the authenticator ECDH key first.
+      NOTREACHED();
+      return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+    }
+
+    const auto& x962 = request.hmac_secret->public_key_x962;
+    bssl::UniquePtr<EC_GROUP> p256(
+        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    bssl::UniquePtr<EC_POINT> platform_point(EC_POINT_new(p256.get()));
+    if (!EC_POINT_oct2point(p256.get(), platform_point.get(), x962.data(),
+                            x962.size(), /*ctx=*/nullptr)) {
+      NOTREACHED();
+      return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+    }
+
+    uint8_t shared_key[SHA256_DIGEST_LENGTH];
+    pin::CalculateSharedKey(mutable_state()->ecdh_key.get(),
+                            platform_point.get(), shared_key);
+
+    const auto& encrypted_salts = request.hmac_secret->encrypted_salts;
+    if (encrypted_salts.size() != 32 && encrypted_salts.size() != 64) {
+      NOTREACHED();
+      return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+    }
+
+    uint8_t salts[64];
+    pin::Decrypt(shared_key, encrypted_salts, salts);
+
+    if (pin::MakePinAuth(shared_key, encrypted_salts) !=
+        request.hmac_secret->salts_auth) {
+      NOTREACHED();
+      return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+    }
+
+    hmac_salt1.emplace();
+    memcpy(hmac_salt1->data(), salts, hmac_salt1->size());
+    if (encrypted_salts.size() == 64) {
+      hmac_salt2.emplace();
+      memcpy(hmac_salt2->data(), salts + hmac_salt1->size(),
+             hmac_salt2->size());
+    }
+
+    hmac_shared_key.emplace();
+    CHECK_EQ(hmac_shared_key->size(), sizeof(shared_key));
+    memcpy(hmac_shared_key->data(), shared_key, sizeof(shared_key));
   }
 
   // This implementation does not sort credentials by creation time as the spec
@@ -1176,10 +1229,51 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
           registration.second->private_key->GetPublicKey()));
     }
 
+    cbor::Value::MapValue extensions_map;
+    if (config_.add_extra_extension) {
+      extensions_map.emplace(cbor::Value("unsolicited"), cbor::Value(42));
+    }
+
+    if (hmac_salt1 && registration.second->hmac_key) {
+      const std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>>&
+          hmac_keys = *registration.second->hmac_key;
+      const std::array<uint8_t, 32>& hmac_key =
+          user_verified ? hmac_keys.second : hmac_keys.first;
+
+      unsigned hmac_out_length;
+      uint8_t hmac_result[SHA256_DIGEST_LENGTH];
+      std::vector<uint8_t> outputs;
+
+      HMAC(EVP_sha256(), hmac_key.data(), hmac_key.size(), hmac_salt1->data(),
+           hmac_salt1->size(), hmac_result, &hmac_out_length);
+      DCHECK_EQ(hmac_out_length, sizeof(hmac_result));
+      outputs.insert(outputs.end(), &hmac_result[0],
+                     &hmac_result[sizeof(hmac_result)]);
+
+      if (hmac_salt2) {
+        HMAC(EVP_sha256(), hmac_key.data(), hmac_key.size(), hmac_salt2->data(),
+             hmac_salt2->size(), hmac_result, &hmac_out_length);
+        DCHECK_EQ(hmac_out_length, sizeof(hmac_result));
+        outputs.insert(outputs.end(), &hmac_result[0],
+                       &hmac_result[sizeof(hmac_result)]);
+      }
+
+      std::vector<uint8_t> encrypted_outputs(outputs.size());
+      pin::Encrypt(hmac_shared_key->data(), outputs, encrypted_outputs.data());
+
+      extensions_map.emplace(kExtensionHmacSecret,
+                             std::move(encrypted_outputs));
+    }
+
+    base::Optional<cbor::Value> extensions;
+    if (!extensions_map.empty()) {
+      extensions.emplace(std::move(extensions_map));
+    }
+
     AuthenticatorData authenticator_data(
         rp_id_hash, /*user_present=*/true, user_verified,
         registration.second->counter, std::move(opt_attested_cred_data),
-        extensions ? base::make_optional(extensions->Clone()) : base::nullopt);
+        std::move(extensions));
 
     base::Optional<std::string> opt_android_client_data_json;
     if (request.android_client_data_ext &&
@@ -1274,12 +1368,6 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetNextAssertion(
 base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
-  if (device_info_->options.client_pin_availability ==
-          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported &&
-      !config_.pin_uv_auth_token_support) {
-    return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
-  }
-
   const auto& cbor_request = cbor::Reader::Read(request_bytes);
   if (!cbor_request || !cbor_request->is_map()) {
     return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
@@ -1303,6 +1391,18 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
   }
   const int64_t subcommand = subcommand_it->second.GetUnsigned();
 
+  if (device_info_->options.client_pin_availability ==
+          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported &&
+      !config_.pin_uv_auth_token_support &&
+      // hmac_secret requires the platform to fetch the key-agreement key and
+      // so, presumably, devices that support it must support at least that
+      // subcommand of PIN support too.
+      (!config_.hmac_secret_support ||
+       subcommand !=
+           static_cast<int>(device::pin::Subcommand::kGetKeyAgreement))) {
+    return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
+  }
+
   cbor::Value::MapValue response_map;
   switch (subcommand) {
     case static_cast<int>(device::pin::Subcommand::kGetRetries):
@@ -1319,8 +1419,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
       bssl::UniquePtr<EC_KEY> key(
           EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
       CHECK(EC_KEY_generate_key(key.get()));
+      std::array<uint8_t, kP256X962Length> x962;
+      CHECK_EQ(x962.size(),
+               EC_POINT_point2oct(EC_KEY_get0_group(key.get()),
+                                  EC_KEY_get0_public_key(key.get()),
+                                  POINT_CONVERSION_UNCOMPRESSED, x962.data(),
+                                  x962.size(), nullptr /* BN_CTX */));
+
       response_map.emplace(static_cast<int>(pin::ResponseKey::kKeyAgreement),
-                           pin::EncodeCOSEPublicKey(key.get()));
+                           pin::EncodeCOSEPublicKey(x962));
       mutable_state()->ecdh_key = std::move(key);
       break;
     }

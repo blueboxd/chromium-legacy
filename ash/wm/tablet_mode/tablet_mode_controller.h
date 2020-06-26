@@ -28,6 +28,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -205,7 +206,6 @@ class ASH_EXPORT TabletModeController
 
  private:
   class DestroyObserver;
-  class TabletModeTransitionFpsCounter;
   class ScopedShelfHider;
   friend class TabletModeControllerTestApi;
 
@@ -449,7 +449,8 @@ class ASH_EXPORT TabletModeController
   // does not show the old version of shelf in the background).
   std::unique_ptr<ScopedShelfHider> shelf_hider_;
 
-  std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
+  // Tracks and record transition smoothness.
+  base::Optional<ui::ThroughputTracker> transition_tracker_;
 
   base::CancelableOnceCallback<void(std::unique_ptr<viz::CopyOutputResult>)>
       screenshot_taken_callback_;

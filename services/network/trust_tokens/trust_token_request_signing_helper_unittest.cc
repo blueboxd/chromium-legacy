@@ -593,4 +593,47 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
 }
 
+// Test a round-trip sign-and-verify with signed headers when adding additional
+// signing data.
+TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyAdditionalSigningData) {
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
+
+  TrustTokenRequestSigningHelper::Params params(
+      *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
+      *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")));
+  params.sign_request_data = mojom::TrustTokenSignRequestData::kHeadersOnly;
+  params.additional_signing_data = "some additional data to sign";
+
+  SignedTrustTokenRedemptionRecord record;
+  record.set_body("I am a signed token redemption record");
+  record.set_public_key("key");
+  store->SetRedemptionRecord(params.issuer, params.toplevel, record);
+
+  auto canonicalizer = std::make_unique<TrustTokenRequestCanonicalizer>();
+  TrustTokenRequestSigningHelper helper(store.get(), std::move(params),
+                                        std::make_unique<IdentitySigner>(),
+                                        std::move(canonicalizer));
+
+  auto my_request = MakeURLRequest("https://destination.com/");
+  my_request->set_initiator(
+      url::Origin::Create(GURL("https://initiator.com/")));
+  mojom::TrustTokenOperationStatus result =
+      ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
+
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  ASSERT_NO_FATAL_FAILURE(
+      ReconstructSigningDataAndAssertSignatureVerifies<IdentitySigner>(
+          my_request.get()));
+
+  std::string signature_string;
+  ASSERT_NO_FATAL_FAILURE(
+      AssertHasSignatureAndExtract(*my_request, &signature_string));
+  std::string retrieved_additional_signing_data;
+  ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
+      signature_string, "sec-trust-tokens-additional-signing-data",
+      &retrieved_additional_signing_data));
+
+  EXPECT_EQ(retrieved_additional_signing_data, "some additional data to sign");
+}
+
 }  // namespace network

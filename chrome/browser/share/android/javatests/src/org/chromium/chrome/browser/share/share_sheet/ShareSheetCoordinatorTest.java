@@ -92,7 +92,8 @@ public final class ShareSheetCoordinatorTest {
 
         List<PropertyModel> propertyModels =
                 mShareSheetCoordinator.createTopRowPropertyModels(activity,
-                        /*shareParams=*/null, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
+                        /*shareParams=*/null, /*chromeShareExtras=*/null,
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
         assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 

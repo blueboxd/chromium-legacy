@@ -175,6 +175,14 @@ class TabRestoreTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
+  void GoForward(Browser* browser) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    chrome::GoForward(browser, WindowOpenDisposition::CURRENT_TAB);
+    observer.Wait();
+  }
+
   void EnsureTabFinishedRestoring(content::WebContents* tab) {
     content::NavigationController* controller = &tab->GetController();
     if (!controller->NeedsReload() && !controller->GetPendingEntry() &&
@@ -1063,4 +1071,116 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   Browser* restored_window = GetBrowser(1);
   ASSERT_EQ(base::nullopt,
             restored_window->tab_strip_model()->GetTabGroupForTab(0));
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, DoesNotRestoreReaderModePages) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+  EXPECT_EQ(GURL("chrome-distiller://any"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Close it. Restoring restores the tab which came before.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DoesNotRestoreReaderModePageBehindInHistory) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate to some random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example1.com"));
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+
+  // Navigate to another random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example2.com"));
+
+  // Close it. Restoring restores example2 site.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(GURL("https://www.example2.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Going back should bring us to example1, Reader Mode has been omitted.
+  ASSERT_TRUE(chrome::CanGoBack(browser()));
+  GoBack(browser());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  GoBack(browser());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       DoesNotRestoreReaderModePageAheadInHistory) {
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  int tab_count = AddSomeTabs(browser(), 1);
+  int interesting_tab = tab_count - 1;
+  ASSERT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Navigate to some random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example1.com"));
+
+  // Navigate the tab to a reader mode page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome-distiller://any"));
+
+  // Navigate to another random page.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://www.example2.com"));
+
+  // Go back to the example1.
+  GoBack(browser());
+  GoBack(browser());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Close it. Restoring restores example1 site.
+  CloseTab(interesting_tab);
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
+
+  ASSERT_NO_FATAL_FAILURE(RestoreTab(0, interesting_tab));
+
+  // And make sure everything looks right.
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(interesting_tab, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(GURL("https://www.example1.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Going forward should bring us to example2, Reader Mode has been omitted.
+  ASSERT_TRUE(chrome::CanGoForward(browser()));
+  GoForward(browser());
+  EXPECT_EQ(GURL("https://www.example2.com"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  GoBack(browser());
+  GoBack(browser());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }

@@ -61,6 +61,7 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   void SetShowingContextMenu(bool showing) override;
   void DisplayCursor(const content::WebCursor& cursor) override;
   void SetCursorLocked(bool locked) override;
+  void SetCursorLockedUnacceleratedMovement(bool unaccelerated) override;
   void ShowDictionaryOverlayForSelection() override;
   void ShowDictionaryOverlay(ui::mojom::AttributedStringPtr attributed_string,
                              const gfx::Point& baseline_point) override;

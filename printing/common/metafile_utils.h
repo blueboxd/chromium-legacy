@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -18,23 +19,31 @@
 namespace printing {
 
 using ContentToProxyIdMap = base::flat_map<uint32_t, int>;
+using ContentProxySet = base::flat_set<uint32_t>;
 
 // Stores the mapping between a content's unique id and its actual content.
 using PictureDeserializationContext =
     base::flat_map<uint32_t, sk_sp<SkPicture>>;
+using TypefaceDeserializationContext =
+    base::flat_map<uint32_t, sk_sp<SkTypeface>>;
 
 // Stores the mapping between content's unique id and its corresponding frame
 // proxy id.
 using PictureSerializationContext = ContentToProxyIdMap;
 
+// Stores the set of typeface unique ids used by the picture frame content.
+using TypefaceSerializationContext = ContentProxySet;
+
 sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
                                   const ui::AXTreeUpdate& accessibility_tree,
                                   SkWStream* stream);
 
-SkSerialProcs SerializationProcs(PictureSerializationContext* picture_ctx);
+SkSerialProcs SerializationProcs(PictureSerializationContext* picture_ctx,
+                                 TypefaceSerializationContext* typeface_ctx);
 
 SkDeserialProcs DeserializationProcs(
-    PictureDeserializationContext* picture_ctx);
+    PictureDeserializationContext* picture_ctx,
+    TypefaceDeserializationContext* typeface_ctx);
 
 }  // namespace printing
 

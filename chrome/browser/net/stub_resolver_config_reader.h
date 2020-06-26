@@ -6,10 +6,16 @@
 #define CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_
 
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
+
+#if defined(OS_ANDROID)
+#include "base/memory/weak_ptr.h"
+#endif
 
 class PrefRegistrySimple;
 class PrefService;
@@ -28,7 +34,7 @@ class StubResolverConfigReader {
   StubResolverConfigReader(const StubResolverConfigReader&) = delete;
   StubResolverConfigReader& operator=(const StubResolverConfigReader&) = delete;
 
-  virtual ~StubResolverConfigReader() = default;
+  virtual ~StubResolverConfigReader();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -51,15 +57,22 @@ class StubResolverConfigReader {
   // Updates the network service with the current configuration.
   void UpdateNetworkService(bool record_metrics);
 
-  // Returns true if there are any active machine level policies or if the
-  // machine is domain joined. This special logic is used to disable DoH by
-  // default for Desktop platforms (the enterprise policy field
-  // default_for_enterprise_users only applies to ChromeOS). We don't attempt
-  // enterprise detection on Android at this time.
+  // Returns true if there are any active machine level policies, if the
+  // machine is domain joined (Windows), or any device or profile owner apps are
+  // installed (Android). This special logic is used to disable DoH by default
+  // for Desktop platforms and Android. ChromeOS is handled by the enterprise
+  // policy field "default_for_enterprise_users".
   virtual bool ShouldDisableDohForManaged();
 
   // Returns true if there are parental controls detected on the device.
   virtual bool ShouldDisableDohForParentalControls();
+
+#if defined(OS_ANDROID)
+  // Updates the android owned state and network service if the device/prfile is
+  // owned.
+  void OnAndroidOwnedStateCheckComplete(bool has_profile_owner,
+                                        bool has_device_owner);
+#endif
 
  private:
   void OnParentalControlsDelayTimer();
@@ -81,7 +94,20 @@ class StubResolverConfigReader {
   // expiration of the delay timer or because of a forced check.
   bool parental_controls_checked_ = false;
 
+  // This object lives on the UI thread, but it's possible for it to be created
+  // before BrowserMainLoop::CreateThreads() is called which would cause a
+  // DCHECK for the UI thread to fail (as the UI thread hasn't been
+  // named yet). Using a sequence checker works around this.
+  SEQUENCE_CHECKER(sequence_checker_);
+
   PrefChangeRegistrar pref_change_registrar_;
+
+#if defined(OS_ANDROID)
+  // Whether or not an Android device or profile is owned.
+  // A nullopt indicates this value has not been determined yet.
+  base::Optional<bool> android_has_owner_ = base::nullopt;
+  base::WeakPtrFactory<StubResolverConfigReader> weak_factory_{this};
+#endif
 };
 
 #endif  // CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_

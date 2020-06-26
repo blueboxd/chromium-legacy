@@ -19,7 +19,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/android/chrome_jni_headers/PaintPreviewDemoService_jni.h"
+#include "chrome/browser/paint_preview/android/jni_headers/PaintPreviewDemoService_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;

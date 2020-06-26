@@ -26,7 +26,6 @@
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_task_provider.h"
 #include "chrome/browser/task_manager/providers/worker_task_provider.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -93,22 +92,14 @@ TaskManagerImpl::TaskManagerImpl()
   // section. All of them should be added as primary subproviders for the
   // FallbackTaskProvider, so that a fallback task can be shown for a renderer
   // process if no other provider is shown for it.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTaskManagerShowExtraRenderers)) {
-    task_providers_.push_back(
-        std::make_unique<SpareRenderProcessHostTaskProvider>());
-    task_providers_.push_back(std::make_unique<WorkerTaskProvider>());
-    task_providers_.push_back(std::make_unique<WebContentsTaskProvider>());
-  } else {
-    std::vector<std::unique_ptr<TaskProvider>> primary_subproviders;
-    primary_subproviders.push_back(
-        std::make_unique<SpareRenderProcessHostTaskProvider>());
-    primary_subproviders.push_back(std::make_unique<WorkerTaskProvider>());
-    primary_subproviders.push_back(std::make_unique<WebContentsTaskProvider>());
-    task_providers_.push_back(std::make_unique<FallbackTaskProvider>(
-        std::move(primary_subproviders),
-        std::make_unique<RenderProcessHostTaskProvider>()));
-  }
+  std::vector<std::unique_ptr<TaskProvider>> primary_subproviders;
+  primary_subproviders.push_back(
+      std::make_unique<SpareRenderProcessHostTaskProvider>());
+  primary_subproviders.push_back(std::make_unique<WorkerTaskProvider>());
+  primary_subproviders.push_back(std::make_unique<WebContentsTaskProvider>());
+  task_providers_.push_back(std::make_unique<FallbackTaskProvider>(
+      std::move(primary_subproviders),
+      std::make_unique<RenderProcessHostTaskProvider>()));
 
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAvailable())

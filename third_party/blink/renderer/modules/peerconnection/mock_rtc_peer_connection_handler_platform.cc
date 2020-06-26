@@ -7,10 +7,6 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
@@ -368,8 +364,9 @@ MockRTCPeerConnectionHandlerPlatform::AddTransceiverWithKind(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
-MockRTCPeerConnectionHandlerPlatform::AddTrack(MediaStreamComponent* component,
-                                               const Vector<WebMediaStream>&) {
+MockRTCPeerConnectionHandlerPlatform::AddTrack(
+    MediaStreamComponent* component,
+    const MediaStreamDescriptorVector&) {
   transceivers_.push_back(std::unique_ptr<DummyRTCRtpTransceiverPlatform>(
       new DummyRTCRtpTransceiverPlatform(component->Source()->GetType(),
                                          component)));

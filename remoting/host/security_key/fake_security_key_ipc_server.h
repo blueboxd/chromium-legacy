@@ -39,8 +39,8 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& send_message_callback,
-      const base::Closure& connect_callback,
-      const base::Closure& channel_closed_callback);
+      base::OnceClosure connect_callback,
+      base::OnceClosure channel_closed_callback);
   ~FakeSecurityKeyIpcServer() override;
 
   // SecurityKeyIpcServer interface.
@@ -71,7 +71,8 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
   // Signaled when a security key response message is received.
   // NOTE: Ths callback will be used instead of the IPC channel for response
   // notifications if it is set.
-  void set_send_response_callback(const base::Closure& send_response_callback) {
+  void set_send_response_callback(
+      const base::RepeatingClosure& send_response_callback) {
     send_response_callback_ = send_response_callback;
   }
 
@@ -90,13 +91,13 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
   SecurityKeyAuthHandler::SendMessageCallback send_message_callback_;
 
   // Signaled when the IPC channel is connected.
-  base::Closure connect_callback_;
+  base::OnceClosure connect_callback_;
 
   // Signaled when the IPC channel is closed.
-  base::Closure channel_closed_callback_;
+  base::OnceClosure channel_closed_callback_;
 
   // Signaled when a security key response message is received.
-  base::Closure send_response_callback_;
+  base::RepeatingClosure send_response_callback_;
 
   // Used for sending/receiving security key messages between processes.
   std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
@@ -123,8 +124,8 @@ class FakeSecurityKeyIpcServerFactory : public SecurityKeyIpcServerFactory {
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
-      const base::Closure& connect_callback,
-      const base::Closure& done_callback) override;
+      base::OnceClosure connect_callback,
+      base::OnceClosure done_callback) override;
 
   // Provide a WeakPtr reference to the FakeSecurityKeyIpcServer object
   // created for the |connection_id| IPC channel.

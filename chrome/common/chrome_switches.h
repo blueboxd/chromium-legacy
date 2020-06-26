@@ -168,7 +168,6 @@ extern const char kStartStackProfilerBrowserTest[];
 extern const char kStoragePressureNotificationInterval[];
 extern const char kSupervisedUserId[];
 extern const char kSystemLogUploadFrequency[];
-extern const char kTaskManagerShowExtraRenderers[];
 extern const char kTestName[];
 extern const char kTrustedDownloadSources[];
 extern const char kTryChromeAgain[];

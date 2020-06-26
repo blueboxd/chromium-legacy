@@ -4,8 +4,12 @@
 # found in the LICENSE file.
 
 from __future__ import print_function
-from StringIO import StringIO
 import argparse, os, sys, json, subprocess, pickle
+
+try:
+  from StringIO import StringIO  # Python 2
+except:
+  from io import StringIO
 
 parser = argparse.ArgumentParser(
   description =

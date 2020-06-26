@@ -51,10 +51,10 @@ OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
   // Other code in Blink watches for destruction of the context; be
   // robust here as well.
   if (!context->IsContextDestroyed()) {
-    if (context->IsDocument()) {
+    if (auto* window = DynamicTo<LocalDOMWindow>(context)) {
       // If this OffscreenCanvas is being created in the context of a
       // cross-origin iframe, it should prefer to use the low-power GPU.
-      LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
+      LocalFrame* frame = window->GetFrame();
       if (!(frame && frame->IsCrossOriginToMainFrame())) {
         AllowHighPerformancePowerPreference();
       }

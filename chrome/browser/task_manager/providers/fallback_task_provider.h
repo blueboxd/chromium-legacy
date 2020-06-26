@@ -18,8 +18,7 @@ namespace task_manager {
 // This FallbackTaskProvider is created to manage a hierarchy of subproviders.
 // Tasks from the primary subproviders are always shown in the Task Manager.
 // Tasks from the secondary subprovider are only shown when no task from any of
-// the primary providers exists for that process. It is currently behind the
-// command line flag --task-manager-show-extra-renderers.
+// the primary providers exists for that process.
 class FallbackTaskProvider : public TaskProvider {
  public:
   FallbackTaskProvider(
@@ -70,6 +69,11 @@ class FallbackTaskProvider : public TaskProvider {
   // cancel showing a task that has been removed before it has been shown.
   std::map<Task*, base::WeakPtrFactory<FallbackTaskProvider>>
       pending_shown_tasks_;
+
+  // This flag specifies whether the use of a fallback task is an error. For
+  // releases it is, but the checking needs to be turned off during testing of
+  // this class itself.
+  bool allow_fallback_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackTaskProvider);
 };

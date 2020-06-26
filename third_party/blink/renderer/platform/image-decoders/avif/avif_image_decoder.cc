@@ -355,7 +355,7 @@ void AVIFImageDecoder::DecodeToYUV() {
 
   // libavif cannot decode to an external buffer. So we need to copy from
   // libavif's internal buffer to |image_planes_|.
-  // TODO(wtc): Enhance libavif to decode to an external buffer.
+  // TODO(crbug.com/1099825): Enhance libavif to decode to an external buffer.
   if (!DecodeImage(0)) {
     SetFailed();
     return;
@@ -679,7 +679,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
       YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
                                              premultiply_alpha, rgba_hhhh);
     } else {
-      // TODO: Add fast path for 10bit 4:2:0 using libyuv.
+      // TODO(crbug.com/1099820): Add fast path for 10bit 4:2:0 using libyuv.
       YUVAToRGBA<ColorType::kColor, uint16_t>(image, color_transform_.get(),
                                               premultiply_alpha, rgba_hhhh);
     }

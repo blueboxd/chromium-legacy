@@ -37,14 +37,13 @@ WebViewFrameWidget::WebViewFrameWidget(
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close(
-    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-    base::OnceCallback<void()> cleanup_task) {
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
   GetPage()->WillCloseAnimationHost(nullptr);
   // Closing the WebViewFrameWidget happens in response to the local main frame
   // being detached from the Page/WebViewImpl.
   web_view_->SetMainFrameWidgetBase(nullptr);
   web_view_ = nullptr;
-  WebFrameWidgetBase::Close(std::move(cleanup_runner), std::move(cleanup_task));
+  WebFrameWidgetBase::Close(std::move(cleanup_runner));
   self_keep_alive_.Clear();
 }
 
@@ -173,6 +172,10 @@ void WebViewFrameWidget::MouseCaptureLost() {
 void WebViewFrameWidget::FocusChanged(bool enable) {
   web_view_->SetFocus(enable);
   Client()->FocusChanged(enable);
+}
+
+bool WebViewFrameWidget::ShouldHandleImeEvents() {
+  return HasFocus();
 }
 
 bool WebViewFrameWidget::SelectionBounds(WebRect& anchor,

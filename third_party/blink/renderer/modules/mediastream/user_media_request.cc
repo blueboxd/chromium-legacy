@@ -512,14 +512,13 @@ void UserMediaRequest::Start() {
     controller_->RequestUserMedia(this);
 }
 
-void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor,
-                               bool pan_tilt_zoom_allowed) {
+void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor) {
   DCHECK(!is_resolved_);
   if (!GetExecutionContext())
     return;
 
-  MediaStream* stream = MediaStream::Create(
-      GetExecutionContext(), stream_descriptor, pan_tilt_zoom_allowed);
+  MediaStream* stream =
+      MediaStream::Create(GetExecutionContext(), stream_descriptor);
 
   MediaStreamTrackVector audio_tracks = stream->getAudioTracks();
   for (MediaStreamTrackVector::iterator iter = audio_tracks.begin();

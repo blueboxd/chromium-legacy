@@ -1195,4 +1195,68 @@ TEST_F(ClientSideDetectionHostTest, TestSendModelToRenderFrame) {
   fake_phishing_detector_.Reset();
 }
 
+TEST_F(ClientSideDetectionHostTest, ClearsScreenshotData) {
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
+                                    false);
+
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(web_contents());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://phishingurl.com/");
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
+  verdict.set_screenshot_phash("screenshot_phash");
+  verdict.set_phash_dimension_size(48);
+
+  ClientPhishingRequest* request;
+
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(Invoke([&](const BrowseInfo* into,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        std::move(callback).Run(true, std::move(request));
+      }));
+  EXPECT_CALL(*csd_service_, SendClientReportPhishingRequest(_, _, _, _))
+      .WillOnce(SaveArg<0>(&request));
+  PhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
+  EXPECT_FALSE(request->has_phash_dimension_size());
+  EXPECT_FALSE(request->has_screenshot_phash());
+  delete request;
+}
+
+TEST_F(ClientSideDetectionHostTest, AllowsScreenshotDataForSBER) {
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
+                                    true);
+
+  MockBrowserFeatureExtractor* mock_extractor =
+      new StrictMock<MockBrowserFeatureExtractor>(web_contents());
+  SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
+
+  ClientPhishingRequest verdict;
+  verdict.set_url("http://phishingurl.com/");
+  verdict.set_client_score(1.0f);
+  verdict.set_is_phishing(true);
+  verdict.set_screenshot_phash("screenshot_phash");
+  verdict.set_phash_dimension_size(48);
+
+  ClientPhishingRequest* request;
+
+  EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
+      .WillOnce(Invoke([&](const BrowseInfo* into,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        std::move(callback).Run(true, std::move(request));
+      }));
+  EXPECT_CALL(*csd_service_, SendClientReportPhishingRequest(_, _, _, _))
+      .WillOnce(SaveArg<0>(&request));
+  PhishingDetectionDone(verdict.SerializeAsString());
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
+  EXPECT_TRUE(request->has_phash_dimension_size());
+  EXPECT_TRUE(request->has_screenshot_phash());
+  delete request;
+}
+
 }  // namespace safe_browsing

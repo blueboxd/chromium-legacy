@@ -38,6 +38,10 @@
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace gpu {
 
 GpuMemoryBufferSupport::GpuMemoryBufferSupport() {
@@ -151,10 +155,10 @@ bool GpuMemoryBufferSupport::IsConfigurationSupportedForTest(
   if (type == GetNativeGpuMemoryBufferType()) {
 #if defined(USE_X11)
     // On X11, we require GPUInfo to determine configuration support.
-    return false;
-#else
-    return IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+    if (!features::IsUsingOzonePlatform())
+      return false;
 #endif
+    return IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
   }
 
   if (type == gfx::SHARED_MEMORY_BUFFER) {

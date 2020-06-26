@@ -436,6 +436,12 @@ bool RendererBlinkPlatformImpl::IsGpuCompositingDisabled() {
   return !thread || thread->IsGpuCompositingDisabled();
 }
 
+#if defined(OS_ANDROID)
+bool RendererBlinkPlatformImpl::IsSynchronousCompositingEnabled() {
+  return GetContentClient()->UsingSynchronousCompositing();
+}
+#endif
+
 bool RendererBlinkPlatformImpl::IsThreadedAnimationEnabled() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread ? thread->IsThreadedAnimationEnabled() : true;

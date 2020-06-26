@@ -51,6 +51,10 @@ constexpr size_t kMinBytes = 4;
 // accept.
 constexpr size_t kMaxBytes = 63;
 
+// EncodeCOSEPublicKey converts an X9.62 public key to a COSE structure.
+cbor::Value::MapValue EncodeCOSEPublicKey(
+    base::span<const uint8_t, kP256X962Length> x962);
+
 // PinRetriesRequest asks an authenticator for the number of remaining PIN
 // attempts before the device is locked.
 struct PinRetriesRequest {};
@@ -92,6 +96,9 @@ struct KeyAgreementResponse {
       const base::Optional<cbor::Value>& cbor);
   static base::Optional<KeyAgreementResponse> ParseFromCOSE(
       const cbor::Value::MapValue& cose_key);
+
+  // X962 returns the public key from the response in X9.62 form.
+  std::array<uint8_t, kP256X962Length> X962() const;
 
   // x and y contain the big-endian coordinates of a P-256 point. It is ensured
   // that this is a valid point on the curve.
@@ -163,7 +170,7 @@ class TokenRequest {
   explicit TokenRequest(const KeyAgreementResponse& peer_key);
   ~TokenRequest();
   std::array<uint8_t, 32> shared_key_;
-  cbor::Value::MapValue cose_key_;
+  std::array<uint8_t, kP256X962Length> public_key_;
 };
 
 class PinTokenRequest : public TokenRequest {

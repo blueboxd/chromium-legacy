@@ -63,10 +63,9 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
   ~MockOptimizationGuideKeyedService() override = default;
 
   MOCK_METHOD0(GetHintsManager, OptimizationGuideHintsManager*());
-  MOCK_METHOD2(
-      RegisterOptimizationTypesAndTargets,
-      void(const std::vector<optimization_guide::proto::OptimizationType>&,
-           const std::vector<optimization_guide::proto::OptimizationTarget>&));
+  MOCK_METHOD1(
+      RegisterOptimizationTypes,
+      void(const std::vector<optimization_guide::proto::OptimizationType>&));
 };
 
 class OptimizationGuideBridgeTest : public testing::Test {
@@ -112,11 +111,10 @@ class OptimizationGuideBridgeTest : public testing::Test {
     optimization_guide_service_.reset();
   }
 
-  void RegisterOptimizationTypesAndTargets() {
-    optimization_guide_keyed_service_->RegisterOptimizationTypesAndTargets(
+  void RegisterOptimizationTypes() {
+    optimization_guide_keyed_service_->RegisterOptimizationTypes(
         {optimization_guide::proto::DEFER_ALL_SCRIPT,
-         optimization_guide::proto::PERFORMANCE_HINTS},
-        {});
+         optimization_guide::proto::PERFORMANCE_HINTS});
   }
 
  protected:
@@ -138,16 +136,13 @@ class OptimizationGuideBridgeTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 };
 
-TEST_F(OptimizationGuideBridgeTest, RegisterOptimizationTypesAndTargets) {
-  EXPECT_CALL(
-      *optimization_guide_keyed_service_,
-      RegisterOptimizationTypesAndTargets(
-          UnorderedElementsAre(optimization_guide::proto::PERFORMANCE_HINTS,
-                               optimization_guide::proto::DEFER_ALL_SCRIPT),
-          UnorderedElementsAre(optimization_guide::proto::
-                                   OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)));
+TEST_F(OptimizationGuideBridgeTest, RegisterOptimizationTypes) {
+  EXPECT_CALL(*optimization_guide_keyed_service_,
+              RegisterOptimizationTypes(UnorderedElementsAre(
+                  optimization_guide::proto::PERFORMANCE_HINTS,
+                  optimization_guide::proto::DEFER_ALL_SCRIPT)));
 
-  Java_OptimizationGuideBridgeNativeUnitTest_testRegisterOptimizationTypesAndTargets(
+  Java_OptimizationGuideBridgeNativeUnitTest_testRegisterOptimizationTypes(
       env_, j_test_);
 }
 
@@ -155,13 +150,13 @@ TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationPreInit) {
   EXPECT_CALL(*optimization_guide_keyed_service_, GetHintsManager())
       .WillOnce(Return(nullptr));
 
-  RegisterOptimizationTypesAndTargets();
+  RegisterOptimizationTypes();
   Java_OptimizationGuideBridgeNativeUnitTest_testCanApplyOptimizationPreInit(
       env_, j_test_);
 }
 
 TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationHasHint) {
-  RegisterOptimizationTypesAndTargets();
+  RegisterOptimizationTypes();
   EXPECT_CALL(*optimization_guide_keyed_service_, GetHintsManager())
       .Times(2)
       .WillRepeatedly(Return(optimization_guide_hints_manager_.get()));

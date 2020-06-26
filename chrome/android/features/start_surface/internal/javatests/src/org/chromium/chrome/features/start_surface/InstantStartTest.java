@@ -71,6 +71,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelMetadata;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
@@ -156,9 +157,8 @@ public class InstantStartTest {
     }
 
     private void createCorruptedTabStateFile() throws IOException {
-        File stateFile =
-                new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
-                        TabbedModeTabPersistencePolicy.getStateFileName(0));
+        File stateFile = new File(TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
+                TabbedModeTabPersistencePolicy.getStateFileName(0));
         FileOutputStream output = new FileOutputStream(stateFile);
         output.write(0);
         output.close();
@@ -171,8 +171,7 @@ public class InstantStartTest {
      */
     private static void saveTabState(int tabId, boolean encrypted) {
         File file = TabStateFileManager.getTabStateFile(
-                TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(), tabId,
-                encrypted);
+                TabStateDirectory.getOrCreateTabbedModeStateDirectory(), tabId, encrypted);
         writeFile(file, M26_GOOGLE_COM.encodedTabState);
 
         TabState tabState = TabStateFileManager.restoreTabState(file, false);
@@ -217,9 +216,8 @@ public class InstantStartTest {
 
         byte[] listData = TabPersistentStore.serializeMetadata(normalInfo, incognitoInfo, null);
 
-        File stateFile =
-                new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
-                        TabbedModeTabPersistencePolicy.getStateFileName(0));
+        File stateFile = new File(TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
+                TabbedModeTabPersistencePolicy.getStateFileName(0));
         FileOutputStream output = new FileOutputStream(stateFile);
         output.write(listData);
         output.close();

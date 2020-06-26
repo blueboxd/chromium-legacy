@@ -291,6 +291,10 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
   return *this;
 }
 
+const KURL& DocumentInit::GetCookieUrl() const {
+  return owner_document_ ? owner_document_->CookieURL() : url_;
+}
+
 void DocumentInit::CalculateAndCacheDocumentOrigin() {
   DCHECK(!cached_document_origin_);
   cached_document_origin_ = GetDocumentOrigin();

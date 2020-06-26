@@ -94,7 +94,8 @@ void MouseLockDispatcher::OnChangeLockAck(
 
 void MouseLockDispatcher::OnLockMouseACK(
     blink::mojom::PointerLockResult result,
-    mojo::PendingRemote<blink::mojom::PointerLockContext> context) {
+    blink::CrossVariantMojoRemote<blink::mojom::PointerLockContextInterfaceBase>
+        context) {
   DCHECK(!mouse_lock_context_ && pending_lock_request_);
 
   pending_lock_request_ = false;

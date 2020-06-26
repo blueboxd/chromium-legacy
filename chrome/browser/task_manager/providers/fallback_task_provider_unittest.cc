@@ -84,6 +84,8 @@ class FallbackTaskProviderTest : public testing::Test,
 
     task_provider_ = std::make_unique<FallbackTaskProvider>(
         std::move(primary_subproviders), std::make_unique<FakeTaskProvider>());
+
+    task_provider_->allow_fallback_for_testing_ = true;
   }
 
   ~FallbackTaskProviderTest() override {}
@@ -103,7 +105,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void FirstPrimaryTaskAdded(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->primary_sources_[0]->subprovider())
+        task_provider_->primary_sources_[0]->subprovider())
         ->TaskAdded(task);
   }
 
@@ -111,7 +113,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void FirstPrimaryTaskRemoved(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->primary_sources_[0]->subprovider())
+        task_provider_->primary_sources_[0]->subprovider())
         ->TaskRemoved(task);
   }
 
@@ -119,7 +121,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void SecondPrimaryTaskAdded(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->primary_sources_[1]->subprovider())
+        task_provider_->primary_sources_[1]->subprovider())
         ->TaskAdded(task);
   }
 
@@ -127,7 +129,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void SecondPrimaryTaskRemoved(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->primary_sources_[1]->subprovider())
+        task_provider_->primary_sources_[1]->subprovider())
         ->TaskRemoved(task);
   }
 
@@ -135,7 +137,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void SecondaryTaskAdded(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->secondary_source_->subprovider())
+        task_provider_->secondary_source_->subprovider())
         ->TaskAdded(task);
   }
 
@@ -143,7 +145,7 @@ class FallbackTaskProviderTest : public testing::Test,
   void SecondaryTaskRemoved(Task* task) {
     DCHECK(task);
     static_cast<FakeTaskProvider*>(
-        task_provider_.get()->secondary_source_->subprovider())
+        task_provider_->secondary_source_->subprovider())
         ->TaskRemoved(task);
   }
 
@@ -156,10 +158,10 @@ class FallbackTaskProviderTest : public testing::Test,
     return result;
   }
 
-  void StartUpdating() { task_provider_.get()->SetObserver(this); }
+  void StartUpdating() { task_provider_->SetObserver(this); }
 
   void StopUpdating() {
-    task_provider_.get()->ClearObserver();
+    task_provider_->ClearObserver();
     seen_tasks_.clear();
   }
 

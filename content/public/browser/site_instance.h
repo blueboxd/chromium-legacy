@@ -19,59 +19,72 @@ class RenderProcessHost;
 ///////////////////////////////////////////////////////////////////////////////
 // SiteInstance interface.
 //
-// A SiteInstance represents a group of web pages that must live in the same
-// renderer process.  Pages able to synchronously script each other will always
-// be placed in the same SiteInstance.  Pages unable to synchronously script
-// each other may also be placed in the same SiteInstance, as determined by the
-// process model.
+// In an ideal sense, a SiteInstance represents a group of documents and workers
+// that can share memory with each other, and thus must live in the same
+// renderer process. In the spec, this roughly corresponds to an agent cluster.
+// Documents that are able to synchronously script each other will always be
+// placed in the same SiteInstance.
 //
-// A page's SiteInstance is determined by a combination of where the page comes
-// from (the site) and which frames have references to each other (the
-// instance).  Here, a "site" is similar to the page's origin but includes only
-// the registered domain name and scheme, not the port or subdomains.  This
-// accounts for the fact that changes to document.domain allow similar origin
-// pages with different ports or subdomains to script each other.  An "instance"
-// includes all frames that might be able to script each other because of how
-// they were created (e.g., window.open or targeted links).  We represent
-// instances using the BrowsingInstance class.
+// A document's SiteInstance is determined by a combination of where the
+// document comes from (i.e., a principal based on its "site") and which frames
+// have references to it (i.e., the browsing context group, or "instance"). The
+// site part groups together documents that can script each other, while the
+// instance part allows independent copies of such documents to safely live in
+// different processes.
 //
-// Four process models are currently supported:
+// The principal is usually based on the site of the document's URL: the scheme
+// and "registrable domain" (i.e., eTLD+1), not the full origin. For example,
+// https://dev.chromium.org would have a site of https://chromium.org. This
+// preserves compatibility with document.domain modifications, which allow
+// similar origin pages to script each other. (Note that there are many
+// exceptions, and the policy for determining site URLs is complex.) Meanwhile,
+// an "instance" is represented by the BrowsingInstance class, which includes
+// all frames that can find each other based on how they were created (e.g.,
+// window.open or targeted links).
 //
-// PROCESS PER SITE INSTANCE (the current default): SiteInstances are created
-// (1) when the user manually creates a new tab (which also creates a new
-// BrowsingInstance), and (2) when the user navigates across site boundaries
-// (which uses the same BrowsingInstance).  If the user navigates within a site,
-// the same SiteInstance is used.  Caveat: we currently allow renderer-initiated
-// cross-site navigations to stay in the same SiteInstance, to preserve
-// compatibility in cases like cross-site iframes that open popups.  This means
-// that most SiteInstances will contain pages from multiple sites.
+// In practice, a SiteInstance may contain documents from more than a single
+// site, usually for compatibility or performance reasons. For example, on
+// platforms that do not support out-of-process iframes, cross-site iframes must
+// necessarily be loaded in the same process as their parent document. Chrome's
+// process model uses SiteInstance as the basic primitive for assigning
+// documents to processes, and the process model's behavior is tuned primarily
+// by changing how SiteInstance principals (e.g., site URLs) are defined.
 //
-// SITE PER PROCESS (currently experimental): is the most granular process
-// model and is made possible by our support for out-of-process iframes.  A
-// subframe will be given a different SiteInstance if its site differs from the
-// containing document.  Cross-site navigation of top-level frames or subframes
-// will trigger a change of SiteInstances, even if the navigation is renderer
-// initiated.  In this model, each process can be dedicated to documents from
-// just one site, allowing the same origin policy to be enforced by the sandbox.
+// Various process models are currently supported:
 //
-// PROCESS PER TAB: SiteInstances are created when the user manually creates a
-// new tab, but not when navigating across site boundaries (unless a process
-// swap is required for security reasons, such as navigating from a privileged
-// WebUI page to a normal web page).  This corresponds to one process per
-// BrowsingInstance.
+// FULL SITE ISOLATION (the current default for desktop platforms): Every
+// document from the web uses a SiteInstance whose process is strictly locked to
+// a single site (scheme + eTLD+1), such that the renderer process can be
+// prevented from loading documents outside that site. Cross-site navigations
+// always change SiteInstances (usually within the same BrowsingInstance,
+// although sometimes the BrowsingInstance changes as well). Subframes from
+// other sites will use different SiteInstances (always within the same
+// BrowsingInstance), and thus out-of-process iframes.
 //
-// PROCESS PER SITE: We consolidate all SiteInstances for a given site into the
-// same process, throughout the entire browser context.  This ensures that only
-// one process will be used for each site.  Note that there is no strict process
-// isolation of sites in this mode, so a given SiteInstance can still contain
-// pages from multiple sites.
+// PARTIAL SITE ISOLATION (the current Google Chrome default on most Android
+// devices): Documents from sites that are most likely to involve login use
+// SiteInstances that are strictly locked to such sites, while one shared
+// SiteInstance within each BrowsingInstance is used for the remaining documents
+// from other less sensitive sites. This avoids out-of-process iframes in the
+// common case for performance reasons, while protecting the sites that are most
+// likely to be targeted in attacks.
 //
-// Each NavigationEntry for a WebContents points to the SiteInstance that
-// rendered it.  Each RenderFrameHost also points to the SiteInstance that it is
-// associated with.  A SiteInstance keeps track of the number of these
-// references and deletes itself when the count goes to zero.  This means that
-// a SiteInstance is only live as long as it is accessible, either from new
-// tabs with no NavigationEntries or in NavigationEntries in the history.
+// NO SITE ISOLATION (the current Google Chrome default on low-end Android
+// devices and Android WebView): No documents from the web use locked processes,
+// and no out-of-process iframes are created. The shared SiteInstance for each
+// BrowsingInstance is always used for documents from the web.
+//
+// In each model, there are many exceptions, such as always requiring locked
+// processes for chrome:// URLs, or allowing some special cases to share
+// processes with each other (e.g., file:// URLs).
+//
+// In terms of lifetime, each RenderFrameHost tracks the SiteInstance it is
+// associated with, to identify its principal and determine its process. Each
+// FrameNavigationEntry also tracks the SiteInstance that rendered it, to
+// prevent loading attacker-controlled data into the wrong process on a session
+// history navigation. A SiteInstance is jointly owned by these references and
+// is only alive as long as it is accessible, either from current documents or
+// from session history.
 //
 ///////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {

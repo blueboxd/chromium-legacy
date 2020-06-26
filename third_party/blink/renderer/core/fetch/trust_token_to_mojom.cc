@@ -85,6 +85,9 @@ bool ConvertTrustTokenToMojom(const TrustToken& in,
     return false;
   }
 
+  if (in.hasAdditionalSigningData())
+    out->possibly_unsafe_additional_signing_data = in.additionalSigningData();
+
   return true;
 }
 

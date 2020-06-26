@@ -188,6 +188,10 @@ target_cpu = "arm64"       # or "arm", "x86", or "x64"; see below
 is_debug = false
 is_official_build = true
 
+# Use the default production settings for field trials, instead of the testing
+# defaults.
+fieldtrial_testing_like_official_build = true
+
 # WebView's efficient native library loading mechanism is not compatible with
 # component builds of Chromium.
 is_component_build = false

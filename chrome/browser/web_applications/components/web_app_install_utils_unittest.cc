@@ -100,6 +100,13 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
     manifest.file_handlers.push_back(handler);
   }
 
+  {
+    blink::Manifest::ProtocolHandler protocol_handler;
+    protocol_handler.protocol = base::UTF8ToUTF16("mailto");
+    protocol_handler.url = GURL("http://example.com/handle=%s");
+    manifest.protocol_handlers.push_back(protocol_handler);
+  }
+
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
   EXPECT_EQ(AppUrl(), web_app_info.app_url);
@@ -143,6 +150,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(file_handler[0].accept[base::UTF8ToUTF16("image/png")][0],
             base::UTF8ToUTF16(".png"));
   EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
+
+  // Check protocol handlers were updated
+  EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
+  auto protocol_handler = web_app_info.protocol_handlers[0];
+  EXPECT_EQ(protocol_handler.protocol, base::UTF8ToUTF16("mailto"));
+  EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 }
 
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
@@ -182,6 +195,13 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
         base::UTF8ToUTF16(".png"));
     handler.name = base::UTF8ToUTF16("Images");
     manifest.file_handlers.push_back(handler);
+  }
+
+  {
+    blink::Manifest::ProtocolHandler protocol_handler;
+    protocol_handler.protocol = base::UTF8ToUTF16("mailto");
+    protocol_handler.url = GURL("http://example.com/handle=%s");
+    manifest.protocol_handlers.push_back(protocol_handler);
   }
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
@@ -265,6 +285,12 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   EXPECT_EQ(file_handler[0].accept[base::UTF8ToUTF16("image/png")][0],
             base::UTF8ToUTF16(".png"));
   EXPECT_EQ(file_handler[0].name, base::UTF8ToUTF16("Images"));
+
+  // Check protocol handlers were updated
+  EXPECT_EQ(1u, web_app_info.protocol_handlers.size());
+  auto protocol_handler = web_app_info.protocol_handlers[0];
+  EXPECT_EQ(protocol_handler.protocol, base::UTF8ToUTF16("mailto"));
+  EXPECT_EQ(protocol_handler.url, GURL("http://example.com/handle=%s"));
 }
 
 // Tests that we limit the number of icons declared by a site.

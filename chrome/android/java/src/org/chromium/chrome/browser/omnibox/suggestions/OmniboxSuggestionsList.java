@@ -165,6 +165,16 @@ public class OmniboxSuggestionsList
             AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {}
 
     @Override
+    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int rangeX,
+            int rangeY, int maxX, int maxY, boolean isTouchEvent) {
+        if (scrollY == 0 && deltaY < 0) {
+            mObserver.onSuggestionDropdownOverscrolledToTop();
+        }
+        return super.overScrollBy(
+                deltaX, deltaY, scrollX, scrollY, rangeX, rangeY, maxX, maxY, isTouchEvent);
+    }
+
+    @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
         if (scrollState == SCROLL_STATE_TOUCH_SCROLL && mObserver != null) {
             mObserver.onSuggestionDropdownScroll();

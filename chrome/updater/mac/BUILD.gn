@@ -113,7 +113,9 @@ source_set("install_app") {
   deps = [
     ":updater_setup_sources",
     "//base",
+    "//chrome/updater:base",
     "//chrome/updater:lib",
+    "//chrome/updater:version_header",
   ]
 
   allow_circular_includes_from = [ "//chrome/updater:lib" ]

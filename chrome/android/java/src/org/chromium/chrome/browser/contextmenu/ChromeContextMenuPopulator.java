@@ -726,7 +726,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     ChromePreferenceKeys.CONTEXT_MENU_SEARCH_SIMILAR_PRODUCTS_CLICKED, true);
         } else if (itemId == R.id.contextmenu_share_image) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_IMAGE);
-            shareImage(renderFrameHost);
+            shareImage(renderFrameHost, params.getSrcUrl());
         } else if (itemId == R.id.contextmenu_open_in_chrome) {
             recordContextMenuSelection(params, ContextMenuUma.Action.OPEN_IN_CHROME);
             mDelegate.onOpenInChrome(params.getUrl(), params.getPageUrl());
@@ -811,8 +811,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * Package-private, allowing access only from the context menu item to ensure that
      * it will use the right activity set when the menu was displayed.
      * @param renderFrameHost {@link RenderFrameHost} to get the encoded images from.
+     * @param srcUrl url of the image.
      */
-    private void shareImage(RenderFrameHost renderFrameHost) {
+    private void shareImage(RenderFrameHost renderFrameHost, String srcUrl) {
         retrieveImage(renderFrameHost, ContextMenuImageFormat.ORIGINAL, (Uri imageUri) -> {
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
                 ShareHelper.shareImage(getWindow(), null, imageUri);
@@ -826,7 +827,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                             .setFileContentType(contentResolver.getType(imageUri))
                             .build();
             mShareDelegateSupplier.get().share(imageShareParams,
-                    new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
+                    new ChromeShareExtras.Builder()
+                            .setSaveLastUsed(true)
+                            .setImageSrcUrl(srcUrl)
+                            .build());
         });
     }
 

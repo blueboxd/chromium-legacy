@@ -6,14 +6,13 @@
 #define CONTENT_COMMON_AX_CONTENT_TREE_UPDATE_H_
 
 #include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_data.h"
 #include "content/common/content_export.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
-typedef ui::AXTreeUpdateBase<content::AXContentNodeData,
-                             content::AXContentTreeData>
+typedef ui::AXTreeUpdateBase<content::AXContentNodeData, ui::AXTreeData>
     AXContentTreeUpdate;
 
 }  // namespace content

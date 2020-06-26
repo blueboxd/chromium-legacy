@@ -50,6 +50,16 @@ static char** g_argv;
 @end
 #endif  // TARGET_IPHONE_SIMULATOR
 
+// No-op scene delegate for unit tests. Note that this is created along with
+// the application delegate, so they need to be separate objects (the same
+// object can't be both the app and scene delegate, since new scene delegates
+// are created for each scene).
+@interface ChromeUnitTestSceneDelegate : NSObject <UISceneDelegate>
+@end
+
+@implementation ChromeUnitTestSceneDelegate
+@end
+
 @interface ChromeUnitTestDelegate : NSObject <GoogleTestRunnerDelegate> {
   base::scoped_nsobject<UIWindow> _window;
 }

@@ -1378,6 +1378,54 @@ class GmailSearchStory2020(_GmailBrowsingStory):
     action_runner.WaitForJavaScriptCondition(self.SEARCH_BEGIN_EVENT)
     action_runner.WaitForJavaScriptCondition(self.SEARCH_END_EVENT)
 
+class GmailComposeStory2020(_GmailBrowsingStory):
+  NAME = 'browse:tools:gmail-compose:2020'
+  # Needs to be http and not https.
+  URL = 'http://mail.google.com/'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2020]
+  SKIP_LOGIN = False
+
+  # Page event queries.
+  COMPOSE_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  COMPOSE_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+
+  # These maps translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_AND_MEASURES_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'mail:ob-1':
+          'telemetry:reported_by_page:benchmark_begin',
+    };
+
+    window.__telemetry_reported_page_measures = {
+      'mail:ob':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GmailComposeStory2020,
+          self).__init__(story_set, take_memory_measurement,
+                         self.EVENTS_AND_MEASURES_REPORTED_BY_PAGE)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.Wait(1)
+    action_runner.EvaluateJavaScript(
+        "document.evaluate(\"//div[text()='Compose']\", document, "
+        "null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)"
+        ".singleNodeValue.focus();")
+    action_runner.PressKey('Return')
+
+    action_runner.WaitForJavaScriptCondition(self.COMPOSE_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.COMPOSE_END_EVENT)
+
 ##############################################################################
 # Google sheets browsing story.
 ##############################################################################

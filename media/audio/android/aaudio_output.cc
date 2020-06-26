@@ -134,14 +134,18 @@ void AAudioOutputStream::Start(AudioSourceCallback* callback) {
 void AAudioOutputStream::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  base::AutoLock al(lock_);
-  if (!callback_ || !aaudio_stream_)
-    return;
+  {
+    base::AutoLock al(lock_);
+    if (!callback_ || !aaudio_stream_)
+      return;
+  }
 
-  // Note: This call is asynchronous, so we must clear |callback_| under lock
-  // below to ensure no further calls occur after Stop().
+  // Note: This call may be asynchronous, so we must clear |callback_| under
+  // lock below to ensure no further calls occur after Stop(). Since it may
+  // not always be asynchronous, we don't hold |lock_| while we call stop.
   auto result = AAudioStream_requestStop(aaudio_stream_);
 
+  base::AutoLock al(lock_);
   if (result != AAUDIO_OK) {
     DLOG(ERROR) << "Failed to stop audio stream, result: "
                 << AAudio_convertResultToText(result);

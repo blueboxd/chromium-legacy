@@ -63,7 +63,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
 
   // https://w3c.github.io/wake-lock/#the-request-method
   auto* context = ExecutionContext::From(script_state);
-  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
+  DCHECK(context->IsWindow() || context->IsDedicatedWorkerGlobalScope());
 
   if (type == "screen" &&
       !RuntimeEnabledFeatures::ScreenWakeLockEnabled(context)) {

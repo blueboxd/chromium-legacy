@@ -23,6 +23,8 @@ component("cdm_factory_daemon_gpu") {
   sources = [
     "cdm_storage_adapter.cc",
     "cdm_storage_adapter.h",
+    "content_decryption_module_adapter.cc",
+    "content_decryption_module_adapter.h",
   ]
   public_deps = [
     "//chromeos/components/cdm_factory_daemon/mojom",
@@ -37,13 +39,18 @@ component("cdm_factory_daemon_gpu") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "cdm_storage_adapter_unittest.cc" ]
+  sources = [
+    "cdm_storage_adapter_unittest.cc",
+    "content_decryption_module_adapter_unittest.cc",
+  ]
 
   deps = [
     ":cdm_factory_daemon_gpu",
     "//base",
     "//base/test:test_support",
     "//chromeos/components/cdm_factory_daemon/mojom",
+    "//chromeos/components/cdm_factory_daemon/mojom:unit_tests",
+    "//media:test_support",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",

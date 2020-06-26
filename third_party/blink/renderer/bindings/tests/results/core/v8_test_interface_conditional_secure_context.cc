@@ -505,7 +505,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
             base::size(kAccessorConfigurations));
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
         static constexpr V8DOMConfiguration::AccessorConfiguration
         kAccessorConfigurations[] = {
@@ -580,7 +580,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
       }
     }
     if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         {
           // Install secureContextWindowExposedMethod configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -610,7 +610,7 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
       }
     }
     if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
           {
             // Install secureContextWindowExposedRuntimeEnabledMethod configuration

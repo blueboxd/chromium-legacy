@@ -183,7 +183,8 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
     password_manager::PasswordStore::FormDigest digest(
-        autofill::PasswordForm::Scheme::kHtml, login.origin.spec(), GURL());
+        autofill::PasswordForm::Scheme::kHtml, password_form_.signon_realm,
+        password_form_.url);
     form_fetcher_ = std::make_unique<password_manager::FormFetcherImpl>(
         digest, client, true);
   }

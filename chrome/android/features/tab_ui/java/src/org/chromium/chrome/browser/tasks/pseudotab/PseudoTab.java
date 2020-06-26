@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.io.ByteArrayInputStream;
@@ -298,9 +299,8 @@ public class PseudoTab {
         sReadStateFile = true;
 
         long startMs = SystemClock.elapsedRealtime();
-        File stateFile =
-                new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
-                        TabbedModeTabPersistencePolicy.getStateFileName(0));
+        File stateFile = new File(TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
+                TabbedModeTabPersistencePolicy.getStateFileName(0));
         if (!stateFile.exists()) {
             Log.i(TAG, "State file does not exist.");
             return;

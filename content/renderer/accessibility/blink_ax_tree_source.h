@@ -12,11 +12,11 @@
 
 #include "base/optional.h"
 #include "content/common/ax_content_node_data.h"
-#include "content/common/ax_content_tree_data.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_source.h"
 
 namespace content {
@@ -38,10 +38,9 @@ class ScopedFreezeBlinkAXTreeSource {
   DISALLOW_COPY_AND_ASSIGN(ScopedFreezeBlinkAXTreeSource);
 };
 
-class BlinkAXTreeSource
-    : public ui::AXTreeSource<blink::WebAXObject,
-                              AXContentNodeData,
-                              AXContentTreeData> {
+class BlinkAXTreeSource : public ui::AXTreeSource<blink::WebAXObject,
+                                                  AXContentNodeData,
+                                                  ui::AXTreeData> {
  public:
   BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;
@@ -93,7 +92,7 @@ class BlinkAXTreeSource
   void SetLoadInlineTextBoxesForId(int32_t id);
 
   // AXTreeSource implementation.
-  bool GetTreeData(AXContentTreeData* tree_data) const override;
+  bool GetTreeData(ui::AXTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;
   blink::WebAXObject GetFromId(int32_t id) const override;
   int32_t GetId(blink::WebAXObject node) const override;

@@ -86,6 +86,10 @@ class RequestPinExceptFirstQuotaBucketMapper final
     : public QuotaLimitHeuristic::BucketMapper {
  public:
   RequestPinExceptFirstQuotaBucketMapper() = default;
+  RequestPinExceptFirstQuotaBucketMapper(
+      const RequestPinExceptFirstQuotaBucketMapper&) = delete;
+  RequestPinExceptFirstQuotaBucketMapper& operator=(
+      const RequestPinExceptFirstQuotaBucketMapper&) = delete;
   ~RequestPinExceptFirstQuotaBucketMapper() override = default;
 
   void GetBucketsForArgs(const base::ListValue* args,
@@ -120,9 +124,84 @@ class RequestPinExceptFirstQuotaBucketMapper final
   int biggest_request_id_ = -1;
   QuotaLimitHeuristic::Bucket default_bucket_;
   std::unique_ptr<QuotaLimitHeuristic::Bucket> new_request_bucket_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestPinExceptFirstQuotaBucketMapper);
 };
+
+scoped_refptr<net::X509Certificate> ParseCertificateDer(
+    const std::vector<uint8_t>& cert_der,
+    std::string* out_error_message) {
+  if (cert_der.empty()) {
+    *out_error_message = kCertificateProviderErrorInvalidX509Cert;
+    return nullptr;
+  }
+
+  // Allow UTF-8 inside PrintableStrings in client certificates. See
+  // crbug.com/770323 and crbug.com/788655.
+  net::X509Certificate::UnsafeCreateOptions options;
+  options.printable_string_is_utf8 = true;
+  scoped_refptr<net::X509Certificate> certificate =
+      net::X509Certificate::CreateFromBytesUnsafeOptions(
+          reinterpret_cast<const char*>(cert_der.data()), cert_der.size(),
+          options);
+  if (!certificate) {
+    *out_error_message = kCertificateProviderErrorInvalidX509Cert;
+    return nullptr;
+  }
+
+  size_t public_key_length_in_bits = 0;
+  net::X509Certificate::PublicKeyType type =
+      net::X509Certificate::kPublicKeyTypeUnknown;
+  net::X509Certificate::GetPublicKeyInfo(certificate->cert_buffer(),
+                                         &public_key_length_in_bits, &type);
+
+  switch (type) {
+    case net::X509Certificate::kPublicKeyTypeRSA:
+      break;
+    case net::X509Certificate::kPublicKeyTypeECDSA:
+      *out_error_message = kCertificateProviderErrorECDSANotSupported;
+      return nullptr;
+    case net::X509Certificate::kPublicKeyTypeUnknown:
+    case net::X509Certificate::kPublicKeyTypeDSA:
+    case net::X509Certificate::kPublicKeyTypeDH:
+    case net::X509Certificate::kPublicKeyTypeECDH:
+      *out_error_message = kCertificateProviderErrorUnknownKeyType;
+      return nullptr;
+  }
+  return certificate;
+}
+
+bool ParseCertificateInfo(
+    const api_cp::CertificateInfo& info,
+    chromeos::certificate_provider::CertificateInfo* out_info,
+    std::string* out_error_message) {
+  out_info->certificate =
+      ParseCertificateDer(info.certificate, out_error_message);
+  if (!out_info->certificate)
+    return false;
+
+  for (const api_cp::Hash hash : info.supported_hashes) {
+    switch (hash) {
+      case api_cp::HASH_MD5_SHA1:
+        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_MD5_SHA1);
+        break;
+      case api_cp::HASH_SHA1:
+        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA1);
+        break;
+      case api_cp::HASH_SHA256:
+        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA256);
+        break;
+      case api_cp::HASH_SHA384:
+        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA384);
+        break;
+      case api_cp::HASH_SHA512:
+        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA512);
+        break;
+      case api_cp::HASH_NONE:
+        NOTREACHED();
+        return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -154,98 +233,35 @@ CertificateProviderInternalReportCertificatesFunction::Run() {
   std::vector<std::vector<uint8_t>> rejected_certificates;
   for (const api_cp::CertificateInfo& input_cert_info : *params->certificates) {
     chromeos::certificate_provider::CertificateInfo parsed_cert_info;
-
-    if (ParseCertificateInfo(input_cert_info, &parsed_cert_info))
+    std::string error_message;
+    if (ParseCertificateInfo(input_cert_info, &parsed_cert_info,
+                             &error_message)) {
       cert_infos.push_back(parsed_cert_info);
-    else
+    } else {
       rejected_certificates.push_back(input_cert_info.certificate);
+      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError, error_message);
+    }
   }
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
   VLOG(1) << "Certificates provided by extension " << extension()->id() << ": "
           << cert_infos.size() << ", rejected " << rejected_certificates.size();
 
-  if (service->SetCertificatesProvidedByExtension(
-          extension_id(), params->request_id, cert_infos)) {
+  service->SetCertificatesProvidedByExtension(extension_id(), cert_infos);
+
+  if (service->SetExtensionCertificateReplyReceived(extension_id(),
+                                                    params->request_id))
     return RespondNow(ArgumentList(
         api_cpi::ReportCertificates::Results::Create(rejected_certificates)));
-  } else {
-    // The custom binding already checks for multiple reports to the same
-    // request. The only remaining case, why this reply can fail is that the
-    // request timed out.
-    return RespondNow(Error(kCertificateProviderErrorTimeout));
-  }
-}
 
-bool CertificateProviderInternalReportCertificatesFunction::
-    ParseCertificateInfo(
-        const api_cp::CertificateInfo& info,
-        chromeos::certificate_provider::CertificateInfo* out_info) {
-  const std::vector<uint8_t>& cert_der = info.certificate;
-  if (cert_der.empty()) {
-    WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                   kCertificateProviderErrorInvalidX509Cert);
-    return false;
-  }
-
-  // Allow UTF-8 inside PrintableStrings in client certificates. See
-  // crbug.com/770323 and crbug.com/788655.
-  net::X509Certificate::UnsafeCreateOptions options;
-  options.printable_string_is_utf8 = true;
-  out_info->certificate = net::X509Certificate::CreateFromBytesUnsafeOptions(
-      reinterpret_cast<const char*>(cert_der.data()), cert_der.size(), options);
-  if (!out_info->certificate) {
-    WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                   kCertificateProviderErrorInvalidX509Cert);
-    return false;
-  }
-
-  size_t public_key_length_in_bits = 0;
-  net::X509Certificate::PublicKeyType type =
-      net::X509Certificate::kPublicKeyTypeUnknown;
-  net::X509Certificate::GetPublicKeyInfo(out_info->certificate->cert_buffer(),
-                                         &public_key_length_in_bits, &type);
-
-  switch (type) {
-    case net::X509Certificate::kPublicKeyTypeRSA:
-      break;
-    case net::X509Certificate::kPublicKeyTypeECDSA:
-      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                     kCertificateProviderErrorECDSANotSupported);
-      return false;
-    default:
-      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                     kCertificateProviderErrorUnknownKeyType);
-      return false;
-  }
-
-  for (const api_cp::Hash hash : info.supported_hashes) {
-    switch (hash) {
-      case api_cp::HASH_MD5_SHA1:
-        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_MD5_SHA1);
-        break;
-      case api_cp::HASH_SHA1:
-        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA1);
-        break;
-      case api_cp::HASH_SHA256:
-        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA256);
-        break;
-      case api_cp::HASH_SHA384:
-        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA384);
-        break;
-      case api_cp::HASH_SHA512:
-        out_info->supported_algorithms.push_back(SSL_SIGN_RSA_PKCS1_SHA512);
-        break;
-      case api_cp::HASH_NONE:
-        NOTREACHED();
-        return false;
-    }
-  }
-  return true;
+  // The custom binding already checks for multiple reports to the same
+  // request. The only remaining case, why this reply can fail is that the
+  // request timed out.
+  return RespondNow(Error(kCertificateProviderErrorTimeout));
 }
 
 CertificateProviderStopPinRequestFunction::
-    ~CertificateProviderStopPinRequestFunction() {}
+    ~CertificateProviderStopPinRequestFunction() = default;
 
 ExtensionFunction::ResponseAction
 CertificateProviderStopPinRequestFunction::Run() {
@@ -429,6 +445,45 @@ void CertificateProviderRequestPinFunction::OnInputReceived(
   }
 
   Respond(ArgumentList(std::move(create_results)));
+}
+
+CertificateProviderSetCertificatesFunction::
+    ~CertificateProviderSetCertificatesFunction() = default;
+
+ExtensionFunction::ResponseAction
+CertificateProviderSetCertificatesFunction::Run() {
+  std::unique_ptr<api_cp::SetCertificates::Params> params(
+      api_cp::SetCertificates::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  chromeos::certificate_provider::CertificateInfoList accepted_certificates;
+  uint32_t rejected_certificates_count = 0;
+  for (const api_cp::CertificateInfo& input_cert_info : params->certificates) {
+    chromeos::certificate_provider::CertificateInfo parsed_cert_info;
+    std::string parsing_error_message;
+    if (ParseCertificateInfo(input_cert_info, &parsed_cert_info,
+                             &parsing_error_message)) {
+      accepted_certificates.push_back(parsed_cert_info);
+    } else {
+      rejected_certificates_count++;
+      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                     parsing_error_message);
+    }
+  }
+
+  // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+  VLOG(1) << "Certificates provided by extension " << extension()->id() << ": "
+          << accepted_certificates.size() << ", rejected "
+          << rejected_certificates_count;
+
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+  service->SetCertificatesProvidedByExtension(extension_id(),
+                                              accepted_certificates);
+
+  return RespondNow(NoArguments());
 }
 
 CertificateProviderInternalReportSignatureFunction::

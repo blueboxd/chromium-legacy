@@ -22,7 +22,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode) {
-        return VrShellDelegate.onActivityResultWithNative(requestCode, resultCode);
+        return VrShellDelegate.onActivityResultWithNative(requestCode, resultCode)
+                || VrCoreInstallUtils.onActivityResultWithNative(requestCode, resultCode);
     }
 
     @Override
@@ -133,7 +134,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 
     @Override
     public boolean isDaydreamReadyDevice() {
-        return VrShellDelegate.isDaydreamReadyDevice();
+        return VrCoreInstallUtils.isDaydreamReadyDevice();
     }
 
     @Override

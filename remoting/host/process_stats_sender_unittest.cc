@@ -33,9 +33,9 @@ class FakeProcessStatsStub : public protocol::ProcessStatsStub {
       const protocol::AggregatedProcessResourceUsage& usage) override {
     received_.push_back(usage);
     DCHECK_LE(received_.size(), expected_usage_count_);
-    DCHECK(!quit_closure_.is_null());
+    DCHECK(quit_closure_);
     if (received_.size() == expected_usage_count_) {
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     }
   }
 
@@ -44,8 +44,8 @@ class FakeProcessStatsStub : public protocol::ProcessStatsStub {
     return received_;
   }
 
-  void set_quit_closure(base::Closure quit_closure) {
-    quit_closure_ = quit_closure;
+  void set_quit_closure(base::OnceClosure quit_closure) {
+    quit_closure_ = std::move(quit_closure);
   }
 
   void set_expected_usage_count(size_t expected_usage_count) {
@@ -55,7 +55,7 @@ class FakeProcessStatsStub : public protocol::ProcessStatsStub {
  private:
   std::vector<protocol::AggregatedProcessResourceUsage> received_;
   size_t expected_usage_count_ = 0;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 };
 
 class FakeProcessStatsAgent : public ProcessStatsAgent {
@@ -105,7 +105,7 @@ TEST(ProcessStatsSenderTest, ReportUsage) {
   FakeProcessStatsAgent agent;
 
   stub.set_expected_usage_count(10);
-  stub.set_quit_closure(base::Bind(
+  stub.set_quit_closure(base::BindOnce(
       [](std::unique_ptr<ProcessStatsSender>* stats,
          const FakeProcessStatsStub& stub, const FakeProcessStatsAgent& agent,
          base::RunLoop* run_loop) -> void {
@@ -143,7 +143,7 @@ TEST(ProcessStatsSenderTest, MergeUsage) {
   FakeProcessStatsAgent agent2;
 
   stub.set_expected_usage_count(10);
-  stub.set_quit_closure(base::Bind(
+  stub.set_quit_closure(base::BindOnce(
       [](std::unique_ptr<ProcessStatsSender>* stats,
          const FakeProcessStatsStub& stub, const FakeProcessStatsAgent& agent1,
          const FakeProcessStatsAgent& agent2, base::RunLoop* run_loop) -> void {

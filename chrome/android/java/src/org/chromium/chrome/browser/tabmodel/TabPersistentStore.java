@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.content.Context;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -17,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.util.AtomicFile;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.StreamUtil;
@@ -43,6 +41,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -76,8 +75,6 @@ public class TabPersistentStore extends TabPersister {
      * Version 5: In addition to the total tab count, save the incognito tab count.
      */
     private static final int SAVED_STATE_VERSION = 5;
-
-    private static final String BASE_STATE_FOLDER = "tabs";
 
     /**
      * The prefix of the name of the file where the state is saved.  Values returned by
@@ -155,16 +152,6 @@ public class TabPersistentStore extends TabPersister {
             index = selectedIndex;
             ids = new ArrayList<>();
             urls = new ArrayList<>();
-        }
-    }
-
-    private static class BaseStateDirectoryHolder {
-        // Not final for tests.
-        private static File sDirectory;
-
-        static {
-            sDirectory = ContextUtils.getApplicationContext()
-                    .getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE);
         }
     }
 
@@ -682,7 +669,8 @@ public class TabPersistentStore extends TabPersister {
         mSequencedTaskRunner.postTask(new Runnable() {
             @Override
             public void run() {
-                File[] baseStateFiles = getOrCreateBaseStateDirectory().listFiles();
+                File[] baseStateFiles =
+                        TabStateDirectory.getOrCreateBaseStateDirectory().listFiles();
                 if (baseStateFiles == null) return;
                 for (File baseStateFile : baseStateFiles) {
                     // In legacy scenarios (prior to migration, state files could reside in the
@@ -1010,7 +998,7 @@ public class TabPersistentStore extends TabPersister {
         // critical patch to initializing the TabIdManager with the correct max tab ID.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            File[] subDirectories = getOrCreateBaseStateDirectory().listFiles();
+            File[] subDirectories = TabStateDirectory.getOrCreateBaseStateDirectory().listFiles();
             if (subDirectories != null) {
                 for (File subDirectory : subDirectories) {
                     if (!subDirectory.isDirectory()) {
@@ -1441,18 +1429,6 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
-     * Directory containing all data for TabModels.  Each subdirectory stores info about different
-     * TabModelSelectors, including metadata about each TabModel and TabStates for each of their
-     * tabs.
-     *
-     * @return The parent state directory.
-     */
-    @VisibleForTesting
-    public static File getOrCreateBaseStateDirectory() {
-        return BaseStateDirectoryHolder.sDirectory;
-    }
-
-    /**
      * @param uniqueId The ID that uniquely identifies this state file.
      * @return The name of the state file.
      */
@@ -1476,14 +1452,6 @@ public class TabPersistentStore extends TabPersister {
      */
     public static boolean isStateFile(String fileName) {
         return fileName.startsWith(SAVED_STATE_FILE_PREFIX);
-    }
-
-    /**
-     * Sets where the base state directory is in tests.
-     */
-    @VisibleForTesting
-    public static void setBaseStateDirectoryForTests(File directory) {
-        BaseStateDirectoryHolder.sDirectory = directory;
     }
 
     @VisibleForTesting

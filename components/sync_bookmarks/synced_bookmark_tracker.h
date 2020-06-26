@@ -148,6 +148,10 @@ class SyncedBookmarkTracker {
 
   ~SyncedBookmarkTracker();
 
+  // This method is used to denote that all bookmarks are reuploaded and there
+  // is no need to reupload them again after next browser startup.
+  void SetBookmarksFullTitleReuploaded();
+
   // Returns null if no entity is found.
   const Entity* GetEntityForSyncId(const std::string& sync_id) const;
 

@@ -128,7 +128,7 @@ class CastActivityManager : public CastActivityManagerBase,
 
   static void SetActitivyRecordFactoryForTest(
       ActivityRecordFactoryForTest* factory) {
-    activity_record_factory_ = factory;
+    activity_record_factory_for_test_ = factory;
   }
 
   cast_channel::ResultCallback MakeResultCallbackForRoute(
@@ -204,8 +204,7 @@ class CastActivityManager : public CastActivityManagerBase,
   };
 
   void DoLaunchSession(DoLaunchSessionParams params);
-
-  void RemoveActivityByRouteId(const std::string& route_id);
+  void OnActivityStopped(const std::string& route_id);
 
   // Removes an activity, terminating any associated connections, then
   // notifies the media router that routes have been updated.
@@ -275,7 +274,7 @@ class CastActivityManager : public CastActivityManagerBase,
   std::string ChooseAppId(const CastMediaSource& source,
                           const MediaSinkInternal& sink) const;
 
-  static ActivityRecordFactoryForTest* activity_record_factory_;
+  static ActivityRecordFactoryForTest* activity_record_factory_for_test_;
 
   base::flat_set<MediaSource::Id> route_queries_;
 

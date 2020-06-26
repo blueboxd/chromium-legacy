@@ -35,7 +35,7 @@ class SecurityKeySocket {
  public:
   SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
                     base::TimeDelta timeout,
-                    const base::Closure& timeout_callback);
+                    base::OnceClosure timeout_callback);
   ~SecurityKeySocket();
 
   // Returns false if the request has not yet completed, or is too large to be
@@ -52,7 +52,7 @@ class SecurityKeySocket {
   // |request_received_callback| is used to notify the caller that request data
   // has been fully read, and caller is to use GetAndClearRequestData method to
   // get the request data.
-  void StartReadingRequest(const base::Closure& request_received_callback);
+  void StartReadingRequest(base::OnceClosure request_received_callback);
 
   bool socket_read_error() const { return socket_read_error_; }
 
@@ -91,7 +91,7 @@ class SecurityKeySocket {
   std::unique_ptr<net::StreamSocket> socket_;
 
   // Invoked when request data has been read.
-  base::Closure request_received_callback_;
+  base::OnceClosure request_received_callback_;
 
   // Indicates whether the socket is being used to wait for a request.
   bool waiting_for_request_ = false;

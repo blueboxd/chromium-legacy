@@ -5236,9 +5236,8 @@ void RenderFrameHostImpl::HandleAXEvents(
     ui::AXTreeUpdate* dst_update = &details.updates[i];
     if (src_update.has_tree_data) {
       dst_update->has_tree_data = true;
-      ax_content_tree_data_ = src_update.tree_data;
-      AXContentTreeDataToAXTreeData(&dst_update->tree_data);
-      dst_update->tree_data.parent_tree_id = GetParentAXTreeID();
+      ax_tree_data_ = src_update.tree_data;
+      dst_update->tree_data = GetAXTreeData();
     }
     dst_update->root_id = src_update.root_id;
     dst_update->node_id_to_clear = src_update.node_id_to_clear;
@@ -6694,8 +6693,7 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
   detail.ax_tree_id = GetAXTreeID();
   detail.updates.resize(1);
   detail.updates[0].has_tree_data = true;
-  AXContentTreeDataToAXTreeData(&detail.updates[0].tree_data);
-  detail.updates[0].tree_data.parent_tree_id = GetParentAXTreeID();
+  detail.updates[0].tree_data = GetAXTreeData();
 
   SendAccessibilityEventsToManager(detail);
   delegate_->AccessibilityEventReceived(detail);
@@ -7018,27 +7016,6 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
   }
 }
 
-void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
-  const AXContentTreeData& src = ax_content_tree_data_;
-
-  // Copy the common fields.
-  *dst = src;
-
-  if (src.routing_id != MSG_ROUTING_NONE)
-    dst->tree_id = RoutingIDToAXTreeID(src.routing_id);
-
-  // If this is not the root frame tree node, we're done.
-  if (!is_main_frame())
-    return;
-
-  // For the root frame tree node, also store the AXTreeID of the focused frame.
-  auto* focused_frame = static_cast<RenderFrameHostImpl*>(
-      delegate_->GetFocusedFrameIncludingInnerWebContents());
-  if (!focused_frame)
-    return;
-  dst->focused_tree_id = focused_frame->GetAXTreeID();
-}
-
 ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
   if (browser_plugin_embedder_ax_tree_id_ != ui::AXTreeIDUnknown())
     return browser_plugin_embedder_ax_tree_id_;
@@ -7047,6 +7024,28 @@ ui::AXTreeID RenderFrameHostImpl::GetParentAXTreeID() {
     return GetParent()->GetAXTreeID();
 
   return ui::AXTreeIDUnknown();
+}
+
+ui::AXTreeID RenderFrameHostImpl::GetFocusedAXTreeID() {
+  // If this is not the root frame tree node, we're done.
+  if (!is_main_frame())
+    return ui::AXTreeIDUnknown();
+
+  auto* focused_frame = static_cast<RenderFrameHostImpl*>(
+      delegate_->GetFocusedFrameIncludingInnerWebContents());
+  if (focused_frame)
+    return focused_frame->GetAXTreeID();
+
+  return ui::AXTreeIDUnknown();
+}
+
+ui::AXTreeData RenderFrameHostImpl::GetAXTreeData() {
+  // Make sure to update the locally stored |ax_tree_data_| to include
+  // references to the relevant AXTreeIDs before returning its value.
+  ax_tree_data_.tree_id = GetAXTreeID();
+  ax_tree_data_.parent_tree_id = GetParentAXTreeID();
+  ax_tree_data_.focused_tree_id = GetFocusedAXTreeID();
+  return ax_tree_data_;
 }
 
 void RenderFrameHostImpl::AccessibilityHitTestCallback(
@@ -7101,9 +7100,8 @@ void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
     AXContentNodeDataToAXNodeData(snapshot.nodes[i], &dst_snapshot.nodes[i]);
 
   if (snapshot.has_tree_data) {
-    ax_content_tree_data_ = snapshot.tree_data;
-    AXContentTreeDataToAXTreeData(&dst_snapshot.tree_data);
-    dst_snapshot.tree_data.parent_tree_id = GetParentAXTreeID();
+    ax_tree_data_ = snapshot.tree_data;
+    dst_snapshot.tree_data = GetAXTreeData();
     dst_snapshot.has_tree_data = true;
   }
   std::move(callback).Run(dst_snapshot);

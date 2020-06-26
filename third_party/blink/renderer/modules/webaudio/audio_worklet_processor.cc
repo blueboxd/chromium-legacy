@@ -39,14 +39,14 @@ AudioWorkletProcessor::AudioWorkletProcessor(
     : global_scope_(global_scope), processor_port_(port), name_(name) {}
 
 bool AudioWorkletProcessor::Process(
-    Vector<scoped_refptr<AudioBus>>* input_buses,
-    Vector<scoped_refptr<AudioBus>>* output_buses,
-    HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map) {
+    const Vector<scoped_refptr<AudioBus>>& inputs,
+    Vector<scoped_refptr<AudioBus>>& outputs,
+    const HashMap<String, std::unique_ptr<AudioFloatArray>>& param_value_map) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("audio-worklet"),
                "AudioWorkletProcessor::Process");
 
   DCHECK(global_scope_->IsContextThread());
-  DCHECK(!hasErrorOccured());
+  DCHECK(!hasErrorOccurred());
 
   ScriptState* script_state =
       global_scope_->ScriptController()->GetScriptState();
@@ -56,11 +56,11 @@ bool AudioWorkletProcessor::Process(
   AudioWorkletProcessorDefinition* definition =
       global_scope_->FindDefinition(Name());
 
-  // 1st JS arg |inputs_|. Compare |inputs_buses| and |inputs_|. Then allocates
-  // the data container if necessary.
-  if (!PortTopologyMatches(isolate, context, *input_buses, inputs_)) {
+  // 1st JS arg |inputs_|. Compare |inputs| and |inputs_|. Then allocates the
+  // data container if necessary.
+  if (!PortTopologyMatches(isolate, context, inputs, inputs_)) {
     bool inputs_cloned_successfully =
-        ClonePortTopology(isolate, context, *input_buses, inputs_,
+        ClonePortTopology(isolate, context, inputs, inputs_,
                           input_array_buffers_);
     DCHECK(inputs_cloned_successfully);
     if (!inputs_cloned_successfully)
@@ -68,17 +68,17 @@ bool AudioWorkletProcessor::Process(
   }
   DCHECK(!inputs_.IsEmpty());
   DCHECK(inputs_.NewLocal(isolate)->IsArray());
-  DCHECK_EQ(inputs_.NewLocal(isolate)->Length(), input_buses->size());
-  DCHECK_EQ(input_array_buffers_.size(), input_buses->size());
+  DCHECK_EQ(inputs_.NewLocal(isolate)->Length(), inputs.size());
+  DCHECK_EQ(input_array_buffers_.size(), inputs.size());
 
-  // Copies |input_buses| to the internal |input_array_buffers|.
-  CopyPortToArrayBuffers(isolate, *input_buses, input_array_buffers_);
+  // Copies |inputs| to the internal |input_array_buffers|.
+  CopyPortToArrayBuffers(isolate, inputs, input_array_buffers_);
 
-  // 2nd JS arg |outputs_|. Compare |outputs_buses| and |outputs_|. Then
-  // allocates the data container if necessary.
-  if (!PortTopologyMatches(isolate, context, *output_buses, outputs_)) {
+  // 2nd JS arg |outputs_|. Compare |outputs| and |outputs_|. Then allocates the
+  // data container if necessary.
+  if (!PortTopologyMatches(isolate, context, outputs, outputs_)) {
     bool outputs_cloned_successfully =
-        ClonePortTopology(isolate, context, *output_buses, outputs_,
+        ClonePortTopology(isolate, context, outputs, outputs_,
                           output_array_buffers_);
     DCHECK(outputs_cloned_successfully);
     if (!outputs_cloned_successfully)
@@ -86,16 +86,15 @@ bool AudioWorkletProcessor::Process(
   }
   DCHECK(!outputs_.IsEmpty());
   DCHECK(outputs_.NewLocal(isolate)->IsArray());
-  DCHECK_EQ(outputs_.NewLocal(isolate)->Length(), output_buses->size());
-  DCHECK_EQ(output_array_buffers_.size(), output_buses->size());
+  DCHECK_EQ(outputs_.NewLocal(isolate)->Length(), outputs.size());
+  DCHECK_EQ(output_array_buffers_.size(), outputs.size());
 
   // 3rd JS arg |params_|. Compare |param_value_map| and |params_|. Then
   // allocates the data container if necessary.
-  if (!ParamValueMapMatchesToParamsObject(isolate, context,
-                                          *param_value_map, params_)) {
+  if (!ParamValueMapMatchesToParamsObject(isolate, context, param_value_map,
+                                          params_)) {
     bool params_cloned_successfully =
-        CloneParamValueMapToObject(isolate, context, *param_value_map,
-                                   params_);
+        CloneParamValueMapToObject(isolate, context, param_value_map, params_);
     DCHECK(params_cloned_successfully);
     if (!params_cloned_successfully)
       return false;
@@ -104,7 +103,7 @@ bool AudioWorkletProcessor::Process(
   DCHECK(params_.NewLocal(isolate)->IsObject());
 
   // Copies |param_value_map| to the internal |params_| object;
-  CopyParamValueMapToObject(isolate, context, *param_value_map, params_);
+  CopyParamValueMapToObject(isolate, context, param_value_map, params_);
 
   // Performs the user-defined AudioWorkletProcessor.process() function.
   v8::TryCatch try_catch(isolate);
@@ -126,8 +125,8 @@ bool AudioWorkletProcessor::Process(
   }
   DCHECK(!try_catch.HasCaught());
 
-  // Copies the resulting output from author script to |output_buses|.
-  CopyArrayBuffersToPort(isolate, output_array_buffers_, *output_buses);
+  // Copies the resulting output from author script to |outputs|.
+  CopyArrayBuffersToPort(isolate, output_array_buffers_, outputs);
 
   // Return the value from the user-supplied |process()| function. It is
   // used to maintain the lifetime of the node and the processor.
@@ -143,7 +142,7 @@ AudioWorkletProcessorErrorState AudioWorkletProcessor::GetErrorState() const {
   return error_state_;
 }
 
-bool AudioWorkletProcessor::hasErrorOccured() const {
+bool AudioWorkletProcessor::hasErrorOccurred() const {
   return error_state_ != AudioWorkletProcessorErrorState::kNoError;
 }
 

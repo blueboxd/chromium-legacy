@@ -85,6 +85,18 @@ class ExportNotifierTest(LoggingTestCase):
             self.notifier.get_failure_taskcluster_status(
                 taskcluster_status, 123), None)
 
+    def test_get_failure_taskcluster_pending_status(self):
+        taskcluster_status = [
+            {
+                "state": "pending",
+                "context": "Community-TC (pull_request)",
+            },
+        ]
+
+        self.assertEqual(
+            self.notifier.get_failure_taskcluster_status(
+                taskcluster_status, 123), None)
+
     def test_has_latest_taskcluster_status_commented_false(self):
         pr_status_info = PRStatusInfo('bar', 123, 'num')
         messages = [{

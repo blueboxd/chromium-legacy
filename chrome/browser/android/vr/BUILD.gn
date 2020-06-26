@@ -63,6 +63,8 @@ static_library("vr_android") {
     "vr_shell.h",
     "vr_shell_delegate.cc",
     "vr_shell_delegate.h",
+    "vrcore_install_helper.cc",
+    "vrcore_install_helper.h",
     "web_xr_presentation_state.cc",
     "web_xr_presentation_state.h",
   ]

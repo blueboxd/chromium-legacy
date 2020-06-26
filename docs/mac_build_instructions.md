@@ -13,15 +13,15 @@ Are you a Google employee? See
 ## System requirements
 
 *   A 64-bit Mac running 10.14+.
-*   [Xcode](https://developer.apple.com/xcode) 11+
-*   The OS X 10.15 SDK. Run
+*   [Xcode](https://developer.apple.com/xcode) 11.2+
+*   The OS X 10.15.1 SDK. Run
 
     ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
 
     to check whether you have it.  Building with a newer SDK works too, but
-    the releases currently use the 10.15 SDK.
+    the releases [currently use Xcode 11.2.1](https://source.chromium.org/search?q=MAC_BINARIES_LABEL&ss=chromium).
 
 ## Install `depot_tools`
 

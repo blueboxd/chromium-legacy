@@ -92,6 +92,7 @@ container{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutNGBlockFlow",
     "showAccessibilityInfo": true
   }
 }
@@ -187,6 +188,7 @@ child{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutNGBlockFlow",
     "showAccessibilityInfo": true
   }
 }
@@ -282,6 +284,7 @@ span{
     "isKeyboardFocusable": false,
     "accessibleName": "",
     "accessibleRole": "generic",
+    "layoutObjectName": "LayoutInline",
     "showAccessibilityInfo": true
   }
 }

@@ -14,6 +14,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.TaskTraits;
@@ -43,6 +45,24 @@ public final class EnterpriseInfo {
             mDeviceOwned = isDeviceOwned;
             mProfileOwned = isProfileOwned;
         }
+    }
+
+    /**
+     * Returns, via callback, whether the device has a device owner or a profile owner for native.
+     */
+    @CalledByNative
+    public static void getManagedStateForNative() {
+        Callback<OwnedState> callback = (result) -> {
+            if (result == null) {
+                // Unable to determine the owned state, assume it's not owned.
+                EnterpriseInfoJni.get().updateNativeOwnedState(false, false);
+            }
+
+            EnterpriseInfoJni.get().updateNativeOwnedState(
+                    result.mDeviceOwned, result.mProfileOwned);
+        };
+
+        getDeviceEnterpriseInfo(callback);
     }
 
     /**
@@ -137,8 +157,13 @@ public final class EnterpriseInfo {
     private static void recordManagementHistograms(OwnedState state) {
         if (state == null) return;
 
-        RecordHistogram.recordBooleanHistogram("EnterpriseCheck.IsManaged", state.mProfileOwned);
+        RecordHistogram.recordBooleanHistogram("EnterpriseCheck.IsManaged2", state.mProfileOwned);
         RecordHistogram.recordBooleanHistogram(
-                "EnterpriseCheck.IsFullyManaged", state.mDeviceOwned);
+                "EnterpriseCheck.IsFullyManaged2", state.mDeviceOwned);
+    }
+
+    @NativeMethods
+    interface Natives {
+        void updateNativeOwnedState(boolean hasProfileOwnerApp, boolean hasDeviceOwnerApp);
     }
 }

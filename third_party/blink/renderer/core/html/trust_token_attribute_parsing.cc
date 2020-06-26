@@ -6,6 +6,7 @@
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trust_token.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -131,6 +132,14 @@ network::mojom::blink::TrustTokenParamsPtr TrustTokenParamsFromJson(
         return nullptr;
       ret->additional_signed_headers.push_back(std::move(next));
     }
+  }
+
+  // |additionalSigningData| is optional.
+  if (JSONValue* additional_signing_data =
+          object->Get("additionalSigningData")) {
+    if (!additional_signing_data->AsString(
+            &ret->possibly_unsafe_additional_signing_data))
+      return nullptr;
   }
 
   return ret;

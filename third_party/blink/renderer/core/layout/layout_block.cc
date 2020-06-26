@@ -975,6 +975,7 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
       if (container_map_it->value == this) {
         DCHECK(HasPositionedObjects());
         DCHECK(PositionedObjects()->Contains(o));
+        PositionedObjects()->AppendOrMoveToLast(o);
         return;
       }
       RemovePositionedObject(o);
@@ -1010,23 +1011,6 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
   DCHECK(positioned_descendants);
   DCHECK(positioned_descendants->Contains(o));
   positioned_descendants->erase(o);
-  // To ensure |positioned_descendants| remains in tree order, remove any fixed
-  // positioned descendants. This ensures if |o| is added back, it doesn't end
-  // up after any descendants. This is to ensure layout of fixed position
-  // elements happens in tree-order.
-  for (auto it = positioned_descendants->begin();
-       it != positioned_descendants->end();) {
-    LayoutBox* box = *it;
-    auto current_it = it;
-    ++it;
-    if (box->IsFixedPositioned() && box->IsDescendantOf(o)) {
-      g_positioned_container_map->Take(box);
-      positioned_descendants->erase(current_it);
-      box->SetNeedsLayout(layout_invalidation_reason::kAncestorMoved);
-    } else {
-      break;
-    }
-  }
   if (positioned_descendants->IsEmpty()) {
     g_positioned_descendants_map->erase(container);
     container->has_positioned_objects_ = false;

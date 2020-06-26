@@ -21,7 +21,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "chrome/android/chrome_jni_headers/PaintPreviewTabService_jni.h"
+#include "chrome/browser/paint_preview/android/jni_headers/PaintPreviewTabService_jni.h"
 #endif  // defined(OS_ANDROID)
 
 namespace paint_preview {

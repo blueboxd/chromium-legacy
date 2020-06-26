@@ -233,7 +233,7 @@ def expr_from_exposure(exposure,
         "PaintWorklet": "IsPaintWorkletGlobalScope",
         "ServiceWorker": "IsServiceWorkerGlobalScope",
         "SharedWorker": "IsSharedWorkerGlobalScope",
-        "Window": "IsDocument",
+        "Window": "IsWindow",
         "Worker": "IsWorkerGlobalScope",
         "Worklet": "IsWorkletGlobalScope",
     }

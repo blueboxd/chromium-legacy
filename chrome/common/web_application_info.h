@@ -143,6 +143,9 @@ struct WebApplicationInfo {
   // it contains.
   ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps;
 
+  // The URL protocols/schemes that the app can handle.
+  std::vector<blink::Manifest::ProtocolHandler> protocol_handlers;
+
   // User preference as to whether to auto run the app on OS login.
   // Currently only supported in Windows platform.
   bool run_on_os_login = false;

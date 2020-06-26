@@ -169,7 +169,6 @@ class ExportNotifier(object):
         if status is None:
             return None
 
-        assert status['state'] == 'success'
         _log.debug('Taskcluster status for PR %s is %s', pr_number, status)
         return None
 

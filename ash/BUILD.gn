@@ -1699,6 +1699,9 @@ static_library("ash_shell_lib") {
 
   # Usage of content should be in ash_shell_lib_with_content.
   assert_no_deps = [
+    "//ash/public/cpp/external_arc",
+    "//components/arc",
+    "//components/exo",
     "//content/public/browser",
     "//content/public/common",
   ]

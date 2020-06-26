@@ -277,6 +277,7 @@ source_set("unit_tests") {
     "user_data_util_unittest.cc",
     "user_model_unittest.cc",
     "value_util_unittest.cc",
+    "website_login_manager_impl_unittest.cc",
   ]
 
   deps = [

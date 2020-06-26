@@ -139,34 +139,29 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                                  : mojom::RequestContextFrameType::kNested);
 
   const KURL& url = frame_request.GetResourceRequest().Url();
+  auto* window = frame_request.GetOriginWindow();
   if (!frame_request.CanDisplay(url)) {
-    if (frame_request.OriginDocument()) {
-      frame_request.OriginDocument()->AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kSecurity,
-              mojom::ConsoleMessageLevel::kError,
-              "Not allowed to load local resource: " + url.ElidedString()));
+    if (window) {
+      window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kSecurity,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "Not allowed to load local resource: " + url.ElidedString()));
     }
     return;
   }
 
   // The process where this frame actually lives won't have sufficient
   // information to upgrade the url, since it won't have access to the
-  // originDocument. Do it now.
+  // origin context. Do it now.
   const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
-  if (frame_request.OriginDocument()) {
-    fetch_client_settings_object = &frame_request.OriginDocument()
-                                        ->Fetcher()
-                                        ->GetProperties()
-                                        .GetFetchClientSettingsObject();
+  if (window) {
+    fetch_client_settings_object =
+        &window->Fetcher()->GetProperties().GetFetchClientSettingsObject();
   }
-  LocalFrame* frame = frame_request.OriginDocument()
-                          ? frame_request.OriginDocument()->GetFrame()
-                          : nullptr;
   MixedContentChecker::UpgradeInsecureRequest(
-      frame_request.GetResourceRequest(), fetch_client_settings_object,
-      frame ? frame->DomWindow() : nullptr, frame_request.GetFrameType(),
-      frame ? frame->GetContentSettingsClient() : nullptr);
+      frame_request.GetResourceRequest(), fetch_client_settings_object, window,
+      frame_request.GetFrameType(),
+      window ? window->GetFrame()->GetContentSettingsClient() : nullptr);
 
   // Navigations in portal contexts do not create back/forward entries.
   if (GetPage()->InsidePortal() &&
@@ -175,21 +170,19 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   }
 
   WebLocalFrame* initiator_frame =
-      frame ? frame->Client()->GetWebFrame() : nullptr;
+      window ? window->GetFrame()->Client()->GetWebFrame() : nullptr;
 
   bool is_opener_navigation = false;
   bool initiator_frame_has_download_sandbox_flag = false;
   bool initiator_frame_is_ad = false;
 
-  if (frame) {
-    is_opener_navigation = frame->Client()->Opener() == this;
+  if (window) {
+    is_opener_navigation = window->GetFrame()->Client()->Opener() == this;
     initiator_frame_has_download_sandbox_flag =
-        frame->GetSecurityContext() &&
-        frame->GetSecurityContext()->IsSandboxed(
-            network::mojom::blink::WebSandboxFlags::kDownloads);
-    initiator_frame_is_ad = frame->IsAdSubframe();
+        window->IsSandboxed(network::mojom::blink::WebSandboxFlags::kDownloads);
+    initiator_frame_is_ad = window->GetFrame()->IsAdSubframe();
     if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
-      probe::FrameRequestedNavigation(frame, this, url,
+      probe::FrameRequestedNavigation(window->GetFrame(), this, url,
                                       frame_request.ClientRedirectReason(),
                                       kNavigationPolicyCurrentTab);
     }

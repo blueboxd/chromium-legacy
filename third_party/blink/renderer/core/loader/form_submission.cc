@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -156,7 +157,7 @@ inline FormSubmission::FormSubmission(
     std::unique_ptr<ResourceRequest> resource_request,
     Frame* target_frame,
     WebFrameLoadType load_type,
-    Document* origin_document)
+    LocalDOMWindow* origin_window)
     : method_(method),
       action_(action),
       target_(target),
@@ -169,7 +170,7 @@ inline FormSubmission::FormSubmission(
       resource_request_(std::move(resource_request)),
       target_frame_(target_frame),
       load_type_(load_type),
-      origin_document_(origin_document) {}
+      origin_window_(origin_window) {}
 
 inline FormSubmission::FormSubmission(const String& result)
     : method_(kDialogMethod), result_(result) {}
@@ -301,7 +302,8 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
     triggering_event_info = TriggeringEventInfo::kNotFromEvent;
   }
 
-  FrameLoadRequest frame_request(&form->GetDocument(), *resource_request);
+  FrameLoadRequest frame_request(form->GetDocument().domWindow(),
+                                 *resource_request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(event));
   frame_request.SetClientRedirectReason(reason);
   frame_request.SetForm(form);
@@ -325,13 +327,13 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       encoding_type, form, std::move(form_data), event,
       frame_request.GetNavigationPolicy(), triggering_event_info, reason,
       std::move(resource_request), target_frame, load_type,
-      frame_request.OriginDocument());
+      form->GetDocument().domWindow());
 }
 
 void FormSubmission::Trace(Visitor* visitor) const {
   visitor->Trace(form_);
   visitor->Trace(target_frame_);
-  visitor->Trace(origin_document_);
+  visitor->Trace(origin_window_);
 }
 
 void FormSubmission::Navigate() {
@@ -342,7 +344,7 @@ void FormSubmission::Navigate() {
   }
   resource_request_->SetUrl(request_url);
 
-  FrameLoadRequest frame_request(origin_document_.Get(), *resource_request_);
+  FrameLoadRequest frame_request(origin_window_.Get(), *resource_request_);
   frame_request.SetNavigationPolicy(navigation_policy_);
   frame_request.SetClientRedirectReason(reason_);
   frame_request.SetForm(form_);

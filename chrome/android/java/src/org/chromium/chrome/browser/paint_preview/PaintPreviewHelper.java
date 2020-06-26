@@ -18,14 +18,24 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
  */
 public class PaintPreviewHelper {
     /**
-     * Observes a {@link TabModelSelector} to monitor for initialization completion.
+     * Tracks whether there has been an attempt to display a paint preview before. We use this to
+     * only attempt to display a paint preview on the first tab restoration that happens after
+     * Chrome startup.
+     */
+    private static boolean sHasAttemptedToShowOnRestore;
+
+    /**
+     * Initializes the logic required for the Paint Preview on startup feature. Mainly, observes a
+     * {@link TabModelSelector} to monitor for initialization completion.
      * @param activity The ChromeActivity that corresponds to the tabModelSelector.
      * @param tabModelSelector The TabModelSelector to observe.
      */
-    public static void observeTabModelSelector(
-            ChromeActivity activity, TabModelSelector tabModelSelector) {
+    public static void initialize(ChromeActivity activity, TabModelSelector tabModelSelector) {
         if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) return;
 
+        if (!MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(activity)) {
+            sHasAttemptedToShowOnRestore = false;
+        }
         // TODO(crbug/1074428): verify this doesn't cause a memory leak if the user exits Chrome
         // prior to onTabStateInitialized being called.
         tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
@@ -43,7 +53,7 @@ public class PaintPreviewHelper {
     }
 
     /**
-     * Attemps to display the Paint Preview representation of for the given Tab.
+     * Attempts to display the Paint Preview representation of for the given Tab.
      * @param onShown The callback for when the Paint Preview is shown.
      * @param onDismissed The callback for when the Paint Preview is dismissed.
      * @return Whether the Paint Preview started to initialize or is already initializating.
@@ -51,10 +61,12 @@ public class PaintPreviewHelper {
      */
     public static boolean showPaintPreviewOnRestore(
             Tab tab, Runnable onShown, Runnable onDismissed) {
-        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)) {
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP)
+                || sHasAttemptedToShowOnRestore) {
             return false;
         }
 
+        sHasAttemptedToShowOnRestore = true;
         return TabbedPaintPreviewPlayer.get(tab).maybeShow(onShown, onDismissed);
     }
 }

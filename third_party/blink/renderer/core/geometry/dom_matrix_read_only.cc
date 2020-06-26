@@ -111,7 +111,7 @@ DOMMatrixReadOnly* DOMMatrixReadOnly::Create(
     const StringOrUnrestrictedDoubleSequence& init,
     ExceptionState& exception_state) {
   if (init.IsString()) {
-    if (!execution_context->IsDocument()) {
+    if (!execution_context->IsWindow()) {
       exception_state.ThrowTypeError(
           "DOMMatrix can't be constructed with strings on workers.");
       return nullptr;

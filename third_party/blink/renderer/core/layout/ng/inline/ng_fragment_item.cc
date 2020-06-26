@@ -197,7 +197,6 @@ NGFragmentItem::NGFragmentItem(const NGFragmentItem& source)
       ink_overflow_computed_(source.ink_overflow_computed_),
       is_dirty_(source.is_dirty_),
       is_last_for_node_(source.is_last_for_node_) {
-  DCHECK(!source.ink_overflow_);  // Ensure it was moved.
   switch (Type()) {
     case kText:
       new (&text_) TextItem(source.text_);

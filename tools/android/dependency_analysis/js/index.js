@@ -97,12 +97,14 @@ function renderGraph(inputData) {
   // TODO(yjlong): SVG should be resizable & these values updated.
   const width = +svg.attr('width');
   const height = +svg.attr('height');
-
+  const centeringStrengthY = 1.0;
+  const centeringStrengthX = centeringStrengthY * (height / width);
   const simulation = d3.forceSimulation()
       .nodes(inputNodes)
-      .alphaMin(0.1) // Stop the simulation faster than default (0.001).
-      .force('chargeForce', d3.forceManyBody().strength(-300))
-      .force('centerForce', d3.forceCenter(width / 2, height / 2))
+      .alphaMin(0.03) // Stop the simulation faster than default (0.001).
+      .force('chargeForce', d3.forceManyBody().strength(-3000))
+      .force('centerXForce', d3.forceX(width / 2).strength(centeringStrengthX))
+      .force('centerYForce', d3.forceY(height / 2).strength(centeringStrengthY))
       .force('links', d3.forceLink(inputEdges).id(d => d.id));
   const reheatSimulation = () => simulation.alpha(0.3).restart();
 
@@ -194,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     graphStore.addIncludedNode('org.chromium.chrome.browser.omaha');
     graphStore.addIncludedNode('org.chromium.chrome.browser.media');
     graphStore.addIncludedNode('org.chromium.ui.base');
+    graphStore.setOutboundDepth(1);
 
     new Vue({
       el: '#selected-node-details',

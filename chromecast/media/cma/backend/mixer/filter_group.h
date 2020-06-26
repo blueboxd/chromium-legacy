@@ -134,6 +134,7 @@ class FilterGroup {
   };
 
   void ParseVolumeLimits(const base::Value* volume_limits);
+  void ZeroOutputBufferIfNeeded();
   void ResizeBuffers();
 
   const int num_channels_;

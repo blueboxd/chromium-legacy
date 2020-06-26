@@ -194,6 +194,8 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 
   web_app_info->file_handlers = manifest.file_handlers;
 
+  web_app_info->protocol_handlers = manifest.protocol_handlers;
+
   // If any shortcuts are specified in the manifest, they take precedence over
   // any we picked up from the web_app stuff.
   if (!manifest.shortcuts.empty() &&

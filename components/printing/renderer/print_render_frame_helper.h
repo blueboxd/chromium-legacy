@@ -536,6 +536,7 @@ class PrintRenderFrameHelper
     const std::vector<int>& pages_to_render() const;
     int pages_rendered_count() const;
     MetafileSkia* metafile();
+    ContentProxySet* typeface_content_info();
     int last_error() const;
 
    private:
@@ -558,6 +559,9 @@ class PrintRenderFrameHelper
     blink::WebNode source_node_;
 
     std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
+
+    // The typefaces encountered in the content during document serialization.
+    ContentProxySet typeface_content_info_;
 
     // A document metafile is needed when not using the print compositor.
     std::unique_ptr<MetafileSkia> metafile_;

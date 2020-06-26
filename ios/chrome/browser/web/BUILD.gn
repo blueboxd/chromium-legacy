@@ -262,6 +262,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:feature_flags",
     "//ios/components/security_interstitials",
+    "//ios/components/security_interstitials/lookalikes",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",

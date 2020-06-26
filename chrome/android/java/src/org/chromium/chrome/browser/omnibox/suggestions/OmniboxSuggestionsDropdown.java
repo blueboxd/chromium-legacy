@@ -48,6 +48,11 @@ public interface OmniboxSuggestionsDropdown {
          * Invoked whenever the User scrolls the list.
          */
         void onSuggestionDropdownScroll();
+
+        /**
+         * Invoked whenever the User scrolls the list to the top.
+         */
+        void onSuggestionDropdownOverscrolledToTop();
     }
 
     /** Get the Android View implementing suggestion list. */

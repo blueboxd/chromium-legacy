@@ -859,8 +859,10 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   if (!send_touch) {
-    WebMouseEvent event =
-        WebMouseEventBuilder::Build(theEvent, self, _pointerType);
+    bool unaccelerated_movement =
+        _mouse_locked && _mouse_lock_unaccelerated_movement;
+    WebMouseEvent event = WebMouseEventBuilder::Build(
+        theEvent, self, _pointerType, unaccelerated_movement);
 
     if (_mouse_locked &&
         base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
@@ -938,6 +940,10 @@ void ExtractUnderlines(NSAttributedString* string,
     CGAssociateMouseAndMouseCursorPosition(YES);
     [NSCursor unhide];
   }
+}
+
+- (void)setCursorLockedUnacceleratedMovement:(BOOL)unaccelerated {
+  _mouse_lock_unaccelerated_movement = unaccelerated;
 }
 
 // CommandDispatcherTarget implementation:

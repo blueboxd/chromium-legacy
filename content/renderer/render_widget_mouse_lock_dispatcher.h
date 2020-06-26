@@ -32,7 +32,8 @@ class RenderWidgetMouseLockDispatcher : public MouseLockDispatcher {
 
   void OnMouseLocked(
       blink::mojom::PointerLockResult result,
-      mojo::PendingRemote<blink::mojom::PointerLockContext> context);
+      blink::CrossVariantMojoRemote<
+          blink::mojom::PointerLockContextInterfaceBase> context);
 
   RenderWidget* render_widget_;
 

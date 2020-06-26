@@ -62,9 +62,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   // URL used by the SiteInstance associated with the WebViewGuest. See
   // GetGuestPartitionConfigForSite for the URL format.
   static GURL GetSiteForGuestPartitionConfig(
-      const std::string& partition_domain,
-      const std::string& partition_name,
-      bool in_memory);
+      const content::StoragePartitionConfig& storage_partition_config);
 
   // Returns the WebView partition ID associated with the render process
   // represented by |render_process_host|, if any. Otherwise, an empty string is

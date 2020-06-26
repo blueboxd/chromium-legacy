@@ -87,6 +87,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -450,7 +451,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           break;
       }
 #if defined(USE_OZONE)
-      if (params.surface_handle != gpu::kNullSurfaceHandle) {
+      if (features::IsUsingOzonePlatform() &&
+          params.surface_handle != gpu::kNullSurfaceHandle) {
         window_surface_ =
             ui::OzonePlatform::GetInstance()
                 ->GetSurfaceFactoryOzone()

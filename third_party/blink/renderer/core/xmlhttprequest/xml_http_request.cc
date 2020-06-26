@@ -309,11 +309,6 @@ XMLHttpRequest::~XMLHttpRequest() {
   ReportMemoryUsageToV8();
 }
 
-Document* XMLHttpRequest::GetDocument() const {
-  DCHECK(IsA<LocalDOMWindow>(GetExecutionContext()));
-  return To<LocalDOMWindow>(GetExecutionContext())->document();
-}
-
 XMLHttpRequest::State XMLHttpRequest::readyState() const {
   return state_;
 }
@@ -354,9 +349,10 @@ void XMLHttpRequest::InitResponseDocument() {
     return;
   }
 
+  auto* document = To<LocalDOMWindow>(GetExecutionContext())->document();
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(GetExecutionContext())
-                          .WithOwnerDocument(GetDocument())
+                          .WithOwnerDocument(document)
                           .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);
@@ -364,7 +360,7 @@ void XMLHttpRequest::InitResponseDocument() {
     response_document_ = MakeGarbageCollected<XMLDocument>(init);
 
   // FIXME: Set Last-Modified.
-  response_document_->SetContextFeatures(GetDocument()->GetContextFeatures());
+  response_document_->SetContextFeatures(document->GetContextFeatures());
   response_document_->SetMimeType(FinalResponseMIMETypeWithFallback());
 }
 
@@ -466,7 +462,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
   // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while
   // fetching is in progress. If that occurs it will still be measured relative
   // to the start of fetching."
-  if (GetExecutionContext() && GetExecutionContext()->IsDocument() && !async_) {
+  if (GetExecutionContext() && GetExecutionContext()->IsWindow() && !async_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "Timeouts cannot be set for synchronous "
                                       "requests made from a document.");
@@ -497,7 +493,7 @@ void XMLHttpRequest::setResponseType(const String& response_type,
   // Newer functionality is not available to synchronous requests in window
   // contexts, as a spec-mandated attempt to discourage synchronous XHR use.
   // responseType is one such piece of functionality.
-  if (GetExecutionContext() && GetExecutionContext()->IsDocument() && !async_) {
+  if (GetExecutionContext() && GetExecutionContext()->IsWindow() && !async_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The response type cannot be changed for "
                                       "synchronous requests made from a "
@@ -661,9 +657,10 @@ void XMLHttpRequest::open(const AtomicString& method,
   error_ = false;
   upload_complete_ = false;
 
-  if (!async && GetExecutionContext()->IsDocument()) {
-    if (GetDocument()->GetSettings() &&
-        !GetDocument()->GetSettings()->GetSyncXHRInDocumentsEnabled()) {
+  auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext());
+  if (!async && window) {
+    if (window->GetFrame() &&
+        !window->GetFrame()->GetSettings()->GetSyncXHRInDocumentsEnabled()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidAccessError,
           "Synchronous requests are disabled for this page.");
@@ -693,7 +690,7 @@ void XMLHttpRequest::open(const AtomicString& method,
     // exception thrown.
     // Refer : https://xhr.spec.whatwg.org/#sync-warning
     // Use count for XHR synchronous requests on main thread only.
-    if (!GetDocument()->ProcessingBeforeUnload()) {
+    if (!window->document()->ProcessingBeforeUnload()) {
       Deprecation::CountDeprecation(
           GetExecutionContext(),
           WebFeature::kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload);
@@ -740,7 +737,7 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
   }
 
   if (!async_) {
-    if (GetExecutionContext()->IsDocument() &&
+    if (GetExecutionContext()->IsWindow() &&
         !GetExecutionContext()->IsFeatureEnabled(
             mojom::blink::FeaturePolicyFeature::kSyncXHR,
             ReportOptions::kReportOnFailure,
@@ -1117,8 +1114,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   } else {
     // Use count for XHR synchronous requests.
     UseCounter::Count(&execution_context, WebFeature::kXMLHttpRequestSynchronous);
-    if (execution_context.IsDocument()) {
-      if (Frame* frame = GetDocument()->GetFrame()) {
+    if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+      if (Frame* frame = window->GetFrame()) {
         if (frame->IsMainFrame()) {
           UseCounter::Count(&execution_context,
                             WebFeature::kXMLHttpRequestSynchronousInMainFrame);
@@ -1162,7 +1159,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
 
   if (!async_) {
     base::TimeDelta blocking_time = base::TimeTicks::Now() - start_time;
-    if (execution_context.IsDocument()) {
+    if (execution_context.IsWindow()) {
       UMA_HISTOGRAM_MEDIUM_TIMES("XHR.Sync.BlockingTime.MainThread",
                                  blocking_time);
     } else {
@@ -1820,13 +1817,11 @@ void XMLHttpRequest::EndLoading() {
   send_flag_ = false;
   ChangeState(kDone);
 
-  if (!GetExecutionContext() || !GetExecutionContext()->IsDocument())
-    return;
-
-  if (GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetPage() && cors::IsOkStatus(status()))
-    GetDocument()->GetFrame()->GetPage()->GetChromeClient().AjaxSucceeded(
-        GetDocument()->GetFrame());
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
+    LocalFrame* frame = window->GetFrame();
+    if (frame && cors::IsOkStatus(status()))
+      frame->GetPage()->GetChromeClient().AjaxSucceeded(frame);
+  }
 }
 
 void XMLHttpRequest::DidSendData(uint64_t bytes_sent,

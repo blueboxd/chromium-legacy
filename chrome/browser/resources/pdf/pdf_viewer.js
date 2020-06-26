@@ -251,7 +251,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     this.inkController_ = new InkController(
         this.viewport, /** @type {!HTMLDivElement} */ (this.getContent()));
     this.tracker.add(
-        this.inkController_.getEventTarget(), 'stroke-added',
+        this.inkController_.getEventTarget(), 'has-unsaved-changes',
         () => chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true));
     this.tracker.add(
         this.inkController_.getEventTarget(), 'set-annotation-undo-state',

@@ -412,7 +412,7 @@ void BlinkAXTreeSource::SetLoadInlineTextBoxesForId(int32_t id) {
   load_inline_text_boxes_ids_.insert(id);
 }
 
-bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
+bool BlinkAXTreeSource::GetTreeData(ui::AXTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
   tree_data->loaded = root().IsLoaded();
@@ -443,13 +443,6 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
     tree_data->sel_focus_offset = focus_offset;
     tree_data->sel_anchor_affinity = anchor_affinity;
     tree_data->sel_focus_affinity = focus_affinity;
-  }
-
-  // Get the tree ID for this frame.
-  WebLocalFrame* web_frame = document().GetFrame();
-  if (web_frame) {
-    RenderFrame* render_frame = RenderFrame::FromWebFrame(web_frame);
-    tree_data->routing_id = render_frame->GetRoutingID();
   }
 
   tree_data->root_scroller_id = root().RootScroller().AxID();

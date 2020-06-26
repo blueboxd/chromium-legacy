@@ -116,13 +116,12 @@ void FullscreenMouseLockDispatcher::SendLockMouseRequest(
     bool request_unadjusted_movement) {
   bool has_transient_user_activation =
       requester_frame ? requester_frame->HasTransientUserActivation() : false;
-  auto* host = widget_->GetInputHandlerHost();
-  if (host) {
-    host->RequestMouseLock(has_transient_user_activation, /*privileged=*/true,
-                           request_unadjusted_movement,
-                           base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
-                                          weak_ptr_factory_.GetWeakPtr()));
-  }
+
+  widget_->GetWebWidget()->RequestMouseLock(
+      has_transient_user_activation, /*privileged=*/true,
+      request_unadjusted_movement,
+      base::BindOnce(&MouseLockDispatcher::OnLockMouseACK,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // anonymous namespace
@@ -160,26 +159,6 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
 
   void DidCommitAndDrawCompositorFrame() override {
     widget_->DidInitiatePaint();
-  }
-
-  void GetWidgetInputHandler(
-      blink::CrossVariantMojoReceiver<
-          blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
-      blink::CrossVariantMojoRemote<
-          blink::mojom::WidgetInputHandlerHostInterfaceBase>
-          widget_input_host_remote) override {
-    widget_->GetWidgetInputHandler(std::move(widget_input_receiver),
-                                   std::move(widget_input_host_remote));
-  }
-
-  void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override {
-    return widget_->SendCompositionRangeChanged(range, character_bounds);
-  }
-
-  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override {
-    return widget_->HasCurrentImeGuard(request_to_show_virtual_keyboard);
   }
 
   void FocusChanged(bool enabled) override { widget_->FocusChanged(enabled); }

@@ -91,7 +91,7 @@ String EmptyChromeClient::AcceptLanguages() {
 void EmptyLocalFrameClient::BeginNavigation(
     const ResourceRequest&,
     mojom::RequestContextFrameType,
-    Document* origin_document,
+    LocalDOMWindow*,
     DocumentLoader*,
     WebNavigationType,
     NavigationPolicy,

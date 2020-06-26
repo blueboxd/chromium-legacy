@@ -81,6 +81,11 @@ class AudioWorkletHandler final
   // MUST be set/used by render thread.
   CrossThreadPersistent<AudioWorkletProcessor> processor_;
 
+  // Keeps the reference of AudioBus objects from AudioNodeInput and
+  // AudioNodeOutput in order to pass them to AudioWorkletProcessor.
+  Vector<scoped_refptr<AudioBus>> inputs_;
+  Vector<scoped_refptr<AudioBus>> outputs_;
+
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map_;
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 

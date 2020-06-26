@@ -98,15 +98,15 @@ constexpr char kAndroidSettingsAppPackage[] = "com.android.settings";
 
 action::AppStatus GetActionAppStatus(AppStatus status) {
   switch (status) {
-    case AppStatus::UNKNOWN:
+    case AppStatus::kUnknown:
       return action::UNKNOWN;
-    case AppStatus::AVAILABLE:
+    case AppStatus::kAvailable:
       return action::AVAILABLE;
-    case AppStatus::UNAVAILABLE:
+    case AppStatus::kUnavailable:
       return action::UNAVAILABLE;
-    case AppStatus::VERSION_MISMATCH:
+    case AppStatus::kVersionMismatch:
       return action::VERSION_MISMATCH;
-    case AppStatus::DISABLED:
+    case AppStatus::kDisabled:
       return action::DISABLED;
   }
 }

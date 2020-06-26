@@ -57,8 +57,8 @@ class SessionInputInjectorWin::Core
   Core(scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
        std::unique_ptr<InputInjector> nested_executor,
        scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
-       const base::Closure& inject_sas,
-       const base::Closure& lock_workstation);
+       const base::RepeatingClosure& inject_sas,
+       const base::RepeatingClosure& lock_workstation);
 
   // InputInjector implementation.
   void Start(std::unique_ptr<ClipboardStub> client_clipboard) override;
@@ -90,10 +90,10 @@ class SessionInputInjectorWin::Core
   webrtc::ScopedThreadDesktop desktop_;
 
   // Used to inject Secure Attention Sequence.
-  base::Closure inject_sas_;
+  base::RepeatingClosure inject_sas_;
 
   // Used to lock the current session on non-home SKUs of Windows.
-  base::Closure lock_workstation_;
+  base::RepeatingClosure lock_workstation_;
 
   // Keys currently pressed by the client, used to detect key sequences.
   std::set<ui::DomCode> pressed_keys_;
@@ -105,8 +105,8 @@ SessionInputInjectorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     std::unique_ptr<InputInjector> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> execute_action_task_runner,
-    const base::Closure& inject_sas,
-    const base::Closure& lock_workstation)
+    const base::RepeatingClosure& inject_sas,
+    const base::RepeatingClosure& lock_workstation)
     : input_task_runner_(input_task_runner),
       nested_executor_(std::move(nested_executor)),
       execute_action_task_runner_(execute_action_task_runner),
@@ -221,8 +221,8 @@ SessionInputInjectorWin::SessionInputInjectorWin(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     std::unique_ptr<InputInjector> nested_executor,
     scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner,
-    const base::Closure& inject_sas,
-    const base::Closure& lock_workstation) {
+    const base::RepeatingClosure& inject_sas,
+    const base::RepeatingClosure& lock_workstation) {
   core_ = new Core(input_task_runner, std::move(nested_executor),
                    inject_sas_task_runner, inject_sas, lock_workstation);
 }

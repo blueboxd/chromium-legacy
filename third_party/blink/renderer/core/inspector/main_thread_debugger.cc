@@ -157,9 +157,7 @@ void MainThreadDebugger::ContextCreated(ScriptState* script_state,
       ToV8InspectorStringView(human_readable_name));
   context_info.origin = ToV8InspectorStringView(origin_string);
   context_info.auxData = ToV8InspectorStringView(aux_data);
-  context_info.hasMemoryOnConsole =
-      ExecutionContext::From(script_state) &&
-      ExecutionContext::From(script_state)->IsDocument();
+  context_info.hasMemoryOnConsole = LocalDOMWindow::From(script_state);
   GetV8Inspector()->contextCreated(context_info);
 }
 
@@ -352,9 +350,7 @@ void MainThreadDebugger::consoleClear(int context_group_id) {
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  DCHECK(execution_context);
-  DCHECK(execution_context->IsDocument());
+  DCHECK(ToLocalDOMWindow(context));
   return ToV8(
       MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized),
       context->Global(), isolate);

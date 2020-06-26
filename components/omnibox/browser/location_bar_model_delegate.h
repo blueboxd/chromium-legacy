@@ -72,11 +72,13 @@ class LocationBarModelDelegate {
   // previously-downloaded content.
   virtual bool IsOfflinePage() const;
 
-  // Returns true if the current page is a New Tab Page rendered by Instant.
-  virtual bool IsInstantNTP() const;
+  // Returns true if the current page is the default new tab page, i.e., the
+  // page shown when Google is the DSP, NTP is not provided by an extension,
+  // the profile is not off-the-record, and the browser is not in Guest mode.
+  virtual bool IsNewTabPage() const;
 
   // Returns whether |url| corresponds to the new tab page.
-  virtual bool IsNewTabPage(const GURL& url) const;
+  virtual bool IsNewTabPageURL(const GURL& url) const;
 
   // Returns whether |url| corresponds to the user's home page.
   virtual bool IsHomePage(const GURL& url) const;

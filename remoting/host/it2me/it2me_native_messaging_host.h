@@ -67,7 +67,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 
   // Set a callback to be called when a policy error notification has been
   // processed.
-  void SetPolicyErrorClosureForTesting(const base::Closure& closure);
+  void SetPolicyErrorClosureForTesting(base::OnceClosure closure);
 
   static std::string HostStateToString(It2MeHostState host_state);
 
@@ -164,9 +164,9 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   // is completed.  Rather than just failing, we thunk the connection call so
   // it can be executed after at least one successful policy read. This
   // variable contains the thunk if it is necessary.
-  base::Closure pending_connect_;
+  base::OnceClosure pending_connect_;
 
-  base::Closure policy_error_closure_for_testing_;
+  base::OnceClosure policy_error_closure_for_testing_;
 
   base::WeakPtr<It2MeNativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<It2MeNativeMessagingHost> weak_factory_{this};

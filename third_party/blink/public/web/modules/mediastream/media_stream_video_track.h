@@ -53,6 +53,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<double>& pan,
       const base::Optional<double>& tilt,
       const base::Optional<double>& zoom,
+      bool pan_tilt_zoom_allowed,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
 
@@ -73,6 +74,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<double>& pan,
       const base::Optional<double>& tilt,
       const base::Optional<double>& zoom,
+      bool pan_tilt_zoom_allowed,
       MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   ~MediaStreamVideoTrack() override;
@@ -122,6 +124,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   const base::Optional<double>& pan() const { return pan_; }
   const base::Optional<double>& tilt() const { return tilt_; }
   const base::Optional<double>& zoom() const { return zoom_; }
+  bool pan_tilt_zoom_allowed() const { return pan_tilt_zoom_allowed_; }
 
   // Setting information about the track size.
   // Called from MediaStreamVideoSource at track initialization.
@@ -187,6 +190,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   base::Optional<double> pan_;
   base::Optional<double> tilt_;
   base::Optional<double> zoom_;
+  bool pan_tilt_zoom_allowed_;
 
   // Weak ref to the source this tracks is connected to.
   base::WeakPtr<MediaStreamVideoSource> source_;

@@ -336,6 +336,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   element_info->setString("accessibleName", element->computedName());
   element_info->setString("accessibleRole", element->computedRole());
 
+  element_info->setString("layoutObjectName", layout_object->GetName());
+
   return element_info;
 }
 

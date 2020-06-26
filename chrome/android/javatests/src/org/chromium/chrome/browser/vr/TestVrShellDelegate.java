@@ -68,10 +68,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
         super.overrideDaydreamApi(api);
     }
 
-    public void overrideVrCoreVersionCheckerForTesting(VrCoreVersionChecker versionChecker) {
-        super.overrideVrCoreVersionChecker(versionChecker);
-    }
-
     public void setFeedbackFrequencyForTesting(int frequency) {
         super.setFeedbackFrequency(frequency);
     }

@@ -262,10 +262,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) {}
 
-  // Called when a frame is capturing mouse input, such as when a scrollbar
-  // is being dragged.
-  virtual void SetMouseCapture(bool capture) {}
-
   // Console messages ----------------------------------------------------
 
   // Whether or not we should report a detailed message for the given source.
@@ -682,6 +678,16 @@ class BLINK_EXPORT WebLocalFrameClient {
                                     int aggregated_percent,
                                     int impl_percent,
                                     base::Optional<int> main_percent) {}
+
+  // Update the current frame selection to the browser.
+  virtual void SyncSelectionIfRequired() {}
+
+  // Scroll the focused editable element into the rect. This should eventually
+  // be removed and all be done inside blink.
+  virtual void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect) {}
+
+  // Reset the currently tracked scrolled focused node.
+  virtual void ResetHasScrolledFocusedEditableIntoView() {}
 };
 
 }  // namespace blink

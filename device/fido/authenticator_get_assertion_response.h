@@ -67,12 +67,26 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
     android_client_data_ext_ = data;
   }
 
+  // hmac_secret contains the output of the hmac_secret extension.
+  base::Optional<base::span<const uint8_t>> hmac_secret() const;
+  void set_hmac_secret(std::vector<uint8_t>);
+
+  // hmac_secret_not_evaluated will be true in cases where the
+  // |FidoAuthenticator| was unable to process the extension, even though it
+  // supports hmac_secret in general. This is intended for a case of Windows,
+  // where some versions of webauthn.dll can only express the extension for
+  // makeCredential, not getAssertion.
+  bool hmac_secret_not_evaluated() const;
+  void set_hmac_secret_not_evaluated(bool);
+
  private:
   base::Optional<PublicKeyCredentialDescriptor> credential_;
   AuthenticatorData authenticator_data_;
   std::vector<uint8_t> signature_;
   base::Optional<PublicKeyCredentialUserEntity> user_entity_;
   base::Optional<uint8_t> num_credentials_;
+  base::Optional<std::vector<uint8_t>> hmac_secret_;
+  bool hmac_secret_not_evaluated_ = false;
 
   // If not base::nullopt, the content of the googleAndroidClientData extension
   // authenticator output.

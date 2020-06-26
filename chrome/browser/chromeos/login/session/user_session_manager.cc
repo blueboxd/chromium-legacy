@@ -70,6 +70,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/adb_sideloading_allowance_mode_policy_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
@@ -1859,6 +1860,12 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->ShowTPMAutoUpdateNotificationIfNeeded();
 
   GetMinimumVersionPolicyHandler()->MaybeShowNotificationOnLogin();
+
+  // Show a notification about ADB sideloading policy change if applicable.
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetAdbSideloadingAllowanceModePolicyHandler()
+      ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {

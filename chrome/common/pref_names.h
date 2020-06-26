@@ -820,6 +820,7 @@ extern const char kHardwareAccelerationModePrevious[];
 extern const char kDevicePolicyRefreshRate[];
 
 extern const char kFactoryResetRequested[];
+extern const char kForceFactoryReset[];
 extern const char kFactoryResetTPMFirmwareUpdateMode[];
 extern const char kDebuggingFeaturesRequested[];
 extern const char kEnableAdbSideloadingRequested[];
@@ -1071,6 +1072,12 @@ extern const char kMediaFeedsBackgroundFetching[];
 extern const char kMediaFeedsSafeSearchEnabled[];
 
 extern const char kAppCacheForceEnabled[];
+
+#if defined(OS_CHROMEOS)
+extern const char kAdbSideloadingDisallowedNotificationShown[];
+extern const char kAdbSideloadingPowerwashPlannedNotificationShownTime[];
+extern const char kAdbSideloadingPowerwashOnNextRebootNotificationShown[];
+#endif
 
 }  // namespace prefs
 

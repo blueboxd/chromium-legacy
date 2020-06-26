@@ -21,6 +21,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
 namespace ui {
 
@@ -29,6 +30,7 @@ class WaylandDataDeviceManager;
 class WaylandDataOffer;
 class WaylandWindow;
 class WaylandWindowManager;
+class WaylandSurface;
 
 // Drag controller implementation that drives window moving sessions (aka: tab
 // dragging). Wayland Drag and Drop protocol is used, under the hood, to keep
@@ -37,7 +39,8 @@ class WaylandWindowManager;
 // TODO(crbug.com/896640): Use drag icon to emulate window moving.
 class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
                                     public WaylandDataSource::Delegate,
-                                    public PlatformEventDispatcher {
+                                    public PlatformEventDispatcher,
+                                    public WaylandWindowObserver {
  public:
   // Constants used to keep track of the drag controller state.
   enum class State {
@@ -81,6 +84,9 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
+  // WaylandWindowObserver:
+  void OnWindowRemoved(WaylandWindow* window) override;
+
   // Offers the focused window as available to be dragged. A new data source is
   // setup and the underlying DnD session is started, if not done yet.
   bool OfferWindow();
@@ -103,12 +109,23 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   WaylandPointer::Delegate* const pointer_delegate_;
 
   State state_ = State::kIdle;
-  WaylandToplevelWindow* dragged_window_ = nullptr;
   gfx::Vector2d drag_offset_;
 
   std::unique_ptr<WaylandDataSource> data_source_;
   std::unique_ptr<WaylandDataOffer> data_offer_;
   wl::Object<wl_surface> icon_surface_;
+
+  // The current toplevel window being dragged, when in detached mode.
+  WaylandToplevelWindow* dragged_window_ = nullptr;
+
+  // The window where the DND session originated from. i.e: which had the
+  // pointer focus when the session was initiated.
+  WaylandWindow* origin_window_ = nullptr;
+
+  // The |origin_window_| can be destroyed during the DND session. If this
+  // happens, |origin_surface_| takes ownership of its surface and ensure it
+  // is kept alive until the end of the session.
+  std::unique_ptr<WaylandSurface> origin_surface_;
 
   std::unique_ptr<ScopedEventDispatcher> nested_dispatcher_;
   base::OnceClosure quit_loop_closure_;

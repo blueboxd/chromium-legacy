@@ -188,10 +188,9 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
     return;
   // Prevent promise rejection while shutting down the document.
   // See crbug.com/960290
-  if (execution_context->IsDocument() &&
-      To<LocalDOMWindow>(execution_context)->document()->IsDetached()) {
+  auto* window = DynamicTo<LocalDOMWindow>(execution_context);
+  if (window && window->document()->IsDetached())
     return;
-  }
 
   FontResource* font = ToFontResource(resource);
   histograms_.RecordRemoteFont(font);
@@ -294,7 +293,7 @@ FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
     ReportOptions report_option) const {
   ExecutionContext* context = font_selector->GetExecutionContext();
   if (display != kFontDisplayFallback && display != kFontDisplayOptional &&
-      context && context->IsDocument() &&
+      context && context->IsWindow() &&
       !context->IsFeatureEnabled(
           mojom::blink::DocumentPolicyFeature::kFontDisplay, report_option)) {
     return kFontDisplayOptional;

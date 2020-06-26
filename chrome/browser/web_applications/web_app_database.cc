@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/metadata_batch.h"
@@ -199,6 +200,13 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     // Additional search terms should be sanitized before being added here.
     DCHECK(!additional_search_term.empty());
     local_data->add_additional_search_terms(additional_search_term);
+  }
+
+  for (const auto& protocol_handler : web_app.protocol_handlers()) {
+    WebAppProtocolHandler* protocol_handler_proto =
+        local_data->add_protocol_handlers();
+    protocol_handler_proto->set_protocol(protocol_handler.protocol);
+    protocol_handler_proto->set_url(protocol_handler.url.spec());
   }
 
   return local_data;
@@ -392,6 +400,22 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     additional_search_terms.push_back(additional_search_term);
   }
   web_app->SetAdditionalSearchTerms(std::move(additional_search_terms));
+
+  std::vector<apps::ProtocolHandlerInfo> protocol_handlers;
+  for (const auto& protocol_handler_proto : local_data.protocol_handlers()) {
+    apps::ProtocolHandlerInfo protocol_handler;
+    protocol_handler.protocol = protocol_handler_proto.protocol();
+    GURL protocol_handler_url(protocol_handler_proto.url());
+    if (protocol_handler_url.is_empty() || !protocol_handler_url.is_valid()) {
+      DLOG(ERROR) << "WebApp ProtocolHandler proto url parse error: "
+                  << protocol_handler_url.possibly_invalid_spec();
+      return nullptr;
+    }
+    protocol_handler.url = protocol_handler_url;
+
+    protocol_handlers.push_back(std::move(protocol_handler));
+  }
+  web_app->SetProtocolHandlers(std::move(protocol_handlers));
 
   return web_app;
 }

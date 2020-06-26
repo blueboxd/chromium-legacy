@@ -83,6 +83,7 @@ class Document;
 class DocumentParser;
 class FrameLoader;
 class HistoryItem;
+class LocalDOMWindow;
 class LocalFrame;
 class LocalFrameClient;
 class MHTMLArchive;
@@ -164,7 +165,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                        scoped_refptr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
                                        WebFrameLoadType,
-                                       Document*);
+                                       bool is_content_initiated);
   const ResourceResponse& GetResponse() const { return response_; }
   bool IsClientRedirect() const { return is_client_redirect_; }
   bool ReplacesCurrentHistoryItem() const {
@@ -194,6 +195,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void StartLoading();
   void StopLoading();
 
+  // CommitNavigation() does the work of creating a Document and
+  // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
+  // initializes a bunch of state on the Document (e.g., the state based on
+  // response headers).
   void CommitNavigation();
 
   GlobalObjectReusePolicy GetGlobalObjectReusePolicy() const {
@@ -211,7 +216,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       WebFrameLoadType,
       HistoryItem*,
       ClientRedirectPolicy,
-      Document* origin_document,
+      LocalDOMWindow* origin_window,
       bool has_event,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 
@@ -343,15 +348,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       mojom::MHTMLLoadResult::kSuccess;
 
  private:
-  // InstallNewDocument() does the work of creating a Document and
-  // DocumentParser, as well as creating a new LocalDOMWindow if needed. It also
-  // initalizes a bunch of state on the Document (e.g., the state based on
-  // response headers).
-  void InstallNewDocument(
-      const KURL&,
-      const scoped_refptr<const SecurityOrigin> initiator_origin,
-      Document* owner_document,
-      const AtomicString& mime_type);
   void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation();
@@ -363,7 +359,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       WebFrameLoadType,
       HistoryItem*,
       ClientRedirectPolicy,
-      Document*,
+      bool is_content_initiated,
       bool has_event,
       std::unique_ptr<WebDocumentLoader::ExtraData>);
 

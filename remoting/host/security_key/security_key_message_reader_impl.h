@@ -30,7 +30,7 @@ class SecurityKeyMessageReaderImpl : public SecurityKeyMessageReader {
 
   // SecurityKeyMessageReader interface.
   void Start(const SecurityKeyMessageCallback& message_callback,
-             const base::Closure& error_callback) override;
+             base::OnceClosure error_callback) override;
 
  private:
   // Reads a message from the remote_security_key process and passes it to
@@ -53,7 +53,7 @@ class SecurityKeyMessageReaderImpl : public SecurityKeyMessageReader {
 
   // Caller-supplied message and error callbacks.
   SecurityKeyMessageCallback message_callback_;
-  base::Closure error_callback_;
+  base::OnceClosure error_callback_;
 
   // Thread used for blocking IO operations.
   base::Thread reader_thread_;

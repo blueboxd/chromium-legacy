@@ -31,18 +31,20 @@ class TestOptimizationGuideDecider
   TestOptimizationGuideDecider() = default;
   ~TestOptimizationGuideDecider() override = default;
 
-  void RegisterOptimizationTypesAndTargets(
-      const std::vector<optimization_guide::proto::OptimizationType>&
-          optimization_types,
+  void RegisterOptimizationTargets(
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets) override {
-    registered_optimization_types_ =
-        base::flat_set<optimization_guide::proto::OptimizationType>(
-            optimization_types.begin(), optimization_types.end());
-
     registered_optimization_targets_ =
         base::flat_set<optimization_guide::proto::OptimizationTarget>(
             optimization_targets.begin(), optimization_targets.end());
+  }
+
+  void RegisterOptimizationTypes(
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types) override {
+    registered_optimization_types_ =
+        base::flat_set<optimization_guide::proto::OptimizationType>(
+            optimization_types.begin(), optimization_types.end());
   }
 
   // Returns the optimization types registered with the Optimization Guide

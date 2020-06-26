@@ -189,20 +189,6 @@
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_BEHAVIOR_JS"
              file="cr_elements/policy/cr_policy_indicator_behavior.js"
              type="chrome_html" />
-  <if expr="chromeos">
-    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_BEHAVIOR_MOJO_HTML"
-               file="cr_elements/policy/cr_policy_network_behavior_mojo.html"
-               type="chrome_html" />
-    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_BEHAVIOR_MOJO_JS"
-               file="cr_elements/policy/cr_policy_network_behavior_mojo.js"
-               type="chrome_html" />
-    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_INDICATOR_MOJO_JS"
-               file="cr_elements/policy/cr_policy_network_indicator_mojo.js"
-               type="chrome_html" />
-    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_INDICATOR_MOJO_HTML"
-               file="cr_elements/policy/cr_policy_network_indicator_mojo.html"
-               type="chrome_html" />
-  </if>
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_PREF_BEHAVIOR_HTML"
              file="cr_elements/policy/cr_policy_pref_behavior.html"
              type="chrome_html" />

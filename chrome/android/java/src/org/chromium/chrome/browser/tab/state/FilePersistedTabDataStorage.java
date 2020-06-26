@@ -14,7 +14,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
@@ -85,7 +85,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected File getFile(int tabId, String dataId) {
-        return new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
+        return new File(TabStateDirectory.getOrCreateTabbedModeStateDirectory(),
                 String.format(Locale.ENGLISH, "%d%s", tabId, dataId));
     }
 

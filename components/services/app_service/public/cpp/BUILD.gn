@@ -89,6 +89,15 @@ source_set("intents") {
   ]
 }
 
+source_set("protocol_handling") {
+  sources = [
+    "protocol_handler_info.cc",
+    "protocol_handler_info.h",
+  ]
+
+  deps = [ "//url" ]
+}
+
 source_set("preferred_apps") {
   sources = [
     "preferred_apps_converter.cc",

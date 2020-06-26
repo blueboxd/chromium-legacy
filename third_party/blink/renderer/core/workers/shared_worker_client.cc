@@ -28,7 +28,7 @@ void SharedWorkerClient::OnCreated(
 
   // No nested workers (for now) - connect() can only be called from a
   // window context.
-  DCHECK(worker_->GetExecutionContext()->IsDocument());
+  DCHECK(worker_->GetExecutionContext()->IsWindow());
   DCHECK_EQ(creation_context_type,
             worker_->GetExecutionContext()->IsSecureContext()
                 ? mojom::SharedWorkerCreationContextType::kSecure

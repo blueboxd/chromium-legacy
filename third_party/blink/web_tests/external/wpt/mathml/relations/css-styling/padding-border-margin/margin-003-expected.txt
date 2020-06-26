@@ -6,9 +6,9 @@ FAIL Margin properties on the children of mmultiscripts assert_approx_equals: bl
 PASS Margin properties on the children of mover
 PASS Margin properties on the children of mpadded
 PASS Margin properties on the children of mphantom
-FAIL Margin properties on the children of mroot assert_true: mroot is supported expected true got false
+PASS Margin properties on the children of mroot
 PASS Margin properties on the children of mrow
-FAIL Margin properties on the children of msqrt assert_true: msqrt is supported expected true got false
+PASS Margin properties on the children of msqrt
 PASS Margin properties on the children of mstyle
 PASS Margin properties on the children of msub
 PASS Margin properties on the children of msubsup

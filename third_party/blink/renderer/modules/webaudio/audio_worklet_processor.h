@@ -45,15 +45,15 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
 
   // |AudioWorkletHandler| invokes this method to process audio.
   bool Process(
-      Vector<scoped_refptr<AudioBus>>* input_buses,
-      Vector<scoped_refptr<AudioBus>>* output_buses,
-      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
+      const Vector<scoped_refptr<AudioBus>>& inputs,
+      Vector<scoped_refptr<AudioBus>>& outputs,
+      const HashMap<String, std::unique_ptr<AudioFloatArray>>& param_value_map);
 
   const String& Name() const { return name_; }
 
   void SetErrorState(AudioWorkletProcessorErrorState);
   AudioWorkletProcessorErrorState GetErrorState() const;
-  bool hasErrorOccured() const;
+  bool hasErrorOccurred() const;
 
   // IDL
   MessagePort* port() const;

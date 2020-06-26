@@ -1294,10 +1294,30 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
     'modifications': {
+      # TODO(https://crbug.com/1099762): Remove the --expected-device-id args
+      # once JSON generation properly handles multiple GPUs.
+      'ANGLE GPU Win10 x64 Release (Intel HD 630)': {
+        'args': [
+          '--expected-device-id', '3e92',
+        ],
+      },
+      'Optional Win10 x64 Release (Intel HD 630)': {
+        'args': [
+          '--expected-device-id', '3e92',
+        ],
+      },
       'Win10 FYI x64 Exp Release (Intel HD 630)': {
         'args': [
-          # TODO(https://crbug.com/1053803): Add this to all tests once UHD
-          # 630 machines are used alongside HD 630 machines.
+          '--expected-device-id', '3e92',
+        ],
+      },
+      'Win10 FYI x64 Release (Intel HD 630)': {
+        'args': [
+          '--expected-device-id', '3e92',
+        ],
+      },
+      'Win10 FYI x64 dEQP Release (Intel HD 630)': {
+        'args': [
           '--expected-device-id', '3e92',
         ],
       },

@@ -20,7 +20,7 @@ bool ScopedDeviceActions::OpenAndroidApp(const AndroidAppInfo& app_info) {
 
 AppStatus ScopedDeviceActions::GetAndroidAppStatus(
     const AndroidAppInfo& app_info) {
-  return AppStatus::AVAILABLE;
+  return AppStatus::kAvailable;
 }
 
 }  // namespace assistant

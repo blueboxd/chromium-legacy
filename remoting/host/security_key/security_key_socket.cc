@@ -29,12 +29,12 @@ const char kSshError[] = {0x05};
 
 SecurityKeySocket::SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
                                      base::TimeDelta timeout,
-                                     const base::Closure& timeout_callback)
+                                     base::OnceClosure timeout_callback)
     : socket_(std::move(socket)),
       read_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
           kRequestReadBufferLength)) {
   timer_.reset(new base::OneShotTimer());
-  timer_->Start(FROM_HERE, timeout, timeout_callback);
+  timer_->Start(FROM_HERE, timeout, std::move(timeout_callback));
 }
 
 SecurityKeySocket::~SecurityKeySocket() {
@@ -78,12 +78,12 @@ void SecurityKeySocket::SendSshError() {
 }
 
 void SecurityKeySocket::StartReadingRequest(
-    const base::Closure& request_received_callback) {
+    base::OnceClosure request_received_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(request_received_callback_.is_null());
+  DCHECK(!request_received_callback_);
 
   waiting_for_request_ = true;
-  request_received_callback_ = request_received_callback;
+  request_received_callback_ = std::move(request_received_callback);
 
   DoRead();
 }

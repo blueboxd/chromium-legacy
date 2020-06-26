@@ -13,6 +13,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/trust_token_parameterization.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/boringssl_trust_token_issuance_cryptographer.h"
 #include "services/network/trust_tokens/boringssl_trust_token_redemption_cryptographer.h"
@@ -21,6 +22,7 @@
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_key_commitment_controller.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
 #include "services/network/trust_tokens/trust_token_request_issuance_helper.h"
 #include "services/network/trust_tokens/trust_token_request_redemption_helper.h"
@@ -137,12 +139,32 @@ void TrustTokenRequestHelperFactory::ConstructHelperUsingStore(
         return;
       }
 
+      if (params->possibly_unsafe_additional_signing_data) {
+        if (params->possibly_unsafe_additional_signing_data->size() >
+            kTrustTokenAdditionalSigningDataMaxSizeBytes) {
+          LogOutcome(net_log, "Overly long additionalSigningData");
+          std::move(done).Run(
+              mojom::TrustTokenOperationStatus::kInvalidArgument);
+          return;
+        }
+
+        if (!net::HttpUtil::IsValidHeaderValue(
+                *params->possibly_unsafe_additional_signing_data)) {
+          LogOutcome(net_log,
+                     "additionalSigningData was not a valid HTTP header value");
+          std::move(done).Run(
+              mojom::TrustTokenOperationStatus::kInvalidArgument);
+          return;
+        }
+      }
+
       TrustTokenRequestSigningHelper::Params signing_params(
           std::move(*maybe_issuer), top_frame_origin,
           std::move(params->additional_signed_headers),
-          params->include_timestamp_header, params->sign_request_data);
+          params->include_timestamp_header, params->sign_request_data,
+          params->possibly_unsafe_additional_signing_data);
 
-      LogOutcome(net_log, "Missing/unsuitable 'issuer' parameter");
+      LogOutcome(net_log, "Success");
       std::move(done).Run(std::unique_ptr<TrustTokenRequestHelper>(
           new TrustTokenRequestSigningHelper(
               store, std::move(signing_params),

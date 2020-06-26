@@ -37,7 +37,7 @@ class LocationBarModelAndroid : public ChromeLocationBarModelDelegate {
 
   // ChromeLocationBarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
-  bool IsInstantNTP() const override;
+  bool IsNewTabPage() const override;
 
  private:
   std::unique_ptr<LocationBarModel> location_bar_model_;

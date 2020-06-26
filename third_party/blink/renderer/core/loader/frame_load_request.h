@@ -33,7 +33,6 @@
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/web/web_window_features.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -44,18 +43,19 @@
 namespace blink {
 
 class HTMLFormElement;
+class LocalDOMWindow;
 class KURL;
 
 struct CORE_EXPORT FrameLoadRequest {
   STACK_ALLOCATED();
 
  public:
-  FrameLoadRequest(Document* origin_document, const ResourceRequest&);
-  FrameLoadRequest(Document* origin_document, const ResourceRequestHead&);
+  FrameLoadRequest(LocalDOMWindow* origin_window, const ResourceRequest&);
+  FrameLoadRequest(LocalDOMWindow* origin_window, const ResourceRequestHead&);
   FrameLoadRequest(const FrameLoadRequest&) = delete;
   FrameLoadRequest& operator=(const FrameLoadRequest&) = delete;
 
-  Document* OriginDocument() const { return origin_document_; }
+  LocalDOMWindow* GetOriginWindow() const { return origin_window_; }
 
   mojom::RequestContextFrameType GetFrameType() const { return frame_type_; }
   void SetFrameType(mojom::RequestContextFrameType frame_type) {
@@ -153,12 +153,10 @@ struct CORE_EXPORT FrameLoadRequest {
 
   const base::Optional<WebImpression>& Impression() { return impression_; }
 
-  // Whether either OriginDocument, RequestorOrigin or IsolatedWorldOrigin can
-  // display the |url|,
   bool CanDisplay(const KURL&) const;
 
  private:
-  Document* origin_document_;
+  LocalDOMWindow* origin_window_;
   ResourceRequest resource_request_;
   AtomicString href_translate_;
   ClientNavigationReason client_navigation_reason_ =

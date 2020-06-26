@@ -7,11 +7,11 @@
 
 #include "content/common/ax_content_node_data.h"
 #include "content/common/ax_content_node_data_mojom_traits.h"
-#include "content/common/ax_content_tree_data.h"
-#include "content/common/ax_content_tree_data_mojom_traits.h"
 #include "content/common/ax_content_tree_update.h"
 #include "content/common/ax_content_tree_update.mojom-shared.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/mojom/ax_event_intent_mojom_traits.h"
+#include "ui/accessibility/mojom/ax_tree_data_mojom_traits.h"
 
 namespace mojo {
 
@@ -21,7 +21,7 @@ struct StructTraits<ax::mojom::AXContentTreeUpdateDataView,
   static bool has_tree_data(const content::AXContentTreeUpdate& p) {
     return p.has_tree_data;
   }
-  static const content::AXContentTreeData& tree_data(
+  static const ui::AXTreeData& tree_data(
       const content::AXContentTreeUpdate& p) {
     return p.tree_data;
   }

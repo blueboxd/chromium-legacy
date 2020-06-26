@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -546,14 +547,16 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
 
 void WebPluginContainerImpl::LoadFrameRequest(const WebURLRequest& request,
                                               const WebString& target) {
-  LocalFrame* frame = element_->GetDocument().GetFrame();
-  if (!frame || !frame->Loader().GetDocumentLoader())
-    return;  // FIXME: send a notification in this case?
+  LocalDOMWindow* window = element_->GetDocument().domWindow();
+  if (!window)
+    return;
 
-  FrameLoadRequest frame_request(frame->GetDocument(),
-                                 request.ToResourceRequest());
+  FrameLoadRequest frame_request(window, request.ToResourceRequest());
   Frame* target_frame =
-      frame->Tree().FindOrCreateFrameForNavigation(frame_request, target).frame;
+      window->GetFrame()
+          ->Tree()
+          .FindOrCreateFrameForNavigation(frame_request, target)
+          .frame;
   if (target_frame)
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }

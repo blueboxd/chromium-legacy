@@ -587,11 +587,10 @@ config("compiler") {
     assert(use_lld || target_os == "chromeos",
            "gold plugin only supported with ChromeOS")
 
-    cflags += [ "-flto=thin" ]
-
-    if (target_os != "chromeos") {
-      cflags += [ "-fsplit-lto-unit" ]
-    }
+    cflags += [
+      "-flto=thin",
+      "-fsplit-lto-unit",
+    ]
 
     if (thin_lto_enable_optimizations) {
       lto_opt_level = 2

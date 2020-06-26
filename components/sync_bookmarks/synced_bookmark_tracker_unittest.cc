@@ -16,6 +16,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/model/entity_data.h"
+#include "components/sync_bookmarks/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -991,6 +992,94 @@ TEST(SyncedBookmarkTrackerTest, ShouldPopulateFaviconHashExplicitly) {
   // Further calls should be ignored.
   tracker->PopulateFaviconHashIfUnset(entity, "otherpngbytes");
   EXPECT_TRUE(entity->MatchesFaviconHash(kFaviconPngBytes));
+}
+
+TEST(SyncedBookmarkTrackerTest, ShouldNotReuploadEntitiesAfterMergeAndRestart) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncReuploadBookmarkFullTitles);
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.foo.com");
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(model_type_state);
+  tracker->SetBookmarksFullTitleReuploaded();
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* node =
+      model->AddURL(/*parent=*/bookmark_bar_node, /*index=*/0,
+                    base::UTF8ToUTF16(kTitle), kUrl);
+
+  const sync_pb::EntitySpecifics specifics =
+      GenerateSpecifics(kTitle, kUrl.spec());
+  tracker->Add(node, /*sync_id=*/"id", /*server_version=*/0,
+               /*creation_time=*/base::Time::Now(),
+               syncer::UniquePosition::InitialPosition(
+                   syncer::UniquePosition::RandomSuffix())
+                   .ToProto(),
+               specifics);
+
+  sync_pb::EntitySpecifics permanent_specifics;
+  permanent_specifics.mutable_bookmark();
+
+  // Add permanent nodes to tracker.
+  tracker->Add(model->bookmark_bar_node(), kBookmarkBarId, /*server_version=*/0,
+               /*creation_time=*/base::Time::Now(),
+               syncer::UniquePosition::InitialPosition(
+                   syncer::UniquePosition::RandomSuffix())
+                   .ToProto(),
+               permanent_specifics);
+  tracker->Add(model->other_node(), kOtherBookmarksId, /*server_version=*/0,
+               /*creation_time=*/base::Time::Now(),
+               syncer::UniquePosition::InitialPosition(
+                   syncer::UniquePosition::RandomSuffix())
+                   .ToProto(),
+               permanent_specifics);
+  tracker->Add(model->mobile_node(), kMobileBookmarksId, /*server_version=*/0,
+               /*creation_time=*/base::Time::Now(),
+               syncer::UniquePosition::InitialPosition(
+                   syncer::UniquePosition::RandomSuffix())
+                   .ToProto(),
+               permanent_specifics);
+
+  ASSERT_FALSE(tracker->HasLocalChanges());
+
+  // Simulate browser restart.
+  tracker = SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+      model.get(), tracker->BuildBookmarkModelMetadata());
+  ASSERT_THAT(tracker, NotNull());
+  EXPECT_FALSE(tracker->HasLocalChanges());
+  EXPECT_EQ(4u, tracker->TrackedEntitiesCountForTest());
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldResetReuploadFlagOnDisabledFeatureToggle) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(
+      switches::kSyncReuploadBookmarkFullTitles);
+
+  const std::string kTitle = "Title";
+  const GURL kUrl("http://www.foo.com");
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+  sync_pb::BookmarkModelMetadata initial_model_metadata =
+      CreateMetadataForPermanentNodes(bookmark_model.get());
+  initial_model_metadata.set_bookmarks_full_title_reuploaded(true);
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+          bookmark_model.get(), std::move(initial_model_metadata));
+  ASSERT_THAT(tracker, NotNull());
+
+  EXPECT_FALSE(
+      tracker->BuildBookmarkModelMetadata().bookmarks_full_title_reuploaded());
 }
 
 }  // namespace

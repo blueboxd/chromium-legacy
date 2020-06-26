@@ -78,7 +78,6 @@
 #include "content/renderer/categorized_worker_pool.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/frame_swap_message_queue.h"
-#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
@@ -1840,8 +1839,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
             compositor_task_runner_, GetGpuMemoryBufferManager(),
             sync_message_filter(), g_next_layer_tree_frame_sink_id++,
             std::move(params.synthetic_begin_frame_source),
-            render_widget->widget_input_handler_manager()
-                ->GetSynchronousCompositorRegistry(),
+            render_widget->GetWebWidget()->GetSynchronousCompositorRegistry(),
             std::move(frame_swap_message_queue),
             std::move(params.pipes.compositor_frame_sink_remote),
             std::move(params.pipes.client_receiver)),

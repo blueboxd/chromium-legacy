@@ -28,9 +28,12 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
@@ -43,6 +46,9 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class ChromeProvidedSharingOptionsProviderTest {
     @Rule
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    @Rule
     public ActivityTestRule<DummyUiActivity> mActivityTestRule =
             new ActivityTestRule<>(DummyUiActivity.class);
 
@@ -51,6 +57,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Mock
     private PrefServiceBridge mPrefServiceBridge;
+
+    private static final String URL = "http://www.google.com/";
 
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
@@ -183,13 +191,38 @@ public class ChromeProvidedSharingOptionsProviderTest {
         assertModelsAreFirstParty(propertyModels);
     }
 
+    @Test
+    @MediumTest
+    public void getUrlToShare_noShareParamsUrl_returnsImageUrl() {
+        ShareParams shareParams = new ShareParams.Builder(null, /*title=*/"", /*url=*/"").build();
+        ChromeShareExtras chromeShareExtras =
+                new ChromeShareExtras.Builder().setImageSrcUrl(URL).build();
+
+        assertEquals("URL should be imageSrcUrl.",
+                ChromeProvidedSharingOptionsProvider.getUrlToShare(shareParams, chromeShareExtras),
+                URL);
+    }
+
+    @Test
+    @MediumTest
+    public void getUrlToShare_shareParamsUrlExists_returnsShareParamsUrl() {
+        ShareParams shareParams = new ShareParams.Builder(null, /*title=*/"", URL).build();
+        ChromeShareExtras chromeShareExtras =
+                new ChromeShareExtras.Builder().setImageSrcUrl("").build();
+
+        assertEquals("URL should be ShareParams URL.",
+                ChromeProvidedSharingOptionsProvider.getUrlToShare(shareParams, chromeShareExtras),
+                URL);
+    }
+
     private void setUpChromeProvidedSharingOptionsProviderTest(boolean printingEnabled) {
         Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(printingEnabled);
 
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
                 /*activityTabProvider=*/null, /*bottomSheetController=*/null,
                 new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
-                /*shareParams=*/null,
+                new ShareParams.Builder(null, "", "").build(),
+                new ChromeShareExtras.Builder().build(),
                 /*TabPrinterDelegate=*/null,
                 /*shareStartTime=*/0,
                 /*shareSheetCoordinator=*/null);

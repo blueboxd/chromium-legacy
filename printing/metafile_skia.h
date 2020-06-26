@@ -105,6 +105,8 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   int GetDocumentCookie() const;
   const ContentToProxyIdMap& GetSubframeContentInfo() const;
 
+  void UtilizeTypefaceContext(ContentProxySet* typeface_content_info);
+
   const ui::AXTreeUpdate& accessibility_tree() const {
     return accessibility_tree_;
   }
@@ -112,6 +114,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetafileSkiaTest, TestFrameContent);
+  FRIEND_TEST_ALL_PREFIXES(MetafileSkiaTest, TestMultiPictureDocumentTypefaces);
 
   // The following three functions are used for tests only.
   void AppendPage(const SkSize& page_size, sk_sp<cc::PaintRecord> record);

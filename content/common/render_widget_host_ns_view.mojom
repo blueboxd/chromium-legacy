@@ -74,6 +74,10 @@ interface RenderWidgetHostNSView {
   // Lock or unlock the cursor.
   SetCursorLocked(bool locked);
 
+  // Set whether unaccelerated (unadjusted) mouse move events are
+  // generated while the cursor is locked.
+  SetCursorLockedUnacceleratedMovement(bool unaccelerated_movement);
+
   // Open the dictionary overlay for the currently selected string. This
   // will roundtrip to the NSView to determine the selected range.
   ShowDictionaryOverlayForSelection();

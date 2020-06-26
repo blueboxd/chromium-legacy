@@ -57,14 +57,15 @@ Display::Display()
 }
 
 #if defined(OS_CHROMEOS)
-Display::Display(NotificationSurfaceManager* notification_surface_manager,
-                 InputMethodSurfaceManager* input_method_surface_manager,
-                 std::unique_ptr<FileHelper> file_helper)
-    : Display() {
-  file_helper_ = std::move(file_helper);
-  notification_surface_manager_ = notification_surface_manager;
-  input_method_surface_manager_ = input_method_surface_manager;
-}
+Display::Display(
+    std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
+    std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
+    std::unique_ptr<FileHelper> file_helper)
+    : notification_surface_manager_(std::move(notification_surface_manager)),
+      input_method_surface_manager_(std::move(input_method_surface_manager)),
+      file_helper_(std::move(file_helper)),
+      client_native_pixmap_factory_(
+          gfx::CreateClientNativePixmapFactoryDmabuf()) {}
 #endif  // defined(OS_CHROMEOS)
 
 Display::~Display() {}
@@ -187,8 +188,8 @@ std::unique_ptr<NotificationSurface> Display::CreateNotificationSurface(
     return nullptr;
   }
 
-  return std::make_unique<NotificationSurface>(notification_surface_manager_,
-                                               surface, notification_key);
+  return std::make_unique<NotificationSurface>(
+      notification_surface_manager_.get(), surface, notification_key);
 }
 
 std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
@@ -208,7 +209,8 @@ std::unique_ptr<InputMethodSurface> Display::CreateInputMethodSurface(
   }
 
   return std::make_unique<InputMethodSurface>(
-      input_method_surface_manager_, surface, default_device_scale_factor);
+      input_method_surface_manager_.get(), surface,
+      default_device_scale_factor);
 }
 #endif  // defined(OS_CHROMEOS)
 

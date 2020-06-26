@@ -12,7 +12,6 @@ namespace blink {
 
 LayoutNGMathMLBlock::LayoutNGMathMLBlock(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {
-  DCHECK(element);
 }
 
 void LayoutNGMathMLBlock::UpdateBlockLayout(bool relayout_children) {

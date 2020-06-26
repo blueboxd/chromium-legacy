@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
@@ -22,7 +23,6 @@
 #include "components/account_id/account_id.h"
 #include "dbus/message.h"
 #include "net/base/net_errors.h"
-#include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
 
@@ -53,26 +53,6 @@ bool ChallengeSignatureAlgorithmToSslAlgorithm(
                  << challenge_algorithm;
       return false;
   }
-}
-
-// Builds the digest of the given input, using the hashing algorithm that is
-// required for the given signature algorithm.
-bool BuildDigestToSign(const std::string& input,
-                       uint16_t ssl_algorithm,
-                       std::vector<uint8_t>* digest) {
-  DCHECK(!input.empty());
-  const EVP_MD* md = SSL_get_signature_algorithm_digest(ssl_algorithm);
-  if (!md)
-    return false;
-  digest->resize(EVP_MAX_MD_SIZE);
-  unsigned digest_len = 0;
-  if (!EVP_Digest(input.data(), input.size(), digest->data(), &digest_len, md,
-                  nullptr)) {
-    digest->clear();
-    return false;
-  }
-  digest->resize(digest_len);
-  return true;
 }
 
 // Completes the "ChallengeKey" D-Bus call of the |CHALLENGE_TYPE_SIGNATURE|
@@ -172,17 +152,9 @@ void HandleSignatureKeyChallenge(
     return;
   }
 
-  std::vector<uint8_t> digest;
-  if (!BuildDigestToSign(challenge_request_data.data_to_sign(), ssl_algorithm,
-                         &digest)) {
-    std::move(response_sender)
-        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
-                                                 "Failed to build digest"));
-    return;
-  }
-
   certificate_provider_service->RequestSignatureBySpki(
-      challenge_request_data.public_key_spki_der(), ssl_algorithm, digest,
+      challenge_request_data.public_key_spki_der(), ssl_algorithm,
+      base::as_bytes(base::make_span(challenge_request_data.data_to_sign())),
       account_id,
       base::BindOnce(&CompleteSignatureKeyChallenge,
                      base::Unretained(method_call),

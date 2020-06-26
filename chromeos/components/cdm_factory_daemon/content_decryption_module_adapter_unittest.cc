@@ -1,0 +1,688 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/components/cdm_factory_daemon/content_decryption_module_adapter.h"
+
+#include <algorithm>
+
+#include "base/logging.h"
+#include "base/test/mock_callback.h"
+#include "base/test/task_environment.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/mock_filters.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using DaemonCdm = chromeos::cdm::mojom::ContentDecryptionModule;
+using testing::_;
+using testing::IsNull;
+
+namespace chromeos {
+
+namespace {
+
+constexpr char kFakeEmeInitData[] = "fake_init_data";
+const std::vector<uint8_t> kFakeEncryptedData = {42, 22, 26, 13, 7, 16, 8, 2};
+const std::vector<uint8_t> kFakeSideData = {36, 24, 36};
+constexpr char kFakeKeyId[] = "fake_key_id";
+constexpr char kFakeIv[] = "fake_iv_16_bytes";
+constexpr char kFakeServiceCertificate[] = "fake_service_cert";
+constexpr char kFakeSessionId1[] = "fakeSid1";
+constexpr char kFakeSessionId2[] = "fakeSid2";
+constexpr char kFakeSessionUpdate[] = "fake_session_update";
+
+constexpr int64_t kFakeTimestampSec = 42;
+constexpr int64_t kFakeDurationSec = 64;
+
+template <size_t size>
+std::vector<uint8_t> ToVector(const char (&array)[size]) {
+  return std::vector<uint8_t>(array, array + size - 1);
+}
+
+MATCHER_P(MatchesDecoderBuffer, buffer, "") {
+  DCHECK(arg);
+  return arg->MatchesForTesting(*buffer);
+}
+
+MATCHER_P(MatchesDecryptConfig, config, "") {
+  DCHECK(arg);
+  return arg.Equals(*config);
+}
+
+// Mock of the mojo implementation on the Chrome OS side.
+class MockDaemonCdm : public cdm::mojom::ContentDecryptionModule {
+ public:
+  MockDaemonCdm(mojo::PendingAssociatedReceiver<ContentDecryptionModule>
+                    pending_receiver) {
+    receiver_.Bind(std::move(pending_receiver));
+  }
+  ~MockDaemonCdm() = default;
+
+  MOCK_METHOD(void,
+              SetServerCertificate,
+              (const std::vector<uint8_t>&, SetServerCertificateCallback));
+  MOCK_METHOD(void,
+              GetStatusForPolicy,
+              (media::HdcpVersion, GetStatusForPolicyCallback));
+  MOCK_METHOD(void,
+              CreateSessionAndGenerateRequest,
+              (media::CdmSessionType,
+               media::EmeInitDataType,
+               const std::vector<uint8_t>&,
+               CreateSessionAndGenerateRequestCallback));
+  MOCK_METHOD(void,
+              LoadSession,
+              (media::CdmSessionType, const std::string&, LoadSessionCallback));
+  MOCK_METHOD(void,
+              UpdateSession,
+              (const std::string&,
+               const std::vector<uint8_t>&,
+               UpdateSessionCallback));
+  MOCK_METHOD(void, CloseSession, (const std::string&, CloseSessionCallback));
+  MOCK_METHOD(void, RemoveSession, (const std::string&, RemoveSessionCallback));
+  MOCK_METHOD(void,
+              Decrypt,
+              (const std::vector<uint8_t>&,
+               cdm::mojom::DecryptConfigPtr,
+               DecryptCallback));
+
+ private:
+  mojo::AssociatedReceiver<ContentDecryptionModule> receiver_{this};
+};
+
+cdm::mojom::CdmPromiseResultPtr CreatePromise(bool success) {
+  cdm::mojom::CdmPromiseResultPtr promise = cdm::mojom::CdmPromiseResult::New();
+  promise->success = success;
+  if (!success) {
+    promise->error_message = "error";
+  }
+  return promise;
+}
+
+scoped_refptr<media::DecoderBuffer> CreateDecoderBuffer(
+    const std::vector<uint8_t> data) {
+  scoped_refptr<media::DecoderBuffer> buffer = media::DecoderBuffer::CopyFrom(
+      data.data(), data.size(), kFakeSideData.data(), kFakeSideData.size());
+  buffer->set_timestamp(base::TimeDelta::FromSeconds(kFakeTimestampSec));
+  buffer->set_duration(base::TimeDelta::FromSeconds(kFakeDurationSec));
+  return buffer;
+}
+
+scoped_refptr<media::DecoderBuffer> CloneDecoderBuffer(
+    scoped_refptr<media::DecoderBuffer> buffer_in) {
+  scoped_refptr<media::DecoderBuffer> buffer_out =
+      media::DecoderBuffer::CopyFrom(buffer_in->data(), buffer_in->data_size(),
+                                     buffer_in->side_data(),
+                                     buffer_in->side_data_size());
+  buffer_out->set_timestamp(buffer_in->timestamp());
+  buffer_out->set_duration(buffer_in->duration());
+  if (buffer_in->decrypt_config())
+    buffer_out->set_decrypt_config(buffer_in->decrypt_config()->Clone());
+  buffer_out->set_is_key_frame(buffer_in->is_key_frame());
+  return buffer_out;
+}
+
+}  // namespace
+
+class ContentDecryptionModuleAdapterTest : public testing::Test {
+ protected:
+  ContentDecryptionModuleAdapterTest() {
+    mojo::AssociatedRemote<cdm::mojom::ContentDecryptionModule> daemon_cdm_mojo;
+    mock_daemon_cdm_ = std::make_unique<MockDaemonCdm>(
+        daemon_cdm_mojo.BindNewEndpointAndPassDedicatedReceiverForTesting());
+    cdm_adapter_ = base::WrapRefCounted<ContentDecryptionModuleAdapter>(
+        new ContentDecryptionModuleAdapter(
+            nullptr /* storage */, std::move(daemon_cdm_mojo),
+            mock_session_message_cb_.Get(), mock_session_closed_cb_.Get(),
+            mock_session_keys_change_cb_.Get(),
+            mock_session_expiration_update_cb_.Get()));
+  }
+
+  ~ContentDecryptionModuleAdapterTest() override {
+    // Destroy the CdmAdapter first so it can invoke any session closed
+    // callbacks on destruction before we destroy the callback mockers.
+    cdm_adapter_.reset();
+  }
+
+  void LoadSession() {
+    EXPECT_CALL(*mock_daemon_cdm_,
+                LoadSession(media::CdmSessionType::kPersistentLicense,
+                            kFakeSessionId1, _))
+        .WillOnce([](media::CdmSessionType session_type,
+                     const std::string& session_id,
+                     MockDaemonCdm::LoadSessionCallback callback) {
+          std::move(callback).Run(CreatePromise(true), kFakeSessionId2);
+        });
+    std::string session_id;
+    std::unique_ptr<media::MockCdmSessionPromise> promise =
+        std::make_unique<media::MockCdmSessionPromise>(true, &session_id);
+    cdm_adapter_->LoadSession(media::CdmSessionType::kPersistentLicense,
+                              kFakeSessionId1, std::move(promise));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(session_id, kFakeSessionId2);
+  }
+
+  scoped_refptr<ContentDecryptionModuleAdapter> cdm_adapter_;
+  std::unique_ptr<MockDaemonCdm> mock_daemon_cdm_;
+
+  base::MockCallback<media::SessionMessageCB> mock_session_message_cb_;
+  base::MockCallback<media::SessionClosedCB> mock_session_closed_cb_;
+  base::MockCallback<media::SessionKeysChangeCB> mock_session_keys_change_cb_;
+  base::MockCallback<media::SessionExpirationUpdateCB>
+      mock_session_expiration_update_cb_;
+
+ private:
+  base::test::TaskEnvironment task_environment_;
+};
+
+TEST_F(ContentDecryptionModuleAdapterTest, GetClientInterface) {
+  auto pending_remote = cdm_adapter_->GetClientInterface();
+  EXPECT_TRUE(pending_remote.is_valid());
+  // If we try to get it again, it should fail.
+  ASSERT_DEATH(cdm_adapter_->GetClientInterface(), "");
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, SetServerCertificate_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              SetServerCertificate(ToVector(kFakeServiceCertificate), _))
+      .WillOnce([](const std::vector<uint8_t>& cert,
+                   MockDaemonCdm::SetServerCertificateCallback callback) {
+        std::move(callback).Run(CreatePromise(false));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(false);
+  cdm_adapter_->SetServerCertificate(ToVector(kFakeServiceCertificate),
+                                     std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, SetServerCertificate_Success) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              SetServerCertificate(ToVector(kFakeServiceCertificate), _))
+      .WillOnce([](const std::vector<uint8_t>& cert,
+                   MockDaemonCdm::SetServerCertificateCallback callback) {
+        std::move(callback).Run(CreatePromise(true));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(true);
+  cdm_adapter_->SetServerCertificate(ToVector(kFakeServiceCertificate),
+                                     std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, GetStatusForPolicy_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              GetStatusForPolicy(media::HdcpVersion::kHdcpVersion1_4, _))
+      .WillOnce([](media::HdcpVersion hdcp_version,
+                   MockDaemonCdm::GetStatusForPolicyCallback callback) {
+        std::move(callback).Run(
+            CreatePromise(false),
+            media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
+      });
+  media::CdmKeyInformation::KeyStatus key_status;
+  std::unique_ptr<media::MockCdmKeyStatusPromise> promise =
+      std::make_unique<media::MockCdmKeyStatusPromise>(false, &key_status);
+  cdm_adapter_->GetStatusForPolicy(media::HdcpVersion::kHdcpVersion1_4,
+                                   std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest,
+       GetStatusForPolicy_SuccessRestricted) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              GetStatusForPolicy(media::HdcpVersion::kHdcpVersion2_2, _))
+      .WillOnce([](media::HdcpVersion hdcp_version,
+                   MockDaemonCdm::GetStatusForPolicyCallback callback) {
+        std::move(callback).Run(
+            CreatePromise(true),
+            media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
+      });
+  media::CdmKeyInformation::KeyStatus key_status;
+  std::unique_ptr<media::MockCdmKeyStatusPromise> promise =
+      std::make_unique<media::MockCdmKeyStatusPromise>(true, &key_status);
+  cdm_adapter_->GetStatusForPolicy(media::HdcpVersion::kHdcpVersion2_2,
+                                   std::move(promise));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(key_status, media::CdmKeyInformation::KeyStatus::OUTPUT_RESTRICTED);
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, GetStatusForPolicy_SuccessUsable) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              GetStatusForPolicy(media::HdcpVersion::kHdcpVersion2_0, _))
+      .WillOnce([](media::HdcpVersion hdcp_version,
+                   MockDaemonCdm::GetStatusForPolicyCallback callback) {
+        std::move(callback).Run(CreatePromise(true),
+                                media::CdmKeyInformation::KeyStatus::USABLE);
+      });
+  media::CdmKeyInformation::KeyStatus key_status;
+  std::unique_ptr<media::MockCdmKeyStatusPromise> promise =
+      std::make_unique<media::MockCdmKeyStatusPromise>(true, &key_status);
+  cdm_adapter_->GetStatusForPolicy(media::HdcpVersion::kHdcpVersion2_0,
+                                   std::move(promise));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(key_status, media::CdmKeyInformation::KeyStatus::USABLE);
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest,
+       CreateSessionAndGenerateRequest_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              CreateSessionAndGenerateRequest(media::CdmSessionType::kTemporary,
+                                              media::EmeInitDataType::CENC,
+                                              ToVector(kFakeEmeInitData), _))
+      .WillOnce(
+          [](media::CdmSessionType session_type,
+             media::EmeInitDataType init_type,
+             const std::vector<uint8_t>& init_data,
+             MockDaemonCdm::CreateSessionAndGenerateRequestCallback callback) {
+            std::move(callback).Run(CreatePromise(false), "");
+          });
+  std::string session_id;
+  std::unique_ptr<media::MockCdmSessionPromise> promise =
+      std::make_unique<media::MockCdmSessionPromise>(false, &session_id);
+  cdm_adapter_->CreateSessionAndGenerateRequest(
+      media::CdmSessionType::kTemporary, media::EmeInitDataType::CENC,
+      ToVector(kFakeEmeInitData), std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest,
+       CreateSessionAndGenerateRequest_Success) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              CreateSessionAndGenerateRequest(media::CdmSessionType::kTemporary,
+                                              media::EmeInitDataType::CENC,
+                                              ToVector(kFakeEmeInitData), _))
+      .WillOnce(
+          [](media::CdmSessionType session_type,
+             media::EmeInitDataType init_type,
+             const std::vector<uint8_t>& init_data,
+             MockDaemonCdm::CreateSessionAndGenerateRequestCallback callback) {
+            std::move(callback).Run(CreatePromise(true), kFakeSessionId1);
+          });
+  std::string session_id;
+  std::unique_ptr<media::MockCdmSessionPromise> promise =
+      std::make_unique<media::MockCdmSessionPromise>(true, &session_id);
+  cdm_adapter_->CreateSessionAndGenerateRequest(
+      media::CdmSessionType::kTemporary, media::EmeInitDataType::CENC,
+      ToVector(kFakeEmeInitData), std::move(promise));
+  // We should also be getting a session closed callback for any open sessions.
+  EXPECT_CALL(mock_session_closed_cb_, Run(kFakeSessionId1));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(session_id, kFakeSessionId1);
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, LoadSession_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              LoadSession(media::CdmSessionType::kPersistentLicense,
+                          kFakeSessionId1, _))
+      .WillOnce([](media::CdmSessionType session_type,
+                   const std::string& session_id,
+                   MockDaemonCdm::LoadSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(false), "");
+      });
+  std::string session_id;
+  std::unique_ptr<media::MockCdmSessionPromise> promise =
+      std::make_unique<media::MockCdmSessionPromise>(false, &session_id);
+  cdm_adapter_->LoadSession(media::CdmSessionType::kPersistentLicense,
+                            kFakeSessionId1, std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, LoadSession_Success) {
+  LoadSession();
+  // We should also be getting a session closed callback for any open sessions.
+  EXPECT_CALL(mock_session_closed_cb_, Run(kFakeSessionId2));
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, UpdateSession_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              UpdateSession(kFakeSessionId1, ToVector(kFakeSessionUpdate), _))
+      .WillOnce([](const std::string& session_id,
+                   const std::vector<uint8_t>& response,
+                   MockDaemonCdm::UpdateSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(false));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(false);
+  cdm_adapter_->UpdateSession(kFakeSessionId1, ToVector(kFakeSessionUpdate),
+                              std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, UpdateSession_Success) {
+  EXPECT_CALL(*mock_daemon_cdm_,
+              UpdateSession(kFakeSessionId1, ToVector(kFakeSessionUpdate), _))
+      .WillOnce([](const std::string& session_id,
+                   const std::vector<uint8_t>& response,
+                   MockDaemonCdm::UpdateSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(true));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(true);
+  cdm_adapter_->UpdateSession(kFakeSessionId1, ToVector(kFakeSessionUpdate),
+                              std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, CloseSession_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_, CloseSession(kFakeSessionId1, _))
+      .WillOnce([](const std::string& session_id,
+                   MockDaemonCdm::CloseSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(false));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(false);
+  cdm_adapter_->CloseSession(kFakeSessionId1, std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, CloseSession_Success) {
+  EXPECT_CALL(*mock_daemon_cdm_, CloseSession(kFakeSessionId1, _))
+      .WillOnce([](const std::string& session_id,
+                   MockDaemonCdm::CloseSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(true));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(true);
+  cdm_adapter_->CloseSession(kFakeSessionId1, std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, RemoveSession_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_, RemoveSession(kFakeSessionId1, _))
+      .WillOnce([](const std::string& session_id,
+                   MockDaemonCdm::RemoveSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(false));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(false);
+  cdm_adapter_->RemoveSession(kFakeSessionId1, std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, RemoveSession_Success) {
+  EXPECT_CALL(*mock_daemon_cdm_, RemoveSession(kFakeSessionId1, _))
+      .WillOnce([](const std::string& session_id,
+                   MockDaemonCdm::RemoveSessionCallback callback) {
+        std::move(callback).Run(CreatePromise(true));
+      });
+  std::unique_ptr<media::MockCdmPromise> promise =
+      std::make_unique<media::MockCdmPromise>(true);
+  cdm_adapter_->RemoveSession(kFakeSessionId1, std::move(promise));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, OnSessionMessage) {
+  EXPECT_CALL(mock_session_message_cb_,
+              Run(kFakeSessionId1, media::CdmMessageType::LICENSE_REQUEST,
+                  ToVector(kFakeSessionUpdate)));
+  cdm_adapter_->OnSessionMessage(kFakeSessionId1,
+                                 media::CdmMessageType::LICENSE_REQUEST,
+                                 ToVector(kFakeSessionUpdate));
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, OnSessionClosed) {
+  LoadSession();
+  EXPECT_CALL(mock_session_closed_cb_, Run(kFakeSessionId2));
+  cdm_adapter_->OnSessionClosed(kFakeSessionId2);
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, OnSessionKeysChange) {
+  EXPECT_CALL(mock_session_keys_change_cb_, Run(kFakeSessionId1, true, _));
+  cdm_adapter_->OnSessionKeysChange(kFakeSessionId1, true, {});
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, OnSessionExpirationUpdate) {
+  constexpr double kFakeExpiration = 123456;
+  EXPECT_CALL(mock_session_expiration_update_cb_,
+              Run(kFakeSessionId2, base::Time::FromDoubleT(kFakeExpiration)));
+  cdm_adapter_->OnSessionExpirationUpdate(kFakeSessionId2, kFakeExpiration);
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, RegisterNewKeyCB) {
+  base::MockRepeatingClosure closure;
+  cdm_adapter_->RegisterNewKeyCB(media::Decryptor::kVideo, closure.Get());
+  cdm_adapter_->RegisterNewKeyCB(media::Decryptor::kAudio, closure.Get());
+
+  // It should get invoked for each audio & video.
+  EXPECT_CALL(closure, Run()).Times(2);
+  EXPECT_CALL(mock_session_keys_change_cb_, Run(kFakeSessionId1, true, _));
+  cdm_adapter_->OnSessionKeysChange(kFakeSessionId1, true, {});
+
+  // If no keys change, they should not get called.
+  EXPECT_CALL(closure, Run()).Times(0);
+  EXPECT_CALL(mock_session_keys_change_cb_, Run(kFakeSessionId1, false, _));
+  cdm_adapter_->OnSessionKeysChange(kFakeSessionId1, false, {});
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_Unencrypted) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _)).Times(0);
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_is_key_frame(true);
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer =
+      CloneDecoderBuffer(encrypted_buffer);
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess,
+                            MatchesDecoderBuffer(decrypted_buffer)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_NoSubsamples) {
+  cdm::mojom::DecryptConfigPtr expected_decrypt_config =
+      cdm::mojom::DecryptConfig::New(
+          media::EncryptionScheme::kCbcs, kFakeKeyId, kFakeIv,
+          std::vector<cdm::mojom::SubsampleEntryPtr>(),
+          media::EncryptionPattern(6, 9));
+  EXPECT_CALL(*mock_daemon_cdm_,
+              Decrypt(kFakeEncryptedData,
+                      MatchesDecryptConfig(&expected_decrypt_config), _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        // For decryption, just reverse the data.
+        std::vector<uint8_t> decrypted = data;
+        std::reverse(std::begin(decrypted), std::end(decrypted));
+        std::move(callback).Run(media::Decryptor::kSuccess,
+                                std::move(decrypted));
+      });
+  std::vector<uint8_t> decrypted_data = kFakeEncryptedData;
+  std::reverse(std::begin(decrypted_data), std::end(decrypted_data));
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer =
+      CreateDecoderBuffer(decrypted_data);
+  decrypted_buffer->set_is_key_frame(true);
+
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess,
+                            MatchesDecoderBuffer(decrypted_buffer)));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_is_key_frame(true);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv, {}, media::EncryptionPattern(6, 9)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_Failure) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        std::move(callback).Run(media::Decryptor::kError, {});
+      });
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kError, IsNull()));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv, {}, media::EncryptionPattern(6, 9)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_NoKey) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        std::move(callback).Run(media::Decryptor::kNoKey, {});
+      });
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kNoKey, IsNull()));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv, {}, media::EncryptionPattern(6, 9)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_MismatchedSubsamples) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _)).Times(0);
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kError, IsNull()));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCencConfig(
+      kFakeKeyId, kFakeIv, {media::SubsampleEntry(1, 1)}));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_InvalidSizeReturned) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        std::move(callback).Run(media::Decryptor::kSuccess, {1});
+      });
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kError, IsNull()));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv, {}, media::EncryptionPattern(4, 4)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_NoEncryptedSubsamples) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _)).Times(0);
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCencConfig(
+      kFakeKeyId, kFakeIv,
+      {media::SubsampleEntry(kFakeEncryptedData.size(), 0)}));
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer =
+      CloneDecoderBuffer(encrypted_buffer);
+  decrypted_buffer->set_decrypt_config(nullptr);
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess,
+                            MatchesDecoderBuffer(decrypted_buffer)));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_SubsampledCenc) {
+  cdm::mojom::DecryptConfigPtr expected_decrypt_config =
+      cdm::mojom::DecryptConfig::New(
+          media::EncryptionScheme::kCenc, kFakeKeyId, kFakeIv,
+          std::vector<cdm::mojom::SubsampleEntryPtr>(), base::nullopt);
+  EXPECT_CALL(*mock_daemon_cdm_,
+              Decrypt(std::vector<uint8_t>(kFakeEncryptedData.begin() + 3,
+                                           kFakeEncryptedData.end()),
+                      MatchesDecryptConfig(&expected_decrypt_config), _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        // For decryption, just reverse the data.
+        std::vector<uint8_t> decrypted = data;
+        std::reverse(std::begin(decrypted), std::end(decrypted));
+        std::move(callback).Run(media::Decryptor::kSuccess,
+                                std::move(decrypted));
+      });
+  std::vector<uint8_t> decrypted_data = kFakeEncryptedData;
+  std::reverse(std::begin(decrypted_data) + 3, std::end(decrypted_data));
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer =
+      CreateDecoderBuffer(decrypted_data);
+  decrypted_buffer->set_is_key_frame(true);
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess,
+                            MatchesDecoderBuffer(decrypted_buffer)));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_is_key_frame(true);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCencConfig(
+      kFakeKeyId, kFakeIv, {media::SubsampleEntry(3, 5)}));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_SubsampledCbcs) {
+  cdm::mojom::DecryptConfigPtr expected_decrypt_config =
+      cdm::mojom::DecryptConfig::New(
+          media::EncryptionScheme::kCbcs, kFakeKeyId, kFakeIv,
+          std::vector<cdm::mojom::SubsampleEntryPtr>(), base::nullopt);
+  expected_decrypt_config->subsamples.emplace_back(
+      cdm::mojom::SubsampleEntry::New(1, 2));
+  expected_decrypt_config->subsamples.emplace_back(
+      cdm::mojom::SubsampleEntry::New(2, 3));
+  EXPECT_CALL(*mock_daemon_cdm_,
+              Decrypt(kFakeEncryptedData,
+                      MatchesDecryptConfig(&expected_decrypt_config), _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        // For decryption, just reverse the data.
+        std::vector<uint8_t> decrypted = data;
+        std::reverse(std::begin(decrypted), std::end(decrypted));
+        std::move(callback).Run(media::Decryptor::kSuccess,
+                                std::move(decrypted));
+      });
+  std::vector<uint8_t> decrypted_data = kFakeEncryptedData;
+  std::reverse(std::begin(decrypted_data), std::end(decrypted_data));
+  scoped_refptr<media::DecoderBuffer> decrypted_buffer =
+      CreateDecoderBuffer(decrypted_data);
+  decrypted_buffer->set_is_key_frame(true);
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess,
+                            MatchesDecoderBuffer(decrypted_buffer)));
+  scoped_refptr<media::DecoderBuffer> encrypted_buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  encrypted_buffer->set_is_key_frame(true);
+  encrypted_buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv,
+      {media::SubsampleEntry(1, 2), media::SubsampleEntry(2, 3)},
+      base::nullopt));
+  cdm_adapter_->Decrypt(media::Decryptor::kVideo, encrypted_buffer,
+                        callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContentDecryptionModuleAdapterTest, Decrypt_CancelDecrypt) {
+  EXPECT_CALL(*mock_daemon_cdm_, Decrypt(_, _, _))
+      .WillOnce([](const std::vector<uint8_t>& data,
+                   cdm::mojom::DecryptConfigPtr decrypt_config,
+                   MockDaemonCdm::DecryptCallback callback) {
+        std::move(callback).Run(media::Decryptor::kSuccess, data);
+      });
+  scoped_refptr<media::DecoderBuffer> buffer =
+      CreateDecoderBuffer(kFakeEncryptedData);
+  buffer->set_decrypt_config(media::DecryptConfig::CreateCbcsConfig(
+      kFakeKeyId, kFakeIv, {}, media::EncryptionPattern(6, 9)));
+  base::MockCallback<media::Decryptor::DecryptCB> callback;
+  EXPECT_CALL(callback, Run(media::Decryptor::kSuccess, IsNull())).Times(1);
+  cdm_adapter_->Decrypt(media::Decryptor::kAudio, buffer, callback.Get());
+  cdm_adapter_->CancelDecrypt(media::Decryptor::kAudio);
+  base::RunLoop().RunUntilIdle();
+}
+
+}  // namespace chromeos

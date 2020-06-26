@@ -44,11 +44,10 @@ using OptimizationGuideDecisionCallback =
 
 class OptimizationGuideDecider {
  public:
-  // Registers the optimization types and targets that intend to be queried
-  // during the session. It is expected for this to be called after the browser
-  // has been initialized.
-  virtual void RegisterOptimizationTypesAndTargets(
-      const std::vector<proto::OptimizationType>& optimization_types,
+  // Registers the optimization targets that intend to be queried during the
+  // session. It is expected for this to be called after the browser has been
+  // initialized.
+  virtual void RegisterOptimizationTargets(
       const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
   // Returns whether the current conditions match |optimization_target|. This
@@ -56,6 +55,12 @@ class OptimizationGuideDecider {
   virtual OptimizationGuideDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) = 0;
+
+  // Registers the optimization types that intend to be queried during the
+  // session. It is expected for this to be called after the browser has been
+  // initialized.
+  virtual void RegisterOptimizationTypes(
+      const std::vector<proto::OptimizationType>& optimization_types) = 0;
 
   // Invokes |callback| with the decision for the URL contained in
   // |navigation_handle| and |optimization_type|, when sufficient information

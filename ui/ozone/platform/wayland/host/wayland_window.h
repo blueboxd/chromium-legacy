@@ -31,6 +31,7 @@ namespace ui {
 class BitmapCursorOzone;
 class OSExchangeData;
 class WaylandConnection;
+class WaylandWindowDragController;
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
@@ -54,8 +55,8 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // to do so (this is not needed upon window initialization).
   void UpdateBufferScale(bool update_bounds);
 
-  WaylandSurface* wayland_surface() { return &wayland_surface_; }
-  wl_surface* surface() const { return wayland_surface_.surface(); }
+  WaylandSurface* wayland_surface() { return wayland_surface_.get(); }
+  wl_surface* surface() const { return wayland_surface_->surface(); }
 
   void set_parent_window(WaylandWindow* parent_window) {
     parent_window_ = parent_window;
@@ -82,7 +83,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
   WaylandWindow* child_window() const { return child_window_; }
 
-  int32_t buffer_scale() const { return wayland_surface_.buffer_scale(); }
+  int32_t buffer_scale() const { return wayland_surface_->buffer_scale(); }
   int32_t ui_scale() const { return ui_scale_; }
 
   const base::flat_set<uint32_t>& entered_outputs_ids() const {
@@ -145,8 +146,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   virtual void OnDragEnter(const gfx::PointF& point,
                            std::unique_ptr<OSExchangeData> data,
                            int operation);
-  virtual int OnDragMotion(const gfx::PointF& point,
-                           int operation);
+  virtual int OnDragMotion(const gfx::PointF& point, int operation);
   virtual void OnDragDrop(std::unique_ptr<OSExchangeData> data);
   virtual void OnDragLeave();
   virtual void OnDragSessionClose(uint32_t dnd_action);
@@ -182,8 +182,10 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
 
-  // Install a surface listener and start getting wl_output enter/leave events.
+  // Registers/unregisters a surface listener, so wl_output enter/leave events
+  // can be received.
   void AddSurfaceListener();
+  void RemoveSurfaceListener();
 
   void AddEnteredOutputId(struct wl_output* output);
   void RemoveEnteredOutputId(struct wl_output* output);
@@ -211,12 +213,21 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
                     struct wl_surface* wl_surface,
                     struct wl_output* output);
 
+  // WaylandWindowDragController might need to take ownership of the wayland
+  // surface whether the window that originated the DND session gets destroyed
+  // in the middle of that session (e.g: when it is snapped into a tab strip).
+  // Surface ownership is allowed to be taken only when the window is under
+  // destruction, i.e: |shutting_down_| is set. This can be done, for example,
+  // by implementing |WaylandWindowObserver::OnWindowRemoved|.
+  friend WaylandWindowDragController;
+  std::unique_ptr<WaylandSurface> TakeWaylandSurface();
+
   PlatformWindowDelegate* delegate_;
   WaylandConnection* connection_;
   WaylandWindow* parent_window_ = nullptr;
   WaylandWindow* child_window_ = nullptr;
 
-  WaylandSurface wayland_surface_;
+  std::unique_ptr<WaylandSurface> wayland_surface_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;
@@ -249,6 +260,9 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   // The type of the current WaylandWindow object.
   ui::PlatformWindowType type_ = ui::PlatformWindowType::kWindow;
+
+  // Set when the window enters in shutdown process.
+  bool shutting_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };

@@ -4566,7 +4566,7 @@ void V8TestInterface::InstallOriginTrialFeature(
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
   ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
-  if (execution_context && (execution_context->IsDocument())) {
+  if (execution_context && (execution_context->IsWindow())) {
     static constexpr V8DOMConfiguration::MethodConfiguration
     kOriginTrialWindowExposedMethodConfigurations[] = {
         {"originTrialWindowExposedMethod", V8TestInterface::OriginTrialWindowExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
@@ -4679,7 +4679,7 @@ void V8TestInterface::InstallConditionalFeatures(
           signature, kAccessorConfigurations,
           base::size(kAccessorConfigurations));
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       static constexpr V8DOMConfiguration::AccessorConfiguration
       kAccessorConfigurations[] = {
           { "windowExposedAttribute", V8TestInterface::WindowExposedAttributeAttributeGetterCallback, V8TestInterface::WindowExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -4760,7 +4760,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       {
         // Install windowExposedMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4773,7 +4773,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
         {
           // Install methodWithExposedAndRuntimeEnabledFlag configuration
@@ -4788,7 +4788,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       {
         // Install overloadMethodWithExposedAndRuntimeEnabledFlag configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4801,7 +4801,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && ((execution_context->IsDocument() && RuntimeEnabledFeatures::FeatureNameEnabled()) || (execution_context->IsWorkerGlobalScope() && RuntimeEnabledFeatures::FeatureName2Enabled()))) {
+    if (execution_context && ((execution_context->IsWindow() && RuntimeEnabledFeatures::FeatureNameEnabled()) || (execution_context->IsWorkerGlobalScope() && RuntimeEnabledFeatures::FeatureName2Enabled()))) {
       {
         // Install methodWithExposedHavingRuntimeEnabledFlag configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4814,7 +4814,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument() || execution_context->IsServiceWorkerGlobalScope())) {
+    if (execution_context && (execution_context->IsServiceWorkerGlobalScope() || execution_context->IsWindow())) {
       {
         // Install windowAndServiceWorkerExposedMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4869,7 +4869,7 @@ void V8TestInterface::InstallConditionalFeatures(
       }
     }
     if (is_secure_context) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         {
           // Install secureContextWindowExposedMethod configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -4899,7 +4899,7 @@ void V8TestInterface::InstallConditionalFeatures(
       }
     }
     if (is_secure_context) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
           {
             // Install secureContextWindowExposedRuntimeEnabledMethod configuration
@@ -4974,7 +4974,7 @@ void V8TestInterface::InstallConditionalFeatures(
       }
     }
     if (is_secure_context) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         {
           // Install partialSecureContextWindowExposedMethod configuration
           const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -5004,7 +5004,7 @@ void V8TestInterface::InstallConditionalFeatures(
       }
     }
     if (is_secure_context) {
-      if (execution_context && (execution_context->IsDocument())) {
+      if (execution_context && (execution_context->IsWindow())) {
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
           {
             // Install partialSecureContextWindowExposedRuntimeEnabledMethod configuration
@@ -5050,7 +5050,7 @@ void V8TestInterface::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       {
         // Install windowExposedStaticMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

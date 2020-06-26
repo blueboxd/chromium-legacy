@@ -1345,8 +1345,13 @@ void PrintRenderFrameHelper::PrintFrameContent(
   if (!weak_this)
     return;
 
+  ContentProxySet typeface_content_info;
   MetafileSkia metafile(mojom::SkiaDocumentType::kMSKP,
                         params->document_cookie);
+
+  // Provide a typeface context to use with serializing to the print compositor.
+  metafile.UtilizeTypefaceContext(&typeface_content_info);
+
   gfx::Size area_size = params->printable_area.size();
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
@@ -1616,6 +1621,8 @@ bool PrintRenderFrameHelper::RenderPreviewPage(int page_number) {
     CHECK(page_render_metafile->Init());
     render_metafile = page_render_metafile.get();
   }
+  render_metafile->UtilizeTypefaceContext(
+      print_preview_context_.typeface_content_info());
   base::TimeTicks begin_time = base::TimeTicks::Now();
   double scale_factor = GetScaleFactor(print_params.scale_factor,
                                        !print_preview_context_.IsModifiable());
@@ -1956,9 +1963,13 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
+  ContentProxySet typeface_content_info;
   MetafileSkia metafile(print_params.printed_doc_type,
                         print_params.document_cookie);
   CHECK(metafile.Init());
+
+  // Provide a typeface context to use with serializing to the print compositor.
+  metafile.UtilizeTypefaceContext(&typeface_content_info);
 
   // If tagged PDF exporting is enabled, we also need to capture an
   // accessibility tree and store it in the metafile. AXTreeSnapshotter
@@ -2738,6 +2749,12 @@ MetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {
   return metafile_.get();
 }
 
+ContentProxySet*
+PrintRenderFrameHelper::PrintPreviewContext::typeface_content_info() {
+  DCHECK(IsRendering());
+  return &typeface_content_info_;
+}
+
 int PrintRenderFrameHelper::PrintPreviewContext::last_error() const {
   return error_;
 }
@@ -2745,6 +2762,7 @@ int PrintRenderFrameHelper::PrintPreviewContext::last_error() const {
 void PrintRenderFrameHelper::PrintPreviewContext::ClearContext() {
   prep_frame_view_.reset();
   metafile_.reset();
+  typeface_content_info_.clear();
   pages_to_render_.clear();
   error_ = PREVIEW_ERROR_NONE;
 }

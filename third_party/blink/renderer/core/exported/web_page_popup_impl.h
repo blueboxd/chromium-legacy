@@ -32,6 +32,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/web/web_page_popup.h"
@@ -114,7 +117,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WidgetBaseClient overrides:
-  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
@@ -129,16 +131,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override { return true; }
-  void QueueSyntheticEvent(
-      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
-  void GetWidgetInputHandler(
-      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
-      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
-  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
-  void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override;
   void FocusChanged(bool enabled) override;
+  void ScheduleAnimation() override;
 
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be
@@ -150,14 +144,16 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
   void Resize(const WebSize&) override;
-  void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-             base::OnceCallback<void()> cleanup_task) override;
+  void Close(
+      scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
   bool HasFocus() override;
   WebURL GetURLForDebugTrace() override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override { return {}; }
   cc::LayerTreeHost* InitializeCompositing(
+      bool never_composited,
+      scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
@@ -169,12 +165,21 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
                                       HandledEventCallback) override;
   void UpdateTextInputState() override;
-  void ForceTextInputStateUpdate() override;
-  void UpdateCompositionInfo() override;
   void UpdateSelectionBounds() override;
   void ShowVirtualKeyboard() override;
-  void RequestCompositionUpdates(bool immediate_request,
-                                 bool monitor_updates) override;
+  void FlushInputProcessedCallback() override;
+  void CancelCompositionForPepper() override;
+  void RequestMouseLock(
+      bool has_transient_user_activation,
+      bool priviledged,
+      bool request_unadjusted_movement,
+      base::OnceCallback<
+          void(mojom::blink::PointerLockResult,
+               CrossVariantMojoRemote<
+                   mojom::blink::PointerLockContextInterfaceBase>)>) override;
+#if defined(OS_ANDROID)
+  SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() override;
+#endif
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

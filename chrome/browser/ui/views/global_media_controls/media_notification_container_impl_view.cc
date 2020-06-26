@@ -12,11 +12,13 @@
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/canvas_painter.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
@@ -30,6 +32,7 @@ constexpr int kDismissButtonIconSize = 20;
 constexpr int kDismissButtonBackgroundRadius = 15;
 constexpr SkColor kDefaultForegroundColor = SK_ColorBLACK;
 constexpr SkColor kDefaultBackgroundColor = SK_ColorTRANSPARENT;
+constexpr float kDragImageOpacity = 0.7f;
 
 // The minimum number of enabled and visible user actions such that we should
 // force the MediaNotificationView to be expanded.
@@ -115,6 +118,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
 }
 
 MediaNotificationContainerImplView::~MediaNotificationContainerImplView() {
+  drag_image_widget_.reset();
   for (auto& observer : observers_)
     observer.OnContainerDestroyed(id_);
 }
@@ -127,6 +131,34 @@ void MediaNotificationContainerImplView::AddedToWidget() {
 void MediaNotificationContainerImplView::RemovedFromWidget() {
   if (GetFocusManager())
     GetFocusManager()->RemoveFocusChangeListener(this);
+}
+
+void MediaNotificationContainerImplView::CreateDragImageWidget() {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_DRAG;
+  params.name = "DragImage";
+  params.accept_events = false;
+  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  params.context = GetWidget()->GetNativeWindow();
+
+  drag_image_widget_ = views::UniqueWidgetPtr(
+      std::make_unique<views::Widget>(std::move(params)));
+  drag_image_widget_->SetOpacity(kDragImageOpacity);
+
+  views::ImageView* image_view =
+      drag_image_widget_->SetContentsView(std::make_unique<views::ImageView>());
+
+  SkBitmap bitmap;
+  view_->Paint(views::PaintInfo::CreateRootPaintInfo(
+      ui::CanvasPainter(&bitmap, GetPreferredSize(), 1.f, SK_ColorTRANSPARENT,
+                        true /* is_pixel_canvas */)
+          .context(),
+      GetPreferredSize()));
+  gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, 1.f));
+  image_view->SetImage(image);
+
+  drag_image_widget_->Show();
 }
 
 bool MediaNotificationContainerImplView::OnMousePressed(
@@ -170,9 +202,9 @@ bool MediaNotificationContainerImplView::OnMouseDragged(
     return true;
   }
 
-  gfx::Transform transform;
-  transform.Translate(movement);
-  swipeable_container_->layer()->SetTransform(transform);
+  if (!drag_image_widget_)
+    CreateDragImageWidget();
+  drag_image_widget_->SetBounds(GetBoundsInScreen() + movement);
 
   return true;
 }
@@ -196,6 +228,8 @@ void MediaNotificationContainerImplView::OnMouseReleased(
     for (auto& observer : observers_)
       observer.OnContainerDraggedOut(id_, dragged_bounds);
   }
+
+  drag_image_widget_.reset();
 }
 
 void MediaNotificationContainerImplView::OnMouseEntered(

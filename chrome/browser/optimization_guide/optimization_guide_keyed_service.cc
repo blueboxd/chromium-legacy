@@ -150,29 +150,19 @@ void OptimizationGuideKeyedService::OnNavigationFinish(
     hints_manager_->OnNavigationFinish(navigation_redirect_chain);
 }
 
-void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(
-    const std::vector<optimization_guide::proto::OptimizationType>&
-        optimization_types,
+void OptimizationGuideKeyedService::RegisterOptimizationTargets(
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets) {
-  // If the service has not been initialized yet, keep track of the optimization
-  // types and targets that are registered, so that we can pass them to the
-  // appropriate managers at initialization.
-  if (!hints_manager_) {
-    pre_initialized_optimization_types_.insert(
-        pre_initialized_optimization_types_.begin(), optimization_types.begin(),
-        optimization_types.end());
-
+  if (prediction_manager_) {
+    prediction_manager_->RegisterOptimizationTargets(optimization_targets);
+  } else {
+    // If the service has not been initialized yet, keep track of the
+    // optimization targets that are registered, so that we can pass them to the
+    // prediction manager at initialization.
     pre_initialized_optimization_targets_.insert(
         pre_initialized_optimization_targets_.begin(),
         optimization_targets.begin(), optimization_targets.end());
-    return;
   }
-
-  hints_manager_->RegisterOptimizationTypes(optimization_types);
-
-  if (prediction_manager_)
-    prediction_manager_->RegisterOptimizationTargets(optimization_targets);
 }
 
 optimization_guide::OptimizationGuideDecision
@@ -205,6 +195,21 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
           optimization_guide::OptimizationTargetDecision::kMaxValue));
   return GetOptimizationGuideDecisionFromOptimizationTargetDecision(
       optimization_target_decision);
+}
+
+void OptimizationGuideKeyedService::RegisterOptimizationTypes(
+    const std::vector<optimization_guide::proto::OptimizationType>&
+        optimization_types) {
+  if (hints_manager_) {
+    hints_manager_->RegisterOptimizationTypes(optimization_types);
+  } else {
+    // If the service has not been initialized yet, keep track of the
+    // optimization types that are registered, so that we can pass them to the
+    // hints manager at initialization.
+    pre_initialized_optimization_types_.insert(
+        pre_initialized_optimization_types_.begin(), optimization_types.begin(),
+        optimization_types.end());
+  }
 }
 
 optimization_guide::OptimizationGuideDecision

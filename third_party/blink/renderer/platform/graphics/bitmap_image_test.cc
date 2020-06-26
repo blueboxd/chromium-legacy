@@ -848,7 +848,7 @@ const DecodedImageTypeHistogramTest::ParamType
         {"animated-10color.gif", BitmapImageMetrics::kImageGIF},
         {"webp-color-profile-lossy.webp", BitmapImageMetrics::kImageWebP},
         {"wrong-frame-dimensions.ico", BitmapImageMetrics::kImageICO},
-        {"lenna.bmp", BitmapImageMetrics::kImageBMP},
+        {"gracehopper.bmp", BitmapImageMetrics::kImageBMP},
 #if BUILDFLAG(ENABLE_AV1_DECODER)
         {"red-full-ranged-8bpc.avif", BitmapImageMetrics::kImageAVIF},
 #endif

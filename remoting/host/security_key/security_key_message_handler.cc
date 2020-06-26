@@ -28,7 +28,7 @@ void SecurityKeyMessageHandler::Start(
     base::File message_read_stream,
     base::File message_write_stream,
     std::unique_ptr<SecurityKeyIpcClient> ipc_client,
-    const base::Closure& error_callback) {
+    base::OnceClosure error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(message_read_stream.IsValid());
   DCHECK(message_write_stream.IsValid());
@@ -47,12 +47,13 @@ void SecurityKeyMessageHandler::Start(
   }
 
   ipc_client_ = std::move(ipc_client);
-  error_callback_ = error_callback;
+  error_callback_ = std::move(error_callback);
 
   reader_->Start(
-      base::Bind(&SecurityKeyMessageHandler::ProcessSecurityKeyMessage,
-                 base::Unretained(this)),
-      base::Bind(&SecurityKeyMessageHandler::OnError, base::Unretained(this)));
+      base::BindRepeating(&SecurityKeyMessageHandler::ProcessSecurityKeyMessage,
+                          base::Unretained(this)),
+      base::BindOnce(&SecurityKeyMessageHandler::OnError,
+                     base::Unretained(this)));
 }
 
 void SecurityKeyMessageHandler::SetSecurityKeyMessageReaderForTest(

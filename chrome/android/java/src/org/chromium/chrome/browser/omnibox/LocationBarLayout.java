@@ -73,6 +73,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -723,6 +724,13 @@ public class LocationBarLayout extends FrameLayout
     public void setKeyboardVisibility(boolean shouldShow) {
         mKeyboardShouldShow = shouldShow;
         setKeyboardVisibilityInternal(false);
+    }
+
+    @Override
+    public boolean isKeyboardActive() {
+        return KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(getContext(), this)
+                || (getContext().getResources().getConfiguration().keyboard
+                        == Configuration.KEYBOARD_QWERTY);
     }
 
     @Override

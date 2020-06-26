@@ -181,8 +181,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
  private:
   class BlobLoader;
 
-  Document* GetDocument() const;
-
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(uint64_t identifier,

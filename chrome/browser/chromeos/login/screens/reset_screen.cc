@@ -30,7 +30,6 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -171,6 +170,7 @@ ResetScreen::ResetScreen(ResetView* view,
     view_->SetIsTpmFirmwareUpdateEditable(true);
     view_->SetTpmFirmwareUpdateMode(tpm_firmware_update::Mode::kPowerwash);
     view_->SetShouldShowConfirmationDialog(false);
+    view_->SetIsForcedPowerwash(true);
   }
 }
 
@@ -183,16 +183,27 @@ ResetScreen::~ResetScreen() {
 // static
 void ResetScreen::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFactoryResetRequested, false);
+  registry->RegisterBooleanPref(prefs::kForceFactoryReset, false);
   registry->RegisterIntegerPref(
       prefs::kFactoryResetTPMFirmwareUpdateMode,
       static_cast<int>(tpm_firmware_update::Mode::kNone));
+}
+
+// static
+void ResetScreen::SetPrefsForForcedPowerwash(PrefService* pref_service) {
+  pref_service->SetBoolean(prefs::kFactoryResetRequested, true);
+  pref_service->SetBoolean(prefs::kForceFactoryReset, true);
+  pref_service->CommitPendingWrite();
 }
 
 void ResetScreen::ShowImpl() {
   if (view_)
     view_->Show();
 
-  // Guest sugn-in button should be disabled as sign-in is not possible while
+  PrefService* prefs = g_browser_process->local_state();
+  view_->SetIsForcedPowerwash(prefs->GetBoolean(prefs::kForceFactoryReset));
+
+  // Guest sign-in button should be disabled as sign-in is not possible while
   // reset screen is shown.
   if (!scoped_guest_button_blocker_) {
     scoped_guest_button_blocker_ =
@@ -233,7 +244,6 @@ void ResetScreen::ShowImpl() {
   }
 
   // Set availability of TPM firmware update.
-  PrefService* prefs = g_browser_process->local_state();
   bool tpm_firmware_update_requested =
       prefs->HasPrefPath(prefs::kFactoryResetTPMFirmwareUpdateMode);
   if (tpm_firmware_update_requested) {
@@ -264,7 +274,8 @@ void ResetScreen::ShowImpl() {
 
   // Clear prefs so the reset screen isn't triggered again the next time the
   // device is about to show the login screen.
-  prefs->ClearPref(prefs::kFactoryResetRequested);
+  if (!prefs->GetBoolean(prefs::kForceFactoryReset))
+    prefs->ClearPref(prefs::kFactoryResetRequested);
   prefs->ClearPref(prefs::kFactoryResetTPMFirmwareUpdateMode);
   prefs->CommitPendingWrite();
 }

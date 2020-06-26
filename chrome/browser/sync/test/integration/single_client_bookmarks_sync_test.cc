@@ -125,6 +125,16 @@ class SingleClientBookmarksSyncTestWithEnabledReuploadRemoteBookmarks
   }
 };
 
+class SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks
+    : public SyncTest {
+ public:
+  SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks()
+      : SyncTest(SINGLE_CLIENT) {
+    feature_list_.InitAndDisableFeature(
+        switches::kSyncReuploadBookmarkFullTitles);
+  }
+};
+
 class SingleClientBookmarksSyncTestWithEnabledReuploadPreexistingBookmarks
     : public SingleClientBookmarksSyncTest {
  public:
@@ -716,8 +726,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   for (const std::string& illegal_title : illegal_titles) {
     fake_server::BookmarkEntityBuilder bookmark_builder =
         entity_builder_factory.NewBookmarkEntityBuilder(illegal_title + " ");
-    fake_server_->InjectEntity(
-        bookmark_builder.BuildBookmark(GURL("http://www.google.com")));
+    fake_server_->InjectEntity(bookmark_builder.BuildBookmarkWithoutFullTitle(
+        GURL("http://www.google.com")));
   }
 
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -743,7 +753,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(remote_blank_title);
-  fake_server_->InjectEntity(bookmark_builder.BuildFolder());
+  fake_server_->InjectEntity(bookmark_builder.BuildFolderWithoutFullTitle());
 
   DisableVerifier();
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -1141,8 +1151,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_TRUE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
                                            originator_client_item_id));
 
-  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
-                                               /*kSpecifics=*/0));
+  // Do not check for kSpecifics bucket because it may be 0 or 1. It depends on
+  // reupload of bookmark (legacy bookmark will be reuploaded and may return
+  // from the server again with valid GUID in specifics).
   EXPECT_EQ(1, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kValidOCII=*/1));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
@@ -1182,8 +1193,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex,
                                             originator_client_item_id));
 
-  EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
-                                               /*kSpecifics=*/0));
+  // Do not check for kSpecifics bucket because it may be 0 or 1. It depends on
+  // reupload of bookmark (legacy bookmark will be reuploaded and may return
+  // from the server again with valid GUID in specifics).
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
                                                /*kValidOCII=*/1));
   EXPECT_EQ(0, histogram_tester.GetBucketCount("Sync.BookmarkGUIDSource2",
@@ -1227,8 +1239,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       PRE_ShouldNotReploadUponFaviconLoad) {
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks,
+    PRE_ShouldNotReploadUponFaviconLoad) {
   const GURL url = GURL("http://www.foo.com");
   fake_server::EntityBuilderFactory entity_builder_factory;
   fake_server::BookmarkEntityBuilder bookmark_builder =
@@ -1332,8 +1345,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(server_bookmarks.front().specifics().bookmark().has_favicon());
 }
 
-IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
-                       ShouldNotReploadUponFaviconLoad) {
+IN_PROC_BROWSER_TEST_F(
+    SingleClientBookmarksSyncTestWithDisabledReuploadBookmarks,
+    ShouldNotReploadUponFaviconLoad) {
   const GURL url = GURL("http://www.foo.com");
 
   base::HistogramTester histogram_tester;
@@ -1377,8 +1391,7 @@ IN_PROC_BROWSER_TEST_P(
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(title);
   std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
-      bookmark_builder.BuildFolder(/*is_legacy=*/false);
-  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+      bookmark_builder.BuildFolderWithoutFullTitle();
   ASSERT_FALSE(remote_folder->GetSpecifics().bookmark().has_full_title());
   fake_server_->InjectEntity(std::move(remote_folder));
 
@@ -1478,8 +1491,7 @@ IN_PROC_BROWSER_TEST_P(
   fake_server::BookmarkEntityBuilder bookmark_builder =
       entity_builder_factory.NewBookmarkEntityBuilder(title);
   std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
-      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
-  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+      bookmark_builder.BuildBookmarkWithoutFullTitle(url);
   ASSERT_FALSE(remote_folder->GetSpecifics().bookmark().has_full_title());
   fake_server_->InjectEntity(std::move(remote_folder));
 

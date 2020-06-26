@@ -169,7 +169,7 @@ CertDbContentWatcher::HashValue CertDbContentWatcher::ComputeHash() {
 }
 
 CertificateWatcher::CertificateWatcher(
-    const base::Closure& restart_action,
+    const base::RepeatingClosure& restart_action,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : restart_action_(restart_action),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),

@@ -5,6 +5,7 @@
 #include "chrome/browser/lite_video/lite_video_decider.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/optional.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
@@ -74,6 +75,9 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
 
   // TODO(crbug/1096193): Add checks for Lite mode and ECT.
 
+  // TODO(crbug/1096796): Add checks on the page transition and update
+  // the blocklist if needed page transition.
+
   GURL url = navigation_handle->GetURL();
 
   if (!url.SchemeIsHTTPOrHTTPS())
@@ -93,6 +97,16 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
     return base::nullopt;
 
   return hint;
+}
+
+void LiteVideoDecider::OnUserBlocklistedStatusChange(bool blocklisted) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!blocklist_loaded_) {
+    blocklist_loaded_ = true;
+    // Local event used as a signal for testing.
+    LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.UserBlocklist.BlocklistLoaded", true);
+  }
 }
 
 }  // namespace lite_video

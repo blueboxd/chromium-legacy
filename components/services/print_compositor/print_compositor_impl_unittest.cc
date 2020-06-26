@@ -334,10 +334,10 @@ TEST_F(PrintCompositorImplTest, MultiRequestsDepOrder) {
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 3 and 2 become available, the pending requests should be
-  // satisfied, thus be fulfilled in order.
+  // satisfied, thus be fulfilled in page order.
   testing::Sequence order;
-  EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   EXPECT_CALL(impl, OnFulfillRequest(1, 0)).Times(1).InSequence(order);
+  EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   impl.AddSubframeContent(3, CreateTestData(3, -1), ContentToFrameMap());
   impl.AddSubframeContent(2, CreateTestData(2, -1), ContentToFrameMap());
 }

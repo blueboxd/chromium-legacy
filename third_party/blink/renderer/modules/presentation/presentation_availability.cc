@@ -39,9 +39,7 @@ PresentationAvailability::PresentationAvailability(
           To<LocalDOMWindow>(execution_context)->GetFrame()->GetPage()),
       urls_(urls),
       value_(value),
-      state_(State::kActive) {
-  DCHECK(execution_context->IsDocument());
-}
+      state_(State::kActive) {}
 
 PresentationAvailability::~PresentationAvailability() = default;
 

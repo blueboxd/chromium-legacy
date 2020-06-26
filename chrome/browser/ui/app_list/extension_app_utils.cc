@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -55,7 +56,9 @@ void AddMenuItemIconsForSystemApps(const std::string& app_id,
     if (menu_model->GetLabelAt(index) ==
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW)) {
       menu_model->SetIcon(
-          index, ui::ImageModel::FromVectorIcon(views::kNewWindowIcon));
+          index, ui::ImageModel::FromVectorIcon(views::kNewWindowIcon,
+                                                /*color_id=*/-1,
+                                                ash::kAppContextMenuIconSize));
     }
   }
 }

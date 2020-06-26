@@ -259,7 +259,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'PaintWorklet': 'IsPaintWorkletGlobalScope',
     'ServiceWorker': 'IsServiceWorkerGlobalScope',
     'SharedWorker': 'IsSharedWorkerGlobalScope',
-    'Window': 'IsDocument',
+    'Window': 'IsWindow',
     'Worker': 'IsWorkerGlobalScope',
     'Worklet': 'IsWorkletGlobalScope',
 }
@@ -327,11 +327,11 @@ def exposed(member, interface):
     well.
 
     EXAMPLE: [Exposed=Window, RuntimeEnabledFeature=Feature1]
-      => context->isDocument()
+      => context->IsWindow()
 
     EXAMPLE: [Exposed(Window Feature1, Window Feature2)]
-      => context->isDocument() && RuntimeEnabledFeatures::Feature1Enabled() ||
-         context->isDocument() && RuntimeEnabledFeatures::Feature2Enabled()
+      => context->IsWindow() && RuntimeEnabledFeatures::Feature1Enabled() ||
+         context->IsWindow() && RuntimeEnabledFeatures::Feature2Enabled()
     """
     exposure_set = ExposureSet(
         extended_attribute_value_as_list(member, 'Exposed'))

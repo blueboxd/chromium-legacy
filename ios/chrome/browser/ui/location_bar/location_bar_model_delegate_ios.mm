@@ -114,7 +114,7 @@ bool LocationBarModelDelegateIOS::IsOfflinePage() const {
       ->presenting_offline_page();
 }
 
-bool LocationBarModelDelegateIOS::IsInstantNTP() const {
+bool LocationBarModelDelegateIOS::IsNewTabPage() const {
   // This is currently only called by the OmniboxEditModel to determine if the
   // Google landing page is showing.
   //
@@ -127,7 +127,7 @@ bool LocationBarModelDelegateIOS::IsInstantNTP() const {
   return currentURL == kChromeUINewTabURL;
 }
 
-bool LocationBarModelDelegateIOS::IsNewTabPage(const GURL& url) const {
+bool LocationBarModelDelegateIOS::IsNewTabPageURL(const GURL& url) const {
   return url.spec() == kChromeUINewTabURL;
 }
 

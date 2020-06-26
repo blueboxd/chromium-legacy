@@ -63,7 +63,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // from the browser.
   void OnLockMouseACK(
       blink::mojom::PointerLockResult result,
-      mojo::PendingRemote<blink::mojom::PointerLockContext> context);
+      blink::CrossVariantMojoRemote<
+          blink::mojom::PointerLockContextInterfaceBase> context);
   void OnChangeLockAck(blink::mojom::PointerLockResult result);
 
   void FlushContextPipeForTesting();

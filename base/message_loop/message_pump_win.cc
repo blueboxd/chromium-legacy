@@ -510,7 +510,7 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 
   TRACE_EVENT1("base,toplevel", "MessagePumpForUI::ProcessMessageHelper",
                "message", msg.message);
-  if (WM_QUIT == msg.message) {
+  if (msg.message == WM_QUIT) {
     // WM_QUIT is the standard way to exit a ::GetMessage() loop. Our
     // MessageLoop has its own quit mechanism, so WM_QUIT should only terminate
     // it if |enable_wm_quit_| is explicitly set (and is generally unexpected
@@ -592,7 +592,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   if (!have_message)
     return false;
 
-  if (WM_QUIT == msg.message) {
+  if (msg.message == WM_QUIT) {
     // If we're in a nested ::GetMessage() loop then we must let that loop see
     // the WM_QUIT in order for it to exit. If we're in DoRunLoop then the re-
     // posted WM_QUIT will be either ignored, or handled, by
@@ -610,6 +610,20 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
 
     // The return value is mostly irrelevant but return true like we would after
     // processing a QuitClosure() task.
+    return true;
+  } else if (msg.message == WM_TIMER &&
+             msg.wParam == reinterpret_cast<UINT_PTR>(this)) {
+    // This happens when a native nested loop invokes HandleWorkMessage() =>
+    // ProcessPumpReplacementMessage() which finds the WM_TIMER message
+    // installed by ScheduleNativeTimer(). That message needs to be handle
+    // directly as handing it off to ProcessMessageHelper() below would cause an
+    // unnecessary BeforeDoInternalWork() which may incorrectly lead the
+    // Delegate's heuristics to conclude that the DoWork() in
+    // HandleTimerMessage() is nested inside a native task. It's also safe to
+    // skip the below ScheduleWork() as it is not mandatory before invoking
+    // DoWork() and HandleTimerMessage() handles re-installing the necessary
+    // followup messages.
+    HandleTimerMessage();
     return true;
   }
 

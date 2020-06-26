@@ -31,11 +31,11 @@ namespace remoting {
 class PolicyWatcher : public policy::PolicyService::Observer {
  public:
   // Called first with all policies, and subsequently with any changed policies.
-  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue>)>
+  typedef base::RepeatingCallback<void(std::unique_ptr<base::DictionaryValue>)>
       PolicyUpdatedCallback;
 
   // Called after detecting malformed policies.
-  typedef base::Callback<void()> PolicyErrorCallback;
+  typedef base::RepeatingCallback<void()> PolicyErrorCallback;
 
   ~PolicyWatcher() override;
 

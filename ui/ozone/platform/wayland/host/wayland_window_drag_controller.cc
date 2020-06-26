@@ -181,6 +181,8 @@ void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
   data_offer_.reset();
   data_source_.reset();
   icon_surface_.reset();
+  origin_surface_.reset();
+  origin_window_ = nullptr;
   dragged_window_ = nullptr;
 
   // Transition to |kDropped| state and determine the next action to take. If
@@ -193,6 +195,7 @@ void WaylandWindowDragController::OnDataSourceFinish(bool completed) {
     HandleDropAndResetState();
 
   data_device_->ResetDragDelegate();
+  window_manager_->RemoveObserver(this);
 }
 
 void WaylandWindowDragController::OnDataSourceSend(const std::string& mime_type,
@@ -219,12 +222,18 @@ uint32_t WaylandWindowDragController::DispatchEvent(
   return POST_DISPATCH_PERFORM_DEFAULT;
 }
 
+void WaylandWindowDragController::OnWindowRemoved(WaylandWindow* window) {
+  DCHECK_NE(state_, State::kIdle);
+  if (window == origin_window_)
+    origin_surface_ = origin_window_->TakeWaylandSurface();
+}
+
 bool WaylandWindowDragController::OfferWindow() {
   DCHECK_LE(state_, State::kAttached);
 
-  auto* window = window_manager_->GetCurrentFocusedWindow();
-  if (!window) {
-    LOG(ERROR) << "Failed to get focused window.";
+  origin_window_ = window_manager_->GetCurrentFocusedWindow();
+  if (!origin_window_) {
+    LOG(ERROR) << "Failed to get origin window.";
     return false;
   }
 
@@ -235,11 +244,16 @@ bool WaylandWindowDragController::OfferWindow() {
     DCHECK(!icon_surface_);
     icon_surface_ = connection_->CreateSurface();
 
+    // Observe window so we can take ownership of the origin surface in case it
+    // is destroyed during the DND session.
+    window_manager_->AddObserver(this);
+
     VLOG(1) << "Starting DND session.";
     state_ = State::kAttached;
     data_source_->Offer({kMimeTypeChromiumWindow});
     data_source_->SetAction(DragDropTypes::DRAG_MOVE);
-    data_device_->StartDrag(*data_source_, *window, icon_surface_.get(), this);
+    data_device_->StartDrag(*data_source_, *origin_window_, icon_surface_.get(),
+                            this);
   }
   return true;
 }

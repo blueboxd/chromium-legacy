@@ -11,6 +11,7 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -20,6 +21,7 @@
 #include "base/check.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -28,7 +30,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -102,8 +104,7 @@ base::TimeDelta GetCrossFadeDuration(aura::Window* window,
 // the layer's animation completes, it deletes the layer and removes itself as
 // an observer.
 class CrossFadeObserver : public aura::WindowObserver,
-                          public ui::ImplicitAnimationObserver,
-                          public ui::AnimationMetricsReporter {
+                          public ui::ImplicitAnimationObserver {
  public:
   // Observes |window| for destruction, but does not take ownership.
   // Takes ownership of |layer_owner| and its child layers.
@@ -112,13 +113,28 @@ class CrossFadeObserver : public aura::WindowObserver,
                     base::Optional<std::string> histogram_name)
       : window_(window),
         layer_(window->layer()),
-        layer_owner_(std::move(layer_owner)),
-        histogram_name_(histogram_name) {
+        layer_owner_(std::move(layer_owner)) {
     window_->AddObserver(this);
+
+    smoothness_tracker_ =
+        layer_->GetCompositor()->RequestNewThroughputTracker();
+    smoothness_tracker_->Start(metrics_util::ForSmoothness(base::BindRepeating(
+        [](const base::Optional<std::string>& histogram_name, int smoothness) {
+          if (histogram_name) {
+            DCHECK(!histogram_name->empty());
+            base::UmaHistogramPercentage(*histogram_name, smoothness);
+          } else {
+            UMA_HISTOGRAM_PERCENTAGE(kCrossFadeSmoothness, smoothness);
+          }
+        },
+        std::move(histogram_name))));
   }
   CrossFadeObserver(const CrossFadeObserver&) = delete;
   CrossFadeObserver& operator=(const CrossFadeObserver&) = delete;
   ~CrossFadeObserver() override {
+    smoothness_tracker_->Stop();
+    smoothness_tracker_.reset();
+
     // Stop the old animator to trigger aborts or ends on any observers it may
     // have.
     layer_owner_->root()->GetAnimator()->StopAnimating();
@@ -145,21 +161,6 @@ class CrossFadeObserver : public aura::WindowObserver,
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override { delete this; }
 
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    if (reported_)
-      return;
-
-    reported_ = true;
-    if (histogram_name_) {
-      LOG(ERROR) << "hi";
-      DCHECK(!histogram_name_->empty());
-      base::UmaHistogramPercentage(*histogram_name_, value);
-    } else {
-      UMA_HISTOGRAM_PERCENTAGE(kCrossFadeSmoothness, value);
-    }
-  }
-
  protected:
   void StopAnimating() {
     // Trigger OnImplicitAnimationsCompleted() to be called and deletes us. If
@@ -167,11 +168,6 @@ class CrossFadeObserver : public aura::WindowObserver,
     DCHECK(window_);
     window_->layer()->GetAnimator()->StopAnimating();
   }
-
-  // Report() gets called for each LayerAnimationElement. For cross fade, its
-  // fairly common to animate both transform and opacity, so only report the
-  // metric once.
-  bool reported_ = false;
 
   // The window and the associated layer this observer is watching. The window
   // layer may be recreated during the course of the animation so |layer_| will
@@ -181,9 +177,7 @@ class CrossFadeObserver : public aura::WindowObserver,
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 
-  // Optional histogram name to record for animation smoothness. If null, use
-  // |kCrossFadeSmoothness|.
-  base::Optional<std::string> histogram_name_;
+  base::Optional<ui::ThroughputTracker> smoothness_tracker_;
 };
 
 // A version of CrossFadeObserver which updates its transform to match the
@@ -364,7 +358,6 @@ void CrossFadeAnimationInternal(
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
     settings.AddObserver(observer);
-    settings.SetAnimationMetricsReporter(observer);
     settings.SetTransitionDuration(animation_duration);
     settings.SetTweenType(animation_tween_type);
     settings.DeferPaint();

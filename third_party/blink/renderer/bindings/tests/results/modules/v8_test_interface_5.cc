@@ -1132,7 +1132,7 @@ void V8TestInterface5::InstallConditionalFeatures(
   DCHECK(execution_context);
 
   if (!prototype_object.IsEmpty() || !interface_object.IsEmpty()) {
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       static constexpr V8DOMConfiguration::AccessorConfiguration
       kAccessorConfigurations[] = {
           { "windowExposedAttribute", V8TestInterface5::WindowExposedAttributeAttributeGetterCallback, V8TestInterface5::WindowExposedAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -1165,7 +1165,7 @@ void V8TestInterface5::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       {
         // Install windowExposedMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -1178,7 +1178,7 @@ void V8TestInterface5::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument() || execution_context->IsServiceWorkerGlobalScope())) {
+    if (execution_context && (execution_context->IsServiceWorkerGlobalScope() || execution_context->IsWindow())) {
       {
         // Install windowAndServiceWorkerExposedMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {
@@ -1204,7 +1204,7 @@ void V8TestInterface5::InstallConditionalFeatures(
         }
       }
     }
-    if (execution_context && (execution_context->IsDocument())) {
+    if (execution_context && (execution_context->IsWindow())) {
       {
         // Install windowExposedStaticMethod configuration
         const V8DOMConfiguration::MethodConfiguration kConfigurations[] = {

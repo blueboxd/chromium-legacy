@@ -105,9 +105,8 @@ LoadingPredictorTabHelper::LoadingPredictorTabHelper(
     optimization_guide_decider_ =
         OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
     if (optimization_guide_decider_) {
-      optimization_guide_decider_->RegisterOptimizationTypesAndTargets(
-          {optimization_guide::proto::LOADING_PREDICTOR},
-          /*optimization_targets=*/{});
+      optimization_guide_decider_->RegisterOptimizationTypes(
+          {optimization_guide::proto::LOADING_PREDICTOR});
     }
   }
 }

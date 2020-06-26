@@ -8,6 +8,7 @@
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
+#include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 namespace blink {
@@ -41,18 +42,20 @@ WebExternalWidgetImpl::WebExternalWidgetImpl(
 WebExternalWidgetImpl::~WebExternalWidgetImpl() = default;
 
 cc::LayerTreeHost* WebExternalWidgetImpl::InitializeCompositing(
+    bool never_composited,
+    scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     const cc::LayerTreeSettings& settings,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
-  widget_base_->InitializeCompositing(task_graph_runner, settings,
+  widget_base_->InitializeCompositing(never_composited, main_thread_scheduler,
+                                      task_graph_runner, settings,
                                       std::move(ukm_recorder_factory));
   return widget_base_->LayerTreeHost();
 }
 
 void WebExternalWidgetImpl::Close(
-    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
-    base::OnceCallback<void()> cleanup_task) {
-  widget_base_->Shutdown(std::move(cleanup_runner), std::move(cleanup_task));
+    scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) {
+  widget_base_->Shutdown(std::move(cleanup_runner));
   widget_base_.reset();
 }
 
@@ -116,25 +119,12 @@ void WebExternalWidgetImpl::UpdateTextInputState() {
   widget_base_->UpdateTextInputState();
 }
 
-void WebExternalWidgetImpl::UpdateCompositionInfo() {
-  widget_base_->UpdateCompositionInfo(/*immediate_request=*/false);
-}
-
 void WebExternalWidgetImpl::UpdateSelectionBounds() {
   widget_base_->UpdateSelectionBounds();
 }
 
 void WebExternalWidgetImpl::ShowVirtualKeyboard() {
   widget_base_->ShowVirtualKeyboard();
-}
-
-void WebExternalWidgetImpl::ForceTextInputStateUpdate() {
-  widget_base_->ForceTextInputStateUpdate();
-}
-
-void WebExternalWidgetImpl::RequestCompositionUpdates(bool immediate_request,
-                                                      bool monitor_updates) {
-  widget_base_->RequestCompositionUpdates(immediate_request, monitor_updates);
 }
 
 void WebExternalWidgetImpl::SetFocus(bool focus) {
@@ -144,6 +134,35 @@ void WebExternalWidgetImpl::SetFocus(bool focus) {
 bool WebExternalWidgetImpl::HasFocus() {
   return widget_base_->has_focus();
 }
+
+void WebExternalWidgetImpl::FlushInputProcessedCallback() {
+  widget_base_->FlushInputProcessedCallback();
+}
+
+void WebExternalWidgetImpl::CancelCompositionForPepper() {
+  widget_base_->CancelCompositionForPepper();
+}
+
+void WebExternalWidgetImpl::RequestMouseLock(
+    bool has_transient_user_activation,
+    bool priviledged,
+    bool request_unadjusted_movement,
+    base::OnceCallback<void(
+        mojom::blink::PointerLockResult,
+        CrossVariantMojoRemote<mojom::blink::PointerLockContextInterfaceBase>)>
+        callback) {
+  widget_base_->RequestMouseLock(has_transient_user_activation, priviledged,
+                                 request_unadjusted_movement,
+                                 std::move(callback));
+}
+
+#if defined(OS_ANDROID)
+SynchronousCompositorRegistry*
+WebExternalWidgetImpl::GetSynchronousCompositorRegistry() {
+  return widget_base_->widget_input_handler_manager()
+      ->GetSynchronousCompositorRegistry();
+}
+#endif
 
 void WebExternalWidgetImpl::DidOverscrollForTesting(
     const gfx::Vector2dF& overscroll_delta,
@@ -195,26 +214,6 @@ void WebExternalWidgetImpl::ObserveGestureEventAndResult(
 
 bool WebExternalWidgetImpl::SupportsBufferedTouchEvents() {
   return client_->SupportsBufferedTouchEvents();
-}
-
-void WebExternalWidgetImpl::QueueSyntheticEvent(
-    std::unique_ptr<blink::WebCoalescedInputEvent>) {}
-
-void WebExternalWidgetImpl::GetWidgetInputHandler(
-    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
-    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
-  client_->GetWidgetInputHandler(std::move(request), std::move(host));
-}
-
-bool WebExternalWidgetImpl::HasCurrentImeGuard(
-    bool request_to_show_virtual_keyboard) {
-  return client_->HasCurrentImeGuard(request_to_show_virtual_keyboard);
-}
-
-void WebExternalWidgetImpl::SendCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-  client_->SendCompositionRangeChanged(range, character_bounds);
 }
 
 void WebExternalWidgetImpl::FocusChanged(bool enabled) {

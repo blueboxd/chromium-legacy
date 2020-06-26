@@ -220,6 +220,9 @@ jumbo_source_set("config_sources") {
     deps += [ "//third_party/angle:angle_gpu_info_util" ]
   }
   if (use_x11) {
-    deps += [ "//ui/gfx/linux:gpu_memory_buffer_support_x11" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/gfx/linux:gpu_memory_buffer_support_x11",
+    ]
   }
 }

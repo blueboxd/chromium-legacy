@@ -30,7 +30,10 @@ component("init") {
     deps += [ "//gpu/vulkan/android" ]
   }
   if (use_ozone) {
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/ozone",
+    ]
   }
   if (is_win) {
     deps += [ "//gpu/vulkan/win32" ]

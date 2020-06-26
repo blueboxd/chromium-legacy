@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
@@ -74,7 +75,8 @@ ui::ImageModel AppContextMenu::GetIconForCommandId(int command_id) const {
       GetMenuItemVectorIcon(command_id, controller_->IsAppPinned(app_id_)
                                             ? IDS_APP_LIST_CONTEXT_MENU_UNPIN
                                             : IDS_APP_LIST_CONTEXT_MENU_PIN);
-  return ui::ImageModel::FromVectorIcon(icon);
+  return ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+                                        ash::kAppContextMenuIconSize);
 }
 
 // static

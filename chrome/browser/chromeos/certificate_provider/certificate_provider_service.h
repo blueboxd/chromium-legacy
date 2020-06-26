@@ -91,7 +91,7 @@ class CertificateProviderService : public KeyedService {
         int sign_request_id,
         uint16_t algorithm,
         const scoped_refptr<net::X509Certificate>& certificate,
-        base::span<const uint8_t> digest) = 0;
+        base::span<const uint8_t> input) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -121,17 +121,22 @@ class CertificateProviderService : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Must be called with the reply of an extension to a previous certificate
-  // request. For each request, it is expected that every registered extension
-  // replies exactly once with the latest list of certificates.
-  // |cert_request_id| must refer to a previously broadcast certificate request.
-  // Returns false and ignores the call if the request id is unknown or it was
-  // called before with the same combination of request id and extension id.
-  // E.g. the request could have timed out before an extension replies.
-  bool SetCertificatesProvidedByExtension(
+  // Updates the certificates provided by the extension with |extension_id| to
+  // be |certificates_infos|.
+  void SetCertificatesProvidedByExtension(
       const std::string& extension_id,
-      int cert_request_id,
       const CertificateInfoList& certificate_infos);
+
+  // Must be called when an extension replied to a previous certificate
+  // request, after the new certificates were registered with
+  // SetCertificatesForExtension(). For each request, it is expected that every
+  // registered extension replies exactly once. |cert_request_id| must refer to
+  // a previously broadcast certificate request. Returns false if the request id
+  // is unknown or it was called before with the same combination of request id
+  // and extension id. E.g. the request could have timed out before an extension
+  // replies.
+  bool SetExtensionCertificateReplyReceived(const std::string& extension_id,
+                                            int cert_request_id);
 
   // Must be called with the reply of an extension to a previous sign request.
   // |sign_request_id| is provided in the reply of the extension and must refer
@@ -139,7 +144,7 @@ class CertificateProviderService : public KeyedService {
   // not the sign request id alone but only the pair (extension id, sign request
   // id) is unambiguous.
   // If the signature could be calculated by the extension, |signature| is
-  // provided in the reply and should be the signature of the digest sent in the
+  // provided in the reply and should be the signature of the data sent in the
   // sign request. Otherwise, in case of a failure, |signature| must be empty.
   // The call is ignored if |sign_request_id| is not referring to a pending
   // request.
@@ -175,14 +180,14 @@ class CertificateProviderService : public KeyedService {
   void OnExtensionUnloaded(const std::string& extension_id);
 
   // Requests the extension which provided the certificate identified by
-  // |subject_public_key_info| to sign |digest| with the corresponding private
-  // key. |algorithm| is a TLS 1.3 SignatureScheme value. See net::SSLPrivateKey
-  // for details. |callback| will be run with the reply of the extension or an
-  // error.
+  // |subject_public_key_info| to sign the unhashed |input| with the
+  // corresponding private key. |algorithm| is a TLS 1.3 SignatureScheme value.
+  // See net::SSLPrivateKey for details. |callback| will be run with the reply
+  // of the extension or an error.
   void RequestSignatureBySpki(
       const std::string& subject_public_key_info,
       uint16_t algorithm,
-      base::span<const uint8_t> digest,
+      base::span<const uint8_t> input,
       const base::Optional<AccountId>& authenticating_user_account_id,
       net::SSLPrivateKey::SignCallback callback);
 
@@ -225,16 +230,15 @@ class CertificateProviderService : public KeyedService {
   // are processed.
   void TerminateCertificateRequest(int cert_request_id);
 
-  // Requests extension with |extension_id| to sign |digest| with the private
-  // key certified by |certificate|. |algorithm| is a TLS 1.3 SignatureScheme
-  // value. See net::SSLPrivateKey for details. |digest| was created by
-  // |algorithm|'s prehash.  |callback| will be run with the reply of the
-  // extension or an error.
+  // Requests extension with |extension_id| to sign the unhashed |input| with
+  // the private key certified by |certificate|. |algorithm| is a TLS 1.3
+  // SignatureScheme value. See net::SSLPrivateKey for details. |callback| will
+  // be run with the reply of the extension or an error.
   void RequestSignatureFromExtension(
       const std::string& extension_id,
       const scoped_refptr<net::X509Certificate>& certificate,
       uint16_t algorithm,
-      base::span<const uint8_t> digest,
+      base::span<const uint8_t> input,
       const base::Optional<AccountId>& authenticating_user_account_id,
       net::SSLPrivateKey::SignCallback callback);
 

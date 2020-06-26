@@ -11,6 +11,7 @@
 #include "chrome/android/features/vr/jni_headers/VrShellDelegate_jni.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
 #include "chrome/browser/android/vr/vr_shell.h"
+#include "chrome/browser/android/vr/vrcore_install_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
@@ -197,10 +198,7 @@ void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 bool VrShellDelegate::ShouldDisableGvrDevice() {
-  int vr_support_level =
-      Java_VrShellDelegate_getVrSupportLevel(AttachCurrentThread());
-  return static_cast<VrSupportLevel>(vr_support_level) <=
-         VrSupportLevel::kVrNeedsUpdate;
+  return VrCoreInstallHelper::VrSupportNeedsUpdate();
 }
 
 void VrShellDelegate::StartWebXRPresentation(

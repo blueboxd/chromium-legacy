@@ -61,7 +61,6 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -518,6 +517,8 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
       // up to this point |web_frame_| is still provisional and the updates will
       // not get sent. Revise this when https://crbug.com/578349 is fixed.
       ResetWheelAndTouchEventHandlerProperties(*web_frame_->GetFrame());
+
+      web_frame_->FrameWidgetImpl()->DidNavigate();
     }
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
@@ -537,7 +538,7 @@ void LocalFrameClientImpl::DispatchDidFinishLoad() {
 void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
     mojom::RequestContextFrameType frame_type,
-    Document* origin_document,
+    LocalDOMWindow* origin_window,
     DocumentLoader* document_loader,
     WebNavigationType type,
     NavigationPolicy policy,
@@ -572,9 +573,9 @@ void LocalFrameClientImpl::BeginNavigation(
       should_check_main_world_content_security_policy;
   navigation_info->blob_url_token = std::move(blob_url_token);
   navigation_info->input_start = input_start_time;
-  if (origin_document && origin_document->GetFrame()) {
+  if (origin_window && origin_window->GetFrame()) {
     navigation_info->initiator_frame =
-        origin_document->GetFrame()->Client()->GetWebFrame();
+        origin_window->GetFrame()->Client()->GetWebFrame();
   } else {
     navigation_info->initiator_frame = nullptr;
   }
@@ -615,7 +616,7 @@ void LocalFrameClientImpl::BeginNavigation(
   if (form)
     navigation_info->form = WebFormElement(form);
 
-  LocalFrame* frame = origin_document ? origin_document->GetFrame() : nullptr;
+  LocalFrame* frame = origin_window ? origin_window->GetFrame() : nullptr;
   if (frame) {
     navigation_info->is_opener_navigation =
         frame->Client()->Opener() == ToCoreFrame(web_frame_);
@@ -630,15 +631,15 @@ void LocalFrameClientImpl::BeginNavigation(
       RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
 
   // The frame has navigated either by itself or by the action of the
-  // |origin_document| when it is defined. |source_location| represents the
+  // |origin_window| when it is defined. |source_location| represents the
   // line of code that has initiated the navigation. It is used to let web
   // developpers locate the root cause of blocked navigations.
   // TODO(crbug.com/804504): This is likely wrong -- this is often invoked
   // asynchronously as a result of ScheduledURLNavigation::Fire(), so JS
   // stack is not available here.
   std::unique_ptr<SourceLocation> source_location =
-      origin_document
-          ? SourceLocation::Capture(origin_document->GetExecutionContext())
+      origin_window
+          ? SourceLocation::Capture(origin_window)
           : SourceLocation::Capture(web_frame_->GetFrame()->DomWindow());
   if (source_location && !source_location->IsUnknown()) {
     navigation_info->source_location.url = source_location->Url();
@@ -1130,7 +1131,7 @@ LocalFrameClientImpl::CreateSpeechRecognitionClient(
 }
 
 void LocalFrameClientImpl::SetMouseCapture(bool capture) {
-  web_frame_->Client()->SetMouseCapture(capture);
+  web_frame_->LocalRoot()->FrameWidgetImpl()->SetMouseCapture(capture);
 }
 
 bool LocalFrameClientImpl::UsePrintingLayout() const {

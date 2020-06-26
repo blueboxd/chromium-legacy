@@ -93,6 +93,31 @@ bool CheckForUnoptimizedImagePolicy(ExecutionContext* context,
   return false;
 }
 
+// This implements the HTML Standard's list of available images tuple-matching
+// logic [1]. In our implementation, it is only used to determine whether or not
+// we should skip queueing the microtask that continues the rest of the image
+// loading algorithm. But the actual decision to reuse the image is determined
+// by ResourceFetcher, and is much stricter.
+// [1]:
+// https://html.spec.whatwg.org/multipage/images.html#updating-the-image-data:list-of-available-images
+bool CanReuseFromListOfAvailableImages(
+    const Resource* resource,
+    CrossOriginAttributeValue cross_origin_attribute,
+    const SecurityOrigin* origin) {
+  const ResourceRequestHead& request = resource->GetResourceRequest();
+  bool is_same_origin = request.RequestorOrigin()->IsSameOriginWith(origin);
+  if (cross_origin_attribute != kCrossOriginAttributeNotSet && !is_same_origin)
+    return false;
+
+  if (request.GetCredentialsMode() ==
+          network::mojom::CredentialsMode::kSameOrigin &&
+      cross_origin_attribute != kCrossOriginAttributeAnonymous) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
@@ -741,9 +766,17 @@ bool ImageLoader::ShouldLoadImmediately(const KURL& url) const {
   if (!url.IsNull()) {
     Resource* resource = GetMemoryCache()->ResourceForURL(
         url, element_->GetDocument().Fetcher()->GetCacheIdentifier());
-    if (resource && !resource->ErrorOccurred())
+
+    if (resource && !resource->ErrorOccurred() &&
+        CanReuseFromListOfAvailableImages(
+            resource,
+            GetCrossOriginAttributeValue(
+                element_->FastGetAttribute(html_names::kCrossoriginAttr)),
+            element_->GetDocument().GetSecurityOrigin())) {
       return true;
+    }
   }
+
   return (IsA<HTMLObjectElement>(*element_) ||
           IsA<HTMLEmbedElement>(*element_));
 }

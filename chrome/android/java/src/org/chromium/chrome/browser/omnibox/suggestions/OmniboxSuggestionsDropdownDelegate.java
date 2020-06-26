@@ -216,6 +216,7 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
                 // A->B->A transitions and suppress the broadcasts.
                 if (mLastBroadcastedListViewMaxHeight == availableViewportHeight) return;
                 if (mObserver == null) return;
+
                 mObserver.onSuggestionDropdownHeightChanged(availableViewportHeight);
                 mLastBroadcastedListViewMaxHeight = availableViewportHeight;
             });

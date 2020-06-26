@@ -31,7 +31,7 @@ VrModuleProvider::~VrModuleProvider() {
                                         j_vr_module_provider_);
 }
 
-bool VrModuleProvider::ModuleInstalled() {
+bool VrModuleProvider::ModuleInstalled() const {
   return Java_VrModuleProvider_isModuleInstalled(
       base::android::AttachCurrentThread());
 }

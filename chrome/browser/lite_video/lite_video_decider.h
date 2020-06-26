@@ -45,6 +45,9 @@ class LiteVideoDecider : public blocklist::OptOutBlocklistDelegate {
     hint_cache_ = std::move(hint_cache);
   }
 
+  // blocklist::OptOutBlocklistDelegate
+  void OnUserBlocklistedStatusChange(bool blocklisted) override;
+
  private:
   // The hint cache that holds LiteVideoHints that specify the parameters
   // for throttling media requests for that navigation.
@@ -53,6 +56,10 @@ class LiteVideoDecider : public blocklist::OptOutBlocklistDelegate {
   // The blocklist that maintains the hosts that should not have media requests
   // throttled on them due to too many opt-outs.
   std::unique_ptr<LiteVideoUserBlocklist> user_blocklist_;
+
+  // Whether the backing store used by the owned |user_blocklist_| is loaded
+  // and available.
+  bool blocklist_loaded_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

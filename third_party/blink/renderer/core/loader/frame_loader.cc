@@ -235,7 +235,7 @@ void FrameLoader::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(progress_tracker_);
   visitor->Trace(document_loader_);
-  visitor->Trace(last_origin_document_csp_);
+  visitor->Trace(last_origin_window_csp_);
 }
 
 void FrameLoader::Init() {
@@ -500,7 +500,7 @@ void FrameLoader::DidFinishSameDocumentNavigation(
 WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     const KURL& url,
     const AtomicString& http_method,
-    Document* origin_document,
+    bool has_origin_window,
     const KURL& failing_url,
     WebFrameLoadType frame_load_type) {
   // TODO(dgozman): this method is rewriting the load type, which makes it hard
@@ -533,7 +533,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
   if (url == document_loader_->UrlForHistory()) {
     if (http_method == http_names::kPOST)
       return WebFrameLoadType::kStandard;
-    if (!origin_document)
+    if (!has_origin_window)
       return WebFrameLoadType::kReload;
     return WebFrameLoadType::kReplaceCurrentItem;
   }
@@ -552,21 +552,20 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
 bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
   // If no origin Document* was specified, skip remaining security checks and
   // assume the caller has fully initialized the FrameLoadRequest.
-  if (!request.OriginDocument())
+  if (!request.GetOriginWindow())
     return true;
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript()) {
-    Document* origin_document = request.OriginDocument();
     // Check the CSP of the caller (the "source browsing context") if required,
     // as per https://html.spec.whatwg.org/C/#javascript-protocol.
     bool javascript_url_is_allowed =
         request.ShouldCheckMainWorldContentSecurityPolicy() ==
             network::mojom::CSPDisposition::DO_NOT_CHECK ||
-        origin_document->GetContentSecurityPolicy()->AllowInline(
+        request.GetOriginWindow()->GetContentSecurityPolicy()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             frame_->DeprecatedLocalOwner(), url.GetString(),
-            String() /* nonce */, origin_document->Url(),
+            String() /* nonce */, request.GetOriginWindow()->Url(),
             OrdinalNumber::First());
 
     if (!javascript_url_is_allowed)
@@ -580,7 +579,7 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
   }
 
   if (!request.CanDisplay(url)) {
-    request.OriginDocument()->AddConsoleMessage(
+    request.GetOriginWindow()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kError,
@@ -657,7 +656,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   ResourceRequest& resource_request = request.GetResourceRequest();
   const KURL& url = resource_request.Url();
-  Document* origin_document = request.OriginDocument();
+  LocalDOMWindow* origin_window = request.GetOriginWindow();
 
   resource_request.SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(frame_));
@@ -673,9 +672,9 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // handled by a plugin or end up as a download, so allow it to let the
   // embedder figure out what to do with it. Navigations to filesystem URLs are
   // always blocked here.
-  if (frame_->IsMainFrame() && origin_document &&
+  if (frame_->IsMainFrame() && origin_window &&
       !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
-          request.OriginDocument()->Url()) &&
+          origin_window->Url()) &&
       (url.ProtocolIs("filesystem") ||
        (url.ProtocolIsData() &&
         network_utils::IsDataURLMimeTypeSupported(url)))) {
@@ -696,7 +695,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   }
 
   frame_load_type = DetermineFrameLoadType(
-      resource_request.Url(), resource_request.HttpMethod(), origin_document,
+      resource_request.Url(), resource_request.HttpMethod(), origin_window,
       KURL(), frame_load_type);
 
   bool same_document_navigation =
@@ -707,8 +706,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // Perform same document navigation.
   if (same_document_navigation) {
     document_loader_->CommitSameDocumentNavigation(
-        url, frame_load_type, nullptr, request.ClientRedirect(),
-        origin_document,
+        url, frame_load_type, nullptr, request.ClientRedirect(), origin_window,
         request.GetTriggeringEventInfo() != TriggeringEventInfo::kNotFromEvent,
         nullptr /* extra_data */);
     return;
@@ -735,20 +733,20 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
   WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp;
   network::mojom::blink::CSPSourcePtr initiator_self_source;
-  if (origin_document && origin_document->GetContentSecurityPolicy()
-                             ->ExperimentalFeaturesEnabled()) {
-    ContentSecurityPolicy* origin_document_csp =
-        origin_document->GetContentSecurityPolicy();
-    CSPSource* origin_document_csp_self_source =
-        origin_document_csp->GetSelfSource();
+  if (origin_window && origin_window->GetContentSecurityPolicy()
+                           ->ExperimentalFeaturesEnabled()) {
+    ContentSecurityPolicy* origin_window_csp =
+        origin_window->GetContentSecurityPolicy();
+    CSPSource* origin_window_csp_self_source =
+        origin_window_csp->GetSelfSource();
 
-    initiator_csp = origin_document_csp->ExposeForNavigationalChecks();
-    if (origin_document_csp_self_source) {
+    initiator_csp = origin_window_csp->ExposeForNavigationalChecks();
+    if (origin_window_csp_self_source) {
       initiator_self_source =
-          origin_document_csp_self_source->ExposeForNavigationalChecks();
+          origin_window_csp_self_source->ExposeForNavigationalChecks();
     }
-    origin_document->NavigationInitiator().BindReceiver(
-        navigation_initiator.InitWithNewPipeAndPassReceiver());
+    NavigationInitiatorImpl::From(*origin_window)
+        .BindReceiver(navigation_initiator.InitWithNewPipeAndPassReceiver());
   }
 
   // Record the document that has initiated this navigation. It will be used at
@@ -756,10 +754,10 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   // TODO(arthursonzogni): This looks very fragile. It seems easy to confuse the
   // FrameLoader by starting several navigations in a row. We should get rid of
   // this.
-  last_origin_document_csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
-  if (origin_document && origin_document->GetContentSecurityPolicy()) {
-    last_origin_document_csp_->CopyStateFrom(
-        origin_document->GetContentSecurityPolicy());
+  last_origin_window_csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
+  if (origin_window && origin_window->GetContentSecurityPolicy()) {
+    last_origin_window_csp_->CopyStateFrom(
+        origin_window->GetContentSecurityPolicy());
   }
 
   // Record the latest requiredCSP value that will be used when loading the
@@ -781,27 +779,25 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   // Report-only CSP headers are checked in browser.
   const FetchClientSettingsObject* fetch_client_settings_object = nullptr;
-  if (origin_document) {
-    fetch_client_settings_object = &origin_document->Fetcher()
+  if (origin_window) {
+    fetch_client_settings_object = &origin_window->Fetcher()
                                         ->GetProperties()
                                         .GetFetchClientSettingsObject();
   }
   ModifyRequestForCSP(resource_request, fetch_client_settings_object,
-                      origin_document, request.GetFrameType());
+                      origin_window, request.GetFrameType());
 
   DCHECK(Client()->HasWebView());
   // Check for non-escaped new lines in the url.
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
     Deprecation::CountDeprecation(
-        origin_document ? origin_document->GetExecutionContext() : nullptr,
-        WebFeature::kCanRequestURLHTTPContainingNewline);
+        origin_window, WebFeature::kCanRequestURLHTTPContainingNewline);
     return;
   }
 
   if (url.ProtocolIsJavaScript()) {
-    if (!origin_document ||
-        origin_document->GetExecutionContext()->CanExecuteScripts(
-            kAboutToExecuteScript)) {
+    if (!origin_window ||
+        origin_window->CanExecuteScripts(kAboutToExecuteScript)) {
       frame_->GetDocument()->ProcessJavaScriptUrl(
           url, request.ShouldCheckMainWorldContentSecurityPolicy());
     }
@@ -832,11 +828,11 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   }
 
   const network::mojom::IPAddressSpace initiator_address_space =
-      origin_document ? origin_document->GetSecurityContext().AddressSpace()
-                      : network::mojom::IPAddressSpace::kUnknown;
+      origin_window ? origin_window->GetSecurityContext().AddressSpace()
+                    : network::mojom::IPAddressSpace::kUnknown;
 
   Client()->BeginNavigation(
-      resource_request, request.GetFrameType(), origin_document,
+      resource_request, request.GetFrameType(), origin_window,
       nullptr /* document_loader */, navigation_type,
       request.GetNavigationPolicy(), frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
@@ -952,7 +948,7 @@ void FrameLoader::CommitNavigation(
 
   navigation_params->frame_load_type = DetermineFrameLoadType(
       navigation_params->url, navigation_params->http_method,
-      nullptr /* origin_document */, navigation_params->unreachable_url,
+      false /* has_origin_window */, navigation_params->unreachable_url,
       navigation_params->frame_load_type);
 
   // Note: we might actually classify this navigation as same document
@@ -987,7 +983,7 @@ void FrameLoader::CommitNavigation(
   // violations and display console messages properly.
   ContentSecurityPolicy* content_security_policy = CreateCSP(
       navigation_params->url, navigation_params->response.ToResourceResponse(),
-      navigation_params->origin_policy, last_origin_document_csp_.Release(),
+      navigation_params->origin_policy, last_origin_window_csp_.Release(),
       commit_reason);
 
   base::Optional<Document::UnloadEventTiming> unload_timing;
@@ -1599,7 +1595,7 @@ FrameLoader::PendingEffectiveSandboxFlags() const {
 void FrameLoader::ModifyRequestForCSP(
     ResourceRequest& resource_request,
     const FetchClientSettingsObject* fetch_client_settings_object,
-    Document* document_for_logging,
+    LocalDOMWindow* window_for_logging,
     mojom::RequestContextFrameType frame_type) const {
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
@@ -1623,9 +1619,7 @@ void FrameLoader::ModifyRequestForCSP(
   }
 
   MixedContentChecker::UpgradeInsecureRequest(
-      resource_request, fetch_client_settings_object,
-      document_for_logging ? document_for_logging->GetExecutionContext()
-                           : nullptr,
+      resource_request, fetch_client_settings_object, window_for_logging,
       frame_type, frame_->GetContentSettingsClient());
 }
 

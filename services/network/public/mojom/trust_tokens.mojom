@@ -102,14 +102,21 @@ struct TrustTokenParams {
   // or redeem a new token, evicting the SRR currently stored.
   TrustTokenRefreshPolicy refresh_policy = kUseCached;
 
-  // "sign_request_data", "include_timestamp_header", "issuer", and
-  // "additional_signed_headers" are used only when "type" is "kSigning":
-  // these parameters specify the manner in which the outgoing request should
-  // be signed.
+  // The remaining members are used only when "type" is "kSigning": these
+  // parameters specify the manner in which the outgoing request should be
+  // signed, including optionally specifying additional data to add in
+  // browser-provided request headers (for instance, a timestamp or custom
+  // client-provided data).
   TrustTokenSignRequestData sign_request_data = kOmit;
   bool include_timestamp_header = false;
   url.mojom.Origin? issuer;
   array<string> additional_signed_headers;
+
+  // "possibly_unsafe_additional_signing_data", which stores the request's
+  // optional additionalSigningData Trust Tokens parameter, might not be a valid
+  // HTTP header value; it's the user's responsibility to ensure that it is safe
+  // to attach as a header prior to adding it to an outgoing request's headers.
+  string? possibly_unsafe_additional_signing_data;
 };
 
 // Result struct for a HasTrustTokens (see below) call:

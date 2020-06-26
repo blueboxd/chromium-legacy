@@ -27,6 +27,10 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/trace_util.h"
 
+#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
+#include "ui/base/ui_base_features.h"  // nogncheck
+#endif
+
 #if (defined(USE_X11) || defined(OS_FUCHSIA) || defined(OS_WIN)) && \
     BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
@@ -95,8 +99,17 @@ SharedImageFactory::SharedImageFactory(
   }
 
   // For X11
-#if (defined(USE_X11) || defined(OS_FUCHSIA) || defined(OS_WIN)) && \
-    BUILDFLAG(ENABLE_VULKAN)
+#if defined(USE_X11) && BUILDFLAG(ENABLE_VULKAN)
+  if (!features::IsUsingOzonePlatform()) {
+    if (using_vulkan_) {
+      interop_backing_factory_ =
+          std::make_unique<ExternalVkImageFactory>(context_state);
+    }
+  } else if (using_vulkan_) {
+    LOG(ERROR) << "ERROR: using_vulkan_ = true and interop_backing_factory_ is "
+                  "not set";
+  }
+#elif (defined(OS_FUCHSIA) || defined(OS_WIN)) && BUILDFLAG(ENABLE_VULKAN)
   if (using_vulkan_) {
     interop_backing_factory_ =
         std::make_unique<ExternalVkImageFactory>(context_state);

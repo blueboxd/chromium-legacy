@@ -16,6 +16,7 @@
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace media_message_center {
 class MediaNotificationItem;
@@ -102,6 +103,10 @@ class MediaNotificationContainerImplView
 
   bool is_playing_for_testing() { return is_playing_; }
 
+  views::Widget* drag_image_widget_for_testing() {
+    return drag_image_widget_.get();
+  }
+
  private:
   class DismissButton;
 
@@ -112,6 +117,8 @@ class MediaNotificationContainerImplView
   void UpdateDismissButtonVisibility();
 
   void DismissNotification();
+
+  void CreateDragImageWidget();
 
   // Updates the forced expanded state of |view_|.
   void ForceExpandedState();
@@ -170,6 +177,8 @@ class MediaNotificationContainerImplView
   std::unique_ptr<views::SlideOutController> slide_out_controller_;
 
   OverlayMediaNotificationView* overlay_ = nullptr;
+
+  views::UniqueWidgetPtr drag_image_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImplView);
 };

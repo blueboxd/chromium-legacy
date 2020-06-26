@@ -9,6 +9,8 @@ include_rules = [
     "+base/strings",
     "+base/time/time.h",
     "+base/threading/thread_checker.h",
+    "+build/build_config.h",
+    "+build/buildflag.h",
     "+cc/input/browser_controls_state.h",
     "+cc/input/event_listener_properties.h",
     "+cc/input/overscroll_behavior.h",

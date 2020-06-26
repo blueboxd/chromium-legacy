@@ -11,17 +11,23 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
-class Document;
+class LocalDOMWindow;
 
 class NavigationInitiatorImpl
     : public GarbageCollected<NavigationInitiatorImpl>,
+      public Supplement<LocalDOMWindow>,
       public mojom::blink::NavigationInitiator {
+  USING_GARBAGE_COLLECTED_MIXIN(NavigationInitiatorImpl);
+
  public:
-  explicit NavigationInitiatorImpl(Document& document);
-  void Trace(Visitor* visitor) const;
+  static const char kSupplementName[];
+  static NavigationInitiatorImpl& From(LocalDOMWindow&);
+  explicit NavigationInitiatorImpl(LocalDOMWindow&);
+  void Trace(Visitor* visitor) const override;
 
   // mojom::blink::NavigationInitiator override:
   void SendViolationReport(
@@ -32,14 +38,12 @@ class NavigationInitiatorImpl
 
  private:
   // A list of all the navigation_initiator receivers owned by the owner
-  // document. Used to report CSP violations that result from CSP blocking
-  // navigation requests that were initiated by the owner document.
+  // window. Used to report CSP violations that result from CSP blocking
+  // navigation requests that were initiated by the owner window.
   HeapMojoReceiverSet<mojom::blink::NavigationInitiator,
                       NavigationInitiatorImpl,
                       HeapMojoWrapperMode::kWithoutContextObserver>
       navigation_initiator_receivers_;
-
-  Member<Document> document_;
 };
 
 }  // namespace blink

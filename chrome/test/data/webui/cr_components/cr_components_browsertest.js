@@ -70,6 +70,57 @@ TEST_F('CrComponentsManagedFootnoteTest', 'LoadTimeDataDevice', function() {
       this.suiteName, managed_footnote_test.TestNames.LoadTimeDataDevice);
 });
 
+GEN('#endif');
+
+GEN('#if defined(OS_CHROMEOS)');
+/**
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrPolicyNetworkBehaviorMojoTest() {}
+
+CrPolicyNetworkBehaviorMojoTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://os-settings/chromeos/internet_page/internet_page.html',
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    '../cr_elements/cr_policy_strings.js',
+    'cr_policy_network_behavior_mojo_tests.js',
+  ]),
+};
+
+TEST_F('CrPolicyNetworkBehaviorMojoTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrComponentsPolicyNetworkIndicatorMojoTest() {}
+
+CrComponentsPolicyNetworkIndicatorMojoTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://os-settings/chromeos/internet_page/internet_page.html',
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    '../cr_elements/cr_policy_strings.js',
+    'cr_policy_network_indicator_mojo_tests.js',
+  ]),
+};
+
+TEST_F('CrComponentsPolicyNetworkIndicatorMojoTest', 'All', function() {
+  mocha.run();
+});
+
 /**
  * @constructor
  * @extends {CrComponentsBrowserTest}

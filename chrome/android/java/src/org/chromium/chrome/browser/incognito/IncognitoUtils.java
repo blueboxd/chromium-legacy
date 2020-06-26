@@ -19,7 +19,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 
 import java.io.File;
@@ -111,7 +111,7 @@ public class IncognitoUtils {
      * @return whether successful.
      */
     public static boolean deleteIncognitoStateFiles() {
-        File directory = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File directory = TabStateDirectory.getOrCreateTabbedModeStateDirectory();
         File[] tabStateFiles = directory.listFiles();
         if (tabStateFiles == null) return true;
 

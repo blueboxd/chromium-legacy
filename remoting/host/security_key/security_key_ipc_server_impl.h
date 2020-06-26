@@ -43,8 +43,8 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
       ClientSessionDetails* client_session_details,
       base::TimeDelta initial_connect_timeout,
       const SecurityKeyAuthHandler::SendMessageCallback& message_callback,
-      const base::Closure& connect_callback,
-      const base::Closure& done_callback);
+      base::OnceClosure connect_callback,
+      base::OnceClosure done_callback);
   ~SecurityKeyIpcServerImpl() override;
 
   // SecurityKeyIpcServer implementation.
@@ -83,10 +83,10 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
   base::OneShotTimer timer_;
 
   // Used to signal that the IPC channel has been connected.
-  base::Closure connect_callback_;
+  base::OnceClosure connect_callback_;
 
   // Used to signal that the IPC channel should be disconnected.
-  base::Closure done_callback_;
+  base::OnceClosure done_callback_;
 
   // Used to pass a security key request on to the remote client.
   SecurityKeyAuthHandler::SendMessageCallback message_callback_;

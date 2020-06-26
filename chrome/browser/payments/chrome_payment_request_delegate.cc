@@ -39,9 +39,9 @@
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
-#if defined(CHROME_OS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
-#endif  // CHROME_OS
+#endif  // OS_CHROMEOS
 
 namespace payments {
 
@@ -207,19 +207,20 @@ bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
 }
 
 std::string ChromePaymentRequestDelegate::GetTwaPackageName() const {
-#if defined(CHROME_OS)
-  auto* apk_web_service = chromeos::ApkWebService::Get(
+#if defined(OS_CHROMEOS)
+  auto* apk_web_app_service = chromeos::ApkWebAppService::Get(
       Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  if (!apk_web_service)
+  if (!apk_web_app_service)
     return "";
 
   base::Optional<std::string> twa_package_name =
-      apk_web_service->GetPackageNameForWebApp(top_level_url);
+      apk_web_app_service->GetPackageNameForWebApp(
+          web_contents_->GetLastCommittedURL());
 
   return twa_package_name.has_value() ? twa_package_name.value() : "";
 #else
   return "";
-#endif  // CHROME_OS
+#endif  // OS_CHROMEOS
 }
 
 }  // namespace payments

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_FRAME_WIDGET_H_
 
 #include "mojo/public/mojom/base/text_direction.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
@@ -24,10 +25,15 @@ class PaintImage;
 namespace blink {
 
 // In interface exposed within Blink from local root frames that provides
-// local-root specific things related to compositing and input.
-class PLATFORM_EXPORT FrameWidget {
+// local-root specific things related to compositing and input. This
+// class extends the FrameWidgetInputHandler implementation. All API calls
+// on this class occur on the main thread. input/FrameWidgetInputHandlerImpl
+// which also implements the FrameWidgetInputHandler interface runs on the
+// compositor thread and proxies calls to this class.
+class PLATFORM_EXPORT FrameWidget
+    : public mojom::blink::FrameWidgetInputHandler {
  public:
-  virtual ~FrameWidget();
+  ~FrameWidget() override;
 
   // Returns the WebWidgetClient, which is implemented outside of blink.
   virtual WebWidgetClient* Client() const = 0;
@@ -127,6 +133,7 @@ class PLATFORM_EXPORT FrameWidget {
   virtual void GetEditContextBoundsInWindow(
       base::Optional<gfx::Rect>* control_bounds,
       base::Optional<gfx::Rect>* selection_bounds) = 0;
+
   virtual int32_t ComputeWebTextInputNextPreviousFlags() = 0;
   virtual void ResetVirtualKeyboardVisibilityRequest() = 0;
 
@@ -140,6 +147,32 @@ class PLATFORM_EXPORT FrameWidget {
 
   // Clear any cached text input state.
   virtual void ClearTextInputState() = 0;
+
+  // This message sends a string being composed with an input method.
+  virtual bool SetComposition(const String& text,
+                              const Vector<ui::ImeTextSpan>& ime_text_spans,
+                              const gfx::Range& replacement_range,
+                              int selection_start,
+                              int selection_end) = 0;
+
+  // This message deletes the current composition, inserts specified text, and
+  // moves the cursor.
+  virtual void CommitText(const String& text,
+                          const Vector<ui::ImeTextSpan>& ime_text_spans,
+                          const gfx::Range& replacement_range,
+                          int relative_cursor_pos) = 0;
+
+  // This message inserts the ongoing composition.
+  virtual void FinishComposingText(bool keep_selection) = 0;
+
+  virtual bool IsProvisional() = 0;
+  virtual uint64_t GetScrollableContainerIdAt(const gfx::PointF& point) = 0;
+
+  virtual bool ShouldHandleImeEvents() { return false; }
+  virtual bool ShouldDispatchImeEventsToPepper() { return false; }
+
+  virtual void SetEditCommandsForNextKeyEvent(
+      Vector<mojom::blink::EditCommandPtr> edit_commands) = 0;
 };
 
 }  // namespace blink

@@ -108,54 +108,6 @@ uint8_t GetMedian(const std::vector<uint8_t>& data) {
   }
 }
 
-std::string GetHashFromBlurredImage(
-    VisualFeatures::BlurredImage blurred_image) {
-  DCHECK_EQ(blurred_image.data().size(),
-            3u * blurred_image.width() * blurred_image.height());
-  // Convert the blurred image to grayscale.
-  std::vector<uint8_t> luma_values;
-  luma_values.resize(blurred_image.width() * blurred_image.height());
-  for (size_t i = 0; i < luma_values.size(); i++) {
-    luma_values[i] = color_utils::GetLuma(SkColorSetRGB(
-        static_cast<unsigned char>(blurred_image.data()[3 * i]),
-        static_cast<unsigned char>(blurred_image.data()[3 * i + 1]),
-        static_cast<unsigned char>(blurred_image.data()[3 * i + 2])));
-  }
-
-  uint8_t median_luma = GetMedian(luma_values);
-
-  std::string output;
-
-  // The server-side hash generation writes a Varint here, rather than just an
-  // int. These encodings coincide as long as the width is at most 127. If
-  // we begin using larger widths, we need to implement the Varint encoding used
-  // on the server.
-  DCHECK_LT(blurred_image.width(), 128);
-  output.push_back(static_cast<unsigned char>(blurred_image.width()));
-
-  // Write the output bitstring.
-  unsigned char next_byte = 0;
-  int bits_encoded_so_far = 0;
-  for (const uint8_t luma_value : luma_values) {
-    next_byte <<= 1;
-    if (luma_value >= median_luma)
-      next_byte |= 1;
-
-    ++bits_encoded_so_far;
-    if (bits_encoded_so_far == 8) {
-      output.push_back(next_byte);
-      bits_encoded_so_far = 0;
-    }
-  }
-
-  if (bits_encoded_so_far != 0) {
-    next_byte <<= 8 - bits_encoded_so_far;
-    output.push_back(next_byte);
-  }
-
-  return output;
-}
-
 }  // namespace
 
 // A QuantizedColor takes the highest 3 bits of R, G, and B, and concatenates
@@ -303,6 +255,54 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
   }
 
   return target;
+}
+
+std::string GetHashFromBlurredImage(
+    VisualFeatures::BlurredImage blurred_image) {
+  DCHECK_EQ(blurred_image.data().size(),
+            3u * blurred_image.width() * blurred_image.height());
+  // Convert the blurred image to grayscale.
+  std::vector<uint8_t> luma_values;
+  luma_values.resize(blurred_image.width() * blurred_image.height());
+  for (size_t i = 0; i < luma_values.size(); i++) {
+    luma_values[i] = color_utils::GetLuma(SkColorSetRGB(
+        static_cast<unsigned char>(blurred_image.data()[3 * i]),
+        static_cast<unsigned char>(blurred_image.data()[3 * i + 1]),
+        static_cast<unsigned char>(blurred_image.data()[3 * i + 2])));
+  }
+
+  uint8_t median_luma = GetMedian(luma_values);
+
+  std::string output;
+
+  // The server-side hash generation writes a Varint here, rather than just an
+  // int. These encodings coincide as long as the width is at most 127. If
+  // we begin using larger widths, we need to implement the Varint encoding used
+  // on the server.
+  DCHECK_LT(blurred_image.width(), 128);
+  output.push_back(static_cast<unsigned char>(blurred_image.width()));
+
+  // Write the output bitstring.
+  unsigned char next_byte = 0;
+  int bits_encoded_so_far = 0;
+  for (const uint8_t luma_value : luma_values) {
+    next_byte <<= 1;
+    if (luma_value >= median_luma)
+      next_byte |= 1;
+
+    ++bits_encoded_so_far;
+    if (bits_encoded_so_far == 8) {
+      output.push_back(next_byte);
+      bits_encoded_so_far = 0;
+    }
+  }
+
+  if (bits_encoded_so_far != 0) {
+    next_byte <<= 8 - bits_encoded_so_far;
+    output.push_back(next_byte);
+  }
+
+  return output;
 }
 
 base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,

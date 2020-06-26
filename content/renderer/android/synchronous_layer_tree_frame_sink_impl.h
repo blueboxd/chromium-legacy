@@ -26,12 +26,13 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "content/renderer/input/synchronous_layer_tree_frame_sink.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "third_party/blink/public/platform/input/synchronous_compositor_registry.h"
+#include "third_party/blink/public/platform/input/synchronous_layer_tree_frame_sink.h"
 #include "ui/gfx/transform.h"
 
 class SkCanvas;
@@ -53,7 +54,6 @@ class ParentLocalSurfaceIdAllocator;
 namespace content {
 
 class FrameSwapMessageQueue;
-class SynchronousCompositorRegistry;
 
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
@@ -64,7 +64,7 @@ class SynchronousCompositorRegistry;
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousLayerTreeFrameSinkImpl
-    : public SynchronousLayerTreeFrameSink,
+    : public blink::SynchronousLayerTreeFrameSink,
       public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient {
  public:
@@ -76,7 +76,7 @@ class SynchronousLayerTreeFrameSinkImpl
       IPC::Sender* sender,
       uint32_t layer_tree_frame_sink_id,
       std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
-      SynchronousCompositorRegistry* registry,
+      blink::SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       mojo::PendingRemote<viz::mojom::CompositorFrameSink>
           compositor_frame_sink_remote,
@@ -109,8 +109,9 @@ class SynchronousLayerTreeFrameSinkImpl
   // viz::ExternalBeginFrameSourceClient overrides.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
-  // SynchronousLayerTreeFrameSink overrides.
-  void SetSyncClient(SynchronousLayerTreeFrameSinkClient* compositor) override;
+  // blink::SynchronousLayerTreeFrameSink overrides.
+  void SetSyncClient(
+      blink::SynchronousLayerTreeFrameSinkClient* compositor) override;
   void DidPresentCompositorFrame(
       const viz::FrameTimingDetailsMap& timing_details) override;
   void BeginFrame(const viz::BeginFrameArgs& args) override;
@@ -123,7 +124,9 @@ class SynchronousLayerTreeFrameSinkImpl
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority) override;
   void DemandDrawSw(SkCanvas* canvas) override;
+  void DemandDrawSwZeroCopy() override;
   void WillSkipDraw() override;
+  bool UseZeroCopySoftwareDraw() override;
 
  private:
   class SoftwareOutputSurface;
@@ -136,11 +139,11 @@ class SynchronousLayerTreeFrameSinkImpl
   bool CalledOnValidThread() const;
 
   const uint32_t layer_tree_frame_sink_id_;
-  SynchronousCompositorRegistry* const registry_;  // Not owned.
-  IPC::Sender* const sender_;                      // Not owned.
+  blink::SynchronousCompositorRegistry* const registry_;  // Not owned.
+  IPC::Sender* const sender_;                             // Not owned.
 
   // Not owned.
-  SynchronousLayerTreeFrameSinkClient* sync_client_ = nullptr;
+  blink::SynchronousLayerTreeFrameSinkClient* sync_client_ = nullptr;
 
   // Used to allocate bitmaps in the software Display.
   // TODO(crbug.com/692814): The Display never sends its resources out of
@@ -209,6 +212,7 @@ class SynchronousLayerTreeFrameSinkImpl
   const bool viz_frame_submission_enabled_;
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;
+  const bool use_zero_copy_sw_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSinkImpl);
 };

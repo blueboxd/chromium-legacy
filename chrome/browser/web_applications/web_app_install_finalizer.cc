@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -135,6 +136,20 @@ void SetWebAppFileHandlers(
   }
 
   web_app->SetFileHandlers(std::move(web_app_file_handlers));
+}
+
+void SetWebAppProtocolHandlers(
+    const std::vector<blink::Manifest::ProtocolHandler>& protocol_handlers,
+    WebApp* web_app) {
+  std::vector<apps::ProtocolHandlerInfo> web_app_protocol_handlers;
+  for (const auto& handler : protocol_handlers) {
+    apps::ProtocolHandlerInfo protocol_handler_info;
+    protocol_handler_info.protocol = base::UTF16ToUTF8(handler.protocol);
+    protocol_handler_info.url = handler.url;
+    web_app_protocol_handlers.push_back(std::move(protocol_handler_info));
+  }
+
+  web_app->SetProtocolHandlers(web_app_protocol_handlers);
 }
 
 }  // namespace
@@ -428,6 +443,7 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
           web_app_info.shortcuts_menu_icons_bitmaps));
 
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app.get());
+  SetWebAppProtocolHandlers(web_app_info.protocol_handlers, web_app.get());
 
   AppId app_id = web_app->app_id();
   icon_manager_->WriteData(

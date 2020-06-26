@@ -311,7 +311,7 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
                                     const WindowPostMessageOptions* options,
                                     ExceptionState& exception_state) {
-  if (!CheckPortalsEnabledOrThrow(exception_state))
+  if (!CheckPortalsEnabledOrThrow(exception_state) || !GetExecutionContext())
     return;
 
   if (!portal_) {
@@ -322,7 +322,7 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
   }
 
   scoped_refptr<const SecurityOrigin> target_origin =
-      PostMessageHelper::GetTargetOrigin(options, GetDocument(),
+      PostMessageHelper::GetTargetOrigin(options, *GetExecutionContext(),
                                          exception_state);
   if (exception_state.HadException())
     return;

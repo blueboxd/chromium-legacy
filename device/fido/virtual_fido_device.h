@@ -108,6 +108,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // rp is only valid if |is_resident| is true.
     base::Optional<device::PublicKeyCredentialRpEntity> rp;
 
+    // hmac_key is present iff the credential has the hmac_secret extension
+    // enabled. The first element of the pair is the HMAC key for non-UV, and
+    // the second for when UV is used.
+    base::Optional<std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>>>
+        hmac_key;
+
     DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
 

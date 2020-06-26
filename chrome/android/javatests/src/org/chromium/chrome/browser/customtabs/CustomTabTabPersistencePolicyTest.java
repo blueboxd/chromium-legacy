@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
+import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -79,10 +80,9 @@ public class CustomTabTabPersistencePolicyTest {
                                                       .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
 
-        mMockDirectory = new TestTabModelDirectory(
-                mAppContext, "CustomTabTabPersistencePolicyTest",
-                CustomTabTabPersistencePolicy.SAVED_STATE_DIRECTORY);
-        TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
+        mMockDirectory = new TestTabModelDirectory(mAppContext, "CustomTabTabPersistencePolicyTest",
+                TabStateDirectory.CUSTOM_TABS_DIRECTORY);
+        TabStateDirectory.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
     }
 
     @After
@@ -161,7 +161,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testExistingMetadataFileDeletedIfNoRestore() throws Exception {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(7, false);
@@ -235,7 +235,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testCleanupTask() throws Throwable {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, false);
@@ -322,7 +322,7 @@ public class CustomTabTabPersistencePolicyTest {
     @Feature("TabPersistentStore")
     @MediumTest
     public void testMetadataTimestampRefreshed() throws Exception {
-        File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
+        File baseStateDirectory = TabStateDirectory.getOrCreateBaseStateDirectory();
         Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, true);
@@ -418,8 +418,7 @@ public class CustomTabTabPersistencePolicyTest {
 
             @Override
             public File getOrCreateStateDirectory() {
-                return new File(
-                        TabPersistentStore.getOrCreateBaseStateDirectory(), "cct_tests_zor");
+                return new File(TabStateDirectory.getOrCreateBaseStateDirectory(), "cct_tests_zor");
             }
 
             @Override

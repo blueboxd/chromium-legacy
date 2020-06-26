@@ -25,10 +25,12 @@ dictionary TrustToken {
   // 2. |additionalSignedHeaders|
   // 3. |includeTimestampHeader|
   // 4. |signRequestData|
+  // 5. |additionalSigningData|
   //
   // Additionally, |issuer| is required when |type| is "send-srr".
   USVString issuer;
   sequence<USVString> additionalSignedHeaders;
   boolean includeTimestampHeader = false;
   SignRequestData signRequestData = "omit";
+  DOMString additionalSigningData;
 };

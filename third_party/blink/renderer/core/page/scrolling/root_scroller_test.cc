@@ -221,8 +221,8 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
             EffectiveRootScroller(MainFrame()->GetDocument()));
 }
 
-class OverscrollTestWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
+class OverscrollWidgetInputHandlerHost
+    : public frame_test_helpers::TestWidgetInputHandlerHost {
  public:
   MOCK_METHOD5(DidOverscroll,
                void(const gfx::Vector2dF&,
@@ -230,6 +230,29 @@ class OverscrollTestWebWidgetClient
                     const gfx::PointF&,
                     const gfx::Vector2dF&,
                     cc::OverscrollBehavior));
+
+  void DidOverscroll(mojom::blink::DidOverscrollParamsPtr params) override {
+    DidOverscroll(params->latest_overscroll_delta,
+                  params->accumulated_overscroll,
+                  params->causal_event_viewport_point,
+                  params->current_fling_velocity, params->overscroll_behavior);
+  }
+};
+
+class OverscrollTestWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
+ public:
+  frame_test_helpers::TestWidgetInputHandlerHost* GetInputHandlerHost()
+      override {
+    return &input_handler_host_;
+  }
+
+  OverscrollWidgetInputHandlerHost& GetOverscrollWidgetInputHandlerHost() {
+    return input_handler_host_;
+  }
+
+ private:
+  OverscrollWidgetInputHandlerHost input_handler_host_;
 };
 
 // Tests that setting an element as the root scroller causes it to control url
@@ -273,7 +296,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   {
     // Scroll 50 pixels past the end. Ensure we report the 50 pixels as
     // overscroll.
-    EXPECT_CALL(client,
+    EXPECT_CALL(client.GetOverscrollWidgetInputHandlerHost(),
                 DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
                               gfx::PointF(100, 100), gfx::Vector2dF(),
                               cc::OverscrollBehavior()));
@@ -282,12 +305,14 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(
         0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
-    Mock::VerifyAndClearExpectations(&client);
+    RunPendingTasks();
+    Mock::VerifyAndClearExpectations(
+        &client.GetOverscrollWidgetInputHandlerHost());
   }
 
   {
     // Continue the gesture overscroll.
-    EXPECT_CALL(client,
+    EXPECT_CALL(client.GetOverscrollWidgetInputHandlerHost(),
                 DidOverscroll(gfx::Vector2dF(0, 20), gfx::Vector2dF(0, 70),
                               gfx::PointF(100, 100), gfx::Vector2dF(),
                               cc::OverscrollBehavior()));
@@ -296,7 +321,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(
         0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
-    Mock::VerifyAndClearExpectations(&client);
+    RunPendingTasks();
+    Mock::VerifyAndClearExpectations(
+        &client.GetOverscrollWidgetInputHandlerHost());
   }
 
   GetWebView()->MainFrameWidget()->HandleInputEvent(
@@ -308,7 +335,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->MainFrameWidget()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::Type::kGestureScrollBegin));
 
-    EXPECT_CALL(client,
+    EXPECT_CALL(client.GetOverscrollWidgetInputHandlerHost(),
                 DidOverscroll(gfx::Vector2dF(0, 30), gfx::Vector2dF(0, 30),
                               gfx::PointF(100, 100), gfx::Vector2dF(),
                               cc::OverscrollBehavior()));
@@ -317,7 +344,9 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
     EXPECT_FLOAT_EQ(
         0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
-    Mock::VerifyAndClearExpectations(&client);
+    RunPendingTasks();
+    Mock::VerifyAndClearExpectations(
+        &client.GetOverscrollWidgetInputHandlerHost());
 
     GetWebView()->MainFrameWidget()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::Type::kGestureScrollEnd));

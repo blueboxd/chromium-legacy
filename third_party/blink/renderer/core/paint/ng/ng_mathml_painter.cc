@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_mathml_painter.h"
 
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
+#include "third_party/blink/renderer/core/mathml/mathml_radical_element.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -26,14 +27,25 @@ void NGMathMLPainter::PaintBar(const PaintInfo& info, const IntRect& bar) {
   info.context.DrawLine(bar.Location(), bar.Location() + line_end_point);
 }
 
-void NGMathMLPainter::PaintFractionBar(const PaintInfo& info,
-                                       PhysicalOffset paint_offset) {
-  const DisplayItemClient& display_item_client =
-      *box_fragment_.GetLayoutObject();
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          info.context, display_item_client, info.phase))
-    return;
+void NGMathMLPainter::PaintStretchyOrLargeOperator(
+    const PaintInfo& info,
+    PhysicalOffset paint_offset) {
+  const ComputedStyle& style = box_fragment_.Style();
+  const NGMathMLPaintInfo& parameters = box_fragment_.GetMathMLPaintInfo();
+  UChar operator_character = parameters.operator_character;
+  NGTextFragmentPaintInfo text_fragment_paint_info = {
+      StringView(&operator_character, 1), 0, 1,
+      parameters.operator_shape_result_view.get()};
+  GraphicsContextStateSaver state_saver(info.context);
+  info.context.SetFillColor(style.VisitedDependentColor(GetCSSPropertyColor()));
+  info.context.DrawText(style.GetFont(), text_fragment_paint_info,
+                        FloatPoint(paint_offset), kInvalidDOMNodeId);
+}
 
+void NGMathMLPainter::PaintFractionBar(
+    const PaintInfo& info,
+    const DisplayItemClient& display_item_client,
+    PhysicalOffset paint_offset) {
   DrawingRecorder recorder(info.context, display_item_client, info.phase);
 
   DCHECK(box_fragment_.Style().IsHorizontalWritingMode());
@@ -55,15 +67,85 @@ void NGMathMLPainter::PaintFractionBar(const PaintInfo& info,
   }
 }
 
+void NGMathMLPainter::PaintRadicalSymbol(
+    const PaintInfo& info,
+    const DisplayItemClient& display_item_client,
+    PhysicalOffset paint_offset) {
+  auto children = box_fragment_.Children();
+  if (children.size() == 0)
+    return;
+
+  const auto& base_child = To<NGPhysicalBoxFragment>(*children[0]);
+
+  const NGMathMLPaintInfo& parameters = box_fragment_.GetMathMLPaintInfo();
+
+  DrawingRecorder recorder(info.context, display_item_client, info.phase);
+  DCHECK(box_fragment_.Style().IsHorizontalWritingMode());
+
+  // Paint the vertical symbol.
+  const ComputedStyle& style = box_fragment_.Style();
+  bool has_index =
+      To<MathMLRadicalElement>(box_fragment_.GetNode())->HasIndex();
+  auto vertical = GetRadicalVerticalParameters(style, has_index);
+
+  auto radical_base_ascent =
+      base_child.Baseline().value_or(base_child.Size().height) +
+      parameters.radical_base_margins.inline_start;
+  LayoutUnit block_offset =
+      box_fragment_.Baseline().value_or(box_fragment_.Size().height) -
+      vertical.vertical_gap - radical_base_ascent;
+
+  auto borders = box_fragment_.Borders();
+  auto padding = box_fragment_.Padding();
+  LayoutUnit inline_offset = borders.left + padding.left;
+  inline_offset += parameters.radical_operator_inline_offset;
+
+  LogicalOffset radical_symbol_offset(
+      inline_offset, block_offset + parameters.operator_ascent);
+  auto radical_symbol_physical_offset = radical_symbol_offset.ConvertToPhysical(
+      style.GetWritingMode(), style.Direction(),
+      PhysicalSize(box_fragment_.Size().width, box_fragment_.Size().height),
+      PhysicalSize(parameters.operator_ascent,
+                   parameters.operator_ascent + parameters.operator_descent));
+  PaintStretchyOrLargeOperator(info,
+                               paint_offset + radical_symbol_physical_offset);
+
+  // Paint the horizontal overbar.
+  LayoutUnit rule_thickness = vertical.rule_thickness;
+  if (!rule_thickness)
+    return;
+  LayoutUnit base_width =
+      base_child.Size().width + parameters.radical_base_margins.InlineSum();
+  LogicalOffset bar_offset =
+      LogicalOffset(inline_offset, block_offset) +
+      LogicalSize(parameters.operator_inline_size, LayoutUnit());
+  LayoutSize bar_size = {base_width, rule_thickness};
+  auto bar_physical_offset = bar_offset.ConvertToPhysical(
+      style.GetWritingMode(), style.Direction(),
+      PhysicalSize(box_fragment_.Size().width, box_fragment_.Size().height),
+      PhysicalSize(bar_size));
+  PhysicalRect bar_rect = {bar_physical_offset.left, bar_physical_offset.top,
+                           base_width, rule_thickness};
+  bar_rect.Move(paint_offset);
+  PaintBar(info, PixelSnappedIntRect(bar_rect));
+}
+
 void NGMathMLPainter::Paint(const PaintInfo& info,
                             PhysicalOffset paint_offset) {
+  const DisplayItemClient& display_item_client =
+      *box_fragment_.GetLayoutObject();
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          info.context, display_item_client, info.phase))
+    return;
+
   // Fraction
   if (box_fragment_.IsMathMLFraction()) {
-    PaintFractionBar(info, paint_offset);
+    PaintFractionBar(info, display_item_client, paint_offset);
     return;
   }
 
-  // TODO(rbuis): paint operator and radicals.
+  // TODO(rbuis): paint operator
+  PaintRadicalSymbol(info, display_item_client, paint_offset);
 }
 
 }  // namespace blink

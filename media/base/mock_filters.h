@@ -575,6 +575,22 @@ class MockCdmSessionPromise : public NewSessionCdmPromise {
   DISALLOW_COPY_AND_ASSIGN(MockCdmSessionPromise);
 };
 
+class MockCdmKeyStatusPromise : public KeyStatusCdmPromise {
+ public:
+  // |expect_success| is true if resolve() should be called, false if reject()
+  // is expected. |key_status| is updated with the key status on resolve().
+  MockCdmKeyStatusPromise(bool expect_success,
+                          CdmKeyInformation::KeyStatus* key_status);
+  ~MockCdmKeyStatusPromise() override;
+
+  MOCK_METHOD1(resolve, void(const CdmKeyInformation::KeyStatus&));
+  MOCK_METHOD3(reject,
+               void(CdmPromise::Exception, uint32_t, const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCdmKeyStatusPromise);
+};
+
 class MockCdm : public ContentDecryptionModule {
  public:
   MockCdm(const std::string& key_system,

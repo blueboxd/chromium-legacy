@@ -77,6 +77,7 @@ struct MetafileSkiaData {
   ContentToProxyIdMap subframe_content_info;
   std::map<uint32_t, sk_sp<SkPicture>> subframe_pics;
   int document_cookie = 0;
+  ContentProxySet* typeface_content_info = nullptr;
 
   // The scale factor is used because Blink occasionally calls
   // PaintCanvas::getTotalMatrix() even though the total matrix is not as
@@ -104,6 +105,11 @@ MetafileSkia::~MetafileSkia() = default;
 
 bool MetafileSkia::Init() {
   return true;
+}
+
+void MetafileSkia::UtilizeTypefaceContext(
+    ContentProxySet* typeface_content_info) {
+  data_->typeface_content_info = typeface_content_info;
 }
 
 // TODO(halcanary): Create a Metafile class that only stores data.
@@ -200,7 +206,8 @@ bool MetafileSkia::FinishDocument() {
       doc = MakePdfDocument(printing::GetAgent(), accessibility_tree_, &stream);
       break;
     case mojom::SkiaDocumentType::kMSKP:
-      SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);
+      SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
+                                               data_->typeface_content_info);
       doc = SkMakeMultiPictureDocument(&stream, &procs);
       // It is safe to use base::Unretained(this) because the callback
       // is only used by |canvas| in the following loop which has shorter
@@ -236,7 +243,8 @@ void MetafileSkia::FinishFrameContent() {
   sk_sp<SkPicture> pic = ToSkPicture(data_->pages[0].content,
                                      SkRect::MakeSize(data_->pages[0].size),
                                      nullptr, custom_callback);
-  SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);
+  SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
+                                           data_->typeface_content_info);
   SkDynamicMemoryWStream stream;
   pic->serialize(&stream, &procs);
   data_->data_stream = stream.detachAsStream();
@@ -373,6 +381,7 @@ std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
   metafile->data_->pages.push_back(data_->pages.back());
   metafile->data_->subframe_content_info = data_->subframe_content_info;
   metafile->data_->subframe_pics = data_->subframe_pics;
+  metafile->data_->typeface_content_info = data_->typeface_content_info;
 
   if (!metafile->FinishDocument())  // Generate PDF.
     metafile.reset();

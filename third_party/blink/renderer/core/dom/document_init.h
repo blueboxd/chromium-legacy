@@ -140,6 +140,8 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithURL(const KURL&);
   const KURL& Url() const { return url_; }
 
+  const KURL& GetCookieUrl() const;
+
   // Pre-calculates the origin. This is needed for DocumentLoader, which wants
   // to inspect the origin multiple times and should receive the same object
   // back each time.
@@ -148,7 +150,6 @@ class CORE_EXPORT DocumentInit final {
 
   // Specifies the Document to inherit security configurations from.
   DocumentInit& WithOwnerDocument(Document*);
-  Document* OwnerDocument() const { return owner_document_; }
 
   // Specifies the SecurityOrigin in which the URL was requested. This is
   // relevant for determining properties of the resulting document's origin
@@ -158,9 +159,6 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithOriginToCommit(
       scoped_refptr<SecurityOrigin> origin_to_commit);
-  const scoped_refptr<SecurityOrigin>& OriginToCommit() const {
-    return origin_to_commit_;
-  }
 
   DocumentInit& WithIPAddressSpace(
       network::mojom::IPAddressSpace ip_address_space);

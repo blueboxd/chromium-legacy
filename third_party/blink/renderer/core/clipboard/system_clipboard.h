@@ -73,6 +73,8 @@ class CORE_EXPORT SystemClipboard final
   // the OS clipboard.
   void CommitWrite();
 
+  void CopyToFindPboard(const String& text);
+
   void Trace(Visitor*) const;
 
  private:

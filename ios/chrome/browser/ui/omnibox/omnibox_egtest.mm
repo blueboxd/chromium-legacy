@@ -474,6 +474,11 @@ id<GREYMatcher> SearchCopiedTextButton() {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad, iOS 13 and later.");
   }
 
+  // TODO(crbug.com/1099361): Test fails on iOS 12 when run as EG2 test.
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.");
+  }
+
 // TODO(crbug.com/1046787): Test is failing for EG1.
 #if defined(CHROME_EARL_GREY_1)
   if (![ChromeEarlGrey isIPadIdiom]) {

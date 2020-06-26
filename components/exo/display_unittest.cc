@@ -11,6 +11,8 @@
 #include "components/exo/data_device.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/file_helper.h"
+#include "components/exo/input_method_surface_manager.h"
+#include "components/exo/notification_surface_manager.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"

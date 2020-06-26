@@ -892,6 +892,11 @@
     'cros_benchmarks': {
       'filepath': 'tools/perf/contrib/cros_benchmarks',
     },
+    'cros_reporting': {
+      'filepath': 'chrome/browser/policy/messaging_layer/'\
+                  '|chrome/browser/chromeos/policy/status_collector/'\
+                  '|components/policy/proto/record',
+    },
     'crostini': {
       'filepath': 'cicerone'\
                   '|components/exo'\
@@ -2420,8 +2425,10 @@
     'cros_benchmarks': ['cros-perf-detectives@google.com',
                         'cywang@chromium.org',
                         'vovoy@chromium.org'],
+    'cros_reporting': ['cros-reporting-reviews@google.com'],
     'crostini': ['crostini-ui@chromium.org'],
-    'cups_printing': ['print-reviews+cups@chromium.org'],
+    'cups_printing': ['print-reviews+cups@chromium.org',
+                      'cros-printing-reviews@google.com'],
     'custom_proxy': ['lbendig@opera.com',
                      'wdzierzanowski@opera.com'],
     'custom_tabs': ['amalova+watch@chromium.org',

@@ -5,13 +5,14 @@
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -43,11 +44,11 @@ class PartialResourceRequest {
 
 class PingLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  explicit PingLocalFrameClient(TestingPlatformSupport* platform)
-      : platform_(platform) {}
+  PingLocalFrameClient() = default;
 
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return platform_->CreateDefaultURLLoaderFactory();
+    return std::make_unique<WebURLLoaderFactoryWithMock>(
+        WebURLLoaderMockFactory::GetSingletonInstance());
   }
 
   void DispatchWillSendRequest(ResourceRequest& request) override {
@@ -59,14 +60,12 @@ class PingLocalFrameClient : public EmptyLocalFrameClient {
 
  private:
   PartialResourceRequest ping_request_;
-  TestingPlatformSupport* platform_;
 };
 
 class PingLoaderTest : public PageTestBase {
  public:
   void SetUp() override {
-    client_ = MakeGarbageCollected<PingLocalFrameClient>(
-        platform_.GetTestingPlatformSupport());
+    client_ = MakeGarbageCollected<PingLocalFrameClient>();
     PageTestBase::SetupPageWithClients(nullptr, client_);
   }
 
@@ -101,7 +100,6 @@ class PingLoaderTest : public PageTestBase {
   }
 
  protected:
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   Persistent<PingLocalFrameClient> client_;
 };
 

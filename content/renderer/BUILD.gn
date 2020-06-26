@@ -83,27 +83,12 @@ target(link_target_type, "renderer") {
     "history_entry.h",
     "history_serialization.cc",
     "history_serialization.h",
-    "ime_event_guard.cc",
-    "ime_event_guard.h",
     "impression_conversions.cc",
     "impression_conversions.h",
     "in_process_renderer_thread.cc",
     "in_process_renderer_thread.h",
-    "input/frame_input_handler_impl.cc",
-    "input/frame_input_handler_impl.h",
-    "input/input_event_prediction.cc",
-    "input/input_event_prediction.h",
     "input/input_target_client_impl.cc",
     "input/input_target_client_impl.h",
-    "input/main_thread_event_queue.cc",
-    "input/main_thread_event_queue.h",
-    "input/main_thread_event_queue_task.h",
-    "input/main_thread_event_queue_task_list.cc",
-    "input/main_thread_event_queue_task_list.h",
-    "input/widget_input_handler_impl.cc",
-    "input/widget_input_handler_impl.h",
-    "input/widget_input_handler_manager.cc",
-    "input/widget_input_handler_manager.h",
     "internal_document_state_data.cc",
     "internal_document_state_data.h",
     "java/gin_java_bridge_dispatcher.cc",
@@ -422,11 +407,6 @@ target(link_target_type, "renderer") {
   if (is_android) {
     set_sources_assignment_filter([])
     sources += [
-      "input/synchronous_compositor_proxy.cc",
-      "input/synchronous_compositor_proxy.h",
-      "input/synchronous_compositor_registry.h",
-      "input/synchronous_layer_tree_frame_sink.h",
-
       # Add back the Linux file which Android shares.
       "render_view_linux.cc",
     ]

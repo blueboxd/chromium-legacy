@@ -47,7 +47,7 @@ base::string16 MoveToAccountStoreBubbleController::GetTitle() const {
 }
 
 void MoveToAccountStoreBubbleController::AcceptMove() {
-  dismissal_reason_ = metrics_util::CLICKED_SAVE;
+  dismissal_reason_ = metrics_util::CLICKED_ACCEPT;
   if (delegate_->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
     // User has already opted in to the account store. Move without reauth.
     return delegate_->MovePasswordToAccountStore();

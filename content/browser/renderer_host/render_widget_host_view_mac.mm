@@ -1083,15 +1083,15 @@ blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockMouse(
   if (mouse_locked_)
     return blink::mojom::PointerLockResult::kSuccess;
 
-  if (request_unadjusted_movement) {
-    // TODO(crbug/998688): implement pointerlock unadjusted movement on mac.
-    NOTIMPLEMENTED();
+  if (request_unadjusted_movement && !IsUnadjustedMouseMovementSupported()) {
     return blink::mojom::PointerLockResult::kUnsupportedOptions;
   }
 
   mouse_locked_ = true;
+  mouse_lock_unadjusted_movement_ = request_unadjusted_movement;
 
   // Lock position of mouse cursor and hide it.
+  ns_view_->SetCursorLockedUnacceleratedMovement(request_unadjusted_movement);
   ns_view_->SetCursorLocked(true);
 
   // Clear the tooltip window.
@@ -1102,22 +1102,42 @@ blink::mojom::PointerLockResult RenderWidgetHostViewMac::LockMouse(
 
 blink::mojom::PointerLockResult RenderWidgetHostViewMac::ChangeMouseLock(
     bool request_unadjusted_movement) {
-  // Unadjusted movement is not supported on Mac. Which means that
-  // |mouse_locked_unadjusted_movement_| must not be set. Therefore,
-  // |request_unadjusted_movement| must be true so this request will always
-  // fail with kUnsupportedOptions.
-  NOTIMPLEMENTED();
-  return blink::mojom::PointerLockResult::kUnsupportedOptions;
+  if (request_unadjusted_movement && !IsUnadjustedMouseMovementSupported()) {
+    return blink::mojom::PointerLockResult::kUnsupportedOptions;
+  }
+
+  mouse_lock_unadjusted_movement_ = request_unadjusted_movement;
+  ns_view_->SetCursorLockedUnacceleratedMovement(request_unadjusted_movement);
+  return blink::mojom::PointerLockResult::kSuccess;
 }
 
 void RenderWidgetHostViewMac::UnlockMouse() {
   if (!mouse_locked_)
     return;
   mouse_locked_ = false;
+  mouse_lock_unadjusted_movement_ = false;
   ns_view_->SetCursorLocked(false);
+  ns_view_->SetCursorLockedUnacceleratedMovement(false);
 
   if (host())
     host()->LostMouseLock();
+}
+
+bool RenderWidgetHostViewMac::GetIsMouseLockedUnadjustedMovementForTesting() {
+  return mouse_locked_ && mouse_lock_unadjusted_movement_;
+}
+
+bool RenderWidgetHostViewMac::IsUnadjustedMouseMovementSupported() {
+  // kCGEventUnacceleratedPointerMovementX/Y were first added as CGEventField
+  // enum values in the 10.15.1 SDK.
+  //
+  // While they do seem to work at runtime back to 10.14, the safest approach is
+  // to limit their use to 10.15.1 and newer to avoid relying on private or
+  // undocumented APIs on earlier OSes.
+  if (@available(macOS 10.15.1, *)) {
+    return true;
+  }
+  return false;
 }
 
 bool RenderWidgetHostViewMac::LockKeyboard(

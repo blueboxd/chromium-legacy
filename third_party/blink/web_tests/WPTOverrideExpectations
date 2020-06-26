@@ -741,7 +741,6 @@ external/wpt/mathml/presentation-markup/mrow/legacy-mrow-like-elements-001.html 
 external/wpt/mathml/presentation-markup/operators/mo-axis-height-1.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/operators/operator-dictionary-001.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/operators/operator-dictionary-002.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/presentation-markup/radicals/root-parameters-1.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/scripts/subsup-1.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/scripts/subsup-2.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/presentation-markup/scripts/subsup-3.html [ Failure Pass ] # wpt_subtest_failure
@@ -775,9 +774,6 @@ external/wpt/mathml/relations/css-styling/mathcolor-003.html [ Failure Pass ]
 external/wpt/mathml/relations/css-styling/mathsize-attribute-css-keywords.html [ Failure Pass ]
 external/wpt/mathml/relations/css-styling/mathsize-attribute-legacy-values.html [ Failure Pass ]
 external/wpt/mathml/relations/css-styling/mathsize-attribute.html [ Failure Pass ]
-external/wpt/mathml/relations/css-styling/padding-border-margin/border-002.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/relations/css-styling/padding-border-margin/margin-002.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/mathml/relations/css-styling/padding-border-margin/padding-002.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/relations/css-styling/width-height-001.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/mathml/relations/html5-tree/color-attributes-1.html [ Failure Pass ]
 external/wpt/mathml/relations/html5-tree/display-1.html [ Failure Pass ] # wpt_subtest_failure

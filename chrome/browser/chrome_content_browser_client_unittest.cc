@@ -59,6 +59,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#include "ui/base/page_transition_types.h"
 #else
 #include "base/system/sys_info.h"
 #endif
@@ -289,6 +290,84 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
   }
 
   EXPECT_EQ(previous_count + 2, browser()->tab_strip_model()->count());
+}
+
+// TODO(crbug.com/566091): Remove the need for ShouldStayInParentProcessForNTP()
+//    and associated test.
+TEST_F(ChromeContentBrowserClientWindowTest, ShouldStayInParentProcessForNTP) {
+  ChromeContentBrowserClient client;
+  scoped_refptr<content::SiteInstance> site_instance =
+      content::SiteInstance::CreateForURL(
+          browser()->profile(),
+          GURL("chrome-search://local-ntp/local-ntp.html"));
+  EXPECT_TRUE(client.ShouldStayInParentProcessForNTP(
+      GURL("chrome-search://local-ntp/local-ntp.html"), site_instance.get()));
+
+  site_instance = content::SiteInstance::CreateForURL(
+      browser()->profile(), GURL("chrome://new-tab-page"));
+  // chrome://new-tab-page is an NTP replacing local-ntp and supports OOPIFs.
+  // ShouldStayInParentProcessForNTP() should only return true for NTPs hosted
+  // under the chrome-search: scheme.
+  EXPECT_FALSE(client.ShouldStayInParentProcessForNTP(
+      GURL("chrome://new-tab-page"), site_instance.get()));
+}
+
+TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
+  ChromeContentBrowserClient client;
+  ui::PageTransition transition;
+  bool is_renderer_initiated;
+  content::Referrer referrer = content::Referrer();
+  base::Optional<url::Origin> initiator_origin = base::nullopt;
+
+  scoped_refptr<content::SiteInstance> site_instance =
+      content::SiteInstance::CreateForURL(
+          browser()->profile(),
+          GURL("chrome-search://local-ntp/local-ntp.html"));
+  transition = ui::PAGE_TRANSITION_LINK;
+  is_renderer_initiated = true;
+  // The origin is a placeholder to test that |initiator_origin| is set to
+  // base::nullopt and is not meant to represent what would happen in practice.
+  initiator_origin = url::Origin::Create(GURL("https://www.example.com"));
+  client.OverrideNavigationParams(site_instance.get(), &transition,
+                                  &is_renderer_initiated, &referrer,
+                                  &initiator_origin);
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                           transition));
+  EXPECT_FALSE(is_renderer_initiated);
+  EXPECT_EQ(base::nullopt, initiator_origin);
+
+  site_instance = content::SiteInstance::CreateForURL(
+      browser()->profile(), GURL("chrome://new-tab-page"));
+  transition = ui::PAGE_TRANSITION_LINK;
+  is_renderer_initiated = true;
+  initiator_origin = url::Origin::Create(GURL("https://www.example.com"));
+  client.OverrideNavigationParams(site_instance.get(), &transition,
+                                  &is_renderer_initiated, &referrer,
+                                  &initiator_origin);
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                           transition));
+  EXPECT_FALSE(is_renderer_initiated);
+  EXPECT_EQ(base::nullopt, initiator_origin);
+
+  // No change for transitions that are not PAGE_TRANSITION_LINK.
+  site_instance = content::SiteInstance::CreateForURL(
+      browser()->profile(), GURL("chrome://new-tab-page"));
+  transition = ui::PAGE_TRANSITION_TYPED;
+  client.OverrideNavigationParams(site_instance.get(), &transition,
+                                  &is_renderer_initiated, &referrer,
+                                  &initiator_origin);
+  EXPECT_TRUE(
+      ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_TYPED, transition));
+
+  // No change for transitions on a non-NTP page.
+  site_instance = content::SiteInstance::CreateForURL(
+      browser()->profile(), GURL("https://www.example.com"));
+  transition = ui::PAGE_TRANSITION_LINK;
+  client.OverrideNavigationParams(site_instance.get(), &transition,
+                                  &is_renderer_initiated, &referrer,
+                                  &initiator_origin);
+  EXPECT_TRUE(
+      ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_LINK, transition));
 }
 
 #endif  // !defined(OS_ANDROID)

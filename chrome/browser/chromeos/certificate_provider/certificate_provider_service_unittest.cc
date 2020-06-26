@@ -209,8 +209,9 @@ class CertificateProviderServiceTest : public testing::Test {
       const certificate_provider::CertificateInfo& cert_info) {
     certificate_provider::CertificateInfoList infos;
     infos.push_back(cert_info);
-    service_->SetCertificatesProvidedByExtension(extension_id, cert_request_id,
-                                                 infos);
+    service_->SetCertificatesProvidedByExtension(extension_id, infos);
+    service_->SetExtensionCertificateReplyReceived(extension_id,
+                                                   cert_request_id);
   }
 
   bool CheckLookUpCertificate(
@@ -316,8 +317,9 @@ TEST_F(CertificateProviderServiceTest, LookUpCertificate) {
   {
     const int cert_request_id = RequestCertificatesFromExtensions(nullptr);
     service_->SetCertificatesProvidedByExtension(
-        kExtension1, cert_request_id,
-        certificate_provider::CertificateInfoList());
+        kExtension1, certificate_provider::CertificateInfoList());
+    service_->SetExtensionCertificateReplyReceived(kExtension1,
+                                                   cert_request_id);
     SetCertificateProvidedByExtension(kExtension2, cert_request_id,
                                       cert_info2_);
     task_runner_->RunUntilIdle();

@@ -60,7 +60,7 @@ void HostStarter::StartHost(
   host_name_ = host_name;
   host_pin_ = host_pin;
   consent_to_data_collection_ = consent_to_data_collection;
-  on_done_ = on_done;
+  on_done_ = std::move(on_done);
   oauth_client_info_.client_id =
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING);
   oauth_client_info_.client_secret =

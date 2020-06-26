@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -93,6 +94,13 @@ NSString* GetSafeBrowsingErrorPageHTML(web::WebState* web_state,
   security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state)
       ->AssociateBlockingPage(navigation_id, std::move(page));
 
+  return base::SysUTF8ToNSString(error_page_content);
+}
+
+// Returns the lookalike error page HTML.
+NSString* GetLookalikeErrorPageHTML(web::WebState* web_state,
+                                    int64_t navigation_id) {
+  std::string error_page_content = "lookalike error";
   return base::SysUTF8ToNSString(error_page_content);
 }
 
@@ -299,6 +307,11 @@ void ChromeWebClient::PrepareErrorPage(
     DCHECK_EQ(kUnsafeResourceErrorCode, final_underlying_error.code);
     std::move(error_html_callback)
         .Run(GetSafeBrowsingErrorPageHTML(web_state, navigation_id));
+  } else if ([final_underlying_error.domain isEqual:kLookalikeUrlErrorDomain]) {
+    // Only kLookalikeUrlErrorCode is supported.
+    DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
+    std::move(error_html_callback)
+        .Run(GetLookalikeErrorPageHTML(web_state, navigation_id));
   } else if (info.has_value()) {
     base::OnceCallback<void(bool)> proceed_callback;
     base::OnceCallback<void(NSString*)> blocking_page_callback =

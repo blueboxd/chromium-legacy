@@ -31,7 +31,7 @@ class SecurityKeyMessageHandler {
   void Start(base::File message_read_stream,
              base::File message_write_stream,
              std::unique_ptr<SecurityKeyIpcClient> ipc_client,
-             const base::Closure& error_callback);
+             base::OnceClosure error_callback);
 
   // Sets |reader_| to the instance passed in via |reader|.  This method should
   // be called before Start().
@@ -80,7 +80,7 @@ class SecurityKeyMessageHandler {
   std::unique_ptr<SecurityKeyMessageWriter> writer_;
 
   // Signaled when an error occurs.
-  base::Closure error_callback_;
+  base::OnceClosure error_callback_;
 
   // Used to indicate when we expect the IPC channel to be closed (i.e. in the
   // invalid session scenario) and when it is an unexpected error.

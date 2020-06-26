@@ -287,7 +287,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     document->GetFrame()->Loader().ModifyRequestForCSP(
         resource_request,
         &document->Fetcher()->GetProperties().GetFetchClientSettingsObject(),
-        document.Get(), frame_type);
+        document->domWindow(), frame_type);
   }
 
   void ExpectUpgrade(const char* input, const char* expected) {

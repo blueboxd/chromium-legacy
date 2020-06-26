@@ -15,6 +15,10 @@
       <include name="IDR_NEARBY_INTERNALS_INDEX_HTML"
                file="index.html"
                type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_LOGGING_TAB_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\logging_tab.js"
+               use_base_dir="false"
+               type="BINDATA"/>
       <include name="IDR_NEARBY_INTERNALS_NEARBY_INTERNALS_JS"
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\nearby_internals.js"
                use_base_dir="false"

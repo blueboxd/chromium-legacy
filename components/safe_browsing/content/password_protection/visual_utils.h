@@ -41,6 +41,9 @@ bool GetBlurredImage(const SkBitmap& image,
 std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
                                            int block_size);
 
+// Returns the hash used to compare blurred images.
+std::string GetHashFromBlurredImage(VisualFeatures::BlurredImage blurred_image);
+
 // Returns whether the given |image| is a match for the |target|. Returns
 // nullopt in the case of no match, and the VisionMatchResult if it is a match.
 base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,

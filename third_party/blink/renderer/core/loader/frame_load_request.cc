@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -17,11 +18,11 @@
 
 namespace blink {
 
-static void SetReferrerForRequest(ExecutionContext* origin_context,
+static void SetReferrerForRequest(LocalDOMWindow* origin_window,
                                   ResourceRequest& request) {
-  DCHECK(origin_context);
+  DCHECK(origin_window);
 
-  // Always use the initiating document to generate the referrer. We need to
+  // Always use the initiating window to generate the referrer. We need to
   // generateReferrer(), because we haven't enforced
   // network::mojom::ReferrerPolicy or https->http referrer suppression yet.
   String referrer_to_use = request.ReferrerString();
@@ -29,10 +30,10 @@ static void SetReferrerForRequest(ExecutionContext* origin_context,
       request.GetReferrerPolicy();
 
   if (referrer_to_use == Referrer::ClientReferrerString())
-    referrer_to_use = origin_context->OutgoingReferrer();
+    referrer_to_use = origin_window->OutgoingReferrer();
 
   if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy_to_use = origin_context->GetReferrerPolicy();
+    referrer_policy_to_use = origin_window->GetReferrerPolicy();
 
   Referrer referrer = SecurityPolicy::GenerateReferrer(
       referrer_policy_to_use, request.Url(), referrer_to_use);
@@ -42,10 +43,9 @@ static void SetReferrerForRequest(ExecutionContext* origin_context,
   request.SetHTTPOriginToMatchReferrerIfNeeded();
 }
 
-FrameLoadRequest::FrameLoadRequest(Document* origin_document,
+FrameLoadRequest::FrameLoadRequest(LocalDOMWindow* origin_window,
                                    const ResourceRequest& resource_request)
-    : origin_document_(origin_document),
-      should_send_referrer_(kMaybeSendReferrer) {
+    : origin_window_(origin_window), should_send_referrer_(kMaybeSendReferrer) {
   resource_request_.CopyHeadFrom(resource_request);
   resource_request_.SetHttpBody(resource_request.HttpBody());
   resource_request_.SetMode(network::mojom::RequestMode::kNavigate);
@@ -57,34 +57,31 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     SetInputStartTime(input_event->TimeStamp());
 
   should_check_main_world_content_security_policy_ =
-      origin_document && ContentSecurityPolicy::ShouldBypassMainWorld(
-                             origin_document->GetExecutionContext())
+      origin_window &&
+              ContentSecurityPolicy::ShouldBypassMainWorld(origin_window)
           ? network::mojom::CSPDisposition::DO_NOT_CHECK
           : network::mojom::CSPDisposition::CHECK;
 
-  if (origin_document) {
+  if (origin_window) {
     DCHECK(!resource_request_.RequestorOrigin());
-    resource_request_.SetRequestorOrigin(origin_document->GetSecurityOrigin());
+    resource_request_.SetRequestorOrigin(origin_window->GetSecurityOrigin());
 
-    if (auto* context = origin_document->GetExecutionContext()) {
-      if (resource_request.Url().ProtocolIs("blob")) {
-        blob_url_token_ = base::MakeRefCounted<
-            base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>();
-        context->GetPublicURLManager().Resolve(
-            resource_request.Url(),
-            blob_url_token_->data.BindNewPipeAndPassReceiver());
-      }
-
-      SetReferrerForRequest(context, resource_request_);
+    if (resource_request.Url().ProtocolIs("blob")) {
+      blob_url_token_ = base::MakeRefCounted<
+          base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>();
+      origin_window->GetPublicURLManager().Resolve(
+          resource_request.Url(),
+          blob_url_token_->data.BindNewPipeAndPassReceiver());
     }
+
+    SetReferrerForRequest(origin_window, resource_request_);
   }
 }
 
 FrameLoadRequest::FrameLoadRequest(
-    Document* origin_document,
+    LocalDOMWindow* origin_window,
     const ResourceRequestHead& resource_request_head)
-    : FrameLoadRequest(origin_document,
-                       ResourceRequest(resource_request_head)) {}
+    : FrameLoadRequest(origin_window, ResourceRequest(resource_request_head)) {}
 
 ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
   // Form submissions and anchor clicks have not historically been reported
@@ -100,14 +97,9 @@ ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
 }
 
 bool FrameLoadRequest::CanDisplay(const KURL& url) const {
-  if (OriginDocument() &&
-      OriginDocument()->GetSecurityOrigin()->CanDisplay(url))
-    return true;
-
-  if (resource_request_.CanDisplay(url))
-    return true;
-
-  return false;
+  DCHECK(!origin_window_ || origin_window_->GetSecurityOrigin() ==
+                                resource_request_.RequestorOrigin());
+  return resource_request_.CanDisplay(url);
 }
 
 }  // namespace blink

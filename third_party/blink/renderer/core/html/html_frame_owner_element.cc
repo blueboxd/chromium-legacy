@@ -495,7 +495,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.
-    FrameLoadRequest frame_load_request(&GetDocument(), request);
+    FrameLoadRequest frame_load_request(GetDocument().domWindow(), request);
     frame_load_request.SetClientRedirectReason(
         ClientNavigationReason::kFrameNavigation);
     WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
@@ -559,7 +559,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
-  FrameLoadRequest frame_load_request(&GetDocument(), request);
+  FrameLoadRequest frame_load_request(GetDocument().domWindow(), request);
   child_frame->Loader().StartNavigation(frame_load_request, child_load_type);
 
   return true;

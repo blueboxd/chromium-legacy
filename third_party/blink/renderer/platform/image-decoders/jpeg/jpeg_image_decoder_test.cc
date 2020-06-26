@@ -153,7 +153,7 @@ TEST(JPEGImageDecoderTest, tooBig) {
 // multiples of 8, to ensure we compute the correct DecodedSize and pass correct
 // parameters to libjpeg to output the image with the expected size.
 TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";  // 256x256
   unsigned output_width, output_height;
 
   // 1/8 downsample.
@@ -236,7 +236,7 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
 
 // Tests that upsampling is not allowed.
 TEST(JPEGImageDecoderTest, upsample) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";  // 256x256
   unsigned output_width, output_height;
   Downsample(kLargeEnoughSize, &output_width, &output_height, jpeg_file);
   EXPECT_EQ(256u, output_width);
@@ -244,7 +244,8 @@ TEST(JPEGImageDecoderTest, upsample) {
 }
 
 TEST(JPEGImageDecoderTest, yuv) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256, YUV 4:2:0
+  // This image is 256x256 with YUV 4:2:0
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";
   unsigned output_y_width, output_y_height, output_uv_width, output_uv_height;
   ReadYUV(kLargeEnoughSize, &output_y_width, &output_y_height, &output_uv_width,
           &output_uv_height, jpeg_file);
@@ -312,7 +313,7 @@ TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
 // size (when JPEGImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
 TEST(JPEGImageDecoderTest, mergeBuffer) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";
   TestMergeBuffer(&CreateJPEGDecoder, jpeg_file);
 }
 
@@ -331,7 +332,7 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
@@ -448,7 +449,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangleNotMultipleOfMCU) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
@@ -557,7 +558,7 @@ INSTANTIATE_TEST_SUITE_P(JPEGImageDecoderTest,
                          ::testing::ValuesIn(kColorSpaceUMATestParams));
 
 TEST(JPEGImageDecoderTest, PartialDataWithoutSize) {
-  const char* jpeg_file = "/images/resources/lenna.jpg";
+  const char* jpeg_file = "/images/resources/gracehopper.jpg";
   scoped_refptr<SharedBuffer> full_data = ReadFile(jpeg_file);
   ASSERT_TRUE(full_data);
 

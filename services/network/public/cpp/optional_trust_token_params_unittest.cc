@@ -28,7 +28,8 @@ OptionalTrustTokenParams NonemptyTrustTokenParams() {
       mojom::TrustTokenSignRequestData::kInclude,
       /*include_timestamp_header=*/true,
       url::Origin::Create(GURL("https://issuer.com")),
-      std::vector<std::string>{"some_header", "another_header"});
+      std::vector<std::string>{"some_header", "another_header"},
+      "some additional signing data");
 }
 }  // namespace
 

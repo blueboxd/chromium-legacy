@@ -197,8 +197,9 @@ class OptimizationGuideKeyedServiceBrowserTest
 
   void RegisterWithKeyedService() {
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->RegisterOptimizationTypesAndTargets(
-            {optimization_guide::proto::NOSCRIPT},
+        ->RegisterOptimizationTypes({optimization_guide::proto::NOSCRIPT});
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->RegisterOptimizationTargets(
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
     // Set up an OptimizationGuideKeyedService consumer.

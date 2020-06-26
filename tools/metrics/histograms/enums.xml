@@ -23659,6 +23659,7 @@ Called by update_extension_histograms.py.-->
   <int value="1482" label="ENTERPRISE_NETWORKINGATTRIBUTES_GETNETWORKDETAILS"/>
   <int value="1483" label="INPUTMETHODPRIVATE_SETAUTOCORRECTRANGE"/>
   <int value="1484" label="PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI"/>
+  <int value="1485" label="CERTIFICATEPROVIDER_SETCERTIFICATES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -53915,7 +53916,7 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="PasswordManagerUIDismissalReason">
   <int value="0" label="Bubble lost focus / No infobar interaction"/>
-  <int value="1" label="Clicked 'Save'"/>
+  <int value="1" label="Clicked 'Save'/'Update'/'Move'/etc"/>
   <int value="2" label="Clicked 'Nope'"/>
   <int value="3" label="Clicked 'Never'"/>
   <int value="4" label="Clicked 'Manage passwords'"/>

@@ -503,6 +503,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
+        false, web_widget_client.main_thread_scheduler(),
         web_widget_client.task_graph_runner(),
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings(),
         std::make_unique<cc::TestUkmRecorderFactory>()));
@@ -2481,7 +2482,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
 
   // Click an anchor
   FrameLoadRequest request_a(
-      main_frame_local->GetDocument(),
+      main_frame_local->DomWindow(),
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#a")));
   main_frame_local->Loader().StartNavigation(request_a);
   Persistent<HistoryItem> item2 =
@@ -2502,7 +2503,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
 
   // Click a different anchor
   FrameLoadRequest request_b(
-      main_frame_local->GetDocument(),
+      main_frame_local->DomWindow(),
       ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b")));
   main_frame_local->Loader().StartNavigation(request_b);
   Persistent<HistoryItem> item3 =
@@ -3674,7 +3675,7 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
       To<WebLocalFrameImpl>(web_view_impl->MainFrame()->FirstChild())
           ->GetFrame();
   FrameLoadRequest request_with_target_start(
-      local_frame->GetDocument(),
+      local_frame->DomWindow(),
       web_url_request_with_target_start.ToResourceRequest());
   local_frame->Tree().FindOrCreateFrameForNavigation(request_with_target_start,
                                                      "_top");
@@ -3748,7 +3749,7 @@ TEST_F(WebViewTest,
   // Request a new window, but the WebViewClient will decline to and instead
   // return the current window.
   WebURLRequest web_url_request(KURL("about:blank"));
-  FrameLoadRequest request(frame->GetDocument(),
+  FrameLoadRequest request(frame->DomWindow(),
                            web_url_request.ToResourceRequest());
   FrameTree::FindResult result =
       frame->Tree().FindOrCreateFrameForNavigation(request, "_blank");
@@ -4102,6 +4103,7 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
         CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
         CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
+        false, web_widget_client.main_thread_scheduler(),
         web_widget_client.task_graph_runner(),
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings(),
         std::make_unique<cc::TestUkmRecorderFactory>()));

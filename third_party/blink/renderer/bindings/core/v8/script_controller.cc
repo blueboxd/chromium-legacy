@@ -327,6 +327,7 @@ void ScriptController::ExecuteJavaScriptURL(
   params->url = GetFrame()->GetDocument()->Url();
   if (auto* owner = GetFrame()->Owner())
     params->frame_policy = owner->GetFramePolicy();
+  params->origin_to_commit = GetFrame()->DomWindow()->GetSecurityOrigin();
 
   String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
   WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",

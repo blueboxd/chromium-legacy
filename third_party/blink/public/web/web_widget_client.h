@@ -37,6 +37,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/time/time.h"
+#include "build/buildflag.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -67,6 +68,7 @@ class PointF;
 
 namespace ui {
 class Cursor;
+struct ImeTextSpan;
 }
 
 namespace blink {
@@ -76,6 +78,7 @@ class WebGestureEvent;
 struct WebFloatRect;
 class WebWidget;
 class WebLocalFrame;
+class WebString;
 
 class WebWidgetClient {
  public:
@@ -144,32 +147,6 @@ class WebWidgetClient {
   // Returns true iff the pointer is locked to this widget.
   virtual bool IsPointerLocked() { return false; }
 
-  // Called when overscrolled on main thread. All parameters are in
-  // viewport-space.
-  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                             const gfx::Vector2dF& accumulated_overscroll,
-                             const gfx::PointF& position_in_viewport,
-                             const gfx::Vector2dF& velocity_in_viewport,
-                             cc::OverscrollBehavior overscroll_behavior) {}
-
-  // Called to update if pointerrawupdate events should be sent.
-  virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
-
-  // Called to update whether low latency input mode is enabled or not.
-  virtual void SetNeedsLowLatencyInput(bool) {}
-
-  // Requests unbuffered (ie. low latency) input until a pointerup
-  // event occurs.
-  virtual void RequestUnbufferedInputEvents() {}
-
-  // Requests unbuffered (ie. low latency) input due to debugger being
-  // attached. Debugger needs to paint when stopped in the event handler.
-  virtual void SetNeedsUnbufferedInputForDebugger(bool) {}
-
-  // Called during WebWidget::HandleInputEvent for a TouchStart event to inform
-  // the embedder of the touch actions that are permitted for this touch.
-  virtual void SetTouchAction(WebTouchAction touch_action) {}
-
   // Converts the |rect| from Blink's Viewport coordinates to the
   // coordinates in the native window used to display the content, in
   // DIP.  They're identical in tradional world, but will differ when
@@ -192,6 +169,12 @@ class WebWidgetClient {
   // is eanbled.  TODO(oshima): Update the comment when the
   // migration is completed.
   virtual void ConvertWindowToViewport(WebFloatRect* rect) {}
+  virtual gfx::Point ConvertWindowPointToViewport(const gfx::Point& point) {
+    return point;
+  }
+  virtual gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point) {
+    return point;
+  }
 
   // Called when a drag-and-drop operation should begin.
   virtual void StartDragging(network::mojom::ReferrerPolicy,
@@ -206,10 +189,6 @@ class WebWidgetClient {
                                           bool is_pinch_gesture_active,
                                           float minimum,
                                           float maximum) {}
-
-  // Dispatch any pending input. This method will called before
-  // dispatching a RequestAnimationFrame to the widget.
-  virtual void DispatchRafAlignedInput(base::TimeTicks frame_time) {}
 
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
@@ -229,13 +208,6 @@ class WebWidgetClient {
     NOTREACHED();
     return viz::FrameSinkId();
   }
-
-  // Notification that the LayerTreeHost started or stopped deferring main frame
-  // updates.
-  virtual void OnDeferMainFrameUpdatesChanged(bool defer) {}
-
-  // Notification that the LayerTreeHost started or stopped deferring commits.
-  virtual void OnDeferCommitsChanged(bool defer) {}
 
   // For more information on the sequence of when these callbacks are made
   // consult cc/trees/layer_tree_host_client.h.
@@ -289,34 +261,6 @@ class WebWidgetClient {
     return false;
   }
 
-  // Queue a sythentic event in the MainThreadEventQueue. This is called
-  // for when handling scrollbars.
-  virtual void QueueSyntheticEvent(
-      std::unique_ptr<blink::WebCoalescedInputEvent>) {}
-
-  // Connect the Widget Input Handler to the channels provided.
-  virtual void GetWidgetInputHandler(
-      CrossVariantMojoReceiver<mojom::WidgetInputHandlerInterfaceBase>
-          widget_input_receiver,
-      CrossVariantMojoRemote<mojom::WidgetInputHandlerHostInterfaceBase>
-          widget_input_host_remote) {}
-
-  // Since the widget input IPC channel is still on the content side send this
-  // message back to the embedder to then send it on that channel. All bounds
-  // are in window coordinates.
-  virtual void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) {}
-
-  // The IME guard prevents sending IPC messages while messages are being
-  // processed. Returns true if there is a current guard.
-  // |request_to_show_virtual_keyboard| is whether the message that would have
-  // been sent would have requested the keyboard. This method will eventually be
-  // removed when all input handling is moved into blink.
-  virtual bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) {
-    return false;
-  }
-
   // Determines whether composition can happen inline.
   virtual bool CanComposeInline() { return false; }
 
@@ -335,6 +279,27 @@ class WebWidgetClient {
   // The state of the focus has changed for the WebWidget. |enabled|
   // is the new state.
   virtual void FocusChanged(bool enabled) {}
+
+  // Set the composition in pepper.
+  virtual void ImeSetCompositionForPepper(
+      const WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) {}
+
+  // Commit the text to pepper.
+  virtual void ImeCommitTextForPepper(
+      const WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int relative_cursor_pos) {}
+
+  // Indicate composition is complete to pepper.
+  virtual void ImeFinishComposingTextForPepper(bool keep_selection) {}
+
+  // Called to indicate a syntehtic event was queued.
+  virtual void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) {}
 };
 
 }  // namespace blink

@@ -281,8 +281,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
 
   void RegisterWithKeyedService() {
     OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
-        ->RegisterOptimizationTypesAndTargets(
-            {optimization_guide::proto::NOSCRIPT},
+        ->RegisterOptimizationTargets(
             {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
   }
 

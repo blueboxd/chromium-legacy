@@ -440,7 +440,7 @@ bool LockManager::AllowLocks(ScriptState* script_state) {
   if (!cached_allowed_.has_value()) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
     DCHECK(execution_context->IsContextThread());
-    SECURITY_DCHECK(execution_context->IsDocument() ||
+    SECURITY_DCHECK(execution_context->IsWindow() ||
                     execution_context->IsWorkerGlobalScope());
     if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
       LocalFrame* frame = window->GetFrame();

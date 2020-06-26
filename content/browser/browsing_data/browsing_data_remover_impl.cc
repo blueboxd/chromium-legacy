@@ -207,11 +207,11 @@ void BrowsingDataRemoverImpl::RemoveInternal(
       << "before observing a removal task.";
 
   // Remove() and RemoveAndReply() pass a null pointer to indicate no filter.
-  // No filter is equivalent to one that |IsEmptyBlacklist()|.
+  // No filter is equivalent to one that |MatchesAllOriginsAndDomains()|.
   if (!filter_builder) {
-    filter_builder =
-        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
-    DCHECK(filter_builder->IsEmptyBlacklist());
+    filter_builder = BrowsingDataFilterBuilder::Create(
+        BrowsingDataFilterBuilder::Mode::kPreserve);
+    DCHECK(filter_builder->MatchesAllOriginsAndDomains());
   }
 
   RemovalTask task(delete_begin, delete_end, remove_mask, origin_type_mask,
@@ -269,8 +269,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // 2. Add a comment explaining why is it acceptable in your case to delete all
   //    data without filtering URLs / origins / domains.
   // 3. Do not support partial deletion, i.e. only delete your data if
-  //    |filter_builder.IsEmptyBlacklist()|. Add a comment explaining why this
-  //    is acceptable.
+  //    |filter_builder.MatchesAllOriginsAndDomains()|. Add a comment explaining
+  //    why this is acceptable.
   base::ScopedClosureRunner synchronous_clear_operations(
       CreateTaskCompletionClosure(TracingDataType::kSynchronous));
 
@@ -311,7 +311,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // Some backends support a filter that |is_null()| to make complete deletion
   // more efficient.
   base::RepeatingCallback<bool(const GURL&)> nullable_url_filter =
-      filter_builder->IsEmptyBlacklist()
+      filter_builder->MatchesAllOriginsAndDomains()
           ? base::RepeatingCallback<bool(const GURL&)>()
           : url_filter;
 
@@ -409,7 +409,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // If cookies are supposed to be conditionally deleted from the storage
     // partition, create the deletion info object.
     network::mojom::CookieDeletionFilterPtr deletion_filter;
-    if (!filter_builder->IsEmptyBlacklist() &&
+    if (!filter_builder->MatchesAllOriginsAndDomains() &&
         (storage_partition_remove_mask &
          StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
       deletion_filter = filter_builder->BuildCookieDeletionFilter();
@@ -435,7 +435,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     bool perform_storage_cleanup =
         delete_begin_.is_null() && delete_end_.is_max() &&
         origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB &&
-        filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
+        filter_builder->GetMode() == BrowsingDataFilterBuilder::Mode::kPreserve;
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
@@ -467,9 +467,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     if (base::FeatureList::IsEnabled(
             features::kCodeCacheDeletionWithoutFilter)) {
-      // Experimentally perform blacklist deletions without filter and skip
+      // Experimentally perform preservelist deletions without filter and skip
       // origin specific deletions. See crbug.com/1040039#26.
-      if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      if (filter_builder->GetMode() ==
+          BrowsingDataFilterBuilder::Mode::kPreserve) {
         storage_partition->ClearCodeCaches(
             delete_begin, delete_end, /*filter=*/base::NullCallback(),
             CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
@@ -481,7 +482,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     }
 
     // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.
-    if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+    if (filter_builder->GetMode() ==
+        BrowsingDataFilterBuilder::Mode::kPreserve) {
       // When clearing cache, wipe accumulated network related data
       // (TransportSecurityState and HttpServerPropertiesManager data).
       network_context->ClearNetworkingHistorySince(
@@ -636,10 +638,11 @@ void BrowsingDataRemoverImpl::Notify() {
   }
 
   base::TimeDelta delta = base::Time::Now() - task.task_started;
-  if (task.filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+  if (task.filter_builder->GetMode() ==
+      BrowsingDataFilterBuilder::Mode::kPreserve) {
     // Full, and time based and filtered deletions are often implemented
     // differently, so we track them in separate metrics.
-    if (!task.filter_builder->IsEmptyBlacklist()) {
+    if (!task.filter_builder->MatchesAllOriginsAndDomains()) {
       base::UmaHistogramMediumTimes(
           "History.ClearBrowsingData.Duration.FilteredDeletion", delta);
     } else if (task.delete_begin.is_null() && task.delete_end.is_max()) {

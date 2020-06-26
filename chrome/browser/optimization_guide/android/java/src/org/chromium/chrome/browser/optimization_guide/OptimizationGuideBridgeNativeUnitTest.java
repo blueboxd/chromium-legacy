@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.HintsProto.OptimizationType;
-import org.chromium.components.optimization_guide.proto.ModelsProto.OptimizationTarget;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import java.util.Arrays;
@@ -54,13 +53,10 @@ public class OptimizationGuideBridgeNativeUnitTest {
     private OptimizationGuideBridgeNativeUnitTest() {}
 
     @CalledByNative
-    public void testRegisterOptimizationTypesAndTargets() {
+    public void testRegisterOptimizationTypes() {
         OptimizationGuideBridge bridge = new OptimizationGuideBridge();
-        bridge.registerOptimizationTypesAndTargets(
-                Arrays.asList(new OptimizationType[] {
-                        OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}),
-                Arrays.asList(new OptimizationTarget[] {
-                        OptimizationTarget.OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD}));
+        bridge.registerOptimizationTypes(Arrays.asList(new OptimizationType[] {
+                OptimizationType.PERFORMANCE_HINTS, OptimizationType.DEFER_ALL_SCRIPT}));
     }
 
     @CalledByNative

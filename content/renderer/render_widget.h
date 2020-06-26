@@ -36,7 +36,6 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
-#include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
@@ -49,7 +48,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
@@ -76,9 +74,6 @@ class SyncMessageFilter;
 }
 
 namespace blink {
-namespace scheduler {
-class WebWidgetScheduler;
-}
 struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
@@ -101,15 +96,12 @@ class Range;
 namespace content {
 class CompositorDependencies;
 class FrameSwapMessageQueue;
-class ImeEventGuard;
-class MainThreadEventQueue;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
 class RenderWidgetScreenMetricsEmulator;
-class WidgetInputHandlerManager;
 struct VisualProperties;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -134,8 +126,7 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
-      public RenderWidgetScreenMetricsEmulatorDelegate,
-      public MainThreadEventQueueClient {
+      public RenderWidgetScreenMetricsEmulatorDelegate {
  public:
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
@@ -295,6 +286,8 @@ class CONTENT_EXPORT RenderWidget
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
+  gfx::Point ConvertWindowPointToViewport(const gfx::Point& point) override;
+  gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point) override;
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
                           blink::WebWidgetClient::PointerLockCallback callback,
                           bool request_unadjusted_movement) override;
@@ -309,56 +302,38 @@ class CONTENT_EXPORT RenderWidget
                      blink::WebDragOperationsMask mask,
                      const SkBitmap& drag_image,
                      const gfx::Point& image_offset) override;
-  void SetTouchAction(cc::TouchAction touch_action) override;
-  void RequestUnbufferedInputEvents() override;
-  void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
-  void SetNeedsLowLatencyInput(bool) override;
-  void SetNeedsUnbufferedInputForDebugger(bool) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum) override;
-  void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   viz::FrameSinkId GetFrameSinkId() override;
   void RecordTimeToFirstActivePaint(base::TimeDelta duration) override;
-  void OnDeferMainFrameUpdatesChanged(bool) override;
-  void OnDeferCommitsChanged(bool) override;
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidCompletePageScaleAnimation() override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
-  void DidHandleGestureScrollEvent(
-      const blink::WebGestureEvent& gesture_event,
-      const gfx::Vector2dF& unused_delta,
-      const cc::OverscrollBehavior& overscroll_behavior,
-      bool event_processed) override;
-  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                     const gfx::Vector2dF& accumulated_overscroll,
-                     const gfx::PointF& position_in_viewport,
-                     const gfx::Vector2dF& velocity_in_viewport,
-                     cc::OverscrollBehavior overscroll_behavior) override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
-  void QueueSyntheticEvent(
-      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
-  void GetWidgetInputHandler(
-      blink::CrossVariantMojoReceiver<
-          blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
-      blink::CrossVariantMojoRemote<
-          blink::mojom::WidgetInputHandlerHostInterfaceBase>
-          widget_input_host_remote) override;
-  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
-  void SendCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override;
   bool CanComposeInline() override;
   bool ShouldDispatchImeEventsToPepper() override;
   blink::WebTextInputType GetPepperTextInputType() override;
   gfx::Rect GetPepperCaretBounds() override;
   void FocusChanged(bool enable) override;
+  void ImeSetCompositionForPepper(
+      const blink::WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) override;
+  void ImeCommitTextForPepper(
+      const blink::WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int relative_cursor_pos) override;
+  void ImeFinishComposingTextForPepper(bool keep_selection) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -382,9 +357,6 @@ class CONTENT_EXPORT RenderWidget
       float initial_device_scale_factor);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
-  WidgetInputHandlerManager* widget_input_handler_manager() {
-    return widget_input_handler_manager_.get();
-  }
   void SetHandlingInputEvent(bool handling_input_event);
 
   // Queues the IPC |message| to be sent to the browser, delaying sending until
@@ -397,10 +369,6 @@ class CONTENT_EXPORT RenderWidget
   // will not be automatically available to BrowserMessageFilter, for example.
   // FIFO ordering is preserved between messages enqueued.
   void QueueMessage(std::unique_ptr<IPC::Message> msg);
-
-  // Handle start and finish of IME event guard.
-  void OnImeEventGuardStart(ImeEventGuard* guard);
-  void OnImeEventGuardFinish(ImeEventGuard* guard);
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
@@ -426,9 +394,6 @@ class CONTENT_EXPORT RenderWidget
   // When emulated, this returns the original (non-emulated) ScreenInfo.
   const ScreenInfo& GetOriginalScreenInfo() const;
 
-  // Helper to convert |point| using ConvertWindowToViewport().
-  gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);
-  gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
   void DidNavigate(ukm::SourceId source_id, const GURL& url);
 
   bool auto_resize_mode() const { return auto_resize_mode_; }
@@ -445,49 +410,10 @@ class CONTENT_EXPORT RenderWidget
     return last_capture_sequence_number_;
   }
 
-  // MainThreadEventQueueClient overrides.
-  bool HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
-                        HandledEventCallback callback) override;
-  void SetNeedsMainFrame() override;
-
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
-  blink::mojom::WidgetInputHandlerHost* GetInputHandlerHost();
-
-  scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
-
   void OnSetActive(bool active);
-  void OnSetFocus(bool enable);
-  void OnMouseCaptureLost();
-  void OnCursorVisibilityChange(bool is_visible);
-  void OnSetEditCommandsForNextKeyEvent(
-      std::vector<blink::mojom::EditCommandPtr> edit_commands);
-  void OnImeSetComposition(const base::string16& text,
-                           const std::vector<ui::ImeTextSpan>& ime_text_spans,
-                           const gfx::Range& replacement_range,
-                           int selection_start,
-                           int selection_end);
-  void OnImeCommitText(const base::string16& text,
-                       const std::vector<ui::ImeTextSpan>& ime_text_spans,
-                       const gfx::Range& replacement_range,
-                       int relative_cursor_pos);
-  void OnImeFinishComposingText(bool keep_selection);
-
-  // Called by the browser process to update text input state.
-  void OnRequestTextInputStateUpdate();
-
-  // Called by the browser process to update the cursor and composition
-  // information by sending WidgetInputHandlerHost::ImeCompositionRangeChanged.
-  // If |immediate_request| is true, an IPC is sent back with current state.
-  // When |monitor_update| is true, then RenderWidget will send the updates
-  // in each compositor frame when there are changes. Outside of compositor
-  // frame updates, a change in text selection might also lead to an update for
-  // composition info (when in monitor mode).
-  void OnRequestCompositionUpdates(bool immediate_request,
-                                   bool monitor_updates);
-
-  void SetMouseCapture(bool capture);
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
@@ -518,14 +444,6 @@ class CONTENT_EXPORT RenderWidget
   // This method returns the WebLocalFrame which is currently focused and
   // belongs to the frame tree associated with this RenderWidget.
   blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
-
-  bool handling_select_range() const { return handling_select_range_; }
-
-  bool is_pasting() const { return is_pasting_; }
-
-  void set_is_pasting(bool value) { is_pasting_ = value; }
-
-  void set_handling_select_range(bool value) { handling_select_range_ = value; }
 
  protected:
   // Notify subclasses that we handled OnUpdateVisualProperties.
@@ -581,11 +499,6 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect CompositorViewportRect() const;
 
   // RenderWidget IPC message handlers.
-  void OnHandleInputEvent(
-      const blink::WebInputEvent* event,
-      const std::vector<const blink::WebInputEvent*>& coalesced_events,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type);
   void OnClose();
   void OnUpdateVisualProperties(const VisualProperties& properties);
   void OnCreatingNewAck();
@@ -669,11 +582,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-
-  // Determines whether or not RenderWidget should process IME events from the
-  // browser. It always returns true unless there is no WebFrameWidget to
-  // handle the event, or there is no page focus.
-  bool ShouldHandleImeEvents() const;
 
   void UpdateTextInputStateInternal(bool show_virtual_keyboard,
                                     bool reply_to_request);
@@ -774,10 +682,6 @@ class CONTENT_EXPORT RenderWidget
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted_ = false;
 
-  // It is possible that one ImeEventGuard is nested inside another
-  // ImeEventGuard. We keep track of the outermost one, and update it as needed.
-  ImeEventGuard* ime_event_guard_ = nullptr;
-
   // True once Close() is called, during the self-destruction process, and to
   // verify destruction always goes through Close().
   bool closing_ = false;
@@ -815,8 +719,6 @@ class CONTENT_EXPORT RenderWidget
   // for a more detailed explanation of how when this value is computed and
   // propagated.
   std::vector<gfx::Rect> root_widget_window_segments_;
-
-  scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;
@@ -887,19 +789,9 @@ class CONTENT_EXPORT RenderWidget
   float page_scale_factor_from_mainframe_ = 1.f;
   bool is_pinch_gesture_active_from_mainframe_ = false;
 
-  scoped_refptr<MainThreadEventQueue> input_event_queue_;
   gfx::Rect compositor_visible_rect_;
 
   uint32_t last_capture_sequence_number_ = 0u;
-
-  // Used to inform didChangeSelection() when it is called in the context
-  // of handling a FrameInputHandler::SelectRange IPC.
-  bool handling_select_range_ = false;
-
-  // Whether or not this RenderWidget is currently pasting.
-  bool is_pasting_ = false;
-
-  std::unique_ptr<blink::scheduler::WebWidgetScheduler> widget_scheduler_;
 
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
 

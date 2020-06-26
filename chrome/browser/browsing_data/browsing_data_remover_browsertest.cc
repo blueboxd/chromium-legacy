@@ -105,10 +105,10 @@ static const char* kLocalHost = "localhost";
 static const base::Time kLastHour =
     base::Time::Now() - base::TimeDelta::FromHours(1);
 
-// Check if |file| matches any regex in |whitelist|.
-bool IsFileWhitelisted(const std::string& file,
-                       const std::vector<std::string>& whitelist) {
-  for (const std::string& pattern : whitelist) {
+// Check if |file| matches any regex in |ignore_file_patterns|.
+bool ShouldIgnoreFile(const std::string& file,
+                      const std::vector<std::string>& ignore_file_patterns) {
+  for (const std::string& pattern : ignore_file_patterns) {
     if (RE2::PartialMatch(file, pattern))
       return true;
   }
@@ -117,9 +117,10 @@ bool IsFileWhitelisted(const std::string& file,
 
 // Searches the user data directory for files that contain |hostname| in the
 // filename or as part of the content. Returns the number of files that
-// do not match any regex in |whitelist|.
-bool CheckUserDirectoryForString(const std::string& hostname,
-                                 const std::vector<std::string>& whitelist) {
+// do not match any regex in |ignore_file_patterns|.
+bool CheckUserDirectoryForString(
+    const std::string& hostname,
+    const std::vector<std::string>& ignore_file_patterns) {
   base::FilePath user_data_dir =
       g_browser_process->profile_manager()->user_data_dir();
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -136,8 +137,8 @@ bool CheckUserDirectoryForString(const std::string& hostname,
 
     // Check file name.
     if (file.find(hostname) != std::string::npos) {
-      if (IsFileWhitelisted(file, whitelist)) {
-        LOG(INFO) << "Whitelisted: " << file;
+      if (ShouldIgnoreFile(file, ignore_file_patterns)) {
+        LOG(INFO) << "Ignored: " << file;
       } else {
         found++;
         LOG(WARNING) << "Found file name: " << file;
@@ -185,8 +186,8 @@ bool CheckUserDirectoryForString(const std::string& hostname,
     }
     size_t pos = content.find(hostname);
     if (pos != std::string::npos) {
-      if (IsFileWhitelisted(file, whitelist)) {
-        LOG(INFO) << "Whitelisted: " << file;
+      if (ShouldIgnoreFile(file, ignore_file_patterns)) {
+        LOG(INFO) << "Ignored: " << file;
         continue;
       }
       found++;
@@ -861,7 +862,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   // Partially delete cache data. Delete data for localhost, which is the origin
   // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(url::Origin::Create(url1));
   RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
@@ -871,8 +873,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   EXPECT_EQ(net::OK, content::LoadBasicRequest(network_context(), url2));
 
   // Another partial deletion with the same filter should have no effect.
-  filter_builder =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(url::Origin::Create(url1));
   RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
@@ -1040,7 +1042,8 @@ IN_PROC_BROWSER_TEST_F(
   // opt-in.
   {
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
-        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+        BrowsingDataFilterBuilder::Create(
+            BrowsingDataFilterBuilder::Mode::kDelete);
     filter_builder->AddRegisterableDomain("example.com");
     RemoveWithFilterAndWait(
         ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
@@ -1052,7 +1055,8 @@ IN_PROC_BROWSER_TEST_F(
   // Clearing cookies for google.com should clear the opt-in.
   {
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
-        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+        BrowsingDataFilterBuilder::Create(
+            BrowsingDataFilterBuilder::Mode::kDelete);
     filter_builder->AddRegisterableDomain("google.com");
     RemoveWithFilterAndWait(
         ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
@@ -1338,10 +1342,11 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_EQ(1, GetMediaLicenseCount());
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
 
-  // Try to remove the Media Licenses using a whitelist that doesn't include
+  // Try to remove the Media Licenses using a deletelist that doesn't include
   // the current URL. Media License should not be deleted.
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(
       url::Origin::CreateFromNormalizedTuple("https", "test-origin", 443));
   RemoveWithFilterAndWait(
@@ -1349,20 +1354,20 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
       std::move(filter_builder));
   EXPECT_EQ(1, GetMediaLicenseCount());
 
-  // Now try with a blacklist that includes the current URL. Media License
+  // Now try with a preservelist that includes the current URL. Media License
   // should not be deleted.
-  filter_builder =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
+  filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kPreserve);
   filter_builder->AddOrigin(url::Origin::Create(url));
   RemoveWithFilterAndWait(
       content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
       std::move(filter_builder));
   EXPECT_EQ(1, GetMediaLicenseCount());
 
-  // Now try with a whitelist that includes the current URL. Media License
+  // Now try with a deletelist that includes the current URL. Media License
   // should be deleted this time.
-  filter_builder =
-      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(url::Origin::Create(url));
   RemoveWithFilterAndWait(
       content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
@@ -1434,7 +1439,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   // Deletions should remove all traces of browsing data from disk
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
-  static const std::vector<std::string> whitelist = {
+  static const std::vector<std::string> ignore_file_patterns = {
 #if defined(OS_CHROMEOS)
     // TODO(crbug.com/846297): Many leveldb files remain on ChromeOS. I couldn't
     // reproduce this in manual testing, so it might be a timing issue when
@@ -1442,8 +1447,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
     "[0-9]{6}",
 #endif
   };
-  int found = CheckUserDirectoryForString(kLocalHost, whitelist);
-  EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
+  int found = CheckUserDirectoryForString(kLocalHost, ignore_file_patterns);
+  EXPECT_EQ(0, found) << "A non-ignored file contains the hostname.";
 }
 
 // TODO(crbug.com/840080): Filesystem can't be deleted on exit correctly at the

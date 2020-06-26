@@ -8,6 +8,7 @@
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#import "net/base/mac/url_conversions.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,15 +24,29 @@ class LookalikeUrlTabHelperTest : public PlatformTest {
     allow_list_ = LookalikeUrlTabAllowList::FromWebState(&web_state_);
   }
 
-  bool RequestAllowed(NSString* url_string, bool main_frame) {
-    web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, main_frame,
-        /*has_user_gesture=*/false);
-    web::WebStatePolicyDecider::PolicyDecision request_policy =
-        web_state_.ShouldAllowRequest(
-            [NSURLRequest requestWithURL:[NSURL URLWithString:url_string]],
-            request_info);
-    return request_policy.ShouldAllowNavigation();
+  // Helper function that calls into WebState::ShouldAllowResponse with the
+  // given |url| and |for_main_frame|, waits for the callback with the decision
+  // to be called, and returns the decision.
+  web::WebStatePolicyDecider::PolicyDecision ShouldAllowResponseUrl(
+      const GURL& url,
+      bool for_main_frame) {
+    NSURLResponse* response =
+        [[NSURLResponse alloc] initWithURL:net::NSURLWithGURL(url)
+                                  MIMEType:@"text/html"
+                     expectedContentLength:0
+                          textEncodingName:nil];
+    __block bool callback_called = false;
+    __block web::WebStatePolicyDecider::PolicyDecision policy_decision =
+        web::WebStatePolicyDecider::PolicyDecision::Allow();
+    auto callback =
+        base::Bind(^(web::WebStatePolicyDecider::PolicyDecision decision) {
+          policy_decision = decision;
+          callback_called = true;
+        });
+    web_state_.ShouldAllowResponse(response, for_main_frame,
+                                   std::move(callback));
+    EXPECT_TRUE(callback_called);
+    return policy_decision;
   }
 
   LookalikeUrlTabAllowList* allow_list() { return allow_list_; }
@@ -41,22 +56,27 @@ class LookalikeUrlTabHelperTest : public PlatformTest {
   LookalikeUrlTabAllowList* allow_list_;
 };
 
-// Tests that ShouldAllowRequest properly blocks lookalike navigations and
+// Tests that ShouldAllowResponse properly blocks lookalike navigations and
 // allows subframe navigations, non-HTTP/S navigations, and navigations
-// to allowed domains.
-TEST_F(LookalikeUrlTabHelperTest, ShouldAllowRequest) {
-  NSString* lookalike_url = @"https://xn--googl-fsa.com/";
+// to allowed domains. ShouldAllowRequest should always allow the navigation.
+TEST_F(LookalikeUrlTabHelperTest, ShouldAllowResponse) {
+  GURL lookalike_url("https://xn--googl-fsa.com/");
 
   // Lookalike IDNs should be blocked.
-  EXPECT_FALSE(RequestAllowed(lookalike_url, /*main_frame=*/true));
+  EXPECT_FALSE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
+                   .ShouldAllowNavigation());
 
   // Non-main frame navigations should be allowed.
-  EXPECT_TRUE(RequestAllowed(lookalike_url, /*main_frame=*/false));
+  EXPECT_TRUE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/false)
+                  .ShouldAllowNavigation());
+
   // Non-HTTP/S navigations should be allowed.
-  EXPECT_TRUE(
-      RequestAllowed(@"file://xn--googl-fsa.com/", /*main_frame=*/true));
+  GURL file_url("file://xn--googl-fsa.com/");
+  EXPECT_TRUE(ShouldAllowResponseUrl(file_url, /*main_frame=*/true)
+                  .ShouldAllowNavigation());
 
   // Lookalike IDNs that have been allowlisted should not be blocked.
   allow_list()->AllowDomain("xn--googl-fsa.com");
-  EXPECT_TRUE(RequestAllowed(lookalike_url, /*main_frame=*/true));
+  EXPECT_TRUE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
+                  .ShouldAllowNavigation());
 }

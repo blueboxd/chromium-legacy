@@ -49,10 +49,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
       avoid_embedded_bitmaps_(false),
       orientation_(FontOrientation::kHorizontal),
       is_hash_table_deleted_value_(true)
-#if defined(OS_WIN)
-      ,
-      font_flags_(0)
-#endif
 {
 }
 
@@ -63,10 +59,6 @@ FontPlatformData::FontPlatformData()
       avoid_embedded_bitmaps_(false),
       orientation_(FontOrientation::kHorizontal),
       is_hash_table_deleted_value_(false)
-#if defined(OS_WIN)
-      ,
-      font_flags_(0)
-#endif
 {
 }
 
@@ -80,10 +72,6 @@ FontPlatformData::FontPlatformData(float size,
       avoid_embedded_bitmaps_(false),
       orientation_(orientation),
       is_hash_table_deleted_value_(false)
-#if defined(OS_WIN)
-      ,
-      font_flags_(0)
-#endif
 {
 }
 
@@ -97,15 +85,11 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       synthetic_italic_(source.synthetic_italic_),
       avoid_embedded_bitmaps_(source.avoid_embedded_bitmaps_),
       orientation_(source.orientation_),
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
       style_(source.style_),
 #endif
       harfbuzz_face_(nullptr),
       is_hash_table_deleted_value_(false)
-#if defined(OS_WIN)
-      ,
-      font_flags_(source.font_flags_)
-#endif
 {
 }
 
@@ -138,14 +122,11 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
       avoid_embedded_bitmaps_(false),
       orientation_(orientation),
       is_hash_table_deleted_value_(false)
-#if defined(OS_WIN)
-      ,
-      font_flags_(0)
-#endif
 {
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
   style_ = WebFontRenderStyle::GetDefault();
   auto system_style =
+#if !defined(OS_WIN)
       QuerySystemRenderStyle(family_, text_size_, typeface_->fontStyle());
 
   // In web tests, ignore system preference for subpixel positioning,
@@ -156,12 +137,10 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
             ? WebFontRenderStyle::kNoPreference
             : 0;
   }
-
-  style_.OverrideWith(system_style);
+#else
+     QuerySystemForRenderStyle();
 #endif
-
-#if defined(OS_WIN)
-  QuerySystemForRenderStyle();
+  style_.OverrideWith(system_style);
 #endif
 }
 
@@ -189,12 +168,8 @@ const FontPlatformData& FontPlatformData::operator=(
   avoid_embedded_bitmaps_ = other.avoid_embedded_bitmaps_;
   harfbuzz_face_ = nullptr;
   orientation_ = other.orientation_;
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
   style_ = other.style_;
-#endif
-
-#if defined(OS_WIN)
-  font_flags_ = 0;
 #endif
 
   return *this;
@@ -214,7 +189,7 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const {
          synthetic_bold_ == a.synthetic_bold_ &&
          synthetic_italic_ == a.synthetic_italic_ &&
          avoid_embedded_bitmaps_ == a.avoid_embedded_bitmaps_
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
          && style_ == a.style_
 #endif
          && orientation_ == a.orientation_;

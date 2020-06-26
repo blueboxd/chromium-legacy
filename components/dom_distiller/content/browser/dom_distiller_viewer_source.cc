@@ -30,7 +30,6 @@
 #include "components/dom_distiller/core/viewer.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/back_forward_cache.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -61,10 +60,6 @@ class DomDistillerViewerSource::RequestViewerHandle
   ~RequestViewerHandle() override;
 
   // content::WebContentsObserver implementation:
-#if !defined(OS_ANDROID)
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-#endif  // !defined(OS_ANDROID)
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
@@ -91,11 +86,6 @@ class DomDistillerViewerSource::RequestViewerHandle
   // Temporary store of pending JavaScript if the page isn't ready to receive
   // data from distillation.
   std::string buffer_;
-
-#if !defined(OS_ANDROID)
-  bool remove_previous_navigation_ = false;
-  int last_distiller_page_index_ = -1;
-#endif  // !defined(OS_ANDROID)
 };
 
 DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
@@ -125,29 +115,6 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
   }
 }
 
-#if !defined(OS_ANDROID)
-void DomDistillerViewerSource::RequestViewerHandle::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
-
-  // Reader Mode should not pollute the navigation stack. To avoid this, watch
-  // for navigations and prepare to remove any that are "chrome-distiller" URLs.
-  // Note that Android handles this for non-CCT mode in ReaderModeManager.java.
-  // TODO(crbug.com/1090588): Consider combining Android implementation here,
-  // if it doesn't impact CCT mode.
-  int index = web_contents()->GetController().GetLastCommittedEntryIndex();
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetEntryAtIndex(index);
-
-  if (entry != nullptr && url_utils::IsDistilledPage(entry->GetURL())) {
-    remove_previous_navigation_ = true;
-    last_distiller_page_index_ = index;
-  }
-}
-#endif  // !defined(OS_ANDROID)
-
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -159,17 +126,6 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     // In-page navigations, as well as the main view request can be ignored.
     return;
   }
-
-#if !defined(OS_ANDROID)
-  if (remove_previous_navigation_) {
-    remove_previous_navigation_ = false;
-    if (web_contents()->GetController().GetEntryAtIndex(
-            last_distiller_page_index_) != nullptr) {
-      web_contents()->GetController().RemoveEntryAtIndex(
-          last_distiller_page_index_);
-    }
-  }
-#endif  // !defined(OS_ANDROID)
 
   // At the moment we destroy the handle and won't be able
   // to restore the document later, so we prevent the page

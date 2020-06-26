@@ -141,7 +141,8 @@ class SecurityKeyMessage final {
 };
 
 // Used to pass security key message data between classes.
-typedef base::Callback<void(std::unique_ptr<SecurityKeyMessage> message)>
+typedef base::RepeatingCallback<void(
+    std::unique_ptr<SecurityKeyMessage> message)>
     SecurityKeyMessageCallback;
 
 }  // namespace remoting

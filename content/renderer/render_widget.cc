@@ -56,9 +56,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/frame_swap_message_queue.h"
-#include "content/renderer/ime_event_guard.h"
-#include "content/renderer/input/main_thread_event_queue.h"
-#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/queue_message_swap_promise.h"
 #include "content/renderer/render_frame_impl.h"
@@ -86,7 +83,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -371,16 +367,6 @@ viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
   return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
 }
 
-blink::mojom::DidOverscrollParamsPtr ToOverscrollParams(
-    const blink::InputHandlerProxy::DidOverscrollParams* params) {
-  if (!params)
-    return nullptr;
-  return blink::mojom::DidOverscrollParams::New(
-      params->accumulated_overscroll, params->latest_overscroll_delta,
-      params->current_fling_velocity, params->causal_event_viewport_point,
-      params->overscroll_behavior);
-}
-
 }  // namespace
 
 // RenderWidget ---------------------------------------------------------------
@@ -573,22 +559,6 @@ bool RenderWidget::Send(IPC::Message* message) {
     message->set_routing_id(routing_id_);
 
   return RenderThread::Get()->Send(message);
-}
-
-bool RenderWidget::ShouldHandleImeEvents() const {
-  if (delegate())
-    return GetWebWidget()->HasFocus();
-  if (for_child_local_root_frame_) {
-    // TODO(ekaramad): We track page focus in all RenderViews on the page but
-    // the RenderWidgets corresponding to child local roots do not get the
-    // update. For now, this method returns true when the RenderWidget is for a
-    // child local frame, i.e., IME events will be processed regardless of page
-    // focus. We should revisit this after page focus for OOPIFs has been fully
-    // resolved (https://crbug.com/689777).
-    return true;
-  }
-  // Not a frame widget.
-  return false;
 }
 
 void RenderWidget::OnClose() {
@@ -1065,65 +1035,9 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
   return GetFrameSinkId();
 }
 
-bool RenderWidget::HandleInputEvent(
-    const blink::WebCoalescedInputEvent& input_event,
-    HandledEventCallback callback) {
-  // Temporarily convert between the blink callback and the main thread
-  // event queue callback. This will go away once the MainThreadEventQueue
-  // moves into blink.
-  WebWidget::HandledEventCallback blink_callback = base::BindOnce(
-      [](HandledEventCallback callback,
-         blink::mojom::InputEventResultState ack_state,
-         const ui::LatencyInfo& latency_info,
-         std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
-             overscroll_params,
-         base::Optional<cc::TouchAction> touch_action) {
-        if (!callback)
-          return;
-        std::move(callback).Run(ack_state, latency_info,
-                                ToOverscrollParams(overscroll_params.get()),
-                                touch_action);
-      },
-      std::move(callback));
-  webwidget_->ProcessInputEventSynchronously(input_event,
-                                             std::move(blink_callback));
-  return true;
-}
-
-void RenderWidget::SetNeedsMainFrame() {
-  ScheduleAnimation();
-}
-
-scoped_refptr<MainThreadEventQueue> RenderWidget::GetInputEventQueue() {
-  return input_event_queue_;
-}
-
-void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
-  GetWebWidget()->SetCursorVisibilityState(is_visible);
-}
-
-void RenderWidget::OnMouseCaptureLost() {
-  GetWebWidget()->MouseCaptureLost();
-}
-
-void RenderWidget::OnSetEditCommandsForNextKeyEvent(
-    std::vector<blink::mojom::EditCommandPtr> edit_commands) {
-  if (auto* frame_widget = GetFrameWidget()) {
-    for (auto& command : edit_commands) {
-      frame_widget->AddEditCommandForNextKeyEvent(
-          WebString::FromUTF8(command->name),
-          WebString::FromUTF8(command->value));
-    }
-  }
-}
-
 void RenderWidget::OnSetActive(bool active) {
   if (delegate())
     delegate()->SetActiveForWidget(active);
-}
-
-void RenderWidget::OnSetFocus(bool enable) {
-  GetWebWidget()->SetFocus(enable);
 }
 
 void RenderWidget::FocusChanged(bool enable) {
@@ -1132,34 +1046,6 @@ void RenderWidget::FocusChanged(bool enable) {
 
   for (auto& observer : render_frames_)
     observer.RenderWidgetSetFocus(enable);
-}
-
-void RenderWidget::DispatchRafAlignedInput(base::TimeTicks frame_time) {
-  input_event_queue_->DispatchRafAlignedInput(frame_time);
-}
-
-void RenderWidget::OnDeferMainFrameUpdatesChanged(bool deferral_state) {
-  // LayerTreeHost::CreateThreaded() will defer main frame updates immediately
-  // until it gets a LocalSurfaceIdAllocation. That's before the
-  // |widget_input_handler_manager_| is created, so it can be null here. We
-  // detect that by seeing a null LayerTreeHost.
-  // TODO(schenney): To avoid ping-ponging between defer main frame states
-  // during initialization, and requiring null checks here, we should probably
-  // pass the LocalSurfaceIdAllocation to the compositor while it is
-  // initialized so that it doesn't have to immediately switch into deferred
-  // mode without being requested to.
-  if (!layer_tree_host_)
-    return;
-
-  // The input handler wants to know about the mainframe update status to
-  // enable/disable input and for metrics.
-  widget_input_handler_manager_->OnDeferMainFrameUpdatesChanged(deferral_state);
-}
-
-void RenderWidget::OnDeferCommitsChanged(bool deferral_state) {
-  // The input handler wants to know about the commit status for metric purposes
-  // and to enable/disable input.
-  widget_input_handler_manager_->OnDeferCommitsChanged(deferral_state);
 }
 
 void RenderWidget::RequestNewLayerTreeFrameSink(
@@ -1222,75 +1108,6 @@ void RenderWidget::RecordTimeToFirstActivePaint(base::TimeDelta duration) {
         "PurgeAndSuspend.Experimental.TimeToFirstActivePaint."
         "AfterBackgrounded.5min",
         duration);
-  }
-}
-
-void RenderWidget::DidHandleGestureScrollEvent(
-    const blink::WebGestureEvent& gesture_event,
-    const gfx::Vector2dF& unused_delta,
-    const cc::OverscrollBehavior& overscroll_behavior,
-    bool event_processed) {
-  if (!compositor_deps_->IsElasticOverscrollEnabled())
-    return;
-
-  cc::InputHandlerScrollResult scroll_result;
-  scroll_result.did_scroll = event_processed;
-  scroll_result.did_overscroll_root = !unused_delta.IsZero();
-  scroll_result.unused_scroll_delta = unused_delta;
-  scroll_result.overscroll_behavior = overscroll_behavior;
-
-  widget_input_handler_manager_->ObserveGestureEventOnMainThread(gesture_event,
-                                                                 scroll_result);
-}
-
-void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                                 const gfx::Vector2dF& accumulated_overscroll,
-                                 const gfx::PointF& position_in_viewport,
-                                 const gfx::Vector2dF& velocity_in_viewport,
-                                 cc::OverscrollBehavior overscroll_behavior) {
-  if (blink::mojom::WidgetInputHandlerHost* host =
-          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-    host->DidOverscroll(blink::mojom::DidOverscrollParams::New(
-        accumulated_overscroll, overscroll_delta, velocity_in_viewport,
-        position_in_viewport, overscroll_behavior));
-  }
-}
-
-void RenderWidget::QueueSyntheticEvent(
-    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
-  // TODO(acomminos): If/when we add support for gesture event attribution on
-  //                  the impl thread, have the caller provide attribution.
-  blink::WebInputEventAttribution attribution;
-  GetInputEventQueue()->HandleEvent(
-      std::move(event), DISPATCH_TYPE_NON_BLOCKING,
-      blink::mojom::InputEventResultState::kNotConsumed, attribution,
-      HandledEventCallback());
-}
-
-void RenderWidget::GetWidgetInputHandler(
-    blink::CrossVariantMojoReceiver<
-        blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
-    blink::CrossVariantMojoRemote<
-        blink::mojom::WidgetInputHandlerHostInterfaceBase>
-        widget_input_host_remote) {
-  widget_input_handler_manager_->AddInterface(
-      std::move(widget_input_receiver), std::move(widget_input_host_remote));
-}
-
-bool RenderWidget::HasCurrentImeGuard(bool request_to_show_virtual_keyboard) {
-  if (!ime_event_guard_)
-    return false;
-  if (request_to_show_virtual_keyboard)
-    ime_event_guard_->set_show_virtual_keyboard(true);
-  return true;
-}
-
-void RenderWidget::SendCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-  if (blink::mojom::WidgetInputHandlerHost* host =
-          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-    host->ImeCompositionRangeChanged(range, character_bounds);
   }
 }
 
@@ -1546,44 +1363,13 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
   TRACE_EVENT0("blink", "RenderWidget::InitializeLayerTreeView");
 
   layer_tree_host_ = webwidget_->InitializeCompositing(
+      never_composited_, compositor_deps_->GetWebMainThreadScheduler(),
       compositor_deps_->GetTaskGraphRunner(),
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
                                 screen_info.rect.size(),
                                 screen_info.device_scale_factor),
       compositor_deps_->CreateUkmRecorderFactory());
   DCHECK(layer_tree_host_);
-  blink::scheduler::WebThreadScheduler* main_thread_scheduler =
-      compositor_deps_->GetWebMainThreadScheduler();
-
-  widget_scheduler_ = main_thread_scheduler->CreateWidgetScheduler();
-
-  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
-      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_input_task_runner;
-  // Use the compositor thread task runner unless this is a popup or other such
-  // non-frame widgets. The |compositor_thread_scheduler| can be null in tests
-  // without a compositor thread.
-  if (for_frame() && compositor_thread_scheduler) {
-    compositor_input_task_runner =
-        compositor_thread_scheduler->DefaultTaskRunner();
-  }
-
-  input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
-      this, widget_scheduler_->InputTaskRunner(), main_thread_scheduler,
-      /*allow_raf_aligned_input=*/!never_composited_);
-
-  // We only use an external input handler for frame RenderWidgets because only
-  // frames use the compositor for input handling. Other kinds of RenderWidgets
-  // (e.g.  popups, plugins) must forward their input directly through
-  // RenderWidgetInputHandler into Blink.
-  bool uses_input_handler = for_frame();
-  widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
-      weak_ptr_factory_.GetWeakPtr(), std::move(compositor_input_task_runner),
-      main_thread_scheduler, uses_input_handler);
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(blink::switches::kAllowPreCommitInput))
-    widget_input_handler_manager_->AllowPreCommitInput();
 }
 
 // static
@@ -1632,19 +1418,7 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
     RenderThread::Get()->RemoveRoute(routing_id_);
   }
 
-  // The |input_event_queue_| is refcounted and will live while an event is
-  // being handled. This drops the connection back to this RenderWidget which
-  // is being destroyed.
-  input_event_queue_->ClearClient();
-
-  // The |widget_input_handler_manager_| needs to outlive the LayerTreeHost,
-  // which is destroyed asynchronously by Close(). We pass ownership of it to
-  // Close() for it to destroy the LayerTreeHost and
-  // |widget_input_handler_manager_| together on the cleanup TaskRunner.
-  webwidget_->Close(
-      compositor_deps_->GetCleanupTaskRunner(),
-      base::BindOnce([](scoped_refptr<WidgetInputHandlerManager> manager) {},
-                     std::move(widget_input_handler_manager_)));
+  webwidget_->Close(compositor_deps_->GetCleanupTaskRunner());
   webwidget_ = nullptr;
 
   // |layer_tree_host_| is valid only when |webwidget_| is valid. Close may
@@ -1823,101 +1597,39 @@ void RenderWidget::OnShowContextMenu(ui::MenuSourceType source_type,
   has_host_context_menu_location_ = false;
 }
 
-void RenderWidget::OnImeSetComposition(
-    const base::string16& text,
+void RenderWidget::ImeSetCompositionForPepper(
+    const blink::WebString& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
-  if (!ShouldHandleImeEvents())
-    return;
-
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
-    plugin->render_frame()->OnImeSetComposition(text, ime_text_spans,
-                                                selection_start, selection_end);
-    return;
-  }
+  auto* plugin = GetFocusedPepperPluginInsideWidget();
+  DCHECK(plugin);
+  plugin->render_frame()->OnImeSetComposition(text.Utf16(), ime_text_spans,
+                                              selection_start, selection_end);
 #endif
-  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
-  blink::WebInputMethodController* controller = GetInputMethodController();
-  if (!controller ||
-      !controller->SetComposition(
-          WebString::FromUTF16(text),
-          WebVector<ui::ImeTextSpan>(ime_text_spans),
-          replacement_range.IsValid()
-              ? WebRange(replacement_range.start(), replacement_range.length())
-              : WebRange(),
-          selection_start, selection_end)) {
-    // If we failed to set the composition text, then we need to let the browser
-    // process to cancel the input method's ongoing composition session, to make
-    // sure we are in a consistent state.
-    if (blink::mojom::WidgetInputHandlerHost* host =
-            widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-      host->ImeCancelComposition();
-    }
-  }
-  UpdateCompositionInfo();
 }
 
-void RenderWidget::OnImeCommitText(
-    const base::string16& text,
+void RenderWidget::ImeCommitTextForPepper(
+    const blink::WebString& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  if (!ShouldHandleImeEvents())
-    return;
-
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
-    plugin->render_frame()->OnImeCommitText(text, replacement_range,
-                                            relative_cursor_pos);
-    return;
-  }
+  auto* plugin = GetFocusedPepperPluginInsideWidget();
+  DCHECK(plugin);
+  plugin->render_frame()->OnImeCommitText(text.Utf16(), replacement_range,
+                                          relative_cursor_pos);
 #endif
-  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
-  GetWebWidget()->SetHandlingInputEvent(true);
-  if (auto* controller = GetInputMethodController()) {
-    controller->CommitText(
-        WebString::FromUTF16(text), WebVector<ui::ImeTextSpan>(ime_text_spans),
-        replacement_range.IsValid()
-            ? WebRange(replacement_range.start(), replacement_range.length())
-            : WebRange(),
-        relative_cursor_pos);
-  }
-  GetWebWidget()->SetHandlingInputEvent(false);
-  UpdateCompositionInfo();
 }
 
-void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
-  if (!ShouldHandleImeEvents())
-    return;
-
+void RenderWidget::ImeFinishComposingTextForPepper(bool keep_selection) {
 #if BUILDFLAG(ENABLE_PLUGINS)
-  if (auto* plugin = GetFocusedPepperPluginInsideWidget()) {
-    plugin->render_frame()->OnImeFinishComposingText(keep_selection);
-    return;
-  }
+  auto* plugin = GetFocusedPepperPluginInsideWidget();
+  DCHECK(plugin);
+  plugin->render_frame()->OnImeFinishComposingText(keep_selection);
 #endif
-
-  ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
-  GetWebWidget()->SetHandlingInputEvent(true);
-  if (auto* controller = GetInputMethodController()) {
-    controller->FinishComposingText(
-        keep_selection ? WebInputMethodController::kKeepSelection
-                       : WebInputMethodController::kDoNotKeepSelection);
-  }
-  GetWebWidget()->SetHandlingInputEvent(false);
-  UpdateCompositionInfo();
-}
-
-void RenderWidget::OnRequestTextInputStateUpdate() {
-  GetWebWidget()->ForceTextInputStateUpdate();
-}
-
-void RenderWidget::OnRequestCompositionUpdates(bool immediate_request,
-                                               bool monitor_updates) {
-  GetWebWidget()->RequestCompositionUpdates(immediate_request, monitor_updates);
 }
 
 void RenderWidget::UpdateSurfaceAndScreenInfo(
@@ -2124,40 +1836,14 @@ void RenderWidget::SetHidden(bool hidden) {
   // If the renderer was hidden, resolve any pending synthetic gestures so they
   // aren't blocked waiting for a compositor frame to be generated.
   if (is_hidden_)
-    widget_input_handler_manager_->InvokeInputProcessedCallback();
+    webwidget_->FlushInputProcessedCallback();
 
   if (!never_composited_)
     webwidget_->SetCompositorVisible(!is_hidden_);
 }
 
-void RenderWidget::OnImeEventGuardStart(ImeEventGuard* guard) {
-  if (!ime_event_guard_)
-    ime_event_guard_ = guard;
-}
-
-void RenderWidget::OnImeEventGuardFinish(ImeEventGuard* guard) {
-  if (ime_event_guard_ != guard)
-    return;
-  ime_event_guard_ = nullptr;
-
-  // While handling an ime event, text input state and selection bounds updates
-  // are ignored. These must explicitly be updated once finished handling the
-  // ime event.
-  UpdateSelectionBounds();
-#if defined(OS_ANDROID)
-  if (guard->show_virtual_keyboard())
-    GetWebWidget()->ShowVirtualKeyboard();
-  else
-    UpdateTextInputState();
-#endif
-}
-
 void RenderWidget::UpdateSelectionBounds() {
   GetWebWidget()->UpdateSelectionBounds();
-}
-
-void RenderWidget::UpdateCompositionInfo() {
-  GetWebWidget()->UpdateCompositionInfo();
 }
 
 void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
@@ -2675,18 +2361,6 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
   return actual;
 }
 
-void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
-  input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
-}
-
-void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
-  input_event_queue_->SetNeedsLowLatency(needs_low_latency);
-}
-
-void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
-  input_event_queue_->SetNeedsUnbufferedInputForDebugger(unbuffered);
-}
-
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
                                               bool is_pinch_gesture_active,
                                               float minimum,
@@ -2725,14 +2399,6 @@ void RenderWidget::RequestDecode(const cc::PaintImage& image,
 
 viz::FrameSinkId RenderWidget::GetFrameSinkId() {
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(), routing_id());
-}
-
-void RenderWidget::RequestUnbufferedInputEvents() {
-  input_event_queue_->RequestUnbufferedInputEvents();
-}
-
-void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
-  widget_input_handler_manager_->ProcessTouchAction(touch_action);
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
@@ -2829,13 +2495,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
 }
 
 void RenderWidget::DidNavigate(ukm::SourceId source_id, const GURL& url) {
-  // The input handler wants to know about navigation so that it can
-  // suppress input until the newly navigated page has a committed frame.
-  // It also resets the state for UMA reporting of input arrival with respect
-  // to document lifecycle.
-  DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->DidNavigate();
-
   // Update the URL and the document source id used to key UKM metrics in the
   // compositor. Note that the metrics for all frames are keyed to the main
   // frame's URL.
@@ -2848,17 +2507,6 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
     return frame_widget->GetActiveWebInputMethodController();
 
   return nullptr;
-}
-
-blink::mojom::WidgetInputHandlerHost* RenderWidget::GetInputHandlerHost() {
-  return widget_input_handler_manager_->GetWidgetInputHandlerHost();
-}
-
-void RenderWidget::SetMouseCapture(bool capture) {
-  if (blink::mojom::WidgetInputHandlerHost* host =
-          widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-    host->SetMouseCapture(capture);
-  }
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {

@@ -42,11 +42,11 @@ SecurityKeyMessageReaderImpl::~SecurityKeyMessageReaderImpl() {
 
 void SecurityKeyMessageReaderImpl::Start(
     const SecurityKeyMessageCallback& message_callback,
-    const base::Closure& error_callback) {
+    base::OnceClosure error_callback) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
   message_callback_ = message_callback;
-  error_callback_ = error_callback;
+  error_callback_ = std::move(error_callback);
 
   // base::Unretained is safe since this class owns the thread running this task
   // which will be destroyed before this instance is.
@@ -139,7 +139,7 @@ void SecurityKeyMessageReaderImpl::InvokeMessageCallback(
 
 void SecurityKeyMessageReaderImpl::InvokeErrorCallback() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  error_callback_.Run();
+  std::move(error_callback_).Run();
 }
 
 }  // namespace remoting

@@ -101,7 +101,6 @@
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/impression_conversions.h"
 #include "content/renderer/input/input_target_client_impl.h"
-#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/navigation_body_loader.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -2017,15 +2016,7 @@ void RenderFrameImpl::PepperCancelComposition(
     PepperPluginInstanceImpl* instance) {
   if (instance != focused_pepper_plugin_)
     return;
-  if (blink::mojom::WidgetInputHandlerHost* host =
-          GetLocalRootRenderWidget()
-              ->widget_input_handler_manager()
-              ->GetWidgetInputHandlerHost()) {
-    host->ImeCancelComposition();
-  }
-#if defined(OS_MACOSX) || defined(USE_AURA)
-  GetLocalRootRenderWidget()->UpdateCompositionInfo();
-#endif
+  GetLocalRootRenderWidget()->GetWebWidget()->CancelCompositionForPepper();
 }
 
 void RenderFrameImpl::PepperSelectionChanged(
@@ -2096,17 +2087,21 @@ void RenderFrameImpl::SimulateImeSetComposition(
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
-  GetMainFrameRenderWidget()->OnImeSetComposition(
-      text, ime_text_spans, gfx::Range::InvalidRange(), selection_start,
-      selection_end);
+  if (!GetMainFrameRenderWidget()->ShouldDispatchImeEventsToPepper())
+    return;
+  GetMainFrameRenderWidget()->ImeSetCompositionForPepper(
+      WebString::FromUTF16(text), ime_text_spans, gfx::Range::InvalidRange(),
+      selection_start, selection_end);
 }
 
 void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range) {
-  GetMainFrameRenderWidget()->OnImeCommitText(text, ime_text_spans,
-                                              replacement_range, 0);
+  if (!GetMainFrameRenderWidget()->ShouldDispatchImeEventsToPepper())
+    return;
+  GetMainFrameRenderWidget()->ImeCommitTextForPepper(
+      WebString::FromUTF16(text), ime_text_spans, replacement_range, 0);
 }
 
 void RenderFrameImpl::OnImeSetComposition(
@@ -2448,27 +2443,6 @@ void RenderFrameImpl::OnCustomContextMenuAction(
     render_view_->GetWebView()->PerformCustomContextMenuAction(action);
   }
 }
-
-#if defined(OS_MACOSX)
-void RenderFrameImpl::OnCopyToFindPboard() {
-  // Since the find pasteboard supports only plain text, this can be simpler
-  // than the |OnCopy()| case.
-  if (frame_->HasSelection()) {
-    if (!clipboard_host_) {
-      GetBrowserInterfaceBroker()->GetInterface(
-          clipboard_host_.BindNewPipeAndPassReceiver());
-      clipboard_host_.set_disconnect_handler(base::BindOnce(
-          &RenderFrameImpl::OnClipboardHostError, base::Unretained(this)));
-    }
-    base::string16 selection = frame_->SelectionAsText().Utf16();
-    clipboard_host_->WriteStringToFindPboard(selection);
-  }
-}
-
-void RenderFrameImpl::OnClipboardHostError() {
-  clipboard_host_.reset();
-}
-#endif
 
 void RenderFrameImpl::JavaScriptExecuteRequest(
     const base::string16& javascript,
@@ -2940,7 +2914,7 @@ PreviewsState RenderFrameImpl::GetPreviewsState() {
 }
 
 bool RenderFrameImpl::IsPasting() {
-  return GetLocalRootRenderWidget()->is_pasting();
+  return GetLocalRootRenderWidget()->GetFrameWidget()->IsPasting();
 }
 
 // blink::mojom::FullscreenVideoElementHandler implementation ------------------
@@ -4031,10 +4005,6 @@ void RenderFrameImpl::DidMatchCSS(
     observer.DidMatchCSS(newly_matching_selectors, stopped_matching_selectors);
 }
 
-void RenderFrameImpl::SetMouseCapture(bool capture) {
-  GetLocalRootRenderWidget()->SetMouseCapture(capture);
-}
-
 bool RenderFrameImpl::ShouldReportDetailedMessageForSource(
     const blink::WebString& source) {
   return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
@@ -4430,7 +4400,7 @@ void RenderFrameImpl::AbortClientNavigation() {
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   if (!GetLocalRootRenderWidget()->GetWebWidget()->HandlingInputEvent() &&
-      !GetLocalRootRenderWidget()->handling_select_range())
+      !GetLocalRootRenderWidget()->GetFrameWidget()->HandlingSelectRange())
     return;
 
   if (is_empty_selection)

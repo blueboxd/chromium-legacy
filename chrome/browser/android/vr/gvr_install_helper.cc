@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/android/vr/android_vr_utils.h"
+#include "chrome/browser/android/vr/vrcore_install_helper.h"
 
 using base::android::AttachCurrentThread;
 
@@ -48,28 +49,37 @@ void GvrInstallHelper::EnsureInstalled(
   // If the module is already installed, then skip to the next step, asserting
   // that install succeeded.
   if (module_delegate_->ModuleInstalled()) {
-    OnModuleInstalled(true);
+    OnModuleInstalled(render_process_id, render_frame_id, true);
     return;
   }
 
   // Prompt for module installation.
   module_delegate_->InstallModule(base::BindOnce(
-      &GvrInstallHelper::OnModuleInstalled, weak_ptr_.GetWeakPtr()));
+      &GvrInstallHelper::OnModuleInstalled, weak_ptr_.GetWeakPtr(),
+      render_process_id, render_frame_id));
 }
 
-void GvrInstallHelper::OnModuleInstalled(bool success) {
+void GvrInstallHelper::OnModuleInstalled(int render_process_id,
+                                         int render_frame_id,
+                                         bool success) {
   if (!success) {
     // If we failed to install the DFM, then abort the flow.
     RunInstallFinishedCallback(false);
     return;
   }
 
-  // TODO(crbug.com/1037935): Currently when spinning up VrShellDelegate will
-  // detect that VrCore is not installed and prompt for it to be installed.
-  // However, since we don't know about it here, this causes the session to get
-  // rejected when the prompt comes up. It would be better if we could do this
-  // installation here.
-  RunInstallFinishedCallback(success);
+  // We can't create the VrCore installer when we're created, since the VrCore
+  // installer relies on code that's in the DFM. However, we also don't need to
+  // recreate it if we already have it. Now that we know we have the DFM
+  // installed, create it if we don't already have it.
+  if (!vrcore_installer_)
+    vrcore_installer_ =
+        std::make_unique<VrCoreInstallHelper>(*module_delegate_);
+
+  vrcore_installer_->EnsureInstalled(
+      render_process_id, render_frame_id,
+      base::BindOnce(&GvrInstallHelper::RunInstallFinishedCallback,
+                     weak_ptr_.GetWeakPtr()));
 }
 
 void GvrInstallHelper::RunInstallFinishedCallback(bool success) {

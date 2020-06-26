@@ -6,21 +6,32 @@
 
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
-NavigationInitiatorImpl::NavigationInitiatorImpl(Document& document)
-    : navigation_initiator_receivers_(this, document.GetExecutionContext()),
-      document_(document) {
-  DCHECK(document.GetExecutionContext());
+const char NavigationInitiatorImpl::kSupplementName[] =
+    "NavigationInitiatorImpl";
+
+NavigationInitiatorImpl& NavigationInitiatorImpl::From(LocalDOMWindow& window) {
+  NavigationInitiatorImpl* initiator =
+      Supplement<LocalDOMWindow>::From<NavigationInitiatorImpl>(window);
+  if (!initiator) {
+    initiator = MakeGarbageCollected<NavigationInitiatorImpl>(window);
+    Supplement<LocalDOMWindow>::ProvideTo(window, initiator);
+  }
+  return *initiator;
 }
 
+NavigationInitiatorImpl::NavigationInitiatorImpl(LocalDOMWindow& window)
+    : Supplement<LocalDOMWindow>(window),
+      navigation_initiator_receivers_(this, &window) {}
+
 void NavigationInitiatorImpl::Trace(Visitor* visitor) const {
-  visitor->Trace(document_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(navigation_initiator_receivers_);
 }
 
@@ -30,11 +41,11 @@ void NavigationInitiatorImpl::SendViolationReport(
       violation->source_location->url, violation->source_location->line,
       violation->source_location->column, nullptr);
 
-  document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+  GetSupplementable()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError, violation->console_message));
 
-  document_->GetContentSecurityPolicy()->ReportViolation(
+  GetSupplementable()->GetContentSecurityPolicy()->ReportViolation(
       violation->directive,
       ContentSecurityPolicy::GetDirectiveType(violation->effective_directive),
       violation->console_message, KURL(violation->blocked_url),
@@ -50,7 +61,8 @@ void NavigationInitiatorImpl::SendViolationReport(
 void NavigationInitiatorImpl::BindReceiver(
     mojo::PendingReceiver<mojom::blink::NavigationInitiator> receiver) {
   navigation_initiator_receivers_.Add(
-      std::move(receiver), document_->GetTaskRunner(TaskType::kNetworking));
+      std::move(receiver),
+      GetSupplementable()->GetTaskRunner(TaskType::kNetworking));
 }
 
 }  // namespace blink

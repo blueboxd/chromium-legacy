@@ -113,13 +113,12 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
 };
 
 // Models status of an app.
-// TODO(xiaohuic): update to constant style naming.
 enum class AppStatus {
-  UNKNOWN,
-  AVAILABLE,
-  UNAVAILABLE,
-  VERSION_MISMATCH,
-  DISABLED
+  kUnknown,
+  kAvailable,
+  kUnavailable,
+  kVersionMismatch,
+  kDisabled,
 };
 
 // Models an Android app.
@@ -144,7 +143,7 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AndroidAppInfo {
   std::string intent;
 
   // Status of the app.
-  AppStatus status{AppStatus::UNKNOWN};
+  AppStatus status{AppStatus::kUnknown};
 
   // The general action to be performed, such as ACTION_VIEW, ACTION_MAIN, etc.
   std::string action;

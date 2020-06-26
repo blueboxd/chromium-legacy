@@ -40,6 +40,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -291,13 +292,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
-  ui::OzonePlatform::InitParams params;
-  params.single_process = false;
-  ui::OzonePlatform::InitializeForGPU(params);
-  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->GetSupportedFormatsForTexturing();
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = false;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
   if (!gl_use_swiftshader_) {
@@ -558,12 +557,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   init_successful_ = true;
 #if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-#endif
-
-#if defined(USE_OZONE)
-  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-      std::move(supported_buffer_formats_for_texturing);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+    const std::vector<gfx::BufferFormat>
+        supported_buffer_formats_for_texturing =
+            ui::OzonePlatform::GetInstance()
+                ->GetSurfaceFactoryOzone()
+                ->GetSupportedFormatsForTexturing();
+    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+        std::move(supported_buffer_formats_for_texturing);
+  }
 #endif
 
   if (!watchdog_thread_)
@@ -595,13 +598,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   gpu_preferences_ = gpu_preferences;
   init_successful_ = true;
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
-  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->GetSupportedFormatsForTexturing();
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
   bool needs_more_info = true;
 #if !BUILDFLAG(IS_CHROMECAST)
@@ -694,8 +695,15 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 
 #if defined(USE_OZONE)
-  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-      std::move(supported_buffer_formats_for_texturing);
+  if (features::IsUsingOzonePlatform()) {
+    const std::vector<gfx::BufferFormat>
+        supported_buffer_formats_for_texturing =
+            ui::OzonePlatform::GetInstance()
+                ->GetSurfaceFactoryOzone()
+                ->GetSupportedFormatsForTexturing();
+    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+        std::move(supported_buffer_formats_for_texturing);
+  }
 #endif
 
   DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);

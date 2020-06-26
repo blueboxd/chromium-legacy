@@ -23,8 +23,8 @@
 #error VS 2017 Update 3.2 or higher is required
 #endif
 
-#if !defined(NTDDI_WIN10_19H1)
-#error Windows 10.0.18362.0 SDK or higher required.
+#if !defined(NTDDI_WIN10_VB)
+#error Windows 10.0.19041.0 SDK or higher required.
 #endif
 
 namespace base {

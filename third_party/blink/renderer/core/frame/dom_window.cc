@@ -432,18 +432,10 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  Document* source_document = source->document();
-
-  // Capture the source of the message.  We need to do this synchronously
-  // in order to capture the source of the message correctly.
-  if (!source_document)
-    return;
-
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
   scoped_refptr<const SecurityOrigin> target =
-      PostMessageHelper::GetTargetOrigin(options, *source_document,
-                                         exception_state);
+      PostMessageHelper::GetTargetOrigin(options, *source, exception_state);
   if (exception_state.HadException())
     return;
 
@@ -452,40 +444,31 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (exception_state.HadException())
     return;
 
-  const SecurityOrigin* security_origin = source_document->GetSecurityOrigin();
-
-  String source_origin = security_origin->ToString();
-
+  const SecurityOrigin* target_security_origin =
+      GetFrame()->GetSecurityContext()->GetSecurityOrigin();
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
   KURL target_url = local_dom_window
-                        ? local_dom_window->document()->Url()
-                        : KURL(NullURL(), GetFrame()
-                                              ->GetSecurityContext()
-                                              ->GetSecurityOrigin()
-                                              ->ToString());
-  if (MixedContentChecker::IsMixedContent(source_document->GetSecurityOrigin(),
+                        ? local_dom_window->Url()
+                        : KURL(NullURL(), target_security_origin->ToString());
+  if (MixedContentChecker::IsMixedContent(source->GetSecurityOrigin(),
                                           target_url)) {
-    UseCounter::Count(source_document,
-                      WebFeature::kPostMessageFromSecureToInsecure);
-  } else if (MixedContentChecker::IsMixedContent(
-                 GetFrame()->GetSecurityContext()->GetSecurityOrigin(),
-                 source_document->Url())) {
-    UseCounter::Count(source_document,
-                      WebFeature::kPostMessageFromInsecureToSecure);
+    UseCounter::Count(source, WebFeature::kPostMessageFromSecureToInsecure);
+  } else if (MixedContentChecker::IsMixedContent(target_security_origin,
+                                                 source->Url())) {
+    UseCounter::Count(source, WebFeature::kPostMessageFromInsecureToSecure);
     if (MixedContentChecker::IsMixedContent(
             GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin(),
-            source_document->Url())) {
-      UseCounter::Count(source_document,
+            source->Url())) {
+      UseCounter::Count(source,
                         WebFeature::kPostMessageFromInsecureToSecureToplevel);
     }
   }
 
-  if (!source_document->GetContentSecurityPolicy()->AllowConnectToSource(
+  if (!source->GetContentSecurityPolicy()->AllowConnectToSource(
           target_url, target_url, RedirectStatus::kNoRedirect,
           ReportingDisposition::kSuppressReporting)) {
     UseCounter::Count(
-        source_document,
-        WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
+        source, WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
   UserActivation* user_activation = nullptr;
   if (options->includeUserActivation())
@@ -504,7 +487,8 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   }
 
   MessageEvent* event = MessageEvent::Create(
-      std::move(channels), std::move(message), source_origin, String(), source,
+      std::move(channels), std::move(message),
+      source->GetSecurityOrigin()->ToString(), String(), source,
       user_activation, options->transferUserActivation(), allow_autoplay);
 
   // Transfer user activation state in the source's renderer when

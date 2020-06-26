@@ -932,7 +932,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL isManagedDevice = [[NSUserDefaults standardUserDefaults]
                              dictionaryForKey:managedKey] != nil;
 
-  base::UmaHistogramBoolean("EnterpriseCheck.IsManaged", isManagedDevice);
+  base::UmaHistogramBoolean("EnterpriseCheck.IsManaged2", isManagedDevice);
 }
 
 - (void)startFreeMemoryMonitoring {

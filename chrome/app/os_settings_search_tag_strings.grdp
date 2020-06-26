@@ -202,9 +202,9 @@
     Smart Lock
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Android messages'">
-    Messages settings
+    Messages
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Messages settings'">
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Messages'">
     Android messages
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone).">
@@ -217,7 +217,7 @@
     Disconnect connected phone
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SET_UP" desc="Text for search result item which, when clicked, navigates the user to connected devices settings, with a button to set up the feature.">
-    Connected devices setup
+    Set up connected devices
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_NEARBY_SHARE" desc="Text for search result item which, when clicked, navigates the user to connected multi-device settings Nearby Share.">
     Nearby Share

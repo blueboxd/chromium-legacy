@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
@@ -100,6 +102,8 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
       std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+
+  last_modified_expansion_ = base::TimeTicks::Now();
 }
 
 TabGroupHeader::~TabGroupHeader() = default;
@@ -111,8 +115,11 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
     if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
       // The collapse feature changes the behavior from showing the
       // editor bubble to toggling the collapsed state of the group.
-      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value(),
-                                                             true);
+      bool successful_toggle =
+          tab_strip_->controller()->ToggleTabGroupCollapsedState(
+              group().value(), true);
+      if (successful_toggle)
+        LogCollapseTime();
     } else {
       editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
           tab_strip_->controller()->GetBrowser(), group().value(), this));
@@ -166,9 +173,14 @@ void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
   if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
     // The collapse feature changes the left click behavior from showing the
     // editor bubble to toggling the collapsed state of the group.
-    if (event.IsLeftMouseButton() && !dragging())
-      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value(),
-                                                             true);
+    if (event.IsLeftMouseButton() && !dragging()) {
+      bool successful_toggle =
+          tab_strip_->controller()->ToggleTabGroupCollapsedState(
+              group().value(), true);
+      if (successful_toggle)
+        LogCollapseTime();
+    }
+
   } else if (!dragging() && !editor_bubble_tracker_.is_open()) {
     // (TODO): Delete this else statement once collapse launches since
     // ShowContextMenuForViewImpl() will handle spawning the bubble on right
@@ -330,6 +342,18 @@ int TabGroupHeader::CalculateWidth() const {
   const int right_adjust = title.empty() ? 2 : -2;
 
   return overlap_margin + title_chip_->width() + right_adjust;
+}
+
+void TabGroupHeader::LogCollapseTime() {
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  if (tab_strip_->controller()->IsGroupCollapsed(group().value())) {
+    UMA_HISTOGRAM_LONG_TIMES_100("TabGroups.TimeSpentExpanded",
+                                 current_time - last_modified_expansion_);
+  } else {
+    UMA_HISTOGRAM_LONG_TIMES_100("TabGroups.TimeSpentCollapsed",
+                                 current_time - last_modified_expansion_);
+  }
+  last_modified_expansion_ = current_time;
 }
 
 void TabGroupHeader::VisualsChanged() {

@@ -132,6 +132,12 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
  protected:
   void SetUp() override { ASSERT_TRUE(location_.CreateUniqueTempDir()); }
 
+  void TearDown() override {
+    if (storage_queue_) {
+      ShutDownStorageQueue();
+    }
+  }
+
   void CreateStorageQueueOrDie(const StorageQueue::Options& options) {
     ASSERT_FALSE(storage_queue_) << "StorageQueue already assigned";
     TestEvent<StatusOr<scoped_refptr<StorageQueue>>> e;
@@ -144,6 +150,19 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
     ASSERT_OK(storage_queue_result) << "Failed to create StorageQueue, error="
                                     << storage_queue_result.status();
     storage_queue_ = std::move(storage_queue_result.ValueOrDie());
+  }
+
+  void ShutDownStorageQueue() {
+    base::WaitableEvent completed(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    StorageQueue::ShutDown(
+        &storage_queue_,
+        base::BindOnce(
+            [](base::WaitableEvent* completed) { completed->Signal(); },
+            base::Unretained(&completed)));
+    completed.Wait();
+    ASSERT_EQ(storage_queue_.get(), nullptr);
   }
 
   StorageQueue::Options BuildStorageQueueOptionsImmediate() const {
@@ -205,7 +224,8 @@ TEST_P(StorageQueueTest, WriteIntoNewStorageQueueAndReopen) {
   WriteStringOrDie(blobs[1]);
   WriteStringOrDie(blobs[2]);
 
-  storage_queue_.reset();
+  ShutDownStorageQueue();
+  ASSERT_EQ(storage_queue_.get(), nullptr);
 
   CreateStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
 }

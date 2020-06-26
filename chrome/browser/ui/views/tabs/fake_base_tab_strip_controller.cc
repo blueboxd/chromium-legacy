@@ -52,12 +52,13 @@ void FakeBaseTabStripController::MoveTab(int from_index, int to_index) {
 void FakeBaseTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
                                            int to_index) {}
 
-void FakeBaseTabStripController::ToggleTabGroupCollapsedState(
+bool FakeBaseTabStripController::ToggleTabGroupCollapsedState(
     const tab_groups::TabGroupId group,
     bool record_user_action) {
   fake_group_data_ = tab_groups::TabGroupVisualData(
       fake_group_data_.title(), fake_group_data_.color(),
       !fake_group_data_.is_collapsed());
+  return true;
 }
 
 void FakeBaseTabStripController::RemoveTab(int index) {

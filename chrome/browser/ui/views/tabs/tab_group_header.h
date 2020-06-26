@@ -65,6 +65,10 @@ class TabGroupHeader : public TabSlotView,
   // Calculate the width for this View.
   int CalculateWidth() const;
 
+  // Helper method used to log the time since the group was last expanded or
+  // collapsed.
+  void LogCollapseTime();
+
   TabStrip* const tab_strip_;
 
   views::View* title_chip_;
@@ -72,6 +76,9 @@ class TabGroupHeader : public TabSlotView,
 
   // Focus ring for accessibility.
   views::FocusRing* focus_ring_ = nullptr;
+
+  // Time used for logging the last time the group was collapsed or expanded.
+  base::TimeTicks last_modified_expansion_;
 
   // Tracks whether our editor bubble is open. At most one can be open
   // at once.

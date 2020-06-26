@@ -347,7 +347,7 @@ void BrowserTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
   model_->MoveGroupTo(group, final_index);
 }
 
-void BrowserTabStripController::ToggleTabGroupCollapsedState(
+bool BrowserTabStripController::ToggleTabGroupCollapsedState(
     const tab_groups::TabGroupId group,
     bool record_user_action) {
   const bool is_currently_collapsed = IsGroupCollapsed(group);
@@ -366,7 +366,7 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
           model_->GetNextExpandedActiveTab(GetActiveIndex(), group);
       if (!next_active.has_value()) {
         base::RecordAction(base::UserMetricsAction("TabGroups_CannotCollapse"));
-        return;
+        return false;
       }
       model_->ActivateTabAt(next_active.value(),
                             {TabStripModel::GestureType::kOther});
@@ -390,6 +390,7 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
   tab_groups::TabGroupVisualData new_data(
       GetGroupTitle(group), GetGroupColorId(group), !is_currently_collapsed);
   model_->group_model()->GetTabGroup(group)->SetVisualData(new_data, true);
+  return true;
 }
 
 void BrowserTabStripController::ShowContextMenuForTab(

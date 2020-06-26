@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -32,8 +33,22 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-const std::vector<SearchConcept>& GetMultiDeviceSearchConcepts() {
+const std::vector<SearchConcept>& GetMultiDeviceOptedInSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS,
+       mojom::kSmartLockSubpagePath,
+       mojom::SearchResultIcon::kLock,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSmartLock}},
+      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET,
+       mojom::kMultiDeviceFeaturesSubpagePath,
+       mojom::SearchResultIcon::kPhone,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kForgetPhone},
+       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET_ALT1,
+        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES,
        mojom::kMultiDeviceFeaturesSubpagePath,
        mojom::SearchResultIcon::kMessages,
@@ -55,40 +70,35 @@ const std::vector<SearchConcept>& GetMultiDeviceSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kSmartLock}},
-
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetMultiDeviceOptedInSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS,
-       mojom::kSmartLockSubpagePath,
-       mojom::SearchResultIcon::kLock,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSmartLock}},
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET,
-       mojom::kMultiDeviceFeaturesSubpagePath,
-       mojom::SearchResultIcon::kPhone,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kForgetPhone},
-       {IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET_ALT1,
-        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetMultiDeviceOptedOutSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SET_UP,
-       mojom::kMultiDeviceSectionPath,
-       mojom::SearchResultIcon::kPhone,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSetUpMultiDevice}},
-  });
+  static const base::NoDestructor<std::vector<SearchConcept>> tags([] {
+    // Special-case: The "set up" search tag also includes the names of the
+    // multi-device features as a way to increase discoverability of these
+    // features.
+    SearchConcept set_up_concept{
+        IDS_OS_SETTINGS_TAG_MULTIDEVICE_SET_UP,
+        mojom::kMultiDeviceSectionPath,
+        mojom::SearchResultIcon::kPhone,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::SearchResultType::kSetting,
+        {.setting = mojom::Setting::kSetUpMultiDevice},
+        {IDS_OS_SETTINGS_TAG_MULTIDEVICE,
+         IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES,
+         IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK, SearchConcept::kAltTagEnd},
+    };
+
+    // If Instant Tethering is available, also include that in the list.
+    if (base::FeatureList::IsEnabled(features::kInstantTethering)) {
+      set_up_concept.alt_tag_ids[3] = IDS_OS_SETTINGS_TAG_INSTANT_TETHERING;
+      set_up_concept.alt_tag_ids[4] = SearchConcept::kAltTagEnd;
+    }
+
+    return std::vector<SearchConcept>{set_up_concept};
+  }());
   return *tags;
 }
 
@@ -155,7 +165,7 @@ MultiDeviceSection::MultiDeviceSection(
       multidevice_setup_client_(multidevice_setup_client),
       android_sms_service_(android_sms_service),
       pref_service_(pref_service) {
-  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+  if (base::FeatureList::IsEnabled(::features::kNearbySharing)) {
     pref_change_registrar_.Init(pref_service_);
     pref_change_registrar_.Add(
         ::prefs::kNearbySharingEnabledPrefName,
@@ -170,7 +180,6 @@ MultiDeviceSection::MultiDeviceSection(
     return;
 
   multidevice_setup_client_->AddObserver(this);
-  registry()->AddSearchTags(GetMultiDeviceSearchConcepts());
   OnHostStatusChanged(multidevice_setup_client_->GetHostStatus());
 }
 

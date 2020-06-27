@@ -6,12 +6,15 @@
 
 #include "chrome/browser/ui/views/passwords/password_bubble_view_test_base.h"
 
+namespace {
+using testing::Return;
+
 class PostSaveCompromisedBubbleViewTest : public PasswordBubbleViewTestBase {
  public:
   PostSaveCompromisedBubbleViewTest() = default;
   ~PostSaveCompromisedBubbleViewTest() override = default;
 
-  void CreateViewAndShow();
+  void CreateViewAndShow(password_manager::ui::State state);
 
   void TearDown() override;
 
@@ -19,9 +22,11 @@ class PostSaveCompromisedBubbleViewTest : public PasswordBubbleViewTestBase {
   PostSaveCompromisedBubbleView* view_;
 };
 
-void PostSaveCompromisedBubbleViewTest::CreateViewAndShow() {
+void PostSaveCompromisedBubbleViewTest::CreateViewAndShow(
+    password_manager::ui::State state) {
   CreateAnchorViewAndShow();
 
+  EXPECT_CALL(*model_delegate_mock(), GetState).WillOnce(Return(state));
   view_ = new PostSaveCompromisedBubbleView(web_contents(), anchor_view());
   views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
 }
@@ -33,8 +38,28 @@ void PostSaveCompromisedBubbleViewTest::TearDown() {
   PasswordBubbleViewTestBase::TearDown();
 }
 
-TEST_F(PostSaveCompromisedBubbleViewTest, HasTwoButtons) {
-  CreateViewAndShow();
-  EXPECT_TRUE(view_->GetOkButton());
-  EXPECT_TRUE(view_->GetCancelButton());
+TEST_F(PostSaveCompromisedBubbleViewTest, SafeState) {
+  CreateViewAndShow(password_manager::ui::PASSWORD_UPDATED_SAFE_STATE);
+  EXPECT_FALSE(view_->GetOkButton());
+  EXPECT_FALSE(view_->GetCancelButton());
 }
+
+TEST_F(PostSaveCompromisedBubbleViewTest, MoreToFixState) {
+  CreateViewAndShow(password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX);
+  EXPECT_TRUE(view_->GetOkButton());
+  EXPECT_FALSE(view_->GetCancelButton());
+
+  EXPECT_CALL(*model_delegate_mock(), NavigateToPasswordCheckup);
+  view_->AcceptDialog();
+}
+
+TEST_F(PostSaveCompromisedBubbleViewTest, UnsafeState) {
+  CreateViewAndShow(password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE);
+  EXPECT_TRUE(view_->GetOkButton());
+  EXPECT_FALSE(view_->GetCancelButton());
+
+  EXPECT_CALL(*model_delegate_mock(), NavigateToPasswordCheckup);
+  view_->AcceptDialog();
+}
+
+}  // namespace

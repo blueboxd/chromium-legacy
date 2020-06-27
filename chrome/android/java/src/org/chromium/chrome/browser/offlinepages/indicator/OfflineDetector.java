@@ -60,18 +60,6 @@ class OfflineDetector
         mCallback = callback;
         mHandler = new Handler();
 
-        if (sMockConnectivityDetector != null) {
-            mConnectivityDetector = sMockConnectivityDetector;
-        } else {
-            mConnectivityDetector = new ConnectivityDetector(this);
-        }
-
-        // Register as an application state observer and initialize |mTimeWhenLastForegrounded|.
-        ApplicationStatus.registerApplicationStateListener(this);
-        if (mApplicationState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            mTimeWhenLastForegrounded = getElapsedTime();
-        }
-
         mUpdateOfflineStatusIndicatorDelayedRunnable = () -> {
             // |callback| is invoked only when the app is in foreground. If the app is in
             // background, return early. When the app comes to foreground,
@@ -88,6 +76,18 @@ class OfflineDetector
             mIsEffectivelyOffline = mIsOfflineLastReportedByConnectivityDetector;
             mCallback.onResult(mIsEffectivelyOffline);
         };
+
+        // Register as an application state observer and initialize |mTimeWhenLastForegrounded|.
+        ApplicationStatus.registerApplicationStateListener(this);
+        if (mApplicationState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            mTimeWhenLastForegrounded = getElapsedTime();
+        }
+
+        if (sMockConnectivityDetector != null) {
+            mConnectivityDetector = sMockConnectivityDetector;
+        } else {
+            mConnectivityDetector = new ConnectivityDetector(this);
+        }
     }
 
     @Override
@@ -173,6 +173,8 @@ class OfflineDetector
                 STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS - timeSinceLastForeground;
         final long timeNeededForOffline =
                 STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS - timeSinceOffline;
+
+        assert mUpdateOfflineStatusIndicatorDelayedRunnable != null;
 
         // If the connection is online, report the state immediately. Alternatively, if the app has
         // been in foreground and connection has been offline for sufficient time, then report the

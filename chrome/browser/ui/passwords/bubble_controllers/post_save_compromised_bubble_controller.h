@@ -14,14 +14,32 @@ class PasswordsModelDelegate;
 class PostSaveCompromisedBubbleController
     : public PasswordBubbleControllerBase {
  public:
+  enum class BubbleType {
+    // Last compromised password was updated. The user is presumed safe.
+    kPasswordUpdatedSafeState,
+    // A compromised password was updated and there are more issues to fix.
+    kPasswordUpdatedWithMoreToFix,
+    // There are stored compromised credentials.
+    kUnsafeState,
+  };
   explicit PostSaveCompromisedBubbleController(
       base::WeakPtr<PasswordsModelDelegate> delegate);
   ~PostSaveCompromisedBubbleController() override;
+
+  BubbleType type() const { return type_; }
+  base::string16 GetBody() const;
+  base::string16 GetButtonText() const;
+  int GetImageID(bool dark) const;
+
+  // The user chose to check passwords.
+  void OnAccepted();
 
  private:
   // PasswordBubbleControllerBase:
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
+
+  BubbleType type_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_POST_SAVE_COMPROMISED_BUBBLE_CONTROLLER_H_

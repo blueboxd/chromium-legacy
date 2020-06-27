@@ -1274,6 +1274,13 @@ void NGBoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
   while (*cursor) {
     const NGFragmentItem* item = cursor->CurrentItem();
     DCHECK(item);
+    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+      // TODO(crbug.com/1099613): This should not happen, as long as it is
+      // really layout-clean.
+      NOTREACHED();
+      cursor->MoveToNextSkippingChildren();
+      continue;
+    }
     switch (item->Type()) {
       case NGFragmentItem::kText:
       case NGFragmentItem::kGeneratedText:
@@ -2289,6 +2296,14 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
   for (NGInlineBackwardCursor cursor(children); cursor;) {
     const NGFragmentItem* item = cursor.Current().Item();
     DCHECK(item);
+    if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
+      // TODO(crbug.com/1099613): This should not happen, as long as it is
+      // really layout-clean.
+      NOTREACHED();
+      cursor.MoveToPreviousSibling();
+      continue;
+    }
+
     if (item->HasSelfPaintingLayer()) {
       cursor.MoveToPreviousSibling();
       continue;

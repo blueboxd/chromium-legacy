@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
@@ -327,13 +326,9 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetHeaderFieldsWithCookies(
 
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
-#if !(TARGET_OS_SIMULATOR)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    // TODO(crbug.com/1099879): This test is failing on iOS 12.4 device.
-    return;
-  }
-#endif
+// TODO(crbug.com/1065349): this test is flaky.
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
+       DISABLED_FetchWithEmptyCookieStore) {
   ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
@@ -378,13 +373,8 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithRedirect) {
-#if !(TARGET_OS_SIMULATOR)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    // TODO(crbug.com/1099879): This test is failing on iOS 12.4 device.
-    return;
-  }
-#endif
+// TODO(crbug.com/1065349): this test is flaky.
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, DISABLED_FetchWithRedirect) {
   ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]

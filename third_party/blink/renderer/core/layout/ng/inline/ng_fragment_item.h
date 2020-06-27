@@ -140,6 +140,7 @@ class CORE_EXPORT NGFragmentItem {
   LayoutObject* GetMutableLayoutObject() const {
     return const_cast<LayoutObject*>(layout_object_);
   }
+  bool IsLayoutObjectDestroyedOrMoved() const { return !layout_object_; }
   void LayoutObjectWillBeDestroyed() const;
   void LayoutObjectWillBeMoved() const;
   Node* GetNode() const { return layout_object_->GetNode(); }

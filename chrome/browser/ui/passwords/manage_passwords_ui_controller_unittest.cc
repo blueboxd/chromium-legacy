@@ -1515,6 +1515,9 @@ TEST_F(ManagePasswordsUIControllerTest, OpenSafeStateBubble) {
       .WillOnce(Return(saved));
   controller()->SavePassword(submitted_form().username_value,
                              submitted_form().password_value);
+  // The bubble gets hidden after the user clicks on save.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
   saved = {};
   EXPECT_CALL(*client().GetProfilePasswordStore(),
               GetAllCompromisedCredentialsImpl)
@@ -1548,6 +1551,9 @@ TEST_F(ManagePasswordsUIControllerTest, OpenMoreToFixBubble) {
       .WillOnce(Return(saved));
   controller()->SavePassword(submitted_form().username_value,
                              submitted_form().password_value);
+  // The bubble gets hidden after the user clicks on save.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
   // There are more compromised credentials to fix.
   saved[0].username = base::ASCIIToUTF16("another username");
   EXPECT_CALL(*client().GetProfilePasswordStore(),
@@ -1579,6 +1585,9 @@ TEST_F(ManagePasswordsUIControllerTest, OpenUnsafeStateBubble) {
       .WillOnce(Return(saved));
   controller()->SavePassword(submitted_form().username_value,
                              submitted_form().password_value);
+  // The bubble gets hidden after the user clicks on save.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
   // There are compromised credentials to fix.
   saved = {CreateCompromised(test_local_form())};
   EXPECT_CALL(*client().GetProfilePasswordStore(),
@@ -1590,6 +1599,36 @@ TEST_F(ManagePasswordsUIControllerTest, OpenUnsafeStateBubble) {
   EXPECT_TRUE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(
       password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, NoUnsafeStateBubbleIfPromoStillOpen) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      password_manager::features::kCompromisedPasswordsReengagement);
+
+  std::vector<const PasswordForm*> best_matches = {&test_local_form()};
+  auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
+  MockPasswordFormManagerForUI* test_form_manager_raw = test_form_manager.get();
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
+  EXPECT_CALL(*test_form_manager_raw, Save());
+  std::vector<CompromisedCredentials> saved;
+  // Pretend that the current credential was clean.
+  EXPECT_CALL(*test_form_manager_raw, GetCompromisedCredentials())
+      .WillOnce(Return(saved));
+  controller()->SavePassword(submitted_form().username_value,
+                             submitted_form().password_value);
+  // The sign-in promo bubble stays open, the warning isn't shown.
+  // There are compromised credentials to fix.
+  saved = {CreateCompromised(test_local_form())};
+  EXPECT_CALL(*client().GetProfilePasswordStore(),
+              GetAllCompromisedCredentialsImpl)
+      .Times(testing::AtMost(1))
+      .WillOnce(Return(saved));
+  WaitForPasswordStore();
+
+  ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, ReauthenticateBeforeMove) {

@@ -75,6 +75,9 @@ class PasswordsModelDelegate {
   virtual const password_manager::InteractionsStats*
   GetCurrentInteractionStats() const = 0;
 
+  // For PASSWORD_UPDATED_* return # compromised passwords in the store.
+  virtual size_t GetTotalNumberCompromisedPasswords() const = 0;
+
   // Users need to reauth to their account to opt-in using their password
   // account storage. This method returns whether account auth attempt during
   // the last password save process failed or not.
@@ -137,6 +140,8 @@ class PasswordsModelDelegate {
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage(
       password_manager::ManagePasswordsReferrer referrer) = 0;
+  // Open a new tab, pointing to the password check in the settings page.
+  virtual void NavigateToPasswordCheckup() = 0;
   // Called by the view when the "Sign in to Chrome" button or the "Sync to"
   // button in the promo bubble are clicked.
   virtual void EnableSync(const AccountInfo& account,

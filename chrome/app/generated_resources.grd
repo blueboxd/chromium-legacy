@@ -5918,6 +5918,33 @@ the Bookmarks menu.">
         </message>
       </if>
       <if expr="not is_android">
+        <message name="IDS_PASSWORD_MANAGER_UPDATED_BUBBLE_TITLE" desc="Title of the bubble notifying the user that the password was updated.">
+          Password updated
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_COMPROMISED_REMINDER_TITLE" desc="Title of the bubble reminding about number of compromised credentials. ">
+          {COUNT, plural,
+          =1 {You have 1 compromised password}
+          other {You have # compromised passwords}}
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MORE_TO_FIX_BODY_MESSAGE" desc="The content of the bubble notifying that there are no more problems with compromised credentials.">
+          {COUNT, plural,
+          =1 {Successfully changed the compromised password. You have # more compromised password. Chrome recommends checking this password now.}
+          other {Successfully changed the compromised password. You have # more compromised passwords. Chrome recommends checking these passwords now.}}
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_SAFE_STATE_BODY_MESSAGE" desc="The content of the bubble notifying that there are more problems to fix after the user changed a compromised password.">
+          Successfully changed the compromised password. Check your passwords anytime in Settings.
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_UNSAFE_STATE_BODY_MESSAGE" desc="The content of the bubble notifying that there are problems to fix after the user saved a password.">
+          {COUNT, plural,
+          =1 {Chrome recommends checking this password now}
+          other {Chrome recommends checking these passwords now}}
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CHECK_REMAINING_BUTTON" desc="Button text to check left compromised passwords.">
+          Check remaining passwords
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_CHECK_BUTTON" desc="Button text to check compromised passwords.">
+          Check passwords
+        </message>
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save
         </message>

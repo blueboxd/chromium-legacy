@@ -37,6 +37,7 @@ class PasswordsModelDelegateMock
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&());
   MOCK_CONST_METHOD0(GetCurrentInteractionStats,
                      password_manager::InteractionsStats*());
+  MOCK_CONST_METHOD0(GetTotalNumberCompromisedPasswords, size_t());
   MOCK_CONST_METHOD0(DidAuthForAccountStoreOptInFail, bool());
   MOCK_CONST_METHOD0(BubbleIsManualFallbackForSaving, bool());
   MOCK_METHOD0(OnBubbleShown, void());
@@ -59,6 +60,7 @@ class PasswordsModelDelegateMock
                void(password_manager::ManagePasswordsReferrer));
   MOCK_METHOD1(NavigateToPasswordManagerSettingsPage,
                void(password_manager::ManagePasswordsReferrer));
+  MOCK_METHOD0(NavigateToPasswordCheckup, void());
   MOCK_METHOD2(EnableSync,
                void(const AccountInfo& account, bool is_default_promo_account));
   MOCK_METHOD0(OnDialogHidden, void());

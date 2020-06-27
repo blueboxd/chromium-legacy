@@ -3249,7 +3249,7 @@
   {
     "name": "offline-indicator-v2",
     "owners": [ "sinansahin@google.com", "twellington", "offline-dev" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "offline-pages-alternate-dino-page",

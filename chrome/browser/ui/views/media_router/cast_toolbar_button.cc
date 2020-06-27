@@ -73,24 +73,6 @@ CastToolbarButton::~CastToolbarButton() {
     GetActionController()->RemoveObserver(this);
 }
 
-const gfx::VectorIcon& CastToolbarButton::GetCurrentIcon() const {
-  // Highest priority is to indicate whether there's an issue.
-  if (current_issue_) {
-    media_router::IssueInfo::Severity severity = current_issue_->severity;
-    switch (severity) {
-      case media_router::IssueInfo::Severity::FATAL:
-        return ::vector_icons::kMediaRouterErrorIcon;
-      case media_router::IssueInfo::Severity::WARNING:
-        return ::vector_icons::kMediaRouterWarningIcon;
-      case media_router::IssueInfo::Severity::NOTIFICATION:
-        // There is no icon specific to notification issues.
-        break;
-    }
-  }
-  return has_local_display_route_ ? ::vector_icons::kMediaRouterActiveIcon
-                                  : ::vector_icons::kMediaRouterIdleIcon;
-}
-
 void CastToolbarButton::ShowIcon() {
   SetVisible(true);
   PreferredSizeChanged();
@@ -173,44 +155,42 @@ void CastToolbarButton::ButtonPressed(views::Button* sender,
   }
 }
 
-void CastToolbarButton::AddedToWidget() {
-  ToolbarButton::AddedToWidget();
-  UpdateIcon();
-}
-
 void CastToolbarButton::UpdateIcon() {
-  // If widget isn't set, the button doesn't have access to the theme provider
-  // to set colors. Defer updating until AddedToWidget()
-  if (!GetWidget())
+  using Severity = media_router::IssueInfo::Severity;
+  const auto severity =
+      current_issue_ ? current_issue_->severity : Severity::NOTIFICATION;
+  if (severity == Severity::NOTIFICATION && !has_local_display_route_) {
+    UpdateIconsWithStandardColors(vector_icons::kMediaRouterIdleIcon);
+    UpdateLayoutInsetDelta();
     return;
-  const gfx::VectorIcon& icon = GetCurrentIcon();
-  UpdateIconsWithColors(icon, GetIconColor(views::Button::STATE_NORMAL, &icon),
-                        GetIconColor(views::Button::STATE_HOVERED, &icon),
-                        GetIconColor(views::Button::STATE_PRESSED, &icon),
-                        GetIconColor(views::Button::STATE_DISABLED, &icon));
-  // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
-  // the insets to match.
-  SetLayoutInsetDelta(
-      gfx::Insets(ui::TouchUiController::Get()->touch_ui() ? 4 : 0));
+  }
+
+  const gfx::VectorIcon* icon = &vector_icons::kMediaRouterActiveIcon;
+  SkColor icon_color = gfx::kGoogleBlue500;
+  // Highest priority is to indicate whether there's an issue.
+  if (severity == Severity::FATAL) {
+    icon = &vector_icons::kMediaRouterErrorIcon;
+    icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityHigh);
+  } else if (severity == Severity::WARNING) {
+    icon = &vector_icons::kMediaRouterWarningIcon;
+    icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_AlertSeverityMedium);
+  }
+  SetImageModel(ButtonState::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(*icon, icon_color));
+  UpdateLayoutInsetDelta();
 }
 
 MediaRouterActionController* CastToolbarButton::GetActionController() const {
   return MediaRouterUIService::Get(profile_)->action_controller();
 }
 
-SkColor CastToolbarButton::GetIconColor(ButtonState state,
-                                        const gfx::VectorIcon* icon_id) const {
-  if (icon_id == &::vector_icons::kMediaRouterIdleIcon)
-    return GetForegroundColor(state);
-  if (icon_id == &::vector_icons::kMediaRouterActiveIcon)
-    return gfx::kGoogleBlue500;
-  if (icon_id == &::vector_icons::kMediaRouterWarningIcon) {
-    return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityMedium);
-  }
-  DCHECK(icon_id == &::vector_icons::kMediaRouterErrorIcon);
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_AlertSeverityHigh);
+void CastToolbarButton::UpdateLayoutInsetDelta() {
+  // This icon is smaller than the touchable-UI expected 24dp, so we need to pad
+  // the insets to match.
+  SetLayoutInsetDelta(
+      gfx::Insets(ui::TouchUiController::Get()->touch_ui() ? 4 : 0));
 }
 
 }  // namespace media_router

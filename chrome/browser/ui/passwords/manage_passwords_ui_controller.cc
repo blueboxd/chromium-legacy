@@ -411,6 +411,13 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
       form_manager->GetPendingCredentials().username_value);
 }
 
+size_t ManagePasswordsUIController::GetTotalNumberCompromisedPasswords() const {
+  DCHECK(GetState() == password_manager::ui::PASSWORD_UPDATED_SAFE_STATE ||
+         GetState() == password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX ||
+         GetState() == password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE);
+  return post_save_compromised_helper_->compromised_count();
+}
+
 bool ManagePasswordsUIController::DidAuthForAccountStoreOptInFail() const {
   return passwords_data_.auth_for_account_storage_opt_in_failed();
 }
@@ -429,7 +436,10 @@ void ManagePasswordsUIController::OnBubbleHidden() {
       (bubble_status_ == BubbleStatus::SHOWN_PENDING_ICON_UPDATE);
   bubble_status_ = BubbleStatus::NOT_SHOWN;
   if (GetState() == password_manager::ui::CONFIRMATION_STATE ||
-      GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
+      GetState() == password_manager::ui::AUTO_SIGNIN_STATE ||
+      GetState() == password_manager::ui::PASSWORD_UPDATED_SAFE_STATE ||
+      GetState() == password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX ||
+      GetState() == password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     update_icon = true;
   }
@@ -843,7 +853,10 @@ void ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble(
     password_manager::PostSaveCompromisedHelper::BubbleType type,
     size_t count_compromised_passwords_) {
   using password_manager::PostSaveCompromisedHelper;
-  if (passwords_data_.state() != password_manager::ui::MANAGE_STATE)
+  // If the controller changed the state in the mean time or the Sign-in promo
+  // is still open, don't show anything.
+  if (passwords_data_.state() != password_manager::ui::MANAGE_STATE ||
+      bubble_status_ != BubbleStatus::NOT_SHOWN)
     return;
   password_manager::ui::State state;
   switch (type) {

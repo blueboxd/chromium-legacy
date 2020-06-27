@@ -473,6 +473,14 @@ void NGFragmentItem::RecalcInkOverflow(
     PhysicalRect* self_and_contents_rect_out) {
   DCHECK_EQ(this, cursor->CurrentItem());
 
+  if (UNLIKELY(IsLayoutObjectDestroyedOrMoved())) {
+    // TODO(crbug.com/1099613): This should not happen, as long as it is really
+    // layout-clean. It looks like there are cases where the layout is dirty.
+    NOTREACHED();
+    cursor->MoveToNextSkippingChildren();
+    return;
+  }
+
   if (IsText()) {
     cursor->MoveToNext();
 

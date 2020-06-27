@@ -13,6 +13,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -27,8 +28,10 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/check.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/display/types/display_constants.h"
@@ -58,8 +61,7 @@ bool IsAppListBackground(ash::ShelfBackgroundType background_type) {
 namespace ash {
 
 // Records smoothness of bounds animations for the HotseatWidget.
-class HotseatWidgetAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
+class HotseatWidgetAnimationMetricsReporter {
  public:
   // The different kinds of hotseat elements.
   enum class HotseatElementType {
@@ -68,30 +70,26 @@ class HotseatWidgetAnimationMetricsReporter
     // The Hotseat Widget's translucent background.
     kTranslucentBackground
   };
+
   explicit HotseatWidgetAnimationMetricsReporter(
       HotseatElementType hotseat_element)
       : hotseat_element_(hotseat_element) {}
-  ~HotseatWidgetAnimationMetricsReporter() override = default;
+  ~HotseatWidgetAnimationMetricsReporter() = default;
 
-  void SetTargetHotseatState(HotseatState target_state) {
-    target_state_ = target_state;
-  }
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    switch (target_state_) {
+  void ReportSmoothness(HotseatState target_state, int smoothness) {
+    switch (target_state) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         if (hotseat_element_ == HotseatElementType::kWidget) {
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
               "TransitionToShownHotseat",
-              value);
+              smoothness);
         } else {
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.TranslucentBackground."
               "AnimationSmoothness.TransitionToShownHotseat",
-              value);
+              smoothness);
         }
         break;
       case HotseatState::kExtended:
@@ -99,12 +97,12 @@ class HotseatWidgetAnimationMetricsReporter
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
               "TransitionToExtendedHotseat",
-              value);
+              smoothness);
         } else {
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.TranslucentBackground."
               "AnimationSmoothness.TransitionToExtendedHotseat",
-              value);
+              smoothness);
         }
         break;
       case HotseatState::kHidden:
@@ -112,30 +110,37 @@ class HotseatWidgetAnimationMetricsReporter
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.Widget.AnimationSmoothness."
               "TransitionToHiddenHotseat",
-              value);
+              smoothness);
         } else {
           UMA_HISTOGRAM_PERCENTAGE(
               "Ash.HotseatWidgetAnimation.TranslucentBackground."
               "AnimationSmoothness.TransitionToHiddenHotseat",
-              value);
+              smoothness);
         }
         break;
-      default:
+      case HotseatState::kNone:
         NOTREACHED();
+        break;
     }
+  }
+
+  metrics_util::ReportCallback GetReportCallback(HotseatState target_state) {
+    return metrics_util::ForSmoothness(base::BindRepeating(
+        &HotseatWidgetAnimationMetricsReporter::ReportSmoothness,
+        weak_ptr_factory_.GetWeakPtr(), target_state));
   }
 
  private:
   // The element that is reporting an animation.
-  HotseatElementType hotseat_element_;
-  // The state to which the animation is transitioning.
-  HotseatState target_state_ = HotseatState::kHidden;
+  const HotseatElementType hotseat_element_;
+
+  base::WeakPtrFactory<HotseatWidgetAnimationMetricsReporter> weak_ptr_factory_{
+      this};
 };
 
 // An animation metrics reporter for the shelf navigation widget.
 class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter,
-      public ShelfLayoutManagerObserver {
+    : public ShelfLayoutManagerObserver {
  public:
   explicit NavigationWidgetAnimationMetricsReporter(Shelf* shelf)
       : shelf_(shelf) {
@@ -151,32 +156,37 @@ class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
   NavigationWidgetAnimationMetricsReporter& operator=(
       const NavigationWidgetAnimationMetricsReporter&) = delete;
 
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
+  void ReportSmoothness(int smoothness) {
     switch (target_state_) {
       case HotseatState::kShownClamshell:
       case HotseatState::kShownHomeLauncher:
         UMA_HISTOGRAM_PERCENTAGE(
             "Ash.NavigationWidget.Widget.AnimationSmoothness."
             "TransitionToShownHotseat",
-            value);
+            smoothness);
         break;
       case HotseatState::kExtended:
         UMA_HISTOGRAM_PERCENTAGE(
             "Ash.NavigationWidget.Widget.AnimationSmoothness."
             "TransitionToExtendedHotseat",
-            value);
+            smoothness);
         break;
       case HotseatState::kHidden:
         UMA_HISTOGRAM_PERCENTAGE(
             "Ash.NavigationWidget.Widget.AnimationSmoothness."
             "TransitionToHiddenHotseat",
-            value);
+            smoothness);
         break;
-      default:
+      case HotseatState::kNone:
         NOTREACHED();
         break;
     }
+  }
+
+  metrics_util::ReportCallback GetReportCallback() {
+    return metrics_util::ForSmoothness(base::BindRepeating(
+        &NavigationWidgetAnimationMetricsReporter::ReportSmoothness,
+        weak_ptr_factory_.GetWeakPtr()));
   }
 
   // ShelfLayoutManagerObserver:
@@ -186,9 +196,13 @@ class ASH_EXPORT NavigationWidgetAnimationMetricsReporter
   }
 
  private:
-  Shelf* shelf_;
+  Shelf* const shelf_;
+
   // The state to which the animation is transitioning.
   HotseatState target_state_ = HotseatState::kShownHomeLauncher;
+
+  base::WeakPtrFactory<NavigationWidgetAnimationMetricsReporter>
+      weak_ptr_factory_{this};
 };
 
 // Shelf::AutoHideEventHandler -----------------------------------------------
@@ -659,21 +673,20 @@ ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
 }
 
-ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter(
+metrics_util::ReportCallback Shelf::GetHotseatTransitionReportCallback(
     HotseatState target_state) {
-  hotseat_transition_metrics_reporter_->SetTargetHotseatState(target_state);
-  return hotseat_transition_metrics_reporter_.get();
+  return hotseat_transition_metrics_reporter_->GetReportCallback(target_state);
 }
 
-ui::AnimationMetricsReporter* Shelf::GetTranslucentBackgroundMetricsReporter(
+metrics_util::ReportCallback Shelf::GetTranslucentBackgroundReportCallback(
     HotseatState target_state) {
-  translucent_background_metrics_reporter_->SetTargetHotseatState(target_state);
-  return translucent_background_metrics_reporter_.get();
+  return translucent_background_metrics_reporter_->GetReportCallback(
+      target_state);
 }
 
-ui::AnimationMetricsReporter*
-Shelf::GetNavigationWidgetAnimationMetricsReporter() {
-  return navigation_widget_metrics_reporter_.get();
+metrics_util::ReportCallback
+Shelf::GetNavigationWidgetAnimationReportCallback() {
+  return navigation_widget_metrics_reporter_->GetReportCallback();
 }
 
 void Shelf::WillDeleteShelfLayoutManager() {

@@ -17,6 +17,8 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCK_ICON_BADGE" file="badges/block-icon-badge.png" />
       <!-- Badge for apps that used their daily time limit. -->
       <structure type="chrome_scaled_image" name="IDR_HOURGLASS_ICON_BADGE" file="badges/hourglass-icon-badge.png" />
+      <!-- Mask for standard icons. -->
+      <structure type="chrome_scaled_image" name="IDR_ICON_MASK" file="mask/mask.png" />
 
       <!-- Default user profile images. -->
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="default_user_images/avatar_anonymous.png" />

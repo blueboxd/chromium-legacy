@@ -229,13 +229,13 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
                                const IconsMap* icons_map) {
   for (auto& shortcut : web_app_info->shortcut_infos) {
-    std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
+    SizeToBitmap shortcut_icon_bitmaps;
     for (const auto& icon : shortcut.shortcut_icon_infos) {
       auto it = icons_map->find(icon.url);
       if (it != icons_map->end()) {
         std::set<SquareSizePx> sizes_to_generate;
         sizes_to_generate.emplace(icon.square_size_px);
-        std::map<SquareSizePx, SkBitmap> resized_bitmaps(
+        SizeToBitmap resized_bitmaps(
             ConstrainBitmapsToSizes(it->second, sizes_to_generate));
 
         // Don't overwrite as a shortcut item could have multiple icon urls.
@@ -279,15 +279,14 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.
-  std::map<SquareSizePx, SkBitmap> size_to_icon = ResizeIconsAndGenerateMissing(
+  SizeToBitmap size_to_icons = ResizeIconsAndGenerateMissing(
       square_icons, SizesToGenerate(), icon_letter,
-      &web_app_info->generated_icon_color);
+      &web_app_info->generated_icon_color, &web_app_info->is_generated_icon);
 
-  for (std::pair<const SquareSizePx, SkBitmap>& item : size_to_icon) {
+  for (auto& item : size_to_icons) {
     // Retain any bitmaps provided as input to the installation.
-    if (web_app_info->icon_bitmaps.count(item.first) == 0) {
+    if (web_app_info->icon_bitmaps.count(item.first) == 0)
       web_app_info->icon_bitmaps[item.first] = std::move(item.second);
-    }
   }
 }
 

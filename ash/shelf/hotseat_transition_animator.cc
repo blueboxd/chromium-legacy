@@ -4,13 +4,16 @@
 
 #include "ash/shelf/hotseat_transition_animator.h"
 
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/bind.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -19,50 +22,39 @@
 
 namespace ash {
 
-class HotseatTransitionAnimator::TransitionAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  TransitionAnimationMetricsReporter() = default;
-  ~TransitionAnimationMetricsReporter() override = default;
+namespace {
 
-  void set_new_state(HotseatState new_state) { new_state_ = new_state; }
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    switch (new_state_) {
-      case HotseatState::kShownClamshell:
-      case HotseatState::kShownHomeLauncher:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatTransition.AnimationSmoothness."
-            "TransitionToShownHotseat",
-            value);
-        break;
-      case HotseatState::kExtended:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatTransition.AnimationSmoothness."
-            "TransitionToExtendedHotseat",
-            value);
-        break;
-      case HotseatState::kHidden:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Ash.HotseatTransition.AnimationSmoothness."
-            "TransitionToHiddenHotseat",
-            value);
-        break;
-      default:
-        NOTREACHED();
-    }
+void ReportSmoothness(HotseatState new_state, int value) {
+  switch (new_state) {
+    case HotseatState::kShownClamshell:
+    case HotseatState::kShownHomeLauncher:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Ash.HotseatTransition.AnimationSmoothness."
+          "TransitionToShownHotseat",
+          value);
+      break;
+    case HotseatState::kExtended:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Ash.HotseatTransition.AnimationSmoothness."
+          "TransitionToExtendedHotseat",
+          value);
+      break;
+    case HotseatState::kHidden:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Ash.HotseatTransition.AnimationSmoothness."
+          "TransitionToHiddenHotseat",
+          value);
+      break;
+    case HotseatState::kNone:
+      DCHECK(false);
+      break;
   }
+}
 
- private:
-  // The state to which the animation is transitioning.
-  HotseatState new_state_;
-};
+}  // namespace
 
 HotseatTransitionAnimator::HotseatTransitionAnimator(ShelfWidget* shelf_widget)
-    : shelf_widget_(shelf_widget),
-      animation_metrics_reporter_(
-          std::make_unique<TransitionAnimationMetricsReporter>()) {}
+    : shelf_widget_(shelf_widget) {}
 
 HotseatTransitionAnimator::~HotseatTransitionAnimator() {
   StopObservingImplicitAnimations();
@@ -133,8 +125,6 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   drag_handle_bounds.ClampToCenteredSize(ShelfConfig::Get()->DragHandleSize());
   shelf_widget_->GetAnimatingDragHandle()->SetBounds(drag_handle_bounds);
 
-  animation_metrics_reporter_->set_new_state(new_state);
-
   for (auto& observer : observers_)
     observer.OnHotseatTransitionAnimationWillStart(old_state, new_state);
 
@@ -146,12 +136,15 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
     shelf_bg_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     shelf_bg_animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    shelf_bg_animation_setter.SetAnimationMetricsReporter(
-        animation_metrics_reporter_.get());
     animation_complete_callback_ = base::BindOnce(
         &HotseatTransitionAnimator::NotifyHotseatTransitionAnimationEnded,
         weak_ptr_factory_.GetWeakPtr(), old_state, new_state);
     shelf_bg_animation_setter.AddObserver(this);
+
+    ui::AnimationThroughputReporter reporter(
+        shelf_bg_animation_setter.GetAnimator(),
+        metrics_util::ForSmoothness(
+            base::BindRepeating(&ReportSmoothness, new_state)));
 
     shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
   }

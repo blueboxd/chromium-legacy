@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SHELF_NAVIGATION_WIDGET_H_
 #define ASH_SHELF_SHELF_NAVIGATION_WIDGET_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_component.h"
@@ -18,10 +20,6 @@ class Window;
 
 namespace views {
 class BoundsAnimator;
-}
-
-namespace ui {
-class AnimationMetricsReporter;
 }
 
 namespace ash {
@@ -102,7 +100,7 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
       views::View* button,
       bool visible,
       bool animate,
-      ui::AnimationMetricsReporter* animation_metrics_reporter);
+      NavigationButtonAnimationMetricsReporter* metrics_reporter);
 
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;

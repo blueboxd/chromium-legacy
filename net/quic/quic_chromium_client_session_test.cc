@@ -2370,6 +2370,79 @@ TEST_P(QuicChromiumClientSessionTest,
   EXPECT_EQ(0u, connectivity_monitor_->GetNumDegradingSessions());
 }
 
+TEST_P(QuicChromiumClientSessionTest, WriteErrorDuringCryptoConnect) {
+  // Add a connectivity monitor for testing.
+  default_network_ = kDefaultNetworkForTests;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  // Use unmocked crypto stream to do crypto connect.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
+
+  MockQuicData quic_data(version_);
+  // Trigger a packet write error when sending packets in crypto connect.
+  quic_data.AddWrite(SYNCHRONOUS, ERR_ADDRESS_UNREACHABLE);
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  ASSERT_THAT(session_->CryptoConnect(callback_.callback()),
+              IsError(ERR_QUIC_HANDSHAKE_FAILED));
+  // Verify error count is properly recorded.
+  EXPECT_EQ(1u, connectivity_monitor_->GetCountForWriteErrorCode(
+                    ERR_ADDRESS_UNREACHABLE));
+  EXPECT_EQ(0u, connectivity_monitor_->GetCountForWriteErrorCode(
+                    ERR_CONNECTION_RESET));
+
+  // Simulate a default network change, write error stats should be reset.
+  connectivity_monitor_->OnDefaultNetworkUpdated(kNewNetworkForTests);
+  EXPECT_EQ(0u, connectivity_monitor_->GetCountForWriteErrorCode(
+                    ERR_ADDRESS_UNREACHABLE));
+}
+
+TEST_P(QuicChromiumClientSessionTest, WriteErrorAfterHandshakeConfirmed) {
+  // Add a connectivity monitor for testing.
+  default_network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
+  connectivity_monitor_ =
+      std::make_unique<QuicConnectivityMonitor>(default_network_);
+
+  MockQuicData quic_data(version_);
+  int packet_num = 1;
+  if (version_.HasIetfQuicFrames()) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeInitialSettingsPacket(packet_num++));
+  }
+  // When sending the PING packet, trigger a packet write error.
+  quic_data.AddWrite(SYNCHRONOUS, ERR_CONNECTION_RESET);
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+  CompleteCryptoHandshake();
+
+  // Send a ping so that client has outgoing traffic before receiving packets.
+  session_->SendPing();
+
+  // Verify error count is properly recorded.
+  EXPECT_EQ(1u, connectivity_monitor_->GetCountForWriteErrorCode(
+                    ERR_CONNECTION_RESET));
+  EXPECT_EQ(0u, connectivity_monitor_->GetCountForWriteErrorCode(
+                    ERR_ADDRESS_UNREACHABLE));
+
+  connectivity_monitor_->OnIPAddressChanged();
+
+  // If network handle is supported, IP Address change is a no-op. Otherwise it
+  // clears all stats.
+  size_t expected_error_count =
+      NetworkChangeNotifier::AreNetworkHandlesSupported() ? 1u : 0u;
+  EXPECT_EQ(
+      expected_error_count,
+      connectivity_monitor_->GetCountForWriteErrorCode(ERR_CONNECTION_RESET));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

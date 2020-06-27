@@ -1,5 +1,5 @@
 # tags: [ android chromeos fuchsia linux mac win ]
-# tags: [ nvidia ]
+# tags: [ amd intel nvidia ]
 # results: [ Failure RetryOnFailure Skip ]
 
 crbug.com/257109 [ linux ] GpuProcess_video [ Failure ]
@@ -30,3 +30,7 @@ crbug.com/1084794 [ chromeos ] GpuProcess_swiftshader_for_webgl [ Skip ]
 
 # Software Compositing is not supported on ChromeOS.
 crbug.com/1084796 [ chromeos ] GpuProcess_readback_webgl_gpu_process [ Skip ]
+
+# Started crashing with passthrough field trial.
+crbug.com/1099576 [ mac amd ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]
+crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performance [ Skip ]

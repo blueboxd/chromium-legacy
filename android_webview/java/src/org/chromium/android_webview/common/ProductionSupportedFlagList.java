@@ -73,5 +73,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
+            Flag.baseFeature("WebComponentsV0",
+                    "Re-enables the deprecated Web Components v0 features (Shadow DOM v0, Custom "
+                            + "Elements v0, and HTML Imports)."),
     };
 }

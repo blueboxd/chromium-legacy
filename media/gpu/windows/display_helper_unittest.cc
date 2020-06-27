@@ -20,13 +20,13 @@ namespace media {
 class DisplayHelperTest : public ::testing::Test {
  public:
   void SetUp() override {
-    mock_dxgi_factory_ = CreateD3D11Mock<NiceMock<DXGIFactoryMock>>();
+    mock_dxgi_factory_ = MakeComPtr<NiceMock<DXGIFactoryMock>>();
     ON_CALL(*mock_dxgi_factory_.Get(), EnumAdapters(_, _))
         .WillByDefault(Return(DXGI_ERROR_NOT_FOUND));
 
-    mock_dxgi_device_ = CreateD3D11Mock<NiceMock<DXGIDeviceMock>>();
+    mock_dxgi_device_ = MakeComPtr<NiceMock<DXGIDeviceMock>>();
 
-    mock_d3d11_device_ = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
+    mock_d3d11_device_ = MakeComPtr<NiceMock<D3D11DeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), QueryInterface(IID_IDXGIDevice, _))
         .WillByDefault(SetComPointeeAndReturnOk<1>(mock_dxgi_device_.Get()));
   }
@@ -43,7 +43,7 @@ class DisplayHelperTest : public ::testing::Test {
   // Adds an adapter that |mock_dxgi_factory_| will enumerate.
   void AddAdapter() {
     Microsoft::WRL::ComPtr<DXGIAdapterMock> dxgi_adapter =
-        CreateD3D11Mock<NiceMock<DXGIAdapterMock>>();
+        MakeComPtr<NiceMock<DXGIAdapterMock>>();
     ON_CALL(*dxgi_adapter.Get(), GetParent(_, _))
         .WillByDefault(SetComPointeeAndReturnOk<1>(mock_dxgi_factory_.Get()));
 
@@ -65,7 +65,7 @@ class DisplayHelperTest : public ::testing::Test {
   void AddOutput(const DXGI_OUTPUT_DESC1& desc1) {
     // Create a DXGIOutput6 that can return |desc1|.
     Microsoft::WRL::ComPtr<DXGIOutput6Mock> output6 =
-        CreateD3D11Mock<DXGIOutput6Mock>();
+        MakeComPtr<DXGIOutput6Mock>();
     mock_dxgi_output6s_.push_back(output6);
     ON_CALL(*output6.Get(), GetDesc1(_))
         .WillByDefault(DoAll(SetArgPointee<0>(desc1), Return(S_OK)));

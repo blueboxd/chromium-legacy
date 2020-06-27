@@ -1143,10 +1143,10 @@ TEST_F(
     });
 
 TEST_F(
-    'PrintPreviewDestinationDropdownCrosTest', 'ClickRemovesSelected',
+    'PrintPreviewDestinationDropdownCrosTest', 'ClickRemovesHighlight',
     function() {
       this.runMochaTest(
-          destination_dropdown_cros_test.TestNames.ClickRemovesSelected);
+          destination_dropdown_cros_test.TestNames.ClickRemovesHighlight);
     });
 
 TEST_F('PrintPreviewDestinationDropdownCrosTest', 'ClickCloses', function() {
@@ -1158,10 +1158,10 @@ TEST_F('PrintPreviewDestinationDropdownCrosTest', 'TabCloses', function() {
 });
 
 TEST_F(
-    'PrintPreviewDestinationDropdownCrosTest', 'SelectedAfterUpDown',
+    'PrintPreviewDestinationDropdownCrosTest', 'HighlightedAfterUpDown',
     function() {
       this.runMochaTest(
-          destination_dropdown_cros_test.TestNames.SelectedAfterUpDown);
+          destination_dropdown_cros_test.TestNames.HighlightedAfterUpDown);
     });
 
 TEST_F(
@@ -1171,10 +1171,10 @@ TEST_F(
     });
 
 TEST_F(
-    'PrintPreviewDestinationDropdownCrosTest', 'SelectedFollowsMouse',
+    'PrintPreviewDestinationDropdownCrosTest', 'HighlightedFollowsMouse',
     function() {
       this.runMochaTest(
-          destination_dropdown_cros_test.TestNames.SelectedFollowsMouse);
+          destination_dropdown_cros_test.TestNames.HighlightedFollowsMouse);
     });
 
 TEST_F('PrintPreviewDestinationDropdownCrosTest', 'Disabled', function() {
@@ -1200,6 +1200,13 @@ TEST_F(
     function() {
       this.runMochaTest(destination_dropdown_cros_test.TestNames
                             .ChangingDestinationUpdatesIcon);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'HighlightedWhenOpened',
+    function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.HighlightedWhenOpened);
     });
 
 GEN('#else');

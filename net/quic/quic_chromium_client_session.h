@@ -155,6 +155,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
         QuicChromiumClientSession* session,
         NetworkChangeNotifier::NetworkHandle network) = 0;
 
+    // Called when |session| encounters write error on |network|.
+    // A write error may be caused by the change in the underlying network
+    // interface, and can be pre-emptive hints of connectivity quality changes
+    // based on the |error_code|.
+    virtual void OnSessionEncounteringWriteError(
+        QuicChromiumClientSession* session,
+        NetworkChangeNotifier::NetworkHandle network,
+        int error_code) = 0;
+
     // Called when |session| is removed.
     virtual void OnSessionRemoved(QuicChromiumClientSession* session) = 0;
   };

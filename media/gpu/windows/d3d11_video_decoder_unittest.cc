@@ -68,31 +68,30 @@ class D3D11VideoDecoderTest : public ::testing::Test {
 
     // Create a mock D3D11 device that supports 11.0.  Note that if you change
     // this, then you probably also want VideoDevice1 and friends, below.
-    mock_d3d11_device_ = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
+    mock_d3d11_device_ = MakeComPtr<NiceMock<D3D11DeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), GetFeatureLevel)
         .WillByDefault(Return(D3D_FEATURE_LEVEL_11_0));
 
-    mock_d3d11_device_context_ = CreateD3D11Mock<D3D11DeviceContextMock>();
+    mock_d3d11_device_context_ = MakeComPtr<D3D11DeviceContextMock>();
     ON_CALL(*mock_d3d11_device_.Get(), GetImmediateContext(_))
         .WillByDefault(SetComPointee<0>(mock_d3d11_device_context_.Get()));
 
     // Set up an D3D11VideoDevice rather than ...Device1, since Initialize uses
     // Device for checking decoder GUIDs.
     // TODO(liberato): Try to use Device1 more often.
-    mock_d3d11_video_device_ =
-        CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();
+    mock_d3d11_video_device_ = MakeComPtr<NiceMock<D3D11VideoDeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
         .WillByDefault(
             SetComPointeeAndReturnOk<1>(mock_d3d11_video_device_.Get()));
 
     EnableDecoder(D3D11_DECODER_PROFILE_H264_VLD_NOFGT);
 
-    mock_d3d11_video_decoder_ = CreateD3D11Mock<D3D11VideoDecoderMock>();
+    mock_d3d11_video_decoder_ = MakeComPtr<D3D11VideoDecoderMock>();
     ON_CALL(*mock_d3d11_video_device_.Get(), CreateVideoDecoder(_, _, _))
         .WillByDefault(
             SetComPointeeAndReturnOk<2>(mock_d3d11_video_decoder_.Get()));
 
-    mock_d3d11_video_context_ = CreateD3D11Mock<D3D11VideoContextMock>();
+    mock_d3d11_video_context_ = MakeComPtr<D3D11VideoContextMock>();
     ON_CALL(*mock_d3d11_device_context_.Get(),
             QueryInterface(IID_ID3D11VideoContext, _))
         .WillByDefault(
@@ -111,11 +110,11 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   }
 
   void SetUpAdapters() {
-    mock_dxgi_device_ = CreateD3D11Mock<NiceMock<DXGIDeviceMock>>();
+    mock_dxgi_device_ = MakeComPtr<NiceMock<DXGIDeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), QueryInterface(IID_IDXGIDevice, _))
         .WillByDefault(SetComPointeeAndReturnOk<1>(mock_dxgi_device_.Get()));
 
-    mock_dxgi_adapter_ = CreateD3D11Mock<NiceMock<DXGIAdapterMock>>();
+    mock_dxgi_adapter_ = MakeComPtr<NiceMock<DXGIAdapterMock>>();
     ON_CALL(*mock_dxgi_device_.Get(), GetAdapter(_))
         .WillByDefault(SetComPointeeAndReturnOk<0>(mock_dxgi_adapter_.Get()));
 

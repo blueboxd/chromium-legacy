@@ -529,9 +529,6 @@ crbug.com/1098311 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/sha
 # Was timing out randomly on android_optional_gpu_tests_rel, but became so
 # flaky (2018-09-10) that it had to be upgraded to Fail.
 crbug.com/882323 [ android qualcomm-adreno-(tm)-418 ] deqp/data/gles2/shaders/conversions.html [ Failure ]
-# The following test just started timing out randomly on the
-# android_optional_gpu_tests_rel tryserver with no apparent cause.
-crbug.com/793050 [ android qualcomm-adreno-(tm)-418 ] deqp/data/gles2/shaders/swizzles.html [ RetryOnFailure ]
 # This one is causing intermittent timeouts on the device, and it
 # looks like when that happens, the next test also always times
 # out. Skip it for now until it's fixed and running reliably.
@@ -563,6 +560,8 @@ crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/li
 crbug.com/951628 [ android qualcomm-adreno-(tm)-418 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1083320 [ android qualcomm-adreno-(tm)-418 ] conformance/misc/uninitialized-test.html [ Skip ]
 crbug.com/1056830 [ android qualcomm-adreno-(tm)-418 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+# Timing out on this device for unknown reasons.
+crbug.com/1099148 [ android qualcomm-adreno-(tm)-418 ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]

@@ -413,10 +413,7 @@ jumbo_source_set("base") {
   }
 
   if (is_win) {
-    public_deps += [
-      "//media/base/win:d3d11",
-      "//media/base/win:mf_cdm_proxy",
-    ]
+    public_deps += [ "//media/base/win:mf_cdm_proxy" ]
   }
 
   if (is_chromecast || is_fuchsia) {
@@ -509,7 +506,7 @@ static_library("test_support") {
   ]
 
   if (is_win) {
-    public_deps += [ "//media/base/win:d3d11_test_support" ]
+    public_deps += [ "//media/base/win:test_support" ]
   }
 }
 

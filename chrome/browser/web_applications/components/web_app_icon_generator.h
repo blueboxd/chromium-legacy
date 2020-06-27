@@ -37,6 +37,8 @@ enum {
 
 }  // namespace icon_size
 
+using SizeToBitmap = std::map<SquareSizePx, SkBitmap>;
+
 // Returns icon sizes to be generated from downloaded icons.
 std::set<SquareSizePx> SizesToGenerate();
 
@@ -44,9 +46,8 @@ std::set<SquareSizePx> SizesToGenerate();
 // |sizes| and resizes it to that size. This returns a map of sizes to bitmaps
 // which contains only bitmaps of a size in |sizes| and at most one bitmap of
 // each size.
-std::map<SquareSizePx, SkBitmap> ConstrainBitmapsToSizes(
-    const std::vector<SkBitmap>& bitmaps,
-    const std::set<SquareSizePx>& sizes);
+SizeToBitmap ConstrainBitmapsToSizes(const std::vector<SkBitmap>& bitmaps,
+                                     const std::set<SquareSizePx>& sizes);
 
 // Generates a square container icon of |output_size| by drawing the given
 // |icon_letter| into a rounded background of |color|.
@@ -66,17 +67,19 @@ base::char16 GenerateIconLetterFromAppName(const base::string16& app_name);
 // Note that |icon_letter| is the first letter of app name if available
 // otherwise the first letter of app url.
 // Output: |generated_icon_color| is the color to use if an icon needs to be
-// generated for the web app.
-std::map<SquareSizePx, SkBitmap> ResizeIconsAndGenerateMissing(
+// generated for the web app. |is_generated_icon| represents whether the icons
+// were generated.
+SizeToBitmap ResizeIconsAndGenerateMissing(
     const std::vector<SkBitmap>& icons,
     const std::set<SquareSizePx>& sizes_to_generate,
     base::char16 icon_letter,
-    SkColor* generated_icon_color);
+    SkColor* generated_icon_color,
+    bool* is_generated_icon);
 
 // Generate icons for default sizes, using the first letter of the application
 // name and some background color. |app_name| is encoded as UTF8.
-std::map<SquareSizePx, SkBitmap> GenerateIcons(const std::string& app_name,
-                                               SkColor background_icon_color);
+SizeToBitmap GenerateIcons(const std::string& app_name,
+                           SkColor background_icon_color);
 
 }  // namespace web_app
 

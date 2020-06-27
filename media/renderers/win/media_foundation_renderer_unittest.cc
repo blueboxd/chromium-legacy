@@ -15,6 +15,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/base/win/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -27,18 +28,6 @@ namespace media {
 
 using ABI::Windows::Media::Protection::IMediaProtectionPMPServer;
 using Microsoft::WRL::ComPtr;
-
-#define MOCK_STDCALL_METHOD1(Name, Types) \
-  MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
-
-#define MOCK_STDCALL_METHOD2(Name, Types) \
-  MOCK_METHOD2_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
-
-#define MOCK_STDCALL_METHOD3(Name, Types) \
-  MOCK_METHOD3_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
-
-#define MOCK_STDCALL_METHOD7(Name, Types) \
-  MOCK_METHOD7_WITH_CALLTYPE(STDMETHODCALLTYPE, Name, Types)
 
 class MockMFCdmProxy
     : public Microsoft::WRL::RuntimeClass<
@@ -59,7 +48,6 @@ class MockMFCdmProxy
                                uint32_t content_init_data_size,
                                REFIID riid,
                                IUnknown** object_result));
-
   MOCK_STDCALL_METHOD1(RefreshTrustedInput,
                        HRESULT(uint64_t playback_element_id));
   MOCK_STDCALL_METHOD3(SetLastKeyIds,

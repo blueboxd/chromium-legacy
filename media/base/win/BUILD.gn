@@ -44,11 +44,6 @@ jumbo_component("media_foundation_util") {
   all_dependent_configs = [ ":delay_load_mf" ]
 }
 
-source_set("d3d11") {
-  sources = [ "d3d11_create_device_cb.h" ]
-  deps = [ "//base" ]
-}
-
 source_set("hresult_status_helper") {
   sources = [
     "hresult_status_helper.cc",
@@ -62,14 +57,14 @@ source_set("mf_cdm_proxy") {
   deps = [ "//base" ]
 }
 
-source_set("d3d11_test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "d3d11_mocks.cc",
     "d3d11_mocks.h",
+    "test_utils.h",
   ]
   deps = [
-    ":d3d11",
     "//base",
     "//testing/gmock",
   ]

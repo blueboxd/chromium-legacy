@@ -181,6 +181,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (SquareSizePx size : web_app.downloaded_icon_sizes())
     local_data->add_downloaded_icon_sizes(size);
 
+  local_data->set_is_generated_icon(web_app.is_generated_icon());
+
   for (const auto& file_handler : web_app.file_handlers()) {
     WebAppFileHandlerProto* file_handler_proto =
         local_data->add_file_handlers();
@@ -360,6 +362,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   for (int32_t size : local_data.downloaded_icon_sizes())
     icon_sizes_on_disk.push_back(size);
   web_app->SetDownloadedIconSizes(std::move(icon_sizes_on_disk));
+
+  web_app->SetIsGeneratedIcon(local_data.is_generated_icon());
 
   apps::FileHandlers file_handlers;
   for (const auto& file_handler_proto : local_data.file_handlers()) {

@@ -18,6 +18,12 @@ size_t QuicConnectivityMonitor::GetNumDegradingSessions() const {
   return degrading_sessions_.size();
 }
 
+size_t QuicConnectivityMonitor::GetCountForWriteErrorCode(
+    int write_error_code) const {
+  auto it = write_error_map_.find(write_error_code);
+  return it == write_error_map_.end() ? 0u : it->second;
+}
+
 void QuicConnectivityMonitor::SetInitialDefaultNetwork(
     NetworkChangeNotifier::NetworkHandle default_network) {
   default_network_ = default_network;
@@ -37,6 +43,14 @@ void QuicConnectivityMonitor::OnSessionResumedPostPathDegrading(
     degrading_sessions_.erase(session);
 }
 
+void QuicConnectivityMonitor::OnSessionEncounteringWriteError(
+    QuicChromiumClientSession* session,
+    NetworkChangeNotifier::NetworkHandle network,
+    int error_code) {
+  if (network == default_network_)
+    ++write_error_map_[error_code];
+}
+
 void QuicConnectivityMonitor::OnSessionRemoved(
     QuicChromiumClientSession* session) {
   degrading_sessions_.erase(session);
@@ -46,6 +60,7 @@ void QuicConnectivityMonitor::OnDefaultNetworkUpdated(
     NetworkChangeNotifier::NetworkHandle default_network) {
   default_network_ = default_network;
   degrading_sessions_.clear();
+  write_error_map_.clear();
 }
 
 void QuicConnectivityMonitor::OnIPAddressChanged() {
@@ -56,6 +71,7 @@ void QuicConnectivityMonitor::OnIPAddressChanged() {
 
   DCHECK_EQ(default_network_, NetworkChangeNotifier::kInvalidNetworkHandle);
   degrading_sessions_.clear();
+  write_error_map_.clear();
 }
 
 void QuicConnectivityMonitor::OnSessionGoingAwayOnIPAddressChange(

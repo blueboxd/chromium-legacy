@@ -743,6 +743,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   }
   expected_app->SetIconInfos(std::move(icon_infos));
   expected_app->SetDownloadedIconSizes(std::move(sizes));
+  expected_app->SetIsGeneratedIcon(true);
 
   {
     WebApp::SyncFallbackData sync_fallback_data;

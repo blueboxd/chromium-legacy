@@ -104,4 +104,6 @@ message WebAppProto {
 
   // A list of protocol handlers.
   repeated WebAppProtocolHandler protocol_handlers = 17;
+
+  required bool is_generated_icon = 18;
 }

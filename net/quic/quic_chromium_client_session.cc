@@ -1833,6 +1833,16 @@ int QuicChromiumClientSession::HandleWriteError(
                              -error_code);
   }
 
+  // For now, skip reporting if there are multiple packet writers and
+  // connection migration is enabled.
+  if (sockets_.size() == 1u || !migrate_session_early_v2_) {
+    NetworkChangeNotifier::NetworkHandle current_network = GetCurrentNetwork();
+    for (auto& observer : connectivity_observer_list_) {
+      observer.OnSessionEncounteringWriteError(this, current_network,
+                                               error_code);
+    }
+  }
+
   if (error_code == ERR_MSG_TOO_BIG || stream_factory_ == nullptr ||
       !migrate_session_on_network_change_v2_ || !OneRttKeysAvailable()) {
     return error_code;

@@ -29,6 +29,10 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
   // network interface.
   size_t GetNumDegradingSessions() const;
 
+  // Returns the number of reports received for |write_error_code| on
+  // |default_network|.
+  size_t GetCountForWriteErrorCode(int write_error_code) const;
+
   // Called to set up the initial default network, which happens when the
   // default network tracking is lost upon |this| creation.
   void SetInitialDefaultNetwork(
@@ -56,14 +60,25 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
       QuicChromiumClientSession* session,
       NetworkChangeNotifier::NetworkHandle network) override;
 
+  void OnSessionEncounteringWriteError(
+      QuicChromiumClientSession* session,
+      NetworkChangeNotifier::NetworkHandle network,
+      int error_code) override;
+
   void OnSessionRemoved(QuicChromiumClientSession* session) override;
 
  private:
+  // Size chosen per net.QuicSession.WriteError histogram.
+  using WriteErrorMap = quic::QuicSmallMap<int, size_t, 20>;
+
   // If NetworkHandle is not supported, always set to
   // NetworkChangeNotifier::kInvalidNetworkHandle.
   NetworkChangeNotifier::NetworkHandle default_network_;
   // Sessions that are currently degrading on the |default_network_|.
   quic::QuicHashSet<QuicChromiumClientSession*> degrading_sessions_;
+
+  // Map from the write error code to the corresponding number of reports.
+  WriteErrorMap write_error_map_;
 
   base::WeakPtrFactory<QuicConnectivityMonitor> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(QuicConnectivityMonitor);

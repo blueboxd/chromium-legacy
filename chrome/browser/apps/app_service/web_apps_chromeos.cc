@@ -43,6 +43,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -383,8 +384,20 @@ IconEffects WebAppsChromeOs::GetIconEffects(const web_app::WebApp* web_app,
                                             bool paused,
                                             bool is_disabled) {
   IconEffects icon_effects = IconEffects::kNone;
-  icon_effects =
-      static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    icon_effects = web_app->is_generated_icon()
+                       ? static_cast<IconEffects>(
+                             icon_effects | IconEffects::kCrOsStandardMask)
+                       : static_cast<IconEffects>(icon_effects |
+                                                  IconEffects::kResizeAndPad);
+
+    // TODO(crbug.com/1083331): If the icon is maskable, modify the icon effect,
+    // don't apply the kResizeAndPad effect to shrink the icon, add the
+    // kCrOsStandardBackground and kCrOsStandardMask icon effects.
+  } else {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+  }
   if (extensions::util::ShouldApplyChromeBadgeToWebApp(profile(),
                                                        web_app->app_id())) {
     icon_effects =

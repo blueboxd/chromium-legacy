@@ -68,7 +68,7 @@ TEST_F(D3D11DecoderConfiguratorUnittest, SupportsDeviceNoProfiles) {
   auto configurator = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
+  auto vd_mock = MakeComPtr<D3D11VideoDeviceMock>();
   EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
       .Times(1)
       .WillOnce(Return(0));
@@ -80,7 +80,7 @@ TEST_F(D3D11DecoderConfiguratorUnittest, SupportsDeviceWrongProfiles) {
   auto configurator = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
+  auto vd_mock = MakeComPtr<D3D11VideoDeviceMock>();
   EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
       .Times(1)
       .WillOnce(Return(2));
@@ -100,7 +100,7 @@ TEST_F(D3D11DecoderConfiguratorUnittest, SupportsDeviceCorrectProfile) {
   auto configurator = CreateWithDefaultGPUInfo(
       CreateDecoderConfig(VP9PROFILE_PROFILE0, {0, 0}, false));
 
-  auto vd_mock = CreateD3D11Mock<D3D11VideoDeviceMock>();
+  auto vd_mock = MakeComPtr<D3D11VideoDeviceMock>();
   EXPECT_CALL(*vd_mock.Get(), GetVideoDecoderProfileCount())
       .Times(1)
       .WillOnce(Return(5));

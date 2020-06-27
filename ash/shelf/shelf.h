@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_locking_manager.h"
@@ -22,7 +23,6 @@ class Rect;
 }
 
 namespace ui {
-class AnimationMetricsReporter;
 class GestureEvent;
 class MouseWheelEvent;
 class MouseEvent;
@@ -232,12 +232,12 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
   // |target_state| is the hotseat state after hotseat transition animation.
-  ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter(
+  metrics_util::ReportCallback GetHotseatTransitionReportCallback(
       HotseatState target_state);
-  ui::AnimationMetricsReporter* GetTranslucentBackgroundMetricsReporter(
+  metrics_util::ReportCallback GetTranslucentBackgroundReportCallback(
       HotseatState target_state);
 
-  ui::AnimationMetricsReporter* GetNavigationWidgetAnimationMetricsReporter();
+  metrics_util::ReportCallback GetNavigationWidgetAnimationReportCallback();
 
  protected:
   // ShelfLayoutManagerObserver:

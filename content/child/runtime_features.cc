@@ -310,6 +310,12 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableScrollUnification, features::kScrollUnification,
      kUseFeatureState},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode, kUseFeatureState},
+    {wf::EnableShadowDOMV0, blink::features::kWebComponentsV0,
+     kUseFeatureState},
+    {wf::EnableCustomElementsV0, blink::features::kWebComponentsV0,
+     kUseFeatureState},
+    {wf::EnableHTMLImports, blink::features::kWebComponentsV0,
+     kUseFeatureState},
     {wf::EnableVideoPlaybackQuality, features::kVideoPlaybackQuality,
      kUseFeatureState},
     {wf::EnableBrowserVerifiedUserActivationKeyboard,
@@ -364,6 +370,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"CSSMatchedPropertiesCacheDependencies",
            blink::features::kCSSMatchedPropertiesCacheDependencies,
            kUseFeatureState},
+          {"CustomElementsV0", blink::features::kWebComponentsV0,
+           kUseFeatureState},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints, kUseFeatureState},
           {"FlexGaps", blink::features::kFlexGaps, kEnableOnly},
@@ -372,6 +380,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kUseFeatureState},
           {"ForceSynchronousHTMLParsing",
            blink::features::kForceSynchronousHTMLParsing, kUseFeatureState},
+          {"HTMLImports", blink::features::kWebComponentsV0, kUseFeatureState},
           {"IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow,
            kEnableOnly},
@@ -388,6 +397,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginIsolationHeader", features::kOriginIsolationHeader,
            kUseFeatureState},
           {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
+          {"ShadowDOMV0", blink::features::kWebComponentsV0, kUseFeatureState},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},
           {"TrustedDOMTypes", features::kTrustedDOMTypes, kEnableOnly},
           {"UserAgentClientHint", features::kUserAgentClientHint,
@@ -560,6 +570,16 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   // these features.
   if (enable_experimental_web_platform_features) {
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
+  }
+
+  // Except for stable release mode, web tests still run with Web Components
+  // v0 features enabled.
+  // TODO(crbug.com/937746): remove this once the features are deleted.
+  if (command_line.HasSwitch("run-web-tests") &&
+      !command_line.HasSwitch("stable-release-mode")) {
+    WebRuntimeFeatures::EnableShadowDOMV0(true);
+    WebRuntimeFeatures::EnableCustomElementsV0(true);
+    WebRuntimeFeatures::EnableHTMLImports(true);
   }
 
   WebRuntimeFeatures::EnableBackForwardCache(

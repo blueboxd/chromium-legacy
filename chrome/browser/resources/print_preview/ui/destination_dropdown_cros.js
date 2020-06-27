@@ -91,6 +91,12 @@ Polymer({
       return;
     }
 
+    const selectedItem = this.getButtonListFromDropdown_().find(
+        item => item.value === this.value.key);
+    if (selectedItem) {
+      selectedItem.toggleAttribute('highlighted_', true);
+    }
+
     this.$$('iron-dropdown').open();
     this.opened_ = true;
   },
@@ -100,9 +106,9 @@ Polymer({
     this.$$('iron-dropdown').close();
     this.opened_ = false;
 
-    const selectedItem = this.findSelectedItem_();
-    if (selectedItem) {
-      selectedItem.removeAttribute('selected_');
+    const highlightedItem = this.findHighlightedItem_();
+    if (highlightedItem) {
+      highlightedItem.toggleAttribute('highlighted_', false);
     }
   },
 
@@ -117,18 +123,19 @@ Polymer({
       return;
     }
 
-    // Select the item the mouse is hovering over. If the user uses the
-    // keyboard, the selection will shift. But once the user moves the mouse,
-    // selection should be updated based on the location of the mouse cursor.
-    const selectedItem = this.findSelectedItem_();
-    if (item === selectedItem) {
+    // Highlight the item the mouse is hovering over. If the user uses the
+    // keyboard, the highlight will shift. But once the user moves the mouse,
+    // the highlight should be updated based on the location of the mouse
+    // cursor.
+    const highlightedItem = this.findHighlightedItem_();
+    if (item === highlightedItem) {
       return;
     }
 
-    if (selectedItem) {
-      selectedItem.removeAttribute('selected_');
+    if (highlightedItem) {
+      highlightedItem.toggleAttribute('highlighted_', false);
     }
-    item.setAttribute('selected_', '');
+    item.toggleAttribute('highlighted_', true);
   },
 
   /**
@@ -156,11 +163,12 @@ Polymer({
     this.openDropdown_();
   },
 
-  /** @private */
-  onSelect_() {
-    const selectedItem = this.findSelectedItem_();
-    this.closeDropdown_();
-    this.fire('dropdown-value-selected', selectedItem);
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onSelect_(event) {
+    this.dropdownValueSelected_(/** @type {!Element} */ (event.currentTarget));
   },
 
   /**
@@ -180,12 +188,12 @@ Polymer({
         if (items.length === 0) {
           break;
         }
-        this.updateSelected_(event.code === 'ArrowDown');
+        this.updateHighlighted_(event.code === 'ArrowDown');
         break;
       }
       case 'Enter': {
         if (dropdown.opened) {
-          this.onSelect_();
+          this.dropdownValueSelected_(this.findHighlightedItem_());
           break;
         }
         this.openDropdown_();
@@ -202,11 +210,23 @@ Polymer({
   },
 
   /**
-   * Updates the currently selected element based on keyboard up/down movement.
+   * @param {Element|undefined} dropdownItem
+   * @private
+   */
+  dropdownValueSelected_(dropdownItem) {
+    this.closeDropdown_();
+    if (dropdownItem) {
+      this.fire('dropdown-value-selected', dropdownItem);
+    }
+  },
+
+  /**
+   * Updates the currently highlighted element based on keyboard up/down
+   *    movement.
    * @param {boolean} moveDown
    * @private
    */
-  updateSelected_(moveDown) {
+  updateHighlighted_(moveDown) {
     const items = this.getButtonListFromDropdown_();
     const numItems = items.length;
     if (numItems === 0) {
@@ -214,40 +234,40 @@ Polymer({
     }
 
     let nextIndex = 0;
-    const currentIndex = this.findSelectedItemIndex_();
+    const currentIndex = this.findHighlightedItemIndex_();
     if (currentIndex === -1) {
       nextIndex = moveDown ? 0 : numItems - 1;
     } else {
       const delta = moveDown ? 1 : -1;
       nextIndex = (numItems + currentIndex + delta) % numItems;
-      items[currentIndex].removeAttribute('selected_');
+      items[currentIndex].toggleAttribute('highlighted_', false);
     }
-    items[nextIndex].setAttribute('selected_', '');
-    // The newly selected item might not be visible because the dropdown needs
-    // to be scrolled. So scroll the dropdown if necessary.
+    items[nextIndex].toggleAttribute('highlighted_', true);
+    // The newly highlighted item might not be visible because the dropdown
+    // needs to be scrolled. So scroll the dropdown if necessary.
     items[nextIndex].scrollIntoViewIfNeeded();
   },
 
   /**
-   * Finds the currently selected dropdown item.
-   * @return {Element|undefined} Currently selected dropdown item, or undefined
-   *   if no item is selected.
+   * Finds the currently highlighted dropdown item.
+   * @return {Element|undefined} Currently highlighted dropdown item, or
+   *   undefined if no item is highlighted.
    * @private
    */
-  findSelectedItem_() {
+  findHighlightedItem_() {
     const items = this.getButtonListFromDropdown_();
-    return items.find(item => item.hasAttribute('selected_'));
+    return items.find(item => item.hasAttribute('highlighted_'));
   },
 
   /**
-   * Finds the index of currently selected dropdown item.
-   * @return {number} Index of the currently selected dropdown item, or -1 if
-   *   no item is selected.
+   * Finds the index of currently highlighted dropdown item.
+   * @return {number} Index of the currently highlighted dropdown item, or -1 if
+   *   no item is highlighted.
    * @private
    */
-  findSelectedItemIndex_() {
+  findHighlightedItemIndex_() {
     const items = this.getButtonListFromDropdown_();
-    return items.findIndex(item => item.hasAttribute('selected_'));
+    return items.findIndex(item => item.hasAttribute('highlighted_'));
   },
 
   /**

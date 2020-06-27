@@ -436,6 +436,7 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
 
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));
+  web_app->SetIsGeneratedIcon(web_app_info.is_generated_icon);
 
   web_app->SetShortcutInfos(web_app_info.shortcut_infos);
   web_app->SetDownloadedShortcutsMenuIconsSizes(

@@ -30,10 +30,9 @@ TEST_F(FormatSupportCheckerUnittest, NullDeviceDoesntCrash) {
 }
 
 TEST_F(FormatSupportCheckerUnittest, CheckInitializationCantCast) {
-  auto device = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
-  auto vdevice = CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();
-  auto enumerator =
-      CreateD3D11Mock<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
+  auto device = MakeComPtr<NiceMock<D3D11DeviceMock>>();
+  auto vdevice = MakeComPtr<NiceMock<D3D11VideoDeviceMock>>();
+  auto enumerator = MakeComPtr<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
 
   ON_CALL(*device.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
       .WillByDefault(SetComPointeeAndReturnOk<1>(vdevice.Get()));
@@ -51,10 +50,9 @@ TEST_F(FormatSupportCheckerUnittest, CheckInitializationCantCast) {
 }
 
 TEST_F(FormatSupportCheckerUnittest, CheckFormatSupportWorks) {
-  auto device = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
-  auto vdevice = CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();
-  auto enumerator =
-      CreateD3D11Mock<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
+  auto device = MakeComPtr<NiceMock<D3D11DeviceMock>>();
+  auto vdevice = MakeComPtr<NiceMock<D3D11VideoDeviceMock>>();
+  auto enumerator = MakeComPtr<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
 
   ON_CALL(*device.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
       .WillByDefault(SetComPointeeAndReturnOk<1>(vdevice.Get()));
@@ -81,10 +79,9 @@ TEST_F(FormatSupportCheckerUnittest, CheckFormatSupportWorks) {
 }
 
 TEST_F(FormatSupportCheckerUnittest, CheckFormatSupportRequiresBoth) {
-  auto device = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
-  auto vdevice = CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();
-  auto enumerator =
-      CreateD3D11Mock<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
+  auto device = MakeComPtr<NiceMock<D3D11DeviceMock>>();
+  auto vdevice = MakeComPtr<NiceMock<D3D11VideoDeviceMock>>();
+  auto enumerator = MakeComPtr<NiceMock<D3D11VideoProcessorEnumeratorMock>>();
 
   ON_CALL(*device.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
       .WillByDefault(SetComPointeeAndReturnOk<1>(vdevice.Get()));

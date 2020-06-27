@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/hotseat_widget.h"
-#include <memory>
+
 #include <utility>
 
 #include "ash/focus_cycler.h"
@@ -29,6 +29,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_analysis.h"
@@ -43,16 +44,12 @@ namespace ash {
 namespace {
 
 void DoScopedAnimationSetting(
-    ui::ScopedLayerAnimationSettings* animation_setter,
-    ui::AnimationMetricsReporter* metrics_reporter) {
+    ui::ScopedLayerAnimationSettings* animation_setter) {
   animation_setter->SetTransitionDuration(
       ShelfConfig::Get()->shelf_animation_duration());
   animation_setter->SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter->SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (metrics_reporter) {
-    animation_setter->SetAnimationMetricsReporter(metrics_reporter);
-  }
 }
 
 // Calculates the state transition type for the given previous state and
@@ -401,15 +398,18 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
 
   translucent_background_.SetVisible(true);
   SetBackgroundBlur(/*enable_blur=*/true);
-  ui::AnimationMetricsReporter* metrics_reporter =
-      hotseat_widget_
-          ? hotseat_widget_->GetTranslucentBackgroundMetricsReporter()
-          : nullptr;
+
+  auto* animator = translucent_background_.GetAnimator();
+
+  base::Optional<ui::AnimationThroughputReporter> reporter;
+  if (hotseat_widget_) {
+    reporter.emplace(animator,
+                     hotseat_widget_->GetTranslucentBackgroundReportCallback());
+  }
 
   if (ShelfConfig::Get()->GetDefaultShelfColor() != target_color_) {
-    ui::ScopedLayerAnimationSettings color_animation_setter(
-        translucent_background_.GetAnimator());
-    DoScopedAnimationSetting(&color_animation_setter, metrics_reporter);
+    ui::ScopedLayerAnimationSettings color_animation_setter(animator);
+    DoScopedAnimationSetting(&color_animation_setter);
     target_color_ = ShelfConfig::Get()->GetDefaultShelfColor();
     translucent_background_.SetColor(target_color_);
   }
@@ -423,9 +423,8 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
        !scrollable_shelf_view_->NeedUpdateToTargetBounds());
   base::Optional<ui::ScopedLayerAnimationSettings> bounds_animation_setter;
   if (animate_bounds) {
-    bounds_animation_setter.emplace(translucent_background_.GetAnimator());
-    DoScopedAnimationSetting(&bounds_animation_setter.value(),
-                             metrics_reporter);
+    bounds_animation_setter.emplace(animator);
+    DoScopedAnimationSetting(&bounds_animation_setter.value());
   }
 
   const int radius = hotseat_widget_->GetHotseatSize() / 2;
@@ -810,8 +809,10 @@ void HotseatWidget::UpdateLayout(bool animate) {
     animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
     animation_setter.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    animation_setter.SetAnimationMetricsReporter(
-        shelf_->GetHotseatTransitionMetricsReporter(state_));
+
+    ui::AnimationThroughputReporter reporter(
+        animation_setter.GetAnimator(),
+        shelf_->GetHotseatTransitionReportCallback(state_));
 
     shelf_view_layer->SetOpacity(new_layout_inputs.shelf_view_opacity);
   }
@@ -918,9 +919,9 @@ const ShelfView* HotseatWidget::GetShelfView() const {
       const_cast<HotseatWidget*>(this)->GetShelfView());
 }
 
-ui::AnimationMetricsReporter*
-HotseatWidget::GetTranslucentBackgroundMetricsReporter() {
-  return shelf_->GetTranslucentBackgroundMetricsReporter(state_);
+metrics_util::ReportCallback
+HotseatWidget::GetTranslucentBackgroundReportCallback() {
+  return shelf_->GetTranslucentBackgroundReportCallback(state_);
 }
 
 void HotseatWidget::SetState(HotseatState state) {
@@ -1008,8 +1009,10 @@ void HotseatWidget::LayoutHotseatByAnimation(double target_opacity,
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animation_setter.SetAnimationMetricsReporter(
-      shelf_->GetHotseatTransitionMetricsReporter(state_));
+
+  ui::AnimationThroughputReporter reporter(
+      animation_setter.GetAnimator(),
+      shelf_->GetHotseatTransitionReportCallback(state_));
 
   if (!state_transition_in_progress_.has_value()) {
     // Hotseat animation is not triggered by the update in |state_|. So apply

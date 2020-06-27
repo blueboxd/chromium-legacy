@@ -56,19 +56,18 @@ class SupportedResolutionResolverTest : public ::testing::Test {
  public:
   void SetUp() override {
     gpu_workarounds_.disable_dxgi_zero_copy_video = false;
-    mock_d3d11_device_ = CreateD3D11Mock<NiceMock<D3D11DeviceMock>>();
+    mock_d3d11_device_ = MakeComPtr<NiceMock<D3D11DeviceMock>>();
 
-    mock_dxgi_device_ = CreateD3D11Mock<NiceMock<DXGIDeviceMock>>();
+    mock_dxgi_device_ = MakeComPtr<NiceMock<DXGIDeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), QueryInterface(IID_IDXGIDevice, _))
         .WillByDefault(SetComPointeeAndReturnOk<1>(mock_dxgi_device_.Get()));
 
-    mock_d3d11_video_device_ =
-        CreateD3D11Mock<NiceMock<D3D11VideoDeviceMock>>();
+    mock_d3d11_video_device_ = MakeComPtr<NiceMock<D3D11VideoDeviceMock>>();
     ON_CALL(*mock_d3d11_device_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
         .WillByDefault(
             SetComPointeeAndReturnOk<1>(mock_d3d11_video_device_.Get()));
 
-    mock_dxgi_adapter_ = CreateD3D11Mock<NiceMock<DXGIAdapterMock>>();
+    mock_dxgi_adapter_ = MakeComPtr<NiceMock<DXGIAdapterMock>>();
     ON_CALL(*mock_dxgi_device_.Get(), GetAdapter(_))
         .WillByDefault(SetComPointeeAndReturnOk<0>(mock_dxgi_adapter_.Get()));
 

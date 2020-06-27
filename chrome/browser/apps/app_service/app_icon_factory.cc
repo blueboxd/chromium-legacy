@@ -54,6 +54,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif
 
 namespace {
@@ -361,8 +362,19 @@ void IconLoadingPipeline::LoadWebAppIcon(
           return;
         }
         FALLTHROUGH;
-      case apps::mojom::IconCompression::kUncompressed:
+      case apps::mojom::IconCompression::kUncompressed: {
+        // For uncompressed icon, apply the resize and pad effect.
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ | apps::IconEffects::kResizeAndPad);
+
+        // For uncompressed icon, clear the standard icon effects: kBackground
+        // and kMask.
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
+        icon_effects_ = static_cast<apps::IconEffects>(
+            icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
         FALLTHROUGH;
+      }
       case apps::mojom::IconCompression::kStandard:
         // If |icon_effects| are requested, we must always load the
         // uncompressed image to apply the icon effects, and then re-encode the
@@ -372,10 +384,6 @@ void IconLoadingPipeline::LoadWebAppIcon(
             SkBitmapToImageSkiaCallback(base::BindOnce(
                 &IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                 base::WrapRefCounted(this))));
-
-        // TODO(crbug.com/1083331): For kStandard icons, if the icon is
-        // generated or maskable, modify the icon effect, don't apply
-        // kResizeAndPad to shrink the icon.
         return;
       case apps::mojom::IconCompression::kUnknown:
         break;
@@ -651,6 +659,20 @@ void ApplyIconEffects(IconEffects icon_effects,
     // cases MD design is used in another not."
     resize_function =
         base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
+  }
+
+  if (icon_effects & IconEffects::kCrOsStandardMask) {
+    const gfx::ImageSkia* mask_image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_ICON_MASK);
+    DCHECK(mask_image);
+    gfx::ImageSkia resized_badge_image = *mask_image;
+    if (mask_image->size() != image_skia->size()) {
+      resized_badge_image = gfx::ImageSkiaOperations::CreateResizedImage(
+          *mask_image, skia::ImageOperations::RESIZE_BEST, image_skia->size());
+    }
+    *image_skia = gfx::ImageSkiaOperations::CreateMaskedImage(
+        *image_skia, resized_badge_image);
   }
 #endif
 

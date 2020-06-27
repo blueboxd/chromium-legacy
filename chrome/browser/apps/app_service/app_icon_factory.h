@@ -39,6 +39,9 @@ enum IconEffects : uint32_t {
   kPendingLocalLaunch = 0x20,  // Apps that are installed through sync, but
                                // have not been launched locally yet. They
                                // should appear gray until they are launched.
+  kCrOsStandardBackground =
+      0x40,                  // Add the white background to the standard icon.
+  kCrOsStandardMask = 0x80,  // Apply the mask to the standard icon.
 };
 
 // Modifies |image_skia| to apply icon post-processing effects like badging and

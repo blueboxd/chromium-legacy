@@ -188,7 +188,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b29a1a665323d60b98aaf6197d4110e6e0362f16',
+  'skia_revision': '61d454379b0b012d25aa52a430016d6426cab61b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -259,7 +259,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '542833e1cd844a64086943d602cadc5c56873651',
+  'devtools_frontend_revision': 'd4e583c077b792d472ffa551b97a2780c36f07ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1213,7 +1213,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + 'a926fdc3321ea05723273b8d1e1d0a7b35677e42',
+    Var('chromium_git') + '/openscreen' + '@' + '608e0dbc107334f5743bca6c0e2bec5d10457a5c',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1530,7 +1530,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@417c40c71c8b4e301460746f3837f6b6a46c5d8c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b9804cbbd5e807f46a7fee22ffeea389d334d7ec',
     'condition': 'checkout_src_internal',
   },
 

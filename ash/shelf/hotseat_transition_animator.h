@@ -59,7 +59,6 @@ class ASH_EXPORT HotseatTransitionAnimator
   void SetTestObserver(TestObserver* test_observer);
 
  private:
-  class TransitionAnimationMetricsReporter;
   // Starts the animation between |old_state| and |target_state|.
   void DoAnimation(HotseatState old_state, HotseatState new_state);
 
@@ -84,10 +83,6 @@ class ASH_EXPORT HotseatTransitionAnimator
 
   // A test observer used to wait for the hotseat transition animation.
   TestObserver* test_observer_ = nullptr;
-
-  // Metric reporter for hotseat transitions.
-  std::unique_ptr<TransitionAnimationMetricsReporter>
-      animation_metrics_reporter_;
 
   base::WeakPtrFactory<HotseatTransitionAnimator> weak_ptr_factory_{this};
 };

@@ -182,6 +182,10 @@ void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
   downloaded_icon_sizes_ = std::move(sizes);
 }
 
+void WebApp::SetIsGeneratedIcon(bool is_generated_icon) {
+  is_generated_icon_ = is_generated_icon;
+}
+
 void WebApp::SetFileHandlers(apps::FileHandlers file_handlers) {
   file_handlers_ = std::move(file_handlers);
 }
@@ -265,7 +269,8 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << app.sync_fallback_data_ << "  description: " << app.description_
       << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
-      << "  install_time: " << app.install_time_ << std::endl;
+      << "  install_time: " << app.install_time_ << std::endl
+      << "  is_generated_icon_: " << app.is_generated_icon_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
     out << "  icon_info: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_)
@@ -303,23 +308,23 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
   return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.icon_infos_, app1.downloaded_icon_sizes_,
-                  app1.display_mode_, app1.user_display_mode_,
-                  app1.user_page_ordinal_, app1.user_launch_ordinal_,
-                  app1.chromeos_data_, app1.is_locally_installed_,
-                  app1.is_in_sync_install_, app1.file_handlers_,
-                  app1.additional_search_terms_, app1.protocol_handlers_,
-                  app1.sync_fallback_data_, app1.last_launch_time_,
-                  app1.install_time_) ==
+                  app1.is_generated_icon_, app1.display_mode_,
+                  app1.user_display_mode_, app1.user_page_ordinal_,
+                  app1.user_launch_ordinal_, app1.chromeos_data_,
+                  app1.is_locally_installed_, app1.is_in_sync_install_,
+                  app1.file_handlers_, app1.additional_search_terms_,
+                  app1.protocol_handlers_, app1.sync_fallback_data_,
+                  app1.last_launch_time_, app1.install_time_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icon_infos_, app2.downloaded_icon_sizes_,
-                  app2.display_mode_, app2.user_display_mode_,
-                  app2.user_page_ordinal_, app2.user_launch_ordinal_,
-                  app2.chromeos_data_, app2.is_locally_installed_,
-                  app2.is_in_sync_install_, app2.file_handlers_,
-                  app2.additional_search_terms_, app2.protocol_handlers_,
-                  app2.sync_fallback_data_, app2.last_launch_time_,
-                  app2.install_time_);
+                  app2.is_generated_icon_, app2.display_mode_,
+                  app2.user_display_mode_, app2.user_page_ordinal_,
+                  app2.user_launch_ordinal_, app2.chromeos_data_,
+                  app2.is_locally_installed_, app2.is_in_sync_install_,
+                  app2.file_handlers_, app2.additional_search_terms_,
+                  app2.protocol_handlers_, app2.sync_fallback_data_,
+                  app2.last_launch_time_, app2.install_time_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

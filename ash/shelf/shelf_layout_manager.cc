@@ -63,6 +63,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -129,26 +130,21 @@ ui::Layer* GetLayer(views::Widget* widget) {
 
 void SetupAnimator(ui::ScopedLayerAnimationSettings* animation_setter,
                    base::TimeDelta animation_duration,
-                   gfx::Tween::Type type,
-                   ui::AnimationMetricsReporter* animation_metrics_reporter) {
+                   gfx::Tween::Type type) {
   animation_setter->SetTransitionDuration(animation_duration);
   if (!animation_duration.is_zero()) {
     animation_setter->SetTweenType(type);
     animation_setter->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    if (animation_metrics_reporter)
-      animation_setter->SetAnimationMetricsReporter(animation_metrics_reporter);
   }
 }
 
 void AnimateOpacity(ui::Layer* layer,
                     float target_opacity,
                     base::TimeDelta animation_duration,
-                    gfx::Tween::Type type,
-                    ui::AnimationMetricsReporter* animation_metrics_reporter) {
+                    gfx::Tween::Type type) {
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  SetupAnimator(&animation_setter, animation_duration, type,
-                animation_metrics_reporter);
+  SetupAnimator(&animation_setter, animation_duration, type);
   layer->SetOpacity(target_opacity);
 }
 
@@ -1530,18 +1526,23 @@ bool ShelfLayoutManager::SetDimmed(bool dimmed) {
   const gfx::Tween::Type dim_animation_tween =
       ShelfConfig::Get()->DimAnimationTween();
 
+  const bool animate = !dim_animation_duration.is_zero();
+  base::Optional<ui::AnimationThroughputReporter> navigation_widget_reporter;
+  if (animate) {
+    navigation_widget_reporter.emplace(
+        GetLayer(shelf_->navigation_widget())->GetAnimator(),
+        shelf_->GetNavigationWidgetAnimationReportCallback());
+  }
+
   AnimateOpacity(GetLayer(shelf_->navigation_widget()), target_opacity_,
-                 dim_animation_duration, dim_animation_tween,
-                 shelf_->GetNavigationWidgetAnimationMetricsReporter());
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(shelf_->hotseat_widget()->GetShelfView()->layer(),
                  shelf_->hotseat_widget()->CalculateShelfViewOpacity(),
-                 dim_animation_duration, dim_animation_tween,
-                 /*animation_metrics_reporter=*/nullptr);
+                 dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(GetLayer(shelf_->status_area_widget()), target_opacity_,
-                 dim_animation_duration, dim_animation_tween,
-                 /*animation_metrics_reporter=*/nullptr);
+                 dim_animation_duration, dim_animation_tween);
 
   shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
   return true;

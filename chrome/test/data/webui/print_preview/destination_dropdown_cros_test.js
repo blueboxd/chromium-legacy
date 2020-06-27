@@ -15,16 +15,17 @@ destination_dropdown_cros_test.suiteName =
 /** @enum {string} */
 destination_dropdown_cros_test.TestNames = {
   CorrectListItems: 'correct list items',
-  ClickRemovesSelected: 'click removes selected',
+  ClickRemovesHighlight: 'click removes highlight',
   ClickCloses: 'click closes dropdown',
   TabCloses: 'tab closes dropdown',
-  SelectedAfterUpDown: 'selected after keyboard press up and down',
+  HighlightedAfterUpDown: 'highlighted after keyboard press up and down',
   EnterOpensCloses: 'enter opens and closes dropdown',
-  SelectedFollowsMouse: 'selected follows mouse',
+  HighlightedFollowsMouse: 'highlighted follows mouse',
   Disabled: 'disabled',
   HiddenDestinationBadge: 'hidden destination badge',
   NewStatusUpdatesDestinationIcon: 'new status updates destination icon',
   ChangingDestinationUpdatesIcon: 'changing destination updates icon',
+  HighlightedWhenOpened: 'highlighted when opened',
 };
 
 suite(destination_dropdown_cros_test.suiteName, function() {
@@ -69,13 +70,13 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   }
 
   /** @return {?Element} */
-  function getSelectedElement() {
-    return dropdown.$$('[selected_]');
+  function getHighlightedElement() {
+    return dropdown.$$('[highlighted_]');
   }
 
   /** @return {string} */
-  function getSelectedElementText() {
-    return getSelectedElement().textContent.trim();
+  function getHighlightedElementText() {
+    return getHighlightedElement().textContent.trim();
   }
 
   /**
@@ -117,23 +118,24 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       });
 
   test(
-      assert(destination_dropdown_cros_test.TestNames.ClickRemovesSelected),
+      assert(destination_dropdown_cros_test.TestNames.ClickRemovesHighlight),
       function() {
-        setItemList([
-          createDestination('One', DestinationOrigin.CROS),
-          createDestination('Two', DestinationOrigin.CROS)
-        ]);
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
+        setItemList([destinationOne]);
+        dropdown.value = destinationOne;
 
-        getList()[1].setAttribute('selected_', '');
-        assertTrue(getList()[1].hasAttribute('selected_'));
+        getList()[0].toggleAttribute('highlighted_', true);
+        assertTrue(getList()[0].hasAttribute('highlighted_'));
 
-        getList()[1].click();
-        assertFalse(getList()[1].hasAttribute('selected_'));
+        getList()[0].click();
+        assertFalse(getList()[0].hasAttribute('highlighted_'));
       });
 
   test(
       assert(destination_dropdown_cros_test.TestNames.ClickCloses), function() {
-        setItemList([createDestination('One', DestinationOrigin.CROS)]);
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
+        setItemList([destinationOne]);
+        dropdown.value = destinationOne;
         const ironDropdown = dropdown.$$('iron-dropdown');
 
         pointerDown(dropdown.$$('#dropdownInput'));
@@ -151,7 +153,9 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       });
 
   test(assert(destination_dropdown_cros_test.TestNames.TabCloses), function() {
-    setItemList([createDestination('One', DestinationOrigin.CROS)]);
+    const destinationOne = createDestination('One', DestinationOrigin.CROS);
+    setItemList([destinationOne]);
+    dropdown.value = destinationOne;
     const ironDropdown = dropdown.$$('iron-dropdown');
 
     pointerDown(dropdown.$$('#dropdownInput'));
@@ -162,37 +166,39 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   });
 
   test(
-      assert(destination_dropdown_cros_test.TestNames.SelectedAfterUpDown),
+      assert(destination_dropdown_cros_test.TestNames.HighlightedAfterUpDown),
       function() {
-        setItemList([createDestination('One', DestinationOrigin.CROS)]);
-
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
+        setItemList([destinationOne]);
+        dropdown.value = destinationOne;
         pointerDown(dropdown.$$('#dropdownInput'));
 
+        assertEquals('One', getHighlightedElementText());
         down();
-        assertEquals('One', getSelectedElementText());
+        assertEquals('Save as PDF', getHighlightedElementText());
         down();
-        assertEquals('Save as PDF', getSelectedElementText());
+        assertEquals('Save to Google Drive', getHighlightedElementText());
         down();
-        assertEquals('Save to Google Drive', getSelectedElementText());
+        assertEquals('See more…', getHighlightedElementText());
         down();
-        assertEquals('See more…', getSelectedElementText());
-        down();
-        assertEquals('One', getSelectedElementText());
+        assertEquals('One', getHighlightedElementText());
 
         up();
-        assertEquals('See more…', getSelectedElementText());
+        assertEquals('See more…', getHighlightedElementText());
         up();
-        assertEquals('Save to Google Drive', getSelectedElementText());
+        assertEquals('Save to Google Drive', getHighlightedElementText());
         up();
-        assertEquals('Save as PDF', getSelectedElementText());
+        assertEquals('Save as PDF', getHighlightedElementText());
         up();
-        assertEquals('One', getSelectedElementText());
+        assertEquals('One', getHighlightedElementText());
       });
 
   test(
       assert(destination_dropdown_cros_test.TestNames.EnterOpensCloses),
       function() {
-        setItemList([createDestination('One', DestinationOrigin.CROS)]);
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
+        setItemList([destinationOne]);
+        dropdown.value = destinationOne;
 
         assertFalse(dropdown.$$('iron-dropdown').opened);
         enter();
@@ -202,33 +208,35 @@ suite(destination_dropdown_cros_test.suiteName, function() {
       });
 
   test(
-      assert(destination_dropdown_cros_test.TestNames.SelectedFollowsMouse),
+      assert(destination_dropdown_cros_test.TestNames.HighlightedFollowsMouse),
       function() {
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
         setItemList([
-          createDestination('One', DestinationOrigin.CROS),
-          createDestination('Two', DestinationOrigin.CROS),
+          destinationOne, createDestination('Two', DestinationOrigin.CROS),
           createDestination('Three', DestinationOrigin.CROS)
         ]);
-
+        dropdown.value = destinationOne;
         pointerDown(dropdown.$$('#dropdownInput'));
 
         move(getList()[1], {x: 0, y: 0}, {x: 0, y: 0}, 1);
-        assertEquals('Two', getSelectedElementText());
+        assertEquals('Two', getHighlightedElementText());
         move(getList()[2], {x: 0, y: 0}, {x: 0, y: 0}, 1);
-        assertEquals('Three', getSelectedElementText());
+        assertEquals('Three', getHighlightedElementText());
 
-        // Interacting with the keyboard should update the selected element.
+        // Interacting with the keyboard should update the highlighted element.
         up();
-        assertEquals('Two', getSelectedElementText());
+        assertEquals('Two', getHighlightedElementText());
 
-        // When the user moves the mouse again, the selected element should
+        // When the user moves the mouse again, the highlighted element should
         // change.
         move(getList()[0], {x: 0, y: 0}, {x: 0, y: 0}, 1);
-        assertEquals('One', getSelectedElementText());
+        assertEquals('One', getHighlightedElementText());
       });
 
   test(assert(destination_dropdown_cros_test.TestNames.Disabled), function() {
-    setItemList([createDestination('One', DestinationOrigin.CROS)]);
+    const destinationOne = createDestination('One', DestinationOrigin.CROS);
+    setItemList([destinationOne]);
+    dropdown.value = destinationOne;
     dropdown.disabled = true;
 
     pointerDown(dropdown.$$('#dropdownInput'));
@@ -303,5 +311,27 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
         dropdown.value = unknownDestination;
         assertEquals(PrinterState.UNKNOWN, destinationBadge.state);
+      });
+
+  test(
+      assert(destination_dropdown_cros_test.TestNames.HighlightedWhenOpened),
+      function() {
+        const destinationTwo = createDestination('Two', DestinationOrigin.CROS);
+        const destinationThree =
+            createDestination('Three', DestinationOrigin.CROS);
+        setItemList([
+          createDestination('One', DestinationOrigin.CROS),
+          destinationTwo,
+          destinationThree,
+        ]);
+
+        dropdown.value = destinationTwo;
+        pointerDown(dropdown.$$('#dropdownInput'));
+        assertEquals('Two', getHighlightedElementText());
+        pointerDown(dropdown.$$('#dropdownInput'));
+
+        dropdown.value = destinationThree;
+        pointerDown(dropdown.$$('#dropdownInput'));
+        assertEquals('Three', getHighlightedElementText());
       });
 });

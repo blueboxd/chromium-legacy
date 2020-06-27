@@ -36,11 +36,11 @@ class D3D11VideoProcessorProxyUnittest : public ::testing::Test {
   MockD3D11VideoProcessor proc_;
 
   std::unique_ptr<VideoProcessorProxy> CreateProxy() {
-    dev_ = CreateD3D11Mock<D3D11VideoDeviceMock>();
-    ctx_ = CreateD3D11Mock<D3D11DeviceContextMock>();
-    vctx_ = CreateD3D11Mock<D3D11VideoContextMock>();
-    proc_ = CreateD3D11Mock<D3D11VideoProcessorMock>();
-    enumerator_ = CreateD3D11Mock<D3D11VideoProcessorEnumeratorMock>();
+    dev_ = MakeComPtr<D3D11VideoDeviceMock>();
+    ctx_ = MakeComPtr<D3D11DeviceContextMock>();
+    vctx_ = MakeComPtr<D3D11VideoContextMock>();
+    proc_ = MakeComPtr<D3D11VideoProcessorMock>();
+    enumerator_ = MakeComPtr<D3D11VideoProcessorEnumeratorMock>();
 
     EXPECT_CALL(*dev_.Get(), CreateVideoProcessorEnumerator(_, _))
         .WillOnce(SetComPointeeAndReturnOk<1>(enumerator_.Get()));

@@ -344,7 +344,7 @@ TEST_P(PasswordManagerPorterStoreTest, Import) {
   EXPECT_THAT(credentials.second,
               UnorderedPointwise(FormHasDescription(), tc.descriptions));
 
-  base::DeleteFile(temp_file_path, /*recursive=*/false);
+  base::DeleteFile(temp_file_path);
   store->ShutdownOnUIThread();
 }
 

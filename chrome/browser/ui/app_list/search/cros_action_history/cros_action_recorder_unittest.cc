@@ -52,7 +52,7 @@ class CrOSActionRecorderTest : public testing::Test {
     Test::TearDown();
     // Delete download_filename_ because it is put into a directory that may not
     // be deleted automatically.
-    base::DeleteFile(download_filename_, false);
+    base::DeleteFile(download_filename_);
   }
 
   CrOSActionHistoryProto GetCrOSActionHistory() { return recorder_->actions_; }

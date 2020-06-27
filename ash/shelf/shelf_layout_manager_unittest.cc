@@ -618,7 +618,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  // Tests that the shelf is visible when in overview mode
+  // Tests that the shelf is visible when in overview mode.
   overview_controller->StartOverview();
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kEnterAnimationComplete);

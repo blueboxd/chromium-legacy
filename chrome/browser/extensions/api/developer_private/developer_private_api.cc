@@ -1771,7 +1771,7 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
 
     Profile* profile = Profile::FromBrowserContext(browser_context());
     if (properties.incognito && *properties.incognito)
-      profile = profile->GetOffTheRecordProfile();
+      profile = profile->GetPrimaryOTRProfile();
 
     // Wakes up the background page and opens the inspect window.
     devtools_util::InspectBackgroundPage(extension, profile);

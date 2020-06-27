@@ -38,10 +38,6 @@ class LayoutThemeMac final : public LayoutTheme {
  public:
   static scoped_refptr<LayoutTheme> Create();
 
-  void AddVisualOverflow(const Node*,
-                         const ComputedStyle&,
-                         IntRect& border_box) override;
-
   bool IsControlStyled(ControlPart part, const ComputedStyle&) const override;
 
   Color PlatformActiveSelectionBackgroundColor(

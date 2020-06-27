@@ -196,7 +196,7 @@ void RegisterFileHandlersWithOsTask(
 
   // Create a hard link to the chrome pwa launcher app. Delete any pre-existing
   // version of the file first.
-  base::DeleteFile(app_specific_launcher_path, /*recursive=*/false);
+  base::DeleteFile(app_specific_launcher_path);
   if (!base::CreateWinHardLink(app_specific_launcher_path, pwa_launcher_path) &&
       !base::CopyFile(pwa_launcher_path, app_specific_launcher_path)) {
     DPLOG(ERROR) << "Unable to copy the generic PWA launcher";

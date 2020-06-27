@@ -16,7 +16,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/web_test/web_test_content_index_provider.h"
+#include "content/shell/browser/shell_content_index_provider.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
@@ -38,7 +38,7 @@ class ContentIndexTest : public ContentBrowserTest {
     ASSERT_TRUE(NavigateToURL(
         shell_, https_server_->GetURL("/content_index/test.html")));
 
-    provider_ = static_cast<WebTestContentIndexProvider*>(
+    provider_ = static_cast<ShellContentIndexProvider*>(
         shell_->web_contents()->GetBrowserContext()->GetContentIndexProvider());
     ASSERT_TRUE(provider_);
 
@@ -76,11 +76,11 @@ class ContentIndexTest : public ContentBrowserTest {
     return out_icons;
   }
 
-  WebTestContentIndexProvider* provider() { return provider_; }
+  ShellContentIndexProvider* provider() { return provider_; }
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  WebTestContentIndexProvider* provider_;
+  ShellContentIndexProvider* provider_;
   ContentIndexContext* context_;
   Shell* shell_;
 };

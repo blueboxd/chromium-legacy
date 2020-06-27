@@ -715,6 +715,43 @@ TEST_P(SafeBrowsingTabHelperTest, InterruptedUnsafeRedirectChain) {
   EXPECT_TRUE(response_decision.ShouldAllowNavigation());
 }
 
+// Tests the case of a redirection chain where a safe URL redirects to itself.
+TEST_P(SafeBrowsingTabHelperTest, RedirectToSameSafeURL) {
+  GURL url("http://chromium.test");
+  EXPECT_TRUE(ShouldAllowRequestUrl(url).ShouldAllowNavigation());
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Simulate the URL redirecting to itself multiple times before producing a
+  // response.
+  SimulateMainFrameRedirect();
+  SimulateMainFrameRedirect();
+  SimulateMainFrameRedirect();
+
+  web::WebStatePolicyDecider::PolicyDecision response_decision =
+      ShouldAllowResponseUrl(url);
+  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+}
+
+// Tests the case of a redirection chain where an unsafe URL redirects to
+// itself.
+TEST_P(SafeBrowsingTabHelperTest, RedirectToSameUnsafeURL) {
+  GURL url("http://" + FakeSafeBrowsingService::kUnsafeHost);
+  EXPECT_TRUE(ShouldAllowRequestUrl(url).ShouldAllowNavigation());
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Simulate the URL redirecting to itself multiple times before producing a
+  // response.
+  SimulateMainFrameRedirect();
+  SimulateMainFrameRedirect();
+  SimulateMainFrameRedirect();
+
+  web::WebStatePolicyDecider::PolicyDecision response_decision =
+      ShouldAllowResponseUrl(url);
+  EXPECT_TRUE(response_decision.ShouldCancelNavigation());
+}
+
 // Tests that prerendering is cancelled when the URL being prerendered is
 // unsafe.
 TEST_P(SafeBrowsingTabHelperTest, UnsafeMainFrameRequestCancelsPrerendering) {

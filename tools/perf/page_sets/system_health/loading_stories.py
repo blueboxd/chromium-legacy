@@ -290,6 +290,13 @@ class LoadYouTubeStory2018(_LoadingStory):
   ]
 
 
+class LoadYouTubeLivingRoomStory2020(_LoadingStory):
+  NAME = 'load:media:youtubelivingroom:2020'
+  URL = 'https://www.youtube.com/tv#/watch?v=AIyonw6LEOs'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2020]
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
 class LoadDailymotionStory2019(_LoadingStory):
   NAME = 'load:media:dailymotion:2019'
   URL = ('https://www.dailymotion.com/video/x7paozv')

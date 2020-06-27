@@ -31,7 +31,7 @@ class WebAppRunOnOsLoginWinTest : public WebAppTest {
     base::FilePath location = GetStartupFolder();
     std::vector<base::FilePath> shortcuts = GetShortcuts();
     for (const auto& shortcut_file : shortcuts) {
-      base::DeleteFile(shortcut_file, /*recursive=*/false);
+      base::DeleteFile(shortcut_file);
     }
     WebAppTest::TearDown();
   }

@@ -461,7 +461,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
   DownloadManager* GetOffRecordManager() {
     return BrowserContext::GetDownloadManager(
-        browser()->profile()->GetOffTheRecordProfile());
+        browser()->profile()->GetPrimaryOTRProfile());
   }
   DownloadManager* GetCurrentManager() {
     return (current_browser_ == incognito_browser_) ?

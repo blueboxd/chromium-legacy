@@ -227,7 +227,8 @@ void ArcAppTest::TearDown() {
   app_instance_.reset();
   arc_play_store_enabled_preference_handler_.reset();
   arc_session_manager_.reset();
-  arc_service_manager_.reset();
+  if (!persist_service_manager_)
+    arc_service_manager_.reset();
   arc::ResetArcAllowedCheckForTesting(profile_);
   if (dbus_thread_manager_initialized_) {
     // DBusThreadManager may be initialized from other testing utility,

@@ -116,7 +116,7 @@ Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
                                           const CSSValue& value,
                                           bool for_visited_link) {
   return state.GetDocument().GetTextLinkColors().ColorFromCSSValue(
-      value, state.Style()->GetColor(), state.Style()->UsedColorScheme(),
+      value, state.Style()->GetCurrentColor(), state.Style()->UsedColorScheme(),
       for_visited_link);
 }
 
@@ -1540,7 +1540,7 @@ SVGPaint StyleBuilderConverter::ConvertSVGPaint(StyleResolverState& state,
           !paint.resource ? SVG_PAINTTYPE_NONE : SVG_PAINTTYPE_URI_NONE;
     } else if (local_identifier_value && local_identifier_value->GetValueID() ==
                                              CSSValueID::kCurrentcolor) {
-      paint.color = state.Style()->GetColor();
+      paint.color = state.Style()->GetCurrentColor();
       paint.type = !paint.resource ? SVG_PAINTTYPE_CURRENTCOLOR
                                    : SVG_PAINTTYPE_URI_CURRENTCOLOR;
     } else {

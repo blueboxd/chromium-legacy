@@ -284,7 +284,7 @@ base::FilePath GetAppShortcutFilename(const base::FilePath& profile_path,
 void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
   base::FilePath desktop_path;
   if (base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
-    base::DeleteFile(desktop_path.Append(shortcut_filename), false);
+    base::DeleteFile(desktop_path.Append(shortcut_filename));
 }
 
 void DeleteShortcutInApplicationsMenu(

@@ -39,7 +39,7 @@ TYPED_TEST_SUITE(NttParametersTest, rlwe::testing::ModularIntTypes);
 
 TYPED_TEST(NttParametersTest, LogNumCoeffsTooLarge) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
@@ -71,7 +71,7 @@ TYPED_TEST(NttParametersTest, PrimitiveNthRootOfUnity) {
   unsigned int len = 5;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
@@ -97,7 +97,7 @@ TYPED_TEST(NttParametersTest, PrimitiveNthRootOfUnity) {
 
 TYPED_TEST(NttParametersTest, NttPsis) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
@@ -131,7 +131,7 @@ TYPED_TEST(NttParametersTest, NttPsis) {
 
 TYPED_TEST(NttParametersTest, NttPsisBitrev) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
@@ -159,7 +159,7 @@ TYPED_TEST(NttParametersTest, NttPsisBitrev) {
 
 TYPED_TEST(NttParametersTest, NttPsisInvBitrev) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
@@ -208,7 +208,7 @@ TEST(NttParametersRegularTest, Bitrev) {
 
 TYPED_TEST(NttParametersTest, IncorrectNTTParams) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     // modulus + 2, will no longer be 1 mod 2*n
@@ -227,7 +227,7 @@ TYPED_TEST(NttParametersTest, IncorrectNTTParams) {
 // Test all the NTT Parameter fields.
 TYPED_TEST(NttParametersTest, Initialize) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     // Do not create a context, since it creates NttParameters already. Instead,
     // create the modulus parameters manually.
     ASSERT_OK_AND_ASSIGN(auto modulus_params,

@@ -321,7 +321,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 // the PasswordStore.
 TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
   PasswordForm observed = CreateObserved();
-  observed.blacklisted_by_user = false;
+  observed.blocked_by_user = false;
   observed.username_value = ASCIIToUTF16("user1");
   observed.username_element = ASCIIToUTF16("user");
   observed.password_value = ASCIIToUTF16("12345");

@@ -14,17 +14,19 @@ namespace ui {
 
 void AddUiColorMixer(ColorProvider* provider) {
   ColorMixer& mixer = provider->AddMixer();
+  const auto button_disabled_background =
+      BlendForMinContrastWithSelf(kColorButtonBackground, 1.2f);
 
   mixer[kColorBubbleBackground] = {kColorPrimaryBackground};
   mixer[kColorBubbleFooterBackground] = {kColorSubtleEmphasisBackground};
   mixer[kColorButtonBackground] = {kColorPrimaryBackground};
   mixer[kColorButtonBorder] = {kColorBorderAndSeparatorForeground};
+  mixer[kColorButtonDisabledBorder] = button_disabled_background;
   mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorButtonForeground] = {kColorAccent};
   mixer[kColorButtonPressedBackground] = {kColorButtonBackground};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
-  mixer[kColorButtonProminentDisabledBackground] =
-      BlendForMinContrastWithSelf(kColorButtonBackground, 1.2f);
+  mixer[kColorButtonProminentDisabledBackground] = button_disabled_background;
   mixer[kColorButtonProminentFocusedBackground] =
       BlendForMinContrastWithSelf(kColorButtonProminentBackground, 1.3f);
   mixer[kColorButtonProminentForeground] =
@@ -58,6 +60,7 @@ void AddUiColorMixer(ColorProvider* provider) {
   mixer[kColorMenuSeparator] = {kColorBorderAndSeparatorForeground};
   mixer[kColorTabContentSeparator] = {kColorBorderAndSeparatorForeground};
   mixer[kColorTabForeground] = {kColorSecondaryForeground};
+  mixer[kColorTabSelectedBorder] = {kColorAccent};
   mixer[kColorTabSelectedForeground] = {kColorAccent};
   mixer[kColorTableBackground] = {kColorPrimaryBackground};
   mixer[kColorTableForeground] = {kColorPrimaryForeground};

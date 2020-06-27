@@ -83,20 +83,18 @@ void ArcPrintSpoolerBridge::StartPrintInCustomTab(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&SavePrintDocument, std::move(scoped_handle)),
       base::BindOnce(&ArcPrintSpoolerBridge::OnPrintDocumentSaved,
-                     weak_ptr_factory_.GetWeakPtr(), task_id, surface_id,
-                     top_margin, std::move(instance), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), task_id,
+                     std::move(instance), std::move(callback)));
 }
 
 void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
     int32_t task_id,
-    int32_t surface_id,
-    int32_t top_margin,
     mojo::PendingRemote<mojom::PrintSessionInstance> instance,
     StartPrintInCustomTabCallback callback,
     base::FilePath file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (file_path.empty()) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
@@ -105,22 +103,14 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
   aura::Window* arc_window = GetArcWindow(task_id);
   if (!arc_window) {
     LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
-  auto custom_tab =
-      std::make_unique<CustomTab>(arc_window, surface_id, top_margin);
+  auto custom_tab = std::make_unique<CustomTab>(arc_window);
   auto web_contents = CreateArcCustomTabWebContents(profile_, url);
-
-  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
-  // once StartPrintInCustomTab callback from
-  // //components/arc/mojom/print_spooler.mojom could take pending_remote
-  // directly. Refer to crrev.com/c/1868870.
-  mojo::InterfacePtr<mojom::PrintSessionHost> print_session_host_ptr(
-      PrintSessionImpl::Create(std::move(web_contents), std::move(custom_tab),
-                               std::move(instance)));
-  std::move(callback).Run(std::move(print_session_host_ptr));
+  std::move(callback).Run(PrintSessionImpl::Create(
+      std::move(web_contents), std::move(custom_tab), std::move(instance)));
 }
 
 }  // namespace arc

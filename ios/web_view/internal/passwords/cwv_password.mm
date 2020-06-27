@@ -49,7 +49,7 @@
 }
 
 - (BOOL)isBlacklisted {
-  return _passwordForm.blacklisted_by_user;
+  return _passwordForm.blocked_by_user;
 }
 
 #pragma mark - NSObject

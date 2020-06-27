@@ -304,9 +304,7 @@ void LayoutListItem::ComputeVisualOverflow(bool recompute_floats) {
   ClearVisualOverflow();
 
   AddVisualOverflowFromChildren();
-
   AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
 
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())

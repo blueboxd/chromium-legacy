@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
@@ -141,7 +142,6 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (base::FeatureList::IsEnabled(features::kAVIF) &&
       AVIFImageDecoder::MatchesAVIFSignature(fast_reader)) {
-    // TODO(wtc): Sniff AVIF image sequences and return image/avif-sequence.
     return "image/avif";
   }
 #endif
@@ -305,8 +305,7 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
   // TODO(wtc): Implement this. Figure out whether to return kUndefinedFormat or
   // a new kAVIFAnimationFormat in the case of an animated AVIF image.
   if (base::FeatureList::IsEnabled(features::kAVIF) &&
-      (EqualIgnoringASCIICase(mime_type, "image/avif") ||
-       EqualIgnoringASCIICase(mime_type, "image/avif-sequence"))) {
+      EqualIgnoringASCIICase(mime_type, "image/avif")) {
     return kLossyFormat;
   }
 #endif
@@ -317,6 +316,35 @@ ImageDecoder::CompressionFormat ImageDecoder::GetCompressionFormat(
     return kLosslessFormat;
 
   return kUndefinedFormat;
+}
+
+bool ImageDecoder::IsSizeAvailable() {
+  if (failed_)
+    return false;
+  if (!size_available_)
+    DecodeSize();
+
+  if (!IsDecodedSizeAvailable())
+    return false;
+
+#if defined(OS_FUCHSIA)
+  unsigned decoded_bytes_per_pixel = 4;
+  if (ImageIsHighBitDepth() &&
+      high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat) {
+    decoded_bytes_per_pixel = 8;
+  }
+
+  const IntSize size = DecodedSize();
+  const size_t decoded_size_bytes =
+      size.Width() * size.Height() * decoded_bytes_per_pixel;
+  if (decoded_size_bytes > max_decoded_bytes_) {
+    LOG(WARNING) << "Blocked decode of oversized image: " << size.Width() << "x"
+                 << size.Height();
+    return SetFailed();
+  }
+#endif
+
+  return true;
 }
 
 cc::ImageHeaderMetadata ImageDecoder::MakeMetadataForDecodeAcceleration()

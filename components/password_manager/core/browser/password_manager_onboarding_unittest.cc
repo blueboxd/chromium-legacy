@@ -67,12 +67,12 @@ class PasswordManagerOnboardingTest : public testing::Test {
     return form;
   }
 
-  PasswordForm MakeSimpleBlacklistedForm(int id) {
+  PasswordForm MakeSimpleBlockedForm(int id) {
     PasswordForm form;
     std::string link = "https://example" + base::NumberToString(id) + ".org/";
     form.url = GURL(link);
     form.signon_realm = link;
-    form.blacklisted_by_user = true;
+    form.blocked_by_user = true;
     return form;
   }
 
@@ -92,9 +92,9 @@ TEST_F(PasswordManagerOnboardingTest, CredentialsCountUnderThreshold) {
   for (int id = 0; id < kOnboardingCredentialsThreshold - 1; ++id) {
     store_->AddLogin(MakeSimpleForm(id));
   }
-  constexpr int kNumberOfBlacklistedLogins = 5;
-  for (int id = 0; id < kNumberOfBlacklistedLogins; ++id) {
-    store_->AddLogin(MakeSimpleBlacklistedForm(id));
+  constexpr int kNumberOfBlockedLogins = 5;
+  for (int id = 0; id < kNumberOfBlockedLogins; ++id) {
+    store_->AddLogin(MakeSimpleBlockedForm(id));
   }
   RunAllPendingTasks();
   UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));

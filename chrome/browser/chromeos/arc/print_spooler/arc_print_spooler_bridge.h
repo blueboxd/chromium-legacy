@@ -48,8 +48,6 @@ class ArcPrintSpoolerBridge : public KeyedService,
 
   void OnPrintDocumentSaved(
       int32_t task_id,
-      int32_t surface_id,
-      int32_t top_margin,
       mojo::PendingRemote<mojom::PrintSessionInstance> instance,
       StartPrintInCustomTabCallback callback,
       base::FilePath file_path);

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -231,7 +232,23 @@ ExecutionContext::GetContentSecurityPolicyDelegate() {
 }
 
 ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld() {
-  // Isolated worlds are only relevant for Documents. Hence just return the main
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  // This can be called before we enter v8, hence the context might be empty,
+  // which implies we are not in an isolated world.
+  if (v8_context.IsEmpty())
+    return GetContentSecurityPolicy();
+
+  return GetContentSecurityPolicyForWorld(
+      DOMWrapperWorld::Current(GetIsolate()));
+}
+
+ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld(
+    const DOMWrapperWorld& world) {
+  // Only documents support isolated worlds and only isolated worlds can have
+  // their own CSP distinct from the main world CSP. Hence just return the main
   // world's content security policy by default.
   return GetContentSecurityPolicy();
 }

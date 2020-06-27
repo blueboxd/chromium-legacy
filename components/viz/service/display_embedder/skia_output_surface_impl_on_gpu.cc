@@ -1762,11 +1762,6 @@ base::TimeDelta SkiaOutputSurfaceImplOnGpu::GetGpuBlockedTimeSinceLastSwap() {
   return dependency_->GetGpuBlockedTimeSinceLastSwap();
 }
 
-scoped_refptr<gpu::GLSurfaceTaskScheduler>
-SkiaOutputSurfaceImplOnGpu::CreateGLSurfaceTaskScheduler() {
-  return dependency_->CreateGLSurfaceTaskScheduler();
-}
-
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(
     gpu::SwapBuffersCompleteParams params) {
   // Handled by SkiaOutputDevice already.

@@ -1347,6 +1347,10 @@
       settable_from_internals: true,
     },
     {
+      name: "ParentNodeReplaceChildren",
+      status: "experimental",
+    },
+    {
       // This flag enables the Manifest parser to handle URL Protocols.
       name: "ParseUrlProtocolHandler",
       status: "test",

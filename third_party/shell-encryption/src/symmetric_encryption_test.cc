@@ -91,7 +91,7 @@ TYPED_TEST_SUITE(SymmetricRlweEncryptionTest, rlwe::testing::ModularIntTypes);
 TYPED_TEST(SymmetricRlweEncryptionTest, RemoveErrorNegative) {
   unsigned int seed = 0;
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 
@@ -136,7 +136,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, RemoveErrorNegative) {
 // different values of t.
 TYPED_TEST(SymmetricRlweEncryptionTest, RemoveErrorPositive) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     unsigned int seed = 0;
@@ -167,7 +167,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, RemoveErrorPositive) {
 // Ensure that the encryption scheme can decrypt its own ciphertexts.
 TYPED_TEST(SymmetricRlweEncryptionTest, CanDecrypt) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -187,7 +187,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, CanDecrypt) {
 // Accessing out of bounds raises errors
 TYPED_TEST(SymmetricRlweEncryptionTest, OutOfBoundsIndex) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -208,7 +208,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, OutOfBoundsIndex) {
 // Check that the HE scheme is additively homomorphic.
 TYPED_TEST(SymmetricRlweEncryptionTest, AdditivelyHomomorphic) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -252,7 +252,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AdditivelyHomomorphic) {
 // Check that homomorphic addition can be performed in place.
 TYPED_TEST(SymmetricRlweEncryptionTest, AddHomomorphicallyInPlace) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -302,7 +302,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AddHomomorphicallyInPlace) {
 // plaintext.
 TYPED_TEST(SymmetricRlweEncryptionTest, AddToZero) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -329,7 +329,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AddToZero) {
 // Check that homomorphic absorption works.
 TYPED_TEST(SymmetricRlweEncryptionTest, Absorb) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -388,7 +388,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, Absorb) {
 // Check that homomorphic absorption in place works.
 TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbInPlace) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; i++) {
@@ -447,7 +447,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbInPlace) {
 // Check that homomorphic absorption of a scalar works.
 TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbScalar) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     unsigned int seed = 0;
@@ -500,7 +500,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbScalar) {
 // Check that homomorphic absorption of a scalar in place works.
 TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbScalarInPlace) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     unsigned int seed = 0;
@@ -553,7 +553,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AbsorbScalarInPlace) {
 // Check that we cannot multiply with an empty ciphertext.
 TYPED_TEST(SymmetricRlweEncryptionTest, EmptyCipherMultiplication) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -601,7 +601,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, MultiplicativelyHomomorphic) {
   if (sizeof(TypeParam) > 2) {  // No multiplicative homomorphism possible when
                                 // TypeParam = Uint16
     for (const auto& params :
-         rlwe::testing::ContextParameters<TypeParam>::value) {
+         rlwe::testing::ContextParameters<TypeParam>::Value()) {
       ASSERT_OK_AND_ASSIGN(auto context,
                            rlwe::RlweContext<TypeParam>::Create(params));
       for (int i = 0; i < kTestingRounds; i++) {
@@ -658,7 +658,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, MultiplicativelyHomomorphic) {
 // Check that many homomorphic additions can be performed.
 TYPED_TEST(SymmetricRlweEncryptionTest, ManyHomomorphicAdds) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     // Sample a starting plaintext and ciphertext and create aggregators;
@@ -705,7 +705,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, ManyHomomorphicAdds) {
 TYPED_TEST(SymmetricRlweEncryptionTest,
            ExceedMaxNumCoeffDeserializeCiphertext) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 
@@ -733,7 +733,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest,
 // Check that ciphertext serialization works.
 TYPED_TEST(SymmetricRlweEncryptionTest, SerializeCiphertext) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -768,7 +768,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, SerializeCiphertext) {
 // Check that key serialization works.
 TYPED_TEST(SymmetricRlweEncryptionTest, SerializeKey) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -809,7 +809,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, SerializeKey) {
 // Try an ill-formed key modulus switching
 TYPED_TEST(SymmetricRlweEncryptionTest, FailingKeyModulusReduction) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     // p is the original modulus and q is the new modulus we want to switch to
@@ -836,7 +836,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, FailingKeyModulusReduction) {
 // Try an ill-formed ciphertext modulus switching
 TYPED_TEST(SymmetricRlweEncryptionTest, FailingCiphertextModulusReduction) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     // p is the original modulus and q is the new modulus we want to switch to
@@ -871,8 +871,9 @@ TYPED_TEST(SymmetricRlweEncryptionTest, FailingCiphertextModulusReduction) {
 
 // Test modulus switching.
 TYPED_TEST(SymmetricRlweEncryptionTest, ModulusReduction) {
-  for (const auto& [params1, params2] :
-       rlwe::testing::ContextParametersModulusSwitching<TypeParam>::value) {
+  for (const auto& params :
+       rlwe::testing::ContextParametersModulusSwitching<TypeParam>::Value()) {
+    auto params1 = std::get<0>(params), params2 = std::get<1>(params);
     ASSERT_OK_AND_ASSIGN(auto context1,
                          rlwe::RlweContext<TypeParam>::Create(params1));
     ASSERT_OK_AND_ASSIGN(auto context2,
@@ -913,8 +914,9 @@ TYPED_TEST(SymmetricRlweEncryptionTest, ModulusReduction) {
 
 // Check that modulus switching reduces the error.
 TYPED_TEST(SymmetricRlweEncryptionTest, ModulusSwitchingReducesLargeError) {
-  for (const auto& [params1, params2] :
-       rlwe::testing::ContextParametersModulusSwitching<TypeParam>::value) {
+  for (const auto& params :
+       rlwe::testing::ContextParametersModulusSwitching<TypeParam>::Value()) {
+    auto params1 = std::get<0>(params), params2 = std::get<1>(params);
     ASSERT_OK_AND_ASSIGN(auto context1,
                          rlwe::RlweContext<TypeParam>::Create(params1));
     ASSERT_OK_AND_ASSIGN(auto context2,
@@ -968,7 +970,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, ModulusSwitchingReducesLargeError) {
 // different powers of s.
 TYPED_TEST(SymmetricRlweEncryptionTest, OperationsFailOnMismatchedPowersOfS) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -1002,7 +1004,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, OperationsFailOnMismatchedPowersOfS) {
 // Verifies that the power of S changes as expected in adds / mults.
 TYPED_TEST(SymmetricRlweEncryptionTest, AddsAndMultPreservePowerOfS) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -1037,7 +1039,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AddsAndMultPreservePowerOfS) {
 // Check that substitutions of the form 2^k + 1 work.
 TYPED_TEST(SymmetricRlweEncryptionTest, Substitutes) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (int k = 1; k < context->GetLogN(); k++) {
@@ -1083,7 +1085,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, Substitutes) {
 // Check that substitution of 2 does not work.
 TYPED_TEST(SymmetricRlweEncryptionTest, SubstitutionFailsOnEvenPower) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -1102,7 +1104,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, SubstitutionFailsOnEvenPower) {
 // Check that the power of s updates after several substitutions.
 TYPED_TEST(SymmetricRlweEncryptionTest, PowerOfSUpdatedAfterRepeatedSubs) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     int substitution_power = 5;
@@ -1127,7 +1129,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, PowerOfSUpdatedAfterRepeatedSubs) {
 // Check that operations can only be performed when powers of s match.
 TYPED_TEST(SymmetricRlweEncryptionTest, PowersOfSMustMatchOnOperations) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     int substitution_power = 5;
@@ -1160,7 +1162,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, PowersOfSMustMatchOnOperations) {
 // Check that the null key has value 0.
 TYPED_TEST(SymmetricRlweEncryptionTest, NullKeyHasValueZero) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     rlwe::Polynomial<TypeParam> zero(context->GetN(),
@@ -1179,7 +1181,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, NullKeyHasValueZero) {
 // Check the addition and subtraction of keys.
 TYPED_TEST(SymmetricRlweEncryptionTest, AddAndSubKeys) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key_1, this->SampleKey(context.get()));
@@ -1203,7 +1205,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, AddAndSubKeys) {
 // Check that decryption works with added and subtracted keys.
 TYPED_TEST(SymmetricRlweEncryptionTest, EncryptAndDecryptWithAddAndSubKeys) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key_1, this->SampleKey(context.get()));
@@ -1231,7 +1233,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, EncryptAndDecryptWithAddAndSubKeys) {
 // Check that the scheme is key homomorphic.
 TYPED_TEST(SymmetricRlweEncryptionTest, IsKeyHomomorphic) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto prng_seed,
@@ -1319,7 +1321,7 @@ TYPED_TEST(SymmetricRlweEncryptionTest, IsKeyHomomorphic) {
 // Check that incompatible key cannot be added or subtracted.
 TYPED_TEST(SymmetricRlweEncryptionTest, CannotAddOrSubIncompatibleKeys) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto context_different_variance,

@@ -13,6 +13,8 @@
 #include "base/token.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service_control.mojom.h"
@@ -46,7 +48,8 @@ class TestConnectorFactory : public mojom::ServiceControl {
   ~TestConnectorFactory() override;
 
   // A mapping from service names to Service proxies for registered instances.
-  using NameToServiceProxyMap = std::map<std::string, mojom::ServicePtr>;
+  using NameToServiceProxyMap =
+      std::map<std::string, mojo::Remote<mojom::Service>>;
 
   // A Connector which can be used to connect to any service instances
   // registered with this object. This Connector identifies its source as a
@@ -60,7 +63,8 @@ class TestConnectorFactory : public mojom::ServiceControl {
   // Registers a Service instance not owned by this TestConnectorFactory.
   // Returns a ServiceRequest which the instance must bind in order to receive
   // simulated events from this object.
-  mojom::ServiceRequest RegisterInstance(const std::string& service_name);
+  mojo::PendingReceiver<mojom::Service> RegisterInstance(
+      const std::string& service_name);
 
   const base::Token& test_instance_group() const {
     return test_instance_group_;

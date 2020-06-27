@@ -98,7 +98,7 @@ sync_pb::PasswordSpecificsData SpecificsDataFromPasswordForm(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data.set_date_created(
       password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  password_data.set_blacklisted(password_form.blacklisted_by_user);
+  password_data.set_blacklisted(password_form.blocked_by_user);
   password_data.set_type(static_cast<int>(password_form.type));
   password_data.set_times_used(password_form.times_used);
   password_data.set_display_name(base::UTF16ToUTF8(password_form.display_name));

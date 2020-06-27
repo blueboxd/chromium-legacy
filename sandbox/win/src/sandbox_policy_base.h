@@ -101,12 +101,16 @@ class PolicyBase final : public TargetPolicy {
 
   // Adds a target process to the internal list of targets. Internally a
   // call to TargetProcess::Init() is issued.
-  ResultCode AddTarget(TargetProcess* target);
+  ResultCode AddTarget(std::unique_ptr<TargetProcess> target);
 
   // Called when there are no more active processes in a Job.
   // Removes a Job object associated with this policy and the target associated
-  // with the job.
+  // with the job. If a process is not in a job, call OnProcessFinished().
   bool OnJobEmpty(HANDLE job);
+
+  // Called when a process no longer needs to be tracked. Processes in jobs
+  // should be notified via OnJobEmpty instead.
+  bool OnProcessFinished(DWORD process_id);
 
   EvalResult EvalPolicy(IpcTag service, CountedParameterSetBase* params);
 
@@ -121,11 +125,11 @@ class PolicyBase final : public TargetPolicy {
   friend class PolicyDiagnostic;
   ~PolicyBase();
 
-  // Sets up interceptions for a new target.
-  ResultCode SetupAllInterceptions(TargetProcess* target);
+  // Sets up interceptions for a new target. This policy must own |target|.
+  ResultCode SetupAllInterceptions(TargetProcess& target);
 
-  // Sets up the handle closer for a new target.
-  bool SetupHandleCloser(TargetProcess* target);
+  // Sets up the handle closer for a new target. This policy must own |target|.
+  bool SetupHandleCloser(TargetProcess& target);
 
   ResultCode AddRuleInternal(SubSystem subsystem,
                              Semantics semantics,
@@ -135,7 +139,7 @@ class PolicyBase final : public TargetPolicy {
   CRITICAL_SECTION lock_;
   // Maintains the list of target process associated with this policy.
   // The policy takes ownership of them.
-  typedef std::list<TargetProcess*> TargetSet;
+  typedef std::list<std::unique_ptr<TargetProcess>> TargetSet;
   TargetSet targets_;
   // Standard object-lifetime reference counter.
   volatile LONG ref_count;

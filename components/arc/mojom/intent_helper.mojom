@@ -252,11 +252,13 @@ interface IntentHelperHost {
   // which the custom tab should be shown.
   // |top_margin| is the height of the space at the top of the window which
   // needs to be vacant to display the top bar rendered by Android code.
+  // TODO(b/159918677): Remove |surface_id| and |top_margin| since they are no
+  // longer used.
   [MinVersion=25] OnOpenCustomTab@10(string url,
                                      int32 task_id,
                                      int32 surface_id,
                                      int32 top_margin)
-      => (CustomTabSession? session);
+      => (pending_remote<CustomTabSession>? session);
 
   // Opens the wallpaper picker dialog.
   [MinVersion=6] OpenWallpaperPicker@3();

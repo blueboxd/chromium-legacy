@@ -1178,12 +1178,12 @@ void MediaCapabilities::OnBadWindowPrediction(
   } else {
     double histogram_average = histogram->Average();
     pending_cb->is_bad_window_prediction_smooth =
-        histogram_average <= GetLearningBadWindowThreshold();
+        histogram_average < GetLearningBadWindowThreshold();
     histogram_log << histogram_average;
   }
 
   DVLOG(2) << __func__ << " bad_win_avg:" << histogram_log.str()
-           << " smooth_threshold (<=):" << GetLearningBadWindowThreshold();
+           << " smooth_threshold (<):" << GetLearningBadWindowThreshold();
 
   ResolveCallbackIfReady(callback_id);
 }
@@ -1202,12 +1202,12 @@ void MediaCapabilities::OnNnrPrediction(
   } else {
     double histogram_average = histogram->Average();
     pending_cb->is_nnr_prediction_smooth =
-        histogram_average <= GetLearningNnrThreshold();
+        histogram_average < GetLearningNnrThreshold();
     histogram_log << histogram_average;
   }
 
   DVLOG(2) << __func__ << " nnr_avg:" << histogram_log.str()
-           << " smooth_threshold (<=):" << GetLearningNnrThreshold();
+           << " smooth_threshold (<):" << GetLearningNnrThreshold();
 
   ResolveCallbackIfReady(callback_id);
 }

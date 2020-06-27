@@ -5,7 +5,6 @@
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"
 
 #include <fcntl.h>
-#include <xcb/dri3.h>
 #include <xcb/xcb.h>
 
 #include <memory>
@@ -21,6 +20,8 @@
 #include "ui/gfx/linux/gbm_device.h"
 #include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/linux/gbm_wrapper.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/dri3.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -30,39 +31,26 @@ namespace {
 
 // Obtain an authenticated DRM fd from X11 and create a GbmDevice with it.
 std::unique_ptr<ui::GbmDevice> CreateX11GbmDevice() {
-  XDisplay* display = gfx::GetXDisplay();
-  // |display| may be nullptr in headless mode.
-  if (!display)
+  auto* connection = x11::Connection::Get();
+  // |connection| may be nullptr in headless mode.
+  if (!connection)
     return nullptr;
-  xcb_connection_t* connection = XGetXCBConnection(display);
-  DCHECK(connection);
 
-  const auto* dri3_extension = xcb_get_extension_data(connection, &xcb_dri3_id);
-  if (!dri3_extension || !dri3_extension->present)
+  auto& dri3 = connection->dri3();
+  if (!dri3.present())
     return nullptr;
 
   // Let the X11 server know the DRI3 client version. This is required to use
   // the DRI3 extension. We don't care about the returned server version because
   // we only use features from the original DRI3 interface.
-  auto version_cookie = xcb_dri3_query_version(
-      connection, XCB_DRI3_MAJOR_VERSION, XCB_DRI3_MINOR_VERSION);
-  auto* version_reply =
-      xcb_dri3_query_version_reply(connection, version_cookie, nullptr);
-  if (!version_reply)
-    return nullptr;
-  free(version_reply);
+  dri3.QueryVersion({x11::Dri3::major_version, x11::Dri3::minor_version});
 
   // Obtain an authenticated DRM fd.
-  auto open_cookie =
-      xcb_dri3_open(connection, DefaultRootWindow(display), x11::None);
-  auto* open_reply = xcb_dri3_open_reply(connection, open_cookie, nullptr);
-  if (!open_reply)
+  auto reply = dri3.Open({connection->default_root(), 0}).Sync();
+  if (!reply)
     return nullptr;
-  if (open_reply->nfd != 1)
-    return nullptr;
-  int fd = xcb_dri3_open_reply_fds(connection, open_reply)[0];
-  free(open_reply);
 
+  int fd = reply->device_fd.release();
   if (fd < 0)
     return nullptr;
   if (HANDLE_EINTR(fcntl(fd, F_SETFD, FD_CLOEXEC)) == -1)

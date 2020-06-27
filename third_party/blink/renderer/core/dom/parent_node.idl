@@ -40,6 +40,7 @@
 
     [Unscopable, RaisesException, CEReactions, CustomElementCallbacks] void prepend((Node or DOMString or TrustedScript)... nodes);
     [Unscopable, RaisesException, CEReactions, CustomElementCallbacks] void append((Node or DOMString or TrustedScript)... nodes);
+    [RuntimeEnabled=ParentNodeReplaceChildren, Unscopable, RaisesException, CEReactions, CustomElementCallbacks] void replaceChildren((Node or DOMString or TrustedScript)... nodes);
 
     // [Unscopable] Element? query(DOMString relativeSelectors);
     // [NewObject, Unscopable] Elements queryAll(DOMString relativeSelectors);

@@ -689,6 +689,11 @@ const char kMacCoreLocationImplementationName[] =
 const char kMacCoreLocationImplementationDescription[] =
     "Enables usage of the Core Location APIs on macOS for geolocation";
 
+const char kMaintainShelfStateWhenEnteringOverviewName[] =
+    "Allow Home Launcher Shelf In Overview";
+const char kMaintainShelfStateWhenEnteringOverviewDescription[] =
+    "Maintains shelf state when entering and exiting overview mode.";
+
 const char kWinrtGeolocationImplementationName[] =
     "WinRT Geolocation Implementation";
 const char kWinrtGeolocationImplementationDescription[] =
@@ -1107,6 +1112,11 @@ const char kFormControlsDarkModeDescription[] =
 const char kFormControlsRefreshName[] = "Web Platform Controls updated UI";
 const char kFormControlsRefreshDescription[] =
     "If enabled, HTML forms elements will be rendered using an updated style.";
+
+const char kColorPickerEyeDropperName[] = "Color Picker Eye Dropper Support";
+const char kColorPickerEyeDropperDescription[] =
+    "If enabled, the color picker will contain an eye dropper control that "
+    "can be used to pick colors.";
 
 const char kGlobalMediaControlsName[] = "Global Media Controls";
 const char kGlobalMediaControlsDescription[] =

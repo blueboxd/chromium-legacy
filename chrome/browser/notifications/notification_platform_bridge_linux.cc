@@ -224,7 +224,7 @@ class ResourceFile {
     DCHECK(!file_path.empty());
     DCHECK(file_path.IsAbsolute());
   }
-  ~ResourceFile() { base::DeleteFile(file_path_, false); }
+  ~ResourceFile() { base::DeleteFile(file_path_); }
 
   const base::FilePath& file_path() const { return file_path_; }
 

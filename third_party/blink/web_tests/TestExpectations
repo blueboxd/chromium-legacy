@@ -1381,6 +1381,7 @@ crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/ren
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
 
 crbug.com/1057518 virtual/controls-refresh/month-picker/month-picker-appearance-step.html [ Skip ]
+crbug.com/1057518 [ Mac ] virtual/form-controls-refresh-disabled/* [ Skip ]
 
 # ======
 # From this point until the end of the Form Controls Refresh section, these are
@@ -1393,7 +1394,6 @@ crbug.com/1057518 virtual/controls-refresh/month-picker/month-picker-appearance-
 # ====
 # These need additional triage:
 crbug.com/1053725 [ Mac ] paint/invalidation/repaint-overlay/layers-overlay.html [ Skip ]
-crbug.com/1053725 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/targeted-frame-submission.html [ Skip ]
 crbug.com/1053725 [ Mac ] virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-006.xht [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug2479-5.html [ Skip ]
 crbug.com/1053725 [ Mac ] tables/mozilla_expected_failures/bugs/bug45621.html [ Skip ]
@@ -1421,8 +1421,6 @@ crbug.com/1053725 [ Mac ] fast/forms/implicit-submission.html [ Skip ]
 crbug.com/1053725 [ Mac ] fast/forms/select/option-mouseevents.html [ Skip ]
 crbug.com/1053725 [ Mac ] fast/forms/select/menulist-popup-open-hide-using-keyboard.html [ Skip ]
 crbug.com/1053725 [ Mac ] virtual/web-components-v0-disabled/fast/dom/title-text-property.html [ Skip ]
-crbug.com/1053725 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/select-popup-pagekeys.html [ Skip ]
-crbug.com/1053725 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/menulist-update-text-popup.html [ Skip ]
 
 
 
@@ -1663,16 +1661,6 @@ crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scro
 
 # These are copied from elsewhere in this file, for the virtual/form-controls-refresh-disabled suite:
 crbug.com/954349 virtual/form-controls-refresh-disabled/fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeout Failure ]
-crbug.com/1035582 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/text/input-readonly-focus-ring.html [ Skip ]
-
-# From never fix tests:
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select-popup/* [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ Skip ]
-crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
 
 crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Skip ]
@@ -2692,12 +2680,10 @@ crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Cras
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/registered-property-value-015.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-redirect.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/cache-storage/window/cache-match.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-variables/css-vars-custom-property-inheritance.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/Service-Worker-Allowed-header.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/properties/table-layout.html [ Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-eager-reading/external/wpt/service-workers/cache-storage/window/cache-add.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/isSecureContext.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/cache-storage/serviceworker/cache-keys-attributes-for-service-worker.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/computed.tentative.html [ Timeout ]
@@ -6476,13 +6462,6 @@ crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-top-left-s
 crbug.com/1048149 [ Mac ] virtual/controls-refresh/color/color-picker-zoom150-bottom-edge-no-nan.html [ Pass Crash ]
 # This used to be [ Pass Crash ], but as of crbug.com/1050039 it started flaking as well.
 crbug.com/1048149 crbug.com/1050121 [ Mac ] virtual/controls-refresh/month-picker/month-picker-appearance-zoom150.html [ Pass Failure Crash Failure ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-key-operations.html [ Pass Crash Timeout ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-type-change-onchange.html [ Pass Crash ]
-# This used to be [ Pass Crash ], but as of crbug.com/1050039 it started flaking as well.
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-picker-events.html [ Pass Failure Crash ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-choose-default-value-after-set-value.html [ Pass Crash ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-key-operations.html [ Pass Crash Timeout ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-touch-operations.html [ Pass Crash ]
 
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
@@ -6514,8 +6493,6 @@ crbug.com/1054577 [ Mac ] external/wpt/storage-access-api/requestStorageAccess.s
 
 crbug.com/1050039 [ Mac ] fast/events/onbeforeunload-focused-iframe.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] fast/forms/calendar-picker/calendar-picker-type-change-onchange.html [ Pass Failure ]
-crbug.com/1050039 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass Failure ]
-crbug.com/1050039 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/datetimelocal-picker-choose-default-value-after-set-value.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-02.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-03.html [ Pass Failure ]

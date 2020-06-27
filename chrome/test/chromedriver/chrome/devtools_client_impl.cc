@@ -185,6 +185,10 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
     }
   }
 
+  return SetUpDevTools();
+}
+
+Status DevToolsClientImpl::SetUpDevTools() {
   // These lines must be before the following SendCommandXxx calls
   unnotified_connect_listeners_ = listeners_;
   unnotified_event_listeners_.clear();

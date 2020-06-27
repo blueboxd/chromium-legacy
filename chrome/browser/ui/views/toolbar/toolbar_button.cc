@@ -95,13 +95,11 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
   UpdateColorsAndInsets();
+
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
 ToolbarButton::~ToolbarButton() {}
-
-void ToolbarButton::Init() {
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-}
 
 void ToolbarButton::SetHighlight(const base::string16& highlight_text,
                                  base::Optional<SkColor> highlight_color) {

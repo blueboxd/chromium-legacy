@@ -466,9 +466,7 @@ void LayoutBlock::ComputeVisualOverflow(bool) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
-
   AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
     InvalidateIntersectionObserverCachedRects();
@@ -577,16 +575,6 @@ void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
                                  ToLayoutSize(positioned_object->Location()));
     }
   }
-}
-
-void LayoutBlock::AddVisualOverflowFromTheme() {
-  if (!StyleRef().HasEffectiveAppearance())
-    return;
-
-  IntRect inflated_rect = PixelSnappedBorderBoxRect();
-  LayoutTheme::GetTheme().AddVisualOverflow(GetNode(), StyleRef(),
-                                            inflated_rect);
-  AddSelfVisualOverflow(LayoutRect(inflated_rect));
 }
 
 static inline bool ChangeInAvailableLogicalHeightAffectsChild(

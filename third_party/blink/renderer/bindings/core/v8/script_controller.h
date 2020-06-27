@@ -112,7 +112,12 @@ class CORE_EXPORT ScriptController final
       const KURL& base_url,
       SanitizeScriptErrors sanitize_script_errors);
 
-  void ExecuteJavaScriptURL(const KURL&, network::mojom::CSPDisposition);
+  // Executes a javascript url in the main world. |world_for_csp| denotes the
+  // javascript world in which this navigation initiated and which should be
+  // used for CSP checks.
+  void ExecuteJavaScriptURL(const KURL&,
+                            network::mojom::CSPDisposition,
+                            const DOMWrapperWorld& world_for_csp);
 
   // Creates a new isolated world for DevTools with the given human readable
   // |world_name| and returns it id or nullptr on failure.

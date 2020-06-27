@@ -222,7 +222,7 @@ void FormFetcherImpl::SplitResults(
   non_federated_.clear();
   federated_.clear();
   for (auto& form : forms) {
-    if (form->blacklisted_by_user) {
+    if (form->blocked_by_user) {
       // Ignore PSL matches for blacklisted entries.
       if (!form->is_public_suffix_match) {
         is_blacklisted_ = true;

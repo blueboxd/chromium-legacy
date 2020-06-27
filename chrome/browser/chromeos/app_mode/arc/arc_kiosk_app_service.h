@@ -89,6 +89,8 @@ class ArcKioskAppService : public KeyedService,
   void RestartLauncher() override;
   void LaunchApp() override;
 
+  ArcKioskAppLauncher* GetLauncherForTesting() { return app_launcher_.get(); }
+
  private:
   explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;

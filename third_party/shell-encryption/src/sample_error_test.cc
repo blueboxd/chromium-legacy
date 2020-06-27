@@ -46,7 +46,7 @@ TYPED_TEST(SampleErrorTest, CheckUpperBoundOnNoise) {
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(0);
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 
@@ -73,7 +73,7 @@ TYPED_TEST(SampleErrorTest, CheckUpperBoundOnNoise) {
 TYPED_TEST(SampleErrorTest, FailOnTooLargeVariance) {
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(0);
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 

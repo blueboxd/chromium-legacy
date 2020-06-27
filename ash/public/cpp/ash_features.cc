@@ -127,6 +127,10 @@ const base::Feature kShelfAppScaling{"ShelfAppScaling",
 const base::Feature kNotificationsInContextMenu{
     "NotificationsInContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kMaintainShelfStateWhenEnteringOverview{
+    "MaintainShelfStateWhenEnteringOverview",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
@@ -267,6 +271,10 @@ bool IsAppScalingEnabled() {
 
 bool IsNotificationsInContextMenuEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
+}
+
+bool IsMaintainShelfStateWhenEnteringOverviewEnabled() {
+  return base::FeatureList::IsEnabled(kMaintainShelfStateWhenEnteringOverview);
 }
 
 namespace {

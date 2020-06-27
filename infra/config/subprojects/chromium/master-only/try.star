@@ -10,6 +10,7 @@ load('//project.star', 'settings')
 # (bucket, builders, console, cq_group, etc.)
 exec('../versioned/m83/buckets/try.star')
 exec('../versioned/m84/buckets/try.star')
+exec('../versioned/m85/buckets/try.star')
 
 
 try_.set_defaults(
@@ -296,6 +297,12 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-dbg',
+)
+
+
+try_.chromium_codesearch_builder(
+    name = 'codesearch-gen-chromium-win-try',
+    os = os.WINDOWS_10,
 )
 
 

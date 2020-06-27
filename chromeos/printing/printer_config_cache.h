@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -33,9 +34,16 @@ namespace chromeos {
 // a sequenced context.
 class CHROMEOS_EXPORT PrinterConfigCache {
  public:
+  // |loader_factory_dispenser| is a functor that can create fresh
+  // URLLoaderFactory instances. We use this indirection to avoid
+  // caching raw pointers to URLLoaderFactory instances, which are
+  // invalidated by network service restarts.
+  //
+  // Caller must guarantee that |loader_factory_dispenser| is always
+  // safe to Run() for the lifetime of |this|.
   static std::unique_ptr<PrinterConfigCache> Create(
       const base::Clock* clock,
-      network::mojom::URLLoaderFactory* loader_factory);
+      base::RepeatingCallback<network::mojom::URLLoaderFactory*()>);
   virtual ~PrinterConfigCache() = default;
 
   // Result of calling Fetch(). The |key| identifies how Fetch() was

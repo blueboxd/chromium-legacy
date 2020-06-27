@@ -2546,8 +2546,8 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
 }
 
 MediaStreamTrack* RTCPeerConnection::GetTrack(
-    MediaStreamComponent* component) const {
-  return tracks_.at(component);
+    const WebMediaStreamTrack& web_track) const {
+  return tracks_.at(static_cast<MediaStreamComponent*>(web_track));
 }
 
 RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
@@ -2592,32 +2592,34 @@ RTCPeerConnection::FindTransceiver(
 }
 
 RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
-    std::unique_ptr<RTCRtpSenderPlatform> rtp_sender_platform,
+    std::unique_ptr<RTCRtpSenderPlatform> web_sender,
     String kind) {
   // The track corresponding to |web_track| must already be known to us by being
   // in |tracks_|, as is a prerequisite of CreateOrUpdateSender().
-  MediaStreamComponent* component = rtp_sender_platform->Track();
-  MediaStreamTrack* track = nullptr;
-  if (component) {
-    track = tracks_.at(component);
+  WebMediaStreamTrack web_track = web_sender->Track();
+  MediaStreamTrack* track;
+  if (web_track.IsNull()) {
+    track = nullptr;
+  } else {
+    track = tracks_.at(web_track);
     DCHECK(track);
   }
 
   // Create or update sender. If the web sender has stream IDs the sender's
   // streams need to be set separately outside of this method.
-  auto* sender_it = FindSender(*rtp_sender_platform);
+  auto* sender_it = FindSender(*web_sender);
   RTCRtpSender* sender;
   if (sender_it == rtp_senders_.end()) {
     // Create new sender (with empty stream set).
     sender = MakeGarbageCollected<RTCRtpSender>(
-        this, std::move(rtp_sender_platform), kind, track, MediaStreamVector(),
+        this, std::move(web_sender), kind, track, MediaStreamVector(),
         force_encoded_audio_insertable_streams(),
         force_encoded_video_insertable_streams());
     rtp_senders_.push_back(sender);
   } else {
     // Update existing sender (not touching the stream set).
     sender = *sender_it;
-    DCHECK_EQ(sender->web_sender()->Id(), rtp_sender_platform->Id());
+    DCHECK_EQ(sender->web_sender()->Id(), web_sender->Id());
     sender->SetTrack(track);
   }
   sender->set_transport(CreateOrUpdateDtlsTransport(

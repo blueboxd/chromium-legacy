@@ -129,7 +129,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestInitialization_Blocked) {
 
   form_.username_value.clear();
   form_.password_value.clear();
-  form_.blacklisted_by_user = true;
+  form_.blocked_by_user = true;
   CreateController();
   CheckController();
   EXPECT_EQ(2, NumberOfSections());

@@ -223,6 +223,9 @@
         "load:media:youtube:2018": {
             "DEFAULT": "system_health_desktop_cef8441ac0.wprgo"
         },
+        "load:media:youtubelivingroom:2020": {
+            "DEFAULT": "system_health_desktop_ffb5f36c56.wprgo"
+        },
         "load:news:bbc": {
             "DEFAULT": "system_health_desktop_002.wprgo"
         },

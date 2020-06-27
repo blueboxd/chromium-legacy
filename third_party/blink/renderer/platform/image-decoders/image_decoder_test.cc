@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -39,12 +40,13 @@ namespace blink {
 
 class TestImageDecoder : public ImageDecoder {
  public:
-  TestImageDecoder(
-      ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option)
+  explicit TestImageDecoder(
+      ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option,
+      size_t max_decoded_bytes = kNoDecodedImageByteLimit)
       : ImageDecoder(kAlphaNotPremultiplied,
                      high_bit_depth_decoding_option,
                      ColorBehavior::TransformToSRGB(),
-                     kNoDecodedImageByteLimit) {}
+                     max_decoded_bytes) {}
 
   TestImageDecoder() : TestImageDecoder(ImageDecoder::kDefaultBitDepth) {}
 
@@ -298,5 +300,61 @@ TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame) {
       EXPECT_EQ(ImageFrame::kFrameEmpty, frame_buffers[i].GetStatus());
   }
 }
+
+#if defined(OS_FUCHSIA)
+
+TEST(ImageDecoderTest, decodedSizeLimitBoundary) {
+  constexpr unsigned kWidth = 100;
+  constexpr unsigned kHeight = 200;
+  constexpr unsigned kBitDepth = 4;
+  std::unique_ptr<TestImageDecoder> decoder(std::make_unique<TestImageDecoder>(
+      ImageDecoder::kDefaultBitDepth, (kWidth * kHeight * kBitDepth)));
+
+  // Smallest allowable size, should succeed.
+  EXPECT_TRUE(decoder->SetSize(1, 1));
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+
+  // At the limit, should succeed.
+  EXPECT_TRUE(decoder->SetSize(kWidth, kHeight));
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+
+  // Just over the limit, should fail.
+  EXPECT_TRUE(decoder->SetSize(kWidth + 1, kHeight));
+  EXPECT_FALSE(decoder->IsSizeAvailable());
+  EXPECT_TRUE(decoder->Failed());
+}
+
+TEST(ImageDecoderTest, decodedSizeUnlimited) {
+  // Very large values for width and height should be OK.
+  constexpr unsigned kWidth = 10000;
+  constexpr unsigned kHeight = 10000;
+
+  std::unique_ptr<TestImageDecoder> decoder(std::make_unique<TestImageDecoder>(
+      ImageDecoder::kDefaultBitDepth, ImageDecoder::kNoDecodedImageByteLimit));
+  EXPECT_TRUE(decoder->SetSize(kWidth, kHeight));
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+}
+
+#else
+
+// The limit is currently ignored on non-Fuchsia platforms (except for
+// JPEG, which would decode a down-sampled version).
+TEST(ImageDecoderTest, decodedSizeLimitIsIgnored) {
+  constexpr unsigned kWidth = 100;
+  constexpr unsigned kHeight = 200;
+  constexpr unsigned kBitDepth = 4;
+  std::unique_ptr<TestImageDecoder> decoder(std::make_unique<TestImageDecoder>(
+      ImageDecoder::kDefaultBitDepth, (kWidth * kHeight * kBitDepth)));
+
+  // Just over the limit. The limit should be ignored.
+  EXPECT_TRUE(decoder->SetSize(kWidth + 1, kHeight));
+  EXPECT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+}
+
+#endif  // defined(OS_FUCHSIA)
 
 }  // namespace blink

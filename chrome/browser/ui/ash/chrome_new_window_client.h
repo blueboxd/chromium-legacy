@@ -54,8 +54,6 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void OpenArcCustomTab(
       const GURL& url,
       int32_t task_id,
-      int32_t surface_id,
-      int32_t top_margin,
       arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override;
   void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
 

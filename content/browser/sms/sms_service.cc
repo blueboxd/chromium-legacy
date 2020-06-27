@@ -14,6 +14,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/optional.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/sms/sms_metrics.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_type.h"
@@ -65,6 +66,8 @@ void SmsService::Create(
   // error occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
   new SmsService(fetcher, host, std::move(receiver));
+  static_cast<RenderFrameHostImpl*>(host)->OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature::kSmsService);
 }
 
 void SmsService::Receive(ReceiveCallback callback) {

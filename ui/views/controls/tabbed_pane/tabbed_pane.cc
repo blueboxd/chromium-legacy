@@ -471,10 +471,8 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
                    max_main_axis - min_main_axis, kSelectedBorderThickness);
   if (!is_horizontal)
     rect.Transpose();
-  canvas->FillRect(
-      rect, SkColorSetA(GetNativeTheme()->GetSystemColor(
-                            ui::NativeTheme::kColorId_FocusedBorderColor),
-                        SK_AlphaOPAQUE));
+  canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
+                             ui::NativeTheme::kColorId_TabSelectedBorderColor));
 }
 
 DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,

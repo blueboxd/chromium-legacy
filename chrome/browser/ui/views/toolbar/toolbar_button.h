@@ -54,10 +54,6 @@ class ToolbarButton : public views::LabelButton,
   ToolbarButton& operator=(const ToolbarButton&) = delete;
   ~ToolbarButton() override;
 
-  // Set up basic mouseover border behavior.
-  // Should be called before first paint.
-  void Init();
-
   // Highlights the button by setting the label to given |highlight_text|, using
   // tinting it using the |hightlight_color| if set. The highlight is displayed
   // using an animation. If some highlight is already set, it shows the new

@@ -211,7 +211,7 @@ void BindAddStatement(const PasswordForm& form, sql::Statement* s) {
   // The "preferred" column has been deprecated in M81.
   s->BindInt(COLUMN_PREFERRED, 0);
   s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToInternalValue());
-  s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
+  s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blocked_by_user);
   s->BindInt(COLUMN_SCHEME, static_cast<int>(form.scheme));
   s->BindInt(COLUMN_PASSWORD_TYPE, static_cast<int>(form.type));
   s->BindInt(COLUMN_TIMES_USED, form.times_used);
@@ -1220,7 +1220,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   // This is the "preferred" column which has been deprecated in M81.
   s.BindInt(next_param++, 0);
   s.BindInt64(next_param++, form.date_created.ToInternalValue());
-  s.BindInt(next_param++, form.blacklisted_by_user);
+  s.BindInt(next_param++, form.blocked_by_user);
   s.BindInt(next_param++, static_cast<int>(form.scheme));
   s.BindInt(next_param++, static_cast<int>(form.type));
   s.BindInt(next_param++, form.times_used);
@@ -1445,7 +1445,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->signon_realm = tmp;
   form->date_created =
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_CREATED));
-  form->blacklisted_by_user = (s.ColumnInt(COLUMN_BLACKLISTED_BY_USER) > 0);
+  form->blocked_by_user = (s.ColumnInt(COLUMN_BLACKLISTED_BY_USER) > 0);
   int scheme_int = s.ColumnInt(COLUMN_SCHEME);
   form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
   DCHECK(autofill::mojom::IsKnownEnumValue(form->scheme));

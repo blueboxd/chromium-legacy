@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertEmpty", "assertEmpty", "split_incognito");
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   LoadAndReplyWhenSatisfied(SYNC,
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   const Extension* extension =
       LoadAndReplyWhenSatisfied(SYNC,
@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   ResultCatcher catcher, catcher_incognito;
   catcher.RestrictToBrowserContext(browser()->profile());
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   const Extension* extension =
       LoadAndReplyWhenSatisfied(LOCAL,

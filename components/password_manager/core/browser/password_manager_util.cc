@@ -225,7 +225,7 @@ void FindBestMatches(
     const PasswordForm** preferred_match) {
   DCHECK(std::all_of(
       non_federated_matches.begin(), non_federated_matches.end(),
-      [](const PasswordForm* match) { return !match->blacklisted_by_user; }));
+      [](const PasswordForm* match) { return !match->blocked_by_user; }));
   DCHECK(non_federated_same_scheme);
   DCHECK(best_matches);
   DCHECK(preferred_match);
@@ -322,7 +322,7 @@ const PasswordForm* GetMatchForUpdating(
 autofill::PasswordForm MakeNormalizedBlacklistedForm(
     password_manager::PasswordStore::FormDigest digest) {
   autofill::PasswordForm result;
-  result.blacklisted_by_user = true;
+  result.blocked_by_user = true;
   result.scheme = std::move(digest.scheme);
   result.signon_realm = std::move(digest.signon_realm);
   // In case |digest| corresponds to an Android credential copy the origin as

@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
@@ -104,9 +106,10 @@ struct CORE_EXPORT FrameLoadRequest {
     href_translate_ = translate;
   }
 
-  network::mojom::CSPDisposition ShouldCheckMainWorldContentSecurityPolicy()
-      const {
-    return should_check_main_world_content_security_policy_;
+  // The javascript world in which this request initiated.
+  const DOMWrapperWorld& JavascriptWorld() const {
+    // Assume the main world if |world_| is not specified.
+    return world_ ? *world_ : DOMWrapperWorld::MainWorld();
   }
 
   // The BlobURLToken that should be used when fetching the resource. This
@@ -166,8 +169,7 @@ struct CORE_EXPORT FrameLoadRequest {
       TriggeringEventInfo::kNotFromEvent;
   HTMLFormElement* form_ = nullptr;
   ShouldSendReferrer should_send_referrer_;
-  network::mojom::CSPDisposition
-      should_check_main_world_content_security_policy_;
+  scoped_refptr<const DOMWrapperWorld> world_;
   scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;
   base::TimeTicks input_start_time_;

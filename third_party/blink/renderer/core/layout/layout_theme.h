@@ -46,7 +46,6 @@ class Element;
 class File;
 class FontDescription;
 class HTMLInputElement;
-class IntRect;
 class LengthSize;
 class LocalFrame;
 class Node;
@@ -111,12 +110,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Whether or not the control has been styled enough by the author to disable
   // the native appearance.
   virtual bool IsControlStyled(ControlPart part, const ComputedStyle&) const;
-
-  // Some controls may spill out of their containers (e.g., the check on an OSX
-  // 10.9 checkbox). Add this "visual overflow" to the object's border box rect.
-  virtual void AddVisualOverflow(const Node*,
-                                 const ComputedStyle&,
-                                 IntRect& border_box) {}
 
   // This method is called whenever a control state changes on a particular
   // themed object, e.g., the mouse becomes pressed or a control becomes

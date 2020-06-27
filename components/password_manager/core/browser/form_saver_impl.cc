@@ -47,7 +47,7 @@ void PostProcessMatches(const PasswordForm& pending,
                         const std::vector<const PasswordForm*>& matches,
                         const base::string16& old_password,
                         PasswordStore* store) {
-  DCHECK(!pending.blacklisted_by_user);
+  DCHECK(!pending.blocked_by_user);
 
   // Update existing matches in the password store.
   for (const auto* match : matches) {

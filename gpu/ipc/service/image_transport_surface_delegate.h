@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "components/viz/common/gpu/gpu_vsync_callback.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "gpu/command_buffer/service/gl_surface_task_scheduler.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 
@@ -50,11 +49,6 @@ class GPU_IPC_SERVICE_EXPORT ImageTransportSurfaceDelegate {
 
   // Returns how long GpuThread was blocked since last swap. Used for metrics.
   virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;
-
-  // Returns the TaskScheduler that can be used to post async tasks to the GPU
-  // thread.
-  virtual scoped_refptr<GLSurfaceTaskScheduler>
-  CreateGLSurfaceTaskScheduler() = 0;
 
  protected:
   virtual ~ImageTransportSurfaceDelegate() = default;

@@ -18,6 +18,7 @@
 #include <random>
 #include <vector>
 
+#include <google/protobuf/message_lite.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "constants.h"
@@ -415,7 +416,7 @@ TEST_F(PolynomialTest, Serialize) {
                          p.Serialize());
     ASSERT_OK_AND_ASSIGN(rlwe::SerializedCoefficientPolynomial serialized_q,
                          q.Serialize());
-    EXPECT_THAT(serialized_p, EqualsProto(serialized_q));
+    EXPECT_EQ(serialized_p.SerializeAsString(), serialized_q.SerializeAsString());
 
     // Ensure that a serialized polynomial can be deserialized.
     ASSERT_OK_AND_ASSIGN(

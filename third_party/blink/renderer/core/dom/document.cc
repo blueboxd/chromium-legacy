@@ -8297,21 +8297,21 @@ void Document::ExecuteJavaScriptUrls() {
 
   for (auto& url_to_execute : urls_to_execute) {
     GetFrame()->GetScriptController().ExecuteJavaScriptURL(
-        url_to_execute.url, url_to_execute.disposition);
+        url_to_execute.url, network::mojom::CSPDisposition::CHECK,
+        *url_to_execute.world);
     if (!GetFrame())
       break;
   }
   CheckCompleted();
 }
 
-void Document::ProcessJavaScriptUrl(
-    const KURL& url,
-    network::mojom::CSPDisposition disposition) {
+void Document::ProcessJavaScriptUrl(const KURL& url,
+                                    const DOMWrapperWorld& world) {
   DCHECK(url.ProtocolIsJavaScript());
   if (GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     load_event_progress_ = kLoadEventNotRun;
   GetFrame()->Loader().Progress().ProgressStarted();
-  pending_javascript_urls_.push_back(PendingJavascriptUrl(url, disposition));
+  pending_javascript_urls_.push_back(PendingJavascriptUrl(url, world));
   if (!javascript_url_task_handle_.IsActive()) {
     javascript_url_task_handle_ = PostCancellableTask(
         *GetTaskRunner(TaskType::kNetworking), FROM_HERE,

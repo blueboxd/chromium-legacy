@@ -2457,9 +2457,7 @@ void LayoutBlockFlow::ComputeVisualOverflow(
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
-
   AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
 
   if (!IsLayoutNGContainingBlock(this) &&
       (recompute_floats || CreatesNewFormattingContext() ||

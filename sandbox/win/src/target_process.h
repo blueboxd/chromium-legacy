@@ -46,13 +46,6 @@ class TargetProcess {
                 const std::vector<Sid>& impersonation_capabilities);
   ~TargetProcess();
 
-  // TODO(cpu): Currently there does not seem to be a reason to implement
-  // reference counting for this class since is internal, but kept the
-  // the same interface so the interception framework does not need to be
-  // touched at this point.
-  void AddRef() {}
-  void Release() {}
-
   // Creates the new target process. The process is created suspended.
   ResultCode Create(const wchar_t* exe_path,
                     const wchar_t* command_line,
@@ -126,15 +119,16 @@ class TargetProcess {
   std::vector<Sid> impersonation_capabilities_;
 
   // Function used for testing.
-  friend TargetProcess* MakeTestTargetProcess(HANDLE process,
-                                              HMODULE base_address);
+  friend std::unique_ptr<TargetProcess> MakeTestTargetProcess(
+      HANDLE process,
+      HMODULE base_address);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TargetProcess);
 };
 
 // Creates a mock TargetProcess used for testing interceptions.
-// TODO(cpu): It seems that this method is not going to be used anymore.
-TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address);
+std::unique_ptr<TargetProcess> MakeTestTargetProcess(HANDLE process,
+                                                     HMODULE base_address);
 
 }  // namespace sandbox
 

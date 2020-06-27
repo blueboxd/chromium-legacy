@@ -118,7 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _weakReauthenticationModule = reauthenticationModule;
 
     _passwordForm = passwordForm;
-    if (!_passwordForm.blacklisted_by_user) {
+    if (!_passwordForm.blocked_by_user) {
       _username = base::SysUTF16ToNSString(_passwordForm.username_value);
       if (_passwordForm.federation_origin.opaque()) {
         _password = base::SysUTF16ToNSString(_passwordForm.password_value);
@@ -167,7 +167,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self siteCopyButtonItem]
       toSectionWithIdentifier:SectionIdentifierSite];
 
-  if (!_passwordForm.blacklisted_by_user) {
+  if (!_passwordForm.blocked_by_user) {
     [model addSectionWithIdentifier:SectionIdentifierUsername];
     TableViewTextHeaderFooterItem* usernameHeader =
         [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];

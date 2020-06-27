@@ -243,23 +243,16 @@
       </settings-slider>
     </div>
     <template is="dom-if" if="[[shouldShowExperimentalCursorColor_]]">
-      <settings-toggle-button class="hr"
-          pref="{{prefs.settings.a11y.cursor_color_enabled}}"
-          label="$i18n{cursorColorEnabledLabel}">
-      </settings-toggle-button>
-      <template is="dom-if"
-          if="[[prefs.settings.a11y.cursor_color_enabled.value]]">
-        <div class="settings-box continuation">
-          <div class="start sub-item settings-box-text"
-              id="cursorColorOptionsLabel">
-            $i18n{cursorColorOptionsLabel}
-          </div>
-          <settings-dropdown-menu aria-labeledby="cursorColorOptionsLabel"
-              pref="{{prefs.settings.a11y.cursor_color}}"
-              menu-options="[[cursorColorOptions_]]">
-          </settings-dropdown-menu>
+      <div class="settings-box">
+        <div class="start settings-box-text" id="cursorColorOptionsLabel">
+          $i18n{cursorColorOptionsLabel}
         </div>
-      </template>
+        <settings-dropdown-menu aria-labeledby="cursorColorOptionsLabel"
+            pref="{{prefs.settings.a11y.cursor_color}}"
+            menu-options="[[cursorColorOptions_]]"
+            on-settings-control-change="onA11yCursorColorChange_">
+        </settings-dropdown-menu>
+      </div>
     </template>
     <settings-toggle-button
         class="hr"

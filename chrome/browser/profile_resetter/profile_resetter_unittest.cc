@@ -290,7 +290,7 @@ void ShortcutHandler::CheckShortcutHasArguments(
 
 void ShortcutHandler::Delete() {
   EXPECT_FALSE(shortcut_path_.empty());
-  EXPECT_TRUE(base::DeleteFile(shortcut_path_, false));
+  EXPECT_TRUE(base::DeleteFile(shortcut_path_));
   shortcut_path_.clear();
 }
 #else

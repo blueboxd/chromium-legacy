@@ -9,8 +9,8 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -56,13 +56,15 @@ FrameLoadRequest::FrameLoadRequest(LocalDOMWindow* origin_window,
   if (const WebInputEvent* input_event = CurrentInputEvent::Get())
     SetInputStartTime(input_event->TimeStamp());
 
-  should_check_main_world_content_security_policy_ =
-      origin_window &&
-              ContentSecurityPolicy::ShouldBypassMainWorld(origin_window)
-          ? network::mojom::CSPDisposition::DO_NOT_CHECK
-          : network::mojom::CSPDisposition::CHECK;
-
   if (origin_window) {
+    {
+      v8::Isolate* isolate = origin_window->GetIsolate();
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+      if (!v8_context.IsEmpty())
+        world_ = &DOMWrapperWorld::Current(isolate);
+    }
+
     DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(origin_window->GetSecurityOrigin());
 

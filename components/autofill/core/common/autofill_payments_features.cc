@@ -110,12 +110,12 @@ const base::Feature kAutofillSaveCardInfobarEditSupport{
     "AutofillSaveCardInfobarEditSupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
-// ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
-// countries we simply can't turn this on for, and they change over time, so
-// it's important that we can flip a switch and be done instead of having old
-// versions of Chrome forever do the wrong thing. Enabling it by default would
-// mean that any first-run client without a Finch config won't get the
-// overriding command to NOT turn it on, which becomes an issue.
+// ENABLED_BY_DEFAULT because the feature state depends on the user's country.
+// There are countries we simply can't turn this on for, and they change over
+// time, so it's important that we can flip a switch and be done instead of
+// having old versions of Chrome forever do the wrong thing. Enabling it by
+// default would mean that any first-run client without a Finch config won't get
+// the overriding command to NOT turn it on, which becomes an issue.
 const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

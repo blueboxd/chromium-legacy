@@ -63,7 +63,10 @@ constexpr char kChromeExtension[] =
 
 // Constants used in handling postMessage() messages.
 constexpr char kType[] = "type";
-// Beep messge arguments. (Plugin -> Page).
+// Name of identifier field passed from JS to the plugin and back, to associate
+// Page->Plugin messages to Plugin->Page responses.
+constexpr char kJSMessageId[] = "messageId";
+// Beep message arguments. (Plugin -> Page).
 constexpr char kJSBeepType[] = "beep";
 // Viewport message arguments. (Page -> Plugin).
 constexpr char kJSViewportType[] = "viewport";
@@ -582,7 +585,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSStopScrollingType) {
     stop_scrolling_ = true;
   } else if (type == kJSGetSelectedTextType) {
-    HandleGetSelectedTextMessage();
+    HandleGetSelectedTextMessage(dict);
   } else if (type == kJSGetNamedDestinationType) {
     HandleGetNamedDestinationMessage(dict);
   } else {
@@ -1533,7 +1536,8 @@ void OutOfProcessInstance::HandleDisplayAnnotations(
 
 void OutOfProcessInstance::HandleGetNamedDestinationMessage(
     const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
+  if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string() ||
+      !dict.Get(pp::Var(kJSMessageId)).is_string()) {
     NOTREACHED();
     return;
   }
@@ -1544,6 +1548,7 @@ void OutOfProcessInstance::HandleGetNamedDestinationMessage(
   reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
   reply.Set(pp::Var(kJSNamedDestinationPageNumber),
             named_destination ? static_cast<int>(named_destination->page) : -1);
+  reply.Set(pp::Var(kJSMessageId), dict.Get(pp::Var(kJSMessageId)).AsString());
   PostMessage(reply);
 }
 
@@ -1560,13 +1565,20 @@ void OutOfProcessInstance::HandleGetPasswordCompleteMessage(
   callback.Run(PP_OK);
 }
 
-void OutOfProcessInstance::HandleGetSelectedTextMessage() {
+void OutOfProcessInstance::HandleGetSelectedTextMessage(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSMessageId)).is_string()) {
+    NOTREACHED();
+    return;
+  }
+
   std::string selected_text = engine_->GetSelectedText();
   // Always return unix newlines to JS.
   base::ReplaceChars(selected_text, "\r", std::string(), &selected_text);
   pp::VarDictionary reply;
   reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
   reply.Set(pp::Var(kJSSelectedText), selected_text);
+  reply.Set(pp::Var(kJSMessageId), dict.Get(pp::Var(kJSMessageId)).AsString());
   PostMessage(reply);
 }
 

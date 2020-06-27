@@ -575,37 +575,6 @@ bool LayoutThemeMac::IsControlStyled(ControlPart part,
   return LayoutTheme::IsControlStyled(part, style);
 }
 
-void LayoutThemeMac::AddVisualOverflow(const Node* node,
-                                       const ComputedStyle& style,
-                                       IntRect& rect) {
-  ControlPart part = style.EffectiveAppearance();
-  switch (part) {
-    case kCheckboxPart:
-    case kRadioPart:
-    case kPushButtonPart:
-    case kSquareButtonPart:
-    case kButtonPart:
-    case kInnerSpinButtonPart:
-      return AddVisualOverflowHelper(part, ControlStatesForNode(node, style),
-                                     style.EffectiveZoom(), rect);
-    default:
-      break;
-  }
-
-  float zoom_level = style.EffectiveZoom();
-
-  if (part == kMenulistPart) {
-    SetPopupButtonCellState(node, style, rect);
-    IntSize size = PopupButtonSizes()[[PopupButton() controlSize]];
-    size.SetHeight(size.Height() * zoom_level);
-    size.SetWidth(rect.Width());
-    rect = InflateRect(rect, size, PopupButtonMargins(), zoom_level);
-  } else if (part == kSliderThumbHorizontalPart ||
-             part == kSliderThumbVerticalPart) {
-    rect.SetHeight(rect.Height() + kSliderThumbShadowBlur);
-  }
-}
-
 void LayoutThemeMac::UpdateCheckedState(NSCell* cell, const Node* node) {
   bool old_indeterminate = [cell state] == NSMixedState;
   bool indeterminate = IsIndeterminate(node);
@@ -796,9 +765,10 @@ void LayoutThemeMac::AdjustMenuListStyle(ComputedStyle& style,
 
   // Set the foreground color to black or gray when we have the aqua look.
   // Cast to RGB32 is to work around a compiler bug.
-  style.SetColor(e && !e->IsDisabledFormControl()
-                     ? static_cast<RGBA32>(Color::kBlack)
-                     : Color::kDarkGray);
+  StyleColor color(e && !e->IsDisabledFormControl()
+                       ? static_cast<RGBA32>(Color::kBlack)
+                       : Color::kDarkGray);
+  style.SetColor(color);
 
   // Set the button's vertical size.
   SetSizeFromFont(style, MenuListButtonSizes());
@@ -1368,72 +1338,6 @@ LengthBox LayoutThemeMac::ControlBorder(ControlPart part,
       return LayoutTheme::ControlBorder(part, font_description, zoomed_box,
                                         zoom_factor);
   }
-}
-
-void LayoutThemeMac::AddVisualOverflowHelper(ControlPart part,
-                                             ControlStates states,
-                                             float zoom_factor,
-                                             IntRect& zoomed_rect) const {
-  BEGIN_BLOCK_OBJC_EXCEPTIONS
-  switch (part) {
-    case kCheckboxPart: {
-      // We inflate the rect as needed to account for padding included in the
-      // cell to accommodate the checkbox shadow" and the check.  We don't
-      // consider this part of the bounds of the control in WebKit.
-      NSCell* cell = Checkbox(states, zoomed_rect, zoom_factor);
-      NSControlSize control_size = [cell controlSize];
-      IntSize zoomed_size = CheckboxSizes()[control_size];
-      zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
-      zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);
-      zoomed_rect = InflateRect(zoomed_rect, zoomed_size,
-                                CheckboxMargins(control_size), zoom_factor);
-      break;
-    }
-    case kRadioPart: {
-      // We inflate the rect as needed to account for padding included in the
-      // cell to accommodate the radio button shadow".  We don't consider this
-      // part of the bounds of the control in WebKit.
-      NSCell* cell = Radio(states, zoomed_rect, zoom_factor);
-      NSControlSize control_size = [cell controlSize];
-      IntSize zoomed_size = RadioSizes()[control_size];
-      zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
-      zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);
-      zoomed_rect = InflateRect(zoomed_rect, zoomed_size,
-                                RadioMargins(control_size), zoom_factor);
-      break;
-    }
-    case kPushButtonPart:
-    case kButtonPart: {
-      NSButtonCell* cell = Button(part, states, zoomed_rect, zoom_factor);
-      NSControlSize control_size = [cell controlSize];
-
-      // We inflate the rect as needed to account for the Aqua button's shadow.
-      if ([cell bezelStyle] == NSRoundedBezelStyle) {
-        IntSize zoomed_size = ButtonSizes()[control_size];
-        zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
-        // Buttons don't ever constrain width, so the zoomed width can just be
-        // honored.
-        zoomed_size.SetWidth(zoomed_rect.Width());
-        zoomed_rect = InflateRect(zoomed_rect, zoomed_size,
-                                  ButtonMargins(control_size), zoom_factor);
-      }
-      break;
-    }
-    case kInnerSpinButtonPart: {
-      static const int kStepperMargin[4] = {0, 0, 0, 0};
-      ControlSize control_size = ControlSizeFromPixelSize(
-          StepperSizes(), zoomed_rect.Size(), zoom_factor);
-      IntSize zoomed_size = StepperSizes()[control_size];
-      zoomed_size.SetHeight(zoomed_size.Height() * zoom_factor);
-      zoomed_size.SetWidth(zoomed_size.Width() * zoom_factor);
-      zoomed_rect =
-          InflateRect(zoomed_rect, zoomed_size, kStepperMargin, zoom_factor);
-      break;
-    }
-    default:
-      break;
-  }
-  END_BLOCK_OBJC_EXCEPTIONS
 }
 
 void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {

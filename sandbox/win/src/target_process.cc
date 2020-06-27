@@ -369,10 +369,11 @@ ResultCode TargetProcess::AssignLowBoxToken(
   return SBOX_ALL_OK;
 }
 
-TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
-  TargetProcess* target =
-      new TargetProcess(base::win::ScopedHandle(), base::win::ScopedHandle(),
-                        nullptr, nullptr, std::vector<Sid>());
+std::unique_ptr<TargetProcess> MakeTestTargetProcess(HANDLE process,
+                                                     HMODULE base_address) {
+  auto target = std::make_unique<TargetProcess>(
+      base::win::ScopedHandle(), base::win::ScopedHandle(), nullptr, nullptr,
+      std::vector<Sid>());
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

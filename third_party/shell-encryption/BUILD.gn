@@ -6,6 +6,14 @@ import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 config("shell_encryption_config1") {
+  # TODO(crbug.com/1095122) Reenable the warning for unused functions and typedef.
+  cflags = [
+    "-Wno-unused-local-typedef",
+    "-Wno-unused-function",
+    "-Wno-sign-compare",
+    "-Wno-ignored-qualifiers",
+  ]
+
   include_dirs = [
     # Allow includes to be prefixed with shell-encryption/src/ in case it is not an
     # immediate subdirectory of the top-level.
@@ -85,26 +93,42 @@ source_set("shell_encryption") {
     "//third_party/abseil-cpp/absl/numeric:int128",
     "//third_party/abseil-cpp/absl/status:status",
     "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/synchronization",
     "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/boringssl:boringssl",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 
-test("shell_encryption_test") {
+source_set("shell_encryption_test_library") {
   testonly = true
   public_configs = [ ":shell_encryption_config1" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public = [
+    "src/prng/integral_prng_testing_types.h",
     "src/testing/coefficient_polynomial.h",
     "src/testing/coefficient_polynomial_ciphertext.h",
-    "src/testing/parameter.h",
+    "src/testing/parameters.h",
     "src/testing/protobuf_matchers.h",
     "src/testing/status_matchers.h",
     "src/testing/status_testing.h",
     "src/testing/testing_prng.h",
     "src/testing/testing_utils.h",
   ]
+  public_deps = [
+    ":coefficient_polynomial_proto",
+    ":shell_encryption",
+    "//testing/gmock:gmock",
+    "//testing/gtest:gtest",
+  ]
+}
+
+source_set("shell_encryption_test") {
+  testonly = true
+  public_configs = [ ":shell_encryption_config1" ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   sources = [
     "src/bits_util_test.cc",
     "src/context_test.cc",
@@ -114,8 +138,6 @@ test("shell_encryption_test") {
     "src/montgomery_test.cc",
     "src/ntt_parameters_test.cc",
     "src/polynomial_test.cc",
-    "src/prng/chacha_prng.cc",
-    "src/prng/integral_prng_testing_types.h",
     "src/prng/prng_test.cc",
     "src/prng/single_thread_chacha_prng_test.cc",
     "src/relinearization_key_test.cc",
@@ -129,10 +151,12 @@ test("shell_encryption_test") {
     "src/testing/protobuf_matchers_test.cc",
     "src/transcription_test.cc",
   ]
-  public_deps = [
-    ":coefficient_polynomial_proto",
-    ":shell_encryption",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
+  deps = [
+    ":shell_encryption_test_library",
+    "//testing/gtest:gtest_main",
   ]
+}
+
+test("shell_encryption_unittests") {
+  deps = [ ":shell_encryption_test" ]
 }

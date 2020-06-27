@@ -6,12 +6,12 @@
 
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/wm/overview/overview_constants.h"
-#include "base/lazy_instance.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -92,24 +92,12 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
   return base::TimeDelta();
 }
 
-class OverviewCloseMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  OverviewCloseMetricsReporter() = default;
-  ~OverviewCloseMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
-        "Ash.Overview.AnimationSmoothness.Close.ClamshellMode", value);
-    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
-        "Ash.Overview.AnimationSmoothness.Close.TabletMode", value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverviewCloseMetricsReporter);
-};
-
-base::LazyInstance<OverviewCloseMetricsReporter>::Leaky
-    g_close_metrics_reporter = LAZY_INSTANCE_INITIALIZER;
+void ReportCloseSmoothness(int smoothness) {
+  UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(
+      "Ash.Overview.AnimationSmoothness.Close.ClamshellMode", smoothness);
+  UMA_HISTOGRAM_PERCENTAGE_IN_TABLET(
+      "Ash.Overview.AnimationSmoothness.Close.TabletMode", smoothness);
+}
 
 }  // namespace
 
@@ -204,8 +192,9 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       GetAnimationDuration(animation_type));
   if (animation_type == OVERVIEW_ANIMATION_CLOSING_OVERVIEW_ITEM ||
       animation_type == OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM) {
-    animation_settings_->SetAnimationMetricsReporter(
-        g_close_metrics_reporter.Pointer());
+    close_reporter_.emplace(animation_settings_->GetAnimator(),
+                            metrics_util::ForSmoothness(
+                                base::BindRepeating(&ReportCloseSmoothness)));
   }
 }
 

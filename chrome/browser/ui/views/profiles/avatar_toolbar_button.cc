@@ -70,8 +70,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser,
 
   GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 
-  Init();
-
   // For consistency with identity representation, we need to have the avatar on
   // the left and the (potential) user name on the right.
   SetHorizontalAlignment(gfx::ALIGN_LEFT);

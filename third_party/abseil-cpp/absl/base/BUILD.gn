@@ -10,15 +10,13 @@ absl_source_set("atomic_hook") {
     ":config",
     ":core_headers",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("errno_saver") {
   public = [ "internal/errno_saver.h" ]
   deps = [ ":config" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("log_severity") {
@@ -39,8 +37,7 @@ absl_source_set("raw_logging_internal") {
     ":core_headers",
     ":log_severity",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("spinlock_wait") {
@@ -57,8 +54,7 @@ absl_source_set("spinlock_wait") {
     ":core_headers",
     ":errno_saver",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/base:*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/base:*" ]
 }
 
 absl_source_set("config") {
@@ -75,7 +71,6 @@ absl_source_set("dynamic_annotations") {
 
   # Abseil's dynamic annotations are only visible inside Abseil because
   # their usage is deprecated in Chromium (see README.chromium for more info).
-  visibility = []
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
   deps = [ ":config" ]
 }
@@ -120,8 +115,7 @@ absl_source_set("base_internal") {
     ":config",
     "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("base") {
@@ -168,22 +162,19 @@ absl_source_set("throw_delegate") {
     ":config",
     ":raw_logging_internal",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("exception_testing") {
   testonly = true
   public = [ "internal/exception_testing.h" ]
   deps = [ ":config" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("pretty_function") {
   public = [ "internal/pretty_function.h" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 # TODO(mbonadei): This target throws by design. We should probably
@@ -242,8 +233,7 @@ absl_source_set("bits") {
     ":config",
     ":core_headers",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("exponential_biased") {
@@ -253,8 +243,7 @@ absl_source_set("exponential_biased") {
     ":config",
     ":core_headers",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("periodic_sampler") {
@@ -274,8 +263,7 @@ absl_source_set("scoped_set_env") {
     ":config",
     ":raw_logging_internal",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("strerror") {
@@ -286,15 +274,13 @@ absl_source_set("strerror") {
     ":core_headers",
     ":errno_saver",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("fast_type_id") {
   public = [ "internal/fast_type_id.h" ]
   deps = [ ":config" ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("config_test") {

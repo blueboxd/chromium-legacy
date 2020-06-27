@@ -330,6 +330,19 @@ def chromium_chromiumos_builder(*, name, **kwargs):
   )
 
 
+def chromium_codesearch_builder(*, name, os=None, **kwargs):
+  return try_builder(
+      name = name,
+      configure_kitchen = False,
+      executable = 'recipe:chromium_codesearch',
+      mastername = 'tryserver.chromium.codesearch',
+      goma_backend = builders.goma.backend.RBE_PROD,
+      os = os,
+      service_account = "infra-codesearch@chops-service-accounts.iam.gserviceaccont.com",
+      **kwargs
+  )
+
+
 def chromium_dawn_builder(*, name, **kwargs):
   return try_builder(
       name = name,
@@ -517,6 +530,7 @@ try_ = struct(
     chromium_android_builder = chromium_android_builder,
     chromium_angle_builder = chromium_angle_builder,
     chromium_chromiumos_builder = chromium_chromiumos_builder,
+    chromium_codesearch_builder = chromium_codesearch_builder,
     chromium_dawn_builder = chromium_dawn_builder,
     chromium_linux_builder = chromium_linux_builder,
     chromium_mac_builder = chromium_mac_builder,

@@ -87,7 +87,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
     case base::Value::Type::STRING: {
       std::string string_value;
       if (value.GetAsString(&string_value))
-        return base::SysUTF8ToCFStringRef(string_value);
+        return base::SysUTF8ToCFStringRef(string_value).release();
       break;
     }
 

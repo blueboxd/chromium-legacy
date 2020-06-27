@@ -56,12 +56,7 @@ void ArcInputMethodManagerBridgeImpl::SendFocus(
   if (!imm_instance)
     return;
 
-  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
-  // once the 'Focus' method from
-  // //components/arc/mojom/input_method_manager.mojom could take pending_remote
-  // directly. Refer to crrev.com/c/1868870.
-  mojo::InterfacePtr<mojom::InputConnection> ptr(std::move(connection));
-  imm_instance->Focus(std::move(ptr), std::move(state));
+  imm_instance->Focus(std::move(connection), std::move(state));
 }
 
 void ArcInputMethodManagerBridgeImpl::SendUpdateTextInputState(

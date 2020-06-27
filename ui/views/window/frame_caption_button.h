@@ -33,9 +33,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
                      int hit_test_type);
   ~FrameCaptionButton() override;
 
-  // Gets the color to use for a frame caption button.
-  static SkColor GetButtonColor(SkColor background_color);
-
   // Gets the alpha ratio for the colors of inactive frame caption buttons.
   static float GetInactiveButtonColorAlphaRatio();
 
@@ -103,6 +100,9 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   // The current background color.
   SkColor background_color_;
+
+  // The current button color.
+  SkColor button_color_;
 
   // Whether the button should be painted as active.
   bool paint_as_active_;

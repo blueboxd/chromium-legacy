@@ -8,9 +8,9 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "extensions/common/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/test/test_extension_dir.h"
 

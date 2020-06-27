@@ -341,7 +341,7 @@ void RenameChromeDesktopShortcutForProfile(
     const base::FilePath possible_new_system_shortcut =
         system_shortcuts_directory.Append(new_shortcut_filename);
     if (base::PathExists(possible_new_system_shortcut)) {
-      if (base::DeleteFile(old_shortcut_path, false)) {
+      if (base::DeleteFile(old_shortcut_path)) {
         profile_shortcuts->erase(old_shortcut_path);
         desktop_contents->erase(old_shortcut_path);
       } else {
@@ -545,7 +545,7 @@ void DeleteDesktopShortcuts(
     // doesn't consider the command-line of the shortcuts it deletes.
     // TODO(huangs): Refactor with ShellUtil::RemoveShortcuts().
     base::win::UnpinShortcutFromTaskbar(shortcut);
-    base::DeleteFile(shortcut, false);
+    base::DeleteFile(shortcut);
     // Notify the shell that the shortcut was deleted to ensure desktop refresh.
     SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, shortcut.value().c_str(), nullptr);
   }

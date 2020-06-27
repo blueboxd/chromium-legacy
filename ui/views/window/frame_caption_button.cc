@@ -66,26 +66,6 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
 FrameCaptionButton::~FrameCaptionButton() = default;
 
 // static
-SkColor FrameCaptionButton::GetButtonColor(SkColor background_color) {
-  // Use IsDark() to change target colors instead of PickContrastingColor(), so
-  // that DefaultFrameHeader::GetTitleColor() (which uses different target
-  // colors) can change between light/dark targets at the same time.  It looks
-  // bad when the title and caption buttons disagree about whether to be light
-  // or dark.
-  const SkColor default_foreground = color_utils::IsDark(background_color)
-                                         ? gfx::kGoogleGrey200
-                                         : gfx::kGoogleGrey700;
-  const SkColor high_contrast_foreground =
-      color_utils::GetColorWithMaxContrast(background_color);
-  // Guarantee the caption buttons reach at least contrast ratio 3; this ratio
-  // matches that used for focus indicators, large text, and other "have to see
-  // it but perhaps don't have to read fine detail" cases.
-  return color_utils::BlendForMinContrast(default_foreground, background_color,
-                                          high_contrast_foreground, 3.0f)
-      .color;
-}
-
-// static
 float FrameCaptionButton::GetInactiveButtonColorAlphaRatio() {
   return 0.38f;
 }
@@ -94,7 +74,7 @@ void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,
                                   const gfx::VectorIcon& icon_definition) {
   gfx::ImageSkia new_icon_image =
-      gfx::CreateVectorIcon(icon_definition, GetButtonColor(background_color_));
+      gfx::CreateVectorIcon(icon_definition, button_color_);
 
   // The early return is dependent on |animate| because callers use SetImage()
   // with ANIMATE_NO to progress the crossfade animation to the end.
@@ -190,6 +170,8 @@ void FrameCaptionButton::SetBackgroundColor(SkColor background_color) {
     return;
 
   background_color_ = background_color;
+  button_color_ =
+      GetNativeTheme()->GetFrameCaptionButtonForegroundColor(background_color_);
   // Refresh the icon since the color may have changed.
   if (icon_definition_)
     SetImage(icon_, ANIMATE_NO, *icon_definition_);
@@ -288,9 +270,8 @@ void FrameCaptionButton::UpdateInkDropBaseColor() {
   // glyph color.
   // TODO(pkasting): It would likely be better to make the button glyph always
   // be an alpha-blended version of GetColorWithMaxContrast(background_color_).
-  const SkColor button_color = GetButtonColor(background_color_);
   set_ink_drop_base_color(
-      GetColorWithMaxContrast(GetColorWithMaxContrast(button_color)));
+      GetColorWithMaxContrast(GetColorWithMaxContrast(button_color_)));
 }
 
 }  // namespace views

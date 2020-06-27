@@ -497,6 +497,7 @@ jumbo_source_set("browser_sources") {
 
   if (is_android) {
     deps += [ "//ui/android" ]
+    sources += [ "tts_environment_android.h" ]
   }
 
   if (use_aura || is_mac) {

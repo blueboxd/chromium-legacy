@@ -1,0 +1,243 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/nearby_sharing/scheduling/nearby_share_scheduler_base.h"
+
+#include <algorithm>
+#include <utility>
+
+#include "base/numerics/clamped_math.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/clock.h"
+#include "base/util/values/values_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/network_service_instance.h"
+
+namespace {
+
+constexpr base::TimeDelta kZeroTimeDelta = base::TimeDelta::FromSeconds(0);
+constexpr base::TimeDelta kBaseRetryDelay = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kMaxRetryDelay = base::TimeDelta::FromHours(1);
+
+const char kLastAttemptTimeKeyName[] = "a";
+const char kLastSuccessTimeKeyName[] = "s";
+const char kNumConsecutiveFailuresKeyName[] = "f";
+const char kHasPendingImmediateRequestKeyName[] = "p";
+const char kIsWaitingForResultKeyName[] = "w";
+
+}  // namespace
+
+NearbyShareSchedulerBase::NearbyShareSchedulerBase(bool retry_failures,
+                                                   bool require_connectivity,
+                                                   const std::string& pref_name,
+                                                   PrefService* pref_service,
+                                                   OnRequestCallback callback,
+                                                   const base::Clock* clock)
+    : NearbyShareScheduler(std::move(callback)),
+      retry_failures_(retry_failures),
+      require_connectivity_(require_connectivity),
+      pref_name_(pref_name),
+      pref_service_(pref_service),
+      clock_(clock) {
+  DCHECK(pref_service_);
+
+  InitializePersistedRequest();
+
+  if (require_connectivity_) {
+    content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+  }
+}
+
+NearbyShareSchedulerBase::~NearbyShareSchedulerBase() {
+  if (require_connectivity_) {
+    content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
+        this);
+  }
+}
+
+void NearbyShareSchedulerBase::MakeImmediateRequest() {
+  timer_.Stop();
+  SetHasPendingImmediateRequest(true);
+  SetTimer();
+}
+
+void NearbyShareSchedulerBase::HandleResult(bool success) {
+  base::Time now = clock_->Now();
+  SetLastAttemptTime(now);
+
+  if (success) {
+    SetLastSuccessTime(now);
+    SetNumConsecutiveFailures(0);
+  } else {
+    SetNumConsecutiveFailures(base::ClampAdd(GetNumConsecutiveFailures(), 1));
+  }
+
+  SetIsWaitingForResult(false);
+  SetTimer();
+}
+
+base::Optional<base::Time> NearbyShareSchedulerBase::GetLastSuccessTime()
+    const {
+  return util::ValueToTime(pref_service_->GetDictionary(pref_name_)
+                               ->FindKey(kLastSuccessTimeKeyName));
+}
+
+base::Optional<base::TimeDelta>
+NearbyShareSchedulerBase::GetTimeUntilNextRequest() const {
+  if (!is_running() || IsWaitingForResult())
+    return base::nullopt;
+
+  if (HasPendingImmediateRequest())
+    return kZeroTimeDelta;
+
+  base::Time now = clock_->Now();
+
+  // Recover from failures using exponential backoff strategy if necessary.
+  base::Optional<base::TimeDelta> time_until_retry = TimeUntilRetry(now);
+  if (time_until_retry)
+    return time_until_retry;
+
+  // Schedule the periodic request if applicable.
+  return TimeUntilRecurringRequest(now);
+}
+
+bool NearbyShareSchedulerBase::IsWaitingForResult() const {
+  return pref_service_->GetDictionary(pref_name_)
+      ->FindBoolKey(kIsWaitingForResultKeyName)
+      .value_or(false);
+}
+
+size_t NearbyShareSchedulerBase::GetNumConsecutiveFailures() const {
+  const std::string* str = pref_service_->GetDictionary(pref_name_)
+                               ->FindStringKey(kNumConsecutiveFailuresKeyName);
+  if (!str)
+    return 0;
+
+  size_t num_failures = 0;
+  if (!base::StringToSizeT(*str, &num_failures))
+    return 0;
+
+  return num_failures;
+}
+
+void NearbyShareSchedulerBase::OnStart() {
+  SetTimer();
+}
+
+void NearbyShareSchedulerBase::OnStop() {
+  timer_.Stop();
+}
+
+void NearbyShareSchedulerBase::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  if (content::GetNetworkConnectionTracker()->IsOffline())
+    return;
+
+  SetTimer();
+}
+
+base::Optional<base::Time> NearbyShareSchedulerBase::GetLastAttemptTime()
+    const {
+  return util::ValueToTime(pref_service_->GetDictionary(pref_name_)
+                               ->FindKey(kLastAttemptTimeKeyName));
+}
+
+bool NearbyShareSchedulerBase::HasPendingImmediateRequest() const {
+  return pref_service_->GetDictionary(pref_name_)
+      ->FindBoolKey(kHasPendingImmediateRequestKeyName)
+      .value_or(false);
+}
+
+void NearbyShareSchedulerBase::SetLastAttemptTime(
+    base::Time last_attempt_time) {
+  DictionaryPrefUpdate(pref_service_, pref_name_)
+      .Get()
+      ->SetKey(kLastAttemptTimeKeyName, util::TimeToValue(last_attempt_time));
+}
+
+void NearbyShareSchedulerBase::SetLastSuccessTime(
+    base::Time last_success_time) {
+  DictionaryPrefUpdate(pref_service_, pref_name_)
+      .Get()
+      ->SetKey(kLastSuccessTimeKeyName, util::TimeToValue(last_success_time));
+}
+
+void NearbyShareSchedulerBase::SetNumConsecutiveFailures(size_t num_failures) {
+  DictionaryPrefUpdate(pref_service_, pref_name_)
+      .Get()
+      ->SetStringKey(kNumConsecutiveFailuresKeyName,
+                     base::NumberToString(num_failures));
+}
+
+void NearbyShareSchedulerBase::SetHasPendingImmediateRequest(
+    bool has_pending_immediate_request) {
+  DictionaryPrefUpdate(pref_service_, pref_name_)
+      .Get()
+      ->SetBoolKey(kHasPendingImmediateRequestKeyName,
+                   has_pending_immediate_request);
+}
+
+void NearbyShareSchedulerBase::SetIsWaitingForResult(
+    bool is_waiting_for_result) {
+  DictionaryPrefUpdate(pref_service_, pref_name_)
+      .Get()
+      ->SetBoolKey(kIsWaitingForResultKeyName, is_waiting_for_result);
+}
+
+void NearbyShareSchedulerBase::InitializePersistedRequest() {
+  if (IsWaitingForResult()) {
+    SetHasPendingImmediateRequest(true);
+    SetIsWaitingForResult(false);
+  }
+}
+
+base::Optional<base::TimeDelta> NearbyShareSchedulerBase::TimeUntilRetry(
+    base::Time now) const {
+  if (!retry_failures_)
+    return base::nullopt;
+
+  size_t num_failures = GetNumConsecutiveFailures();
+  if (num_failures == 0)
+    return base::nullopt;
+
+  // The exponential back off is
+  //
+  //   base * 2^(num_failures - 1)
+  //
+  // up to a fixed maximum retry delay.
+  base::TimeDelta delay =
+      std::min(kMaxRetryDelay, kBaseRetryDelay * (1 << (num_failures - 1)));
+
+  base::TimeDelta time_elapsed_since_last_attempt = now - *GetLastAttemptTime();
+
+  return std::max(kZeroTimeDelta, delay - time_elapsed_since_last_attempt);
+}
+
+void NearbyShareSchedulerBase::SetTimer() {
+  if (!is_running())
+    return;
+
+  timer_.Stop();
+
+  base::Optional<base::TimeDelta> delay = GetTimeUntilNextRequest();
+  if (!delay)
+    return;
+
+  timer_.Start(FROM_HERE, *delay,
+               base::BindOnce(&NearbyShareSchedulerBase::OnTimerFired,
+                              base::Unretained(this)));
+}
+
+void NearbyShareSchedulerBase::OnTimerFired() {
+  DCHECK(is_running());
+  if (require_connectivity_ &&
+      content::GetNetworkConnectionTracker()->IsOffline()) {
+    return;
+  }
+
+  SetIsWaitingForResult(true);
+  SetHasPendingImmediateRequest(false);
+  NotifyOfRequest();
+}

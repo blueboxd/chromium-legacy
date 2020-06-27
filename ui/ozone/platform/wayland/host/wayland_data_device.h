@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
+#include "base/gtest_prod_util.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
@@ -79,6 +80,8 @@ class WaylandDataDevice : public WaylandDataDeviceBase {
   void SetSelectionSource(WaylandDataSource* source);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDrag);
+
   void ReadDragDataFromFD(base::ScopedFD fd, RequestDataCallback callback);
 
   // wl_data_device_listener callbacks

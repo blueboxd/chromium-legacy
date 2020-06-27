@@ -260,7 +260,7 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
 
 #if !defined(OS_ANDROID)
 std::vector<std::string>
-ChromeAutofillClient::GetMerchantWhitelistForVirtualCards() {
+ChromeAutofillClient::GetAllowedMerchantsForVirtualCards() {
   if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
     return std::vector<std::string>();
 
@@ -269,7 +269,7 @@ ChromeAutofillClient::GetMerchantWhitelistForVirtualCards() {
 }
 
 std::vector<std::string>
-ChromeAutofillClient::GetBinRangeWhitelistForVirtualCards() {
+ChromeAutofillClient::GetAllowedBinRangesForVirtualCards() {
   if (!prefs::IsAutofillCreditCardEnabled(GetPrefs()))
     return std::vector<std::string>();
 

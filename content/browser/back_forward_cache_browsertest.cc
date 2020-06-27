@@ -2096,6 +2096,44 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIdleManager) {
       blink::scheduler::WebSchedulerTrackedFeature::kIdleManager, FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheSMSService) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page and start using the SMSService.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver rfh_a_deleted(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+      await navigator.credentials.get({otp: {transport: ["sms"]}});
+      resolve();
+    });
+  )"));
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page uses SMSService so it should be deleted.
+  rfh_a_deleted.WaitUntilDeleted();
+
+  // 3) Go back and make sure the SMSService page wasn't in the cache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Note that on certain linux tests, there is occasionally a not restored
+  // reason of kDisableForRenderFrameHostCalled. This is due to the javascript
+  // navigator.credentials.get, which will call on authentication code for linux
+  // but not other operating systems. The authenticator code explicitly invokes
+  // kDisableForRenderFrameHostCalled. This causes flakiness if we check against
+  // all not restored reasons. As a result, we only check for the blocklist
+  // reason.
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kSmsService, FROM_HERE);
+}
+
 // crbug.com/1090223
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_DoesNotCachePaymentManager DISABLED_DoesNotCachePaymentManager

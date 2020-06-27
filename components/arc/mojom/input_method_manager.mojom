@@ -132,7 +132,7 @@ interface InputMethodManagerInstance {
 
   // Notifies Android's ArcInputMethodManagerService that
   // a text field is focused.
-  [MinVersion=2] Focus@3(InputConnection connection,
+  [MinVersion=2] Focus@3(pending_remote<InputConnection> connection,
                          TextInputState initial_state);
 
   // Sends the latest TextInputState of the active text field.

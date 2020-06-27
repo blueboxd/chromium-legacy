@@ -194,8 +194,8 @@ void ErrorConsole::Enable() {
   prefs_ = ExtensionPrefs::Get(profile_);
 
   profile_observer_.Add(profile_);
-  if (profile_->HasOffTheRecordProfile())
-    profile_observer_.Add(profile_->GetOffTheRecordProfile());
+  if (profile_->HasPrimaryOTRProfile())
+    profile_observer_.Add(profile_->GetPrimaryOTRProfile());
 
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();

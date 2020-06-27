@@ -281,9 +281,7 @@ void LayoutTextControlSingleLine::ComputeVisualOverflow(
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
-
   AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
 
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())

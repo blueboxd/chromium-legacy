@@ -83,7 +83,7 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
                            UnloadedExtensionReason reason) override {
     original_complete_.reset(new LazyBackgroundObserver(profile_));
     incognito_complete_.reset(
-        new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
+        new LazyBackgroundObserver(profile_->GetPrimaryOTRProfile()));
   }
 
   Profile* profile_;

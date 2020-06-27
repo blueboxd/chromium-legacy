@@ -43,8 +43,6 @@ class PasswordManagerMetricsRecorder {
     NO_MATCHING_FORM,
     // FormFetcher of PasswordFormManager is still loading.
     MATCHING_NOT_COMPLETE,
-    // Form is blacklisted for saving. Obsolete since M47.
-    FORM_BLACKLISTED,
     // <unknown purpose>. Obsolete since M48.
     INVALID_FORM,
     // A Google credential cannot be saved by policy because it is the Chrome

@@ -17,8 +17,8 @@ class BackButtonNode extends SAChildNode {
      */
     this.group_ = group;
 
-    /** @private {function(chrome.automation.AutomationEvent)} */
-    this.locationChangedHandler_ = () => FocusRingManager.setFocusedNode(this);
+    /** @private {!RepeatedEventHandler} */
+    this.locationChangedHandler_;
   }
 
   // ================= Getters and setters =================
@@ -84,9 +84,10 @@ class BackButtonNode extends SAChildNode {
     BackButtonNode.findAutomationNode_();
 
     if (this.group_.automationNode) {
-      this.group_.automationNode.addEventListener(
+      this.locationChangedHandler_ = new RepeatedEventHandler(
+          this.group_.automationNode,
           chrome.automation.EventType.LOCATION_CHANGED,
-          this.locationChangedHandler_, false /* is_capture */);
+          () => FocusRingManager.setFocusedNode(this), true /* exact_match */);
     }
   }
 
@@ -97,10 +98,8 @@ class BackButtonNode extends SAChildNode {
         chrome.accessibilityPrivate.SwitchAccessBubble.BACK_BUTTON,
         false /* show */);
 
-    if (this.group_.automationNode) {
-      this.group_.automationNode.removeEventListener(
-          chrome.automation.EventType.LOCATION_CHANGED,
-          this.locationChangedHandler_, false /* is_capture */);
+    if (this.locationChangedHandler_) {
+      this.locationChangedHandler_.stopListening();
     }
   }
 

@@ -88,13 +88,9 @@ InspectableViewsFinder::ViewList InspectableViewsFinder::GetViewsForExtension(
     return result;
   GetViewsForExtensionForProfile(
       extension, profile_, is_enabled, false, &result);
-  if (profile_->HasOffTheRecordProfile()) {
-    GetViewsForExtensionForProfile(
-        extension,
-        profile_->GetOffTheRecordProfile(),
-        is_enabled,
-        true,
-        &result);
+  if (profile_->HasPrimaryOTRProfile()) {
+    GetViewsForExtensionForProfile(extension, profile_->GetPrimaryOTRProfile(),
+                                   is_enabled, true, &result);
   }
 
   return result;

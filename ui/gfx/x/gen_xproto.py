@@ -459,6 +459,8 @@ class GenXproto(FileWriter):
         return '::'.join(name[chop:])
 
     def fieldtype(self, field):
+        if field.isfd:
+            return 'base::ScopedFD'
         return self.qualtype(field.type,
                              field.enum if field.enum else field.field_type)
 
@@ -603,6 +605,15 @@ class GenXproto(FileWriter):
             self.write('Read(&%s, &buf);' % name)
         else:
             self.write('buf.Write(&%s);' % name)
+
+    def copy_fd(self, field, name):
+        if self.is_read:
+            self.write('%s = base::ScopedFD(buf.TakeFd());' % name)
+        else:
+            # We take the request struct as const&, so dup() the fd to preserve
+            # const-correctness because XCB close()s it after writing it.
+            self.write('buf.fds().push_back(HANDLE_EINTR(dup(%s.get())));' %
+                       name)
 
     def copy_special_field(self, field):
         type_name = self.fieldtype(field)
@@ -805,12 +816,11 @@ class GenXproto(FileWriter):
         elif t.is_container:
             with Indent(self, '{', '}'):
                 self.copy_container(t, name)
-        elif t.is_fd:
-            # TODO(https://crbug.com/1066670): Copy FDs out of band.
-            self.write('NOTIMPLEMENTED();')
         else:
             assert t.is_simple
-            if field.enum:
+            if field.isfd:
+                self.copy_fd(field, name)
+            elif field.enum:
                 self.copy_enum(field)
             else:
                 self.copy_primitive(name)
@@ -983,8 +993,9 @@ class GenXproto(FileWriter):
             self.copy_container(request, 'request')
             self.write('Align(&buf, 4);')
             self.write()
-            self.write('return x11::SendRequest<%s>(connection_, &buf);' %
-                       reply_name)
+            reply_has_fds = reply and any(field.isfd for field in reply.fields)
+            self.write('return x11::SendRequest<%s>(connection_, &buf, %s);' %
+                       (reply_name, 'true' if reply_has_fds else 'false'))
         self.write()
 
         if not reply:
@@ -1266,6 +1277,7 @@ class GenXproto(FileWriter):
         self.write('#include "base/memory/ref_counted_memory.h"')
         self.write('#include "base/memory/scoped_refptr.h"')
         self.write('#include "base/optional.h"')
+        self.write('#include "base/files/scoped_file.h"')
         self.write('#include "ui/gfx/x/xproto_types.h"')
         imports = set(self.module.direct_imports)
         if self.module.namespace.is_ext:
@@ -1351,6 +1363,7 @@ class GenXproto(FileWriter):
         self.write('#include <xcb/xcbext.h>')
         self.write()
         self.write('#include "base/logging.h"')
+        self.write('#include "base/posix/eintr_wrapper.h"')
         self.write('#include "ui/gfx/x/xproto_internal.h"')
         self.write()
         self.write('namespace x11 {')

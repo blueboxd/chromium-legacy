@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(DefaultProfileExtensionBrowserTest, NoExtensionHosts) {
   // Explicitly get the original and off-the-record-profiles, since on CrOS,
   // the signin profile (profile()) is the off-the-record version.
   Profile* original = profile()->GetOriginalProfile();
-  Profile* otr = original->GetOffTheRecordProfile();
+  Profile* otr = original->GetPrimaryOTRProfile();
 #if defined(OS_CHROMEOS)
   EXPECT_EQ(profile(), otr);
   EXPECT_TRUE(chromeos::ProfileHelper::IsSigninProfile(original));

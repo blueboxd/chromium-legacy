@@ -553,9 +553,9 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   // extension can operate incognito, then check the last active incognito, too.
   if ((!browser || !browser->window()->IsActive()) &&
       util::IsIncognitoEnabled(extension()->id(), profile) &&
-      profile->HasOffTheRecordProfile()) {
+      profile->HasPrimaryOTRProfile()) {
     browser =
-        chrome::FindLastActiveWithProfile(profile->GetOffTheRecordProfile());
+        chrome::FindLastActiveWithProfile(profile->GetPrimaryOTRProfile());
   }
 
   // If there's no active browser, or the Toolbar isn't visible, abort.

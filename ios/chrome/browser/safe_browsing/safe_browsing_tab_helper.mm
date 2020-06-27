@@ -161,10 +161,14 @@ void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameDocumentChange() {
 void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameServerRedirect() {
   // The current |pending_main_frame_query_| is a server redirect from
   // |previous_main_frame_query_|, so add the latter to the pending redirect
-  // chain.
-  pending_main_frame_redirect_chain_.push_back(
-      std::move(*previous_main_frame_query_));
-  previous_main_frame_query_ = base::nullopt;
+  // chain. However, when a URL redirects to itself, ShouldAllowRequest may not
+  // be called again, and in that case |previous_main_frame_query_| will not
+  // have a new URL to add to the redirect chain.
+  if (previous_main_frame_query_) {
+    pending_main_frame_redirect_chain_.push_back(
+        std::move(*previous_main_frame_query_));
+    previous_main_frame_query_ = base::nullopt;
+  }
 }
 
 #pragma mark web::WebStatePolicyDecider

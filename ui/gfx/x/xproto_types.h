@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -44,14 +45,18 @@ void VerifyAlignment(T* t, size_t offset) {
 struct COMPONENT_EXPORT(X11) ReadBuffer {
   explicit ReadBuffer(scoped_refptr<base::RefCountedMemory> data);
 
-  ReadBuffer(const ReadBuffer&);
+  ReadBuffer(const ReadBuffer&) = delete;
+  ReadBuffer(ReadBuffer&&);
 
   ~ReadBuffer();
 
   scoped_refptr<base::RefCountedMemory> ReadAndAdvance(size_t length);
 
+  int TakeFd();
+
   scoped_refptr<base::RefCountedMemory> data;
   size_t offset = 0;
+  const int* fds = nullptr;
 };
 
 // Wraps data to write to the connection.
@@ -59,7 +64,8 @@ class COMPONENT_EXPORT(X11) WriteBuffer {
  public:
   WriteBuffer();
 
-  WriteBuffer(const WriteBuffer&);
+  WriteBuffer(const WriteBuffer&) = delete;
+  WriteBuffer(WriteBuffer&&);
 
   ~WriteBuffer();
 
@@ -68,6 +74,8 @@ class COMPONENT_EXPORT(X11) WriteBuffer {
   std::vector<scoped_refptr<base::RefCountedMemory>>& GetBuffers();
 
   size_t offset() const { return offset_; }
+
+  std::vector<int>& fds() { return fds_; }
 
   template <typename T>
   void Write(const T* t) {
@@ -84,6 +92,7 @@ class COMPONENT_EXPORT(X11) WriteBuffer {
   std::vector<scoped_refptr<base::RefCountedMemory>> buffers_;
   std::vector<uint8_t> current_buffer_;
   size_t offset_ = 0;
+  std::vector<int> fds_;
 };
 
 namespace detail {
@@ -111,6 +120,7 @@ template <typename Reply>
 struct Response {
   operator bool() const { return reply.get(); }
   const Reply* operator->() const { return reply.get(); }
+  Reply* operator->() { return reply.get(); }
 
   std::unique_ptr<Reply> reply;
   std::unique_ptr<Error, base::FreeDeleter> error;
@@ -212,7 +222,7 @@ class Future : public FutureBase {
 
  private:
   template <typename R>
-  friend Future<R> SendRequest(Connection*, WriteBuffer*);
+  friend Future<R> SendRequest(Connection*, WriteBuffer*, bool);
 
   Future(Connection* connection, base::Optional<unsigned int> sequence)
       : FutureBase(connection, sequence) {}

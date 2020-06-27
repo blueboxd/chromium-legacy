@@ -78,9 +78,6 @@ void PasswordManagerMetricsRecorder::RecordProvisionalSaveFailure(
       case NO_MATCHING_FORM:
         logger->LogMessage(Logger::STRING_NO_MATCHING_FORM);
         break;
-      case FORM_BLACKLISTED:
-        logger->LogMessage(Logger::STRING_FORM_BLACKLISTED);
-        break;
       case INVALID_FORM:
         logger->LogMessage(Logger::STRING_INVALID_FORM);
         break;

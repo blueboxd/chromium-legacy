@@ -257,8 +257,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Empty password";
     case SavePasswordProgressLogger::STRING_MATCHING_NOT_COMPLETE:
       return "No form manager has completed matching";
-    case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
-      return "Form blacklisted";
     case SavePasswordProgressLogger::STRING_INVALID_FORM:
       return "Invalid form";
     case SavePasswordProgressLogger::STRING_SYNC_CREDENTIAL:

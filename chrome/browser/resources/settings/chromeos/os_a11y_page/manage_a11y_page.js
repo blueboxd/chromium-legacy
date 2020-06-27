@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @const {number} */
+const DEFAULT_BLACK_CURSOR_COLOR = 0;
+
 /**
  * @fileoverview
  * 'settings-manage-a11y-page' is the subpage with the accessibility
@@ -105,25 +108,38 @@ Polymer({
       value() {
         return [
           {
-            value: 0xd50000,  // Google Red A 700
+            value: DEFAULT_BLACK_CURSOR_COLOR,
+            name: loadTimeData.getString('cursorColorBlack'),
+          },
+          {
+            value: 0xd93025,  // Red 600
             name: loadTimeData.getString('cursorColorRed'),
           },
           {
-            value: 0xff6d00,  // Google Orange A 700
-            name: loadTimeData.getString('cursorColorOrange'),
+            value: 0xf29900,  //  Yellow 700
+            name: loadTimeData.getString('cursorColorYellow'),
           },
           {
-            value: 0x00c853,  // Google Green A 700
+            value: 0x1e8e3e,  // Green 600
             name: loadTimeData.getString('cursorColorGreen'),
           },
           {
-            value: 0x2962ff,  // Google Blue A 700
+            value: 0x03b6be,  // Cyan 600
+            name: loadTimeData.getString('cursorColorCyan'),
+          },
+          {
+            value: 0x1a73e8,  // Blue 600
             name: loadTimeData.getString('cursorColorBlue'),
           },
           {
-            value: 0xaa00ff,  // Google Purple A 700
-            name: loadTimeData.getString('cursorColorPurple'),
+            value: 0xc61ad9,  // Magenta 600
+            name: loadTimeData.getString('cursorColorMagenta'),
           },
+          {
+            value: 0xf50057,  // Pink A400
+            name: loadTimeData.getString('cursorColorPink'),
+          },
+
         ];
       },
     },
@@ -431,6 +447,16 @@ Polymer({
     const a11yLiveCaptionOn = event.target.checked;
     chrome.metricsPrivate.recordBoolean(
         'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+  },
+
+  /** @private */
+  onA11yCursorColorChange_() {
+    // Custom cursor color is enabled when the color is not set to black.
+    const a11yCursorColorOn =
+        this.get('prefs.settings.a11y.cursor_color.value') !=
+        DEFAULT_BLACK_CURSOR_COLOR;
+    this.set(
+        'prefs.settings.a11y.cursor_color_enabled.value', a11yCursorColorOn);
   },
 
 

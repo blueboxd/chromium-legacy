@@ -546,7 +546,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     // left side, but the scrollbar is still on the right, so this is not
     // necessary.
     const zoomToolbar = this.getZoomToolbar();
-    if (isRTL()) {
+    if (!isRTL()) {
       zoomToolbar.style.right =
           -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
     }
@@ -575,7 +575,8 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
     switch (message.data.type.toString()) {
       case 'getSelectedText':
-        this.pluginController.getSelectedText();
+        this.pluginController.getSelectedText().then(
+            this.handleSelectedTextReply.bind(this));
         break;
       case 'print':
         this.pluginController.print();
@@ -599,10 +600,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
         return;
       case 'getPassword':
         this.handlePasswordRequest_();
-        return;
-      case 'getSelectedTextReply':
-        this.handleSelectedTextReply(
-            /** @type {{ selectedText: string }} */ (data).selectedText);
         return;
       case 'loadProgress':
         this.updateProgress(
@@ -630,10 +627,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
       case 'setIsSelecting':
         this.viewportScroller.setEnableScrolling(
             /** @type {{ isSelecting: boolean }} */ (data).isSelecting);
-        return;
-      case 'getNamedDestinationReply':
-        this.paramsParser.onNamedDestinationReceived(
-            /** @type {{ pageNumber: number }} */ (data).pageNumber);
         return;
       case 'formFocusChange':
         this.isFormFieldFocused_ =

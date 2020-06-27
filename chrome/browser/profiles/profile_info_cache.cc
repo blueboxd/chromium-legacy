@@ -55,7 +55,7 @@ bool migration_enabled_for_testing = false;
 void DeleteBitmap(const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  base::DeleteFile(image_path, false);
+  base::DeleteFile(image_path);
 }
 
 }  // namespace

@@ -17,6 +17,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/util/message_differencer.h>
 #include "constants.h"
 #include "montgomery.h"
 #include "ntt_parameters.h"
@@ -408,7 +409,7 @@ TEST_F(GaloisKeyTest, SerializationsOfIdentialKeysEqual) {
   ASSERT_OK_AND_ASSIGN(auto serialized_copy, galois_key_copy.Serialize());
 
   // Check that two serializations of the same matrix are equal.
-  EXPECT_THAT(serialized_copy, EqualsProto(serialized));
+  EXPECT_EQ(serialized_copy.SerializeAsString(), serialized.SerializeAsString());
 }
 
 }  //  namespace

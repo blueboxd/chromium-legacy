@@ -17,7 +17,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
-#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
@@ -90,12 +89,6 @@ BackgroundSyncController* WebTestBrowserContext::GetBackgroundSyncController() {
 WebTestPermissionManager* WebTestBrowserContext::GetWebTestPermissionManager() {
   return static_cast<WebTestPermissionManager*>(
       GetPermissionControllerDelegate());
-}
-
-ContentIndexProvider* WebTestBrowserContext::GetContentIndexProvider() {
-  if (!content_index_provider_)
-    content_index_provider_ = std::make_unique<WebTestContentIndexProvider>();
-  return content_index_provider_.get();
 }
 
 ClientHintsControllerDelegate*

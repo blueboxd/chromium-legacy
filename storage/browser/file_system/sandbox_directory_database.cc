@@ -317,7 +317,7 @@ bool DatabaseCheckHelper::ScanDirectory() {
       // Check if the file has a database entry.
       auto itr = files_in_db_.find(relative_file_path);
       if (itr == files_in_db_.end()) {
-        if (!base::DeleteFile(absolute_file_path, false))
+        if (!base::DeleteFile(absolute_file_path))
           return false;
       } else {
         files_in_db_.erase(itr);

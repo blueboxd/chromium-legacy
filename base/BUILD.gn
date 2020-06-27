@@ -1957,6 +1957,7 @@ jumbo_component("base") {
       "mac/bundle_locations.mm",
       "mac/call_with_eh_frame.cc",
       "mac/call_with_eh_frame.h",
+      "mac/call_with_eh_frame_asm.S",
       "mac/foundation_util.h",
       "mac/foundation_util.mm",
       "mac/mac_logging.h",

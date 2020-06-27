@@ -388,10 +388,10 @@ void ThumbnailCache::RemoveFromDisk(TabId tab_id) {
 void ThumbnailCache::RemoveFromDiskTask(TabId tab_id) {
   base::FilePath file_path = GetFilePath(tab_id);
   if (base::PathExists(file_path))
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
   base::FilePath jpeg_file_path = GetJpegFilePath(tab_id);
   if (base::PathExists(jpeg_file_path))
-    base::DeleteFile(jpeg_file_path, false);
+    base::DeleteFile(jpeg_file_path);
 }
 
 void ThumbnailCache::WriteThumbnailIfNecessary(
@@ -638,7 +638,7 @@ void ThumbnailCache::WriteTask(TabId tab_id,
   file.Close();
 
   if (!success)
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
 
   content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, post_write_task);
 }
@@ -663,7 +663,7 @@ void ThumbnailCache::WriteJpegTask(
   }
 
   if (!success)
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
 
   content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, post_write_task);
 }
@@ -887,7 +887,7 @@ void ThumbnailCache::ReadTask(
       content_size.SetSize(0, 0);
       scale = 0.f;
       compressed_data.reset();
-      base::DeleteFile(file_path, false);
+      base::DeleteFile(file_path);
     }
   }
 

@@ -1060,8 +1060,8 @@ void PasswordStore::UnblacklistInternal(
   std::vector<std::unique_ptr<PasswordForm>> all_matches =
       GetLoginsImpl(form_digest);
   for (auto& form : all_matches) {
-    // Ignore PSL matches for blacklisted entries.
-    if (form->blacklisted_by_user && !form->is_public_suffix_match)
+    // Ignore PSL matches for blocked entries.
+    if (form->blocked_by_user && !form->is_public_suffix_match)
       RemoveLoginInternal(*form);
   }
   if (completion)

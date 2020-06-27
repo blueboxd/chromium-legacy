@@ -160,12 +160,6 @@ void SkiaOutputSurfaceDependencyImpl::DidLoseContext(
   gpu_service_impl_->DidLoseContext(/*offscreen=*/false, reason, active_url);
 }
 
-scoped_refptr<gpu::GLSurfaceTaskScheduler>
-SkiaOutputSurfaceDependencyImpl::CreateGLSurfaceTaskScheduler() {
-  return base::MakeRefCounted<gpu::GLSurfaceTaskScheduler>(
-      gpu_service_impl_->GetGpuScheduler());
-}
-
 base::TimeDelta
 SkiaOutputSurfaceDependencyImpl::GetGpuBlockedTimeSinceLastSwap() {
   return gpu_service_impl_->GetGpuScheduler()->TakeTotalBlockingTime();

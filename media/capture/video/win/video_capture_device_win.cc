@@ -207,6 +207,31 @@ ComPtr<IPin> VideoCaptureDeviceWin::GetPin(ComPtr<IBaseFilter> capture_filter,
   return pin;
 }
 
+// Check if the video capture device supports at least one of pan, tilt and zoom
+// controls.
+// static
+bool VideoCaptureDeviceWin::IsPanTiltZoomSupported(
+    ComPtr<IBaseFilter> capture_filter) {
+  ComPtr<ICameraControl> camera_control;
+  ComPtr<IVideoProcAmp> video_control;
+  if (!GetCameraAndVideoControls(capture_filter, &camera_control,
+                                 &video_control)) {
+    return false;
+  }
+
+  for (auto range_getter :
+       {&ICameraControl::getRange_Pan, &ICameraControl::getRange_Tilt,
+        &ICameraControl::getRange_Zoom}) {
+    long min, max, step, default_value, flags;
+    HRESULT hr = (camera_control.Get()->*range_getter)(&min, &max, &step,
+                                                       &default_value, &flags);
+    if (SUCCEEDED(hr) && min < max)
+      return true;
+  }
+
+  return false;
+}
+
 // static
 VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
     const GUID& sub_type) {
@@ -538,8 +563,10 @@ void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
     return;
 
   if (!camera_control_ || !video_control_) {
-    if (!InitializeVideoAndCameraControls())
+    if (!GetCameraAndVideoControls(capture_filter_, &camera_control_,
+                                   &video_control_)) {
       return;
+    }
   }
 
   auto photo_capabilities = mojo::CreateEmptyPhotoState();
@@ -645,8 +672,10 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!camera_control_ || !video_control_) {
-    if (!InitializeVideoAndCameraControls())
+    if (!GetCameraAndVideoControls(capture_filter_, &camera_control_,
+                                   &video_control_)) {
       return;
+    }
   }
 
   HRESULT hr;
@@ -764,9 +793,18 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
   std::move(callback).Run(true);
 }
 
-bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
+// static
+bool VideoCaptureDeviceWin::GetCameraAndVideoControls(
+    ComPtr<IBaseFilter> capture_filter,
+    ICameraControl** camera_control,
+    IVideoProcAmp** video_control) {
+  DCHECK(camera_control);
+  DCHECK(video_control);
+  DCHECK(!*camera_control);
+  DCHECK(!*video_control);
+
   ComPtr<IKsTopologyInfo> info;
-  HRESULT hr = capture_filter_.As(&info);
+  HRESULT hr = capture_filter.As(&info);
   if (FAILED(hr)) {
     DLOG_IF_FAILED_WITH_HRESULT("Failed to obtain the topology info.", hr);
     return false;
@@ -785,7 +823,7 @@ bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control_));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(camera_control));
       if (SUCCEEDED(hr))
         break;
       DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve the ICameraControl.", hr);
@@ -795,14 +833,14 @@ bool VideoCaptureDeviceWin::InitializeVideoAndCameraControls() {
   for (size_t i = 0; i < num_nodes; i++) {
     info->get_NodeType(i, &node_type);
     if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
-      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control_));
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(video_control));
       if (SUCCEEDED(hr))
         break;
       DLOG_IF_FAILED_WITH_HRESULT("Failed to retrieve the IVideoProcAmp.", hr);
       return false;
     }
   }
-  return camera_control_ && video_control_;
+  return *camera_control && *video_control;
 }
 
 // Implements SinkFilterObserver::SinkFilterObserver.

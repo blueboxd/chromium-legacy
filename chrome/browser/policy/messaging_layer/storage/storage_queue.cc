@@ -783,7 +783,7 @@ void StorageQueue::SingleFile::Close() {
 Status StorageQueue::SingleFile::Delete() {
   DCHECK(!handle_);
   size_ = 0;
-  if (!base::DeleteFile(filename_, /*recursive=*/false)) {
+  if (!base::DeleteFile(filename_)) {
     return Status(error::DATA_LOSS,
                   base::StrCat({"Cannot delete file=", name()}));
   }

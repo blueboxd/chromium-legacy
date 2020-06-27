@@ -1105,7 +1105,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.password_element = ASCIIToUTF16("Passwd");
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.google.com/";
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_synced = base::Time::Now();
   form.date_last_used = base::Time::Now();
@@ -1186,7 +1186,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.date_last_used = base::Time::Now();
-  incomplete_form.blacklisted_by_user = false;
+  incomplete_form.blocked_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
 
@@ -1253,7 +1253,7 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
   incomplete_form.date_last_used = base::Time::Now();
-  incomplete_form.blacklisted_by_user = false;
+  incomplete_form.blocked_by_user = false;
   incomplete_form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(incomplete_form), db().AddLogin(incomplete_form));
 
@@ -1302,7 +1302,7 @@ TEST_F(LoginDatabaseTest, DoubleAdd) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
@@ -1321,7 +1321,7 @@ TEST_F(LoginDatabaseTest, AddWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(form));
 
@@ -1337,7 +1337,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_last_used = base::Time::Now();
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -1351,7 +1351,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.date_synced = base::Time::Now();
   form.date_created = base::Time::Now() - base::TimeDelta::FromDays(1);
   form.date_last_used = base::Time::Now() + base::TimeDelta::FromDays(1);
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   form.scheme = PasswordForm::Scheme::kBasic;
   form.type = PasswordForm::Type::kGenerated;
   form.display_name = ASCIIToUTF16("Mr. Smith");
@@ -1381,7 +1381,7 @@ TEST_F(LoginDatabaseTest, UpdateLoginWithoutPassword) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.date_last_used = base::Time::Now();
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -1420,7 +1420,7 @@ TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   // The form isn't in the database.
   EXPECT_FALSE(db().RemoveLogin(form, /*changes=*/nullptr));
@@ -1472,21 +1472,21 @@ void AddMetricsTestData(LoginDatabase* db) {
   password_form.url = GURL("https://fifth.example.com/");
   password_form.signon_realm = "https://fifth.example.com/";
   password_form.password_value = ASCIIToUTF16("");
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.url = GURL("https://sixth.example.com/");
   password_form.signon_realm = "https://sixth.example.com/";
   password_form.username_value = ASCIIToUTF16("my_username");
   password_form.password_value = ASCIIToUTF16("my_password");
-  password_form.blacklisted_by_user = false;
+  password_form.blocked_by_user = false;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.url = GURL();
   password_form.signon_realm = "android://hash@com.example.android/";
   password_form.username_value = ASCIIToUTF16("JohnDoe");
   password_form.password_value = ASCIIToUTF16("my_password");
-  password_form.blacklisted_by_user = false;
+  password_form.blocked_by_user = false;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.username_value = ASCIIToUTF16("JaneDoe");
@@ -1494,22 +1494,22 @@ void AddMetricsTestData(LoginDatabase* db) {
 
   password_form.url = GURL("http://rsolomakhin.github.io/autofill/");
   password_form.signon_realm = "http://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.url = GURL("https://rsolomakhin.github.io/autofill/");
   password_form.signon_realm = "https://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.url = GURL("http://rsolomakhin.github.io/autofill/123");
   password_form.signon_realm = "http://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   password_form.url = GURL("https://rsolomakhin.github.io/autofill/1234");
   password_form.signon_realm = "https://rsolomakhin.github.io/";
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   EXPECT_EQ(AddChangeForForm(password_form), db->AddLogin(password_form));
 
   StatisticsTable& stats_table = db->stats_table();
@@ -1782,7 +1782,7 @@ TEST_F(LoginDatabaseTest, DuplicatesMetrics_NoDuplicates) {
   password_form.url = GURL("http://example3.com/");
   password_form.username_value = ASCIIToUTF16("username_1");
   ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
-  password_form.blacklisted_by_user = true;
+  password_form.blocked_by_user = true;
   password_form.username_value = ASCIIToUTF16("username_2");
   ASSERT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
   password_form.username_value = ASCIIToUTF16("username_3");

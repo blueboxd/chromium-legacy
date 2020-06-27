@@ -135,7 +135,7 @@ void DestructFile(File infos_without_references) {}
 void DeleteFiles(std::vector<FileCreationInfo> files) {
   for (FileCreationInfo& file_info : files) {
     file_info.file.Close();
-    base::DeleteFile(file_info.path, false);
+    base::DeleteFile(file_info.path);
   }
 }
 
@@ -255,7 +255,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
   }
   if (!file.Flush()) {
     file.Close();
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
     creation_info.error = File::FILE_ERROR_FAILED;
     return std::make_pair(std::move(creation_info), free_disk_space);
   }

@@ -74,14 +74,10 @@ InterceptionManager::InterceptionData::InterceptionData(
 
 InterceptionManager::InterceptionData::~InterceptionData() {}
 
-InterceptionManager::InterceptionManager(TargetProcess* child_process,
+InterceptionManager::InterceptionManager(TargetProcess& child_process,
                                          bool relaxed)
-    : child_(child_process), names_used_(false), relaxed_(relaxed) {
-  child_->AddRef();
-}
-InterceptionManager::~InterceptionManager() {
-  child_->Release();
-}
+    : child_(child_process), names_used_(false), relaxed_(relaxed) {}
+InterceptionManager::~InterceptionManager() {}
 
 bool InterceptionManager::AddToPatchedFunctions(
     const wchar_t* dll_name,
@@ -143,7 +139,7 @@ ResultCode InterceptionManager::InitializeInterceptions() {
     return SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_CONFIG_BUFFER;
 
   void* remote_buffer;
-  if (!CopyToChildMemory(child_->Process(), local_buffer.get(), buffer_bytes,
+  if (!CopyToChildMemory(child_.Process(), local_buffer.get(), buffer_bytes,
                          &remote_buffer))
     return SBOX_ERROR_CANNOT_COPY_DATA_TO_CHILD;
 
@@ -154,8 +150,8 @@ ResultCode InterceptionManager::InitializeInterceptions() {
     return rc;
 
   g_interceptions = reinterpret_cast<SharedMemory*>(remote_buffer);
-  rc = child_->TransferVariable("g_interceptions", &g_interceptions,
-                                sizeof(g_interceptions));
+  rc = child_.TransferVariable("g_interceptions", &g_interceptions,
+                               sizeof(g_interceptions));
   return rc;
 }
 
@@ -208,8 +204,7 @@ bool InterceptionManager::SetupConfigBuffer(void* buffer, size_t buffer_bytes) {
   DllPatchInfo* dll_info = shared_memory->dll_list;
   int num_dlls = 0;
 
-  shared_memory->interceptor_base =
-      names_used_ ? child_->MainModule() : nullptr;
+  shared_memory->interceptor_base = names_used_ ? child_.MainModule() : nullptr;
 
   buffer_bytes -= offsetof(SharedMemory, dll_list);
   buffer = dll_info;
@@ -372,7 +367,7 @@ ResultCode InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   }
 
   // Reserve a full 64k memory range in the child process.
-  HANDLE child = child_->Process();
+  HANDLE child = child_.Process();
   BYTE* thunk_base = reinterpret_cast<BYTE*>(::VirtualAllocEx(
       child, nullptr, kAllocGranularity, MEM_RESERVE, PAGE_NOACCESS));
 
@@ -423,7 +418,7 @@ ResultCode InterceptionManager::PatchNtdll(bool hot_patch_needed) {
                      &old_protection);
 
   ResultCode ret =
-      child_->TransferVariable("g_originals", g_originals, sizeof(g_originals));
+      child_.TransferVariable("g_originals", g_originals, sizeof(g_originals));
   return ret;
 }
 
@@ -441,27 +436,27 @@ ResultCode InterceptionManager::PatchClientFunctions(
   char* interceptor_base = nullptr;
 
 #if defined(SANDBOX_EXPORTS)
-  interceptor_base = reinterpret_cast<char*>(child_->MainModule());
-  base::ScopedNativeLibrary local_interceptor(::LoadLibrary(child_->Name()));
+  interceptor_base = reinterpret_cast<char*>(child_.MainModule());
+  base::ScopedNativeLibrary local_interceptor(::LoadLibrary(child_.Name()));
 #endif  // defined(SANDBOX_EXPORTS)
 
   std::unique_ptr<ServiceResolverThunk> thunk;
 #if defined(_WIN64)
-  thunk.reset(new ServiceResolverThunk(child_->Process(), relaxed_));
+  thunk.reset(new ServiceResolverThunk(child_.Process(), relaxed_));
 #else
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   base::win::Version real_os_version = os_info->Kernel32Version();
   if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
     if (real_os_version >= base::win::Version::WIN10)
-      thunk.reset(new Wow64W10ResolverThunk(child_->Process(), relaxed_));
+      thunk.reset(new Wow64W10ResolverThunk(child_.Process(), relaxed_));
     else if (real_os_version >= base::win::Version::WIN8)
-      thunk.reset(new Wow64W8ResolverThunk(child_->Process(), relaxed_));
+      thunk.reset(new Wow64W8ResolverThunk(child_.Process(), relaxed_));
     else
-      thunk.reset(new Wow64ResolverThunk(child_->Process(), relaxed_));
+      thunk.reset(new Wow64ResolverThunk(child_.Process(), relaxed_));
   } else if (real_os_version >= base::win::Version::WIN8) {
-    thunk.reset(new Win8ResolverThunk(child_->Process(), relaxed_));
+    thunk.reset(new Win8ResolverThunk(child_.Process(), relaxed_));
   } else {
-    thunk.reset(new ServiceResolverThunk(child_->Process(), relaxed_));
+    thunk.reset(new ServiceResolverThunk(child_.Process(), relaxed_));
   }
 #endif
 

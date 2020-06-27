@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -1528,7 +1529,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementNumberOfCanvases();
 
-  void ProcessJavaScriptUrl(const KURL&, network::mojom::CSPDisposition);
+  void ProcessJavaScriptUrl(const KURL&, const DOMWrapperWorld& world);
 
   DisplayLockDocumentState& GetDisplayLockDocumentState() const;
 
@@ -1874,11 +1875,12 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskHandle javascript_url_task_handle_;
   struct PendingJavascriptUrl {
    public:
-    PendingJavascriptUrl(const KURL& input_url,
-                         network::mojom::CSPDisposition input_disposition)
-        : url(input_url), disposition(input_disposition) {}
+    PendingJavascriptUrl(const KURL& input_url, const DOMWrapperWorld& world)
+        : url(input_url), world(&world) {}
     KURL url;
-    network::mojom::CSPDisposition disposition;
+
+    // The world in which the navigation to |url| initiated. Non-null.
+    scoped_refptr<const DOMWrapperWorld> world;
   };
   Vector<PendingJavascriptUrl> pending_javascript_urls_;
 

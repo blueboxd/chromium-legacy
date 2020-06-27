@@ -153,7 +153,7 @@ bool CreateIconFile(const gfx::ImageSkia& image_skia,
   if (!IconUtil::CreateIconFileFromImageFamily(image_family, path,
                                                IconUtil::NORMAL_WRITE)) {
     // Delete the file created by CreateTemporaryFileInDir as it won't be used.
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
     return false;
   }
 

@@ -227,7 +227,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
               "\" when looking for \"" << verification_name << "\"";
           prn_file = file.value();
           found_prn = true;
-          base::DeleteFile(file, false);
+          base::DeleteFile(file);
           continue;
         }
         EXPECT_TRUE(false);

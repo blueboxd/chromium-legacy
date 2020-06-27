@@ -984,7 +984,7 @@ TEST_P(ObfuscatedFileUtilTest, MAYBE_TestQuotaOnTruncation) {
         base::File::FILE_OK,
         ofu()->GetLocalFilePath(UnlimitedContext().get(), url, &local_path));
     ASSERT_FALSE(local_path.empty());
-    ASSERT_TRUE(base::DeleteFile(local_path, false));
+    ASSERT_TRUE(base::DeleteFile(local_path));
 
     EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
               ofu()->Truncate(LimitedContext(1234).get(), url, 1234));

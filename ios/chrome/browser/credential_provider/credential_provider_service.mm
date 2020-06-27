@@ -92,7 +92,7 @@ ArchivableCredential* CredentialFromForm(const PasswordForm& form,
     // Verify that the credential is nil because it's an Android one or
     // blacklisted.
     DCHECK(password_manager::IsValidAndroidFacetURI(form.signon_realm) ||
-           form.blacklisted_by_user);
+           form.blocked_by_user);
   }
   return credential;
 }

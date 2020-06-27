@@ -639,7 +639,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     return;
   }
   for (auto& form : results) {
-    if (form->blacklisted_by_user)
+    if (form->blocked_by_user)
       _blockedForms.push_back(std::move(form));
     else
       _savedForms.push_back(std::move(form));
@@ -1243,7 +1243,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   _passwordStore->RemoveLogin(form);
 
   std::vector<std::unique_ptr<autofill::PasswordForm>>& forms =
-      form.blacklisted_by_user ? _blockedForms : _savedForms;
+      form.blocked_by_user ? _blockedForms : _savedForms;
   auto iterator = std::find_if(
       forms.begin(), forms.end(),
       [&form](const std::unique_ptr<autofill::PasswordForm>& value) {
@@ -1252,7 +1252,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   DCHECK(iterator != forms.end());
   forms.erase(iterator);
 
-  password_manager::DuplicatesMap& duplicates = form.blacklisted_by_user
+  password_manager::DuplicatesMap& duplicates = form.blocked_by_user
                                                     ? _blockedPasswordDuplicates
                                                     : _savedPasswordDuplicates;
   std::string key = password_manager::CreateSortKey(form);

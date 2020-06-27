@@ -450,7 +450,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void AddLayoutOverflowFromBlockChildren();
 
  protected:
-  void AddVisualOverflowFromTheme();
   virtual void ComputeVisualOverflow(
       bool recompute_floats);
   virtual void ComputeLayoutOverflow(LayoutUnit old_client_after_edge,

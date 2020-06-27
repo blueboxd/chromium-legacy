@@ -377,8 +377,8 @@ PreferenceEventRouter::PreferenceEventRouter(Profile* profile)
   }
   DCHECK(!profile_->IsOffTheRecord());
   observed_profiles_.Add(profile_);
-  if (profile->HasOffTheRecordProfile())
-    OnOffTheRecordProfileCreated(profile->GetOffTheRecordProfile());
+  if (profile->HasPrimaryOTRProfile())
+    OnOffTheRecordProfileCreated(profile->GetPrimaryOTRProfile());
   else
     ObserveOffTheRecordPrefs(profile->GetReadOnlyOffTheRecordPrefs());
 }
@@ -750,7 +750,7 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (scope == kExtensionPrefsScopeIncognitoSessionOnly &&
-      !profile->HasOffTheRecordProfile()) {
+      !profile->HasPrimaryOTRProfile()) {
     return RespondNow(Error(extensions::preference_api_constants::
                                 kIncognitoSessionOnlyErrorMessage));
   }

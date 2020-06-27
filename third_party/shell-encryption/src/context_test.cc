@@ -33,7 +33,7 @@ TYPED_TEST_SUITE(ContextTest, rlwe::testing::ModularIntTypes);
 
 TYPED_TEST(ContextTest, CreateWorks) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
   }
@@ -41,7 +41,7 @@ TYPED_TEST(ContextTest, CreateWorks) {
 
 TYPED_TEST(ContextTest, ParametersMatch) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 

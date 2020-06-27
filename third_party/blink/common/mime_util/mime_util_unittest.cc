@@ -21,11 +21,8 @@ TEST(MimeUtilTest, LookupTypes) {
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   EXPECT_EQ(IsSupportedImageMimeType("image/avif"),
             base::FeatureList::IsEnabled(features::kAVIF));
-  EXPECT_EQ(IsSupportedImageMimeType("image/avif-sequence"),
-            base::FeatureList::IsEnabled(features::kAVIF));
 #else
   EXPECT_FALSE(IsSupportedImageMimeType("image/avif"));
-  EXPECT_FALSE(IsSupportedImageMimeType("image/avif-sequence"));
 #endif
   EXPECT_FALSE(IsSupportedImageMimeType("image/lolcat"));
   EXPECT_FALSE(IsSupportedImageMimeType("Image/LolCat"));

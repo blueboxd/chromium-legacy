@@ -653,6 +653,9 @@ SharedImageBackingGLImage::SharedImageBackingGLImage(
       is_passthrough_(is_passthrough),
       weak_factory_(this) {
   DCHECK(image_);
+
+  // TODO(https://crbug.com/1092155): Lazily initialize the GL texture.
+  InitializeGLTexture();
 }
 
 SharedImageBackingGLImage::~SharedImageBackingGLImage() {
@@ -891,7 +894,7 @@ bool SharedImageBackingGLImage::OnSkiaBeginWriteAccess() {
   return BindOrCopyImageIfNeeded();
 }
 
-bool SharedImageBackingGLImage::InitializeGLTexture() {
+void SharedImageBackingGLImage::InitializeGLTexture() {
   SharedImageBackingGLCommon::MakeTextureAndSetParameters(
       gl_params_.target, 0 /* service_id */,
       gl_params_.framebuffer_attachment_angle,
@@ -914,12 +917,6 @@ bool SharedImageBackingGLImage::InitializeGLTexture() {
       texture_->SetCompatibilitySwizzle(gl_params_.swizzle);
     texture_->SetImmutable(true, false /* has_immutable_storage */);
   }
-
-  // Historically we have bound GLImages at initialization, rather than waiting
-  // until the bound representation is actually needed.
-  if (image_->ShouldBindOrCopy() == gl::GLImage::BIND)
-    return BindOrCopyImageIfNeeded();
-  return true;
 }
 
 bool SharedImageBackingGLImage::BindOrCopyImageIfNeeded() {
@@ -1220,12 +1217,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   params.is_rgb_emulation = is_rgb_emulation;
   params.framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
-  auto result = std::make_unique<SharedImageBackingGLImage>(
+  return std::make_unique<SharedImageBackingGLImage>(
       image, mailbox, format, size, color_space, usage, params, attribs,
       use_passthrough_);
-  if (!result->InitializeGLTexture())
-    return nullptr;
-  return std::move(result);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -1455,8 +1449,6 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     auto result = std::make_unique<SharedImageBackingGLImage>(
         image, mailbox, format, size, color_space, usage, params, attribs,
         use_passthrough_);
-    if (!result->InitializeGLTexture())
-      return nullptr;
     if (!pixel_data.empty()) {
       result->InitializePixels(format_info.adjusted_format, format_info.gl_type,
                                pixel_data.data());

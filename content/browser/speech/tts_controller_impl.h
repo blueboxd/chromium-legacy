@@ -42,6 +42,8 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
   // Get the single instance of this class.
   static TtsControllerImpl* GetInstance();
 
+  void SetStopSpeakingWhenHidden(bool value);
+
   // TtsController methods
   bool IsSpeaking() override;
   void SpeakOrEnqueue(std::unique_ptr<TtsUtterance> utterance) override;
@@ -62,7 +64,6 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController,
   void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
   void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
   TtsEngineDelegate* GetTtsEngineDelegate() override;
-  void SetStopSpeakingWhenHidden(bool value) override;
 
   // Called directly by ~BrowserContext, because a raw BrowserContext pointer
   // is stored in an Utterance.

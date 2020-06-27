@@ -5,9 +5,11 @@
 #include <mfidl.h>
 
 #include <ks.h>
+#include <ksmedia.h>
 #include <mfapi.h>
 #include <mferror.h>
 #include <stddef.h>
+#include <vidcap.h>
 #include <wrl.h>
 #include <wrl/client.h>
 
@@ -112,6 +114,68 @@ class StubDeviceInterface : public StubInterface<Interface> {
 
  private:
   std::string device_id_;
+};
+
+// Stub IAMCameraControl with pan, tilt and zoom ranges for all devices except
+// from Device 1.
+class StubAMCameraControl final : public StubDeviceInterface<IAMCameraControl> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // IAMCameraControl
+  IFACEMETHODIMP Get(long property, long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetRange(long property,
+                          long* min,
+                          long* max,
+                          long* step,
+                          long* default_value,
+                          long* caps_flags) override {
+    switch (property) {
+      case CameraControl_Pan:
+      case CameraControl_Tilt:
+      case CameraControl_Zoom:
+        if (device_id() != base::SysWideToUTF8(kMFDeviceId1)) {
+          *min = 100;
+          *max = 400;
+          *step = 1;
+          *default_value = 100;
+          *caps_flags = CameraControl_Flags_Manual;
+          return S_OK;
+        }
+        break;
+    }
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Set(long property, long value, long flags) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~StubAMCameraControl() override = default;
+};
+
+class StubAMVideoProcAmp final : public StubDeviceInterface<IAMVideoProcAmp> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // IAMVideoProcAmp
+  IFACEMETHODIMP Get(long property, long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetRange(long property,
+                          long* min,
+                          long* max,
+                          long* step,
+                          long* default_value,
+                          long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Set(long property, long value, long flags) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~StubAMVideoProcAmp() override = default;
 };
 
 class StubMFActivate final : public StubInterface<IMFActivate> {
@@ -284,6 +348,590 @@ class StubMFActivate final : public StubInterface<IMFActivate> {
   const bool kscategory_sensor_camera_;
 };
 
+// Stub IMFMediaSource with IAMCameraControl and IAMVideoProcAmp interfaces for
+// all devices except from Device 0.
+class StubMFMediaSource final : public StubDeviceInterface<IMFMediaSource> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // IUnknown
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
+    if (device_id() != base::SysWideToUTF8(kMFDeviceId0)) {
+      if (riid == __uuidof(IAMCameraControl)) {
+        *object = AddReference(new StubAMCameraControl(device_id()));
+        return S_OK;
+      }
+      if (riid == __uuidof(IAMVideoProcAmp)) {
+        *object = AddReference(new StubAMVideoProcAmp(device_id()));
+        return S_OK;
+      }
+    }
+    return StubDeviceInterface::QueryInterface(riid, object);
+  }
+  // IMFMediaEventGenerator
+  IFACEMETHODIMP BeginGetEvent(IMFAsyncCallback* callback,
+                               IUnknown* state) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP EndGetEvent(IMFAsyncResult* result,
+                             IMFMediaEvent** event) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetEvent(DWORD flags, IMFMediaEvent** event) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP QueueEvent(MediaEventType met,
+                            REFGUID extended_type,
+                            HRESULT status,
+                            const PROPVARIANT* value) override {
+    return E_NOTIMPL;
+  }
+  // IMFMediaSource
+  IFACEMETHODIMP CreatePresentationDescriptor(
+      IMFPresentationDescriptor** presentation_descriptor) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetCharacteristics(DWORD* characteristics) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Pause() override { return E_NOTIMPL; }
+  IFACEMETHODIMP Shutdown() override { return E_NOTIMPL; }
+  IFACEMETHODIMP Start(IMFPresentationDescriptor* presentation_descriptor,
+                       const GUID* time_format,
+                       const PROPVARIANT* start_position) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Stop() override { return E_NOTIMPL; }
+
+ private:
+  ~StubMFMediaSource() override = default;
+};
+
+// Stub ICameraControl with pan range for all devices except from Device 5.
+class StubCameraControl final : public StubDeviceInterface<ICameraControl> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // ICameraControl
+  IFACEMETHODIMP get_Exposure(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_ExposureRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_FocalLengths(long* ocular_focal_length,
+                                  long* objective_focal_length_min,
+                                  long* objective_focal_length_max) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Focus(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_FocusRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Iris(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_IrisRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Pan(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_PanRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_PanTilt(long* pan_value,
+                             long* tilt_value,
+                             long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_PanTiltRelative(long* pan_value,
+                                     long* tilt_value,
+                                     long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_PrivacyMode(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Roll(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_RollRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_ScanMode(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Tilt(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_TiltRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Zoom(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_ZoomRelative(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Exposure(long* min,
+                                   long* max,
+                                   long* step,
+                                   long* default_value,
+                                   long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_ExposureRelative(long* min,
+                                           long* max,
+                                           long* step,
+                                           long* default_value,
+                                           long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Focus(long* min,
+                                long* max,
+                                long* step,
+                                long* default_value,
+                                long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_FocusRelative(long* min,
+                                        long* max,
+                                        long* step,
+                                        long* default_value,
+                                        long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Iris(long* min,
+                               long* max,
+                               long* step,
+                               long* default_value,
+                               long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_IrisRelative(long* min,
+                                       long* max,
+                                       long* step,
+                                       long* default_value,
+                                       long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Pan(long* min,
+                              long* max,
+                              long* step,
+                              long* default_value,
+                              long* caps_flags) override {
+    if (device_id() != base::SysWideToUTF8(kDirectShowDeviceId5)) {
+      *min = 100;
+      *max = 400;
+      *step = 1;
+      *default_value = 100;
+      *caps_flags = CameraControl_Flags_Manual;
+      return S_OK;
+    }
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_PanRelative(long* min,
+                                      long* max,
+                                      long* step,
+                                      long* default_value,
+                                      long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Roll(long* min,
+                               long* max,
+                               long* step,
+                               long* default_value,
+                               long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_RollRelative(long* min,
+                                       long* max,
+                                       long* step,
+                                       long* default_value,
+                                       long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Tilt(long* min,
+                               long* max,
+                               long* step,
+                               long* default_value,
+                               long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_TiltRelative(long* min,
+                                       long* max,
+                                       long* step,
+                                       long* default_value,
+                                       long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Zoom(long* min,
+                               long* max,
+                               long* step,
+                               long* default_value,
+                               long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_ZoomRelative(long* min,
+                                       long* max,
+                                       long* step,
+                                       long* default_value,
+                                       long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Exposure(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_ExposureRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Focus(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_FocusRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Iris(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_IrisRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Pan(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_PanRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_PanTilt(long pan_value,
+                             long tilt_value,
+                             long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_PanTiltRelative(long pan_value,
+                                     long tilt_value,
+                                     long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_PrivacyMode(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Roll(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_RollRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_ScanMode(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Tilt(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_TiltRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Zoom(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_ZoomRelative(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~StubCameraControl() override = default;
+};
+
+class StubVideoProcAmp final : public StubDeviceInterface<IVideoProcAmp> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // IVideoProcAmp
+  IFACEMETHODIMP get_BacklightCompensation(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Brightness(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_ColorEnable(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Contrast(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_DigitalMultiplier(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Gain(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Gamma(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Hue(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_PowerlineFrequency(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Saturation(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Sharpness(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_WhiteBalance(long* value, long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_WhiteBalanceComponent(long* value1,
+                                           long* value2,
+                                           long* flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_BacklightCompensation(long* min,
+                                                long* max,
+                                                long* step,
+                                                long* default_value,
+                                                long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Brightness(long* min,
+                                     long* max,
+                                     long* step,
+                                     long* default_value,
+                                     long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_ColorEnable(long* min,
+                                      long* max,
+                                      long* step,
+                                      long* default_value,
+                                      long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Contrast(long* min,
+                                   long* max,
+                                   long* step,
+                                   long* default_value,
+                                   long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_DigitalMultiplier(long* min,
+                                            long* max,
+                                            long* step,
+                                            long* default_value,
+                                            long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Gain(long* min,
+                               long* max,
+                               long* step,
+                               long* default_value,
+                               long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Gamma(long* min,
+                                long* max,
+                                long* step,
+                                long* default_value,
+                                long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Hue(long* min,
+                              long* max,
+                              long* step,
+                              long* default_value,
+                              long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_PowerlineFrequency(long* min,
+                                             long* max,
+                                             long* step,
+                                             long* default_value,
+                                             long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Saturation(long* min,
+                                     long* max,
+                                     long* step,
+                                     long* default_value,
+                                     long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_Sharpness(long* min,
+                                    long* max,
+                                    long* step,
+                                    long* default_value,
+                                    long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_WhiteBalance(long* min,
+                                       long* max,
+                                       long* step,
+                                       long* default_value,
+                                       long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP getRange_WhiteBalanceComponent(long* min,
+                                                long* max,
+                                                long* step,
+                                                long* default_value,
+                                                long* caps_flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_BacklightCompensation(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Brightness(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_ColorEnable(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Contrast(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_DigitalMultiplier(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Gain(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_Gamma(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Hue(long value, long flags) override { return E_NOTIMPL; }
+  IFACEMETHODIMP put_PowerlineFrequency(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Saturation(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_Sharpness(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_WhiteBalance(long value, long flags) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP put_WhiteBalanceComponent(long value1,
+                                           long value2,
+                                           long flags) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~StubVideoProcAmp() override = default;
+};
+
+// Stub IKsTopologyInfo with 2 nodes.
+// For all devices except from Device 3, the first node is
+// a KSNODETYPE_VIDEO_CAMERA_TERMINAL (ICameraControl) node.
+// For all devices except from Device 4, the second node is
+// a KSNODETYPE_VIDEO_PROCESSING (IVideoProcAmp) node.
+class StubKsTopologyInfo final : public StubDeviceInterface<IKsTopologyInfo> {
+ public:
+  enum { kNumNodes = 2 };
+  using StubDeviceInterface::StubDeviceInterface;
+  // IKsTopologyInfo
+  IFACEMETHODIMP CreateNodeInstance(DWORD node_id,
+                                    REFIID iid,
+                                    void** object) override {
+    GUID node_type;
+    HRESULT hr = get_NodeType(node_id, &node_type);
+    if (FAILED(hr))
+      return hr;
+    if (node_type == KSNODETYPE_VIDEO_CAMERA_TERMINAL) {
+      EXPECT_EQ(iid, __uuidof(ICameraControl));
+      *object = AddReference(new StubCameraControl(device_id()));
+      return S_OK;
+    }
+    if (node_type == KSNODETYPE_VIDEO_PROCESSING) {
+      EXPECT_EQ(iid, __uuidof(IVideoProcAmp));
+      *object = AddReference(new StubVideoProcAmp(device_id()));
+      return S_OK;
+    }
+    NOTREACHED();
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_Category(DWORD index, GUID* category) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_ConnectionInfo(
+      DWORD index,
+      KSTOPOLOGY_CONNECTION* connection_info) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_NodeName(DWORD node_id,
+                              WCHAR* node_name,
+                              DWORD buf_size,
+                              DWORD* name_len) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_NodeType(DWORD node_id, GUID* node_type) override {
+    EXPECT_LT(node_id, kNumNodes);
+    switch (node_id) {
+      case 0:
+        *node_type = device_id() != base::SysWideToUTF8(kDirectShowDeviceId3)
+                         ? KSNODETYPE_VIDEO_CAMERA_TERMINAL
+                         : KSNODETYPE_DEV_SPECIFIC;
+        return S_OK;
+      case 1:
+        *node_type = device_id() != base::SysWideToUTF8(kDirectShowDeviceId4)
+                         ? KSNODETYPE_VIDEO_PROCESSING
+                         : KSNODETYPE_DEV_SPECIFIC;
+        return S_OK;
+    }
+    NOTREACHED();
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_NumCategories(DWORD* num_categories) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_NumConnections(DWORD* num_connections) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_NumNodes(DWORD* num_nodes) override {
+    *num_nodes = kNumNodes;
+    return S_OK;
+  }
+
+ private:
+  ~StubKsTopologyInfo() override = default;
+};
+
+// Stub IBaseFilter with IKsTopologyInfo interface.
+class StubBaseFilter final : public StubDeviceInterface<IBaseFilter> {
+ public:
+  using StubDeviceInterface::StubDeviceInterface;
+  // IUnknown
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
+    if (riid == __uuidof(IKsTopologyInfo)) {
+      *object = AddReference(new StubKsTopologyInfo(device_id()));
+      return S_OK;
+    }
+    return StubDeviceInterface::QueryInterface(riid, object);
+  }
+  // IPersist
+  IFACEMETHODIMP GetClassID(CLSID* class_id) override { return E_NOTIMPL; }
+  // IMediaFilter
+  IFACEMETHODIMP GetState(DWORD milli_secs_timeout,
+                          FILTER_STATE* State) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP GetSyncSource(IReferenceClock** clock) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Pause() override { return E_NOTIMPL; }
+  IFACEMETHODIMP Run(REFERENCE_TIME start) override { return E_NOTIMPL; }
+  IFACEMETHODIMP SetSyncSource(IReferenceClock* clock) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP Stop() override { return E_NOTIMPL; }
+  // IBaseFilter
+  IFACEMETHODIMP EnumPins(IEnumPins** enum_pins) override { return E_NOTIMPL; }
+  IFACEMETHODIMP FindPin(LPCWSTR id, IPin** pin) override { return E_NOTIMPL; }
+  IFACEMETHODIMP JoinFilterGraph(IFilterGraph* graph, LPCWSTR name) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP QueryFilterInfo(FILTER_INFO* info) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP QueryVendorInfo(LPWSTR* vendor_info) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~StubBaseFilter() override = default;
+};
+
 class StubPropertyBag final : public StubInterface<IPropertyBag> {
  public:
   StubPropertyBag(const wchar_t* device_path, const wchar_t* description)
@@ -333,7 +981,12 @@ class StubMoniker final : public StubInterface<IMoniker> {
                               IMoniker* pmkToLeft,
                               REFIID riidResult,
                               void** ppvResult) override {
-    return E_NOTIMPL;
+    if (riidResult == __uuidof(IBaseFilter)) {
+      *ppvResult =
+          AddReference(new StubBaseFilter(base::SysWideToUTF8(device_path_)));
+      return S_OK;
+    }
+    return MK_E_NOOBJECT;
   }
   IFACEMETHODIMP BindToStorage(IBindCtx* pbc,
                                IMoniker* pmkToLeft,
@@ -451,7 +1104,21 @@ class FakeVideoCaptureDeviceFactoryWin : public VideoCaptureDeviceFactoryWin {
   bool CreateDeviceSourceMediaFoundation(
       Microsoft::WRL::ComPtr<IMFAttributes> attributes,
       IMFMediaSource** source) override {
-    return false;
+    UINT32 length;
+    if (FAILED(attributes->GetStringLength(
+            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
+            &length))) {
+      return false;
+    }
+    std::wstring symbolic_link(length, wchar_t());
+    if (FAILED(attributes->GetString(
+            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
+            &symbolic_link[0], length + 1, &length))) {
+      return false;
+    }
+    *source =
+        AddReference(new StubMFMediaSource(base::SysWideToUTF8(symbolic_link)));
+    return true;
   }
   bool EnumerateDeviceSourcesMediaFoundation(
       Microsoft::WRL::ComPtr<IMFAttributes> attributes,
@@ -552,30 +1219,44 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName0));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  // No IAMCameraControl and no IAMVideoProcAmp interfaces.
+  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kMFDeviceId1));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName1));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  // No pan/tilt/zoom in IAMCameraControl interface.
+  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kMFDeviceId2));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName2));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().value());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kDirectShowDeviceId3));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName3));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  // No ICameraControl interface.
+  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kDirectShowDeviceId4));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName4));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  // No IVideoProcAmp interface.
+  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
 
   // Devices that are listed in MediaFoundation but only report supported
   // formats in DirectShow are expected to get enumerated with
@@ -585,6 +1266,9 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName5));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  // No pan, tilt, or zoom ranges in ICameraControl interface.
+  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
 
   // Devices that are listed in both MediaFoundation and DirectShow but are
   // blacklisted for use with MediaFoundation are expected to get enumerated
@@ -594,6 +1278,8 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName6));
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
+  EXPECT_TRUE(it->pan_tilt_zoom_supported().value());
 }
 
 }  // namespace media

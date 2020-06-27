@@ -976,7 +976,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Inherited properties.
 
   // color
-  void SetColor(const Color&);
+  void SetColor(const StyleColor&);
 
   // line-height
   Length LineHeight() const;
@@ -1297,7 +1297,7 @@ class ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return !ColumnRuleColorInternal().Resolve(GetColor()).Alpha();
+    return !ColumnRuleColorInternal().Resolve(GetCurrentColor()).Alpha();
   }
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
   bool HasColumnRule() const {
@@ -2663,7 +2663,7 @@ class ComputedStyle : public ComputedStyleBase,
   EFloat Floating() const { return FloatingInternal(); }
   EResize Resize() const { return ResizeInternal(); }
 
-  void SetInternalVisitedColor(const Color& v) {
+  void SetInternalVisitedColor(const StyleColor& v) {
     SetInternalVisitedColorInternal(v);
   }
   void SetInternalVisitedBackgroundColor(const StyleColor& v) {
@@ -2770,13 +2770,15 @@ class ComputedStyle : public ComputedStyleBase,
       return StyleAutoColor::AutoColor();
     return StyleAutoColor(CaretColorInternal());
   }
-  Color GetColor() const;
+  StyleColor GetColor() const;
   StyleColor ColumnRuleColor() const { return ColumnRuleColorInternal(); }
   StyleColor OutlineColor() const { return OutlineColorInternal(); }
   StyleColor TextEmphasisColor() const { return TextEmphasisColorInternal(); }
   StyleColor TextFillColor() const { return TextFillColorInternal(); }
   StyleColor TextStrokeColor() const { return TextStrokeColorInternal(); }
-  Color InternalVisitedColor() const { return InternalVisitedColorInternal(); }
+  StyleColor InternalVisitedColor() const {
+    return InternalVisitedColorInternal();
+  }
   StyleAutoColor InternalVisitedCaretColor() const {
     if (InternalVisitedCaretColorIsCurrentColorInternal())
       return StyleAutoColor::CurrentColor();
@@ -2890,6 +2892,9 @@ class ComputedStyle : public ComputedStyleBase,
                        const ComputedStyle& other) const;
   CORE_EXPORT bool CustomPropertiesEqual(const Vector<AtomicString>& properties,
                                          const ComputedStyle& other) const;
+
+  Color GetCurrentColor() const;
+  Color GetInternalVisitedCurrentColor() const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 

@@ -37,7 +37,7 @@ void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
     std::vector<base::FilePath> shortcut_files =
         FindAppShortcutsByProfileAndTitle(path, profile_path, shortcut_title);
     for (const auto& shortcut_file : shortcut_files) {
-      base::DeleteFile(shortcut_file, /*recursive=*/false);
+      base::DeleteFile(shortcut_file);
     }
   }
 }

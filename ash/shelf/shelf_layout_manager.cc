@@ -864,6 +864,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       // background.
       if (!Shell::Get()->app_list_controller()->GetTargetVisibility(
               display_.id())) {
+        if (features::IsMaintainShelfStateWhenEnteringOverviewEnabled()) {
+          return in_overview ? shelf_background_type_
+                             : ShelfBackgroundType::kInApp;
+        }
         return in_overview ? ShelfBackgroundType::kOverview
                            : ShelfBackgroundType::kInApp;
       }
@@ -1381,8 +1385,15 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
           if (shelf_->hotseat_widget()->IsShowingShelfMenu())
             return HotseatState::kExtended;
 
-          if (in_overview && !in_split_view)
+          if (in_overview && !in_split_view) {
+            // Maintain the ShownHomeLauncher state if we enter overview mode
+            // from it.
+            if (features::IsMaintainShelfStateWhenEnteringOverviewEnabled() &&
+                hotseat_state() == HotseatState::kShownHomeLauncher) {
+              return HotseatState::kShownHomeLauncher;
+            }
             return HotseatState::kExtended;
+          }
 
           if (state_forced_by_back_gesture_)
             return HotseatState::kExtended;

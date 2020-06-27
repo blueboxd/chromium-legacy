@@ -57,7 +57,11 @@ class MODULES_EXPORT MediaStreamTrack
   MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
   MediaStreamTrack(ExecutionContext*,
                    MediaStreamComponent*,
-                   MediaStreamSource::ReadyState);
+                   bool pan_tilt_zoom_allowed);
+  MediaStreamTrack(ExecutionContext*,
+                   MediaStreamComponent*,
+                   MediaStreamSource::ReadyState,
+                   bool pan_tilt_zoom_allowed);
   ~MediaStreamTrack() override;
 
   String kind() const;

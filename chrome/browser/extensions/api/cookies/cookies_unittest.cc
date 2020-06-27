@@ -51,7 +51,7 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
   TestingProfile::Builder profile_builder;
   std::unique_ptr<TestingProfile> profile = profile_builder.Build();
   // Trigger early creation of off-the-record profile.
-  EXPECT_TRUE(profile->GetOffTheRecordProfile());
+  EXPECT_TRUE(profile->GetPrimaryOTRProfile());
 
   EXPECT_EQ(std::string("0"),
             cookies_helpers::GetStoreIdFromProfile(profile.get()));
@@ -61,28 +61,25 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
   EXPECT_EQ(profile.get(),
             cookies_helpers::ChooseProfileFromStoreId(
                 "0", profile.get(), false));
-  EXPECT_EQ(profile->GetOffTheRecordProfile(),
-            cookies_helpers::ChooseProfileFromStoreId(
-                "1", profile.get(), true));
+  EXPECT_EQ(
+      profile->GetPrimaryOTRProfile(),
+      cookies_helpers::ChooseProfileFromStoreId("1", profile.get(), true));
   EXPECT_EQ(NULL,
             cookies_helpers::ChooseProfileFromStoreId(
                 "1", profile.get(), false));
 
-  EXPECT_EQ(std::string("1"),
-            cookies_helpers::GetStoreIdFromProfile(
-                profile->GetOffTheRecordProfile()));
-  EXPECT_EQ(NULL,
+  EXPECT_EQ(std::string("1"), cookies_helpers::GetStoreIdFromProfile(
+                                  profile->GetPrimaryOTRProfile()));
+  EXPECT_EQ(NULL, cookies_helpers::ChooseProfileFromStoreId(
+                      "0", profile->GetPrimaryOTRProfile(), true));
+  EXPECT_EQ(NULL, cookies_helpers::ChooseProfileFromStoreId(
+                      "0", profile->GetPrimaryOTRProfile(), false));
+  EXPECT_EQ(profile->GetPrimaryOTRProfile(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", profile->GetOffTheRecordProfile(), true));
-  EXPECT_EQ(NULL,
+                "1", profile->GetPrimaryOTRProfile(), true));
+  EXPECT_EQ(profile->GetPrimaryOTRProfile(),
             cookies_helpers::ChooseProfileFromStoreId(
-                "0", profile->GetOffTheRecordProfile(), false));
-  EXPECT_EQ(profile->GetOffTheRecordProfile(),
-            cookies_helpers::ChooseProfileFromStoreId(
-                "1", profile->GetOffTheRecordProfile(), true));
-  EXPECT_EQ(profile->GetOffTheRecordProfile(),
-            cookies_helpers::ChooseProfileFromStoreId(
-                "1", profile->GetOffTheRecordProfile(), false));
+                "1", profile->GetPrimaryOTRProfile(), false));
 }
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {

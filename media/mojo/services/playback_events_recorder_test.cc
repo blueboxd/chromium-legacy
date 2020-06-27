@@ -72,7 +72,8 @@ TEST_F(PlaybackEventsRecorderTest, PlayPause) {
   recorder_.OnPaused();
 
   ExpectEvents({
-      {time_base_, "WebEngine.Media.VideoResolution:640x480"},
+      // VideoResolution value should be encoded as (640 << 16) + 480.
+      {time_base_, "WebEngine.Media.VideoResolution:41943520"},
       {time_base_, "WebEngine.Media.Playing"},
       {time_base_ + 2 * kSecond, "WebEngine.Media.Pause"},
   });

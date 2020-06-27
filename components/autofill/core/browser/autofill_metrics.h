@@ -856,8 +856,8 @@ class AutofillMetrics {
     WALLET_UNSUPPORTED_API_VERSION,
     // Catch all error type.
     WALLET_UNKNOWN_ERROR,
-    // The merchant has been blacklisted for Online Wallet due to some manner
-    // of compliance violation.
+    // The merchant has been blocked for Online Wallet due to some manner of
+    // compliance violation.
     WALLET_UNSUPPORTED_MERCHANT,
     // Buyer Legal Address has a country which is unsupported by Wallet.
     WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,

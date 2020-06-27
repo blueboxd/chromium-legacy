@@ -1,0 +1,44 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("scheduling") {
+  sources = [
+    "nearby_share_expiration_scheduler.cc",
+    "nearby_share_expiration_scheduler.h",
+    "nearby_share_on_demand_scheduler.cc",
+    "nearby_share_on_demand_scheduler.h",
+    "nearby_share_periodic_scheduler.cc",
+    "nearby_share_periodic_scheduler.h",
+    "nearby_share_scheduler.cc",
+    "nearby_share_scheduler.h",
+    "nearby_share_scheduler_base.cc",
+    "nearby_share_scheduler_base.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/prefs",
+    "//content/public/browser",
+    "//services/network/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "nearby_share_expiration_scheduler_unittest.cc",
+    "nearby_share_on_demand_scheduler_unittest.cc",
+    "nearby_share_periodic_scheduler_unittest.cc",
+    "nearby_share_scheduler_base_unittest.cc",
+  ]
+
+  deps = [
+    ":scheduling",
+    "//base",
+    "//base/test:test_support",
+    "//services/network:test_support",
+    "//testing/gtest",
+  ]
+}

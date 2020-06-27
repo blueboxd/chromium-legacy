@@ -46,7 +46,7 @@ bool CreateHardLinkOrCopyCallback(const base::FilePath& launcher_path,
 // A callback invoked by |work_item| that deletes the file at |launcher_path|.
 void DeleteHardLinkOrCopyCallback(const base::FilePath& launcher_path,
                                   const CallbackWorkItem& work_item) {
-  base::DeleteFile(launcher_path, /*recursive=*/false);
+  base::DeleteFile(launcher_path);
 }
 
 void RecordWebAppLauncherUpdateResult(WebAppLauncherUpdateResult result) {
@@ -114,7 +114,7 @@ void CleanUpOldLauncherVersions(const base::FilePath& old_path) {
   const base::FilePath unique_path = base::GetUniquePath(old_path);
   if (!unique_path.empty() && unique_path != old_path) {
     base::Move(old_path, unique_path);
-    base::DeleteFile(unique_path, /*recursive=*/false);
+    base::DeleteFile(unique_path);
   }
 
   // Delete any old versions of |unique_path| that may exist from failed delete
@@ -125,7 +125,7 @@ void CleanUpOldLauncherVersions(const base::FilePath& old_path) {
           .InsertBeforeExtension(FILE_PATH_LITERAL(" (*)"))
           .value());
   for (base::FilePath file = files.Next(); !file.empty(); file = files.Next()) {
-    base::DeleteFile(file, /*recursive=*/false);
+    base::DeleteFile(file);
   }
 }
 

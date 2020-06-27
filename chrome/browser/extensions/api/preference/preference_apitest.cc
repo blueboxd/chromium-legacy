@@ -196,9 +196,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, PersistentIncognito) {
       message_;
 
   // Setting an incognito preference should not create an incognito profile.
-  EXPECT_FALSE(profile_->HasOffTheRecordProfile());
+  EXPECT_FALSE(profile_->HasPrimaryOTRProfile());
 
-  PrefService* otr_prefs = profile_->GetOffTheRecordProfile()->GetPrefs();
+  PrefService* otr_prefs = profile_->GetPrimaryOTRProfile()->GetPrefs();
   const PrefService::Preference* pref =
       otr_prefs->FindPreference(prefs::kBlockThirdPartyCookies);
   ASSERT_TRUE(pref);
@@ -223,9 +223,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, SessionOnlyIncognito) {
       RunExtensionTestIncognito("preference/session_only_incognito")) <<
       message_;
 
-  EXPECT_TRUE(profile_->HasOffTheRecordProfile());
+  EXPECT_TRUE(profile_->HasPrimaryOTRProfile());
 
-  PrefService* otr_prefs = profile_->GetOffTheRecordProfile()->GetPrefs();
+  PrefService* otr_prefs = profile_->GetPrimaryOTRProfile()->GetPrefs();
   const PrefService::Preference* pref =
       otr_prefs->FindPreference(prefs::kBlockThirdPartyCookies);
   ASSERT_TRUE(pref);
@@ -260,8 +260,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, OnChangeSplit) {
   extensions::ResultCatcher catcher;
   catcher.RestrictToBrowserContext(profile_);
   extensions::ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToBrowserContext(
-      profile_->GetOffTheRecordProfile());
+  catcher_incognito.RestrictToBrowserContext(profile_->GetPrimaryOTRProfile());
 
   // Open an incognito window.
   OpenURLOffTheRecord(profile_, GURL("chrome://newtab/"));
@@ -397,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_FALSE(loaded_incognito_test_listener.was_satisfied());
-  EXPECT_FALSE(profile_->HasOffTheRecordProfile());
+  EXPECT_FALSE(profile_->HasPrimaryOTRProfile());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
@@ -407,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
 
   // Open an incognito window.
   OpenURLOffTheRecord(profile_, GURL("chrome://newtab/"));
-  EXPECT_TRUE(profile_->HasOffTheRecordProfile());
+  EXPECT_TRUE(profile_->HasPrimaryOTRProfile());
 
   extensions::ResultCatcher catcher;
   ExtensionTestMessageListener loaded_incognito_test_listener(

@@ -21,7 +21,7 @@ namespace media {
 // spec: https://w3c.github.io/mediacapture-image/#pan
 long CaptureAngleToPlatformValue(double arc_seconds);
 double PlatformAngleToCaptureValue(long degrees);
-constexpr auto PlatformAngleToCaptureStep = PlatformAngleToCaptureValue;
+double PlatformAngleToCaptureStep(long step, double min, double max);
 
 // Windows platform stores exposure time (min, max and current) in log base 2
 // seconds. If value is n, exposure time is 2^n seconds. Spec expects exposure
@@ -30,7 +30,7 @@ constexpr auto PlatformAngleToCaptureStep = PlatformAngleToCaptureValue;
 // spec: https://w3c.github.io/mediacapture-image/#exposure-time
 long CaptureExposureTimeToPlatformValue(double hundreds_of_microseconds);
 double PlatformExposureTimeToCaptureValue(long log_seconds);
-double PlatformExposureTimeToCaptureStep(long log_step);
+double PlatformExposureTimeToCaptureStep(long log_step, double min, double max);
 
 // Returns the rotation of the camera. Returns 0 if it's not a built-in camera,
 // or auto-rotation is not enabled, or only displays on external monitors.
@@ -55,7 +55,9 @@ bool IsInternalVideoOutput(
 static double PlatformToCaptureValue(long value) {
   return value;
 }
-constexpr auto PlatformToCaptureStep = PlatformToCaptureValue;
+static double PlatformToCaptureStep(long step, double min, double max) {
+  return step;
+}
 
 // Retrieves the control range and value using the provided getters, and
 // optionally returns the associated supported and current mode.
@@ -66,7 +68,7 @@ static mojom::RangePtr RetrieveControlRangeAndCurrent(
     std::vector<mojom::MeteringMode>* supported_modes = nullptr,
     mojom::MeteringMode* current_mode = nullptr,
     double (*value_converter)(long) = PlatformToCaptureValue,
-    double (*step_converter)(long) = PlatformToCaptureStep) {
+    double (*step_converter)(long, double, double) = PlatformToCaptureStep) {
   auto control_range = mojom::Range::New();
 
   long min, max, step, default_value, flags;
@@ -76,7 +78,8 @@ static mojom::RangePtr RetrieveControlRangeAndCurrent(
   if (SUCCEEDED(hr)) {
     control_range->min = value_converter(min);
     control_range->max = value_converter(max);
-    control_range->step = step_converter(step);
+    control_range->step =
+        step_converter(step, control_range->min, control_range->max);
     if (supported_modes != nullptr) {
       if (flags & CameraControl_Flags_Auto)
         supported_modes->push_back(mojom::MeteringMode::CONTINUOUS);

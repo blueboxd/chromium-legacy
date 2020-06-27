@@ -120,7 +120,7 @@ TYPED_TEST_SUITE(ErrorParamsTest, rlwe::testing::ModularIntTypes);
 
 TYPED_TEST(ErrorParamsTest, CreateError) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 
@@ -140,7 +140,7 @@ TYPED_TEST(ErrorParamsTest, CreateError) {
 
 TYPED_TEST(ErrorParamsTest, PlaintextError) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
 
@@ -161,7 +161,7 @@ TYPED_TEST(ErrorParamsTest, PlaintextError) {
 
 TYPED_TEST(ErrorParamsTest, EncryptionError) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     ASSERT_OK_AND_ASSIGN(auto key, this->SampleKey(context.get()));
@@ -186,7 +186,7 @@ TYPED_TEST(ErrorParamsTest, EncryptionError) {
 
 TYPED_TEST(ErrorParamsTest, RelinearizationErrorScalesWithT) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     // Error scales by (T / logT) when all other constants are fixed.

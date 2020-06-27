@@ -6,12 +6,12 @@
 
 #include <memory>
 
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"

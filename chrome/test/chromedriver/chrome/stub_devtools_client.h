@@ -28,6 +28,7 @@ class StubDevToolsClient : public DevToolsClient {
   const std::string& GetId() override;
   bool WasCrashed() override;
   Status ConnectIfNecessary() override;
+  Status SetUpDevTools() override;
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override;

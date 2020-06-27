@@ -219,13 +219,14 @@ class SharedImageBackingGLImage
       delete;
   ~SharedImageBackingGLImage() override;
 
-  bool InitializeGLTexture();
   void InitializePixels(GLenum format, GLenum type, const uint8_t* data);
 
   GLenum GetGLTarget() const;
   GLuint GetGLServiceId() const;
 
  private:
+  void InitializeGLTexture();
+
   // SharedImageBacking:
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
   void OnMemoryDump(const std::string& dump_name,

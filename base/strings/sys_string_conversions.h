@@ -20,6 +20,9 @@
 
 #if defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
+
+#include "base/mac/scoped_cftyperef.h"
+
 #ifdef __OBJC__
 @class NSString;
 #else
@@ -66,10 +69,10 @@ BASE_EXPORT std::string SysWideToMultiByte(const std::wstring& wide,
 
 // Creates a string, and returns it with a refcount of 1. You are responsible
 // for releasing it. Returns NULL on failure.
-BASE_EXPORT CFStringRef SysUTF8ToCFStringRef(StringPiece utf8)
+BASE_EXPORT ScopedCFTypeRef<CFStringRef> SysUTF8ToCFStringRef(StringPiece utf8)
     WARN_UNUSED_RESULT;
-BASE_EXPORT CFStringRef SysUTF16ToCFStringRef(StringPiece16 utf16)
-    WARN_UNUSED_RESULT;
+BASE_EXPORT ScopedCFTypeRef<CFStringRef> SysUTF16ToCFStringRef(
+    StringPiece16 utf16) WARN_UNUSED_RESULT;
 
 // Same, but returns an autoreleased NSString.
 BASE_EXPORT NSString* SysUTF8ToNSString(StringPiece utf8) WARN_UNUSED_RESULT;

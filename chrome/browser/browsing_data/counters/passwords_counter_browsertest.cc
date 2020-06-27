@@ -41,20 +41,20 @@ class PasswordsCounterTest : public InProcessBrowserTest {
 
   void AddLogin(const std::string& origin,
                 const std::string& username,
-                bool blocklisted) {
+                bool blocked_by_user) {
     // Add login and wait until the password store actually changes.
     // on the database thread.
     passwords_helper::AddLogin(
-        store_.get(), CreateCredentials(origin, username, blocklisted));
+        store_.get(), CreateCredentials(origin, username, blocked_by_user));
   }
 
   void RemoveLogin(const std::string& origin,
                    const std::string& username,
-                   bool blocklisted) {
+                   bool blocked_by_user) {
     // Remove login and wait until the password store actually changes
     // on the database thread.
     passwords_helper::RemoveLogin(
-        store_.get(), CreateCredentials(origin, username, blocklisted));
+        store_.get(), CreateCredentials(origin, username, blocked_by_user));
   }
 
   void SetPasswordsDeletionPref(bool value) {
@@ -122,13 +122,13 @@ class PasswordsCounterTest : public InProcessBrowserTest {
  private:
   PasswordForm CreateCredentials(const std::string& origin,
                                  const std::string& username,
-                                 bool blocklisted) {
+                                 bool blocked_by_user) {
     PasswordForm result;
     result.signon_realm = origin;
     result.url = GURL(origin);
     result.username_value = base::ASCIIToUTF16(username);
     result.password_value = base::ASCIIToUTF16("hunter2");
-    result.blacklisted_by_user = blocklisted;
+    result.blocked_by_user = blocked_by_user;
     result.date_created = time_;
     result.times_used = times_used_;
     return result;

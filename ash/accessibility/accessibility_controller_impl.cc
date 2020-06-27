@@ -595,12 +595,8 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kAccessibilityCursorColorEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  // TODO(crbug.com/1085442): Work with UX to pick default color, and consider
-  // storing this as an index into a color array or as a hex color string.
-  // For now this should match a color in cursorColorOptions_ from
-  // manage_a11y_page.js.
   registry->RegisterIntegerPref(
-      prefs::kAccessibilityCursorColor, 0xaa00ff,
+      prefs::kAccessibilityCursorColor, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityDictationEnabled, false,

@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_end_to_end.html"))
       << message_;
   // Verify that offscreen profile has been destroyed.
-  ASSERT_FALSE(profile()->HasOffTheRecordProfile());
+  ASSERT_FALSE(profile()->HasPrimaryOTRProfile());
 }
 
 #if defined(OS_MACOSX)
@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_OffscreenTabEvilTests) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_evil_tests.html"))
       << message_;
   // Verify that offscreen profile has been destroyed.
-  ASSERT_FALSE(profile()->HasOffTheRecordProfile());
+  ASSERT_FALSE(profile()->HasPrimaryOTRProfile());
 }
 
 // Tests that getUserMedia() is NOT a way to start tab capture.

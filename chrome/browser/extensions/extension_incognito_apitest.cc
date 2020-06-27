@@ -90,10 +90,10 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoYesScript) {
 // accidentially create and incognito profile.
 // Test disabled due to http://crbug.com/89054.
 IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_DontCreateIncognitoProfile) {
-  ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
+  ASSERT_FALSE(browser()->profile()->HasPrimaryOTRProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(
       "incognito/dont_create_profile")) << message_;
-  ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
+  ASSERT_FALSE(browser()->profile()->HasPrimaryOTRProfile());
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DISABLED_IncognitoSplitMode) {
   catcher.RestrictToBrowserContext(browser()->profile());
   ResultCatcher catcher_incognito;
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   ExtensionTestMessageListener listener("waiting", true);
   ExtensionTestMessageListener listener_incognito("waiting_incognito", true);

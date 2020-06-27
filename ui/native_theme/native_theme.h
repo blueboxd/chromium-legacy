@@ -471,6 +471,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // pressed states.
   virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
 
+  // Gets a sufficiently contrasting color for the caption control foreground
+  // based on the provided background color and the default foreground.
+  SkColor GetFrameCaptionButtonForegroundColor(SkColor background_color) const;
+
  protected:
   explicit NativeTheme(bool should_only_use_dark_colors);
   virtual ~NativeTheme();

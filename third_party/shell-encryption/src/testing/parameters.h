@@ -26,7 +26,8 @@
 #include "integral_types.h"
 #include "montgomery.h"
 
-namespace rlwe::testing {
+namespace rlwe {
+namespace testing {
 
 // ModularInt types for typed tests. A typed test can be defined as follows in
 // test files.
@@ -54,50 +55,54 @@ typedef ::testing::Types<
 // }
 template <typename ModularInt>
 struct ContextParameters {
-  constexpr static std::array<typename RlweContext<ModularInt>::Parameters, 0>
-      value = {};
+  static std::vector<typename RlweContext<ModularInt>::Parameters> Value() {
+    return {};
+  }
 };
 
 template <>
 struct ContextParameters<MontgomeryInt<Uint16>> {
-  constexpr static std::array<RlweContext<MontgomeryInt<Uint16>>::Parameters, 1>
-      value = {
+  static std::vector<RlweContext<MontgomeryInt<Uint16>>::Parameters> Value() {
+      return {
           RlweContext<MontgomeryInt<Uint16>>::Parameters{
               .modulus = kNewhopeModulus,
               .log_n = 10,
               .log_t = 1,
               .variance = 8},
       };
+  }
 };
 
 template <>
 struct ContextParameters<MontgomeryInt<Uint32>> {
-  constexpr static std::array<RlweContext<MontgomeryInt<Uint32>>::Parameters, 2>
-      value = {
+  static std::vector<RlweContext<MontgomeryInt<Uint32>>::Parameters> Value() {
+      return {
           RlweContext<MontgomeryInt<Uint32>>::Parameters{
               .modulus = kModulus25, .log_n = 10, .log_t = 1, .variance = 8},
           RlweContext<MontgomeryInt<Uint32>>::Parameters{
               .modulus = kModulus29, .log_n = 11, .log_t = 5, .variance = 8},
       };
+  }
 };
 
 template <>
 struct ContextParameters<MontgomeryInt<Uint64>> {
-  constexpr static std::array<RlweContext<MontgomeryInt<Uint64>>::Parameters, 1>
-      value = {
+  static std::vector<RlweContext<MontgomeryInt<Uint64>>::Parameters> Value() {
+      return {
           RlweContext<MontgomeryInt<Uint64>>::Parameters{
               .modulus = kModulus59, .log_n = 11, .log_t = 10, .variance = 8},
       };
+  }
 };
 
 template <>
 struct ContextParameters<MontgomeryInt<absl::uint128>> {
-  constexpr static std::array<
-      RlweContext<MontgomeryInt<absl::uint128>>::Parameters, 1>
-      value = {
+  static std::vector<RlweContext<MontgomeryInt<absl::uint128>>::Parameters> Value() {
+      return {
           RlweContext<MontgomeryInt<absl::uint128>>::Parameters{
               .modulus = kModulus80, .log_n = 11, .log_t = 11, .variance = 8},
       };
+  }
 };
 
 // Parameters for testing of modulus switching. These parameters must be
@@ -120,13 +125,16 @@ struct ContextParameters<MontgomeryInt<absl::uint128>> {
 template <typename ModularInt>
 struct ContextParametersModulusSwitching {
   using Params = typename RlweContext<ModularInt>::Parameters;
-  constexpr static std::array<std::tuple<Params, Params>, 0> value = {};
+  static std::vector<std::tuple<Params, Params>> Value() {
+    return {};
+  }
 };
 
 template <>
 struct ContextParametersModulusSwitching<MontgomeryInt<Uint64>> {
   using Params = typename RlweContext<MontgomeryInt<Uint64>>::Parameters;
-  constexpr static std::array<std::tuple<Params, Params>, 1> value = {
+  static std::vector<std::tuple<Params, Params>> Value() {
+    return {
       std::make_tuple(
           Params{.modulus = 17592186028033ULL,
                  .log_n = 10,
@@ -134,12 +142,14 @@ struct ContextParametersModulusSwitching<MontgomeryInt<Uint64>> {
                  .variance = 8},
           Params{
               .modulus = 1589249ULL, .log_n = 10, .log_t = 4, .variance = 8})};
+  }
 };
 
 template <>
 struct ContextParametersModulusSwitching<MontgomeryInt<absl::uint128>> {
   using Params = typename RlweContext<MontgomeryInt<absl::uint128>>::Parameters;
-  constexpr static std::array<std::tuple<Params, Params>, 1> value = {
+  static std::vector<std::tuple<Params, Params>> Value() {
+    return {
       std::make_tuple(
           Params{.modulus = absl::MakeUint128(4611686018427387903ULL,
                                               18446744073709355009ULL),
@@ -150,8 +160,10 @@ struct ContextParametersModulusSwitching<MontgomeryInt<absl::uint128>> {
                  .log_n = 10,
                  .log_t = 2,
                  .variance = 8})};
+  }
 };
 
-}  // namespace rlwe::testing
+}  // namespace testing
+}  // namespace rlwe
 
 #endif  // RLWE_TESTING_INSTANCES_H_

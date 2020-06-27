@@ -1810,21 +1810,20 @@ TEST_P(PasswordManagerTest, SameDocumentNavigation) {
   form_manager_to_save->Save();
 }
 
-TEST_P(PasswordManagerTest, SameDocumentBlacklistedSite) {
-  // Test that observing a newly submitted form on blacklisted site does notify
+TEST_P(PasswordManagerTest, SameDocumentBlockedSite) {
+  // Test that observing a newly submitted form on blocked site does notify
   // the embedder on call in page navigation.
   std::vector<FormData> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form.form_data);
-  // Simulate that blacklisted form stored in store.
-  PasswordForm blacklisted_form(form);
-  blacklisted_form.username_value = ASCIIToUTF16("");
-  blacklisted_form.blacklisted_by_user = true;
+  // Simulate that blocked form stored in store.
+  PasswordForm blocked_form(form);
+  blocked_form.username_value = ASCIIToUTF16("");
+  blocked_form.blocked_by_user = true;
   // TODO(https://crbug.com/949519): replace WillRepeatedly with WillOnce when
   // the old parser is gone.
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(
-          WithArg<1>(InvokeConsumer(store_.get(), blacklisted_form)));
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(store_.get(), blocked_form)));
   EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.url))
       .WillRepeatedly(Return(true));
   manager()->OnPasswordFormsParsed(&driver_, observed);

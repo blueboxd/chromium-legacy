@@ -90,25 +90,6 @@ class BoundsSetter : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(BoundsSetter);
 };
 
-// Animation metrics reporter which reports animation smoothness percentages for
-// the given histogram name, and then self destructs.
-class WindowAnimationMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  explicit WindowAnimationMetricsReporter(const std::string& histogram_name)
-      : histogram_name_(histogram_name) {}
-  ~WindowAnimationMetricsReporter() override = default;
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    base::UmaHistogramPercentage(histogram_name_, value);
-    delete this;
-  }
-
- private:
-  const std::string histogram_name_;
-  DISALLOW_COPY_AND_ASSIGN(WindowAnimationMetricsReporter);
-};
-
 WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
   switch (requested_show_state) {
     case ui::SHOW_STATE_DEFAULT:
@@ -743,11 +724,6 @@ void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   slide_settings.SetTweenType(tween_type);
   slide_settings.SetTransitionDuration(duration);
-  if (animation_smoothness_histogram_name_) {
-    slide_settings.SetAnimationMetricsReporter(
-        new WindowAnimationMetricsReporter(
-            *animation_smoothness_histogram_name_));
-  }
   SetBoundsDirect(bounds);
 }
 

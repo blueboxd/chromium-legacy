@@ -235,6 +235,10 @@ Status WebViewImpl::ConnectIfNecessary() {
   return client_->ConnectIfNecessary();
 }
 
+Status WebViewImpl::SetUpDevTools() {
+  return client_->SetUpDevTools();
+}
+
 Status WebViewImpl::HandleReceivedEvents() {
   return client_->HandleReceivedEvents();
 }

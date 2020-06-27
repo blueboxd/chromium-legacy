@@ -272,9 +272,9 @@ void MdTextButton::UpdateColors() {
   if (is_prominent_) {
     stroke_color = SK_ColorTRANSPARENT;
   } else {
-    stroke_color = SkColorSetA(
-        theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBorderColor),
-        is_disabled ? 0x43 : SK_AlphaOPAQUE);
+    stroke_color = theme->GetSystemColor(
+        is_disabled ? ui::NativeTheme::kColorId_DisabledButtonBorderColor
+                    : ui::NativeTheme::kColorId_ButtonBorderColor);
   }
 
   SetBackground(

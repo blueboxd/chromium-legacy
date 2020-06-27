@@ -139,6 +139,11 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
   // handle the unexpected situations were the angle is not a multiple of 90.
   display.SetRotationAsDegree(static_cast<int>(CGDisplayRotation(display_id)));
+
+  // TODO(crbug.com/1078903): Support multiple internal displays.
+  if (CGDisplayIsBuiltin(display_id))
+    Display::SetInternalDisplayId(display_id);
+
   return display;
 }
 

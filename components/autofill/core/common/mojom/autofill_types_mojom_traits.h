@@ -572,8 +572,8 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.date_synced;
   }
 
-  static bool blacklisted_by_user(const autofill::PasswordForm& r) {
-    return r.blacklisted_by_user;
+  static bool blocked_by_user(const autofill::PasswordForm& r) {
+    return r.blocked_by_user;
   }
 
   static autofill::PasswordForm::Type type(const autofill::PasswordForm& r) {

@@ -187,7 +187,7 @@ void WriteMetadataInBackground(const base::FilePath& metadata_path,
 
 // Deletes |metadata_path|.
 void DeleteMetadataInBackground(const base::FilePath& metadata_path) {
-  bool success = base::DeleteFile(metadata_path, false /* not recursive */);
+  bool success = base::DeleteFile(metadata_path);
   UMA_HISTOGRAM_BOOLEAN("SBIRS.DownloadMetadata.DeleteSuccess", success);
 }
 

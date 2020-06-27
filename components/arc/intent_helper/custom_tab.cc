@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -17,27 +18,9 @@
 
 namespace arc {
 
-namespace {
-
-// Enumerates surfaces under the window.
-void EnumerateSurfaces(aura::Window* window, std::vector<exo::Surface*>* out) {
-  auto* surface = exo::Surface::AsSurface(window);
-  if (surface)
-    out->push_back(surface);
-  for (aura::Window* child : window->children())
-    EnumerateSurfaces(child, out);
-}
-
-}  // namespace
-
-CustomTab::CustomTab(aura::Window* arc_app_window,
-                     int32_t surface_id,
-                     int32_t top_margin)
-    : arc_app_window_(arc_app_window),
-      surface_id_(surface_id),
-      top_margin_(top_margin) {
-  other_windows_observer_.Add(arc_app_window_);
-
+CustomTab::CustomTab(aura::Window* arc_app_window)
+    : arc_app_window_(arc_app_window) {
+  arc_app_window_observer_.Add(arc_app_window_);
   host_->set_owned_by_client();
   auto* const widget = views::Widget::GetWidgetForNativeWindow(arc_app_window_);
   DCHECK(widget);
@@ -54,33 +37,21 @@ void CustomTab::Attach(gfx::NativeView view) {
   container->SetEventTargeter(std::make_unique<aura::WindowTargeter>());
   other_windows_observer_.Add(container);
   EnsureWindowOrders();
-  UpdateSurfaceIfNecessary();
+  UpdateHostBounds(arc_app_window_);
 }
 
 gfx::NativeView CustomTab::GetHostView() {
   return host_->native_view();
 }
 
-void CustomTab::OnWindowHierarchyChanged(const HierarchyChangeParams& params) {
-  if ((params.receiver == arc_app_window_) &&
-      exo::Surface::AsSurface(params.target) && params.new_parent)
-    UpdateSurfaceIfNecessary();
-}
-
 void CustomTab::OnWindowBoundsChanged(aura::Window* window,
                                       const gfx::Rect& old_bounds,
                                       const gfx::Rect& new_bounds,
                                       ui::PropertyChangeReason reason) {
-  if (surface_window_observer_.IsObserving(window) &&
-      old_bounds.size() != new_bounds.size())
-    OnSurfaceBoundsMaybeChanged(window);
-}
-
-void CustomTab::OnWindowPropertyChanged(aura::Window* window,
-                                        const void* key,
-                                        intptr_t old) {
-  if (surfaces_observer_.IsObserving(window) && key == exo::kClientSurfaceIdKey)
-    UpdateSurfaceIfNecessary();
+  if (arc_app_window_observer_.IsObserving(window) &&
+      old_bounds.size() != new_bounds.size()) {
+    UpdateHostBounds(window);
+  }
 }
 
 void CustomTab::OnWindowStackingChanged(aura::Window* window) {
@@ -98,17 +69,20 @@ void CustomTab::OnWindowStackingChanged(aura::Window* window) {
 }
 
 void CustomTab::OnWindowDestroying(aura::Window* window) {
-  if (surfaces_observer_.IsObserving(window))
-    surfaces_observer_.Remove(window);
-  if (surface_window_observer_.IsObserving(window))
-    surface_window_observer_.Remove(window);
+  if (arc_app_window_observer_.IsObserving(window))
+    arc_app_window_observer_.Remove(window);
   if (other_windows_observer_.IsObserving(window))
     other_windows_observer_.Remove(window);
 }
 
-void CustomTab::OnSurfaceBoundsMaybeChanged(aura::Window* surface_window) {
-  DCHECK(surface_window);
-  gfx::Point origin(0, top_margin_);
+void CustomTab::UpdateHostBounds(aura::Window* arc_app_window) {
+  DCHECK(arc_app_window);
+  auto* surface = exo::GetShellMainSurface(arc_app_window);
+  if (!surface)
+    return;
+
+  aura::Window* surface_window = surface->window();
+  gfx::Point origin(0, 0);
   gfx::Point bottom_right(surface_window->bounds().width(),
                           surface_window->bounds().height());
   ConvertPointFromWindow(surface_window, &origin);
@@ -128,33 +102,6 @@ void CustomTab::ConvertPointFromWindow(aura::Window* window,
   views::Widget* const widget = host_->GetWidget();
   aura::Window::ConvertPointToTarget(window, widget->GetNativeWindow(), point);
   views::View::ConvertPointFromWidget(widget->GetContentsView(), point);
-}
-
-void CustomTab::UpdateSurfaceIfNecessary() {
-  std::vector<exo::Surface*> surfaces;
-  EnumerateSurfaces(arc_app_window_, &surfaces);
-
-  // Try to find the surface.
-  const auto it = std::find_if(surfaces.cbegin(), surfaces.cend(),
-                               [id = surface_id_](const auto* surface) {
-                                 return surface->GetClientSurfaceId() == id;
-                               });
-  if (it == surfaces.cend()) {
-    for (auto* surface : surfaces) {
-      if (!surface->GetClientSurfaceId() &&
-          !surfaces_observer_.IsObserving(surface->window()))
-        surfaces_observer_.Add(surface->window());
-    }
-  } else {
-    surfaces_observer_.RemoveAll();
-
-    auto* const window = (*it)->window();
-    if (!surface_window_observer_.IsObserving(window)) {
-      surface_window_observer_.RemoveAll();
-      surface_window_observer_.Add(window);
-      OnSurfaceBoundsMaybeChanged(window);
-    }
-  }
 }
 
 }  // namespace arc

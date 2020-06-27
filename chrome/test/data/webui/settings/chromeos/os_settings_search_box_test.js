@@ -68,6 +68,12 @@ suite('OSSettingsSearchBox', () => {
     Polymer.dom.flush();
   }
 
+  async function waitForResultsFetched() {
+    // Wait for search results to be fetched.
+    await test_util.eventToPromise('search-results-fetched', searchBox);
+    Polymer.dom.flush();
+  }
+
   /**
    * @param {string} resultText Exact string of the result to be displayed.
    * @param {string} path Url path with optional params.
@@ -100,6 +106,12 @@ suite('OSSettingsSearchBox', () => {
 
   function setupSearchBox() {
     chrome.metricsPrivate = new MockMetricsPrivate();
+    settingsSearchHandler = new settings.FakeSettingsSearchHandler();
+    settings.setSearchHandlerForTesting(settingsSearchHandler);
+
+    userActionRecorder = new settings.FakeUserActionRecorder();
+    settings.setUserActionRecorderForTesting(userActionRecorder);
+
     toolbar = document.createElement('os-toolbar');
     assertTrue(!!toolbar);
     document.body.appendChild(toolbar);
@@ -115,12 +127,6 @@ suite('OSSettingsSearchBox', () => {
     assertTrue(!!resultList);
     noResultsSection = searchBox.$$('#noSearchResultsContainer');
     assertTrue(!!noResultsSection);
-
-    settingsSearchHandler = new settings.FakeSettingsSearchHandler();
-    settings.setSearchHandlerForTesting(settingsSearchHandler);
-
-    userActionRecorder = new settings.FakeUserActionRecorder();
-    settings.setUserActionRecorderForTesting(userActionRecorder);
   }
 
   setup(function() {
@@ -133,6 +139,39 @@ suite('OSSettingsSearchBox', () => {
     await simulateSearch('');
     settings.setUserActionRecorderForTesting(null);
     settings.setSearchHandlerForTesting(null);
+  });
+
+  test('Search availability changed', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('result')]);
+    await simulateSearch('test query');
+    assertTrue(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 1);
+
+    settingsSearchHandler.setFakeResults([fakeResult('1'), fakeResult('2')]);
+    assertTrue(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 1);
+
+    // Check that the list updates when the dropdown is open, and the dropdown
+    // remains open.
+    settingsSearchHandler.simulateSearchResultAvailabilityChanged();
+    await waitForResultsFetched();
+    assertTrue(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 2);
+
+    // User clicks outside the search box, closing the dropdown.
+    searchBox.blur();
+    assertFalse(dropDown.opened);
+
+    settingsSearchHandler.setFakeResults([fakeResult('result')]);
+    assertFalse(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 2);
+
+    // Check that the list updates when the dropdown is closed, and the dropdown
+    // remains closed.
+    settingsSearchHandler.simulateSearchResultAvailabilityChanged();
+    await waitForResultsFetched();
+    assertFalse(dropDown.opened);
+    assertEquals(searchBox.searchResults_.length, 1);
   });
 
   test('User action search event', async () => {
@@ -380,6 +419,35 @@ suite('OSSettingsSearchBox', () => {
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
         `Turn on <b>Wi-F</b>i`);
+    await simulateSearch(`wi f`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Turn on <b>Wi-F</b>i`);
+    await simulateSearch(`wi-f`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `Turn on <b>Wi-F</b>i`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('Tap-to-click')]);
+    await simulateSearch(`tap to cli`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Tap-to-cli</b>ck`);
+    await simulateSearch(`taptocli`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Tap-to-cli</b>ck`);
+    await simulateSearch(`tap-to-cli`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Tap-to-cli</b>ck`);
+
+    settingsSearchHandler.setFakeResults(
+        [fakeResult('Tap-to-click Tips Title')]);
+    await simulateSearch(`tap t`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Tap-t</b>o-click <b>T</b>ips <b>T</b>i<b>t</b>le`);
   });
 
   test('Test query longer than result blocks', async () => {

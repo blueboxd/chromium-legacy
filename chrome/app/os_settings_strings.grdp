@@ -561,26 +561,32 @@
   <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LARGE_LABEL" desc="Label in the slider which indicates that this side makes the cursor large.">
     Large
   </message>
-  <message name="IDS_SETTINGS_CURSOR_COLOR_ENABLED_LABEL" desc="Label for a checkbox which enables selecting custom cursor colors.">
-    Custom cursor color
-  </message>
   <message name="IDS_SETTINGS_CURSOR_COLOR_OPTIONS_LABEL" desc="Label for a drop-down menu of cursor color options for custom cursor colors.">
-    Color
+    Cursor color
+  </message>
+  <message name="IDS_SETTINGS_CURSOR_COLOR_BLACK" desc="Label for a cursor color option which colors the cursor black (default).">
+    Black (default)
   </message>
   <message name="IDS_SETTINGS_CURSOR_COLOR_RED" desc="Label for a cursor color option which colors the cursor red.">
     Red
   </message>
-  <message name="IDS_SETTINGS_CURSOR_COLOR_ORANGE" desc="Label for a cursor color option which colors the cursor orange.">
-    Orange
+  <message name="IDS_SETTINGS_CURSOR_COLOR_YELLOW" desc="Label for a cursor color option which colors the cursor dark yellow.">
+    Yellow
   </message>
   <message name="IDS_SETTINGS_CURSOR_COLOR_GREEN" desc="Label for a cursor color option which colors the cursor green.">
     Green
   </message>
+  <message name="IDS_SETTINGS_CURSOR_COLOR_CYAN" desc="Label for a cursor color option which colors the cursor cyan.">
+    Cyan
+  </message>
   <message name="IDS_SETTINGS_CURSOR_COLOR_BLUE" desc="Label for a cursor color option which colors the cursor blue.">
     Blue
   </message>
-    <message name="IDS_SETTINGS_CURSOR_COLOR_PURPLE" desc="Label for a cursor color option which colors the cursor purple.">
-    Purple
+  <message name="IDS_SETTINGS_CURSOR_COLOR_MAGENTA" desc="Label for a cursor color option which colors the cursor magenta.">
+    Magenta
+  </message>
+  <message name="IDS_SETTINGS_CURSOR_COLOR_PINK" desc="Label for a cursor color option which colors the cursor pink.">
+    Pink
   </message>
   <message name="IDS_SETTINGS_HIGH_CONTRAST_LABEL" desc="Label for checkbox which enables high-contrast UI.">
       Use high contrast mode

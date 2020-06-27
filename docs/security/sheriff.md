@@ -173,6 +173,7 @@ i like that.")
 Ideally, sheriffs should reproduce each bug before triaging, but being efficient
 is also important. It's fine to delegate reproducing bugs in the following
 cases:
+
 * A bug comes from an automated infrastructure (such as ClusterFuzz or Vomit).
 * A bug comes from a reporter with a solid track record of vulnerabilities (e.g.
   prolific external researchers or Google Project Zero team).
@@ -206,10 +207,15 @@ help.
 
 Tips for reproducing bugs:
 
-* Plan A is always to [use ClusterFuzz](clusterfuzz-for-sheriffs.md). As well
-  as reproducing bugs, ClusterFuzz will help you with lots of subsequent
-  bisection and labelling tasks. If it's any kind of crash, DCHECK or
-  memory safety problem, try really hard to get ClusterFuzz to reproduce it.
+* For any sort of a crash, CHECK/DCHECK or memory safety problem
+  [use ClusterFuzz](clusterfuzz-for-sheriffs.md). As well as reproducing bugs,
+  ClusterFuzz will help you with lots of subsequent bisection and labelling
+  tasks.
+* Assume that test cases may be malicious. You should only reproduce bugs
+  on your local machine if you're completely certain that you understand
+  100% of the test case. If not, use a disposable virtual machine. If you're
+  inside Google, a good way to do this is using
+  [Redshell](https://goto.google.com/redshell-for-chrome-sheriffs).
 * When you can't just build from a specific branch locally, check out
   [https://dev.chromium.org/getting-involved/dev-channel](https://dev.chromium.org/getting-involved/dev-channel)
   or

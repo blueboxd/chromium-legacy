@@ -163,6 +163,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kWebUITabStripTabDragIntegration;
 // Enables notifications to be shown within context menus.
 ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 
+// Preserve shelf state when entering and exiting overview mode.
+ASH_PUBLIC_EXPORT extern const base::Feature
+    kMaintainShelfStateWhenEnteringOverview;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
@@ -224,6 +228,8 @@ ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
 ASH_PUBLIC_EXPORT bool IsAppScalingEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
+
+ASH_PUBLIC_EXPORT bool IsMaintainShelfStateWhenEnteringOverviewEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

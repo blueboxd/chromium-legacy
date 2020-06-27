@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/system/sys_info.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/user_manager/user.h"
@@ -42,10 +43,17 @@ bool IsUserTypeAllowed(const User* user) {
 }  // namespace
 
 base::FilePath GetUserDataDir() {
-  // Return a subdirectory "lacros" inside of the ash-chrome user data dir.
-  base::FilePath path;
-  base::PathService::Get(chrome::DIR_USER_DATA, &path);
-  return path.Append("lacros");
+  base::FilePath base_path;
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // NOTE: On device this function is privacy/security sensitive. The
+    // directory must be inside the encrypted user partition.
+    base_path = base::FilePath("/home/chronos/user");
+  } else {
+    // For developers on Linux desktop, put the directory under the developer's
+    // specified --user-data-dir.
+    base::PathService::Get(chrome::DIR_USER_DATA, &base_path);
+  }
+  return base_path.Append("lacros");
 }
 
 bool IsLacrosAllowed() {

@@ -147,10 +147,6 @@ class CONTENT_EXPORT TtsController {
   // embedder.
   virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
 
-  // Sets whether speech should stop if the WebContents the utterance
-  // originated from is hidden. The default is false.
-  virtual void SetStopSpeakingWhenHidden(bool value) = 0;
-
   // Visible for testing.
   virtual void SetTtsPlatform(TtsPlatform* tts_platform) = 0;
   virtual int QueueSize() = 0;

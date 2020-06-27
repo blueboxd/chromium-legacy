@@ -47,10 +47,8 @@ class ArcIntentHelperTest : public testing::Test {
     void OpenArcCustomTab(
         const GURL& url,
         int32_t task_id,
-        int32_t surface_id,
-        int32_t top_margin,
         mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override {
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(mojo::NullRemote());
     }
     void OpenChromePageFromArc(mojom::ChromePage chrome_page) override {}
 

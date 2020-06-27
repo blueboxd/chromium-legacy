@@ -16,7 +16,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_export.h"
-#include "ui/gl/gl_surface.h"
 
 extern "C" {
 typedef struct ASurfaceControl ASurfaceControl;
@@ -125,10 +124,12 @@ class GL_EXPORT SurfaceControl {
 
     // Sets the callback which will be dispatched when the transaction is acked
     // by the framework.
+    // |task_runner| provides an optional task runner on which the callback
+    // should be run.
     using OnCompleteCb = base::OnceCallback<void(TransactionStats stats)>;
     void SetOnCompleteCb(
         OnCompleteCb cb,
-        scoped_refptr<GLSurface::TaskScheduler> task_scheduler);
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     void SetParent(const Surface& surface, const Surface* new_parent);
 
     void Apply();

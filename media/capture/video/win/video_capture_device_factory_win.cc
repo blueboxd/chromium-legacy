@@ -700,8 +700,16 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(
           }
           if (list_was_empty ||
               !DescriptorsContainDeviceId(*device_descriptors, device_id)) {
+            ComPtr<IMFMediaSource> source;
+            const bool pan_tilt_zoom_supported =
+                CreateDeviceSourceMediaFoundation(
+                    device_id, api_attributes.first, &source) &&
+                VideoCaptureDeviceMFWin::IsPanTiltZoomSupported(
+                    std::move(source));
             device_descriptors->emplace_back(display_name, device_id, model_id,
                                              api_attributes.first);
+            device_descriptors->back().set_pan_tilt_zoom_supported(
+                pan_tilt_zoom_supported);
           }
         }
       }
@@ -793,8 +801,16 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsDirectShow(
 
     const std::string model_id = GetDeviceModelId(id);
 
+    ComPtr<IBaseFilter> capture_filter;
+    const bool pan_tilt_zoom_supported =
+        CreateDeviceFilterDirectShow(std::move(moniker), &capture_filter) &&
+        VideoCaptureDeviceWin::IsPanTiltZoomSupported(
+            std::move(capture_filter));
+
     device_descriptors->emplace_back(device_name, id, model_id,
                                      VideoCaptureApi::WIN_DIRECT_SHOW);
+    device_descriptors->back().set_pan_tilt_zoom_supported(
+        pan_tilt_zoom_supported);
   }
 }
 

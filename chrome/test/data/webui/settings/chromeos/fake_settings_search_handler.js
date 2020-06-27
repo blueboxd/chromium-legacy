@@ -16,8 +16,8 @@ cr.define('settings', function() {
       /** @private {!Array<chromeos.settings.mojom.SearchResult>} */
       this.fakeResults_ = [];
 
-      /** @type {!chromeos.settings.mojom.SearchResultsObserverInterface} */
-      this.observer;
+      /** @private {!chromeos.settings.mojom.SearchResultsObserverInterface} */
+      this.observer_;
     }
 
     /**
@@ -35,7 +35,13 @@ cr.define('settings', function() {
 
     /** override */
     observe(observer) {
-      this.observer = observer;
+      this.observer_ = observer;
+    }
+
+    simulateSearchResultAvailabilityChanged() {
+      if (this.observer_) {
+        this.observer_.onSearchResultAvailabilityChanged();
+      }
     }
   }
 

@@ -299,7 +299,7 @@ struct PasswordForm {
   mojo_base.mojom.String16 confirmation_password_element;
   mojo_base.mojom.Time date_created;
   mojo_base.mojom.Time date_synced;
-  bool blacklisted_by_user;
+  bool blocked_by_user;
   Type type;
   int32 times_used;
   FormData form_data;

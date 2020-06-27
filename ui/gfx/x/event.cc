@@ -11,6 +11,7 @@
 // the std namespace.
 #undef max
 #undef min
+#undef Data
 
 #include <cstring>
 

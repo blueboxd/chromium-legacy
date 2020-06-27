@@ -254,29 +254,34 @@ void ScriptController::UpdateDocument() {
 
 void ScriptController::ExecuteJavaScriptURL(
     const KURL& url,
-    network::mojom::CSPDisposition check_main_world_csp) {
+    network::mojom::CSPDisposition csp_disposition,
+    const DOMWrapperWorld& world_for_csp) {
   DCHECK(url.ProtocolIsJavaScript());
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
   String script_source = DecodeURLEscapeSequences(
       url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-  bool should_bypass_main_world_content_security_policy =
-      check_main_world_csp == network::mojom::CSPDisposition::DO_NOT_CHECK ||
-      ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->DomWindow());
   if (!GetFrame()->GetPage())
     return;
 
-  if (!should_bypass_main_world_content_security_policy &&
-      !GetFrame()->GetDocument()->GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kNavigation, nullptr,
-          script_source, String() /* nonce */, GetFrame()->GetDocument()->Url(),
-          EventHandlerPosition().line_)) {
+  ContentSecurityPolicy* policy =
+      GetFrame()->DomWindow()->GetContentSecurityPolicyForWorld(world_for_csp);
+  if (csp_disposition == network::mojom::CSPDisposition::CHECK &&
+      !policy->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                           nullptr, script_source, String() /* nonce */,
+                           GetFrame()->GetDocument()->Url(),
+                           EventHandlerPosition().line_)) {
     return;
   }
 
+  // TODO(crbug.com/896041): Investigate how trusted type checks can be
+  // implemented for isolated worlds.
+  const bool should_bypass_trusted_type_check =
+      csp_disposition == network::mojom::CSPDisposition::DO_NOT_CHECK ||
+      ContentSecurityPolicy::ShouldBypassMainWorld(world_for_csp);
   script_source = script_source.Substring(kJavascriptSchemeLength);
-  if (!should_bypass_main_world_content_security_policy) {
+  if (!should_bypass_trusted_type_check) {
     script_source = TrustedTypesCheckForJavascriptURLinNavigation(
         script_source, GetFrame()->DomWindow());
     if (script_source.IsEmpty())

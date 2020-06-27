@@ -46,8 +46,11 @@ namespace rlwe {
   }
   std::string bytes = std::string(in);
   bytes.resize(4);
-  uint32_t res =
-      (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+  uint32_t res = (static_cast<unsigned char>(bytes[0]) << 24) |
+                 (static_cast<unsigned char>(bytes[1]) << 16) |
+                 (static_cast<unsigned char>(bytes[2]) << 8) |
+                 static_cast<unsigned char>(bytes[3]);
+
   return res >> (32 - bit_length);
 }
 

@@ -21,9 +21,13 @@ from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import webgl_conformance_integration_test
 
+from telemetry.internal.util import binary_manager
+from telemetry.internal.platform import system_info
 from telemetry.testing import browser_test_runner
 from telemetry.testing import fakes
-from telemetry.internal.platform import system_info
+from telemetry.testing import run_browser_tests
+
+from unittest_data import integration_tests
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -213,9 +217,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def testSimpleIntegrationTest(self):
     self._RunIntegrationTest(
-        'simple_integration_unittest',
-        ['unexpected_error', 'unexpected_failure'],
-        ['expected_flaky', 'expected_failure'], ['expected_skip'], [
+        test_name='simple_integration_unittest',
+        failures=['unexpected_error', 'unexpected_failure'],
+        successes=['expected_flaky', 'expected_failure'],
+        skips=['expected_skip'],
+        additional_args=[
             '--retry-only-retry-on-failure', '--retry-limit=3',
             '--test-name-prefix=unittest_data.integration_tests.SimpleTest.'
         ])
@@ -226,42 +232,56 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def testIntegrationTesttWithBrowserFailure(self):
     self._RunIntegrationTest(
-        'browser_start_failure_integration_unittest', [],
-        ['unittest_data.integration_tests.BrowserStartFailureTest.restart'], [],
-        [])
+        test_name='browser_start_failure_integration_unittest',
+        failures=[],
+        successes=[('unittest_data.integration_tests.'
+                    'BrowserStartFailureTest.restart')],
+        skips=[], additional_args=[])
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
   def testIntegrationTestWithBrowserCrashUponStart(self):
     self._RunIntegrationTest(
-        'browser_crash_after_start_integration_unittest', [],
-        ['unittest_data.integration_tests.BrowserCrashAfterStartTest.restart'],
-        [], [])
+        test_name='browser_crash_after_start_integration_unittest',
+        failures=[],
+        successes=[('unittest_data.integration_tests.'
+                    'BrowserCrashAfterStartTest.restart')],
+        skips=[], additional_args=[])
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
   def testRetryLimit(self):
     self._RunIntegrationTest(
-        'test_retry_limit',
-        ['unittest_data.integration_tests.TestRetryLimit.unexpected_failure'],
-        [], [], ['--retry-limit=2'])
+        test_name='test_retry_limit',
+        failures=[('unittest_data.integration_tests'
+                   '.TestRetryLimit.unexpected_failure')],
+        successes=[], skips=[], additional_args=['--retry-limit=2'])
     # The number of attempted runs is 1 + the retry limit.
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
   def _RunTestsWithExpectationsFiles(self):
-    self._RunIntegrationTest(
-        'run_tests_with_expectations_files', ['a/b/unexpected-fail.html'],
-        ['a/b/expected-fail.html', 'a/b/expected-flaky.html'], ['should_skip'],
-        [
-            '--retry-limit=3', '--retry-only-retry-on-failure-tests',
-            ('--test-name-prefix=unittest_data.integration_tests.'
-             'RunTestsWithExpectationsFiles.')
-        ])
+    try:
+      self._RunIntegrationTest(
+          test_name='run_tests_with_expectations_files',
+          failures=['a/b/unexpected-fail.html'],
+          successes=['a/b/expected-fail.html', 'a/b/expected-flaky.html'],
+          skips=['should_skip'],
+          additional_args=[
+              '--retry-limit=3', '--retry-only-retry-on-failure-tests',
+              ('--test-name-prefix=unittest_data.integration_tests.'
+               'RunTestsWithExpectationsFiles.')
+          ])
+    finally:
+      # Make sure the flaky failure counter is set to 0 after each test run
+      integration_tests.RunTestsWithExpectationsFiles._flaky_test_run = 0
 
   def testTestFilterCommandLineArg(self):
     self._RunIntegrationTest(
-        'run_tests_with_expectations_files', ['a/b/unexpected-fail.html'],
-        ['a/b/expected-fail.html'], ['should_skip'], [
+        test_name='run_tests_with_expectations_files',
+        failures=['a/b/unexpected-fail.html'],
+        successes=['a/b/expected-fail.html'],
+        skips=['should_skip'],
+        additional_args=[
             '--retry-limit=3', '--retry-only-retry-on-failure-tests',
             ('--test-filter=a/b/unexpected-fail.html::a/b/expected-fail.html::'
              'should_skip'),
@@ -299,19 +319,21 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def testRepeat(self):
     self._RunIntegrationTest(
-        'test_repeat', [],
-        ['unittest_data.integration_tests.TestRepeat.success'], [],
-        ['--repeat=3'])
+        test_name='test_repeat',
+        failures=[],
+        successes=['unittest_data.integration_tests.TestRepeat.success'],
+        skips=[],
+        additional_args=['--repeat=3'])
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
   def testAlsoRunDisabledTests(self):
     self._RunIntegrationTest(
-        'test_also_run_disabled_tests',
-        ['skip', 'flaky'],
+        test_name='test_also_run_disabled_tests',
+        failures=['skip', 'flaky'],
         # Tests that are expected to fail and do fail are treated as test passes
-        ['expected_failure'],
-        [],
-        [
+        successes=['expected_failure'],
+        skips=[],
+        additional_args=[
             '--all', '--test-name-prefix',
             'unittest_data.integration_tests.TestAlsoRunDisabledTests.',
             '--retry-limit=3', '--retry-only-retry-on-failure'
@@ -345,6 +367,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
 
   def _RunIntegrationTest(self, test_name, failures, successes, skips,
                           additional_args):
+    # pylint: disable=too-many-locals
     config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
@@ -353,12 +376,23 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     temp_dir = tempfile.mkdtemp()
     test_results_path = os.path.join(temp_dir, 'test_results.json')
     test_state_path = os.path.join(temp_dir, 'test_state.json')
+    old_manager = binary_manager._binary_manager
     try:
-      browser_test_runner.Run(config, [
-          test_name,
-          '--write-full-results-to=%s' % test_results_path,
-          '--test-state-json-path=%s' % test_state_path
-      ] + additional_args)
+      # TODO(crbug.com/1099856): Fix telemetry binary_manager API so that
+      # we don't need to access its private global variable
+      binary_manager._binary_manager = None
+      # We are proccissing ChromiumConfig instance and getting the argument
+      # list. Then we pass it directly to run_browser_tests.RunTests. If
+      # we called browser_test_runner.Run, then it would spawn another
+      # subprocess which is less efficient.
+      args = browser_test_runner.ProcessConfig(
+          config,
+          [
+              test_name,
+              '--write-full-results-to=%s' % test_results_path,
+              '--test-state-json-path=%s' % test_state_path
+          ] + additional_args)
+      run_browser_tests.RunTests(args)
       with open(test_results_path) as f:
         self._test_result = json.load(f)
       with open(test_state_path) as f:
@@ -369,6 +403,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       self.assertEquals(set(actual_successes), set(successes))
       self.assertEquals(set(actual_skips), set(skips))
     finally:
+      binary_manager._binary_manager = old_manager
       shutil.rmtree(temp_dir)
 
 

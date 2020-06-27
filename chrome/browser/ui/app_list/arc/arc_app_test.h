@@ -99,6 +99,10 @@ class ArcAppTest {
     activate_arc_on_start_ = activate_arc_on_start;
   }
 
+  void set_persist_service_manager(bool persist_service_manager) {
+    persist_service_manager_ = persist_service_manager;
+  }
+
  private:
   const user_manager::User* CreateUserAndLogin();
   bool FindPackage(const std::string& package_name);
@@ -113,6 +117,10 @@ class ArcAppTest {
 
   // If set to true ARC would be automatically enabled on test start up.
   bool activate_arc_on_start_ = true;
+
+  // Whether arc service manager should be destroyed when this object gets torn
+  // down.
+  bool persist_service_manager_ = false;
 
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<arc::ArcSessionManager> arc_session_manager_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_
-#define CHROME_COMMON_EXTENSIONS_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_
+#ifndef EXTENSIONS_COMMON_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_
+#define EXTENSIONS_COMMON_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_
 
 #include <memory>
 
@@ -37,4 +37,4 @@ std::unique_ptr<ScopedCurrentChannel> GetOverrideChannelForActionType(
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_
+#endif  // EXTENSIONS_COMMON_API_EXTENSION_ACTION_ACTION_INFO_TEST_UTIL_H_

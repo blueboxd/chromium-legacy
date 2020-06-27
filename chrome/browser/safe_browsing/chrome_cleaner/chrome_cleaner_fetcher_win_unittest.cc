@@ -33,7 +33,7 @@ class ChromeCleanerFetcherTest : public ::testing::Test {
 
   void TearDown() override {
     if (!downloaded_path_.empty()) {
-      base::DeleteFile(downloaded_path_, /*recursive=*/false);
+      base::DeleteFile(downloaded_path_);
       if (base::IsDirectoryEmpty(downloaded_path_.DirName()))
         base::DeleteFile(downloaded_path_.DirName(), /*recursive=*/false);
     }

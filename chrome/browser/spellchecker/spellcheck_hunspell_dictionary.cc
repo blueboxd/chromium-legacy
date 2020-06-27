@@ -80,7 +80,7 @@ bool SaveDictionaryData(std::unique_ptr<std::string> data,
 #endif
 
     if (!success) {
-      base::DeleteFile(path, false);
+      base::DeleteFile(path);
       return false;
     }
   }
@@ -381,7 +381,7 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(base::TaskRunner* task_runner,
     dictionary.file.Initialize(dictionary.path,
                                base::File::FLAG_READ | base::File::FLAG_OPEN);
   } else {
-    base::DeleteFile(dictionary.path, false);
+    base::DeleteFile(dictionary.path);
   }
 
   return dictionary;

@@ -116,7 +116,8 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const StyleColor& color) {
   // This function does NOT look at visited information, so that computed style
   // doesn't expose that.
-  return cssvalue::CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
+  return cssvalue::CSSColorValue::Create(
+      color.Resolve(style.GetCurrentColor()).Rgb());
 }
 
 const blink::Color ComputedStyleUtils::BorderSideColor(
@@ -133,7 +134,8 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
                         border_style == EBorderStyle::kRidge ||
                         border_style == EBorderStyle::kGroove))
     return blink::Color(238, 238, 238);
-  return visited_link ? style.InternalVisitedColor() : style.GetColor();
+  return visited_link ? style.GetInternalVisitedCurrentColor()
+                      : style.GetCurrentColor();
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(

@@ -12,6 +12,7 @@ include_rules = [
     "+media",
     "+mojo",
     "+services/metrics/public/cpp",
+    "+services/metrics/public/mojom/ukm_interface.mojom.h",
     "+services/network/public/cpp",
     "+services/network/public/mojom/web_sandbox_flags.mojom-shared.h",
     "+services/network/public/mojom/url_loader.mojom.h",
@@ -33,5 +34,5 @@ include_rules = [
     "+url",
 ]
 specific_include_rules = {
-  '.*unittest.?.cc': [ "+v8", "+services/network/test" ],
+  '.*unittest.?.cc': [ "+v8", "+services/network/test" ]
 }

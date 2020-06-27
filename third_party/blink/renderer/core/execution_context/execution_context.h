@@ -71,6 +71,7 @@ class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
 class CoreProbeSink;
 class DOMTimerCoordinator;
+class DOMWrapperWorld;
 class ErrorEvent;
 class EventTarget;
 class FrameOrWorkerScheduler;
@@ -165,7 +166,11 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   // by GetContentSecurityPolicyForWorld. However this is under active
   // development, hence new callers should still use
   // ContentSecurityPolicy::ShouldBypassMainWorld for now.
-  virtual ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
+
+  // Returns the content security policy to be used for the given |world|.
+  virtual ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+      const DOMWrapperWorld& world);
 
   virtual const KURL& Url() const = 0;
   virtual const KURL& BaseURL() const = 0;

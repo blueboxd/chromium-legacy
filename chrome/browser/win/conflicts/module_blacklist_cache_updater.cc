@@ -224,8 +224,7 @@ base::FilePath ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath() {
 
 // static
 void ModuleBlacklistCacheUpdater::DeleteModuleBlacklistCache() {
-  bool delete_result =
-      base::DeleteFile(GetModuleBlacklistCachePath(), false /* recursive */);
+  bool delete_result = base::DeleteFile(GetModuleBlacklistCachePath());
   UMA_HISTOGRAM_BOOLEAN("ModuleBlacklistCache.DeleteResult", delete_result);
 }
 

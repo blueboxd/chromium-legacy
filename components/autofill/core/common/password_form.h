@@ -225,7 +225,7 @@ struct PasswordForm {
   // to false.
   //
   // When parsing an HTML form, this is not used.
-  bool blacklisted_by_user = false;
+  bool blocked_by_user = false;
 
   // The form type.
   Type type = Type::kManual;

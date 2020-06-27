@@ -45,7 +45,7 @@ RoamingUserDataDirectoryDeletionResult DeleteRoamingUserDataDirectoryImpl() {
   auto result = RoamingUserDataDirectoryDeletionResult::kFailed;
   do {
     // A non-recursive directory delete will fail if the directory is not empty.
-    if (!base::DeleteFile(to_delete, /*recursive=*/false))
+    if (!base::DeleteFile(to_delete))
       return result;
     result = RoamingUserDataDirectoryDeletionResult::kSucceeded;
     to_delete = to_delete.DirName();

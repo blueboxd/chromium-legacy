@@ -45,8 +45,8 @@ class AutofillClientImpl
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
 
 #if !defined(OS_ANDROID)
-  std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
-  std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
+  std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
+  std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
 
   void ShowLocalCardMigrationDialog(
       base::OnceClosure show_migration_dialog_closure) override;

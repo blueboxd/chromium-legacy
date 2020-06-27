@@ -179,7 +179,7 @@ class FirefoxObserver : public ProfileWriter,
     EXPECT_EQ(base::ASCIIToUTF16(p.username), form.username_value);
     EXPECT_EQ(base::ASCIIToUTF16(p.password_element), form.password_element);
     EXPECT_EQ(base::ASCIIToUTF16(p.password), form.password_value);
-    EXPECT_EQ(p.blacklisted, form.blacklisted_by_user);
+    EXPECT_EQ(p.blacklisted, form.blocked_by_user);
     ++password_count_;
   }
 

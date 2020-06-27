@@ -1467,7 +1467,12 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   if (v8_context.IsEmpty())
     return false;
 
-  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
+  return ShouldBypassMainWorld(DOMWrapperWorld::Current(isolate));
+}
+
+// static
+bool ContentSecurityPolicy::ShouldBypassMainWorld(
+    const DOMWrapperWorld& world) {
   if (!world.IsIsolatedWorld())
     return false;
 

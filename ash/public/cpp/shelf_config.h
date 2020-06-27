@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/system/model/virtual_keyboard_model.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -24,7 +25,8 @@ namespace ash {
 class ASH_EXPORT ShelfConfig : public TabletModeObserver,
                                public AppListControllerObserver,
                                public display::DisplayObserver,
-                               public VirtualKeyboardModel::Observer {
+                               public VirtualKeyboardModel::Observer,
+                               public OverviewObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -45,6 +47,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Remove observers from this object's dependencies.
   void Shutdown();
+
+  // OverviewObserver:
+  void OnOverviewModeWillStart() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
 
   // TabletModeObserver:
   void OnTabletModeStarting() override;
@@ -117,7 +123,7 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The extra padding added to status area tray buttons on the shelf.
   int status_area_hit_region_padding() const;
 
-  // Returns whether we are within an app.
+  // Returns whether the in app shelf should be shown.
   bool is_in_app() const;
 
   // The threshold relative to the size of the shelf that is used to determine
@@ -235,6 +241,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Updates shelf config - called when the accessibility state changes.
   void UpdateConfigForAccessibilityState();
+
+  // Whether the in app shelf should be shown in overview mode.
+  bool use_in_app_shelf_in_overview_;
+
+  // True if device is currently in overview mode.
+  bool overview_mode_;
 
   // True if device is currently in tablet mode.
   bool in_tablet_mode_;

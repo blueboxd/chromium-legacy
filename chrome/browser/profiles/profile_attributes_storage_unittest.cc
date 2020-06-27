@@ -761,7 +761,7 @@ TEST_F(ProfileAttributesStorageTest, DownloadHighResAvatarTest) {
   // Clean up.
   EXPECT_NE(std::string::npos, icon_path.MaybeAsASCII().find(icon_filename));
   ASSERT_TRUE(base::PathExists(icon_path));
-  EXPECT_TRUE(base::DeleteFile(icon_path, false));
+  EXPECT_TRUE(base::DeleteFile(icon_path));
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 
@@ -827,7 +827,7 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
   VerifyAndResetCallExpectations();
 
   // Clean up.
-  EXPECT_TRUE(base::DeleteFile(icon_path, false));
+  EXPECT_TRUE(base::DeleteFile(icon_path));
   EXPECT_FALSE(base::PathExists(icon_path));
 }
 #endif

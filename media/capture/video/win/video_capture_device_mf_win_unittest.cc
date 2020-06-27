@@ -7,6 +7,9 @@
 #include <stddef.h>
 #include <wincodec.h>
 
+#include <algorithm>
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/task_environment.h"
@@ -27,6 +30,18 @@ using Microsoft::WRL::ComPtr;
 namespace media {
 
 namespace {
+constexpr int kArcSecondsInDegree = 3600;
+constexpr int kHundredMicrosecondsInSecond = 10000;
+
+constexpr long kCameraControlCurrentBase = 10;
+constexpr long kCameraControlMinBase = -20;
+constexpr long kCameraControlMaxBase = 20;
+constexpr long kCameraControlStep = 2;
+constexpr long kVideoProcAmpCurrentBase = 25;
+constexpr long kVideoProcAmpMinBase = -50;
+constexpr long kVideoProcAmpMaxBase = 50;
+constexpr long kVideoProcAmpStep = 1;
+
 class MockClient : public VideoCaptureDevice::Client {
  public:
   void OnIncomingCapturedData(const uint8_t* data,
@@ -99,21 +114,165 @@ class MockImageCaptureClient
   virtual ~MockImageCaptureClient() = default;
 };
 
-class MockMFMediaSource : public base::RefCountedThreadSafe<MockMFMediaSource>,
-                          public IMFMediaSource {
+template <class Interface>
+Interface* AddReference(Interface* object) {
+  DCHECK(object);
+  object->AddRef();
+  return object;
+}
+
+template <class Interface>
+class MockInterface
+    : public base::RefCountedThreadSafe<MockInterface<Interface>>,
+      public Interface {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
-    return E_NOTIMPL;
+  // IUnknown
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
+    if (riid == __uuidof(this) || riid == __uuidof(IUnknown)) {
+      *object = AddReference(this);
+      return S_OK;
+    }
+    return E_NOINTERFACE;
   }
   IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockMFMediaSource>::AddRef();
+    base::RefCountedThreadSafe<MockInterface>::AddRef();
+    return 1U;
+  }
+  IFACEMETHODIMP_(ULONG) Release() override {
+    base::RefCountedThreadSafe<MockInterface>::Release();
     return 1U;
   }
 
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockMFMediaSource>::Release();
-    return 1U;
+ protected:
+  friend class base::RefCountedThreadSafe<MockInterface<Interface>>;
+  virtual ~MockInterface() = default;
+};
+
+class MockAMCameraControl final : public MockInterface<IAMCameraControl> {
+ public:
+  IFACEMETHODIMP Get(long property, long* value, long* flags) override {
+    switch (property) {
+      case CameraControl_Pan:
+      case CameraControl_Tilt:
+      case CameraControl_Roll:
+      case CameraControl_Zoom:
+      case CameraControl_Exposure:
+      case CameraControl_Iris:
+      case CameraControl_Focus:
+        *value = kCameraControlCurrentBase + property;
+        *flags = CameraControl_Flags_Auto;
+        return S_OK;
+      default:
+        NOTREACHED();
+        return E_NOTIMPL;
+    }
   }
+  IFACEMETHODIMP GetRange(long property,
+                          long* min,
+                          long* max,
+                          long* step,
+                          long* default_value,
+                          long* caps_flags) override {
+    switch (property) {
+      case CameraControl_Pan:
+      case CameraControl_Tilt:
+      case CameraControl_Roll:
+      case CameraControl_Zoom:
+      case CameraControl_Exposure:
+      case CameraControl_Iris:
+      case CameraControl_Focus:
+        *min = kCameraControlMinBase + property;
+        *max = kCameraControlMaxBase + property;
+        *step = kCameraControlStep;
+        *default_value = (*min + *max) / 2;
+        *caps_flags = CameraControl_Flags_Auto | CameraControl_Flags_Manual;
+        return S_OK;
+      default:
+        NOTREACHED();
+        return E_NOTIMPL;
+    }
+  }
+  IFACEMETHODIMP Set(long property, long value, long flags) override {
+    return E_NOTIMPL;
+  }
+
+ protected:
+  ~MockAMCameraControl() override = default;
+};
+
+class MockAMVideoProcAmp final : public MockInterface<IAMVideoProcAmp> {
+ public:
+  IFACEMETHODIMP Get(long property, long* value, long* flags) override {
+    switch (property) {
+      case VideoProcAmp_Brightness:
+      case VideoProcAmp_Contrast:
+      case VideoProcAmp_Hue:
+      case VideoProcAmp_Saturation:
+      case VideoProcAmp_Sharpness:
+      case VideoProcAmp_Gamma:
+      case VideoProcAmp_ColorEnable:
+      case VideoProcAmp_WhiteBalance:
+      case VideoProcAmp_BacklightCompensation:
+      case VideoProcAmp_Gain:
+        *value = kVideoProcAmpCurrentBase + property;
+        *flags = VideoProcAmp_Flags_Auto;
+        return S_OK;
+      default:
+        NOTREACHED();
+        return E_NOTIMPL;
+    }
+  }
+  IFACEMETHODIMP GetRange(long property,
+                          long* min,
+                          long* max,
+                          long* step,
+                          long* default_value,
+                          long* caps_flags) override {
+    switch (property) {
+      case VideoProcAmp_Brightness:
+      case VideoProcAmp_Contrast:
+      case VideoProcAmp_Hue:
+      case VideoProcAmp_Saturation:
+      case VideoProcAmp_Sharpness:
+      case VideoProcAmp_Gamma:
+      case VideoProcAmp_ColorEnable:
+      case VideoProcAmp_WhiteBalance:
+      case VideoProcAmp_BacklightCompensation:
+      case VideoProcAmp_Gain:
+        *min = kVideoProcAmpMinBase + property;
+        *max = kVideoProcAmpMaxBase + property;
+        *step = kVideoProcAmpStep;
+        *default_value = (*min + *max) / 2;
+        *caps_flags = VideoProcAmp_Flags_Auto | VideoProcAmp_Flags_Manual;
+        return S_OK;
+      default:
+        NOTREACHED();
+        return E_NOTIMPL;
+    }
+  }
+  IFACEMETHODIMP Set(long property, long value, long flags) override {
+    return E_NOTIMPL;
+  }
+
+ protected:
+  ~MockAMVideoProcAmp() override = default;
+};
+
+class MockMFMediaSource : public MockInterface<IMFMediaSource> {
+ public:
+  // IUnknown
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
+    if (riid == __uuidof(IAMCameraControl)) {
+      *object = AddReference(new MockAMCameraControl);
+      return S_OK;
+    }
+    if (riid == __uuidof(IAMVideoProcAmp)) {
+      *object = AddReference(new MockAMVideoProcAmp);
+      return S_OK;
+    }
+    return MockInterface::QueryInterface(riid, object);
+  }
+  // IMFMediaEventGenerator
   IFACEMETHODIMP GetEvent(DWORD dwFlags, IMFMediaEvent** ppEvent) override {
     return E_NOTIMPL;
   }
@@ -131,6 +290,7 @@ class MockMFMediaSource : public base::RefCountedThreadSafe<MockMFMediaSource>,
                             const PROPVARIANT* pvValue) override {
     return E_NOTIMPL;
   }
+  // IMFMediaSource
   IFACEMETHODIMP GetCharacteristics(DWORD* pdwCharacteristics) override {
     return E_NOTIMPL;
   }
@@ -148,26 +308,11 @@ class MockMFMediaSource : public base::RefCountedThreadSafe<MockMFMediaSource>,
   IFACEMETHODIMP Shutdown(void) override { return E_NOTIMPL; }
 
  private:
-  friend class base::RefCountedThreadSafe<MockMFMediaSource>;
-  virtual ~MockMFMediaSource() = default;
+  ~MockMFMediaSource() override = default;
 };
 
-class MockMFCaptureSource
-    : public base::RefCountedThreadSafe<MockMFCaptureSource>,
-      public IMFCaptureSource {
+class MockMFCaptureSource : public MockInterface<IMFCaptureSource> {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
-    return E_NOTIMPL;
-  }
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockMFCaptureSource>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockMFCaptureSource>::Release();
-    return 1U;
-  }
   IFACEMETHODIMP GetCaptureDeviceSource(
       MF_CAPTURE_ENGINE_DEVICE_TYPE mfCaptureEngineDeviceType,
       IMFMediaSource** ppMediaSource) override {
@@ -247,31 +392,11 @@ class MockMFCaptureSource
   }
 
  private:
-  friend class base::RefCountedThreadSafe<MockMFCaptureSource>;
-  virtual ~MockMFCaptureSource() = default;
+  ~MockMFCaptureSource() override = default;
 };
 
-class MockCapturePreviewSink
-    : public base::RefCountedThreadSafe<MockCapturePreviewSink>,
-      public IMFCapturePreviewSink {
+class MockCapturePreviewSink : public MockInterface<IMFCapturePreviewSink> {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
-    if (riid == IID_IUnknown || riid == IID_IMFCapturePreviewSink) {
-      AddRef();
-      *object = this;
-      return S_OK;
-    }
-    return E_NOINTERFACE;
-  }
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockCapturePreviewSink>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockCapturePreviewSink>::Release();
-    return 1U;
-  }
   IFACEMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
                                     IMFMediaType** ppMediaType) override {
     return E_NOTIMPL;
@@ -330,31 +455,11 @@ class MockCapturePreviewSink
   scoped_refptr<IMFCaptureEngineOnSampleCallback> sample_callback;
 
  private:
-  friend class base::RefCountedThreadSafe<MockCapturePreviewSink>;
-  virtual ~MockCapturePreviewSink() = default;
+  ~MockCapturePreviewSink() override = default;
 };
 
-class MockCapturePhotoSink
-    : public base::RefCountedThreadSafe<MockCapturePhotoSink>,
-      public IMFCapturePhotoSink {
+class MockCapturePhotoSink : public MockInterface<IMFCapturePhotoSink> {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** object) override {
-    if (riid == IID_IUnknown || riid == IID_IMFCapturePhotoSink) {
-      AddRef();
-      *object = this;
-      return S_OK;
-    }
-    return E_NOINTERFACE;
-  }
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockCapturePhotoSink>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockCapturePhotoSink>::Release();
-    return 1U;
-  }
   IFACEMETHODIMP GetOutputMediaType(DWORD dwSinkStreamIndex,
                                     IMFMediaType** ppMediaType) override {
     return E_NOTIMPL;
@@ -389,24 +494,11 @@ class MockCapturePhotoSink
   scoped_refptr<IMFCaptureEngineOnSampleCallback> sample_callback;
 
  private:
-  friend class base::RefCountedThreadSafe<MockCapturePhotoSink>;
-  virtual ~MockCapturePhotoSink() = default;
+  ~MockCapturePhotoSink() override = default;
 };
 
-class MockMFCaptureEngine
-    : public base::RefCountedThreadSafe<MockMFCaptureEngine>,
-      public IMFCaptureEngine {
+class MockMFCaptureEngine : public MockInterface<IMFCaptureEngine> {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) { return S_OK; }
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockMFCaptureEngine>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockMFCaptureEngine>::Release();
-    return 1U;
-  }
   IFACEMETHODIMP Initialize(IMFCaptureEngineOnEventCallback* pEventCallback,
                             IMFAttributes* pAttributes,
                             IUnknown* pAudioSource,
@@ -490,12 +582,10 @@ class MockMFCaptureEngine
   }
   scoped_refptr<IMFCaptureEngineOnEventCallback> event_callback;
  private:
-  friend class base::RefCountedThreadSafe<MockMFCaptureEngine>;
-  virtual ~MockMFCaptureEngine() = default;
+  ~MockMFCaptureEngine() override = default;
 };
 
-class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
-                        public IMFMediaType {
+class StubMFMediaType : public MockInterface<IMFMediaType> {
  public:
   StubMFMediaType(GUID major_type,
                   GUID sub_type,
@@ -508,18 +598,6 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
         frame_height_(frame_height),
         frame_rate_(frame_rate) {}
 
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
-    return E_NOTIMPL;
-  }
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<StubMFMediaType>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<StubMFMediaType>::Release();
-    return 1U;
-  }
   IFACEMETHODIMP GetItem(REFGUID key, PROPVARIANT* value) override {
     if (key == MF_MT_FRAME_SIZE) {
       value->vt = VT_UI8;
@@ -684,8 +762,7 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
   }
 
  private:
-  friend class base::RefCountedThreadSafe<StubMFMediaType>;
-  virtual ~StubMFMediaType() = default;
+  ~StubMFMediaType() override = default;
 
   const GUID major_type_;
   const GUID sub_type_;
@@ -694,23 +771,8 @@ class StubMFMediaType : public base::RefCountedThreadSafe<StubMFMediaType>,
   const int frame_rate_;
 };
 
-class MockMFMediaEvent : public base::RefCountedThreadSafe<MockMFMediaEvent>,
-                         public IMFMediaEvent {
+class MockMFMediaEvent : public MockInterface<IMFMediaEvent> {
  public:
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppvObject) override {
-    return E_NOTIMPL;
-  }
-
-  IFACEMETHODIMP_(ULONG) AddRef() override {
-    base::RefCountedThreadSafe<MockMFMediaEvent>::AddRef();
-    return 1U;
-  }
-
-  IFACEMETHODIMP_(ULONG) Release() override {
-    base::RefCountedThreadSafe<MockMFMediaEvent>::Release();
-    return 1U;
-  }
-
   IFACEMETHODIMP GetItem(REFGUID guidKey, PROPVARIANT* pValue) override {
     return E_NOTIMPL;
   }
@@ -863,8 +925,7 @@ class MockMFMediaEvent : public base::RefCountedThreadSafe<MockMFMediaEvent>,
   IFACEMETHODIMP GetValue(PROPVARIANT* pvValue) override { return E_NOTIMPL; }
 
  private:
-  friend class base::RefCountedThreadSafe<MockMFMediaEvent>;
-  virtual ~MockMFMediaEvent() = default;
+  ~MockMFMediaEvent() override = default;
 };
 
 struct DepthDeviceParams {
@@ -1322,13 +1383,13 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaVideoStream) {
   device_->GetPhotoState(std::move(get_photo_state_callback));
 
   mojom::PhotoState* state = image_capture_client_->state.get();
-  ASSERT_EQ(state->width->min, kArbitraryValidVideoWidth);
-  ASSERT_EQ(state->width->current, kArbitraryValidVideoWidth);
-  ASSERT_EQ(state->width->max, kArbitraryValidVideoWidth);
+  EXPECT_EQ(state->width->min, kArbitraryValidVideoWidth);
+  EXPECT_EQ(state->width->current, kArbitraryValidVideoWidth);
+  EXPECT_EQ(state->width->max, kArbitraryValidVideoWidth);
 
-  ASSERT_EQ(state->height->min, kArbitraryValidVideoHeight);
-  ASSERT_EQ(state->height->current, kArbitraryValidVideoHeight);
-  ASSERT_EQ(state->height->max, kArbitraryValidVideoHeight);
+  EXPECT_EQ(state->height->min, kArbitraryValidVideoHeight);
+  EXPECT_EQ(state->height->current, kArbitraryValidVideoHeight);
+  EXPECT_EQ(state->height->max, kArbitraryValidVideoHeight);
 }
 
 // Given an |IMFCaptureSource| offering a video stream and a photo stream to
@@ -1352,13 +1413,134 @@ TEST_F(VideoCaptureDeviceMFWinTest, GetPhotoStateViaPhotoStream) {
   device_->GetPhotoState(std::move(get_photo_state_callback));
 
   mojom::PhotoState* state = image_capture_client_->state.get();
-  ASSERT_EQ(state->width->min, kArbitraryValidPhotoWidth);
-  ASSERT_EQ(state->width->current, kArbitraryValidPhotoWidth);
-  ASSERT_EQ(state->width->max, kArbitraryValidPhotoWidth);
+  EXPECT_EQ(state->width->min, kArbitraryValidPhotoWidth);
+  EXPECT_EQ(state->width->current, kArbitraryValidPhotoWidth);
+  EXPECT_EQ(state->width->max, kArbitraryValidPhotoWidth);
 
-  ASSERT_EQ(state->height->min, kArbitraryValidPhotoHeight);
-  ASSERT_EQ(state->height->current, kArbitraryValidPhotoHeight);
-  ASSERT_EQ(state->height->max, kArbitraryValidPhotoHeight);
+  EXPECT_EQ(state->height->min, kArbitraryValidPhotoHeight);
+  EXPECT_EQ(state->height->current, kArbitraryValidPhotoHeight);
+  EXPECT_EQ(state->height->max, kArbitraryValidPhotoHeight);
+
+  EXPECT_EQ(state->supported_white_balance_modes.size(), 2u);
+  EXPECT_EQ(std::count(state->supported_white_balance_modes.begin(),
+                       state->supported_white_balance_modes.end(),
+                       mojom::MeteringMode::CONTINUOUS),
+            1);
+  EXPECT_EQ(std::count(state->supported_white_balance_modes.begin(),
+                       state->supported_white_balance_modes.end(),
+                       mojom::MeteringMode::MANUAL),
+            1);
+  EXPECT_EQ(state->current_white_balance_mode, mojom::MeteringMode::CONTINUOUS);
+  EXPECT_EQ(state->supported_exposure_modes.size(), 2u);
+  EXPECT_EQ(std::count(state->supported_exposure_modes.begin(),
+                       state->supported_exposure_modes.end(),
+                       mojom::MeteringMode::CONTINUOUS),
+            1);
+  EXPECT_EQ(std::count(state->supported_exposure_modes.begin(),
+                       state->supported_exposure_modes.end(),
+                       mojom::MeteringMode::MANUAL),
+            1);
+  EXPECT_EQ(state->current_exposure_mode, mojom::MeteringMode::CONTINUOUS);
+  EXPECT_EQ(state->supported_focus_modes.size(), 2u);
+  EXPECT_EQ(std::count(state->supported_focus_modes.begin(),
+                       state->supported_focus_modes.end(),
+                       mojom::MeteringMode::CONTINUOUS),
+            1);
+  EXPECT_EQ(std::count(state->supported_focus_modes.begin(),
+                       state->supported_focus_modes.end(),
+                       mojom::MeteringMode::MANUAL),
+            1);
+  EXPECT_EQ(state->current_focus_mode, mojom::MeteringMode::CONTINUOUS);
+  EXPECT_EQ(state->points_of_interest.size(), 0u);
+
+  EXPECT_EQ(state->exposure_compensation->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_Gain);
+  EXPECT_EQ(state->exposure_compensation->min,
+            kVideoProcAmpMinBase + VideoProcAmp_Gain);
+  EXPECT_EQ(state->exposure_compensation->max,
+            kVideoProcAmpMaxBase + VideoProcAmp_Gain);
+  EXPECT_EQ(state->exposure_compensation->step, kVideoProcAmpStep);
+  EXPECT_DOUBLE_EQ(
+      std::log2(state->exposure_time->current / kHundredMicrosecondsInSecond),
+      kCameraControlCurrentBase + CameraControl_Exposure);
+  EXPECT_DOUBLE_EQ(
+      std::log2(state->exposure_time->min / kHundredMicrosecondsInSecond),
+      kCameraControlMinBase + CameraControl_Exposure);
+  EXPECT_DOUBLE_EQ(
+      std::log2(state->exposure_time->max / kHundredMicrosecondsInSecond),
+      kCameraControlMaxBase + CameraControl_Exposure);
+  EXPECT_DOUBLE_EQ(state->exposure_time->step,
+                   std::exp2(kCameraControlStep) * state->exposure_time->min -
+                       state->exposure_time->min);
+  EXPECT_EQ(state->color_temperature->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_WhiteBalance);
+  EXPECT_EQ(state->color_temperature->min,
+            kVideoProcAmpMinBase + VideoProcAmp_WhiteBalance);
+  EXPECT_EQ(state->color_temperature->max,
+            kVideoProcAmpMaxBase + VideoProcAmp_WhiteBalance);
+  EXPECT_EQ(state->color_temperature->step, kVideoProcAmpStep);
+  EXPECT_EQ(state->iso->min, state->iso->max);
+
+  EXPECT_EQ(state->brightness->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_Brightness);
+  EXPECT_EQ(state->brightness->min,
+            kVideoProcAmpMinBase + VideoProcAmp_Brightness);
+  EXPECT_EQ(state->brightness->max,
+            kVideoProcAmpMaxBase + VideoProcAmp_Brightness);
+  EXPECT_EQ(state->brightness->step, kVideoProcAmpStep);
+  EXPECT_EQ(state->contrast->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_Contrast);
+  EXPECT_EQ(state->contrast->min, kVideoProcAmpMinBase + VideoProcAmp_Contrast);
+  EXPECT_EQ(state->contrast->max, kVideoProcAmpMaxBase + VideoProcAmp_Contrast);
+  EXPECT_EQ(state->contrast->step, kVideoProcAmpStep);
+  EXPECT_EQ(state->saturation->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_Saturation);
+  EXPECT_EQ(state->saturation->min,
+            kVideoProcAmpMinBase + VideoProcAmp_Saturation);
+  EXPECT_EQ(state->saturation->max,
+            kVideoProcAmpMaxBase + VideoProcAmp_Saturation);
+  EXPECT_EQ(state->saturation->step, kVideoProcAmpStep);
+  EXPECT_EQ(state->sharpness->current,
+            kVideoProcAmpCurrentBase + VideoProcAmp_Sharpness);
+  EXPECT_EQ(state->sharpness->min,
+            kVideoProcAmpMinBase + VideoProcAmp_Sharpness);
+  EXPECT_EQ(state->sharpness->max,
+            kVideoProcAmpMaxBase + VideoProcAmp_Sharpness);
+  EXPECT_EQ(state->sharpness->step, kVideoProcAmpStep);
+
+  EXPECT_EQ(state->focus_distance->current,
+            kCameraControlCurrentBase + CameraControl_Focus);
+  EXPECT_EQ(state->focus_distance->min,
+            kCameraControlMinBase + CameraControl_Focus);
+  EXPECT_EQ(state->focus_distance->max,
+            kCameraControlMaxBase + CameraControl_Focus);
+  EXPECT_EQ(state->focus_distance->step, kCameraControlStep);
+
+  EXPECT_DOUBLE_EQ(state->pan->current / kArcSecondsInDegree,
+                   kCameraControlCurrentBase + CameraControl_Pan);
+  EXPECT_DOUBLE_EQ(state->pan->min / kArcSecondsInDegree,
+                   kCameraControlMinBase + CameraControl_Pan);
+  EXPECT_DOUBLE_EQ(state->pan->max / kArcSecondsInDegree,
+                   kCameraControlMaxBase + CameraControl_Pan);
+  EXPECT_DOUBLE_EQ(state->pan->step / kArcSecondsInDegree, kCameraControlStep);
+  EXPECT_DOUBLE_EQ(state->tilt->current / kArcSecondsInDegree,
+                   kCameraControlCurrentBase + CameraControl_Tilt);
+  EXPECT_DOUBLE_EQ(state->tilt->min / kArcSecondsInDegree,
+                   kCameraControlMinBase + CameraControl_Tilt);
+  EXPECT_DOUBLE_EQ(state->tilt->max / kArcSecondsInDegree,
+                   kCameraControlMaxBase + CameraControl_Tilt);
+  EXPECT_DOUBLE_EQ(state->tilt->step / kArcSecondsInDegree, kCameraControlStep);
+  EXPECT_EQ(state->zoom->current,
+            kCameraControlCurrentBase + CameraControl_Zoom);
+  EXPECT_EQ(state->zoom->min, kCameraControlMinBase + CameraControl_Zoom);
+  EXPECT_EQ(state->zoom->max, kCameraControlMaxBase + CameraControl_Zoom);
+  EXPECT_EQ(state->zoom->step, kCameraControlStep);
+
+  EXPECT_FALSE(state->supports_torch);
+  EXPECT_FALSE(state->torch);
+
+  EXPECT_EQ(state->red_eye_reduction, mojom::RedEyeReduction::NEVER);
+  EXPECT_EQ(state->fill_light_mode.size(), 0u);
 }
 
 // Given an |IMFCaptureSource| offering a video stream and a photo stream to

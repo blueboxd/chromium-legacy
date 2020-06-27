@@ -143,7 +143,7 @@ TEST_F(ExtensionSupportsConnectionFromNativeAppTest, NoOnConnectNative) {
 }
 
 TEST_F(ExtensionSupportsConnectionFromNativeAppTest, OffTheRecordProfile) {
-  auto* off_the_record_profile = profile_.GetOffTheRecordProfile();
+  auto* off_the_record_profile = profile_.GetPrimaryOTRProfile();
   ASSERT_NO_FATAL_FAILURE(RegisterExtension(true, true, true));
 
   EXPECT_FALSE(ExtensionSupportsConnectionFromNativeApp(

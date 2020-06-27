@@ -102,7 +102,7 @@ TYPED_TEST(MontgomeryTest, ParamsInvModulus) {
   using Int = typename TypeParam::Int;
   using BigInt = typename internal::BigInt<Int>::value_type;
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     EXPECT_EQ(modulus_params->r * modulus_params->inv_r -
@@ -118,7 +118,7 @@ TYPED_TEST(MontgomeryTest, ImportExportInt) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -140,7 +140,7 @@ TYPED_TEST(MontgomeryTest, AddSub) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -173,7 +173,7 @@ TYPED_TEST(MontgomeryTest, InlineAddSub) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -209,7 +209,7 @@ TYPED_TEST(MontgomeryTest, Equality) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -251,7 +251,7 @@ TYPED_TEST(MontgomeryTest, Negate) {
   using Int = typename TypeParam::Int;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (Int i = 0; i < 4 * kNewhopeModulus; i++) {
@@ -271,7 +271,7 @@ TYPED_TEST(MontgomeryTest, AddRepeatedly) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -307,7 +307,7 @@ TYPED_TEST(MontgomeryTest, Multiply) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     // Test over many random values.
@@ -346,7 +346,7 @@ TYPED_TEST(MontgomeryTest, MulInPlace) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     // Test over many random values.
@@ -375,7 +375,7 @@ TYPED_TEST(MontgomeryTest, MulConstantInPlace) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     // Test over many random values.
@@ -387,7 +387,9 @@ TYPED_TEST(MontgomeryTest, MulConstantInPlace) {
       auto ma_clone = ma;
       ASSERT_OK_AND_ASSIGN(auto mb,
                            TypeParam::ImportInt(b, modulus_params.get()));
-      auto [constant, constant_barrett] = mb.GetConstant(modulus_params.get());
+      auto constants_tuple = mb.GetConstant(modulus_params.get());
+      auto constant = std::get<0>(constants_tuple);
+      auto constant_barrett = std::get<1>(constants_tuple);
       ma.MulInPlace(mb, modulus_params.get());
       ma_clone.MulConstantInPlace(constant, constant_barrett,
                                   modulus_params.get());
@@ -407,7 +409,7 @@ TYPED_TEST(MontgomeryTest, MultiplyRepeatedly) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -436,7 +438,7 @@ TYPED_TEST(MontgomeryTest, SmallModulus) {
   using BigInt = typename internal::BigInt<Int>::value_type;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     const BigInt modulus = static_cast<BigInt>(modulus_params->modulus);
@@ -501,7 +503,7 @@ TYPED_TEST(MontgomeryTest, ModExpModulus) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     const BigInt modulus = static_cast<BigInt>(modulus_params->modulus);
@@ -529,7 +531,7 @@ TYPED_TEST(MontgomeryTest, InverseModulus) {
   unsigned int seed = 0;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (int i = 0; i < kTestingRounds; i++) {
@@ -548,7 +550,7 @@ TYPED_TEST(MontgomeryTest, Serialization) {
   using Int = typename TypeParam::Int;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (Int i = 0; i < kExhaustiveTest; i++) {
@@ -587,7 +589,7 @@ TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorSerialization) {
   int num_coeffs = kMaxNumCoeffs + 1;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -605,7 +607,7 @@ TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorSerialization) {
 
 TYPED_TEST(MontgomeryTest, EmptyVectorSerialization) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     std::vector<TypeParam> coeffs;
@@ -620,7 +622,7 @@ TYPED_TEST(MontgomeryTest, VectorSerialization) {
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(0);
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -653,7 +655,7 @@ TYPED_TEST(MontgomeryTest, ExceedMaxNumCoeffVectorDeserialization) {
   int num_coeffs = kMaxNumCoeffs + 1;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -670,7 +672,7 @@ TYPED_TEST(MontgomeryTest, NegativeVectorDeserialization) {
   int num_coeffs = -1;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     EXPECT_THAT(
@@ -686,7 +688,7 @@ TYPED_TEST(MontgomeryTest, ImportRandomWithPrngWithSameKeys) {
   unsigned int seed_prng = GenerateRandom<unsigned int>(&seed);
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -707,7 +709,7 @@ TYPED_TEST(MontgomeryTest, ImportRandomWithPrngWithDifferentKeys) {
   unsigned int seed_prng2 = seed_prng1 + 1;  // Different seed
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -727,7 +729,7 @@ TYPED_TEST(MontgomeryTest, VerifyBarrett) {
   using BigInt = typename internal::BigInt<Int>::value_type;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -754,7 +756,7 @@ TYPED_TEST(MontgomeryTest, BatchOperations) {
   auto prng = absl::make_unique<rlwe::testing::TestingPrng>(seed_prng);
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
 
@@ -765,8 +767,9 @@ TYPED_TEST(MontgomeryTest, BatchOperations) {
       TypeParam scalar =
           TypeParam::ImportRandom(prng.get(), modulus_params.get())
               .ValueOrDie();
-      auto [scalar_constant, scalar_constant_barrett] =
-          scalar.GetConstant(modulus_params.get());
+      auto scalar_constants_tuple = scalar.GetConstant(modulus_params.get());
+      auto scalar_constant = std::get<0>(scalar_constants_tuple);
+      auto scalar_constant_barrett = std::get<1>(scalar_constants_tuple);
       std::vector<TypeParam> expected_add_scalar, expected_sub_scalar,
           expected_mul_scalar;
       for (size_t i = 0; i < length; i++) {
@@ -774,8 +777,9 @@ TYPED_TEST(MontgomeryTest, BatchOperations) {
                         .ValueOrDie());
         b.push_back(TypeParam::ImportRandom(prng.get(), modulus_params.get())
                         .ValueOrDie());
-        auto [constant, constant_barrett] =
-            b[i].GetConstant(modulus_params.get());
+        auto constants_tuple = b[i].GetConstant(modulus_params.get());
+        auto constant = std::get<0>(constants_tuple);
+        auto constant_barrett = std::get<1>(constants_tuple); 
         b_constant.push_back(constant);
         b_constant_barrett.push_back(constant_barrett);
         expected_add.push_back(a[i].Add(b[i], modulus_params.get()));
@@ -844,7 +848,7 @@ TYPED_TEST(MontgomeryTest, BatchOperationsFailsWithVectorsOfDifferentSize) {
   using Int = typename TypeParam::Int;
 
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     for (size_t length_a : {1, 2, 7, 32, 500, 1024}) {
@@ -911,7 +915,7 @@ class FakePrng {
 
 TYPED_TEST(MontgomeryTest, PrngTemplateParameterizationWorks) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto modulus_params,
                          TypeParam::Params::Create(params.modulus));
     FakePrng prng;

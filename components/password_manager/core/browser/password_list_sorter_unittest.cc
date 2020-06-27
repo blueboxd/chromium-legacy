@@ -21,7 +21,7 @@ struct SortEntry {
   const char* const password;
   const char* const app_display_name;
   const char* const federation;
-  const bool is_blacklisted;
+  const bool is_blocked;
   const int expected_position;
 };
 
@@ -32,8 +32,8 @@ void SortAndCheckPositions(const std::vector<SortEntry>& test_entries) {
     auto form = std::make_unique<autofill::PasswordForm>();
     form->signon_realm = entry.origin;
     form->url = GURL(entry.origin);
-    form->blacklisted_by_user = entry.is_blacklisted;
-    if (!entry.is_blacklisted) {
+    form->blocked_by_user = entry.is_blocked;
+    if (!entry.is_blocked) {
       form->username_value = base::ASCIIToUTF16(entry.username);
       form->password_value = base::ASCIIToUTF16(entry.password);
       if (entry.federation != nullptr)
@@ -57,7 +57,7 @@ void SortAndCheckPositions(const std::vector<SortEntry>& test_entries) {
       SCOPED_TRACE(testing::Message("position in sorted list: ")
                    << entry.expected_position);
       EXPECT_EQ(GURL(entry.origin), list[entry.expected_position]->url);
-      if (!entry.is_blacklisted) {
+      if (!entry.is_blocked) {
         EXPECT_EQ(base::ASCIIToUTF16(entry.username),
                   list[entry.expected_position]->username_value);
         EXPECT_EQ(base::ASCIIToUTF16(entry.password),
@@ -193,7 +193,7 @@ TEST(PasswordListSorterTest, EntriesDifferingByStoreShouldMapToSameKey) {
   autofill::PasswordForm account_form;
   account_form.signon_realm = "https://g.com/";
   account_form.url = GURL(account_form.signon_realm);
-  account_form.blacklisted_by_user = false;
+  account_form.blocked_by_user = false;
   account_form.in_store = autofill::PasswordForm::Store::kAccountStore;
 
   autofill::PasswordForm profile_form(account_form);

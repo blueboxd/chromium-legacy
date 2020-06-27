@@ -44,6 +44,13 @@ Polymer({
 
   behaviors: [I18nBehavior],
 
+  /**
+   * Receiver responsible for observing search result availability changes.
+   * @private {
+   *  ?chromeos.settings.mojom.SearchResultsObserverReceiver}
+   */
+  searchResultObserverReceiver_: null,
+
   properties: {
     // True when the toolbar is displaying in narrow mode.
     // TODO(hsuregan): Change narrow to isNarrow here and associated elements.
@@ -177,6 +184,28 @@ Polymer({
           'ChromeOS.Settings.SearchRequestsPerSession',
           this.searchRequestCount_);
     });
+
+    // Observe for availability changes of results.
+    this.searchResultObserverReceiver_ =
+        new chromeos.settings.mojom.SearchResultsObserverReceiver(
+            /**
+             * @type {!chromeos.settings.mojom.SearchResultsObserverInterface}
+             */
+            (this));
+    settings.getSearchHandler().observe(
+        this.searchResultObserverReceiver_.$.bindNewPipeAndPassRemote());
+  },
+
+  /** @override */
+  detached() {
+    this.searchResultObserverReceiver_.$.close();
+  },
+
+  /**
+   * Overrides chromeos.settings.mojom.SearchResultsObserverInterfaces
+   */
+  onSearchResultAvailabilityChanged() {
+    this.fetchSearchResults_();
   },
 
   /**
@@ -236,6 +265,7 @@ Polymer({
           chrome.metricsPrivate.recordTime(
               'ChromeOS.Settings.SearchLatency', latencyMs);
           this.onSearchResultsReceived_(query, response.results);
+          this.fire('search-results-fetched');
         });
 
     ++this.searchRequestCount_;

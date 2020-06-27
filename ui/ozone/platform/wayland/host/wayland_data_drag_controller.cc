@@ -223,6 +223,8 @@ void WaylandDataDragController::OnDataSourceFinish(bool completed) {
   data_source_.reset();
   data_offer_.reset();
   data_.reset();
+  data_device_->ResetDragDelegate();
+
   state_ = State::kIdle;
 }
 

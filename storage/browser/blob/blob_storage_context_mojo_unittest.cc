@@ -194,7 +194,7 @@ TEST_F(BlobStorageContextMojoTest, SaveBlobToFile) {
   base::TimeDelta difference = file_info.last_modified - last_modified;
   EXPECT_LT(difference.magnitude(), base::TimeDelta::FromSeconds(1));
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -223,7 +223,7 @@ TEST_F(BlobStorageContextMojoTest, SaveBlobToFileNoDate) {
   EXPECT_TRUE(base::ReadFileToString(file_path, &file_contents));
   EXPECT_EQ(file_contents, kData);
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -262,7 +262,7 @@ TEST_F(BlobStorageContextMojoTest, SaveEmptyBlobToFile) {
   base::TimeDelta difference = file_info.last_modified - last_modified;
   EXPECT_LT(difference.magnitude(), base::TimeDelta::FromSeconds(1));
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -314,7 +314,7 @@ TEST_F(BlobStorageContextMojoTest, FileCopyOptimization) {
   base::TimeDelta difference = file_info.last_modified - modification_time;
   EXPECT_LT(difference.magnitude(), base::TimeDelta::FromSeconds(1));
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -367,7 +367,7 @@ TEST_F(BlobStorageContextMojoTest, FileCopyOptimizationOffsetSize) {
   base::TimeDelta difference = file_info.last_modified - modification_time;
   EXPECT_LT(difference.magnitude(), base::TimeDelta::FromSeconds(1));
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -419,7 +419,7 @@ TEST_F(BlobStorageContextMojoTest, FileCopyEmptyFile) {
   base::TimeDelta difference = file_info.last_modified - modification_time;
   EXPECT_LT(difference.magnitude(), base::TimeDelta::FromSeconds(1));
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -458,7 +458,7 @@ TEST_F(BlobStorageContextMojoTest, InvalidInputFileSize) {
   loop.Run();
 
   base::ThreadRestrictions::SetIOAllowed(true);
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -499,7 +499,7 @@ TEST_F(BlobStorageContextMojoTest, InvalidInputFileTimeModified) {
   loop.Run();
 
   base::ThreadRestrictions::SetIOAllowed(true);
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
@@ -675,7 +675,7 @@ TEST_F(BlobStorageContextMojoTest, SaveOptimizedBlobNoFileSize) {
   EXPECT_TRUE(base::ReadFileToString(file_path, &file_contents));
   EXPECT_EQ(file_contents, kData);
 
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
   ASSERT_TRUE(temp_dir_.Delete());
 }
 

@@ -186,7 +186,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 + (BOOL)saveExampleBlockedOrigin:(NSString*)origin {
   PasswordForm example;
   example.url = GURL(base::SysNSStringToUTF16(origin));
-  example.blacklisted_by_user = true;
+  example.blocked_by_user = true;
   example.signon_realm = example.url.spec();
   return SaveToPasswordStore(example);
 }

@@ -6,8 +6,9 @@ import("//build/config/chrome_build.gni")
 
 declare_args() {
   # Enable Kaleidoscope if we are not Android and we have access to the internal
-  # code. For now we are disabled on Windows until the bots issue is fixed.
-  enable_kaleidoscope = !is_android && !is_win && is_chrome_branded
+  # code. For now we are disabled on Windows and Chrome OS until the build issues
+  # are fixed.
+  enable_kaleidoscope = !is_android && !is_win && !is_chromeos && is_chrome_branded
 
   tpm_fallback = false
 }

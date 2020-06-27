@@ -26,6 +26,7 @@ try_.set_defaults(
     'tryserver.chromium.android',
     'tryserver.chromium.angle',
     'tryserver.chromium.chromiumos',
+    'tryserver.chromium.codesearch',
     'tryserver.chromium.dawn',
     'tryserver.chromium.linux',
     'tryserver.chromium.mac',

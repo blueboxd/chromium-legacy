@@ -16,6 +16,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     window.EventType = chrome.automation.EventType;
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
+    window.doHover = this.doHover;
     window.press = this.press;
     window.Mod = constants.ModifierFlag;
 
@@ -40,6 +41,13 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
   doCmd(cmd) {
     return function() {
       CommandHandler.onCommand(cmd);
+    };
+  }
+
+  doHover(node) {
+    return () => {
+      const event = new CustomAutomationEvent(EventType.HOVER, node, 'action');
+      DesktopAutomationHandler.instance.onHover(event);
     };
   }
 
@@ -1929,12 +1937,7 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverTargetsLeafNode', function() {
         assertNotNullNorUndefined(buttonP);
         const buttonText = buttonP.firstChild;
         assertNotNullNorUndefined(buttonText);
-        const doHover = () => {
-          const event =
-              new CustomAutomationEvent(EventType.HOVER, buttonText, 'action');
-          DesktopAutomationHandler.instance.onHover(event);
-        };
-        mockFeedback.call(doHover)
+        mockFeedback.call(doHover(buttonText))
             .expectSpeech('Jefferson')
             .expectSpeech('Button')
             .replay();
@@ -2612,5 +2615,48 @@ TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', function() {
         // should trigger the mouse path above.
         GestureCommandHandler.onAccessibilityGesture_(
             'touchExplore', fakeWindow.location.left, fakeWindow.location.top);
+      });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
+  DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = -1;
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div role="grouparia-label="test" " tabindex=0>
+      <div role=button><p></p></div>
+    </div>
+  `,
+      function(root) {
+        ChromeVoxState.addObserver(new class {
+          onCurrentRangeChanged(range) {
+            if (!range) {
+              ChromeVox.tts.speak('range cleared!');
+            }
+          }
+        }());
+
+        const button = root.find({role: RoleType.BUTTON});
+        assertNotNullNorUndefined(button);
+        const group = button.parent;
+        assertNotNullNorUndefined(group);
+        mockFeedback.call(doHover(button))
+            .expectSpeech('Button')
+            .call(() => {
+              // Override the role to simulate panes which are only found in
+              // views.
+              Object.defineProperty(group, 'role', {
+                get() {
+                  return chrome.automation.RoleType.PANE;
+                }
+              });
+            })
+            .call(doHover(group))
+            .expectSpeech('range cleared!')
+            .expectEarcon(Earcon.TOUCH_EXIT)
+            .call(doHover(group))
+            .expectSpeech('range cleared!')
+            .expectEarcon(Earcon.TOUCH_EXIT)
+            .replay();
       });
 });

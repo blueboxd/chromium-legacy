@@ -69,8 +69,8 @@ class InterceptionManager {
   // An interception manager performs interceptions on a given child process.
   // If we are allowed to intercept functions that have been patched by somebody
   // else, relaxed should be set to true.
-  // Note: We increase the child's reference count internally.
-  InterceptionManager(TargetProcess* child_process, bool relaxed);
+  // |child_process| should outlive the manager.
+  InterceptionManager(TargetProcess& child_process, bool relaxed);
   ~InterceptionManager();
 
   // Patches function_name inside dll_name to point to replacement_code_address.
@@ -215,7 +215,7 @@ class InterceptionManager {
                                   DllInterceptionData* dll_data);
 
   // The process to intercept.
-  TargetProcess* child_;
+  TargetProcess& child_;
   // Holds all interception info until the call to initialize (perform the
   // actual patch).
   std::list<InterceptionData> interceptions_;

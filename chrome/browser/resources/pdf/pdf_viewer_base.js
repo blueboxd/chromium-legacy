@@ -212,8 +212,12 @@ export class PDFViewerBaseElement extends PolymerElement {
     PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
     // Parse open pdf parameters.
-    this.paramsParser = new OpenPdfParamsParser(
-        destination => this.pluginController_.getNamedDestination(destination));
+    this.paramsParser = new OpenPdfParamsParser(destination => {
+      this.pluginController_.getNamedDestination(destination).then(data => {
+        this.paramsParser.onNamedDestinationReceived(
+            /** @type {{ pageNumber: number }} */ (data).pageNumber);
+      });
+    });
 
     // Can only reload if we are in a normal tab.
     if (chrome.tabs && this.browserApi.getStreamInfo().tabId !== -1) {
@@ -594,14 +598,10 @@ export class PDFViewerBaseElement extends PolymerElement {
 
   /**
    * Handles a selected text reply from the current controller.
-   * @param {string} selectedText
+   * @param {!Object} message
    * @protected
    */
-  handleSelectedTextReply(selectedText) {
-    const message = {
-      type: 'getSelectedTextReply',
-      selectedText: selectedText,
-    };
+  handleSelectedTextReply(message) {
     if (this.overrideSendScriptingMessageForTest_) {
       this.overrideSendScriptingMessageForTest_ = false;
       try {

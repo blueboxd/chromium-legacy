@@ -114,6 +114,7 @@ void ArcKioskAppManager::AddAutoLaunchAppForTest(
 
   auto_launch_account_id_ = account_id;
   auto_launched_with_zero_delay_ = true;
+  NotifyKioskAppsChanged();
 }
 
 const AccountId& ArcKioskAppManager::GetAutoLaunchAccountId() const {

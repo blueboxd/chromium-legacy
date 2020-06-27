@@ -560,8 +560,8 @@ bool InputImeEventRouter::RegisterImeExtension(
 
   if (chromeos::input_method::InputMethodManager::Get()->GetUISessionState() ==
           chromeos::input_method::InputMethodManager::STATE_LOGIN_SCREEN &&
-      profile->HasOffTheRecordProfile()) {
-    profile = profile->GetOffTheRecordProfile();
+      profile->HasPrimaryOTRProfile()) {
+    profile = profile->GetPrimaryOTRProfile();
   }
 
   auto observer = std::make_unique<ImeObserverChromeOS>(extension_id, profile);

@@ -197,8 +197,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
-  scoped_refptr<gpu::GLSurfaceTaskScheduler> CreateGLSurfaceTaskScheduler()
-      override;
 
   void PostTaskToClientThread(base::OnceClosure closure) {
     dependency_->PostTaskToClientThread(std::move(closure));

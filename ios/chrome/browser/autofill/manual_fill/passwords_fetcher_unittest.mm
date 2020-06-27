@@ -86,7 +86,7 @@ class PasswordFetcherTest : public PlatformTest {
     form.submit_element = base::ASCIIToUTF16("signIn");
     form.signon_realm = "http://www.example.com/";
     form.scheme = autofill::PasswordForm::Scheme::kHtml;
-    form.blacklisted_by_user = false;
+    form.blocked_by_user = false;
     return form;
   }
 
@@ -105,7 +105,7 @@ class PasswordFetcherTest : public PlatformTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.example2.com/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = false;
+    form->blocked_by_user = false;
     GetPasswordStore()->AddLogin(*std::move(form));
   }
 
@@ -122,7 +122,7 @@ class PasswordFetcherTest : public PlatformTest {
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.secret.test/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = true;
+    form->blocked_by_user = true;
     GetPasswordStore()->AddLogin(*std::move(form));
   }
 

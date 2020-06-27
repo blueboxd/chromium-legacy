@@ -305,9 +305,9 @@ class AutofillClient : public RiskDataLoader {
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // Returns the whitelists for virtual cards. Used on desktop platforms only.
-  virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;
-  virtual std::vector<std::string> GetBinRangeWhitelistForVirtualCards() = 0;
+  // Returns the list of allowed merchants and BIN ranges for virtual cards.
+  virtual std::vector<std::string> GetAllowedMerchantsForVirtualCards() = 0;
+  virtual std::vector<std::string> GetAllowedBinRangesForVirtualCards() = 0;
 
   // Runs |show_migration_dialog_closure| if the user accepts the card migration
   // offer. This causes the card migration dialog to be shown.

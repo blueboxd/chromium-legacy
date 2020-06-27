@@ -4897,8 +4897,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
     {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,
-     flag_descriptions::kFormControlsRefreshDescription, kOsAll,
+     flag_descriptions::kFormControlsRefreshDescription,
+     kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kFormControlsRefresh)},
+
+    {"color-picker-eye-dropper", flag_descriptions::kColorPickerEyeDropperName,
+     flag_descriptions::kColorPickerEyeDropperDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kEyeDropper)},
 
 #if defined(OS_CHROMEOS)
     {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,
@@ -4918,6 +4923,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"release-notes", flag_descriptions::kReleaseNotesName,
      flag_descriptions::kReleaseNotesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotes)},
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+    {"maintain-shelf-state-overview",
+     flag_descriptions::kMaintainShelfStateWhenEnteringOverviewName,
+     flag_descriptions::kMaintainShelfStateWhenEnteringOverviewDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         ash::features::kMaintainShelfStateWhenEnteringOverview)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)

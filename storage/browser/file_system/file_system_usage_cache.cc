@@ -162,7 +162,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
     incognito_usages_.erase(incognito_usages_.find(usage_file_path));
     return true;
   }
-  return base::DeleteFile(usage_file_path, false);
+  return base::DeleteFile(usage_file_path);
 }
 
 void FileSystemUsageCache::CloseCacheFiles() {

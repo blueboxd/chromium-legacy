@@ -39595,6 +39595,7 @@ from previous Chrome versions.
   <int value="-1809891158" label="WebAuthenticationCable:enabled"/>
   <int value="-1809865209" label="KernelnextVMs:enabled"/>
   <int value="-1809835803" label="LayoutNG:disabled"/>
+  <int value="-1809060811" label="EyeDropper:disabled"/>
   <int value="-1808576075" label="SystemTrayUnified:enabled"/>
   <int value="-1808477331" label="MidiManagerCros:disabled"/>
   <int value="-1807797669" label="google-doodle-url"/>
@@ -40337,6 +40338,8 @@ from previous Chrome versions.
   <int value="-1018454657" label="SharingPeerConnectionReceiver:enabled"/>
   <int value="-1016669222" label="CloudPrinterHandler:enabled"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
+  <int value="-1016196171"
+      label="MaintainShelfStateWhenEnteringOverview:enabled"/>
   <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>
   <int value="-1014936248" label="SyncUSSBookmarks:enabled"/>
   <int value="-1014649471" label="committed-interstitials"/>
@@ -40514,6 +40517,7 @@ from previous Chrome versions.
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823394398" label="TargetEmbeddingLookalikes:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
+  <int value="-821635312" label="EyeDropper:enabled"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-816984237" label="OfflinePagesAsyncDownload:enabled"/>
   <int value="-816895294" label="DiscoverApp:disabled"/>
@@ -40999,6 +41003,8 @@ from previous Chrome versions.
   <int value="-275619817"
       label="disable-proximity-auth-bluetooth-low-energy-discovery"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
+  <int value="-273821346"
+      label="MaintainShelfStateWhenEnteringOverview:disabled"/>
   <int value="-271790049" label="ArcUsbHost:enabled"/>
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
@@ -72655,6 +72661,7 @@ Called by update_scheduler_enums.py.-->
   <int value="49" label="PaymentManager"/>
   <int value="50" label="SpeechSynthesis"/>
   <int value="51" label="KeyboardLock"/>
+  <int value="52" label="SMSService"/>
 </enum>
 
 <enum name="WebShareMethod">

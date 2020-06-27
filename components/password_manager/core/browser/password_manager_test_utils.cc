@@ -52,7 +52,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   if (form_data.username_value)
     form->display_name = form->username_value;
   else
-    form->blacklisted_by_user = true;
+    form->blocked_by_user = true;
   form->icon_url = GURL("https://accounts.google.com/Icon");
   if (use_federated_login) {
     form->password_value.clear();

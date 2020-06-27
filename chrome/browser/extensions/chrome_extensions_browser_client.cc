@@ -145,12 +145,12 @@ bool ChromeExtensionsBrowserClient::IsSameContext(
 
 bool ChromeExtensionsBrowserClient::HasOffTheRecordContext(
     content::BrowserContext* context) {
-  return static_cast<Profile*>(context)->HasOffTheRecordProfile();
+  return static_cast<Profile*>(context)->HasPrimaryOTRProfile();
 }
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
     content::BrowserContext* context) {
-  return static_cast<Profile*>(context)->GetOffTheRecordProfile();
+  return static_cast<Profile*>(context)->GetPrimaryOTRProfile();
 }
 
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(

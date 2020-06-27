@@ -135,12 +135,6 @@ void SkiaOutputSurfaceDependencyWebView::DidLoseContext(
   LOG(ERROR) << "SkiaRenderer detected lost context.";
 }
 
-scoped_refptr<gpu::GLSurfaceTaskScheduler>
-SkiaOutputSurfaceDependencyWebView::CreateGLSurfaceTaskScheduler() {
-  // Webview's GLSurface doesn't need to support this functionality.
-  return nullptr;
-}
-
 base::TimeDelta
 SkiaOutputSurfaceDependencyWebView::GetGpuBlockedTimeSinceLastSwap() {
   // WebView doesn't track how long GPU thread was blocked

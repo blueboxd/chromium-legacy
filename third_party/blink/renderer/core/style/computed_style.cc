@@ -1335,10 +1335,10 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
   SetListStyleImageInternal(v);
 }
 
-Color ComputedStyle::GetColor() const {
+StyleColor ComputedStyle::GetColor() const {
   return ColorInternal();
 }
-void ComputedStyle::SetColor(const Color& v) {
+void ComputedStyle::SetColor(const StyleColor& v) {
   SetColorInternal(v);
 }
 
@@ -2443,6 +2443,16 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
 void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
   if (other.ChildHasExplicitInheritance())
     SetChildHasExplicitInheritance();
+}
+
+Color ComputedStyle::GetCurrentColor() const {
+  DCHECK(!GetColor().IsCurrentColor());
+  return GetColor().Resolve(Color());
+}
+
+Color ComputedStyle::GetInternalVisitedCurrentColor() const {
+  DCHECK(!InternalVisitedColor().IsCurrentColor());
+  return InternalVisitedColor().Resolve(Color());
 }
 
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {

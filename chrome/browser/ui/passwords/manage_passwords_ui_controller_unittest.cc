@@ -738,7 +738,7 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   controller()->OnPasswordAutofilled(
       forms, url::Origin::Create(forms.front()->url), nullptr);
 
-  test_local_form().blacklisted_by_user = true;
+  test_local_form().blocked_by_user = true;
   password_manager::PasswordStoreChange change(
       password_manager::PasswordStoreChange::ADD, test_local_form());
   password_manager::PasswordStoreChangeList list(1, change);

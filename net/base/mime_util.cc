@@ -161,7 +161,6 @@ static const MimeInfo kPrimaryMappings[] = {
     {"audio/webm", "webm"},
     {"audio/x-m4a", "m4a"},
     {"image/avif", "avif"},
-    {"image/avif-sequence", "avifs"},
     {"image/gif", "gif"},
     {"image/jpeg", "jpeg,jpg"},
     {"image/png", "png"},
@@ -533,7 +532,6 @@ namespace {
 // From http://www.w3schools.com/media/media_mimeref.asp and
 // http://plugindoc.mozdev.org/winmime.php
 static const char* const kStandardImageTypes[] = {"image/avif",
-                                                  "image/avif-sequence"
                                                   "image/bmp",
                                                   "image/cis-cod",
                                                   "image/gif",

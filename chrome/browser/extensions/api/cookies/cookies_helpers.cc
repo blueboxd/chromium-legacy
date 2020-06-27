@@ -71,11 +71,11 @@ Profile* ChooseProfileFromStoreId(const std::string& store_id,
   DCHECK(profile);
   bool allow_original = !profile->IsOffTheRecord();
   bool allow_incognito = profile->IsOffTheRecord() ||
-      (include_incognito && profile->HasOffTheRecordProfile());
+                         (include_incognito && profile->HasPrimaryOTRProfile());
   if (store_id == kOriginalProfileStoreId && allow_original)
     return profile->GetOriginalProfile();
   if (store_id == kOffTheRecordProfileStoreId && allow_incognito)
-    return profile->GetOffTheRecordProfile();
+    return profile->GetPrimaryOTRProfile();
   return NULL;
 }
 

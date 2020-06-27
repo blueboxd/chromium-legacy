@@ -60,6 +60,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kIdleManager:
     case Feature::kPaymentManager:
     case Feature::kKeyboardLock:
+    case Feature::kSmsService:
       return true;
   }
 }

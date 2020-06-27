@@ -64,6 +64,7 @@ class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
 class Document;
+class DOMWrapperWorld;
 class Element;
 class ExecutionContext;
 class LocalFrame;
@@ -453,7 +454,13 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   CSPSource* GetSelfSource() const { return self_source_; }
 
+  // Whether the main world's CSP should be bypassed based on the current
+  // javascript world we are in.
   static bool ShouldBypassMainWorld(const ExecutionContext*);
+
+  // Whether the main world's CSP should be bypassed for operations in the given
+  // |world|.
+  static bool ShouldBypassMainWorld(const DOMWrapperWorld& world);
 
   static bool IsNonceableElement(const Element*);
 

@@ -11,9 +11,11 @@ class RepeatedEventHandler {
    * @param {!chrome.automation.AutomationNode} node
    * @param {!chrome.automation.EventType} type
    * @param {!function(!chrome.automation.AutomationEvent)} callback
+   * @param {boolean} exact_match Whether to ignore events where the target is
+   *     not the provided node.
    * @param {boolean} capture
    */
-  constructor(node, type, callback, capture = false) {
+  constructor(node, type, callback, exact_match = false, capture = false) {
     /** @private {!Array<!chrome.automation.AutomationEvent>} */
     this.eventStack_ = [];
 
@@ -25,6 +27,9 @@ class RepeatedEventHandler {
 
     /** @private {!function(!chrome.automation.AutomationEvent)} */
     this.callback_ = callback;
+
+    /** @private {boolean} */
+    this.exact_match_ = exact_match;
 
     /** @private {boolean} */
     this.capture_ = capture;
@@ -54,7 +59,11 @@ class RepeatedEventHandler {
     if (this.eventStack_.length === 0) {
       return;
     }
+
     const event = this.eventStack_.pop();
+    if (this.exact_match_ && event.target !== this.node_) {
+      return;
+    }
     this.eventStack_ = [];
 
     this.callback_(event);

@@ -79,7 +79,7 @@ source_set("private_membership") {
   ]
 }
 
-test("private_membership_test") {
+test("private_membership_unittests") {
   testonly = true
   public_configs = [ ":private_membership_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -100,6 +100,7 @@ test("private_membership_test") {
     ":private_membership",
     ":private_membership_proto",
     "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
+    "//testing/gtest:gtest_main",
+    "//third_party/shell-encryption:shell_encryption_test_library",
   ]
 }

@@ -302,10 +302,10 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
   auto account_exception = std::make_unique<autofill::PasswordForm>();
-  account_exception->blacklisted_by_user = true;
+  account_exception->blocked_by_user = true;
   account_exception->in_store = autofill::PasswordForm::Store::kAccountStore;
   auto profile_exception = std::make_unique<autofill::PasswordForm>();
-  profile_exception->blacklisted_by_user = true;
+  profile_exception->blocked_by_user = true;
   profile_exception->in_store = autofill::PasswordForm::Store::kProfileStore;
 
   PasswordFormList list;

@@ -12,12 +12,6 @@
 namespace base {
 namespace mac {
 
-#if defined(OS_IOS)
-// No iOS assembly implementation exists, so just call the block directly.
-void CallWithEHFrame(void (^block)(void)) {
-  block();
-}
-#else  // OS_MACOSX
 extern "C" _Unwind_Reason_Code __gxx_personality_v0(int,
                                                     _Unwind_Action,
                                                     uint64_t,
@@ -48,7 +42,5 @@ _Unwind_Reason_Code CxxPersonalityRoutine(
   return __gxx_personality_v0(version, actions, exception_class,
                               exception_object, context);
 }
-#endif  // defined(OS_IOS)
-
 }  // namespace mac
 }  // namespace base

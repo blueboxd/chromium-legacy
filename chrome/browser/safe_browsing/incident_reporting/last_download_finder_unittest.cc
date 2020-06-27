@@ -59,8 +59,7 @@ std::unique_ptr<KeyedService> BuildHistoryService(
   // Delete the file before creating the service.
   base::FilePath history_path(
       profile->GetPath().Append(history::kHistoryFilename));
-  if (!base::DeleteFile(history_path, false) ||
-      base::PathExists(history_path)) {
+  if (!base::DeleteFile(history_path) || base::PathExists(history_path)) {
     ADD_FAILURE() << "failed to delete history db file "
                   << history_path.value();
     return nullptr;

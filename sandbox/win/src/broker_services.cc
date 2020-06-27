@@ -40,14 +40,6 @@ bool AssociateCompletionPort(HANDLE job, HANDLE port, void* key) {
              : false;
 }
 
-// Utility function to do the cleanup necessary when something goes wrong
-// while in SpawnTarget and we must terminate the target process.
-sandbox::ResultCode SpawnCleanup(sandbox::TargetProcess* target) {
-  target->Terminate();
-  delete target;
-  return sandbox::SBOX_ERROR_GENERIC;
-}
-
 // the different commands that you can send to the worker thread that
 // executes TargetEventsThread().
 enum {
@@ -67,41 +59,28 @@ struct JobTracker {
              scoped_refptr<sandbox::PolicyBase> policy,
              DWORD process_id)
       : job(std::move(job)), policy(policy), process_id(process_id) {}
-  ~JobTracker() { FreeResources(); }
-
-  // Releases the Job and notifies the associated Policy object to release its
-  // resources as well.
-  void FreeResources();
+  ~JobTracker() {
+    // As if TerminateProcess() was called for all associated processes.
+    // Handles are still valid.
+    ::TerminateJobObject(job.Get(), sandbox::SBOX_ALL_OK);
+    policy->OnJobEmpty(job.Get());
+  }
 
   base::win::ScopedHandle job;
   scoped_refptr<sandbox::PolicyBase> policy;
   DWORD process_id;
 };
 
-void JobTracker::FreeResources() {
-  if (policy) {
-    bool res = ::TerminateJobObject(job.Get(), sandbox::SBOX_ALL_OK);
-    DCHECK(res);
-    // Closing the job causes the target process to be destroyed so this needs
-    // to happen before calling OnJobEmpty().
-    HANDLE stale_job_handle = job.Get();
-    job.Close();
-
-    // In OnJobEmpty() we don't actually use the job handle directly.
-    policy->OnJobEmpty(stale_job_handle);
-    policy = nullptr;
-  }
-}
-
-// tracks processes that are not in jobs
+// Tracks processes that are not in jobs.
 struct ProcessTracker {
   ProcessTracker(scoped_refptr<sandbox::PolicyBase> policy,
                  DWORD process_id,
                  base::win::ScopedHandle process)
       : policy(policy), process_id(process_id), process(std::move(process)) {}
-  ~ProcessTracker() { FreeResources(); }
-
-  void FreeResources();
+  ~ProcessTracker() {
+    // Removes process from the policy.
+    policy->OnProcessFinished(process_id);
+  }
 
   scoped_refptr<sandbox::PolicyBase> policy;
   DWORD process_id;
@@ -111,13 +90,6 @@ struct ProcessTracker {
   // IOCP that is tracking this non-job process
   HANDLE iocp;
 };
-
-void ProcessTracker::FreeResources() {
-  if (policy) {
-    policy->OnJobEmpty(nullptr);
-    policy = nullptr;
-  }
-}
 
 // Helper redispatches process events to tracker thread.
 void WINAPI ProcessEventCallback(PVOID param, BOOLEAN ignored) {
@@ -599,7 +571,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // Create the TargetProcess object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
-  TargetProcess* target = new TargetProcess(
+  std::unique_ptr<TargetProcess> target = std::make_unique<TargetProcess>(
       std::move(initial_token), std::move(lockdown_token), job.Get(),
       thread_pool_.get(),
       profile ? profile->GetImpersonationCapabilities() : std::vector<Sid>());
@@ -608,7 +580,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                           &process_info, last_error);
 
   if (result != SBOX_ALL_OK) {
-    SpawnCleanup(target);
+    target->Terminate();
     return result;
   }
 
@@ -621,12 +593,12 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       *last_error = ::GetLastError();
   }
 
-  // Now the policy is the owner of the target.
-  result = policy_base->AddTarget(target);
+  // Now the policy is the owner of the target. TargetProcess will terminate
+  // the process if it has not completed when it is destroyed.
+  result = policy_base->AddTarget(std::move(target));
 
   if (result != SBOX_ALL_OK) {
     *last_error = ::GetLastError();
-    SpawnCleanup(target);
     return result;
   }
 
@@ -639,8 +611,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     CHECK(::PostQueuedCompletionStatus(
         job_port_.Get(), 0, THREAD_CTRL_NEW_JOB_TRACKER,
         reinterpret_cast<LPOVERLAPPED>(tracker)));
-    // There is no obvious recovery after failure here. Previous version with
-    // SpawnCleanup() caused deletion of TargetProcess twice. crbug.com/480639
+    // There is no obvious cleanup here.
     CHECK(
         AssociateCompletionPort(tracker->job.Get(), job_port_.Get(), tracker));
   } else {
@@ -651,18 +622,15 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                            ::GetCurrentProcess(), &tmp_process_handle,
                            SYNCHRONIZE, false, 0 /*no options*/)) {
       *last_error = ::GetLastError();
-      // This may fail in the same way as Job associated processes.
-      // crbug.com/480639.
-      SpawnCleanup(target);
       return SBOX_ERROR_CANNOT_DUPLICATE_PROCESS_HANDLE;
     }
     base::win::ScopedHandle dup_process_handle(tmp_process_handle);
     ProcessTracker* tracker = new ProcessTracker(
         policy_base, process_info.process_id(), std::move(dup_process_handle));
-    // The tracker and policy will leak if this call fails.
-    ::PostQueuedCompletionStatus(job_port_.Get(), 0,
-                                 THREAD_CTRL_NEW_PROCESS_TRACKER,
-                                 reinterpret_cast<LPOVERLAPPED>(tracker));
+    // The worker thread takes ownership of the policy.
+    CHECK(::PostQueuedCompletionStatus(
+        job_port_.Get(), 0, THREAD_CTRL_NEW_PROCESS_TRACKER,
+        reinterpret_cast<LPOVERLAPPED>(tracker)));
   }
 
   *target_info = process_info.Take();

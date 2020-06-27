@@ -219,6 +219,10 @@ struct Referrer;
 struct SocketPermissionRequest;
 struct WebPreferences;
 
+#if defined(OS_ANDROID)
+class TtsEnvironmentAndroid;
+#endif
+
 #if defined(OS_CHROMEOS)
 class TtsControllerDelegate;
 #endif
@@ -1710,9 +1714,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns whether given |url| has to be blocked. It's used only for renderer
   // debug URLs, as other requests are handled via NavigationThrottlers and
-  // blacklist policies are applied there.
-  virtual bool IsRendererDebugURLBlacklisted(const GURL& url,
-                                             BrowserContext* context);
+  // blocklist policies are applied there.
+  virtual bool ShouldBlockRendererDebugURL(const GURL& url,
+                                           BrowserContext* context);
 
   // Returns the default accessibility mode for the given browser context.
   virtual ui::AXMode GetAXModeForBrowserContext(
@@ -1728,6 +1732,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns kNone by default.
   virtual WideColorGamutHeuristic GetWideColorGamutHeuristic();
+
+  // Creates the TtsEnvironmentAndroid. A return value of null results in using
+  // a default implementation.
+  virtual std::unique_ptr<TtsEnvironmentAndroid> CreateTtsEnvironmentAndroid();
 #endif
 
   // Obtains the list of MIME types that are for plugins with external handlers.

@@ -354,14 +354,13 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     const base::Optional<double>& pan,
     const base::Optional<double>& tilt,
     const base::Optional<double>& zoom,
-    bool pan_tilt_zoom_allowed,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
   track.Initialize(source->Owner());
   track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
-      pan, tilt, zoom, pan_tilt_zoom_allowed, std::move(callback), enabled));
+      pan, tilt, zoom, std::move(callback), enabled));
   return track;
 }
 
@@ -413,7 +412,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const base::Optional<double>& pan,
     const base::Optional<double>& tilt,
     const base::Optional<double>& zoom,
-    bool pan_tilt_zoom_allowed,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
     : WebPlatformMediaStreamTrack(true),
@@ -425,7 +423,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       pan_(pan),
       tilt_(tilt),
       zoom_(zoom),
-      pan_tilt_zoom_allowed_(pan_tilt_zoom_allowed),
       source_(source->GetWeakPtr()) {
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(

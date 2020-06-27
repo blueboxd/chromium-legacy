@@ -42,13 +42,15 @@ interface PrintSpoolerHost {
   // The |top_margin| is the height of the space at the top of the window.
   // The returned |host| will be null if errors occur while saving the print
   // document or locating the Android surface.
+  // TODO(b/159918677): Remove |surface_id| and |top_margin| since they are no
+  // longer used.
   [MinVersion=1] StartPrintInCustomTab@0(
       handle scoped_handle,
       int32 task_id,
       int32 surface_id,
       int32 top_margin,
       pending_remote<PrintSessionInstance> instance)
-      => (PrintSessionHost? host);
+      => (pending_remote<PrintSessionHost>? host);
 };
 
 // Next method ID: 1

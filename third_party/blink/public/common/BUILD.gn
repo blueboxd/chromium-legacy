@@ -15,6 +15,7 @@ component("common") {
   output_name = "blink_common"
 
   public_deps = [
+    "//third_party/blink/common/privacy_budget:privacy_budget",
     "//third_party/blink/public/common:headers",
     "//third_party/blink/public/mojom:mojom_modules",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings",
@@ -32,7 +33,10 @@ buildflag_header("buildflags") {
 }
 
 source_set("common_export") {
-  visibility = [ "//third_party/blink/public/common/*" ]
+  visibility = [
+    "//third_party/blink/public/common/*",
+    "//third_party/blink/common/*",
+  ]
   sources = [ "common_export.h" ]
 }
 

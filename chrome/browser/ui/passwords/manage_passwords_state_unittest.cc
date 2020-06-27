@@ -224,19 +224,19 @@ void ManagePasswordsStateTest::TestBlacklistedUpdates() {
   const url::Origin origin = passwords_data_.origin();
   EXPECT_FALSE(origin.opaque());
 
-  // Process the blacklisted form.
-  PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = origin.GetURL();
+  // Process the blocked form.
+  PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = origin.GetURL();
   PasswordStoreChangeList list;
-  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, blacklisted));
+  list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, blocked_form));
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
 
-  // Delete the blacklisted form.
-  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, blacklisted);
+  // Delete the blocked form.
+  list[0] = PasswordStoreChange(PasswordStoreChange::REMOVE, blocked_form);
   passwords_data().ProcessLoginsChanged(list);
   EXPECT_EQ(forms, GetRawPointers(passwords_data().GetCurrentForms()));
   EXPECT_EQ(state, passwords_data().state());

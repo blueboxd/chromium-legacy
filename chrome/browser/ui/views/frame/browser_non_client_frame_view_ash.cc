@@ -243,15 +243,12 @@ SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
     BrowserFrameActiveState active_state) const {
   bool active = ShouldPaintAsActive(active_state);
 
-  SkColor active_color =
-      views::FrameCaptionButton::GetButtonColor(ash::kDefaultFrameColor);
-
   // Web apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
       browser->app_controller()->GetThemeColor();
-  if (theme_color)
-    active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
+  SkColor active_color = GetNativeTheme()->GetFrameCaptionButtonForegroundColor(
+      theme_color.value_or(ash::kDefaultFrameColor));
 
   if (active)
     return active_color;

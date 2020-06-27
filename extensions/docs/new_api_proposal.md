@@ -153,13 +153,17 @@ uncontroversial, the reviews should be simple and fast.
 ## Modifying an Existing API
 Modifications to an existing API should go through a similar process.  Since
 modifications to these APIs are frequently far-reaching, please do not skip the
-proposal process!  However, you may be able to expedite it.  In particular,
-small changes (like adding a new property to a method) may not require a full
-design doc or API Overview doc.  Larger changes, like adding multiple new
-methods and events, should still include an API Overview (though it may be
-condensed). Medium-sized changes, like adding a single new method, are up to the
-discretion of the API reviewers - we may ask for an API Overview, but it might
-not be necessary.
+proposal process!  However it might be possible to skip or expedite it in
+certain specific cases. In particular:
+* Small changes (like adding a new property to a method) to private APIs can
+  skip the review process unless //extensions OWNERS explicitly ask for it.
+  Small changes to non-private APIs are still required to go through this
+  process but may not require a full design doc or API Overview doc.
+* Medium-sized changes, like adding a single new method, are still required to
+  go through the review process. Whether an API overview doc is required is up
+  to the discretion of the API reviewers.
+* Larger changes, like adding multiple new methods and events, should still
+  include an API Overview (though it may be condensed).
 
 ## FAQ
 __Do I need an API review for a private API?__  Yes! Private APIs are not

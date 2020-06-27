@@ -65,7 +65,7 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 IN_PROC_BROWSER_TEST_P(AlarmsApiTest, IncognitoSplit) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
-  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
   ResultCatcher catcher_incognito;
   catcher_incognito.RestrictToBrowserContext(incognito_profile);
   ResultCatcher catcher;

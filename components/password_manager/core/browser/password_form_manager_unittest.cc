@@ -169,7 +169,7 @@ void CheckPendingCredentials(const PasswordForm& expected,
   EXPECT_EQ(expected.password_value, actual.password_value);
   EXPECT_EQ(expected.username_element, actual.username_element);
   EXPECT_EQ(expected.password_element, actual.password_element);
-  EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
+  EXPECT_EQ(expected.blocked_by_user, actual.blocked_by_user);
   FormData::IdentityComparator less;
   EXPECT_FALSE(less(expected.form_data, actual.form_data));
   EXPECT_FALSE(less(actual.form_data, expected.form_data));

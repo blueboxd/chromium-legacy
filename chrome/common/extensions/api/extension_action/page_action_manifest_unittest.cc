@@ -6,9 +6,9 @@
 
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/api/extension_action/action_info.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"

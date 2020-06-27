@@ -40,7 +40,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
-#include "gpu/command_buffer/service/gl_surface_task_scheduler.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_command_buffer_memory_tracker.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
@@ -459,8 +458,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                 ->CreatePlatformWindowSurface(params.surface_handle);
       }
 #endif
-
-      // |gpu_channel_manager_delegate_| may be null in tests.
       surface_ = ImageTransportSurface::CreateNativeSurface(
           gpu_thread_weak_ptr_factory_.GetWeakPtr(), params.surface_handle,
           surface_format);
@@ -1539,16 +1536,6 @@ base::TimeDelta InProcessCommandBuffer::GetGpuBlockedTimeSinceLastSwap() {
 
   return gpu_channel_manager_delegate_->GetGpuScheduler()
       ->TakeTotalBlockingTime();
-}
-
-scoped_refptr<GLSurfaceTaskScheduler>
-InProcessCommandBuffer::CreateGLSurfaceTaskScheduler() {
-  // This can be null in tests.
-  if (!gpu_channel_manager_delegate_)
-    return nullptr;
-
-  return base::MakeRefCounted<GLSurfaceTaskScheduler>(
-      gpu_channel_manager_delegate_->GetGpuScheduler());
 }
 
 void InProcessCommandBuffer::HandleGpuVSyncOnOriginThread(

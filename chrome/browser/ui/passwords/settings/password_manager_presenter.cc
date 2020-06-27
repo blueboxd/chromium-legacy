@@ -560,7 +560,7 @@ bool PasswordManagerPresenter::TryRemovePasswordEntries(
 
 void PasswordManagerPresenter::OnGetPasswordStoreResults(FormVector results) {
   for (auto& form : results) {
-    auto& form_map = form->blacklisted_by_user ? exception_map_ : password_map_;
+    auto& form_map = form->blocked_by_user ? exception_map_ : password_map_;
     form_map[password_manager::CreateSortKey(*form)].push_back(std::move(form));
   }
 

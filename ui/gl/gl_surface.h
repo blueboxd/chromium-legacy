@@ -48,19 +48,6 @@ class EGLTimestampClient;
 class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
                             public base::SupportsWeakPtr<GLSurface> {
  public:
-  // An interface that can be used by the GLSurface to post tasks to run
-  // asynchronously on the thread that the GLSurface is bound to.
-  // This class is thread-safe, it can be used and destroyed on any thread.
-  class GL_EXPORT TaskScheduler
-      : public base::RefCountedThreadSafe<TaskScheduler> {
-   public:
-    virtual void ScheduleTask(base::OnceClosure closure) = 0;
-
-   protected:
-    friend base::RefCountedThreadSafe<TaskScheduler>;
-    virtual ~TaskScheduler() = default;
-  };
-
   GLSurface();
 
   // Non-virtual initialization, this always calls Initialize with a

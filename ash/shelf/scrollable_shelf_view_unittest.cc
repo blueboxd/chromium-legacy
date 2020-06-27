@@ -22,6 +22,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/icu_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -1009,6 +1010,88 @@ TEST_F(ScrollableShelfViewTest, ClickAtLastIcon) {
   // Verfies that after left-click, the context menu should be closed.
   GetEventGenerator()->ClickLeftButton();
   EXPECT_FALSE(shelf_view_->IsShowingMenuForView(last_icon));
+}
+
+// Verifies that presentation time for shelf gesture scroll is recorded as
+// expected (https://crbug.com/1095259).
+TEST_F(ScrollableShelfViewTest, PresentationTimeMetricsForGestureScroll) {
+  PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
+
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  views::ViewModel* view_model = shelf_view_->view_model();
+  ASSERT_GT(view_model->view_size(), 2);
+
+  // |gesture_start_point| is between the first and the second shelf icon. It
+  // ensures that gesture scroll does not start from a point within any shelf
+  // icon's bounds.
+  const gfx::Point first_icon_center =
+      view_model->view_at(0)->GetBoundsInScreen().CenterPoint();
+  const gfx::Point second_icon_center =
+      view_model->view_at(1)->GetBoundsInScreen().CenterPoint();
+  ASSERT_EQ(first_icon_center.y(), second_icon_center.y());
+  const gfx::Point gesture_start_point(
+      (first_icon_center.x() + second_icon_center.x()) / 2,
+      first_icon_center.y());
+
+  GetEventGenerator()->PressTouch(gesture_start_point);
+
+  base::HistogramTester histogram_tester;
+  auto check_bucket_size = [&histogram_tester](
+                               int presentation_time_expected_size,
+                               int max_latency_expected_size) {
+    histogram_tester.ExpectTotalCount(
+        "Apps.ScrollableShelf.Drag.PresentationTime.ClamshellMode."
+        "LauncherHidden",
+        presentation_time_expected_size);
+    histogram_tester.ExpectTotalCount(
+        "Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency.ClamshellMode."
+        "LauncherHidden",
+        max_latency_expected_size);
+  };
+
+  int last_scroll_distance = 0;
+  ScrollableShelfView* const scrollable_shelf_view = scrollable_shelf_view_;
+
+  // Helper function to update |last_scroll_distance| and check whether shelf
+  // is scrolled successfully.
+  auto shelf_scrolled = [&last_scroll_distance,
+                         scrollable_shelf_view]() -> bool {
+    const int current_scroll_distance =
+        scrollable_shelf_view->scroll_offset_for_test().x();
+    const bool scrolled = last_scroll_distance != current_scroll_distance;
+    last_scroll_distance = current_scroll_distance;
+    return scrolled;
+  };
+
+  // Scroll the shelf leftward. Because scrollable shelf already reaches the
+  // left end. So shelf should not be scrolled successfully and the bucket
+  // number should not change.
+  GetEventGenerator()->MoveTouchBy(10, 0);
+  ASSERT_EQ(0, last_scroll_distance);
+  EXPECT_FALSE(shelf_scrolled());
+  check_bucket_size(0, 0);
+
+  // Scroll the shelf rightward. Verify that shelf should be scrolled to the
+  // right end. The bucket number changes as expected.
+  GetEventGenerator()->MoveTouchBy(-50, 0);
+  EXPECT_TRUE(shelf_scrolled());
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  check_bucket_size(1, 0);
+
+  // Scroll the shelf rightward. Because scrollable shelf already reaches the
+  // right end. So shelf should not be scrolled successfully and the bucket
+  // number should not change.
+  GetEventGenerator()->MoveTouchBy(-10, 0);
+  EXPECT_FALSE(shelf_scrolled());
+  check_bucket_size(1, 0);
+
+  // End gesture. Verify that the max latency is recorded.
+  GetEventGenerator()->ReleaseTouch();
+  check_bucket_size(1, 1);
 }
 
 // Tests scrollable shelf's features under both LTR and RTL.

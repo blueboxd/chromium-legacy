@@ -60,10 +60,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 rtc::SocketAddress GetAddress(
     int (net::StreamSocket::*getAddressFn)(net::IPEndPoint*) const,
-    const net::StreamSocket& socket) {
+    const net::StreamSocket* socket) {
   net::IPEndPoint ip_endpoint;
   rtc::SocketAddress address;
-  int result = (socket.*getAddressFn)(&ip_endpoint);
+  if (!socket) {
+    LOG(WARNING) << "Socket does not exist. Empty address will be returned.";
+    return address;
+  }
+  int result = (socket->*getAddressFn)(&ip_endpoint);
   if (result != net::OK) {
     LOG(ERROR) << "Failed to get address: " << result;
     return address;
@@ -95,6 +99,8 @@ StreamPacketSocket::~StreamPacketSocket() = default;
 
 bool StreamPacketSocket::Init(std::unique_ptr<net::StreamSocket> socket,
                               StreamPacketProcessor* packet_processor) {
+  DCHECK(socket);
+  DCHECK(packet_processor);
   socket_ = std::move(socket);
   packet_processor_ = packet_processor;
   state_ = STATE_CONNECTING;
@@ -170,11 +176,11 @@ bool StreamPacketSocket::InitClientTcp(
 }
 
 rtc::SocketAddress StreamPacketSocket::GetLocalAddress() const {
-  return GetAddress(&net::StreamSocket::GetLocalAddress, *socket_);
+  return GetAddress(&net::StreamSocket::GetLocalAddress, socket_.get());
 }
 
 rtc::SocketAddress StreamPacketSocket::GetRemoteAddress() const {
-  return GetAddress(&net::StreamSocket::GetPeerAddress, *socket_);
+  return GetAddress(&net::StreamSocket::GetPeerAddress, socket_.get());
 }
 
 int StreamPacketSocket::Send(const void* data,
@@ -297,7 +303,7 @@ void StreamPacketSocket::OnConnectCompleted(int result) {
 }
 
 void StreamPacketSocket::DoWrite() {
-  if (send_pending_ || send_queue_.empty()) {
+  if (!socket_ || send_pending_ || send_queue_.empty()) {
     return;
   }
 
@@ -352,6 +358,10 @@ void StreamPacketSocket::OnAsyncWriteCompleted(int result) {
 }
 
 void StreamPacketSocket::DoRead() {
+  if (!socket_) {
+    LOG(ERROR) << "Can't read more data since the socket no longer exists.";
+    return;
+  }
   while (true) {
     if (!read_buffer_.get()) {
       read_buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();

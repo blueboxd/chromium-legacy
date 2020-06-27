@@ -71,6 +71,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
       PIN_DIRECTION pin_dir,
       REFGUID category,
       REFGUID major_type);
+  static bool IsPanTiltZoomSupported(
+      Microsoft::WRL::ComPtr<IBaseFilter> capture_filter);
   static VideoPixelFormat TranslateMediaSubtypeToPixelFormat(
       const GUID& sub_type);
 
@@ -98,7 +100,10 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
                  // User needs to recover by destroying the object.
   };
 
-  bool InitializeVideoAndCameraControls();
+  static bool GetCameraAndVideoControls(
+      Microsoft::WRL::ComPtr<IBaseFilter> capture_filter,
+      ICameraControl** camera_control,
+      IVideoProcAmp** video_control);
 
   // Implements SinkFilterObserver.
   void FrameReceived(const uint8_t* buffer,

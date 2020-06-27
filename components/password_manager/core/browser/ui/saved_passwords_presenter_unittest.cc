@@ -101,10 +101,10 @@ TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
   store().AddLogin(federated_form);
   RunUntilIdle();
 
-  PasswordForm blacklisted_form;
-  blacklisted_form.blacklisted_by_user = true;
+  PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
   EXPECT_CALL(observer, OnSavedPasswordsChanged(IsEmpty()));
-  store().AddLogin(blacklisted_form);
+  store().AddLogin(blocked_form);
   RunUntilIdle();
 
   presenter().RemoveObserver(&observer);

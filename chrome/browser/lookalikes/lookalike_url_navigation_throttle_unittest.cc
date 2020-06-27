@@ -90,10 +90,19 @@ TEST_F(LookalikeThrottleTest, SpoofsBlocked) {
   const struct TestCase {
     const char* hostname;
     bool expected_blocked;
-  } kTestCases[] = {{"private.hostname", false},
-                    {"example·com.com", true},
-                    {"🍕.com", true},
-                    {"þook.com", true}};
+  } kTestCases[] = {
+      // ASCII private domain.
+      {"private.hostname", false},
+      // Unsafe middle dot.
+      {"example·com.com", true},
+      // Fails ICU spoof checks.
+      {"lɔlocked.com", true},
+      // Contains a TLD specific character
+      {"þook.com", true},
+      // Also fails ICU spoof checks, but is allowed because consists of only
+      // emoji and ASCII.
+      {"🍕.com", false},
+  };
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -114,10 +123,12 @@ TEST_F(LookalikeThrottleTest, SpoofsBlocked) {
 
     if (test_case.expected_blocked) {
       EXPECT_EQ(content::NavigationThrottle::CANCEL,
-                throttle->WillProcessResponse().action());
+                throttle->WillProcessResponse().action())
+          << "Failed: " << test_case.hostname;
     } else {
       EXPECT_EQ(content::NavigationThrottle::PROCEED,
-                throttle->WillProcessResponse().action());
+                throttle->WillProcessResponse().action())
+          << "Failed: " << test_case.hostname;
     }
   }
 }

@@ -102,7 +102,7 @@ autofill::PasswordForm MakeBlacklistedForm(const std::string& signon_realm) {
   autofill::PasswordForm form;
   form.url = GURL("http://www.origin.com");
   form.signon_realm = signon_realm;
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   return form;
 }
 

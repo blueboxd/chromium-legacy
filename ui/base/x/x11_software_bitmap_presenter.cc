@@ -236,6 +236,9 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
     surface_->peekPixels(&skia_pixmap);
   }
 
+  if (!skia_pixmap.addr())
+    return;
+
   if (composite_ &&
       CompositeBitmap(display_, static_cast<uint32_t>(widget_), rect.x(),
                       rect.y(), rect.width(), rect.height(), attributes_.depth,

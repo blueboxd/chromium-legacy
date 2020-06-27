@@ -76,9 +76,9 @@ void SavedPasswordsPresenter::OnLoginsChanged(
 
 void SavedPasswordsPresenter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  // Ignore blacklisted or federated credentials.
+  // Ignore blocked or federated credentials.
   base::EraseIf(results, [](const auto& form) {
-    return form->blacklisted_by_user || form->IsFederatedCredential();
+    return form->blocked_by_user || form->IsFederatedCredential();
   });
 
   passwords_.resize(results.size());

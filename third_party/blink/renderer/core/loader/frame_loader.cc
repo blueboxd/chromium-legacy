@@ -560,13 +560,13 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
     // Check the CSP of the caller (the "source browsing context") if required,
     // as per https://html.spec.whatwg.org/C/#javascript-protocol.
     bool javascript_url_is_allowed =
-        request.ShouldCheckMainWorldContentSecurityPolicy() ==
-            network::mojom::CSPDisposition::DO_NOT_CHECK ||
-        request.GetOriginWindow()->GetContentSecurityPolicy()->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
-            frame_->DeprecatedLocalOwner(), url.GetString(),
-            String() /* nonce */, request.GetOriginWindow()->Url(),
-            OrdinalNumber::First());
+        request.GetOriginWindow()
+            ->GetContentSecurityPolicyForWorld(request.JavascriptWorld())
+            ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                          frame_->DeprecatedLocalOwner(), url.GetString(),
+                          String() /* nonce */,
+                          request.GetOriginWindow()->Url(),
+                          OrdinalNumber::First());
 
     if (!javascript_url_is_allowed)
       return false;
@@ -798,8 +798,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (url.ProtocolIsJavaScript()) {
     if (!origin_window ||
         origin_window->CanExecuteScripts(kAboutToExecuteScript)) {
-      frame_->GetDocument()->ProcessJavaScriptUrl(
-          url, request.ShouldCheckMainWorldContentSecurityPolicy());
+      frame_->GetDocument()->ProcessJavaScriptUrl(url,
+                                                  request.JavascriptWorld());
     }
     return;
   }
@@ -831,17 +831,25 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       origin_window ? origin_window->GetSecurityContext().AddressSpace()
                     : network::mojom::IPAddressSpace::kUnknown;
 
+  // TODO(crbug.com/896041): Instead of just bypassing the CSP for navigations
+  // from isolated world, ideally we should enforce the isolated world CSP by
+  // plumbing the correct CSP to the browser.
+  using CSPDisposition = network::mojom::CSPDisposition;
+  CSPDisposition should_check_main_world_csp =
+      ContentSecurityPolicy::ShouldBypassMainWorld(request.JavascriptWorld())
+          ? CSPDisposition::DO_NOT_CHECK
+          : CSPDisposition::CHECK;
   Client()->BeginNavigation(
       resource_request, request.GetFrameType(), origin_window,
       nullptr /* document_loader */, navigation_type,
       request.GetNavigationPolicy(), frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
       request.GetTriggeringEventInfo(), request.Form(),
-      request.ShouldCheckMainWorldContentSecurityPolicy(),
-      request.GetBlobURLToken(), request.GetInputStartTime(),
-      request.HrefTranslate().GetString(), request.Impression(),
-      std::move(initiator_csp), std::move(initiator_self_source),
-      initiator_address_space, std::move(navigation_initiator));
+      should_check_main_world_csp, request.GetBlobURLToken(),
+      request.GetInputStartTime(), request.HrefTranslate().GetString(),
+      request.Impression(), std::move(initiator_csp),
+      std::move(initiator_self_source), initiator_address_space,
+      std::move(navigation_initiator));
 }
 
 static void FillStaticResponseIfNeeded(WebNavigationParams* params,

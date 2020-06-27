@@ -227,6 +227,18 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       assertEquals(userActionRecorder.settingChangeCount, 1);
     });
 
+    test('Advanced menu expands on navigating to an advanced setting', () => {
+      const floatingMenu = ui.$$('#left os-settings-menu');
+      floatingMenu.advancedOpened = false;
+      const params = new URLSearchParams('search=test');
+
+      // If there are search params and the current route is a descendant of
+      // the Advanced route, then ensure that the advanced menu expands.
+      assertFalse(floatingMenu.advancedOpened);
+      settings.Router.getInstance().navigateTo(settings.routes.FILES, params);
+      assertTrue(floatingMenu.advancedOpened);
+    });
+
     test('toolbar and nav menu are hidden in kiosk mode', function() {
       loadTimeData.overrideValues({
         isKioskModeActive: true,

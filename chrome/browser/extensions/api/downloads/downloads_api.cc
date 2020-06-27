@@ -459,11 +459,10 @@ void GetManagers(content::BrowserContext* context,
                  DownloadManager** incognito_manager) {
   Profile* profile = Profile::FromBrowserContext(context);
   *manager = BrowserContext::GetDownloadManager(profile->GetOriginalProfile());
-  if (profile->HasOffTheRecordProfile() &&
-      (include_incognito ||
-       profile->IsOffTheRecord())) {
-    *incognito_manager = BrowserContext::GetDownloadManager(
-        profile->GetOffTheRecordProfile());
+  if (profile->HasPrimaryOTRProfile() &&
+      (include_incognito || profile->IsOffTheRecord())) {
+    *incognito_manager =
+        BrowserContext::GetDownloadManager(profile->GetPrimaryOTRProfile());
   } else {
     *incognito_manager = NULL;
   }
@@ -1194,7 +1193,7 @@ ExtensionFunction::ResponseAction DownloadsSearchFunction::Run() {
                        (incognito_manager->GetDownload(download_id) != NULL));
     Profile* profile = Profile::FromBrowserContext(browser_context());
     std::unique_ptr<base::DictionaryValue> json_item(
-        DownloadItemToJSON(*it, off_record ? profile->GetOffTheRecordProfile()
+        DownloadItemToJSON(*it, off_record ? profile->GetPrimaryOTRProfile()
                                            : profile->GetOriginalProfile()));
     json_results->Append(std::move(json_item));
   }

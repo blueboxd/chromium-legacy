@@ -976,9 +976,7 @@ void LayoutTable::ComputeVisualOverflow(bool) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
-
   AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
 
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
     InvalidateIntersectionObserverCachedRects();

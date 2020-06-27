@@ -5,19 +5,6 @@
 import("//build_overrides/build.gni")
 import("//third_party/abseil-cpp/absl.gni")
 
-# Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
-# adding projects to this list please reach out to cxx@chromium.org and CC:
-# - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
-#
-# More information can be found at:
-# https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
-if (build_with_chromium) {
-  default_visibility = absl_visibility
-  default_visibility += [ "//third_party/openscreen/*" ]
-} else {
-  default_visibility = [ "*" ]
-}
-
 absl_source_set("hash") {
   sources = [
     "internal/hash.cc",
@@ -36,7 +23,6 @@ absl_source_set("hash") {
     "//third_party/abseil-cpp/absl/types:variant",
     "//third_party/abseil-cpp/absl/utility",
   ]
-  visibility = default_visibility
 }
 
 absl_source_set("hash_testing") {
@@ -59,8 +45,7 @@ absl_source_set("spy_hash_state") {
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/strings:str_format",
   ]
-  visibility = []
-  visibility += [ "//third_party/abseil-cpp/absl/*" ]
+  visibility = [ "//third_party/abseil-cpp/absl/*" ]
 }
 
 absl_source_set("city") {

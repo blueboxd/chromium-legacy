@@ -10,6 +10,7 @@ load('//project.star', 'settings')
 # (bucket, builders, console, poller, etc.)
 exec('../versioned/m83/buckets/ci.star')
 exec('../versioned/m84/buckets/ci.star')
+exec('../versioned/m85/buckets/ci.star')
 
 
 ci.set_defaults(

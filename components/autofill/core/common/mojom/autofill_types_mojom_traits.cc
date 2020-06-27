@@ -307,7 +307,7 @@ bool StructTraits<
       !data.ReadDateSynced(&out->date_synced))
     return false;
 
-  out->blacklisted_by_user = data.blacklisted_by_user();
+  out->blocked_by_user = data.blocked_by_user();
 
   if (!data.ReadType(&out->type))
     return false;

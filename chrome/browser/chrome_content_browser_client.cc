@@ -5547,7 +5547,7 @@ bool ChromeContentBrowserClient::IsBuiltinComponent(
 #endif
 }
 
-bool ChromeContentBrowserClient::IsRendererDebugURLBlacklisted(
+bool ChromeContentBrowserClient::ShouldBlockRendererDebugURL(
     const GURL& url,
     content::BrowserContext* context) {
   PolicyBlacklistService* service =

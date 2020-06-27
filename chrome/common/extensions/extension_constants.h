@@ -93,9 +93,6 @@ extern const char kTextEditorAppId[];
 // The extension id of the in-app payments support application.
 extern const char kInAppPaymentsSupportAppId[];
 
-// The extension id of the stable media router extension.
-extern const char kMediaRouterStableExtensionId[];
-
 // A list of all the first party extension IDs, last entry is null.
 extern const char* const kBuiltInFirstPartyExtensionIds[];
 

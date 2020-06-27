@@ -53,7 +53,7 @@ class HandleCloser {
   ResultCode AddHandle(const wchar_t* handle_type, const wchar_t* handle_name);
 
   // Serializes and copies the closer table into the target process.
-  bool InitializeTargetHandles(TargetProcess* target);
+  bool InitializeTargetHandles(TargetProcess& target);
 
  private:
   // Calculates the memory needed to copy the serialized handles list (rounded

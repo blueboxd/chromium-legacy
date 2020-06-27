@@ -473,6 +473,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // |cocoa_view_|.
   void SetParentAccessibilityElement(id parent_accessibility_element);
 
+  RenderWidgetHostViewMac* PopupChildHostView() {
+    return popup_child_host_view_;
+  }
+
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
  protected:

@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -70,9 +71,19 @@ MATCHER_P(FetchResultEquals, expected, "") {
 
 class PrinterConfigCacheTest : public ::testing::Test {
  public:
+  // Creates |this| with
+  // *  a testing task environment for testing sequenced code,
+  // *  a testing clock for time-aware testing, and
+  // *  a loader factory dispenser (specified by header comment on
+  //    Create()).
   PrinterConfigCacheTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        cache_(PrinterConfigCache::Create(&clock_, &loader_factory_)) {}
+        cache_(PrinterConfigCache::Create(
+            &clock_,
+            base::BindLambdaForTesting([&]() {
+              return reinterpret_cast<network::mojom::URLLoaderFactory*>(
+                  &loader_factory_);
+            }))) {}
 
   // Sets up the default responses to dispense.
   void SetUp() override {

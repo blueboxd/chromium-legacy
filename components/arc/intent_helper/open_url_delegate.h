@@ -26,8 +26,6 @@ class OpenUrlDelegate {
   virtual void OpenArcCustomTab(
       const GURL& url,
       int32_t task_id,
-      int32_t surface_id,
-      int32_t top_margin,
       mojom::IntentHelperHost::OnOpenCustomTabCallback callback) = 0;
 
   // Opens the requested |chrome_page|. If |chrome_page| is a settings page,

@@ -110,6 +110,10 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
       const BackingArrayBuffers& array_buffers,
       Vector<scoped_refptr<AudioBus>>& audio_port);
 
+  // Fills a given BackingArrayBuffers with zeros.
+  static void ZeroArrayBuffers(v8::Isolate*,
+                               const BackingArrayBuffers& array_buffers);
+
   // Returns true if the structure of |param_value_map| matches |params| object
   // and the underlying ArrayBuffers are not transferred.
   static bool ParamValueMapMatchesToParamsObject(

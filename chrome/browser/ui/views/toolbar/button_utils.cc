@@ -37,7 +37,6 @@ std::unique_ptr<ToolbarButton> CreateBackButton(views::ButtonListener* listener,
   back->GetViewAccessibility().OverrideDescription(
       l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_BACK));
   back->SetID(VIEW_ID_BACK_BUTTON);
-  back->Init();
   return back;
 }
 
@@ -58,7 +57,6 @@ std::unique_ptr<ToolbarButton> CreateForwardButton(
   forward->GetViewAccessibility().OverrideDescription(
       l10n_util::GetStringUTF8(IDS_ACCDESCRIPTION_FORWARD));
   forward->SetID(VIEW_ID_FORWARD_BUTTON);
-  forward->Init();
   return forward;
 }
 
@@ -72,7 +70,6 @@ std::unique_ptr<ReloadButton> CreateReloadButton(
   reload->set_tag(IDC_RELOAD);
   reload->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload->SetID(VIEW_ID_RELOAD_BUTTON);
-  reload->Init();
   return reload;
 }
 
@@ -85,7 +82,6 @@ std::unique_ptr<HomeButton> CreateHomeButton(views::ButtonListener* listener,
   home->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
   home->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   home->SetID(VIEW_ID_HOME_BUTTON);
-  home->Init();
   home->SizeToPreferredSize();
   return home;
 }

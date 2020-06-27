@@ -260,7 +260,7 @@ bool TestPasswordStore::FillAutofillableLogins(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
-      if (!form.blacklisted_by_user)
+      if (!form.blocked_by_user)
         forms->push_back(std::make_unique<autofill::PasswordForm>(form));
     }
   }
@@ -271,7 +271,7 @@ bool TestPasswordStore::FillBlacklistLogins(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {
     for (const autofill::PasswordForm& form : forms_for_realm.second) {
-      if (form.blacklisted_by_user)
+      if (form.blocked_by_user)
         forms->push_back(std::make_unique<autofill::PasswordForm>(form));
     }
   }

@@ -98,13 +98,13 @@ void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 std::vector<std::string>
-TestAutofillClient::GetMerchantWhitelistForVirtualCards() {
-  return merchant_whitelist_;
+TestAutofillClient::GetAllowedMerchantsForVirtualCards() {
+  return allowed_merchants_;
 }
 
 std::vector<std::string>
-TestAutofillClient::GetBinRangeWhitelistForVirtualCards() {
-  return bin_range_whitelist_;
+TestAutofillClient::GetAllowedBinRangesForVirtualCards() {
+  return allowed_bin_ranges_;
 }
 
 void TestAutofillClient::ShowLocalCardMigrationDialog(

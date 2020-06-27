@@ -2631,11 +2631,12 @@ bool AutofillManager::ShouldShowVirtualCardOption(
   if (!IsAutofillCreditCardEnabled())
     return false;
 
-  // If merchant is not whitelisted, return false.
-  std::vector<std::string> whitelist =
-      client_->GetMerchantWhitelistForVirtualCards();
-  if (std::find(whitelist.begin(), whitelist.end(),
-                form_structure->source_url().spec()) == whitelist.end()) {
+  // If merchant is not allowed, return false.
+  std::vector<std::string> allowed_merchants =
+      client_->GetAllowedMerchantsForVirtualCards();
+  if (std::find(allowed_merchants.begin(), allowed_merchants.end(),
+                form_structure->source_url().spec()) ==
+      allowed_merchants.end()) {
     return false;
   }
 

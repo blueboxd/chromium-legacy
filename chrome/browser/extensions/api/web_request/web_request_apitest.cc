@@ -197,7 +197,7 @@ class NavigateTabMessageHandler : public content::NotificationObserver {
 
         content::WebContents* contents = nullptr;
         ExtensionTabUtil::GetTabById(
-            tab_id, profile, profile->HasOffTheRecordProfile(), &contents);
+            tab_id, profile, profile->HasPrimaryOTRProfile(), &contents);
         ASSERT_NE(contents, nullptr)
             << "Could not find tab with id: " << tab_id;
         content::NavigationController::LoadURLParams params(url);
@@ -877,7 +877,7 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
   catcher.RestrictToBrowserContext(browser()->profile());
   ResultCatcher catcher_incognito;
   catcher_incognito.RestrictToBrowserContext(
-      browser()->profile()->GetOffTheRecordProfile());
+      browser()->profile()->GetPrimaryOTRProfile());
 
   ExtensionTestMessageListener listener("done", false);
   ExtensionTestMessageListener listener_incognito("done_incognito", false);
@@ -3026,7 +3026,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, Initiator_SplitIncognito) {
                 profile(), extension->id(), kScript));
   EXPECT_EQ(base::StringPrintf("[\"%s\"]", origin_incognito.c_str()),
             browsertest_util::ExecuteScriptInBackgroundPage(
-                profile()->GetOffTheRecordProfile(), extension->id(), kScript));
+                profile()->GetPrimaryOTRProfile(), extension->id(), kScript));
 }
 
 // A request handler that sets the Access-Control-Allow-Origin header.

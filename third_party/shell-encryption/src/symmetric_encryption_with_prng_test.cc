@@ -110,7 +110,7 @@ TYPED_TEST_SUITE(SymmetricEncryptionWithPrngTest,
 // ciphertext.
 TYPED_TEST(SymmetricEncryptionWithPrngTest, EncryptDecryptSingleCompressed) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; ++i) {
@@ -126,7 +126,7 @@ TYPED_TEST(SymmetricEncryptionWithPrngTest, EncryptDecryptSingleCompressed) {
 // ciphertexts.
 TYPED_TEST(SymmetricEncryptionWithPrngTest, EncryptDecryptMultipleCompressed) {
   for (const auto& params :
-       rlwe::testing::ContextParameters<TypeParam>::value) {
+       rlwe::testing::ContextParameters<TypeParam>::Value()) {
     ASSERT_OK_AND_ASSIGN(auto context,
                          rlwe::RlweContext<TypeParam>::Create(params));
     for (unsigned int i = 0; i < kTestingRounds; ++i) {

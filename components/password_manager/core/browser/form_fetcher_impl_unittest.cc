@@ -162,15 +162,15 @@ PasswordForm CreateAndroidFederated() {
   return form;
 }
 
-// Creates a dummy blacklisted form.
-PasswordForm CreateBlacklisted() {
+// Creates a dummy blocked form.
+PasswordForm CreateBlocked() {
   PasswordForm form = CreateHTMLForm(kTestHttpsURL, "", "");
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   return form;
 }
 
-PasswordForm CreateBlacklistedPsl() {
-  PasswordForm form = CreateBlacklisted();
+PasswordForm CreateBlockedPsl() {
+  PasswordForm form = CreateBlocked();
   form.is_public_suffix_match = true;
   return form;
 }
@@ -302,17 +302,16 @@ TEST_P(FormFetcherImplTest, Federated) {
   EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
-// Check that blacklisted PasswordStore results are handled correctly.
-// Blacklisted PSL matches in the store should be ignored and not returned as a
-// blacklisted match.
-TEST_P(FormFetcherImplTest, Blacklited) {
+// Check that blocked PasswordStore results are handled correctly. Blocked PSL
+// matches in the store should be ignored and not returned as a blocked match.
+TEST_P(FormFetcherImplTest, Blocked) {
   Fetch();
-  PasswordForm blacklisted = CreateBlacklisted();
-  PasswordForm blacklisted_psl = CreateBlacklistedPsl();
+  PasswordForm blocked = CreateBlocked();
+  PasswordForm blocked_psl = CreateBlockedPsl();
   form_fetcher_->AddConsumer(&consumer_);
   std::vector<std::unique_ptr<PasswordForm>> results;
-  results.push_back(std::make_unique<PasswordForm>(blacklisted));
-  results.push_back(std::make_unique<PasswordForm>(blacklisted_psl));
+  results.push_back(std::make_unique<PasswordForm>(blocked));
+  results.push_back(std::make_unique<PasswordForm>(blocked_psl));
   EXPECT_CALL(consumer_, OnFetchCompleted);
   store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
                                                   std::move(results));
@@ -337,7 +336,7 @@ TEST_P(FormFetcherImplTest, Mixed) {
   non_federated2.username_value = ASCIIToUTF16("user_C");
   PasswordForm non_federated3 = CreateNonFederated();
   non_federated3.username_value = ASCIIToUTF16("user_D");
-  PasswordForm blacklisted = CreateBlacklisted();
+  PasswordForm blocked = CreateBlocked();
 
   form_fetcher_->AddConsumer(&consumer_);
   std::vector<std::unique_ptr<PasswordForm>> results;
@@ -347,7 +346,7 @@ TEST_P(FormFetcherImplTest, Mixed) {
   results.push_back(std::make_unique<PasswordForm>(non_federated1));
   results.push_back(std::make_unique<PasswordForm>(non_federated2));
   results.push_back(std::make_unique<PasswordForm>(non_federated3));
-  results.push_back(std::make_unique<PasswordForm>(blacklisted));
+  results.push_back(std::make_unique<PasswordForm>(blocked));
   EXPECT_CALL(consumer_, OnFetchCompleted);
   store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
                                                   std::move(results));

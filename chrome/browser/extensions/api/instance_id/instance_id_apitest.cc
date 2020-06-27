@@ -64,8 +64,7 @@ IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, Incognito) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(profile());
   ResultCatcher incognito_catcher;
-  incognito_catcher.RestrictToBrowserContext(
-      profile()->GetOffTheRecordProfile());
+  incognito_catcher.RestrictToBrowserContext(profile()->GetPrimaryOTRProfile());
 
   ASSERT_TRUE(RunExtensionTestIncognito("instance_id/incognito"));
 

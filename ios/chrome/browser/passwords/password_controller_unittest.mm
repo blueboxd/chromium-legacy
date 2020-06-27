@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -1458,6 +1459,13 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
 // PassworController is waiting to the response in order to show or not to show
 // password suggestions.
 TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
+#if !(TARGET_OS_SIMULATOR)
+  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
+    // TODO(crbug.com/1099720): This test is failing on iOS 12.4 device.
+    return;
+  }
+#endif
+
   for (bool store_has_credentials : {false, true}) {
     LoadHtml(kHtmlWithoutPasswordForm);
     ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");

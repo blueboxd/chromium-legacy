@@ -507,7 +507,6 @@ MediaStreamComponent* UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
       video_capture_settings_.noise_reduction(), is_video_content_capture_,
       video_capture_settings_.min_frame_rate(), video_capture_settings_.pan(),
       video_capture_settings_.tilt(), video_capture_settings_.zoom(),
-      pan_tilt_zoom_allowed(),
       WTF::Bind(&UserMediaProcessor::RequestInfo::OnTrackStarted,
                 WrapWeakPersistent(this)),
       true);
@@ -1484,7 +1483,8 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
       request_info->request_id(), label.Utf8().c_str()));
   if (result == MediaStreamRequestResult::OK) {
     GetUserMediaRequestSucceeded(*request_info->web_stream(),
-                                 request_info->request());
+                                 request_info->request(),
+                                 request_info->pan_tilt_zoom_allowed());
     GetMediaStreamDispatcherHost()->OnStreamStarted(label);
   } else {
     GetUserMediaRequestFailed(result, constraint_name);
@@ -1509,7 +1509,8 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
 
 void UserMediaProcessor::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
-    UserMediaRequest* user_media_request) {
+    UserMediaRequest* user_media_request,
+    bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsCurrentRequestInfo(user_media_request));
   SendLogMessage(
@@ -1524,13 +1525,15 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
                 WrapWeakPersistent(this), current_request_info_->request_id(),
-                stream, WrapPersistent(user_media_request)));
+                stream, WrapPersistent(user_media_request),
+                pan_tilt_zoom_allowed));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
     int request_id,
     const blink::WebMediaStream& stream,
-    UserMediaRequest* user_media_request) {
+    UserMediaRequest* user_media_request,
+    bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SendLogMessage(base::StringPrintf(
       "DelayedGetUserMediaRequestSucceeded({request_id=%d}, {result=%s})",
@@ -1538,7 +1541,7 @@ void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
       MediaStreamRequestResultToString(MediaStreamRequestResult::OK)));
   blink::LogUserMediaRequestResult(MediaStreamRequestResult::OK);
   DeleteUserMediaRequest(user_media_request);
-  user_media_request->Succeed(stream);
+  user_media_request->Succeed(stream, pan_tilt_zoom_allowed);
 }
 
 void UserMediaProcessor::GetUserMediaRequestFailed(

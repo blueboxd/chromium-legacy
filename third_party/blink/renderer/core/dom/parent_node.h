@@ -75,6 +75,13 @@ class ParentNode {
     return node.Append(nodes, exception_state);
   }
 
+  static void replaceChildren(
+      Node& node,
+      const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+      ExceptionState& exception_state) {
+    return node.ReplaceChildren(nodes, exception_state);
+  }
+
   static Element* querySelector(ContainerNode& node,
                                 const AtomicString& selectors,
                                 ExceptionState& exception_state) {

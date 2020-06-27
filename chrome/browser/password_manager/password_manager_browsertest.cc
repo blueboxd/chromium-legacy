@@ -3642,11 +3642,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                 browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
                 .get());
 
-    autofill::PasswordForm blacklisted_form;
-    blacklisted_form.scheme = autofill::PasswordForm::Scheme::kHtml;
-    blacklisted_form.signon_realm = http_test_server.base_url().spec();
-    blacklisted_form.blacklisted_by_user = true;
-    password_store->AddLogin(blacklisted_form);
+    autofill::PasswordForm blocked_form;
+    blocked_form.scheme = autofill::PasswordForm::Scheme::kHtml;
+    blocked_form.signon_realm = http_test_server.base_url().spec();
+    blocked_form.blocked_by_user = true;
+    password_store->AddLogin(blocked_form);
     WaitForPasswordStore();
     ASSERT_FALSE(password_store->IsEmpty());
 
@@ -3683,21 +3683,21 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   }
 }
 
-// Test that if HTML login succeeds, and there is a blacklisted entry
+// Test that if HTML login succeeds, and there is a denylisted entry
 // with the HTTP auth PasswordForm::Scheme (i.e., credentials not put
 // through web forms) for that origin, then
 // 1) The bubble is not shown if the auth realm is empty,
 // 2) The bubble is shown if the auth realm is not empty.
 // This inconsistency is a side-effect of only signon_realm, not
-// PasswordForm::Scheme, being used to match blacklisted entries to a form.
+// PasswordForm::Scheme, being used to match denylisted entries to a form.
 // It is a bug, but so rare that it has not been worth fixing yet.
 // TODO(crbug.com/862930) If the inconsistency is fixed, please ensure that the
 // code for removing duplicates in password_manager_util.cc is updated and does
-// not remove blacklisted credentials which are no longer duplicates.
+// not remove denylisted credentials which are no longer duplicates.
 //
 // Disabled due to flakiness: https://crbug.com/1030579.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       DISABLED_HTMLLoginAfterHTTPAuthIsBlacklisted) {
+                       DISABLED_HTMLLoginAfterHTTPAuthIsDenylisted) {
   for (bool is_realm_empty : {false, true}) {
     scoped_refptr<password_manager::TestPasswordStore> password_store =
         static_cast<password_manager::TestPasswordStore*>(
@@ -3705,13 +3705,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                 browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
                 .get());
 
-    autofill::PasswordForm blacklisted_form;
-    blacklisted_form.scheme = autofill::PasswordForm::Scheme::kBasic;
-    blacklisted_form.signon_realm = embedded_test_server()->base_url().spec();
+    autofill::PasswordForm blocked_form;
+    blocked_form.scheme = autofill::PasswordForm::Scheme::kBasic;
+    blocked_form.signon_realm = embedded_test_server()->base_url().spec();
     if (!is_realm_empty)
-      blacklisted_form.signon_realm += "test realm";
-    blacklisted_form.blacklisted_by_user = true;
-    password_store->AddLogin(blacklisted_form);
+      blocked_form.signon_realm += "test realm";
+    blocked_form.blocked_by_user = true;
+    password_store->AddLogin(blocked_form);
     WaitForPasswordStore();
     ASSERT_FALSE(password_store->IsEmpty());
 

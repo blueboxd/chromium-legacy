@@ -120,7 +120,7 @@ scoped_refptr<base::RefCountedMemory> ReadFile(
     if (base::ReadFileToString(path_to_file, &file_data))
       data = base::RefCountedString::TakeString(&file_data);
   }
-  base::DeleteFile(path_to_file, false);
+  base::DeleteFile(path_to_file);
   return data;
 }
 

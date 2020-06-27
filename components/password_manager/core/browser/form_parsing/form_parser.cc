@@ -983,7 +983,7 @@ std::unique_ptr<PasswordForm> AssemblePasswordForm(
   result->all_possible_passwords = std::move(all_possible_passwords);
   result->all_possible_usernames = std::move(all_possible_usernames);
   result->scheme = PasswordForm::Scheme::kHtml;
-  result->blacklisted_by_user = false;
+  result->blocked_by_user = false;
   result->type = PasswordForm::Type::kManual;
   result->username_may_use_prefilled_placeholder =
       GetMayUsePrefilledPlaceholder(form_predictions, significant_fields);

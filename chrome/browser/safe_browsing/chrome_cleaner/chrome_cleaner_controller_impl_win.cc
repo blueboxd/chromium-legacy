@@ -95,7 +95,7 @@ base::FilePath VerifyAndRenameDownloadedCleaner(
     return base::FilePath();
 
   if (fetch_status != ChromeCleanerFetchStatus::kSuccess) {
-    base::DeleteFile(downloaded_path, /*recursive=*/false);
+    base::DeleteFile(downloaded_path);
     return base::FilePath();
   }
 
@@ -103,7 +103,7 @@ base::FilePath VerifyAndRenameDownloadedCleaner(
       downloaded_path.ReplaceExtension(FILE_PATH_LITERAL("exe")));
 
   if (!base::ReplaceFile(downloaded_path, executable_path, nullptr)) {
-    base::DeleteFile(downloaded_path, /*recursive=*/false);
+    base::DeleteFile(downloaded_path);
     return base::FilePath();
   }
 

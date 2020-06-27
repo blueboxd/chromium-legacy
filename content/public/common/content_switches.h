@@ -162,7 +162,7 @@ CONTENT_EXPORT extern const char kLoggingLevel[];
 CONTENT_EXPORT extern const char kLogFile[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
 extern const char kMaxActiveWebGLContexts[];
-extern const char kMaxDecodedImageSizeMb[];
+CONTENT_EXPORT extern const char kMaxDecodedImageSizeMb[];
 CONTENT_EXPORT extern const char kMessageLoopTypeUi[];
 CONTENT_EXPORT extern const char kMHTMLGeneratorOption[];
 CONTENT_EXPORT extern const char kMHTMLSkipNostoreMain[];

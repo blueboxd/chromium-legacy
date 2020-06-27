@@ -1,10 +1,93 @@
 <style>
   :host {
     --pdf-toolbar-background-color: rgb(50, 54, 57);
+    --pdf-toolbar-text-color: rgb(241, 241, 241);
+
+    align-items: center;
     background-color: var(--pdf-toolbar-background-color);
     box-shadow: var(--cr-elevation-2);
     color: white;
+    display: flex;
     height: 48px;
   }
+
+  cr-icon-button {
+    --cr-icon-button-fill-color: var(--pdf-toolbar-text-color);
+    margin: 0;
+  }
+
+  cr-icon-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+  }
+
+  #menuButton {
+    margin: 0 6px;
+  }
+
+  #actionMenuTrigger {
+    margin-inline-end: 6px;
+  }
+
+  #start,
+  #end {
+    flex: 1;
+  }
+
+  #end {
+    text-align: end;
+  }
+
+  #zoom-controls {
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.3);
+    border-inline-start: 1px solid rgba(255, 255, 255, 0.3);
+    margin-inline-end: 12px;
+    margin-inline-start: 21px;
+    padding: 0 6px;
+  }
+
+  viewer-page-selector {
+    display: inline-flex;
+  }
+
+  input {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    caret-color: currentColor;
+    color: inherit;
+    font-family: inherit;
+    line-height: inherit;
+    margin: 0 4px;
+    outline: none;
+    padding: 0 4px;
+    text-align: center;
+    width: 5ch;
+  }
 </style>
-New PDF Viewer toolbar will appear here.
+<!-- TODO(dpapad): Add aria-label and title for all buttons -->
+<!-- TODO(dpapad): Replace with the final icons provided by UX -->
+<div id="start">
+  <cr-icon-button id="menuButton" iron-icon="cr20:menu"></cr-icon-button>
+  <span>Title</span>
+</div>
+<div id="center">
+  <viewer-page-selector doc-length="100" page-no="5">
+  </viewer-page-selector>
+  <span id="zoom-controls">
+    <cr-icon-button iron-icon="pdf:remove"></cr-icon-button>
+    <input type="text" value="100%"></input>
+    <cr-icon-button iron-icon="pdf:add"></cr-icon-button>
+  </span>
+  <cr-icon-button iron-icon="pdf:fullscreen-exit"></cr-icon-button>
+  <cr-icon-button iron-icon="pdf:rotate-right"></cr-icon-button>
+</div>
+<div id="end">
+  <cr-icon-button id="download" iron-icon="cr:file-download"
+      aria-label$="$i18n{tooltipDownload}"
+      title="$i18n{tooltipDownload}"></cr-icon-button>
+  <cr-icon-button id="print" iron-icon="cr:print"
+      aria-label$="$i18n{tooltipPrint}"
+      title="$i18n{tooltipPrint}"></cr-icon-button>
+  <cr-icon-button id="actionMenuTrigger"
+      iron-icon="cr:more-vert"></cr-icon-button>
+</div>

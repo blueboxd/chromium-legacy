@@ -746,7 +746,7 @@ TEST_F(PasswordAccessoryControllerTest, SavePasswordsEnabledUpdatesStore) {
 
 TEST_F(PasswordAccessoryControllerTest, SavePasswordsDisabledUpdatesStore) {
   autofill::PasswordForm expected_form;
-  expected_form.blacklisted_by_user = true;
+  expected_form.blocked_by_user = true;
   expected_form.scheme = autofill::PasswordForm::Scheme::kHtml;
   expected_form.signon_realm = kExampleSignonRealm;
   expected_form.url = GURL(kExampleSite);

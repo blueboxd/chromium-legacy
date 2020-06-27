@@ -13,6 +13,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
@@ -161,6 +162,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
       switches::kForceProtectedVideoOutputBuffers,
+      switches::kMaxDecodedImageSizeMb,
       switches::kPlayreadyKeySystem,
   };
 

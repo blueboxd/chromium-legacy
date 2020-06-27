@@ -41,6 +41,7 @@ class FakeDevToolsClient : public DevToolsClient {
   const std::string& GetId() override { return id_; }
   bool WasCrashed() override { return false; }
   Status ConnectIfNecessary() override { return Status(kOk); }
+  Status SetUpDevTools() override { return Status(kOk); }
   Status SendCommand(
       const std::string& method,
       const base::DictionaryValue& params) override {

@@ -83,6 +83,10 @@ bool AudioWorkletProcessor::Process(
     DCHECK(outputs_cloned_successfully);
     if (!outputs_cloned_successfully)
       return false;
+  } else {
+    // The reallocation was not needed, so the arrays need to be zeroed before
+    // passing them to the author script.
+    ZeroArrayBuffers(isolate, output_array_buffers_);
   }
   DCHECK(!outputs_.IsEmpty());
   DCHECK(outputs_.NewLocal(isolate)->IsArray());
@@ -346,6 +350,20 @@ void AudioWorkletProcessor::CopyArrayBuffersToPort(
       } else {
         memset(audio_bus->Channel(channel_index)->MutableData(), 0, bus_length);
       }
+    }
+  }
+}
+
+void AudioWorkletProcessor::ZeroArrayBuffers(
+    v8::Isolate* isolate,
+    const BackingArrayBuffers& array_buffers) {
+  for (uint32_t bus_index = 0; bus_index < array_buffers.size(); ++bus_index) {
+    for (uint32_t channel_index = 0;
+         channel_index < array_buffers[bus_index].size(); ++channel_index) {
+      const v8::ArrayBuffer::Contents& contents =
+          array_buffers[bus_index][channel_index].NewLocal(isolate)
+              ->GetContents();
+      memset(contents.Data(), 0, contents.ByteLength());
     }
   }
 }

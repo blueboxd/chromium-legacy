@@ -283,7 +283,7 @@ SurfaceControl::TransactionStats ToTransactionStats(
 
 struct TransactionAckCtx {
   int id = 0;
-  scoped_refptr<GLSurface::TaskScheduler> task_scheduler;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   SurfaceControl::Transaction::OnCompleteCb callback;
 };
 
@@ -296,12 +296,16 @@ void OnTransactionCompletedOnAnyThread(void* context,
   TRACE_EVENT_ASYNC_END0("gpu,benchmark", "SurfaceControlTransaction",
                          ack_ctx->id);
 
-  auto closure = base::BindOnce(std::move(ack_ctx->callback),
-                                std::move(transaction_stats));
-  ack_ctx->task_scheduler->ScheduleTask(std::move(closure));
+  if (ack_ctx->task_runner) {
+    ack_ctx->task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(ack_ctx->callback),
+                                  std::move(transaction_stats)));
+  } else {
+    std::move(ack_ctx->callback).Run(std::move(transaction_stats));
+  }
+
   delete ack_ctx;
 }
-
 }  // namespace
 
 // static
@@ -478,10 +482,10 @@ void SurfaceControl::Transaction::SetFrameRate(const Surface& surface,
 
 void SurfaceControl::Transaction::SetOnCompleteCb(
     OnCompleteCb cb,
-    scoped_refptr<GLSurface::TaskScheduler> task_scheduler) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   TransactionAckCtx* ack_ctx = new TransactionAckCtx;
   ack_ctx->callback = std::move(cb);
-  ack_ctx->task_scheduler = std::move(task_scheduler);
+  ack_ctx->task_runner = std::move(task_runner);
   ack_ctx->id = id_;
 
   SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(

@@ -158,7 +158,7 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
 autofill::PasswordForm GetTestBlacklistedAndroidCredentials(
     const char* signon_realm) {
   autofill::PasswordForm form = GetTestAndroidCredentials(signon_realm);
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   return form;
 }
 

@@ -1536,15 +1536,15 @@ TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
   EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, synthesized.scheme);
 }
 
-TEST_F(CredentialManagerImplTest, GetBlacklistedPasswordCredential) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = form_.url;
-  blacklisted.signon_realm = blacklisted.url.spec();
+TEST_F(CredentialManagerImplTest, GetBlockedPasswordCredential) {
+  autofill::PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = form_.url;
+  blocked_form.signon_realm = blocked_form.url.spec();
   // Deliberately use a wrong format with a non-empty username to simulate a
   // leak. See https://crbug.com/817754.
-  blacklisted.username_value = base::ASCIIToUTF16("Username");
-  store_->AddLogin(blacklisted);
+  blocked_form.username_value = base::ASCIIToUTF16("Username");
+  store_->AddLogin(blocked_form);
 
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _)).Times(0);
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(0);
@@ -1554,7 +1554,7 @@ TEST_F(CredentialManagerImplTest, GetBlacklistedPasswordCredential) {
                        federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
-TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
+TEST_F(CredentialManagerImplTest, BlockedPasswordCredential) {
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_));
 
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
@@ -1568,18 +1568,18 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   // Allow the PasswordFormManager to talk to the password store.
   RunAllPendingTasks();
 
-  // Verify that the site is blacklisted.
-  autofill::PasswordForm blacklisted;
+  // Verify that the site is blocked.
+  autofill::PasswordForm blocked_form;
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = form_.url;
-  blacklisted.signon_realm = form_.signon_realm;
-  blacklisted.date_created = passwords[form_.signon_realm][0].date_created;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = form_.url;
+  blocked_form.signon_realm = form_.signon_realm;
+  blocked_form.date_created = passwords[form_.signon_realm][0].date_created;
   EXPECT_THAT(passwords[form_.signon_realm],
-              ElementsAre(MatchesFormExceptStore(blacklisted)));
+              ElementsAre(MatchesFormExceptStore(blocked_form)));
 }
 
-TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
+TEST_F(CredentialManagerImplTest, BlockedFederatedCredential) {
   form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/example.com";
@@ -1596,25 +1596,25 @@ TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   // Allow the PasswordFormManager to talk to the password store.
   RunAllPendingTasks();
 
-  // Verify that the site is blacklisted.
+  // Verify that the site is blocked.
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
   ASSERT_TRUE(passwords.count(form_.url.spec()));
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = form_.url;
-  blacklisted.signon_realm = blacklisted.url.spec();
-  blacklisted.date_created =
-      passwords[blacklisted.signon_realm][0].date_created;
-  EXPECT_THAT(passwords[blacklisted.signon_realm],
-              ElementsAre(MatchesFormExceptStore(blacklisted)));
+  autofill::PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = form_.url;
+  blocked_form.signon_realm = blocked_form.url.spec();
+  blocked_form.date_created =
+      passwords[blocked_form.signon_realm][0].date_created;
+  EXPECT_THAT(passwords[blocked_form.signon_realm],
+              ElementsAre(MatchesFormExceptStore(blocked_form)));
 }
 
-TEST_F(CredentialManagerImplTest, RespectBlacklistingPasswordCredential) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = form_.url;
-  blacklisted.signon_realm = blacklisted.url.spec();
-  store_->AddLogin(blacklisted);
+TEST_F(CredentialManagerImplTest, RespecBlockedPasswordCredential) {
+  autofill::PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = form_.url;
+  blocked_form.signon_realm = blocked_form.url.spec();
+  store_->AddLogin(blocked_form);
 
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   bool called = false;
@@ -1627,12 +1627,12 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingPasswordCredential) {
   EXPECT_TRUE(client_->pending_manager()->IsBlacklisted());
 }
 
-TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
-  autofill::PasswordForm blacklisted;
-  blacklisted.blacklisted_by_user = true;
-  blacklisted.url = form_.url;
-  blacklisted.signon_realm = blacklisted.url.spec();
-  store_->AddLogin(blacklisted);
+TEST_F(CredentialManagerImplTest, RespectBlockedFederatedCredential) {
+  autofill::PasswordForm blocked_form;
+  blocked_form.blocked_by_user = true;
+  blocked_form.url = form_.url;
+  blocked_form.signon_realm = blocked_form.url.spec();
+  store_->AddLogin(blocked_form);
 
   form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();

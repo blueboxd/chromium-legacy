@@ -5,23 +5,6 @@
 import("//build_overrides/build.gni")
 import("//third_party/abseil-cpp/absl.gni")
 
-# Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
-# adding projects to this list please reach out to cxx@chromium.org and CC:
-# - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
-#
-# More information can be found at:
-# https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
-if (build_with_chromium) {
-  default_visibility = absl_visibility
-  default_visibility += [
-    "//third_party/blink/renderer/platform:platform",
-    "//third_party/blink/renderer/modules/peerconnection:peerconnection",
-    "//third_party/openscreen/*",
-  ]
-} else {
-  default_visibility = [ "*" ]
-}
-
 absl_source_set("any") {
   public = [ "any.h" ]
   deps = [
@@ -49,8 +32,7 @@ absl_source_set("bad_any_cast_impl") {
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]
-  visibility = []
-  visibility += [ ":*" ]
+  visibility = [ ":*" ]
 }
 
 absl_source_set("span") {
@@ -76,7 +58,6 @@ absl_source_set("optional") {
     "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/utility",
   ]
-  visibility = default_visibility
 }
 
 absl_source_set("bad_optional_access") {
@@ -108,7 +89,6 @@ absl_source_set("variant") {
     "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/utility",
   ]
-  visibility = default_visibility
 }
 
 absl_source_set("compare") {

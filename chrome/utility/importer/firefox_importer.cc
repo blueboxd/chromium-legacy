@@ -405,8 +405,7 @@ void FirefoxImporter::ImportPasswords() {
                                forms.size());
     for (size_t i = 0; i < forms.size(); ++i) {
       if (!forms[i].username_value.empty() ||
-          !forms[i].password_value.empty() ||
-          forms[i].blacklisted_by_user) {
+          !forms[i].password_value.empty() || forms[i].blocked_by_user) {
         bridge_->SetPasswordForm(forms[i]);
       }
     }

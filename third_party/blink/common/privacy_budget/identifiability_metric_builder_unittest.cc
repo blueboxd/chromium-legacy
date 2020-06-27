@@ -14,12 +14,17 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/common/privacy_budget/test_ukm_recorder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/privacy_budget/scoped_identifiability_test_sample_collector.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 namespace blink {
 
 TEST(IdentifiabilityMetricBuilderTest, Set) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+
   IdentifiabilityMetricBuilder builder(base::UkmSourceId{});
   constexpr int64_t kInputHash = 2;
   constexpr int64_t kValue = 3;
@@ -28,66 +33,103 @@ TEST(IdentifiabilityMetricBuilderTest, Set) {
       IdentifiableSurface::Type::kWebFeature, kInputHash);
 
   builder.Set(kSurface, kValue);
-  auto entry = builder.TakeEntry();
-  constexpr auto kEventHash = ukm::builders::Identifiability::kEntryNameHash;
+  builder.Record(&recorder);
 
-  EXPECT_EQ(entry->event_hash, kEventHash);
-  EXPECT_EQ(entry->metrics.size(), 1u);
-  EXPECT_EQ(entry->metrics.begin()->first, kSurface.ToUkmMetricHash());
-  EXPECT_EQ(entry->metrics.begin()->second, kValue);
+  ASSERT_EQ(1u, collector.entries().size());
+  auto& entry = collector.entries().front();
+
+  EXPECT_EQ(entry.metrics.size(), 1u);
+  EXPECT_EQ(entry.metrics.begin()->surface, kSurface);
+  EXPECT_EQ(entry.metrics.begin()->value, kValue);
 }
 
 TEST(IdentifiabilityMetricBuilderTest, BuilderOverload) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+
   constexpr int64_t kValue = 3;
   constexpr int64_t kInputHash = 2;
   constexpr auto kSurface = IdentifiableSurface::FromTypeAndInput(
       IdentifiableSurface::Type::kWebFeature, kInputHash);
 
   const auto kSource = base::UkmSourceId::New();
-  auto expected_entry =
-      IdentifiabilityMetricBuilder(kSource).Set(kSurface, kValue).TakeEntry();
+  IdentifiabilityMetricBuilder(kSource).Set(kSurface, kValue).Record(&recorder);
 
-  // Yes, it seems cyclical, but this tests that the overloaded constructors for
-  // IdentifiabilityMetricBuilder are equivalent.
+  ASSERT_EQ(1u, collector.entries().size());
+  test::ScopedIdentifiabilityTestSampleCollector::Entry expected_entry =
+      collector.entries().front();
+  collector.ClearEntries();
+
+  // Yes, it seems cyclical, but this tests that the overloaded constructors
+  // for IdentifiabilityMetricBuilder are equivalent.
   const ukm::SourceId kUkmSource = kSource.ToInt64();
-  auto entry = IdentifiabilityMetricBuilder(kUkmSource)
-                   .Set(kSurface, kValue)
-                   .TakeEntry();
+  IdentifiabilityMetricBuilder(kUkmSource)
+      .Set(kSurface, kValue)
+      .Record(&recorder);
+  ASSERT_EQ(1u, collector.entries().size());
+  test::ScopedIdentifiabilityTestSampleCollector::Entry entry =
+      collector.entries().front();
 
-  EXPECT_EQ(expected_entry->source_id, entry->source_id);
+  EXPECT_EQ(expected_entry.source, entry.source);
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetWebfeature) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+
   constexpr int64_t kValue = 3;
   constexpr int64_t kTestInput =
       static_cast<int64_t>(mojom::WebFeature::kEventSourceDocument);
 
   IdentifiabilityMetricBuilder builder(base::UkmSourceId{});
-  builder.SetWebfeature(mojom::WebFeature::kEventSourceDocument, kValue);
-  auto entry = builder.TakeEntry();
+  builder.SetWebfeature(mojom::WebFeature::kEventSourceDocument, kValue)
+      .Record(&recorder);
+  ASSERT_EQ(1u, collector.entries().size());
+  auto entry = collector.entries().front();
+  collector.ClearEntries();
 
   // Only testing that using SetWebfeature(x,y) is equivalent to
   // .Set(IdentifiableSurface::FromTypeAndInput(kWebFeature, x), y);
-  auto expected_entry =
-      IdentifiabilityMetricBuilder(base::UkmSourceId{})
-          .Set(IdentifiableSurface::FromTypeAndInput(
-                   IdentifiableSurface::Type::kWebFeature, kTestInput),
-               kValue)
-          .TakeEntry();
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(IdentifiableSurface::FromTypeAndInput(
+               IdentifiableSurface::Type::kWebFeature, kTestInput),
+           kValue)
+      .Record(&recorder);
+  ASSERT_EQ(1u, collector.entries().size());
+  auto expected_entry = collector.entries().front();
 
-  EXPECT_EQ(expected_entry->event_hash, entry->event_hash);
-  ASSERT_EQ(entry->metrics.size(), 1u);
-  EXPECT_EQ(entry->metrics, expected_entry->metrics);
+  ASSERT_EQ(entry.metrics.size(), 1u);
+  EXPECT_EQ(entry.metrics, expected_entry.metrics);
 }
 
 namespace {
+
+// clang flags this function as unused although it's used in the MATCHER_P()
+// definition below. Hence the ALLOW_UNUSED_TYPE.
+ALLOW_UNUSED_TYPE bool HasSingleEntryWithValue(
+    const test::ScopedIdentifiabilityTestSampleCollector& collector,
+    int64_t value) {
+  if (collector.entries().size() != 1u) {
+    SCOPED_TRACE(base::StringPrintf("Expected unique entry. Found %zu entries.",
+                                    collector.entries().size()));
+    return false;
+  }
+  if (collector.entries().front().metrics.size() != 1u) {
+    SCOPED_TRACE(
+        base::StringPrintf("Expected unique metric. Found %zu entries.",
+                           collector.entries().front().metrics.size()));
+    return false;
+  }
+  return collector.entries().front().metrics.front().value.ToUkmMetricValue() ==
+         value;
+}
 
 MATCHER_P(FirstMetricIs,
           entry,
           base::StringPrintf("entry is %s0x%" PRIx64,
                              negation ? "not " : "",
                              entry)) {
-  return arg->metrics.begin()->second == entry;
+  return HasSingleEntryWithValue(arg, entry);
 }  // namespace
 
 enum class Never { kGonna, kGive, kYou, kUp };
@@ -107,111 +149,138 @@ const int64_t kExpectedHashOfOnePointFive = 0x3ff8000000000000;
 }  // namespace
 
 TEST(IdentifiabilityMetricBuilderTest, SetChar) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, 'A')
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(65)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, 'A')
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(65)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetCharArray) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   IdentifiableToken sample(kAbcd);
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, sample)
-                  .TakeEntry(),
-              FirstMetricIs(kExpectedHashOfAbcd));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, sample)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(kExpectedHashOfAbcd));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetStringPiece) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   // StringPiece() needs an explicit constructor invocation.
-  EXPECT_THAT(
-      IdentifiabilityMetricBuilder(base::UkmSourceId{})
-          .Set(kTestSurface, IdentifiableToken(base::StringPiece(kAbcd)))
-          .TakeEntry(),
-      FirstMetricIs(kExpectedHashOfAbcd));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, IdentifiableToken(base::StringPiece(kAbcd)))
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(kExpectedHashOfAbcd));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetStdString) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   IdentifiableToken sample((std::string(kAbcd)));
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, sample)
-                  .TakeEntry(),
-              FirstMetricIs(kExpectedHashOfAbcd));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, sample)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(kExpectedHashOfAbcd));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetInt) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, -5)
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(-5)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, -5)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(-5)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetIntRef) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   int x = -5;
   int& xref = x;
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, xref)
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(-5)));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, xref)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(-5)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetIntConstRef) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   int x = -5;
   const int& xref = x;
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, xref)
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(-5)));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, xref)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(-5)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetUnsigned) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, 5u)
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(5)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, 5u)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(5)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetUint64) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, UINT64_C(5))
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(5)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, UINT64_C(5))
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(5)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetBigUnsignedInt) {
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
   // Slightly different in that this value cannot be converted into the sample
   // type without loss. Hence it is digested as raw bytes.
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, std::numeric_limits<uint64_t>::max())
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(-1)));
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, std::numeric_limits<uint64_t>::max())
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(-1)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetFloat) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, 1.5f)
-                  .TakeEntry(),
-              FirstMetricIs(kExpectedHashOfOnePointFive));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, 1.5f)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(kExpectedHashOfOnePointFive));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetDouble) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, 1.5l)
-                  .TakeEntry(),
-              FirstMetricIs(kExpectedHashOfOnePointFive));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, 1.5l)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(kExpectedHashOfOnePointFive));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetEnum) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, Never::kUp)
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(3)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, Never::kUp)
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(3)));
 }
 
 TEST(IdentifiabilityMetricBuilderTest, SetParameterPack) {
-  EXPECT_THAT(IdentifiabilityMetricBuilder(base::UkmSourceId{})
-                  .Set(kTestSurface, IdentifiableToken(1, 2, 3.0, 4, 'a'))
-                  .TakeEntry(),
-              FirstMetricIs(INT64_C(0x672cf4c107b5b22)));
+  test::ScopedIdentifiabilityTestSampleCollector collector;
+  test::TestUkmRecorder recorder;
+  IdentifiabilityMetricBuilder(base::UkmSourceId{})
+      .Set(kTestSurface, IdentifiableToken(1, 2, 3.0, 4, 'a'))
+      .Record(&recorder);
+  EXPECT_THAT(collector, FirstMetricIs(INT64_C(0x672cf4c107b5b22)));
 }
 
 }  // namespace blink

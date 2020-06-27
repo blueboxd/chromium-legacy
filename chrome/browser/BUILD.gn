@@ -3718,6 +3718,7 @@ static_library("browser") {
       "//chrome/browser/nearby_sharing/certificates",
       "//chrome/browser/nearby_sharing/logging",
       "//chrome/browser/nearby_sharing/proto",
+      "//chrome/browser/nearby_sharing/scheduling",
       "//chrome/browser/nearby_sharing/tachyon/proto",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",

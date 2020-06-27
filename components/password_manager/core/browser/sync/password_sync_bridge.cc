@@ -81,7 +81,7 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
   password_data->set_date_created(
       password_form.date_created.ToDeltaSinceWindowsEpoch().InMicroseconds());
-  password_data->set_blacklisted(password_form.blacklisted_by_user);
+  password_data->set_blacklisted(password_form.blocked_by_user);
   password_data->set_type(static_cast<int>(password_form.type));
   password_data->set_times_used(password_form.times_used);
   password_data->set_display_name(
@@ -126,7 +126,7 @@ autofill::PasswordForm PasswordFromEntityChange(
       // Use FromDeltaSinceWindowsEpoch because create_time_us has
       // always used the Windows epoch.
       base::TimeDelta::FromMicroseconds(password_data.date_created()));
-  password.blacklisted_by_user = password_data.blacklisted();
+  password.blocked_by_user = password_data.blacklisted();
   password.type =
       static_cast<autofill::PasswordForm::Type>(password_data.type());
   password.times_used = password_data.times_used();
@@ -160,35 +160,35 @@ int ParsePrimaryKey(const std::string& storage_key) {
 bool AreLocalAndRemotePasswordsEqual(
     const sync_pb::PasswordSpecificsData& password_specifics,
     const autofill::PasswordForm& password_form) {
-  return (
-      static_cast<int>(password_form.scheme) == password_specifics.scheme() &&
-      password_form.signon_realm == password_specifics.signon_realm() &&
-      password_form.url.spec() == password_specifics.origin() &&
-      password_form.action.spec() == password_specifics.action() &&
-      base::UTF16ToUTF8(password_form.username_element) ==
-          password_specifics.username_element() &&
-      base::UTF16ToUTF8(password_form.password_element) ==
-          password_specifics.password_element() &&
-      base::UTF16ToUTF8(password_form.username_value) ==
-          password_specifics.username_value() &&
-      base::UTF16ToUTF8(password_form.password_value) ==
-          password_specifics.password_value() &&
-      password_form.date_last_used ==
-          base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(
-                  password_specifics.date_last_used())) &&
-      password_form.date_created ==
-          base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(
-                  password_specifics.date_created())) &&
-      password_form.blacklisted_by_user == password_specifics.blacklisted() &&
-      static_cast<int>(password_form.type) == password_specifics.type() &&
-      password_form.times_used == password_specifics.times_used() &&
-      base::UTF16ToUTF8(password_form.display_name) ==
-          password_specifics.display_name() &&
-      password_form.icon_url.spec() == password_specifics.avatar_url() &&
-      url::Origin::Create(GURL(password_specifics.federation_url()))
-              .Serialize() == password_form.federation_origin.Serialize());
+  return (static_cast<int>(password_form.scheme) ==
+              password_specifics.scheme() &&
+          password_form.signon_realm == password_specifics.signon_realm() &&
+          password_form.url.spec() == password_specifics.origin() &&
+          password_form.action.spec() == password_specifics.action() &&
+          base::UTF16ToUTF8(password_form.username_element) ==
+              password_specifics.username_element() &&
+          base::UTF16ToUTF8(password_form.password_element) ==
+              password_specifics.password_element() &&
+          base::UTF16ToUTF8(password_form.username_value) ==
+              password_specifics.username_value() &&
+          base::UTF16ToUTF8(password_form.password_value) ==
+              password_specifics.password_value() &&
+          password_form.date_last_used ==
+              base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(
+                      password_specifics.date_last_used())) &&
+          password_form.date_created ==
+              base::Time::FromDeltaSinceWindowsEpoch(
+                  base::TimeDelta::FromMicroseconds(
+                      password_specifics.date_created())) &&
+          password_form.blocked_by_user == password_specifics.blacklisted() &&
+          static_cast<int>(password_form.type) == password_specifics.type() &&
+          password_form.times_used == password_specifics.times_used() &&
+          base::UTF16ToUTF8(password_form.display_name) ==
+              password_specifics.display_name() &&
+          password_form.icon_url.spec() == password_specifics.avatar_url() &&
+          url::Origin::Create(GURL(password_specifics.federation_url()))
+                  .Serialize() == password_form.federation_origin.Serialize());
 }
 
 // Whether we should try to recover undecryptable local passwords by deleting
@@ -818,7 +818,7 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
       password_store_changes.emplace_back(PasswordStoreChange::REMOVE, form,
                                           primary_key);
       if (unsynced_passwords_storage_keys.count(primary_key) != 0 &&
-          !form.blacklisted_by_user) {
+          !form.blocked_by_user) {
         unsynced_logins_being_deleted.push_back(form);
       }
     }

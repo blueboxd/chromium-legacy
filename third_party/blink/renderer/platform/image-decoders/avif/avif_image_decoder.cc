@@ -470,8 +470,8 @@ void AVIFImageDecoder::InitializeNewFrame(size_t index) {
 }
 
 void AVIFImageDecoder::Decode(size_t index) {
-  // TODO(dalecurtis): For fragmented avif-sequence files we probably want to
-  // allow partial decoding. Depends on if we see frequent use of multi-track
+  // TODO(dalecurtis): For fragmented AVIF image sequence files we probably want
+  // to allow partial decoding. Depends on if we see frequent use of multi-track
   // images where there's lots to ignore.
   if (Failed() || !IsAllDataReceived())
     return;

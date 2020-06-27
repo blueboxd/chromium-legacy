@@ -329,11 +329,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
 
-  void set_animation_smoothness_histogram_name(
-      base::Optional<std::string> val) {
-    animation_smoothness_histogram_name_ = val;
-  }
-
   // Returns the Display that this WindowState is on.
   display::Display GetDisplay();
 
@@ -466,10 +461,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool bounds_changed_by_user_;
   bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
-
-  // If this has a value when an animation starts, animation smoothness metrics
-  // with this name will be logged for the animation.
-  base::Optional<std::string> animation_smoothness_histogram_name_;
 
   bool unminimize_to_restore_bounds_;
   bool ignore_keyboard_bounds_change_ = false;

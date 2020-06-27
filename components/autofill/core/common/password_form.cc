@@ -73,7 +73,7 @@ void PasswordFormToJSON(const PasswordForm& form,
                     ValueElementVectorToString(form.all_possible_usernames));
   target->SetString("all_possible_passwords",
                     ValueElementVectorToString(form.all_possible_passwords));
-  target->SetBoolean("blacklisted", form.blacklisted_by_user);
+  target->SetBoolean("blocked_by_user", form.blocked_by_user);
   target->SetDouble("date_last_used", form.date_last_used.ToDoubleT());
   target->SetDouble("date_created", form.date_created.ToDoubleT());
   target->SetDouble("date_synced", form.date_synced.ToDoubleT());
@@ -185,7 +185,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          new_password_value == form.new_password_value &&
          date_created == form.date_created && date_synced == form.date_synced &&
          date_last_used == form.date_last_used &&
-         blacklisted_by_user == form.blacklisted_by_user && type == form.type &&
+         blocked_by_user == form.blocked_by_user && type == form.type &&
          times_used == form.times_used &&
          form_data.SameFormAs(form.form_data) &&
          generation_upload_status == form.generation_upload_status &&

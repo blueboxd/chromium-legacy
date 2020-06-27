@@ -9,6 +9,7 @@
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 import("//testing/test.gni")
+import("//third_party/abseil-cpp/absl.gni")
 
 config("absl_component_build") {
   defines = [ "ABSL_CONSUME_DLL" ]
@@ -74,6 +75,14 @@ component("absl") {
         "//third_party/abseil-cpp/absl/debugging:symbolize",
     ]
   }
+
+  # Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
+  # adding projects to this list please reach out to cxx@chromium.org and CC:
+  # - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
+  #
+  # More information can be found at:
+  # https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
+  visibility = absl_visibility
 }
 
 group("default") {

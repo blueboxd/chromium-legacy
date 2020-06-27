@@ -305,7 +305,7 @@ base::File::Error NativeFileUtil::DeleteFile(const base::FilePath& path) {
     return base::File::FILE_ERROR_NOT_FOUND;
   if (base::DirectoryExists(path))
     return base::File::FILE_ERROR_NOT_A_FILE;
-  if (!base::DeleteFile(path, false))
+  if (!base::DeleteFile(path))
     return base::File::FILE_ERROR_FAILED;
   return base::File::FILE_OK;
 }
@@ -317,7 +317,7 @@ base::File::Error NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
     return base::File::FILE_ERROR_NOT_A_DIRECTORY;
   if (!base::IsDirectoryEmpty(path))
     return base::File::FILE_ERROR_NOT_EMPTY;
-  if (!base::DeleteFile(path, false))
+  if (!base::DeleteFile(path))
     return base::File::FILE_ERROR_FAILED;
   return base::File::FILE_OK;
 }

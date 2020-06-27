@@ -86,12 +86,13 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
  private:
   class ExternalServiceProxy : public ::service_manager::Service {
    public:
-    ExternalServiceProxy(ConnectorImpl* connector,
-                         std::string service_name,
-                         ::service_manager::mojom::ServiceRequest request)
+    ExternalServiceProxy(
+        ConnectorImpl* connector,
+        std::string service_name,
+        mojo::PendingReceiver<::service_manager::mojom::Service> receiver)
         : connector_(connector),
           service_name_(std::move(service_name)),
-          service_binding_(this, std::move(request)) {
+          service_binding_(this, std::move(receiver)) {
       DCHECK(connector_);
     }
 
@@ -187,16 +188,18 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
 
     for (const auto& service_name : external_services_to_proxy) {
       LOG(INFO) << "Register proxy for external " << service_name;
-      service_manager::mojom::ServicePtrInfo service_ptr;
+      mojo::PendingRemote<service_manager::mojom::Service> service_remote;
       registered_external_services_[service_name] =
           std::make_unique<ExternalServiceProxy>(
-              this, service_name, mojo::MakeRequest(&service_ptr));
+              this, service_name,
+              service_remote.InitWithNewPipeAndPassReceiver());
 
       connector_->RegisterServiceInstance(
           service_manager::Identity(service_name,
                                     service_manager::kSystemInstanceGroup,
                                     base::Token{}, base::Token::CreateRandom()),
-          std::move(service_ptr), mojo::NullReceiver() /* metadata_receiver */,
+          std::move(service_remote),
+          mojo::NullReceiver() /* metadata_receiver */,
           base::BindOnce(&OnRegisterServiceResult, service_name));
     }
   }

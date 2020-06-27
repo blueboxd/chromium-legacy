@@ -165,7 +165,7 @@ class PasswordsTableViewControllerTest
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.example.com/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = false;
+    form->blocked_by_user = false;
     AddPasswordForm(std::move(form));
   }
 
@@ -181,7 +181,7 @@ class PasswordsTableViewControllerTest
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.example2.com/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = false;
+    form->blocked_by_user = false;
     AddPasswordForm(std::move(form));
   }
 
@@ -198,7 +198,7 @@ class PasswordsTableViewControllerTest
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.secret.com/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = true;
+    form->blocked_by_user = true;
     AddPasswordForm(std::move(form));
   }
 
@@ -215,7 +215,7 @@ class PasswordsTableViewControllerTest
     form->submit_element = base::ASCIIToUTF16("signIn");
     form->signon_realm = "http://www.secret2.com/";
     form->scheme = autofill::PasswordForm::Scheme::kHtml;
-    form->blacklisted_by_user = true;
+    form->blocked_by_user = true;
     AddPasswordForm(std::move(form));
   }
 
@@ -464,7 +464,7 @@ TEST_P(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
   form.submit_element = base::ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.example.com/";
   form.scheme = autofill::PasswordForm::Scheme::kHtml;
-  form.blacklisted_by_user = false;
+  form.blocked_by_user = false;
 
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
 

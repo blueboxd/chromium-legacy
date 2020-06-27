@@ -498,7 +498,7 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
   Profile* calling_profile = Profile::FromBrowserContext(browser_context());
   Profile* window_profile = open_incognito_window
-                                ? calling_profile->GetOffTheRecordProfile()
+                                ? calling_profile->GetPrimaryOTRProfile()
                                 : calling_profile;
 
   // Look for optional tab id.

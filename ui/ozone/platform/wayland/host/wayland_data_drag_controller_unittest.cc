@@ -14,15 +14,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/ozone/platform/wayland/common/data_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_data_device.h"
@@ -32,7 +35,9 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/public/platform_clipboard.h"
+#include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "url/gurl.h"
 
 using testing::_;
@@ -57,6 +62,14 @@ PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
 }
 
 }  // namespace
+
+class MockDragHandlerDelegate : public WmDragHandler::Delegate {
+ public:
+  MOCK_METHOD1(OnDragLocationChanged, void(const gfx::Point& location));
+  MOCK_METHOD1(OnDragOperationChanged,
+               void(DragDropTypes::DragOperation operation));
+  MOCK_METHOD1(OnDragFinished, void(int operation));
+};
 
 class MockDropHandler : public WmDropHandler {
  public:
@@ -103,6 +116,7 @@ class WaylandDataDragControllerTest : public WaylandTest {
     data_device_manager_ = server_.data_device_manager();
     DCHECK(data_device_manager_);
 
+    drag_handler_delegate_ = std::make_unique<MockDragHandlerDelegate>();
     drop_handler_ = std::make_unique<MockDropHandler>();
     SetWmDropHandler(window_.get(), drop_handler_.get());
   }
@@ -123,6 +137,7 @@ class WaylandDataDragControllerTest : public WaylandTest {
  protected:
   wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockDropHandler> drop_handler_;
+  std::unique_ptr<MockDragHandlerDelegate> drag_handler_delegate_;
 };
 
 TEST_P(WaylandDataDragControllerTest, StartDrag) {
@@ -130,10 +145,13 @@ TEST_P(WaylandDataDragControllerTest, StartDrag) {
   window_->SetPointerFocus(true);
 
   // The client starts dragging.
+  ASSERT_EQ(PlatformWindowType::kWindow, window_->type());
+  auto* toplevel = static_cast<WaylandToplevelWindow*>(window_.get());
   OSExchangeData os_exchange_data;
   os_exchange_data.SetString(sample_text_for_dnd());
   int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
-  drag_controller()->StartSession(os_exchange_data, operation);
+  toplevel->StartDrag(os_exchange_data, operation, {},
+                      drag_handler_delegate_.get());
   Sync();
 
   // The server reads the data and the callback gets it.
@@ -148,6 +166,11 @@ TEST_P(WaylandDataDragControllerTest, StartDrag) {
   data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
                                                 std::move(callback));
   run_loop.Run();
+
+  data_device_manager_->data_source()->OnCancelled();
+  Sync();
+  EXPECT_FALSE(data_device()->drag_delegate_);
+
   window_->SetPointerFocus(restored_focus);
 }
 

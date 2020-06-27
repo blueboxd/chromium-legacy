@@ -129,8 +129,9 @@ void PlaybackEventsRecorder::OnError(PipelineStatus status) {
 }
 
 void PlaybackEventsRecorder::OnNaturalSizeChanged(const gfx::Size& size) {
+  int encoded_video_resolution = (size.width() << 16) | size.height();
   base::RecordComputedAction(base::StringPrintf(
-      "WebEngine.Media.VideoResolution:%dx%d", size.width(), size.height()));
+      "WebEngine.Media.VideoResolution:%d", encoded_video_resolution));
 }
 
 void PlaybackEventsRecorder::OnPipelineStatistics(

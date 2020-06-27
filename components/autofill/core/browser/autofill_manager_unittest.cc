@@ -8312,8 +8312,8 @@ class AutofillManagerTestForVirtualCardOption : public AutofillManagerTest {
     AutofillManagerTest::SetUp();
 
     // The URL should always matche the form URL in
-    // CreateTestCreditCardFormData() to have the whitelist work correctly.
-    autofill_client_.set_merchant_whitelist({"https://myform.com/form.html"});
+    // CreateTestCreditCardFormData() to have the allowlist work correctly.
+    autofill_client_.set_allowed_merchants({"https://myform.com/form.html"});
 
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillEnableVirtualCard);
@@ -8387,12 +8387,12 @@ TEST_F(AutofillManagerTestForVirtualCardOption,
 }
 
 // Ensures the "Use a virtual card number" option should not be shown when
-// merchant is not whitelisted.
+// merchant is not allowlisted.
 TEST_F(AutofillManagerTestForVirtualCardOption,
-       ShouldNotShowDueToMerchantNotWhitelisted) {
-  // Adds a different URL in the whitelist.
-  autofill_client_.set_merchant_whitelist(
-      {"https://myform.anotherwhitelist.com/form.html"});
+       ShouldNotShowDueToMerchantNotAllowlisted) {
+  // Adds a different URL in the allowlist.
+  autofill_client_.set_allowed_merchants(
+      {"https://myform.anotherallowlist.com/form.html"});
   CreateCompleteFormAndGetSuggestions();
 
   VerifyNoVirtualCardSuggestions();

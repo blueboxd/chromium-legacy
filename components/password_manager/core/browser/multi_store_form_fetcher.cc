@@ -168,7 +168,7 @@ void MultiStoreFormFetcher::SplitResults(
   is_blacklisted_in_profile_store_ = false;
   is_blacklisted_in_account_store_ = false;
   for (auto& result : results) {
-    if (!result->blacklisted_by_user)
+    if (!result->blocked_by_user)
       continue;
     // Ignore PSL matches for blacklisted entries.
     if (result->is_public_suffix_match)

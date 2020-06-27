@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/service/gl_surface_task_scheduler.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -107,8 +106,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual void DidLoseContext(gpu::error::ContextLostReason reason,
                               const GURL& active_url) = 0;
 
-  virtual scoped_refptr<gpu::GLSurfaceTaskScheduler>
-  CreateGLSurfaceTaskScheduler() = 0;
   virtual base::TimeDelta GetGpuBlockedTimeSinceLastSwap() = 0;
   virtual bool NeedsSupportForExternalStencil() = 0;
 

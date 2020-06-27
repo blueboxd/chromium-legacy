@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/extension_action/action_info_test_util.h"
+#include "extensions/common/api/extension_action/action_info_test_util.h"
 
 #include "components/version_info/channel.h"
 #include "extensions/common/features/feature_channel.h"

@@ -316,8 +316,8 @@ MenuManager::MenuManager(content::BrowserContext* context, StateStore* store)
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(context);
   observed_profiles_.Add(profile);
-  if (profile->HasOffTheRecordProfile())
-    observed_profiles_.Add(profile->GetOffTheRecordProfile());
+  if (profile->HasPrimaryOTRProfile())
+    observed_profiles_.Add(profile->GetPrimaryOTRProfile());
   if (store_)
     store_->RegisterKey(kContextMenusKey);
 }

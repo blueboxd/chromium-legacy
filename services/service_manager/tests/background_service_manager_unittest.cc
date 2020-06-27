@@ -13,8 +13,8 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -84,12 +84,12 @@ void SetFlagAndRunClosure(bool* flag, base::OnceClosure closure) {
 TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   base::test::TaskEnvironment task_environment;
   BackgroundServiceManager background_service_manager(GetTestManifests());
-  mojom::ServicePtr service;
-  ServiceImpl service_impl(mojo::MakeRequest(&service));
+  mojo::PendingRemote<mojom::Service> service_remote;
+  ServiceImpl service_impl(service_remote.InitWithNewPipeAndPassReceiver());
   background_service_manager.RegisterService(
       Identity(kTestName, kSystemInstanceGroup, base::Token{},
                base::Token::CreateRandom()),
-      service.PassInterface(), mojo::NullReceiver() /* metadata_receiver */);
+      std::move(service_remote), mojo::NullReceiver() /* metadata_receiver */);
 
   mojo::Remote<mojom::TestService> test_service;
   service_impl.connector()->Connect(ServiceFilter::ByName(kAppName),

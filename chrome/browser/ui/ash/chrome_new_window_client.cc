@@ -510,20 +510,17 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 void ChromeNewWindowClient::OpenArcCustomTab(
     const GURL& url,
     int32_t task_id,
-    int32_t surface_id,
-    int32_t top_margin,
     arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) {
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
   aura::Window* arc_window = arc::GetArcWindow(task_id);
   if (!arc_window) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 
-  auto custom_tab =
-      std::make_unique<arc::CustomTab>(arc_window, surface_id, top_margin);
+  auto custom_tab = std::make_unique<arc::CustomTab>(arc_window);
   auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
 
   // |custom_tab_browser| will be destroyed when its tab strip becomes empty,
@@ -538,9 +535,9 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
   // once OnOpenCustomTab from //components/arc/mojom/intent_helper.mojom could
   // take pending_remote directly. Refer to crrev.com/c/1868870.
-  mojo::InterfacePtr<arc::mojom::CustomTabSession> custom_tab_ptr(
+  auto custom_tab_remote(
       CustomTabSessionImpl::Create(std::move(custom_tab), custom_tab_browser));
-  std::move(callback).Run(std::move(custom_tab_ptr));
+  std::move(callback).Run(std::move(custom_tab_remote));
 }
 
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(

@@ -29,6 +29,10 @@ double PlatformAngleToCaptureValue(long degrees) {
   return 1.0 * degrees * kDegreesToArcSeconds;
 }
 
+double PlatformAngleToCaptureStep(long step, double min, double max) {
+  return PlatformAngleToCaptureValue(step);
+}
+
 // Windows platform stores exposure time (min, max and current) in log base 2
 // seconds. If value is n, exposure time is 2^n seconds. Spec expects exposure
 // times in 100 micro seconds.
@@ -42,8 +46,22 @@ double PlatformExposureTimeToCaptureValue(long log_seconds) {
   return std::exp2(log_seconds) * kSecondsTo100MicroSeconds;
 }
 
-double PlatformExposureTimeToCaptureStep(long log_step) {
-  return std::exp2(log_step);
+double PlatformExposureTimeToCaptureStep(long log_step,
+                                         double min,
+                                         double max) {
+  // The smallest possible value is
+  // |exp2(min_log_seconds) * kSecondsTo100MicroSeconds|.
+  // That value can be computed by PlatformExposureTimeToCaptureValue and is
+  // passed to this function as |min| thus there is not need to recompute it
+  // here.
+  // The second smallest possible value is
+  // |exp2(min_log_seconds + log_step) * kSecondsTo100MicroSeconds| which equals
+  // to |exp2(log_step) * min|.
+  // While the relative step or ratio between consecutive values is always the
+  // same (|std::exp2(log_step)|), the smallest absolute step is between the
+  // smallest and the second smallest possible values i.e. between |min| and
+  // |exp2(log_step) * min|.
+  return (std::exp2(log_step) - 1) * min;
 }
 
 // Note: Because we can't find a solid way to detect camera location (front/back

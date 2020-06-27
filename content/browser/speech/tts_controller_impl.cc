@@ -105,6 +105,10 @@ TtsControllerImpl* TtsControllerImpl::GetInstance() {
   return base::Singleton<TtsControllerImpl>::get();
 }
 
+void TtsControllerImpl::SetStopSpeakingWhenHidden(bool value) {
+  stop_speaking_when_hidden_ = value;
+}
+
 TtsControllerImpl::TtsControllerImpl() = default;
 
 TtsControllerImpl::~TtsControllerImpl() {
@@ -529,10 +533,6 @@ void TtsControllerImpl::UpdateUtteranceDefaults(TtsUtterance* utterance) {
     volume = blink::mojom::kSpeechSynthesisDefaultVolume;
 #endif  // defined(OS_CHROMEOS)
   utterance->SetContinuousParameters(rate, pitch, volume);
-}
-
-void TtsControllerImpl::SetStopSpeakingWhenHidden(bool value) {
-  stop_speaking_when_hidden_ = value;
 }
 
 void TtsControllerImpl::StripSSML(

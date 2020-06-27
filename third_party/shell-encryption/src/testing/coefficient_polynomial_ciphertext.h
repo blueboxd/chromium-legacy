@@ -27,7 +27,8 @@
 #include "symmetric_encryption.h"
 #include "testing/coefficient_polynomial.h"
 
-namespace rlwe::testing {
+namespace rlwe {
+namespace testing {
 
 // Container for a vector of polynomials in coefficient representation. This
 // class is the analogue of SymmetricRlweCiphertext with component polynomials
@@ -52,8 +53,8 @@ class CoefficientPolynomialCiphertext {
       const ErrorParams<ModularInt>* error_params)
       : p_(std::move(p)),
         modulus_params_(p_[0].ModulusParams()),
-        power_of_s_(power_of_s),
-        error_params_(error_params) {}
+        error_params_(error_params), 
+        power_of_s_(power_of_s){}
 
   // Static method that creates a CoefficientPolynomialCiphertext from a
   // SymmetricRlweCiphertext by performing InverseNtt on each ciphertext
@@ -163,13 +164,14 @@ class CoefficientPolynomialCiphertext {
   // ErrorParams.
   const rlwe::ErrorParams<ModularInt>* error_params_;
 
-  // A heuristic on the amount of error in the ciphertext.
-  double error_;
-
   // The power a in s(x^a) that the ciphertext can be decrypted with.
   int power_of_s_;
+
+  // A heuristic on the amount of error in the ciphertext.
+  double error_;
 };
 
-}  //  namespace rlwe::testing
+}  //  namespace testing
+}  //  namespace rlwe
 
 #endif  // RLWE_TESTING_COEFFICIENT_POLYNOMIAL_CIPHERTEXT_H_

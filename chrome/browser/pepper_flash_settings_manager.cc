@@ -457,7 +457,7 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesAsync(
   // Wipe that file.
   const base::FilePath& device_id_path =
       DeviceIDFetcher::GetLegacyDeviceIDPath(profile_path);
-  bool success = base::DeleteFile(device_id_path, false);
+  bool success = base::DeleteFile(device_id_path);
 
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&Core::DeauthorizeContentLicensesInPlugin, this,

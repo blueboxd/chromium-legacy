@@ -957,6 +957,30 @@ void Node::ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     parent_node->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
+void Node::ReplaceChildren(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+                           ExceptionState& exception_state) {
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (!this_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
+
+  Node* node =
+      ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state);
+  if (exception_state.HadException())
+    return;
+
+  while (Node* first_child = firstChild()) {
+    removeChild(first_child, exception_state);
+    if (exception_state.HadException())
+      return;
+  }
+
+  appendChild(node, exception_state);
+}
+
 void Node::remove(ExceptionState& exception_state) {
   if (ContainerNode* parent = parentNode())
     parent->RemoveChild(this, exception_state);

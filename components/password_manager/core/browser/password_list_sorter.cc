@@ -61,7 +61,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form,
   key += is_android_uri ? facet_uri.canonical_spec()
                         : SplitByDotAndReverse(shown_origin);
 
-  if (!form.blacklisted_by_user) {
+  if (!form.blocked_by_user) {
     key += kSortKeyPartsSeparator + base::UTF16ToUTF8(form.username_value) +
            kSortKeyPartsSeparator + base::UTF16ToUTF8(form.password_value);
 

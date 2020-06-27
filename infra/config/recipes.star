@@ -5,7 +5,7 @@
 _RECIPE_NAME_PREFIX = 'recipe:'
 
 def _recipe_for_package(cipd_package):
-  def recipe(*, name, cipd_version=None, recipe=None):
+  def recipe(*, name, cipd_version=None, recipe=None, use_bbagent=False):
     # Force the caller to put the recipe prefix rather than adding it
     # programatically to make the string greppable
     if not name.startswith(_RECIPE_NAME_PREFIX):
@@ -18,6 +18,7 @@ def _recipe_for_package(cipd_package):
         cipd_package = cipd_package,
         cipd_version = cipd_version,
         recipe = recipe,
+        use_bbagent = use_bbagent,
     )
   return recipe
 
@@ -55,6 +56,11 @@ build_recipe(
 
 build_recipe(
     name = 'recipe:chromium_clang_coverage_tot',
+)
+
+build_recipe(
+    name = 'recipe:chromium_codesearch',
+    use_bbagent = True,
 )
 
 build_recipe(

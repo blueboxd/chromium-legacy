@@ -102,7 +102,7 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->new_password_element = base::ASCIIToUTF16("confirmation_password");
   form->date_created = AutofillClock::Now();
   form->date_synced = AutofillClock::Now();
-  form->blacklisted_by_user = false;
+  form->blocked_by_user = false;
   form->type = PasswordForm::Type::kGenerated;
   form->times_used = 999;
   test::CreateTestAddressFormData(&form->form_data);

@@ -137,12 +137,10 @@ MimeUtil::MimeUtil() {
   for (const char* type : kSupportedImageTypes)
     image_types_.insert(type);
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  // TODO(wtc): Add "image/avif" and "image/avif-sequence" to the
-  // kSupportedImageTypes array when the AVIF feature is shipped.
-  if (base::FeatureList::IsEnabled(features::kAVIF)) {
+  // TODO(wtc): Add "image/avif" to the kSupportedImageTypes array when the AVIF
+  // feature is shipped.
+  if (base::FeatureList::IsEnabled(features::kAVIF))
     image_types_.insert("image/avif");
-    image_types_.insert("image/avif-sequence");
-  }
 #endif
   for (const char* type : kUnsupportedTextTypes)
     unsupported_text_types_.insert(type);

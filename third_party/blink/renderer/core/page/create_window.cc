@@ -243,15 +243,16 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript() &&
-      opener_frame.DomWindow()->GetContentSecurityPolicy() &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(opener_frame.DomWindow())) {
+      opener_frame.DomWindow()->GetContentSecurityPolicyForWorld()) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
-    if (!opener_frame.DomWindow()->GetContentSecurityPolicy()->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
-            nullptr /* element */, script_source, String() /* nonce */,
-            opener_frame.GetDocument()->Url(), OrdinalNumber())) {
+    if (!opener_frame.DomWindow()
+             ->GetContentSecurityPolicyForWorld()
+             ->AllowInline(
+                 ContentSecurityPolicy::InlineType::kNavigation,
+                 nullptr /* element */, script_source, String() /* nonce */,
+                 opener_frame.GetDocument()->Url(), OrdinalNumber())) {
       return nullptr;
     }
   }

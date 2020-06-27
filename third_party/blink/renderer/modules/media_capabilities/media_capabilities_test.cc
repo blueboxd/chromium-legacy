@@ -548,12 +548,12 @@ TEST(MediaCapabilitiesTests, PredictWithBadWindowMLService) {
 
   // ML is enabled, but DB should still be called for power efficiency (false).
   // Its smoothness value (true) should be ignored in favor of ML prediction.
-  // Only bad window service should be asked for a prediction. We exceed the
-  // bad window threshold to trigger smooth=false.
+  // Only bad window service should be asked for a prediction. Expect
+  // smooth=false because bad window prediction is equal to its threshold.
   EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
       .WillOnce(DbCallback(kFeatures, /*smooth*/ true, /*efficient*/ false));
   EXPECT_CALL(*context.GetBadWindowService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold + 0.5));
+      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold));
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _)).Times(0);
   MediaCapabilitiesInfo* info = DecodingInfo(kDecodingConfig, &context);
   EXPECT_FALSE(info->smooth());
@@ -563,11 +563,11 @@ TEST(MediaCapabilitiesTests, PredictWithBadWindowMLService) {
   context.VerifyAndClearMockExpectations();
 
   // Same as above, but invert all signals. Expect smooth=true because bad
-  // window prediction is now = its threshold.
+  // window prediction is now less than its threshold.
   EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
       .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*efficient*/ true));
   EXPECT_CALL(*context.GetBadWindowService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold));
+      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold - 0.25));
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _)).Times(0);
   info = DecodingInfo(kDecodingConfig, &context);
   EXPECT_TRUE(info->smooth());
@@ -607,14 +607,14 @@ TEST(MediaCapabilitiesTests, PredictWithNnrMLService) {
 
   // ML is enabled, but DB should still be called for power efficiency (false).
   // Its smoothness value (true) should be ignored in favor of ML prediction.
-  // Only NNR service should be asked for a prediction. We exceed the NNR
-  // threshold to trigger smooth=false.
+  // Only NNR service should be asked for a prediction. Expect smooth=false
+  // because NNR prediction is equal to its threshold.
   EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
       .WillOnce(DbCallback(kFeatures, /*smooth*/ true, /*efficient*/ false));
   EXPECT_CALL(*context.GetBadWindowService(), PredictDistribution(_, _))
       .Times(0);
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold + 0.5));
+      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold));
   MediaCapabilitiesInfo* info = DecodingInfo(kDecodingConfig, &context);
   EXPECT_FALSE(info->smooth());
   EXPECT_FALSE(info->powerEfficient());
@@ -623,13 +623,13 @@ TEST(MediaCapabilitiesTests, PredictWithNnrMLService) {
   context.VerifyAndClearMockExpectations();
 
   // Same as above, but invert all signals. Expect smooth=true because NNR
-  // prediction is now = its threshold.
+  // prediction is now less than its threshold.
   EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
       .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*efficient*/ true));
   EXPECT_CALL(*context.GetBadWindowService(), PredictDistribution(_, _))
       .Times(0);
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold));
+      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold - 0.01));
   info = DecodingInfo(kDecodingConfig, &context);
   EXPECT_TRUE(info->smooth());
   EXPECT_TRUE(info->powerEfficient());
@@ -723,16 +723,16 @@ TEST(MediaCapabilitiesTests, PredictWithBothMLServices) {
   context.VerifyAndClearMockExpectations();
 
   // Same as above, but with ML services predicting exactly their respective
-  // thresholds. Still expect info->smooth() = true - matching the threshold is
-  // still considered smooth.
+  // thresholds. Now expect info->smooth() = false - reaching the threshold is
+  // considered not smooth.
   EXPECT_CALL(*context.GetPerfHistoryService(), GetPerfInfo(_, _))
       .WillOnce(DbCallback(kFeatures, /*smooth*/ false, /*efficient*/ true));
   EXPECT_CALL(*context.GetBadWindowService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold / 2));
+      .WillOnce(MlCallback(kFeaturesML, kBadWindowThreshold));
   EXPECT_CALL(*context.GetNnrService(), PredictDistribution(_, _))
-      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold / 2));
+      .WillOnce(MlCallback(kFeaturesML, kNnrThreshold));
   info = DecodingInfo(kDecodingConfig, &context);
-  EXPECT_TRUE(info->smooth());
+  EXPECT_FALSE(info->smooth());
   EXPECT_TRUE(info->powerEfficient());
   context.VerifyAndClearMockExpectations();
 }

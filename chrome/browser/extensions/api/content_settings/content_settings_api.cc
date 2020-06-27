@@ -147,16 +147,16 @@ ContentSettingsContentSettingGetFunction::Run() {
   content_settings::CookieSettings* cookie_settings;
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (incognito) {
-    if (!profile->HasOffTheRecordProfile()) {
+    if (!profile->HasPrimaryOTRProfile()) {
       // TODO(bauerb): Allow reading incognito content settings
       // outside of an incognito session.
       return RespondNow(
           Error(content_settings_api_constants::kIncognitoSessionOnlyError));
     }
     map = HostContentSettingsMapFactory::GetForProfile(
-        profile->GetOffTheRecordProfile());
+        profile->GetPrimaryOTRProfile());
     cookie_settings =
-        CookieSettingsFactory::GetForProfile(profile->GetOffTheRecordProfile())
+        CookieSettingsFactory::GetForProfile(profile->GetPrimaryOTRProfile())
             .get();
   } else {
     map = HostContentSettingsMapFactory::GetForProfile(profile);
@@ -302,8 +302,7 @@ ContentSettingsContentSettingSetFunction::Run() {
   }
 
   if (scope == kExtensionPrefsScopeIncognitoSessionOnly &&
-      !Profile::FromBrowserContext(browser_context())
-           ->HasOffTheRecordProfile()) {
+      !Profile::FromBrowserContext(browser_context())->HasPrimaryOTRProfile()) {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
   }
 

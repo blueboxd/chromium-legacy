@@ -204,7 +204,7 @@ void ManagePasswordsState::ProcessLoginsChanged(
     if (change.type() != password_manager::PasswordStoreChange::REMOVE)
       all_changes_are_deletion = false;
     const PasswordForm& changed_form = change.form();
-    if (changed_form.blacklisted_by_user)
+    if (changed_form.blocked_by_user)
       continue;
     if (change.type() == password_manager::PasswordStoreChange::REMOVE) {
       if (RemoveFormFromVector(changed_form, &local_credentials_forms_))

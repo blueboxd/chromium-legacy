@@ -1569,12 +1569,12 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
     }
     return true;
   }
-  if (event.type() == ui::ET_GESTURE_SCROLL_END) {
-    presentation_time_recorder_.reset();
-    return true;
-  }
 
   if (event.type() == ui::ET_GESTURE_END) {
+    // Do not reset |presentation_time_recorder_| in ui::ET_GESTURE_SCROLL_END
+    // event because it may not exist due to gesture fling.
+    presentation_time_recorder_.reset();
+
     // The type of scrolling offset is float to ensure that ScrollableShelfView
     // is responsive to slow gesture scrolling. However, after offset
     // adjustment, the scrolling offset should be floored.
@@ -1618,16 +1618,32 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 
+  float scroll_delta = 0.f;
+  const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
+  if (is_horizontal) {
+    scroll_delta = -event.details().scroll_x();
+    scroll_delta = ShouldAdaptToRTL() ? -scroll_delta : scroll_delta;
+  } else {
+    scroll_delta = -event.details().scroll_y();
+  }
+
+  // Return early if scrollable shelf cannot be scrolled anymore because it has
+  // reached to the end.
+  const float current_scroll_offset = CalculateMainAxisScrollDistance();
+  if ((current_scroll_offset == 0.f && scroll_delta <= 0.f) ||
+      (current_scroll_offset == CalculateScrollUpperBound(GetSpaceForIcons()) &&
+       scroll_delta >= 0.f)) {
+    return true;
+  }
+
   DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
 
-  const float scroll_x = -event.details().scroll_x();
-  if (GetShelf()->IsHorizontalAlignment()) {
-    ScrollByXOffset(ShouldAdaptToRTL() ? -scroll_x : scroll_x,
-                    /*animate=*/false);
-  } else {
-    ScrollByYOffset(-event.details().scroll_y(), /*animate=*/false);
-  }
+  if (is_horizontal)
+    ScrollByXOffset(scroll_delta, /*animate=*/false);
+  else
+    ScrollByYOffset(scroll_delta, /*animate=*/false);
+
   return true;
 }
 

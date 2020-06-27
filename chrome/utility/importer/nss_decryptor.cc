@@ -80,8 +80,8 @@ struct FirefoxRawPasswordInfo {
 
 namespace {
 
-autofill::PasswordForm CreateBlacklistPasswordForm(
-    const std::string& blacklist_host) {
+autofill::PasswordForm CreateBlockedPasswordForm(
+    const std::string& blocked_host) {
   GURL::Replacements rep;
   rep.ClearQuery();
   rep.ClearRef();
@@ -89,9 +89,9 @@ autofill::PasswordForm CreateBlacklistPasswordForm(
   rep.ClearPassword();
 
   autofill::PasswordForm form;
-  form.url = GURL(blacklist_host).ReplaceComponents(rep);
+  form.url = GURL(blocked_host).ReplaceComponents(rep);
   form.signon_realm = form.url.GetOrigin().spec();
-  form.blacklisted_by_user = true;
+  form.blocked_by_user = true;
   return form;
 }
 
@@ -178,7 +178,7 @@ void NSSDecryptor::ParseSignons(const base::FilePath& signon_file,
   // Reads never-saved list. Domains are stored one per line.
   size_t i;
   for (i = 1; i < lines.size() && lines[i].compare(".") != 0; ++i)
-    forms->push_back(CreateBlacklistPasswordForm(lines[i]));
+    forms->push_back(CreateBlockedPasswordForm(lines[i]));
   ++i;
 
   // Reads saved passwords. The information is stored in blocks
@@ -263,7 +263,7 @@ bool NSSDecryptor::ReadAndParseSignons(
 
   // Read domains for which passwords are never saved.
   while (s.Step())
-    forms->push_back(CreateBlacklistPasswordForm(s.ColumnString(0)));
+    forms->push_back(CreateBlockedPasswordForm(s.ColumnString(0)));
 
   const char query2[] = "SELECT hostname, httpRealm, formSubmitURL, "
                         "usernameField, passwordField, encryptedUsername, "
@@ -306,7 +306,7 @@ bool NSSDecryptor::ReadAndParseLogins(
     for (const auto& value : blacklist_domains->GetList()) {
       if (!value.is_string())
         continue;
-      forms->push_back(CreateBlacklistPasswordForm(value.GetString()));
+      forms->push_back(CreateBlockedPasswordForm(value.GetString()));
     }
   }
 

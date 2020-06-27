@@ -28,8 +28,8 @@ using ::rlwe::testing::EqualsProto;
 RlwePlaintextId CreateRlwePlaintextId(absl::string_view non_sensitive_id,
                                       absl::string_view sensitive_id) {
   RlwePlaintextId id;
-  id.set_non_sensitive_id(non_sensitive_id);
-  id.set_sensitive_id(sensitive_id);
+  id.set_non_sensitive_id(std::string(non_sensitive_id));
+  id.set_sensitive_id(std::string(sensitive_id));
   return id;
 }
 

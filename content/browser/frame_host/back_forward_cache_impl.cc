@@ -159,7 +159,8 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
       FeatureToBit(WebSchedulerTrackedFeature::kIdleManager) |
       FeatureToBit(WebSchedulerTrackedFeature::kPaymentManager) |
       FeatureToBit(WebSchedulerTrackedFeature::kSpeechSynthesis) |
-      FeatureToBit(WebSchedulerTrackedFeature::kKeyboardLock);
+      FeatureToBit(WebSchedulerTrackedFeature::kKeyboardLock) |
+      FeatureToBit(WebSchedulerTrackedFeature::kSmsService);
 
   uint64_t result = kAlwaysDisallowedFeatures;
 

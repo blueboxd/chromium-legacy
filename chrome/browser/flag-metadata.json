@@ -571,6 +571,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "color-picker-eye-dropper",
+    "owners": [ "iopopesc@microsoft.com", "masonfreed", "//third_party/blink/renderer/core/OWNERS" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "color-provider-redirection",
     "owners": [ "//ui/color/OWNERS" ],
     "expiry_milestone": 88
@@ -1698,7 +1703,7 @@
   {
     "name": "enable-heavy-ad-intervention",
     "owners": [ "johnidel", "jkarlin" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "enable-heuristic-stylus-palm-rejection",
@@ -2691,7 +2696,7 @@
   {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "masonfreed", "yuzhehan", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 88
   },
   {
     "name": "fractional-scroll-offsets",
@@ -2801,7 +2806,7 @@
   {
     "name": "heavy-ad-privacy-mitigations",
     "owners": [ "johnidel", "jkarlin" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "help-app",
@@ -3009,6 +3014,11 @@
     "name": "mac-v2-gpu-sandbox",
     "owners": [ "kerrnel@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "maintain-shelf-state-overview",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 86
   },
   {
     "name": "managed-bookmarks-ios",

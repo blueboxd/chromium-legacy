@@ -20,9 +20,9 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_content_browser_client.h"
-#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/common/web_test/web_test_constants.h"
@@ -46,10 +46,10 @@ MockPlatformNotificationService* GetMockPlatformNotificationService() {
   return static_cast<MockPlatformNotificationService*>(service);
 }
 
-WebTestContentIndexProvider* GetWebTestContentIndexProvider() {
+ShellContentIndexProvider* GetShellContentIndexProvider() {
   auto* client = WebTestContentBrowserClient::Get();
   auto* context = client->GetWebTestBrowserContext();
-  return static_cast<WebTestContentIndexProvider*>(
+  return static_cast<ShellContentIndexProvider*>(
       context->GetContentIndexProvider());
 }
 
@@ -130,7 +130,7 @@ void WebTestClientImpl::SimulateWebNotificationClose(const std::string& title,
 void WebTestClientImpl::SimulateWebContentIndexDelete(const std::string& id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto* provider = GetWebTestContentIndexProvider();
+  ShellContentIndexProvider* provider = GetShellContentIndexProvider();
 
   std::pair<int64_t, url::Origin> registration_data =
       provider->GetRegistrationDataFromId(id);

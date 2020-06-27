@@ -14,6 +14,8 @@
 
 syntax = "proto3";
 
+option optimize_for = LITE_RUNTIME;
+
 package private_membership;
 
 // An enum describing different types of available hash functions.

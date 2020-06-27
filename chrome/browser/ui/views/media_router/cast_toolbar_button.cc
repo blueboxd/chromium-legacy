@@ -61,7 +61,6 @@ CastToolbarButton::CastToolbarButton(
   EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ICON_TOOLTIP_TEXT));
 
-  ToolbarButton::Init();
   IssuesObserver::Init();
 
   DCHECK(GetActionController());

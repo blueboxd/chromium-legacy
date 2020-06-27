@@ -18,6 +18,7 @@
 #define RLWE_TESTING_PROTOBUF_MATCHERS_H_
 
 #include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <gmock/gmock.h>
 
@@ -29,10 +30,43 @@ class EqualsProtoImpl
  public:
   EqualsProtoImpl(const google::protobuf::Message& other) : other_(&other) {}
 
-  bool MatchAndExplain(
+  inline bool MatchAndExplain(
       const google::protobuf::Message& message,
       ::testing::MatchResultListener* listener) const override {
     if (!google::protobuf::util::MessageDifferencer::Equals(message, *other_)) {
+      *listener << "protobufs were not equal";
+      return false;
+    }
+    return true;
+  }
+
+  inline void DescribeTo(std::ostream* os) const override {
+    *os << "is equal to another protocol buffer";
+  }
+
+  inline void DescribeNegationTo(std::ostream* os) const override {
+    *os << "is not equal to another protocol buffer";
+  }
+
+ private:
+  const google::protobuf::Message* other_;  // not owned
+};
+
+inline ::testing::Matcher<const google::protobuf::Message&> EqualsProto(
+    const google::protobuf::Message& other) {
+  return ::testing::Matcher<const google::protobuf::Message&>(new EqualsProtoImpl(other));
+}
+
+class EqualsProtoLiteImpl
+    : public ::testing::MatcherInterface<const google::protobuf::MessageLite&> {
+ public:
+  EqualsProtoLiteImpl(const google::protobuf::MessageLite& other) : other_(&other) {}
+
+  bool MatchAndExplain(
+      const google::protobuf::MessageLite& message,
+      ::testing::MatchResultListener* listener) const override {
+    // TODO(b/159369884): Implement robust equality checks.
+    if (message.SerializeAsString() != other_->SerializeAsString()) {
       *listener << "protobufs were not equal";
       return false;
     }
@@ -48,12 +82,13 @@ class EqualsProtoImpl
   }
 
  private:
-  const google::protobuf::Message* other_;  // not owned
+  const google::protobuf::MessageLite* other_;  // not owned
 };
 
-::testing::Matcher<const google::protobuf::Message&> EqualsProto(
-    const google::protobuf::Message& other) {
-  return ::testing::Matcher<const google::protobuf::Message&>(new EqualsProtoImpl(other));
+inline ::testing::Matcher<const google::protobuf::MessageLite&> EqualsProto(
+    const google::protobuf::MessageLite& other) {
+  return ::testing::Matcher<const google::protobuf::MessageLite&>(
+      new EqualsProtoLiteImpl(other));
 }
 
 }  // namespace testing

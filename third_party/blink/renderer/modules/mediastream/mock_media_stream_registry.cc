@@ -75,7 +75,7 @@ MockMediaStreamVideoSource* MockMediaStreamRegistry::AddVideoTrack(
   component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source_ptr, adapter_settings, noise_reduction, is_screencast,
       min_frame_rate, base::nullopt /* pan */, base::nullopt /* tilt */,
-      base::nullopt /* zoom */, false /* pan_tilt_zoom_allowed */,
+      base::nullopt /* zoom */,
       MediaStreamVideoSource::ConstraintsOnceCallback(), true /* enabled */));
   descriptor_->AddRemoteTrack(component);
   return native_source_ptr;

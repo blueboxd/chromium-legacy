@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   Profile* profile = browser()->profile();
   ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToBrowserContext(profile->GetOffTheRecordProfile());
+  catcher_incognito.RestrictToBrowserContext(profile->GetPrimaryOTRProfile());
 
   ASSERT_TRUE(RunExtensionTestIncognito("omnibox")) << message_;
 

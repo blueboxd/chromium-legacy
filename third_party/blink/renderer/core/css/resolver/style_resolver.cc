@@ -857,8 +857,10 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     StyleAdjuster::AdjustComputedStyle(state, element);
   }
 
-  if (IsA<HTMLBodyElement>(*element))
-    GetDocument().GetTextLinkColors().SetTextColor(state.Style()->GetColor());
+  if (IsA<HTMLBodyElement>(*element)) {
+    GetDocument().GetTextLinkColors().SetTextColor(
+        state.Style()->GetCurrentColor());
+  }
 
   SetAnimationUpdateIfNeeded(state, *element);
 
@@ -2339,7 +2341,7 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
     }
     if (!identifier_value) {
       state.Style()->SetColor(
-          StyleBuilderConverter::ConvertColor(state, *color_value));
+          StyleBuilderConverter::ConvertStyleColor(state, *color_value));
     }
   } else if (state.GetElement() == GetDocument().documentElement()) {
     state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
@@ -2370,8 +2372,8 @@ void StyleResolver::ApplyCascadedColorValue(StyleResolverState& state) {
     }
     if (!identifier_value) {
       state.Style()->SetInternalVisitedColor(
-          StyleBuilderConverter::ConvertColor(state, *visited_color_value,
-                                              true));
+          StyleBuilderConverter::ConvertStyleColor(state, *visited_color_value,
+                                                   true));
     }
   }
 }

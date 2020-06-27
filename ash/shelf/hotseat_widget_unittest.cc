@@ -71,26 +71,36 @@ class HotseatWidgetTest
       public testing::WithParamInterface<
           std::tuple<ShelfAutoHideBehavior,
                      /*is_assistant_enabled*/ bool,
-                     /*navigation_buttons_shown_in_tablet_mode*/ bool>> {
+                     /*navigation_buttons_shown_in_tablet_mode*/ bool,
+                     /*should_maintain_shelf_state_for_overview*/ bool>> {
  public:
   HotseatWidgetTest()
       : ShelfLayoutManagerTestBase(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         shelf_auto_hide_behavior_(std::get<0>(GetParam())),
         is_assistant_enabled_(std::get<1>(GetParam())),
-        navigation_buttons_shown_in_tablet_mode_(std::get<2>(GetParam())) {
+        navigation_buttons_shown_in_tablet_mode_(std::get<2>(GetParam())),
+        should_maintain_shelf_state_for_overview_(std::get<3>(GetParam())) {
     if (is_assistant_enabled_)
       assistant_test_api_ = AssistantTestApi::Create();
+
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    enabled_features.push_back(chromeos::features::kShelfHotseat);
     if (navigation_buttons_shown_in_tablet_mode_) {
-      scoped_feature_list_.InitWithFeatures(
-          {chromeos::features::kShelfHotseat},
-          {features::kHideShelfControlsInTabletMode});
+      disabled_features.push_back(features::kHideShelfControlsInTabletMode);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {chromeos::features::kShelfHotseat,
-           features::kHideShelfControlsInTabletMode},
-          {});
+      enabled_features.push_back(features::kHideShelfControlsInTabletMode);
     }
+    if (should_maintain_shelf_state_for_overview_) {
+      enabled_features.push_back(
+          features::kMaintainShelfStateWhenEnteringOverview);
+    } else {
+      disabled_features.push_back(
+          features::kMaintainShelfStateWhenEnteringOverview);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   // testing::Test:
@@ -120,6 +130,9 @@ class HotseatWidgetTest
   }
   bool is_assistant_enabled() const { return is_assistant_enabled_; }
   AssistantTestApi* assistant_test_api() { return assistant_test_api_.get(); }
+  bool should_maintain_shelf_state_for_overview() const {
+    return should_maintain_shelf_state_for_overview_;
+  }
 
   void ShowShelfAndActivateAssistant() {
     if (shelf_auto_hide_behavior() == ShelfAutoHideBehavior::kAlways)
@@ -212,6 +225,7 @@ class HotseatWidgetTest
   const ShelfAutoHideBehavior shelf_auto_hide_behavior_;
   const bool is_assistant_enabled_;
   const bool navigation_buttons_shown_in_tablet_mode_;
+  const bool should_maintain_shelf_state_for_overview_;
   std::unique_ptr<AssistantTestApi> assistant_test_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -322,6 +336,7 @@ INSTANTIATE_TEST_SUITE_P(
     HotseatWidgetTest,
     testing::Combine(testing::Values(ShelfAutoHideBehavior::kNever,
                                      ShelfAutoHideBehavior::kAlways),
+                     testing::Bool(),
                      testing::Bool(),
                      testing::Bool()));
 
@@ -817,15 +832,30 @@ TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
   // kShownHomeLauncher.
   StartOverview();
   EXPECT_TRUE(Shell::Get()->overview_controller()->IsInStartAnimation());
-  EXPECT_FALSE(observer.ObserverCountsEqual());
-  // Overview triggers two animations for hotseat state changes, thus one of
-  // them is cancelled.
-  EXPECT_EQ(1, observer.AnimationAbortedCalls());
+  if (should_maintain_shelf_state_for_overview()) {
+    // No animations should have been started so no animations are in progress
+    // or aborted.
+    EXPECT_TRUE(observer.ObserverCountsEqual());
+    EXPECT_EQ(0, observer.AnimationAbortedCalls());
+  } else {
+    // Overview triggers two animations for hotseat state changes, thus one of
+    // them is cancelled.
+    EXPECT_FALSE(observer.ObserverCountsEqual());
+    EXPECT_EQ(1, observer.AnimationAbortedCalls());
+  }
+
   EndOverview();
-  observer.Wait();
-  // We cancelled the StartOverviewAnimation while it was running, so we expect
-  // the total number of aborted calls were 3.
-  EXPECT_EQ(3, observer.AnimationAbortedCalls());
+
+  if (should_maintain_shelf_state_for_overview()) {
+    // No animations should have been started or aborted.
+    EXPECT_EQ(0, observer.AnimationAbortedCalls());
+  } else {
+    // Observer should only wait if animations are expected.
+    observer.Wait();
+    // We cancelled the StartOverviewAnimation while it was running, so we
+    // expect the total number of aborted calls were 3.
+    EXPECT_EQ(3, observer.AnimationAbortedCalls());
+  }
   EXPECT_TRUE(observer.ObserverCountsEqual());
   ASSERT_EQ(HotseatState::kShownHomeLauncher,
             GetShelfLayoutManager()->hotseat_state());
@@ -833,9 +863,17 @@ TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
   observer.Reset();
   // Go to overview. Hotseat state should be kExtended.
   StartOverview();
-  observer.Wait();
+
+  // Observer should only wait if animations are expected.
+  if (should_maintain_shelf_state_for_overview()) {
+    ASSERT_EQ(HotseatState::kShownHomeLauncher,
+              GetShelfLayoutManager()->hotseat_state());
+  } else {
+    observer.Wait();
+    ASSERT_EQ(HotseatState::kExtended,
+              GetShelfLayoutManager()->hotseat_state());
+  }
   EXPECT_TRUE(observer.ObserverCountsEqual());
-  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
 // Tests that a swipe up on the shelf shows the hotseat while in split view.
@@ -982,7 +1020,11 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
     OverviewAnimationWaiter waiter;
     StartOverview();
     waiter.Wait();
-    watcher.CheckEqual({HotseatState::kExtended});
+    if (should_maintain_shelf_state_for_overview()) {
+      watcher.CheckEqual({/* shelf state should not change*/});
+    } else {
+      watcher.CheckEqual({HotseatState::kExtended});
+    }
   }
 
   // Open a window, then open the home launcher.
@@ -999,7 +1041,11 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
     StartOverview();
     waiter.Wait();
 
-    watcher.CheckEqual({HotseatState::kExtended});
+    if (should_maintain_shelf_state_for_overview()) {
+      watcher.CheckEqual({/* shelf state should not change*/});
+    } else {
+      watcher.CheckEqual({HotseatState::kExtended});
+    }
   }
 }
 
@@ -1028,10 +1074,17 @@ TEST_P(HotseatWidgetTest, VerifyShelfAnimationWhenEnteringOverview) {
 
   OverviewAnimationWaiter waiter;
   StartOverview();
-  EXPECT_TRUE(hotseat_layer_animator->is_animating());
-  EXPECT_TRUE(status_area_layer_animator->is_animating());
-  waiter.Wait();
-  ASSERT_EQ(HotseatState::kExtended, hotseat_widget->state());
+  if (should_maintain_shelf_state_for_overview()) {
+    EXPECT_FALSE(hotseat_layer_animator->is_animating());
+    EXPECT_FALSE(status_area_layer_animator->is_animating());
+    ASSERT_EQ(HotseatState::kShownHomeLauncher, hotseat_widget->state());
+
+  } else {
+    EXPECT_TRUE(hotseat_layer_animator->is_animating());
+    EXPECT_TRUE(status_area_layer_animator->is_animating());
+    waiter.Wait();
+    ASSERT_EQ(HotseatState::kExtended, hotseat_widget->state());
+  }
 }
 
 // Tests that home -> in-app results in only one state change.
@@ -1122,14 +1175,23 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
   WindowState::Get(window.get())->Minimize();
 
-  // Start going to overview - hotseat should transition to extended state.
   HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Start going to overview.
   {
     ui::ScopedAnimationDurationScaleMode regular_animations(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
     StartOverview();
-    watcher.CheckEqual({HotseatState::kExtended});
+
+    // hotseat should transition to extended state if maintain shelf state for
+    // overview is switched off.
+    if (should_maintain_shelf_state_for_overview()) {
+      watcher.CheckEqual({/*Hotseat state should not change*/});
+    } else {
+      watcher.CheckEqual({HotseatState::kExtended});
+    }
   }
+
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
@@ -1139,8 +1201,12 @@ TEST_P(HotseatWidgetTest, HomeToOverviewAndBack) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
 
-  watcher.CheckEqual(
-      {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
+  if (should_maintain_shelf_state_for_overview()) {
+    watcher.CheckEqual({/*Hotseat state should not change*/});
+  } else {
+    watcher.CheckEqual(
+        {HotseatState::kExtended, HotseatState::kShownHomeLauncher});
+  }
 }
 
 TEST_P(HotseatWidgetTest, InAppToOverviewAndBack) {

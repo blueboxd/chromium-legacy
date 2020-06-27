@@ -46,7 +46,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/tts_controller.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -114,6 +113,7 @@
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
+#include "weblayer/browser/tts_environment_android_impl.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -668,12 +668,6 @@ ContentBrowserClientImpl::CreateQuotaPermissionContext() {
   return base::MakeRefCounted<permissions::QuotaPermissionContextImpl>();
 }
 
-content::TtsPlatform* ContentBrowserClientImpl::GetTtsPlatform() {
-  // TODO(sky): figure out a better way to integrate this.
-  content::TtsController::GetInstance()->SetStopSpeakingWhenHidden(true);
-  return nullptr;
-}
-
 void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
   local_state_ = CreateLocalState();
   feature_list_creator_ =
@@ -786,6 +780,12 @@ ContentBrowserClientImpl::CreateLoginDelegate(
       auth_info, web_contents, first_auth_attempt,
       std::move(auth_required_callback));
 }
+
+std::unique_ptr<content::TtsEnvironmentAndroid>
+ContentBrowserClientImpl::CreateTtsEnvironmentAndroid() {
+  return std::make_unique<TtsEnvironmentAndroidImpl>();
+}
+
 #endif  // OS_ANDROID
 
 content::SpeechRecognitionManagerDelegate*

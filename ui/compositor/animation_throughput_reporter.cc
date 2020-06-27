@@ -59,8 +59,11 @@ class AnimationThroughputReporter::AnimationTracker
   void OnLayerAnimationStarted(LayerAnimationSequence* sequence) override {
     CallbackLayerAnimationObserver::OnLayerAnimationStarted(sequence);
 
-    should_start_tracking_ = true;
-    MaybeStartTracking();
+    if (!should_start_tracking_) {
+      should_start_tracking_ = true;
+      aborted_count_on_start_ = aborted_count();
+      MaybeStartTracking();
+    }
 
     // Make sure SetActive() is called so that OnAnimationEnded callback will be
     // invoked when all attached layer animation sequences finish.
@@ -92,7 +95,7 @@ class AnimationThroughputReporter::AnimationTracker
     // E.g. underlying Layer is moved from one Compositor to another. No report
     // for such case.
     if (throughput_tracker_) {
-      if (self.aborted_count())
+      if (self.aborted_count() != aborted_count_on_start_)
         throughput_tracker_->Cancel();
       else
         throughput_tracker_->Stop();
@@ -111,6 +114,9 @@ class AnimationThroughputReporter::AnimationTracker
 
   // Whether |throughput_tracker_| should be started.
   bool should_start_tracking_ = false;
+
+  // The existing aborted count number when tracking starts.
+  int aborted_count_on_start_ = 0;
 
   AnimationThroughputReporter::ReportCallback report_callback_;
 };

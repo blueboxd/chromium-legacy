@@ -397,6 +397,8 @@ if (enable_extensions) {
     sources = [
       "api/declarative_net_request/test_utils.cc",
       "api/declarative_net_request/test_utils.h",
+      "api/extension_action/action_info_test_util.cc",
+      "api/extension_action/action_info_test_util.h",
       "file_test_util.cc",
       "file_test_util.h",
       "scoped_worker_based_extensions_channel.cc",
@@ -406,6 +408,7 @@ if (enable_extensions) {
     deps = [
       ":common",
       "//base",
+      "//components/version_info:channel",
       "//extensions/common/api",
     ]
   }

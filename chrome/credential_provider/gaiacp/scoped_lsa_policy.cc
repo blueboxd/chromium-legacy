@@ -133,7 +133,8 @@ HRESULT ScopedLsaPolicy::AddAccountRights(
     InitLsaString(right.c_str(), &lsa_right);
     lsa_rights.push_back(lsa_right);
   }
-  NTSTATUS sts = ::LsaAddAccountRights(handle_, sid, lsa_rights.data(), 1);
+  NTSTATUS sts =
+      ::LsaAddAccountRights(handle_, sid, lsa_rights.data(), lsa_rights.size());
   if (sts != STATUS_SUCCESS) {
     HRESULT hr = HRESULT_FROM_NT(sts);
     LOGFN(ERROR) << "LsaAddAccountRights sts=" << putHR(sts)
@@ -152,8 +153,8 @@ HRESULT ScopedLsaPolicy::RemoveAccountRights(
     InitLsaString(right.c_str(), &lsa_right);
     lsa_rights.push_back(lsa_right);
   }
-  NTSTATUS sts =
-      ::LsaRemoveAccountRights(handle_, sid, FALSE, lsa_rights.data(), 1);
+  NTSTATUS sts = ::LsaRemoveAccountRights(handle_, sid, FALSE,
+                                          lsa_rights.data(), lsa_rights.size());
   if (sts != STATUS_SUCCESS) {
     HRESULT hr = HRESULT_FROM_NT(sts);
     LOGFN(ERROR) << "LsaRemoveAccountRights sts=" << putHR(sts)

@@ -821,6 +821,14 @@
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
 
+    'tryserver.chromium.codesearch': {
+      'codesearch-gen-chromium-android-try': 'codesearch_gen_chromium_android_bot',
+      'codesearch-gen-chromium-chromiumos-try': 'codesearch_gen_chromium_chromiumos_bot',
+      'codesearch-gen-chromium-fuchsia-try': 'codesearch_gen_chromium_fuchsia_bot',
+      'codesearch-gen-chromium-linux-try': 'codesearch_gen_chromium_bot',
+      'codesearch-gen-chromium-win-try': 'codesearch_gen_chromium_bot',
+    },
+
     'tryserver.chromium.dawn': {
       'dawn-linux-x64-deps-rel': 'dawn_tests_release_trybot',
       'dawn-mac-x64-deps-rel': 'dawn_tests_release_trybot',

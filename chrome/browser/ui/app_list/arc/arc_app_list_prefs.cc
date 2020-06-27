@@ -133,7 +133,7 @@ bool InstallIconFromFileThread(const base::FilePath& icon_path,
   if (wrote != static_cast<int>(content_png.size())) {
     VLOG(2) << "Failed to write ARC icon file: " << icon_path.MaybeAsASCII()
             << ".";
-    if (!base::DeleteFile(icon_path, false)) {
+    if (!base::DeleteFile(icon_path)) {
       VLOG(2) << "Couldn't delete broken icon file" << icon_path.MaybeAsASCII()
               << ".";
     }

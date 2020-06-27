@@ -58,8 +58,7 @@ absl_source_set("symbolize") {
 absl_source_set("examine_stack") {
   sources = [ "internal/examine_stack.cc" ]
   public = [ "internal/examine_stack.h" ]
-  visibility = []
-  visibility += [ ":*" ]
+  visibility = [ ":*" ]
   deps = [
     ":stacktrace",
     ":symbolize",
@@ -137,8 +136,7 @@ if (is_lsan) {
     testonly = true
     sources = [ "leak_check.cc" ]
     public = [ "leak_check.h" ]
-    visibility = []
-    visibility += [ ":*" ]
+    visibility = [ ":*" ]
     deps = [ "//third_party/abseil-cpp/absl/base:config" ]
   }
 } else {
@@ -146,8 +144,7 @@ if (is_lsan) {
     testonly = true
     sources = [ "leak_check.cc" ]
     public = [ "leak_check.h" ]
-    visibility = []
-    visibility += [ ":*" ]
+    visibility = [ ":*" ]
     deps = [ "//third_party/abseil-cpp/absl/base:config" ]
   }
 }
@@ -161,6 +158,5 @@ absl_source_set("stack_consumption") {
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
   ]
-  visibility = []
-  visibility += [ ":*" ]
+  visibility = [ ":*" ]
 }

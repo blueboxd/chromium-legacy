@@ -68,8 +68,8 @@ constexpr char kUsername2[] = "user2";
 #if !defined(OS_ANDROID)
 constexpr char kHistogramName[] = "PasswordManager.AccessPasswordInSettings";
 #endif
-MATCHER(IsNotBlacklisted, "") {
-  return !arg->blacklisted_by_user;
+MATCHER(IsNotBlocked, "") {
+  return !arg->blocked_by_user;
 }
 
 MATCHER_P(HasUrl, url, "") {
@@ -228,7 +228,7 @@ class PasswordManagerPresenterTest : public testing::Test {
   autofill::PasswordForm AddPasswordException(const GURL& url) {
     autofill::PasswordForm form;
     form.url = url;
-    form.blacklisted_by_user = true;
+    form.blocked_by_user = true;
     store_->AddLogin(form);
     return form;
   }
@@ -487,7 +487,7 @@ TEST_F(PasswordManagerPresenterTest, BlacklistedPasswordsNotExported) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> passwords_for_export =
       GetUIController().GetPasswordManagerPresenter()->GetAllPasswords();
   EXPECT_EQ(1u, passwords_for_export.size());
-  EXPECT_THAT(passwords_for_export, Each(IsNotBlacklisted()));
+  EXPECT_THAT(passwords_for_export, Each(IsNotBlocked()));
 }
 
 // Check that stored passwords are provided for exporting even if there is a

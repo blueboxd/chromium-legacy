@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CONTENT_INDEX_PROVIDER_H_
-#define CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CONTENT_INDEX_PROVIDER_H_
+#ifndef CONTENT_SHELL_BROWSER_SHELL_CONTENT_INDEX_PROVIDER_H_
+#define CONTENT_SHELL_BROWSER_SHELL_CONTENT_INDEX_PROVIDER_H_
 
 #include <map>
 #include <string>
@@ -17,12 +17,12 @@
 
 namespace content {
 
-// When using WebTestContentIndexProvider, IDs need to be globally unique,
+// When using ShellContentIndexProvider, IDs need to be globally unique,
 // instead of per Service Worker.
-class WebTestContentIndexProvider : public ContentIndexProvider {
+class ShellContentIndexProvider : public ContentIndexProvider {
  public:
-  WebTestContentIndexProvider();
-  ~WebTestContentIndexProvider() override;
+  ShellContentIndexProvider();
+  ~ShellContentIndexProvider() override;
 
   // ContentIndexProvider implementation.
   std::vector<gfx::Size> GetIconSizes(
@@ -48,9 +48,9 @@ class WebTestContentIndexProvider : public ContentIndexProvider {
 
   std::vector<gfx::Size> icon_sizes_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebTestContentIndexProvider);
+  DISALLOW_COPY_AND_ASSIGN(ShellContentIndexProvider);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CONTENT_INDEX_PROVIDER_H_
+#endif  // CONTENT_SHELL_BROWSER_SHELL_CONTENT_INDEX_PROVIDER_H_

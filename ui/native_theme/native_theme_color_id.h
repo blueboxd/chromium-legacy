@@ -22,6 +22,7 @@
   /* Button */                                                                 \
   OP(kColorId_ButtonColor),                                                    \
   OP(kColorId_ButtonBorderColor),                                              \
+  OP(kColorId_DisabledButtonBorderColor),                                      \
   OP(kColorId_ButtonCheckedColor),                                             \
   OP(kColorId_ButtonUncheckedColor),                                           \
   OP(kColorId_ButtonEnabledColor),                                             \
@@ -109,6 +110,7 @@
   OP(kColorId_TabBottomBorder),                                                \
   OP(kColorId_TabHighlightBackground),                                         \
   OP(kColorId_TabHighlightFocusedBackground),                                  \
+  OP(kColorId_TabSelectedBorderColor),                                         \
   /* Textfield */                                                              \
   OP(kColorId_TextfieldDefaultColor),                                          \
   OP(kColorId_TextfieldDefaultBackground),                                     \
@@ -156,7 +158,9 @@
   OP(kColorId_AlertSeverityHigh),                                              \
   /* Colors for icons in non-menu contexts. */                                 \
   OP(kColorId_DefaultIconColor),                                               \
-  OP(kColorId_DisabledIconColor)
+  OP(kColorId_DisabledIconColor),                                              \
+  /* Default colors for frame caption buttons. */                              \
+  OP(kColorId_DefaultFrameCaptionForegroundColor)
 
 #if defined(OS_CHROMEOS)
 #define NATIVE_THEME_CHROMEOS_COLOR_IDS                                        \

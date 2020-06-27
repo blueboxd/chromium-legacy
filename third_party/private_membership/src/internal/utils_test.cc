@@ -65,8 +65,11 @@ TEST(UtilsTest, TruncateAsUint32BitLengthExceed32) {
 }
 
 TEST(UtilsTest, TruncateAsUint32BitLengthExactly32) {
-  ASSERT_OK_AND_ASSIGN(auto x, TruncateAsUint32("\x01\x01\x01\xFF", 32));
-  EXPECT_EQ(x, 16843263);
+  ASSERT_OK_AND_ASSIGN(auto x1, TruncateAsUint32("\x01\x01\x01\xFF", 32));
+  EXPECT_EQ(x1, 16843263);
+        
+  ASSERT_OK_AND_ASSIGN(auto x2, TruncateAsUint32("\xFF\xFFx\xFF\xFF", 32));
+  EXPECT_EQ(x2, 4294932735LL);
 }
 
 TEST(UtilsTest, TruncateAsUint32BitLengthLessThan32) {

@@ -275,7 +275,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
       // Any shortcut could have been pinned, either by chrome or the user, so
       // they are all unpinned.
       base::win::UnpinShortcutFromTaskbar(*j);
-      base::DeleteFile(*j, false);
+      base::DeleteFile(*j);
     }
   }
 }
@@ -484,7 +484,7 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
           ShellUtil::CURRENT_USER, &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
-      base::DeleteFile(chrome_apps_dir, false);
+      base::DeleteFile(chrome_apps_dir);
   }
 
   // Delete downloaded shortcut icons for the web app.
@@ -503,7 +503,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
           ShellUtil::CURRENT_USER, &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
-      base::DeleteFile(chrome_apps_dir, false);
+      base::DeleteFile(chrome_apps_dir);
   }
 }
 

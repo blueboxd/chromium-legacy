@@ -43,7 +43,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Gets or sets the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
   virtual gfx::ImageSkia GetImage(ButtonState for_state) const;
+  // TODO(http://crbug.com/1100034) prefer SetImageModel over SetImage().
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
+  void SetImageModel(ButtonState for_state, const ui::ImageModel& image_model);
 
   // Gets or sets the text shown on the button.
   const base::string16& GetText() const;
@@ -203,8 +205,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::FontList cached_normal_font_list_;
   gfx::FontList cached_default_button_font_list_;
 
-  // The images and colors for each button state.
-  gfx::ImageSkia button_state_images_[STATE_COUNT] = {};
+  // The image models and colors for each button state.
+  ui::ImageModel button_state_image_models_[STATE_COUNT] = {};
   SkColor button_state_colors_[STATE_COUNT] = {};
 
   // Used to track whether SetTextColor() has been invoked.

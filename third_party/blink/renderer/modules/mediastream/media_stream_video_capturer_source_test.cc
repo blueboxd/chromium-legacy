@@ -143,7 +143,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     // CreateVideoTrack will trigger OnConstraintsApplied.
     return MediaStreamVideoTrack::CreateVideoTrack(
         source_, adapter_settings, noise_reduction, is_screencast,
-        min_frame_rate, base::nullopt, base::nullopt, base::nullopt,
+        min_frame_rate, base::nullopt, base::nullopt, base::nullopt, false,
         WTF::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
                   base::Unretained(this)),
         enabled);

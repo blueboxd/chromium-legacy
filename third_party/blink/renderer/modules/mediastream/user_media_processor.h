@@ -102,8 +102,7 @@ class MODULES_EXPORT UserMediaProcessor
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
-      UserMediaRequest* user_media_request,
-      bool pan_tilt_zoom_allowed);
+      UserMediaRequest* user_media_request);
   virtual void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name = String());
@@ -156,10 +155,10 @@ class MODULES_EXPORT UserMediaProcessor
 
   bool IsCurrentRequestInfo(int request_id) const;
   bool IsCurrentRequestInfo(UserMediaRequest* user_media_request) const;
-  void DelayedGetUserMediaRequestSucceeded(int request_id,
-                                           const blink::WebMediaStream& stream,
-                                           UserMediaRequest* user_media_request,
-                                           bool pan_tilt_zoom_allowed);
+  void DelayedGetUserMediaRequestSucceeded(
+      int request_id,
+      const blink::WebMediaStream& stream,
+      UserMediaRequest* user_media_request);
   void DelayedGetUserMediaRequestFailed(
       int request_id,
       UserMediaRequest* user_media_request,

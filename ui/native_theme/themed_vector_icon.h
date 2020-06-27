@@ -40,10 +40,9 @@ class NATIVE_THEME_EXPORT ThemedVectorIcon {
 
   void clear() { icon_ = nullptr; }
   bool empty() const { return !icon_; }
-  const gfx::ImageSkia GetImageSkia(const NativeTheme* theme) const;
-  const gfx::ImageSkia GetImageSkia(const NativeTheme* theme,
-                                    int icon_size) const;
-  const gfx::ImageSkia GetImageSkia(SkColor color) const;
+  gfx::ImageSkia GetImageSkia(const NativeTheme* theme) const;
+  gfx::ImageSkia GetImageSkia(const NativeTheme* theme, int icon_size) const;
+  gfx::ImageSkia GetImageSkia(SkColor color) const;
 
  private:
   SkColor GetColor(const NativeTheme* theme) const;

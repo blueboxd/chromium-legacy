@@ -208,7 +208,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '89b8527eceaf5ee25924047e329704fd79e2f925',
+  'pdfium_revision': '0c55cdde36c8c9fe1869e8ac275be0550f24a1ab',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -259,7 +259,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'd4e583c077b792d472ffa551b97a2780c36f07ff',
+  'devtools_frontend_revision': '19958414c3415c7009278c1d5384ce79fee96c0d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -534,7 +534,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '87422cf14f454ce8c0c9f4a9c3233f2aa73ef6b4',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '89477800f19d3fff1162d6cad164ae9248379ae2',
       'condition': 'checkout_ios',
   },
 
@@ -1530,7 +1530,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b9804cbbd5e807f46a7fee22ffeea389d334d7ec',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d82d13522f897bb00caad81ae33b970a19713cbe',
     'condition': 'checkout_src_internal',
   },
 

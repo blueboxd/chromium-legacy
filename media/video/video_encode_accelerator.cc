@@ -4,6 +4,8 @@
 
 #include "media/video/video_encode_accelerator.h"
 
+#include <inttypes.h>
+
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 
@@ -79,12 +81,15 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
                               h264_output_level.value());
   }
 
+  if (spatial_layers.empty())
+    return str;
+
   for (size_t i = 0; i < spatial_layers.size(); ++i) {
     const auto& sl = spatial_layers[i];
     str += base::StringPrintf(
-        "\nSL#%zu: width=%d, height=%d, bitrate_bps=%u"
-        ", framerate=%u, max_qp=%u"
-        ", num_of_temporal_layers=%u",
+        ", {SatialLayer#%zu: width=%" PRId32 ", height=%" PRId32
+        ", bitrate_bps=%" PRIu32 ", framerate=%" PRId32
+        ", max_qp=%u, num_of_temporal_layers=%u}",
         i, sl.width, sl.height, sl.bitrate_bps, sl.framerate, sl.max_qp,
         sl.num_of_temporal_layers);
   }

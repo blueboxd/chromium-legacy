@@ -20,6 +20,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -57,13 +58,30 @@ LabelButton::LabelButton(ButtonListener* listener,
 LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
-  if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())
-    return button_state_images_[STATE_NORMAL];
-  return button_state_images_[for_state];
+  if (for_state != STATE_NORMAL &&
+      button_state_image_models_[for_state].IsEmpty()) {
+    for_state = STATE_NORMAL;
+  }
+
+  const auto& image_model = button_state_image_models_[for_state];
+  if (image_model.IsImage())
+    return image_model.GetImage().AsImageSkia();
+
+  if (image_model.IsVectorIcon()) {
+    return ui::ThemedVectorIcon(image_model.GetVectorIcon())
+        .GetImageSkia(GetNativeTheme());
+  }
+
+  return gfx::ImageSkia();
 }
 
 void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
-  button_state_images_[for_state] = image;
+  SetImageModel(for_state, ui::ImageModel::FromImageSkia(image));
+}
+
+void LabelButton::SetImageModel(ButtonState for_state,
+                                const ui::ImageModel& image_model) {
+  button_state_image_models_[for_state] = image_model;
   UpdateImage();
 }
 
@@ -404,8 +422,10 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 }
 
 void LabelButton::UpdateImage() {
+  const gfx::Size old_preferred_size = image_->GetPreferredSize();
   image_->SetImage(GetImage(GetVisualState()));
-  ResetCachedPreferredSize();
+  if (old_preferred_size != image_->GetPreferredSize())
+    ResetCachedPreferredSize();
 }
 
 void LabelButton::UpdateThemedBorder() {
@@ -478,6 +498,7 @@ void LabelButton::OnBlur() {
 void LabelButton::OnThemeChanged() {
   Button::OnThemeChanged();
   ResetColorsFromNativeTheme();
+  UpdateImage();
   UpdateThemedBorder();
   ResetLabelEnabledColor();
   // Invalidate the layout to pickup the new insets from the border.

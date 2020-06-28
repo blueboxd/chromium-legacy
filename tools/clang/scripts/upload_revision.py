@@ -29,8 +29,7 @@ CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
 # Keep lines in here at <= 72 columns, else they wrap in gerrit.
 COMMIT_FOOTER = \
 '''
-TODO: Add bug number.
-
+Bug: TODO
 Cq-Include-Trybots: chromium/try:mac_chromium_asan_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_cfi_rel_ng
 Cq-Include-Trybots: chromium/try:linux_chromium_chromeos_asan_rel_ng
@@ -40,7 +39,8 @@ Cq-Include-Trybots: chromium/try:linux-chromeos-dbg,win-asan
 Cq-Include-Trybots: chromium/try:chromeos-amd64-generic-cfi-thin-lto-rel
 Cq-Include-Trybots: chromium/try:linux_chromium_compile_dbg_32_ng
 Cq-Include-Trybots: chromium/try:win7-rel,win-angle-deqp-rel-32
-Cq-Include-Trybots: chromium/try:win-angle-deqp-rel-64,linux_angle_deqp_rel_ng
+Cq-Include-Trybots: chromium/try:linux_angle_deqp_rel_ng
+Cq-Include-Trybots: chromium/try:win-angle-deqp-rel-64
 Cq-Include-Trybots: chromium/try:dawn-win10-x86-deps-rel
 Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
 Cq-Include-Trybots: chrome/try:linux-chromeos-chrome

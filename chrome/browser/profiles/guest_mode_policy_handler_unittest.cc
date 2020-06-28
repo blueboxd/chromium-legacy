@@ -24,14 +24,12 @@ class GuestModePolicyHandlerTest : public ::testing::Test {
  protected:
   void SetUpPolicy(const char* policy_name, bool value) {
     policies_.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(value),
-                  nullptr);
+                  POLICY_SOURCE_PLATFORM, base::Value(value), nullptr);
   }
 
   void SetUpPolicy(const char* policy_name, int value) {
     policies_.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                  POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(value),
-                  nullptr);
+                  POLICY_SOURCE_PLATFORM, base::Value(value), nullptr);
   }
 
   PolicyMap policies_;

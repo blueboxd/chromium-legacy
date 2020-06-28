@@ -119,9 +119,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // See AXNode::IsLeaf().
   bool PlatformIsLeaf() const;
 
-  // See AXNode::IsLeafIncludingIgnored().
-  bool PlatformIsLeafIncludingIgnored() const;
-
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
 

@@ -748,6 +748,62 @@ class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
         extra_browser_args=['--js-flags="--jitless"'])
 
 
+class YouTubeTVDesktopWatchStory2020(_MediaBrowsingStory):
+  """Load a typical YouTube TV video then navigate to a next few videos. Stop
+  and watch each video for a few seconds.
+  """
+  NAME = 'browse:media:youtubetv_watch:2020'
+  URL = ('https://www.youtube.com/tv?'
+         'env_adsUrl=http%3A%2F%2Fvastsynthesizer.appspot.com'
+         '%2Fyshi_trv_instream_10s#/watch?v=Ylo257Av-qQ')
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2020]
+
+  def WaitIfRecording(self, action_runner):
+    # Uncomment the below if recording to try and reduce network errors.
+    # action_runner.Wait(2)
+    pass
+
+  def WatchThenSkipAd(self, action_runner):
+    skip_button_selector = '.skip-ad-button'
+    action_runner.WaitForElement(selector=skip_button_selector)
+    action_runner.Wait(8)  # Wait until the ad is skippable.
+    action_runner.MouseClick(selector=skip_button_selector)
+    self.WaitIfRecording(action_runner)
+
+  def ShortAttentionSpan(self, action_runner):
+    action_runner.Wait(2)
+
+  def GotoNextVideo(self, action_runner):
+    delay_in_ms = 1000
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    action_runner.PressKey('ArrowRight', 1, delay_in_ms)
+    action_runner.PressKey('Return', 2, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+
+  def _DidLoadDocument(self, action_runner):
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+
+  # This story is mainly relevant for V8 in jitless mode, but there is no
+  # benchmark that enables this flag. We take the pragmatic solution and set
+  # this flag explicitly for this story.
+  def __init__(self, story_set, take_memory_measurement):
+    super(YouTubeTVDesktopWatchStory2020,
+          self).__init__(story_set,
+                         take_memory_measurement,
+                         extra_browser_args=['--js-flags="--jitless"'])
+
+
 class FacebookPhotosMobileStory2019(_MediaBrowsingStory):
   """Load a photo page from Rihanna's facebook page then navigate a few next
   photos.

@@ -238,10 +238,10 @@ std::unique_ptr<WebUsbAllowDevicesForUrlsPolicyHandler> CreateHandler(
       chrome_schema);
 }
 
-std::unique_ptr<base::Value> ReadJson(base::StringPiece json) {
+base::Optional<base::Value> ReadJson(base::StringPiece json) {
   base::Optional<base::Value> value = base::JSONReader::Read(json);
   EXPECT_TRUE(value);
-  return value ? base::Value::ToUniquePtrValue(std::move(*value)) : nullptr;
+  return value;
 }
 
 }  // namespace
@@ -642,7 +642,7 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   EXPECT_TRUE(store_->GetValue(pref_name_, &pref_value));
   EXPECT_TRUE(pref_value);
 
-  std::unique_ptr<base::Value> expected_pref_value =
+  base::Optional<base::Value> expected_pref_value =
       ReadJson(kInvalidPolicyUnknownPropertyAfterCleanup);
   EXPECT_EQ(*expected_pref_value, *pref_value);
 }

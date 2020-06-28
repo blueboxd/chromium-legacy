@@ -55,13 +55,12 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
   void SetUp() override { CreateHandlerList(); }
 
   void AddSimplePolicy() {
-    AddPolicy(kPolicyName, /* is_cloud */ true,
-              std::make_unique<base::Value>(kPolicyValue));
+    AddPolicy(kPolicyName, /* is_cloud */ true, base::Value(kPolicyValue));
   }
 
   void AddPolicy(const std::string policy_name,
                  bool is_cloud,
-                 std::unique_ptr<base::Value> value) {
+                 base::Value value) {
     policies_.Set(policy_name, PolicyLevel::POLICY_LEVEL_MANDATORY,
                   PolicyScope::POLICY_SCOPE_MACHINE,
                   is_cloud ? PolicySource::POLICY_SOURCE_CLOUD
@@ -148,7 +147,7 @@ TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithFuturePolicy) {
   base::Value::ListStorage enabled_future_policies;
   enabled_future_policies.push_back(base::Value(kPolicyName2));
   AddPolicy(key::kEnableExperimentalPolicies, /* is_cloud */ true,
-            std::make_unique<base::Value>(enabled_future_policies));
+            base::Value(enabled_future_policies));
 
   ApplySettings();
 
@@ -158,7 +157,7 @@ TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithFuturePolicy) {
   // Whitelist the policy.
   enabled_future_policies.push_back(base::Value(kPolicyName));
   AddPolicy(key::kEnableExperimentalPolicies, /* is_cloud */ true,
-            std::make_unique<base::Value>(enabled_future_policies));
+            base::Value(enabled_future_policies));
 
   ApplySettings();
 
@@ -185,8 +184,7 @@ TEST_F(ConfigurationPolicyHandlerListTest,
   ApplySettings();
   VerifyPolicyAndPref(kPolicyName, /* in_pref */ true);
 
-  AddPolicy(kPolicyName2, /* is_cloud */ false,
-            std::make_unique<base::Value>(kPolicyValue));
+  AddPolicy(kPolicyName2, /* is_cloud */ false, base::Value(kPolicyValue));
 
   ApplySettings();
   VerifyPolicyAndPref(kPolicyName2, /* in_pref */ false);

@@ -158,8 +158,7 @@ def CheckoutLLVM(commit, dir):
     # Also check that the first commit is reachable.
     if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
         and RunCommand(['git', 'fetch'], fail_hard=False)
-        and RunCommand(['git', 'checkout', commit], fail_hard=False)
-        and RunCommand(['git', 'show', FIRST_LLVM_COMMIT], fail_hard=False)):
+        and RunCommand(['git', 'checkout', commit], fail_hard=False)):
       return
 
     # If we can't use the current repo, delete it.

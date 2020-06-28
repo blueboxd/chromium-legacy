@@ -418,18 +418,12 @@ class AX_EXPORT AXNode final {
   // The definition of a leaf includes nodes with children that are exclusively
   // an internal renderer implementation, such as the children of an HTML native
   // text field, as well as nodes with presentational children according to the
-  // ARIA and HTML5 Specs.
+  // ARIA and HTML5 Specs. Also returns true if all of the node's descendants
+  // are ignored.
   //
   // A leaf node should never have children that are focusable or
   // that might send notifications.
   bool IsLeaf() const;
-
-  // Returns true if this is a leaf node, (see "IsLeaf"), or if all of the
-  // node's children are ignored.
-  //
-  // TODO(nektar): There are no performance advantages in keeping this method
-  // since unignored child count is cached. Please remove.
-  bool IsLeafIncludingIgnored() const;
 
   // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.

@@ -112,10 +112,6 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   return IsLeaf();
 }
 
-bool BrowserAccessibility::PlatformIsLeafIncludingIgnored() const {
-  return node()->IsLeafIncludingIgnored();
-}
-
 bool BrowserAccessibility::CanFireEvents() const {
   // Allow events unless this object would be trimmed away.
   return !IsChildOfLeaf();

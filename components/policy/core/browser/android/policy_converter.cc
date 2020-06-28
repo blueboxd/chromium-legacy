@@ -192,13 +192,9 @@ void PolicyConverter::SetPolicyValue(const std::string& key,
   const PolicyNamespace ns(POLICY_DOMAIN_CHROME, std::string());
   base::Optional<base::Value> converted_value =
       ConvertValueToSchema(std::move(value), schema);
-  std::unique_ptr<base::Value> value_ptr =
-      converted_value.has_value()
-          ? base::Value::ToUniquePtrValue(std::move(converted_value.value()))
-          : nullptr;
   policy_bundle_->Get(ns).Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                              POLICY_SOURCE_PLATFORM, std::move(value_ptr),
-                              nullptr);
+                              POLICY_SOURCE_PLATFORM,
+                              std::move(converted_value), nullptr);
 }
 
 }  // namespace android

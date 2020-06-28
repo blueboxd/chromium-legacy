@@ -10,12 +10,13 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     looks reasonably green.
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
     changes.
-1.  Run go/chrome-push-clang-to-goma. This takes a recent dry run CL to update
-    clang, and if the trybots were successful it will copy the binaries from
-    the staging bucket to the production one. Writing to this bucket requires
-    special permissions. File a bug at g.co/bugatrooper if you don't have these
-    already (e.g., https://crbug.com/1034081). Then it will push the packages
-    to goma. If you do not have the necessary credentials to do the upload, ask
+1.  Run [go/chrome-push-clang-to-goma](https://goto.google.com/chrome-push-clang-to-goma).
+    This takes a recent dry run CL to update clang, and if the trybots were
+    successful it will copy the binaries from the staging bucket to the
+    production one. Writing to this bucket requires special permissions. File a
+    bug at g.co/bugatrooper if you don't have these already (e.g.,
+    https://crbug.com/1034081). Then it will push the packages to goma. If you
+    do not have the necessary credentials to do the upload, ask
     clang@chromium.org to find someone who does.
 1.  Run an exhaustive set of try jobs to test the new compiler. The CL
     description created previously by upload_revision.py includes

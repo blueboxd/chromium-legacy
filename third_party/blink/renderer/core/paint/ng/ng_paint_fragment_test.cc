@@ -100,7 +100,6 @@ TEST_F(NGPaintFragmentTest, InlineFragmentsFor) {
   do {                                                   \
     EXPECT_EQ(expected, fragment.InkOverflow());         \
     EXPECT_EQ(expected, fragment.SelfInkOverflow());     \
-    EXPECT_EQ(expected, fragment.ContentsInkOverflow()); \
   } while (false)
 
 TEST_F(NGPaintFragmentTest, InlineBox) {
@@ -363,7 +362,6 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
             box1.PhysicalFragment().BoxType());
   EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.InkOverflow());
   EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.SelfInkOverflow());
-  EXPECT_EQ(PhysicalRect(), box1.ContentsInkOverflow());
   EXPECT_EQ(IntRect(60, 0, 20, 30), box1.VisualRect());
 
   // Test |InlineFragmentsFor| can find "box1".
@@ -402,7 +400,6 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
             box2.PhysicalFragment().BoxType());
   EXPECT_EQ(PhysicalRect(-10, 0, 50, 70), box2.InkOverflow());
   EXPECT_EQ(PhysicalRect(0, 0, 16, 26), box2.SelfInkOverflow());
-  EXPECT_EQ(PhysicalRect(-10, 0, 50, 70), box2.ContentsInkOverflow());
   // The extra 2 px vertical offset is because the 6px height box is placed
   // vertically center in 10px height line box.
   EXPECT_EQ(IntRect(70, 12, 16, 26), box2.VisualRect());
@@ -470,7 +467,6 @@ TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
             box1.PhysicalFragment().BoxType());
   EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.InkOverflow());
   EXPECT_EQ(PhysicalRect(0, 0, 20, 30), box1.SelfInkOverflow());
-  EXPECT_TRUE(box1.ContentsInkOverflow().IsEmpty());
   EXPECT_EQ(IntRect(90, 60, 20, 30), box1.VisualRect());
 
   // Test |InlineFragmentsFor| can find "box1".
@@ -511,7 +507,6 @@ TEST_F(NGPaintFragmentTest, InlineBlockVerticalRL) {
   // 60 width covers both the overflowing contents and the box shadow.
   EXPECT_EQ(PhysicalRect(-44, -10, 60, 70), box2.InkOverflow());
   EXPECT_EQ(PhysicalRect(0, 0, 16, 26), box2.SelfInkOverflow());
-  EXPECT_EQ(PhysicalRect(-44, -10, 50, 70), box2.ContentsInkOverflow());
   // The extra 2 px horizontal offset is because the 6px width box is placed
   // horizontally center in 10px width vertical line box.
   EXPECT_EQ(IntRect(92, 80, 16, 26), box2.VisualRect());

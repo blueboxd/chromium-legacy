@@ -520,16 +520,6 @@ PhysicalRect NGPaintFragment::SelfInkOverflow() const {
   return ink_overflow_->self_ink_overflow;
 }
 
-PhysicalRect NGPaintFragment::ContentsInkOverflow() const {
-  // Get the cached value in |LayoutBox| if there is one.
-  if (const LayoutBox* box = InkOverflowOwnerBox())
-    return box->PhysicalContentsVisualOverflowRect();
-
-  if (!ink_overflow_)
-    return PhysicalFragment().LocalRect();
-  return ink_overflow_->contents_ink_overflow;
-}
-
 PhysicalRect NGPaintFragment::InkOverflow() const {
   // Get the cached value in |LayoutBox| if there is one.
   if (const LayoutBox* box = InkOverflowOwnerBox())

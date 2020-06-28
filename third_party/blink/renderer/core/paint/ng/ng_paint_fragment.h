@@ -166,9 +166,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // InkOverflow of itself, not including contents, in the local coordinate.
   PhysicalRect SelfInkOverflow() const;
 
-  // InkOverflow of its contents, not including itself, in the local coordinate.
-  PhysicalRect ContentsInkOverflow() const;
-
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
   PhysicalRect InkOverflow() const;

@@ -135,7 +135,7 @@ class WebMediaStreamTrack {
   BLINK_PLATFORM_EXPORT void SetSourceProvider(WebAudioSourceProvider*);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebMediaStreamTrack(MediaStreamComponent*);
+  BLINK_PLATFORM_EXPORT explicit WebMediaStreamTrack(MediaStreamComponent*);
   BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(MediaStreamComponent*);
   BLINK_PLATFORM_EXPORT operator scoped_refptr<MediaStreamComponent>() const;
   BLINK_PLATFORM_EXPORT operator MediaStreamComponent*() const;

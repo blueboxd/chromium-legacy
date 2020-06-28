@@ -77,9 +77,9 @@ WebMediaStreamTrack WebMediaStream::GetAudioTrack(
     MediaStreamComponent* audio_component = private_->AudioComponent(i);
     DCHECK(audio_component);
     if (audio_component->Id() == id)
-      return private_->AudioComponent(i);
+      return WebMediaStreamTrack(private_->AudioComponent(i));
   }
-  return nullptr;
+  return WebMediaStreamTrack();
 }
 
 WebMediaStreamTrack WebMediaStream::GetVideoTrack(
@@ -90,9 +90,9 @@ WebMediaStreamTrack WebMediaStream::GetVideoTrack(
     MediaStreamComponent* video_component = private_->VideoComponent(i);
     DCHECK(video_component);
     if (video_component->Id() == id)
-      return private_->VideoComponent(i);
+      return WebMediaStreamTrack(private_->VideoComponent(i));
   }
-  return nullptr;
+  return WebMediaStreamTrack();
 }
 
 void WebMediaStream::AddTrack(const WebMediaStreamTrack& track) {

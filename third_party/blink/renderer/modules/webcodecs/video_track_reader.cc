@@ -38,7 +38,7 @@ void VideoTrackReader::start(V8VideoFrameOutputCallback* callback,
 
   started_ = true;
   callback_ = callback;
-  ConnectToTrack(track_->Component(),
+  ConnectToTrack(WebMediaStreamTrack(track_->Component()),
                  ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
                      &VideoTrackReader::OnFrameFromVideoTrack,
                      WrapCrossThreadPersistent(this))),

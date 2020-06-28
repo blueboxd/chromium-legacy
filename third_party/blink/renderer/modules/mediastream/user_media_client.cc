@@ -214,9 +214,8 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
                   WrapWeakPersistent(this)));
   } else {
     DCHECK(current_request->IsStopTrack());
-    blink::WebPlatformMediaStreamTrack* track =
-        blink::WebPlatformMediaStreamTrack::GetTrack(
-            current_request->track_to_stop());
+    WebPlatformMediaStreamTrack* track = WebPlatformMediaStreamTrack::GetTrack(
+        WebMediaStreamTrack(current_request->track_to_stop()));
     if (track) {
       track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                                      WrapWeakPersistent(this)));

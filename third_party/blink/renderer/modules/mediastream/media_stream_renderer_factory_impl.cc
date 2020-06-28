@@ -70,7 +70,8 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
   MediaStreamDescriptor& descriptor = *web_stream;
   auto video_components = descriptor.VideoComponents();
   if (video_components.IsEmpty() ||
-      !MediaStreamVideoTrack::GetTrack(video_components[0].Get())) {
+      !MediaStreamVideoTrack::GetTrack(
+          WebMediaStreamTrack(video_components[0].Get()))) {
     return nullptr;
   }
 

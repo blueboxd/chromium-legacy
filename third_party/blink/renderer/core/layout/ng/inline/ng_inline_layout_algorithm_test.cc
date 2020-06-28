@@ -462,15 +462,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, InkOverflow) {
   PhysicalRect ink_overflow = cursor.Current().InkOverflow();
   EXPECT_EQ(LayoutUnit(-5), ink_overflow.offset.top);
   EXPECT_EQ(LayoutUnit(20), ink_overflow.size.height);
-
-  if (paint_fragment) {
-    // |ContentsInkOverflow| should match to |InkOverflow|, except the width
-    // because |<div id=container>| might be wider than the content.
-    const PhysicalRect contents_ink_overflow =
-        paint_fragment->ContentsInkOverflow();
-    EXPECT_EQ(ink_overflow.offset, contents_ink_overflow.offset);
-    EXPECT_EQ(ink_overflow.size.height, contents_ink_overflow.size.height);
-  }
 }
 
 #undef MAYBE_VerticalAlignBottomReplaced

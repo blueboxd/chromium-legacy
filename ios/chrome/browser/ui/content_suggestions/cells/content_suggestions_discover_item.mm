@@ -87,7 +87,7 @@
 
   for (UIView* view in self.discoverFeed.view.subviews) {
     if ([view isKindOfClass:[UICollectionView class]]) {
-      feedView = (UICollectionView*)view;
+      feedView = static_cast<UICollectionView*>(view);
     }
   }
   return feedView.contentSize.height;

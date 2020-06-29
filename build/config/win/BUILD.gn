@@ -125,9 +125,6 @@ config("compiler") {
     if (use_clang_diagnostics_format) {
       cflags += [ "/clang:-fdiagnostics-format=clang" ]
     }
-
-    # Clang runtime libraries, such as the sanitizer runtimes, live here.
-    lib_dirs = [ "$clang_base_path/lib/clang/$clang_version/lib/windows" ]
   }
 
   if (use_lld && !use_thin_lto && (is_clang || !use_goma)) {

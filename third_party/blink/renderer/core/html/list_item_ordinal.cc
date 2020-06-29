@@ -50,6 +50,12 @@ bool ListItemOrdinal::IsListItem(const Node& node) {
   return IsListItem(node.GetLayoutObject());
 }
 
+bool ListItemOrdinal::IsInReversedOrderedList(const Node& node) {
+  const Node* list = EnclosingList(&node);
+  auto* olist = DynamicTo<HTMLOListElement>(list);
+  return olist && olist->IsReversed();
+}
+
 ListItemOrdinal* ListItemOrdinal::Get(const Node& item_node) {
   LayoutObject* layout_object = item_node.GetLayoutObject();
   if (layout_object) {

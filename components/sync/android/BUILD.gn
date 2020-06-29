@@ -14,13 +14,10 @@ android_library("sync_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_sdk:android_gcm_java",
-    "//third_party/cacheinvalidation:cacheinvalidation_javalib",
-    "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums" ]
   sources = [
-    "java/src/org/chromium/components/sync/ModelTypeHelper.java",
     "java/src/org/chromium/components/sync/Passphrase.java",
     "java/src/org/chromium/components/sync/SyncConstants.java",
     "java/src/org/chromium/components/sync/SyncContentResolverDelegate.java",
@@ -35,8 +32,4 @@ java_cpp_enum("java_enums") {
     "//components/sync/base/stop_source.h",
     "//components/sync/driver/sync_service_utils.h",
   ]
-}
-
-generate_jni("jni_headers") {
-  sources = [ "java/src/org/chromium/components/sync/ModelTypeHelper.java" ]
 }

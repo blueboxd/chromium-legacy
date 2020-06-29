@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"

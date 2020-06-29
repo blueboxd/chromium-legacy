@@ -619,6 +619,7 @@ void TabSpecificContentSettings::OnCookiesAccessed(
   } else {
     allowed_local_shared_objects_.cookies()->AddCookies(details);
     OnContentAllowed(ContentSettingsType::COOKIES);
+    delegate_->OnCookieAccessAllowed(details.cookie_list);
   }
 
   handler_.NotifySiteDataObservers();

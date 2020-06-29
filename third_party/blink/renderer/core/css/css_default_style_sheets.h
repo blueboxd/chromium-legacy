@@ -58,7 +58,7 @@ class CSSDefaultStyleSheets final
   RuleSet* DefaultForcedColorStyle() {
     return default_forced_color_style_.Get();
   }
-  RuleSet* DefaultPseudoElementStyle() {
+  RuleSet* DefaultPseudoElementStyleOrNull() {
     return default_pseudo_element_style_.Get();
   }
 

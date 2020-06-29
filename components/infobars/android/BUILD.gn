@@ -27,14 +27,29 @@ android_resources("java_resources") {
   ]
   custom_package = "org.chromium.components.infobars"
   deps = [
+    "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/widget/android:java_resources",
     "//components/strings",
     "//ui/android:ui_java_resources",
   ]
 }
 
+static_library("android") {
+  sources = [
+    "infobar_android.cc",
+    "infobar_android.h",
+  ]
+
+  deps = [
+    ":jni_headers",
+    "//base",
+    "//components/infobars/core",
+  ]
+}
+
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/infobars/InfoBar.java",
     "java/src/org/chromium/components/infobars/InfoBarCompactLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarControlLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarInteractionHandler.java",
@@ -43,14 +58,31 @@ android_library("java") {
     "java/src/org/chromium/components/infobars/InfoBarUiItem.java",
   ]
   deps = [
+    ":infobar_android_enums_java",
     ":java_resources",
     "//base:base_java",
+    "//base:jni_java",
     "//components/browser_ui/widget/android:java",
     "//components/infobars/core:infobar_enums_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+java_cpp_enum("infobar_android_enums") {
+  sources = [ "infobar_android.h" ]
+}
+
+android_library("infobar_android_enums_java") {
+  deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+
+  srcjar_deps = [ ":infobar_android_enums" ]
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/components/infobars/InfoBar.java" ]
 }
 
 android_library("javatests") {

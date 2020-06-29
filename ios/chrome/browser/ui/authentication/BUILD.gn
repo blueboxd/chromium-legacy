@@ -170,6 +170,7 @@ source_set("eg_test_support") {
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//ui/base",
   ]
 }
 
@@ -233,5 +234,6 @@ source_set("eg_test_support+eg2") {
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base",
   ]
 }

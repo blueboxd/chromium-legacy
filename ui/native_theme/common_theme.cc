@@ -226,8 +226,6 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
     case NativeTheme::kColorId_MenuIconColor:
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey500;
-    case NativeTheme::kColorId_DefaultFrameCaptionForegroundColor:
-      return gfx::kGoogleGrey200;
     default:
       return base::nullopt;
   }
@@ -600,9 +598,6 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
 
     case NativeTheme::kColorId_BubbleBorder:
       return gfx::kGoogleGrey300;
-
-    case NativeTheme::kColorId_DefaultFrameCaptionForegroundColor:
-      return gfx::kGoogleGrey700;
 
     case NativeTheme::kColorId_NumColors:
       // Keeping the kColorId_NumColors case instead of using the default case

@@ -16,7 +16,7 @@ import androidx.appcompat.widget.SwitchCompat;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarControlLayout;
 import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.ui.text.NoUnderlineClickableSpan;

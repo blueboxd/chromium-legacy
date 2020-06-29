@@ -24,6 +24,7 @@
 
 using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
+using sandbox::bpf_dsl::Error;
 using sandbox::bpf_dsl::ResultExpr;
 using sandbox::bpf_dsl::Trap;
 using sandbox::syscall_broker::BrokerProcess;
@@ -37,6 +38,8 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 // Main policy for x86_64/i386. Extended by CrosArmGpuProcessPolicy.
 ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
+    case __NR_kcmp:
+      return Error(ENOSYS);
 #if defined(OS_CHROMEOS)
     case __NR_memfd_create:
 #else   // !defined(OS_CHROMEOS)

@@ -11,11 +11,21 @@
 namespace blink {
 
 int TextDecorationOffset::ComputeUnderlineOffsetForUnder(
+    const Length& style_underline_offset,
+    float computed_font_size,
     float text_decoration_thickness,
     FontVerticalPositionType position_type) const {
   const RootInlineBox& root = inline_text_box_->Root();
   FontBaseline baseline_type = root.BaselineType();
-  LayoutUnit offset = inline_text_box_->OffsetTo(position_type, baseline_type);
+
+  LayoutUnit style_underline_offset_pixels = LayoutUnit::FromFloatRound(
+      StyleUnderlineOffsetToPixels(style_underline_offset, computed_font_size));
+  if (IsLineOverSide(position_type)) {
+    style_underline_offset_pixels = -style_underline_offset_pixels;
+  }
+
+  LayoutUnit offset = inline_text_box_->OffsetTo(position_type, baseline_type) +
+                      style_underline_offset_pixels;
 
   // Compute offset to the farthest position of the decorating box.
   LayoutUnit logical_top = inline_text_box_->LogicalTop();

@@ -71,6 +71,13 @@ const CGFloat kClearButtonSize = 28.0f;
 // to view the complete URL and immediately defocuses it".
 @property(nonatomic, assign) BOOL omniboxInteractedWhileFocused;
 
+// Tracks editing status, because only the omnibox that is in edit mode can
+// get an edit menu.
+@property(nonatomic, assign) BOOL isTextfieldEditing;
+
+// Is YES while fixing display of edit menu (below omnibox).
+@property(nonatomic, assign) BOOL showingEditMenu;
+
 @end
 
 @implementation OmniboxViewController
@@ -150,8 +157,29 @@ const CGFloat kClearButtonSize = 28.0f;
                                  toPosition:self.textField.beginningOfDocument];
 }
 
+#pragma mark - properties
+
 - (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate {
   _textChangeDelegate = textChangeDelegate;
+}
+
+- (void)setIsTextfieldEditing:(BOOL)owns {
+  if (_isTextfieldEditing == owns) {
+    return;
+  }
+  if (owns) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(menuControllerWillShow:)
+               name:UIMenuControllerWillShowMenuNotification
+             object:nil];
+  } else {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:UIMenuControllerWillShowMenuNotification
+                object:nil];
+  }
+  _isTextfieldEditing = owns;
 }
 
 #pragma mark - public methods
@@ -179,8 +207,9 @@ const CGFloat kClearButtonSize = 28.0f;
   [self updateClearButtonVisibility];
   self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 
-  if (self.forwardingOnDidChange)
+  if (self.forwardingOnDidChange) {
     return;
+  }
 
   // Reset the changed flag.
   self.omniboxInteractedWhileFocused = YES;
@@ -212,6 +241,7 @@ const CGFloat kClearButtonSize = 28.0f;
                                  : self.emptyTextLeadingImage];
 
   self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
+  self.isTextfieldEditing = YES;
 
   self.omniboxInteractedWhileFocused = NO;
   DCHECK(_textChangeDelegate);
@@ -221,12 +251,15 @@ const CGFloat kClearButtonSize = 28.0f;
 - (BOOL)textFieldShouldEndEditing:(UITextField*)textField {
   DCHECK(_textChangeDelegate);
   _textChangeDelegate->OnWillEndEditing();
+
   return YES;
 }
 
 // Record the metrics as needed.
 - (void)textFieldDidEndEditing:(UITextField*)textField
                         reason:(UITextFieldDidEndEditingReason)reason {
+  self.isTextfieldEditing = NO;
+
   if (!self.omniboxInteractedWhileFocused) {
     RecordAction(
         UserMetricsAction("Mobile_FocusedDefocusedOmnibox_WithNoAction"));
@@ -304,6 +337,26 @@ const CGFloat kClearButtonSize = 28.0f;
   self.semanticContentAttribute = [self.textField bestSemanticContentAttribute];
 
   [self.delegate omniboxViewControllerTextInputModeDidChange:self];
+}
+
+- (void)menuControllerWillShow:(NSNotification*)notification {
+  if (self.showingEditMenu || !self.isTextfieldEditing ||
+      !self.textField.window.isKeyWindow) {
+    return;
+  }
+
+  self.showingEditMenu = YES;
+
+  // Cancel original menu opening.
+  UIMenuController* menuController = [UIMenuController sharedMenuController];
+  [menuController setMenuVisible:NO animated:NO];
+
+  // Reset where it should open below text field and reopen it.
+  menuController.arrowDirection = UIMenuControllerArrowUp;
+  [menuController setTargetRect:self.textField.frame inView:self.textField];
+  [menuController setMenuVisible:YES animated:YES];
+
+  self.showingEditMenu = NO;
 }
 
 #pragma mark clear button

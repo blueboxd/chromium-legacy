@@ -300,6 +300,9 @@ if (is_chromeos_device) {
 
       # crbug.com/1098810
       "security.SELinuxFilesSystem",
+
+      # crbug.com/1099695
+      "platform.Drivefs",
     ]
   }
 

@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chrome/browser/browser_features.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
@@ -97,3 +98,25 @@ TEST_F('CrComponentsCertificateManagerProvisioningV3Test', 'All', function() {
 });
 
 GEN('#endif  // defined(USE_NSS_CERTS) && defined(OS_CHROMEOS)');
+
+// Test fixture for the nearby-onboarding-page component.
+// eslint-disable-next-line no-var
+var CrComponentsNearbyOnboardingPageV3Test =
+    class extends CrComponentsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/nearby_onboarding_page_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: ['features::kNearbySharing'],
+      disabled: [],
+    };
+  }
+};
+
+TEST_F('CrComponentsNearbyOnboardingPageV3Test', 'All', function() {
+  mocha.run();
+});

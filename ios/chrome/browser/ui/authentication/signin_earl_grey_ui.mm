@@ -16,6 +16,7 @@
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -222,6 +223,22 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils checkSignedOut];
+}
+
++ (void)tapRemoveAccountFromDeviceWithFakeIdentity:
+    (FakeChromeIdentity*)fakeIdentity {
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                          fakeIdentity.userEmail)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                   l10n_util::GetNSString(
+                                       IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE))]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                          l10n_util::GetNSString(
+                                              IDS_IOS_REMOVE_ACCOUNT_LABEL))]
+      performAction:grey_tap()];
 }
 
 @end

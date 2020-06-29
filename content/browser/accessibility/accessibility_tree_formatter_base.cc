@@ -99,7 +99,17 @@ base::Optional<int> PropertyNode::AsInt() const {
   return value;
 }
 
-base::Optional<base::string16> PropertyNode::FindKey(const char* refkey) const {
+const PropertyNode* PropertyNode::FindKey(const char* refkey) const {
+  for (const auto& param : parameters) {
+    if (param.key == base::ASCIIToUTF16(refkey)) {
+      return &param;
+    }
+  }
+  return nullptr;
+}
+
+base::Optional<base::string16> PropertyNode::FindStringKey(
+    const char* refkey) const {
   for (const auto& param : parameters) {
     if (param.key == base::ASCIIToUTF16(refkey)) {
       return param.name_or_value;

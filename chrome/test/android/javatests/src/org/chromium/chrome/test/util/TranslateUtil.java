@@ -13,7 +13,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.TranslateCompactInfoBar;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarCompactLayout;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

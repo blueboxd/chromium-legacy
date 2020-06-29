@@ -54,6 +54,8 @@
 #include <limits.h>
 #include <string.h>
 
+#include <atomic>
+
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
@@ -192,8 +194,49 @@ template <>
 class LOCKABLE MaybeSpinLock<ThreadSafe> {
  public:
   MaybeSpinLock() : lock_() {}
-  void Lock() EXCLUSIVE_LOCK_FUNCTION() { lock_->Acquire(); }
-  void Unlock() UNLOCK_FUNCTION() { lock_->Release(); }
+  void Lock() EXCLUSIVE_LOCK_FUNCTION() {
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    // When PartitionAlloc is malloc(), it can easily become reentrant. For
+    // instance, a DCHECK() triggers in external code (such as
+    // base::Lock). DCHECK() error message formatting allocates, which triggers
+    // PartitionAlloc, and then we get reentrancy, and in this case infinite
+    // recursion.
+    //
+    // To avoid that, crash quickly when the code becomes reentrant.
+    PlatformThreadRef current_thread = PlatformThread::CurrentRef();
+    if (!lock_->Try()) {
+      // The lock wasn't free when we tried to acquire it. This can be because
+      // another thread or *this* thread was holding it.
+      //
+      // If it's this thread holding it, then it cannot have become free in the
+      // meantime, and the current value of |owning_thread_ref_| is valid, as it
+      // was set by this thread. Assuming that writes to |owning_thread_ref_|
+      // are atomic, then if it's us, we are trying to recursively acquire a
+      // non-recursive lock.
+      //
+      // Note that we don't rely on a DCHECK() in base::Lock(), as it would
+      // itself allocate. Meaning that without this code, a reentrancy issue
+      // hangs on Linux.
+      if (UNLIKELY(TS_UNCHECKED_READ(owning_thread_ref_.load(
+                       std::memory_order_relaxed)) == current_thread)) {
+        // Trying to acquire lock while it's held by this thread: reentrancy
+        // issue.
+        IMMEDIATE_CRASH();
+      }
+      lock_->Acquire();
+    }
+    owning_thread_ref_.store(current_thread, std::memory_order_relaxed);
+#else
+    lock_->Acquire();
+#endif
+  }
+
+  void Unlock() UNLOCK_FUNCTION() {
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    owning_thread_ref_.store(PlatformThreadRef(), std::memory_order_relaxed);
+#endif
+    lock_->Release();
+  }
   void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {
     lock_->AssertAcquired();
   }
@@ -207,6 +250,10 @@ class LOCKABLE MaybeSpinLock<ThreadSafe> {
   // platforms, base::Lock doesn't allocate memory and neither does the OS
   // library, and the destructor is a no-op.
   base::NoDestructor<base::Lock> lock_;
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  std::atomic<PlatformThreadRef> owning_thread_ref_ GUARDED_BY(lock_);
+#endif
 };
 
 #else

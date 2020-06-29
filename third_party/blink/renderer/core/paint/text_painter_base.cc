@@ -321,24 +321,30 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
     context.SetStrokeThickness(resolved_thickness);
 
     if (has_underline && decoration_info.font_data) {
-      const int underline_offset = decoration_offset.ComputeUnderlineOffset(
-          underline_position, decoration_info.font_data->GetFontMetrics(),
-          resolved_thickness);
+      const int paint_underline_offset =
+          decoration_offset.ComputeUnderlineOffset(
+              underline_position, decoration_info.style->ComputedFontSize(),
+              decoration_info.font_data->GetFontMetrics(),
+              decoration.UnderlineOffset(), resolved_thickness);
       PaintDecorationUnderOrOverLine(
           context, decoration_info, decoration, applied_decorations_index,
-          underline_offset, DoubleOffsetFromThickness(resolved_thickness));
+          paint_underline_offset,
+          DoubleOffsetFromThickness(resolved_thickness));
     }
 
-    if (has_overline) {
+    if (has_overline && decoration_info.font_data) {
       FontVerticalPositionType position =
           flip_underline_and_overline ? FontVerticalPositionType::TopOfEmHeight
                                       : FontVerticalPositionType::TextTop;
-      const int overline_offset =
-          decoration_offset.ComputeUnderlineOffsetForUnder(resolved_thickness,
-                                                           position);
+      const int paint_overline_offset =
+          decoration_offset.ComputeUnderlineOffsetForUnder(
+              decoration_info.style->TextUnderlineOffset(),
+              decoration_info.style->ComputedFontSize(), resolved_thickness,
+              position);
       PaintDecorationUnderOrOverLine(
           context, decoration_info, decoration, applied_decorations_index,
-          overline_offset, -DoubleOffsetFromThickness(resolved_thickness));
+          paint_overline_offset,
+          -DoubleOffsetFromThickness(resolved_thickness));
     }
 
     // We could instead build a vector of the TextDecoration instances needing

@@ -1,0 +1,13 @@
+<html>
+  <script>
+     var date = new Date();
+     date.setDate(date.getDate() + 1);
+     // Set a cookie at the embedder level.
+     document.cookie = `embedder=embedder; expires=${date.toUTCString()};path=/`
+  </script>
+  <body>
+    <iframe src="
+        https://REPLACE_WITH_HOST_AND_PORT/browsing_data/storage_accessor.html">
+    </iframe>
+  </body>
+</html>

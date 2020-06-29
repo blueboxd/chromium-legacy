@@ -585,7 +585,6 @@
         ],
       },
       'base_unittests': {},
-      'cacheinvalidation_unittests': {},
       'capture_unittests': {
         'args': [
           '--test-launcher-jobs=1',
@@ -705,7 +704,6 @@
       'blink_platform_unittests': {},
       'boringssl_crypto_tests': {},
       'boringssl_ssl_tests': {},
-      'cacheinvalidation_unittests': {},
       'capture_unittests': {
         'args': [
           '--gtest_filter=-*UsingRealWebcam*',
@@ -1391,9 +1389,6 @@
         'mixins': ['fuchsia_runner_logs'],
       },
       'boringssl_ssl_tests': {
-        'mixins': ['fuchsia_runner_logs'],
-      },
-      'cacheinvalidation_unittests': {
         'mixins': ['fuchsia_runner_logs'],
       },
       'capture_unittests': {

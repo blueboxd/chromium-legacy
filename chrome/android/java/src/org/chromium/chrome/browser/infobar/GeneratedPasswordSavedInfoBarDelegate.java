@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
+import org.chromium.components.infobars.InfoBar;
 
 /**
  * Provides JNI methods for the infobar to notify that the generated password was saved.

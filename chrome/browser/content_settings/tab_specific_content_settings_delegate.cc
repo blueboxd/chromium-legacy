@@ -4,6 +4,7 @@
 
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
@@ -21,6 +22,11 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/browsing_data/access_context_audit_service.h"
+#include "chrome/browser/browsing_data/access_context_audit_service_factory.h"
+#endif  // !defined(OS_ANDROID)
 
 using content_settings::TabSpecificContentSettings;
 
@@ -148,6 +154,18 @@ void TabSpecificContentSettingsDelegate::OnContentBlocked(
     content_settings::RecordPopupsAction(
         content_settings::POPUPS_ACTION_DISPLAYED_BLOCKED_ICON_IN_OMNIBOX);
   }
+}
+
+void TabSpecificContentSettingsDelegate::OnCookieAccessAllowed(
+    const net::CookieList& accessed_cookies) {
+#if !defined(OS_ANDROID)
+  auto* access_context_audit_service =
+      AccessContextAuditServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (access_context_audit_service)
+    access_context_audit_service->RecordCookieAccess(
+        accessed_cookies, web_contents()->GetLastCommittedURL().GetOrigin());
+#endif  // !defined(OS_ANDROID)
 }
 
 void TabSpecificContentSettingsDelegate::DidFinishNavigation(

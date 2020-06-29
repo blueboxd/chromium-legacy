@@ -2871,6 +2871,38 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
 void Element::DetachLayoutTree(bool performing_reattach) {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
+
+  DetachPseudoElement(kPseudoIdMarker, performing_reattach);
+  DetachPseudoElement(kPseudoIdBefore, performing_reattach);
+
+  // TODO(futhark): We need to traverse into IsUserActionElement() subtrees,
+  // even if they are already display:none because we do not clear the
+  // hovered/active bits as part of style recalc, but wait until the next time
+  // we do a hit test. That means we could be doing a forced layout tree update
+  // making a hovered subtree display:none and immediately remove the subtree
+  // leaving stale hovered/active state on ancestors. See relevant issues:
+  // https://crbug.com/967548
+  // https://crbug.com/939769
+  if (ChildNeedsReattachLayoutTree() || GetComputedStyle() ||
+      (!performing_reattach && IsUserActionElement())) {
+    if (!performing_reattach) {
+      UpdateCallbackSelectors(GetComputedStyle(), nullptr);
+      SetComputedStyle(nullptr);
+    }
+    if (ShadowRoot* shadow_root = GetShadowRoot()) {
+      shadow_root->DetachLayoutTree(performing_reattach);
+      Node::DetachLayoutTree(performing_reattach);
+    } else {
+      ContainerNode::DetachLayoutTree(performing_reattach);
+    }
+  } else {
+    Node::DetachLayoutTree(performing_reattach);
+  }
+
+  DetachPseudoElement(kPseudoIdAfter, performing_reattach);
+  DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
+  DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
+
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
     if (!performing_reattach)
@@ -2887,38 +2919,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
       }
       element_animations->ClearBaseComputedStyle();
     }
-  }
-
-  DetachPseudoElement(kPseudoIdMarker, performing_reattach);
-  DetachPseudoElement(kPseudoIdBefore, performing_reattach);
-
-  // TODO(futhark): We need to traverse into IsUserActionElement() subtrees,
-  // even if they are already display:none because we do not clear the
-  // hovered/active bits as part of style recalc, but wait until the next time
-  // we do a hit test. That means we could be doing a forced layout tree update
-  // making a hovered subtree display:none and immediately remove the subtree
-  // leaving stale hovered/active state on ancestors. See relevant issues:
-  // https://crbug.com/967548
-  // https://crbug.com/939769
-  if (ChildNeedsReattachLayoutTree() || GetComputedStyle() ||
-      (!performing_reattach && IsUserActionElement())) {
-    if (ShadowRoot* shadow_root = GetShadowRoot()) {
-      shadow_root->DetachLayoutTree(performing_reattach);
-      Node::DetachLayoutTree(performing_reattach);
-    } else {
-      ContainerNode::DetachLayoutTree(performing_reattach);
-    }
-  } else {
-    Node::DetachLayoutTree(performing_reattach);
-  }
-
-  DetachPseudoElement(kPseudoIdAfter, performing_reattach);
-  DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
-  DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
-
-  if (!performing_reattach) {
-    UpdateCallbackSelectors(GetComputedStyle(), nullptr);
-    SetComputedStyle(nullptr);
   }
 
   if (!performing_reattach && IsUserActionElement()) {

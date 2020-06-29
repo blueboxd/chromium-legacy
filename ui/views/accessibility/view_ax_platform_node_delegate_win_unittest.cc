@@ -89,6 +89,11 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
             content_accessible->get_accChild(child_index, &textfield_dispatch));
   ASSERT_EQ(S_OK, textfield_dispatch.As(&textfield_accessible));
 
+  ASSERT_EQ(S_OK, textfield_accessible->get_accChildCount(&child_count));
+  EXPECT_EQ(0, child_count)
+      << "Text fields should be leaf nodes on this platform, otherwise no "
+         "descendants will be recognized by assistive software.";
+
   ScopedBstr name;
   ScopedVariant childid_self(CHILDID_SELF);
   ASSERT_EQ(S_OK,

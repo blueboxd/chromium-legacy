@@ -4,9 +4,26 @@
 
 source_set("cpp") {
   sources = [
+    "advertisement.cc",
+    "advertisement.h",
     "sharing_webrtc_metrics.cc",
     "sharing_webrtc_metrics.h",
   ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "advertisement_unittest.cc" ]
+
+  deps = [
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }

@@ -11,9 +11,9 @@ import androidx.annotation.StringRes;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarUiItem;
 
 /**

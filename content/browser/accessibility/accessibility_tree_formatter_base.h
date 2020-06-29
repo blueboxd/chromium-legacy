@@ -69,7 +69,8 @@ class CONTENT_EXPORT PropertyNode final {
   bool IsArray() const;
   bool IsDict() const;
   base::Optional<int> AsInt() const;
-  base::Optional<base::string16> FindKey(const char* refkey) const;
+  const PropertyNode* FindKey(const char* refkey) const;
+  base::Optional<base::string16> FindStringKey(const char* refkey) const;
   base::Optional<int> FindIntKey(const char* key) const;
 
   std::string ToString() const;

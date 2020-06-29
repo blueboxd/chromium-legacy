@@ -1,0 +1,32 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+import("//chrome/android/features/android_library_factory_tmpl.gni")
+
+_factory_sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckComponentFactory.java" ]
+_public_target = "//chrome/browser/password_check/android:public_java"
+
+android_library_factory("public_factory_java") {
+  # These deps will be inherited by the resulting android_library target.
+  deps = [ _public_target ]
+
+  # This internal file will be replaced by a generated file so the resulting
+  # android_library target does not actually depend on this internal file.
+  sources = _factory_sources
+}
+
+android_library("internal_factory_java") {
+  deps = [ ":internal_java" ]
+  sources = _factory_sources
+}
+
+android_library("internal_java") {
+  deps = [
+    "//chrome/android:chrome_java",
+    "//chrome/browser/settings:java",
+    _public_target,
+  ]
+  sources = [ "java/src/org/chromium/chrome/browser/password_check/PasswordCheckCoordinator.java" ]
+}

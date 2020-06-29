@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/text_decoration_thickness.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -19,7 +20,8 @@ class AppliedTextDecoration {
   AppliedTextDecoration(TextDecoration,
                         ETextDecorationStyle,
                         Color,
-                        TextDecorationThickness);
+                        TextDecorationThickness,
+                        Length);
 
   TextDecoration Lines() const { return static_cast<TextDecoration>(lines_); }
   ETextDecorationStyle Style() const {
@@ -29,6 +31,7 @@ class AppliedTextDecoration {
   void SetColor(Color color) { color_ = color; }
 
   TextDecorationThickness Thickness() const { return thickness_; }
+  Length UnderlineOffset() const { return underline_offset_; }
 
   bool operator==(const AppliedTextDecoration&) const;
   bool operator!=(const AppliedTextDecoration& o) const {
@@ -40,6 +43,7 @@ class AppliedTextDecoration {
   unsigned style_ : 3;  // ETextDecorationStyle
   Color color_;
   TextDecorationThickness thickness_;
+  Length underline_offset_;
 };
 
 }  // namespace blink

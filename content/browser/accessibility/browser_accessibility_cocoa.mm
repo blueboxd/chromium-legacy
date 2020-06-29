@@ -765,6 +765,12 @@ id content::AXTextMarkerFrom(const BrowserAccessibilityCocoa* anchor,
   return CreateTextMarker(std::move(position));
 }
 
+id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
+  AXTextMarkerRangeRef cf_marker_range = AXTextMarkerRangeCreate(
+      kCFAllocatorDefault, anchor_textmarker, focus_textmarker);
+  return [static_cast<id>(cf_marker_range) autorelease];
+}
+
 @implementation BrowserAccessibilityCocoa
 
 + (void)initialize {

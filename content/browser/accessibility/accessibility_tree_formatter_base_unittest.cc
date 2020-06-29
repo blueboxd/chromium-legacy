@@ -84,17 +84,38 @@ TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
   EXPECT_EQ(GetArgumentNode("ChildAt(3)").IsDict(), false);
   EXPECT_EQ(GetArgumentNode("ChildAt(3)").IsArray(), false);
   EXPECT_EQ(GetArgumentNode("ChildAt(3)").AsInt(), 3);
-  EXPECT_EQ(GetArgumentNode("Text({start: :1, dir: forward})").FindKey("start"),
-            base::ASCIIToUTF16(":1"));
-  EXPECT_EQ(GetArgumentNode("Text({start: :1, dir: forward})").FindKey("dir"),
-            base::ASCIIToUTF16("forward"));
+
+  // Dict: FindStringKey
   EXPECT_EQ(
-      GetArgumentNode("Text({start: :1, dir: forward})").FindKey("notexists"),
-      base::nullopt);
+      GetArgumentNode("Text({start: :1, dir: forward})").FindStringKey("start"),
+      base::ASCIIToUTF16(":1"));
+  EXPECT_EQ(
+      GetArgumentNode("Text({start: :1, dir: forward})").FindStringKey("dir"),
+      base::ASCIIToUTF16("forward"));
+  EXPECT_EQ(GetArgumentNode("Text({start: :1, dir: forward})")
+                .FindStringKey("notexists"),
+            base::nullopt);
+
+  // Dict: FindIntKey
   EXPECT_EQ(GetArgumentNode("Text({loc: 3, len: 2})").FindIntKey("loc"), 3);
   EXPECT_EQ(GetArgumentNode("Text({loc: 3, len: 2})").FindIntKey("len"), 2);
   EXPECT_EQ(GetArgumentNode("Text({loc: 3, len: 2})").FindIntKey("notexists"),
             base::nullopt);
+
+  // Dict: FindKey
+  EXPECT_EQ(GetArgumentNode("Text({anchor: {:1, 0, up}})")
+                .FindKey("anchor")
+                ->ToString(),
+            "anchor: {}(:1, 0, up)");
+
+  EXPECT_EQ(GetArgumentNode("Text({anchor: {:1, 0, up}})").FindKey("focus"),
+            nullptr);
+
+  EXPECT_EQ(GetArgumentNode("AXStringForTextMarkerRange({anchor: {:2, 1, "
+                            "down}, focus: {:2, 2, down}})")
+                .FindKey("anchor")
+                ->ToString(),
+            "anchor: {}(:2, 1, down)");
 }
 
 }  // namespace content

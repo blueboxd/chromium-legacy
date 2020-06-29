@@ -12,10 +12,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+namespace subtle {
 
 static constexpr size_t kBufferSize = 16;
-
-static subtle::SpinLock g_lock;
 
 static void FillBuffer(volatile char* buffer, char fill_pattern) {
   for (size_t i = 0; i < kBufferSize; ++i)
@@ -35,14 +34,15 @@ static void ChangeAndCheckBuffer(volatile char* buffer) {
   FillBuffer(buffer, '!');
 }
 
-static void ThreadMain(volatile char* buffer) {
+static void ThreadMain(SpinLock* lock, volatile char* buffer) {
   for (int i = 0; i < 500000; ++i) {
-    subtle::SpinLock::Guard guard(g_lock);
+    SpinLock::Guard guard(*lock);
     ChangeAndCheckBuffer(buffer);
   }
 }
 
 TEST(SpinLockTest, Torture) {
+  SpinLock lock;
   char shared_buffer[kBufferSize];
 
   Thread thread1("thread1");
@@ -52,11 +52,11 @@ TEST(SpinLockTest, Torture) {
   thread2.StartAndWaitForTesting();
 
   thread1.task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(&ThreadMain, Unretained(static_cast<char*>(shared_buffer))));
+      FROM_HERE, BindOnce(&ThreadMain, Unretained(&lock),
+                          Unretained(static_cast<char*>(shared_buffer))));
   thread2.task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(&ThreadMain, Unretained(static_cast<char*>(shared_buffer))));
+      FROM_HERE, BindOnce(&ThreadMain, Unretained(&lock),
+                          Unretained(static_cast<char*>(shared_buffer))));
 }
-
+}  // namespace subtle
 }  // namespace base

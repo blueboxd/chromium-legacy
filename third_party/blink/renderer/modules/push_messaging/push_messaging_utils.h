@@ -15,21 +15,12 @@ enum class PushErrorType;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
-class PushSubscriptionOptions;
-
 WTF::String PushRegistrationStatusToString(
     mojom::PushRegistrationStatus status);
 
 mojom::PushErrorType PushRegistrationStatusToPushErrorType(
     mojom::PushRegistrationStatus status);
 
-// Converts a {blink::PushSubscriptionOptions} object into a
-// {blink::mojom::blink::PushSubscriptionOptions} object. Since the buffer of
-// the former may be bigger than the capacity of the latter, a caller of this
-// function has to guarantee that the ByteLength of the input buffer fits into
-// {wtf_size_t} range.
-blink::mojom::blink::PushSubscriptionOptionsPtr
-ConvertSubscriptionOptionPointer(blink::PushSubscriptionOptions* input);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_UTILS_H_

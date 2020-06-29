@@ -16,12 +16,13 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/color_id.h"
-#include "ui/color/color_mixers.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
-#include "ui/color/color_transform.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/native_theme/common_theme.h"
+
+#if !defined(OS_ANDROID)
+#include "ui/color/color_mixers.h"
+#endif
 
 namespace ui {
 
@@ -200,24 +201,6 @@ SkColor NativeTheme::GetSystemColor(ColorId color_id,
 
 SkColor NativeTheme::GetSystemButtonPressedColor(SkColor base_color) const {
   return base_color;
-}
-
-SkColor NativeTheme::GetFrameCaptionButtonForegroundColor(
-    SkColor background_color) const {
-  // Use IsDark() to change target colors instead of PickContrastingColor(), so
-  // that DefaultFrameHeader::GetTitleColor() (which uses different target
-  // colors) can change between light/dark targets at the same time.  It looks
-  // bad when the title and caption buttons disagree about whether to be light
-  // or dark.
-  const ui::NativeTheme::ColorScheme scheme =
-      color_utils::IsDark(background_color)
-          ? ui::NativeTheme::ColorScheme::kDark
-          : ui::NativeTheme::ColorScheme::kLight;
-  const SkColor default_foreground = GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultFrameCaptionForegroundColor, scheme);
-  const auto transform = BlendForMinContrast(
-      FromTransformInput(), background_color, base::nullopt, 3.0f);
-  return transform.Run(default_foreground, ColorMixer());
 }
 
 float NativeTheme::GetBorderRadiusForPart(Part part,

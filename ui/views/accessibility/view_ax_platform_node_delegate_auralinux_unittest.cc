@@ -36,6 +36,10 @@ TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
   textfield->SetAccessibleName(base::UTF8ToUTF16("Name"));
   content->AddChildView(textfield);
 
+  ASSERT_EQ(0, atk_object_get_n_accessible_children(
+                   textfield->GetNativeViewAccessible()))
+      << "Text fields should be leaf nodes on this platform, otherwise no "
+         "descendants will be recognized by assistive software.";
   AtkText* atk_text = ATK_TEXT(textfield->GetNativeViewAccessible());
   ASSERT_NE(nullptr, atk_text);
 

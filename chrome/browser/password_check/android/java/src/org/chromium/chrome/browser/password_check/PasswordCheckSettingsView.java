@@ -1,0 +1,25 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.password_check;
+
+import android.content.Context;
+import android.os.Bundle;
+
+import androidx.preference.PreferenceFragmentCompat;
+
+/**
+ * This class is responsible for rendering the check passwords view in the settings menu.
+ */
+public class PasswordCheckSettingsView extends PreferenceFragmentCompat {
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        getActivity().setTitle(R.string.passwords_check_title);
+        setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
+    }
+
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
+    }
+}

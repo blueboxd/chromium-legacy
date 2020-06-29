@@ -327,6 +327,10 @@ std::string AutofillAssistantPrivateAPI::GetEmailAddressForAccessTokenAccount()
   return "joe@example.com";
 }
 
+std::string AutofillAssistantPrivateAPI::GetChromeSignedInEmailAddress() const {
+  return "joe@example.com";
+}
+
 autofill_assistant::AccessTokenFetcher*
 AutofillAssistantPrivateAPI::GetAccessTokenFetcher() {
   return access_token_fetcher_.get();
@@ -360,6 +364,10 @@ std::string AutofillAssistantPrivateAPI::GetCountryCode() const {
 autofill_assistant::DeviceContext
 AutofillAssistantPrivateAPI::GetDeviceContext() const {
   return autofill_assistant::DeviceContext();
+}
+
+bool AutofillAssistantPrivateAPI::IsAccessibilityEnabled() const {
+  return false;
 }
 
 void AutofillAssistantPrivateAPI::Shutdown(

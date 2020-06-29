@@ -650,8 +650,11 @@ void StyleResolver::MatchUARules(const Element& element,
   if (IsForcedColorsModeEnabled())
     MatchRuleSet(collector, default_style_sheets.DefaultForcedColorStyle());
 
-  if (collector.IsCollectingForPseudoElement())
-    MatchRuleSet(collector, default_style_sheets.DefaultPseudoElementStyle());
+  if (collector.IsCollectingForPseudoElement()) {
+    if (RuleSet* default_pseudo_style =
+            default_style_sheets.DefaultPseudoElementStyleOrNull())
+      MatchRuleSet(collector, default_pseudo_style);
+  }
 
   collector.FinishAddingUARules();
   collector.SetMatchingUARules(false);

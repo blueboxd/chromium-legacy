@@ -1862,7 +1862,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
         (1, AppliedTextDecoration(
                 TextDecoration::kUnderline, ETextDecorationStyle::kSolid,
                 VisitedDependentColor(GetCSSPropertyTextDecorationColor()),
-                TextDecorationThickness())));
+                TextDecorationThickness(), Length::Auto())));
     // Since we only have one of these in memory, just update the color before
     // returning.
     underline.at(0).SetColor(
@@ -2159,7 +2159,8 @@ void ComputedStyle::ApplyTextDecorations(
     SetHasSimpleUnderlineInternal(false);
     AddAppliedTextDecoration(AppliedTextDecoration(
         TextDecoration::kUnderline, ETextDecorationStyle::kSolid,
-        parent_text_decoration_color, TextDecorationThickness()));
+        parent_text_decoration_color, TextDecorationThickness(),
+        Length::Auto()));
   }
   if (override_existing_colors && AppliedTextDecorationsInternal())
     OverrideTextDecorationColors(current_text_decoration_color);
@@ -2181,7 +2182,7 @@ void ComputedStyle::ApplyTextDecorations(
 
   AddAppliedTextDecoration(AppliedTextDecoration(
       decoration_lines, decoration_style, current_text_decoration_color,
-      GetTextDecorationThickness()));
+      GetTextDecorationThickness(), TextUnderlineOffset()));
 }
 
 void ComputedStyle::ClearAppliedTextDecorations() {

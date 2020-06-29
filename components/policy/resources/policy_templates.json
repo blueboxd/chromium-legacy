@@ -11223,13 +11223,13 @@
       },
       'future': True,
       'id': 717,
-      'caption': '''Enable or disable various features for the on-screen keyboard''',
+      'caption': '''Enable or disable various features on the on-screen keyboard''',
       'tags': [],
-      'desc': '''Enable or disable various features for the on-screen keyboard. This policy takes effect only when "VirtualKeyboardEnabled" policy is enabled.
+      'desc': '''Enable or disable various features on the on-screen keyboard. This policy takes effect only when "VirtualKeyboardEnabled" policy is enabled.
 
-      If one feature in this policy is set to True, it will be enabled for the on-screen keyboard.
+      If one feature in this policy is set to True, it will be enabled on the on-screen keyboard.
 
-      If one feature in this policy is set to False or left unset, it will be disabled for the on-screen keyboard.
+      If one feature in this policy is set to False or left unset, it will be disabled on the on-screen keyboard.
 
       NOTE: this policy is only supported in PWA Kiosk mode.'''
     },

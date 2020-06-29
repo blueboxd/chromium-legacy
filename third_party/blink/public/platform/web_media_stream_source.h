@@ -33,8 +33,8 @@
 
 #include <memory>
 
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 #include "third_party/blink/public/platform/web_private_ptr.h"

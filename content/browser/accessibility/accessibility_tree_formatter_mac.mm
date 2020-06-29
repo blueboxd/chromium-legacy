@@ -145,7 +145,11 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   gfx::NativeViewAccessible PropertyNodeToUIElement(
       const PropertyNode&,
       const LineIndexesMap&) const;
+
+  id DictNodeToTextMarker(const PropertyNode&, const LineIndexesMap&) const;
   id PropertyNodeToTextMarker(const PropertyNode&, const LineIndexesMap&) const;
+  id PropertyNodeToTextMarkerRange(const PropertyNode&,
+                                   const LineIndexesMap&) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
@@ -339,6 +343,9 @@ AccessibilityTreeFormatterMac::ParamByPropertyNode(
     param = PropertyNodeToUIElement(property_node, line_indexes_map);
   } else if (property_name == "AXIndexForTextMarker") {  // TextMarker
     param = PropertyNodeToTextMarker(property_node, line_indexes_map);
+  } else if (property_name ==
+             "AXStringForTextMarkerRange") {  // TextMarkerRange
+    param = PropertyNodeToTextMarkerRange(property_node, line_indexes_map);
   }
 
   return param;
@@ -426,34 +433,29 @@ AccessibilityTreeFormatterMac::PropertyNodeToUIElement(
   return uielement;
 }
 
-id AccessibilityTreeFormatterMac::PropertyNodeToTextMarker(
-    const PropertyNode& propnode,
+id AccessibilityTreeFormatterMac::DictNodeToTextMarker(
+    const PropertyNode& dictnode,
     const LineIndexesMap& line_indexes_map) const {
-  if (propnode.parameters.size() != 1) {
-    TEXTMARKER_FAIL(propnode, "single argument is expected")
+  if (!dictnode.IsDict()) {
+    TEXTMARKER_FAIL(dictnode, "dictionary is expected")
   }
-
-  const auto& tmnode = propnode.parameters[0];
-  if (!tmnode.IsDict()) {
-    TEXTMARKER_FAIL(propnode, "dictionary is expected")
-  }
-  if (tmnode.parameters.size() != 3) {
-    TEXTMARKER_FAIL(propnode, "wrong number of dictionary elements")
+  if (dictnode.parameters.size() != 3) {
+    TEXTMARKER_FAIL(dictnode, "wrong number of dictionary elements")
   }
 
   BrowserAccessibilityCocoa* anchor_cocoa =
-      LineIndexToNode(tmnode.parameters[0].name_or_value, line_indexes_map);
+      LineIndexToNode(dictnode.parameters[0].name_or_value, line_indexes_map);
   if (!anchor_cocoa) {
-    TEXTMARKER_FAIL(propnode, "1st argument: wrong anchor")
+    TEXTMARKER_FAIL(dictnode, "1st argument: wrong anchor")
   }
 
-  base::Optional<int> offset = tmnode.parameters[1].AsInt();
+  base::Optional<int> offset = dictnode.parameters[1].AsInt();
   if (!offset) {
-    TEXTMARKER_FAIL(propnode, "2nd argument: wrong offset")
+    TEXTMARKER_FAIL(dictnode, "2nd argument: wrong offset")
   }
 
   ax::mojom::TextAffinity affinity;
-  const base::string16& affinity_str = tmnode.parameters[2].name_or_value;
+  const base::string16& affinity_str = dictnode.parameters[2].name_or_value;
   if (affinity_str == base::UTF8ToUTF16("none")) {
     affinity = ax::mojom::TextAffinity::kNone;
   } else if (affinity_str == base::UTF8ToUTF16("down")) {
@@ -461,10 +463,54 @@ id AccessibilityTreeFormatterMac::PropertyNodeToTextMarker(
   } else if (affinity_str == base::UTF8ToUTF16("up")) {
     affinity = ax::mojom::TextAffinity::kUpstream;
   } else {
-    TEXTMARKER_FAIL(propnode, "3rd argument: wrong affinity")
+    TEXTMARKER_FAIL(dictnode, "3rd argument: wrong affinity")
   }
 
   return content::AXTextMarkerFrom(anchor_cocoa, *offset, affinity);
+}
+
+id AccessibilityTreeFormatterMac::PropertyNodeToTextMarker(
+    const PropertyNode& propnode,
+    const LineIndexesMap& line_indexes_map) const {
+  if (propnode.parameters.size() != 1) {
+    TEXTMARKER_FAIL(propnode, "single argument is expected")
+  }
+  return DictNodeToTextMarker(propnode.parameters[0], line_indexes_map);
+}
+
+id AccessibilityTreeFormatterMac::PropertyNodeToTextMarkerRange(
+    const PropertyNode& propnode,
+    const LineIndexesMap& line_indexes_map) const {
+  if (propnode.parameters.size() != 1) {
+    TEXTMARKER_FAIL(propnode, "single argument is expected")
+  }
+
+  const auto& rangenode = propnode.parameters[0];
+  if (!rangenode.IsDict()) {
+    TEXTMARKER_FAIL(propnode, "dictionary is expected")
+  }
+
+  const PropertyNode* anchornode = rangenode.FindKey("anchor");
+  if (!anchornode) {
+    TEXTMARKER_FAIL(propnode, "no anchor")
+  }
+
+  id anchor_textmarker = DictNodeToTextMarker(*anchornode, line_indexes_map);
+  if (!anchor_textmarker) {
+    TEXTMARKER_FAIL(propnode, "failed to parse anchor")
+  }
+
+  const PropertyNode* focusnode = rangenode.FindKey("focus");
+  if (!focusnode) {
+    TEXTMARKER_FAIL(propnode, "no focus")
+  }
+
+  id focus_textmarker = DictNodeToTextMarker(*focusnode, line_indexes_map);
+  if (!focus_textmarker) {
+    TEXTMARKER_FAIL(propnode, "failed to parse focus")
+  }
+
+  return content::AXTextMarkerRangeFrom(anchor_textmarker, focus_textmarker);
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(

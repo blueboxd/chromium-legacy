@@ -446,12 +446,20 @@ template("win_toolchains") {
     environment = "environment." + toolchain_arch
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${clang_prefix}$prefix/${clang_cl}"
+    _clang_lib_dir =
+        rebase_path("$clang_base_path/lib/clang/$clang_version/lib/windows",
+                    root_build_dir)
     if (host_os == "win") {
       # Flip the slashes so that copy/paste of the command works.
       cl = string_replace(cl, "/", "\\")
+
+      # And to match the other -libpath flags.
+      _clang_lib_dir = string_replace(_clang_lib_dir, "/", "\\")
     }
+
     sys_include_flags = "${win_toolchain_data.include_flags_imsvc}"
-    sys_lib_flags = "${win_toolchain_data.libpath_flags}"
+    sys_lib_flags =
+        "-libpath:$_clang_lib_dir ${win_toolchain_data.libpath_flags}"
 
     toolchain_args = {
       if (defined(invoker.toolchain_args)) {

@@ -695,8 +695,6 @@ static_library("ui") {
       "android/infobars/generated_password_saved_infobar.h",
       "android/infobars/grouped_permission_infobar.cc",
       "android/infobars/grouped_permission_infobar.h",
-      "android/infobars/infobar_android.cc",
-      "android/infobars/infobar_android.h",
       "android/infobars/infobar_container_android.cc",
       "android/infobars/infobar_container_android.h",
       "android/infobars/installable_ambient_badge_infobar.cc",
@@ -814,6 +812,7 @@ static_library("ui") {
       "//components/browser_ui/client_certificate/android",
       "//components/embedder_support/android:context_menu",
       "//components/embedder_support/android:web_contents_delegate",
+      "//components/infobars/android",
       "//components/javascript_dialogs/android:jni_headers",
       "//components/navigation_interception",
       "//components/optimization_guide/proto:optimization_guide_proto",
@@ -4504,16 +4503,6 @@ if (is_chromeos) {
 }
 
 if (is_android) {
-  java_cpp_enum("infobar_android_enums") {
-    sources = [ "android/infobars/infobar_android.h" ]
-  }
-
-  android_library("infobar_android_enums_java") {
-    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
-
-    srcjar_deps = [ ":infobar_android_enums" ]
-  }
-
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

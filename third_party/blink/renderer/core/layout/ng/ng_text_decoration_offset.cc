@@ -7,19 +7,28 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 
 namespace blink {
 
 int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
+    const Length& style_underline_offset,
+    float computed_font_size,
     float text_decoration_thickness,
     FontVerticalPositionType position_type) const {
   LayoutUnit offset = LayoutUnit::Max();
   const ComputedStyle& style = text_style_;
   FontBaseline baseline_type = style.GetFontBaseline();
 
-  if (decorating_box_)
-    offset = decorating_box_->Baseline().value_or(offset);
+  LayoutUnit style_underline_offset_pixels = LayoutUnit::FromFloatRound(
+      StyleUnderlineOffsetToPixels(style_underline_offset, computed_font_size));
+  if (IsLineOverSide(position_type)) {
+    style_underline_offset_pixels = -style_underline_offset_pixels;
+  }
+
+  if (decorating_box_) {
+    offset = decorating_box_->Baseline().value_or(offset) +
+             style_underline_offset_pixels;
+  }
 
   if (offset == LayoutUnit::Max()) {
     // TODO(layout-dev): How do we compute the baseline offset with a
@@ -27,8 +36,10 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
     const SimpleFontData* font_data = style.GetFont().PrimaryFont();
     if (!font_data)
       return 0;
-    offset = font_data->GetFontMetrics().Ascent(baseline_type) -
-             font_data->VerticalPosition(position_type, baseline_type);
+    offset = LayoutUnit::FromFloatRound(
+                 font_data->GetFontMetrics().FloatAscent(baseline_type)) -
+             font_data->VerticalPosition(position_type, baseline_type) +
+             style_underline_offset_pixels;
   }
 
   // Compute offset to the farthest position of the decorating box.

@@ -198,12 +198,13 @@ bool PlanCounter(LayoutObject& object,
           type_mask = CounterNode::kResetType;
           return true;
         }
-        value = 1;
+        value = ListItemOrdinal::IsInReversedOrderedList(*e) ? -1 : 1;
         type_mask = CounterNode::kIncrementType;
         return true;
       }
       if (auto* olist = DynamicTo<HTMLOListElement>(*e)) {
-        value = olist->StartConsideringItemCount();
+        value =
+            olist->StartConsideringItemCount() + (olist->IsReversed() ? 1 : -1);
         type_mask = CounterNode::kResetType;
         return true;
       }

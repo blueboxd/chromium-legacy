@@ -101,7 +101,7 @@
       testType('application/json', '[533,3223]', ['533', '322'], next);
     },
     function jsonSpecialMimeTest(next) {
-      testType('application/vnd.document+json', '{foo0foo: 123}', ['foo'], next);
+      testType('application/vnd.document+json', '{"foo0foo": 123}', ['foo'], next);
     },
     function xmlMultipleSearchTest(next) {
       testType('text/xml', '<bar><foo/>test</bar>', ['bar', 'foo', 'bar', 'test'], next);
@@ -116,7 +116,7 @@
       testType('text/xml', '<a><![CDATA[GGG]]><g tee="gee">tee</g></a>', ['GGG', 'tee', 'CDATA'], next);
     },
     function xmlMimeTypeJsonTest(next) {
-      testType('text/xml', '{foo0: \'barr\', \'barr\': \'fooo\'}', ['fooo', 'bar'], next);
+      testType('text/xml', '{"foo0": "barr", "barr": "fooo"}', ['fooo', 'bar'], next);
     }
   ]);
 })();

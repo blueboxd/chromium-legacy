@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.components.infobars.InfoBarCompactLayout;
 import org.chromium.components.infobars.InfoBarInteractionHandler;
 import org.chromium.components.infobars.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

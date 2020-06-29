@@ -64,6 +64,7 @@ class CORE_EXPORT ListItemOrdinal {
   static bool IsList(const Node&);
   static bool IsListItem(const Node&);
   static bool IsListItem(const LayoutObject*);
+  static bool IsInReversedOrderedList(const Node&);
 
   // Compute the total item count of a list.
   static unsigned ItemCountForOrderedList(const HTMLOListElement*);

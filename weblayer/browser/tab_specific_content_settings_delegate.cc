@@ -97,4 +97,7 @@ TabSpecificContentSettingsDelegate::GetMicrophoneCameraState() {
 void TabSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
+void TabSpecificContentSettingsDelegate::OnCookieAccessAllowed(
+    const net::CookieList& accessed_cookies) {}
+
 }  // namespace weblayer

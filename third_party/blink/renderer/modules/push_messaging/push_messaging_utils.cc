@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom-blink.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -108,20 +107,6 @@ mojom::PushErrorType PushRegistrationStatusToPushErrorType(
       break;
   }
   return error_type;
-}
-
-blink::mojom::blink::PushSubscriptionOptionsPtr
-ConvertSubscriptionOptionPointer(blink::PushSubscriptionOptions* input) {
-  Vector<uint8_t> application_server_key;
-  // The checked_cast here guarantees that the input buffer fits into the
-  // result buffer.
-  application_server_key.Append(
-      reinterpret_cast<uint8_t*>(input->applicationServerKey()->Data()),
-      base::checked_cast<wtf_size_t>(
-          input->applicationServerKey()->ByteLengthAsSizeT()));
-
-  return blink::mojom::blink::PushSubscriptionOptions::New(
-      input->userVisibleOnly(), application_server_key);
 }
 
 }  // namespace blink

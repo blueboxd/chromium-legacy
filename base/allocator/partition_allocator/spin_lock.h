@@ -11,18 +11,27 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 
+// DEPRECATED. THIS CLASS SHOULD NOT BE USED. It will be removed as part of
+// http://crbug.com/1061437.
+//
 // Spinlock is a simple spinlock class based on the standard CPU primitive of
 // atomic increment and decrement of an int at a given memory address. These are
 // intended only for very short duration locks and assume a system with multiple
 // cores. For any potentially longer wait you should use a real lock, such as
 // |base::Lock|.
 namespace base {
+
+namespace internal {
+template <bool thread_safe>
+class MaybeSpinLock;
+}
+
 namespace subtle {
 
 class BASE_EXPORT SpinLock {
  public:
-  constexpr SpinLock() = default;
   ~SpinLock() = default;
   using Guard = std::lock_guard<SpinLock>;
 
@@ -37,6 +46,15 @@ class BASE_EXPORT SpinLock {
   ALWAYS_INLINE void unlock() { lock_.store(false, std::memory_order_release); }
 
  private:
+  template <bool thread_safe>
+  friend class base::internal::MaybeSpinLock;
+
+  FRIEND_TEST_ALL_PREFIXES(SpinLockTest, Torture);
+  FRIEND_TEST_ALL_PREFIXES(SpinLockPerfTest, Simple);
+  FRIEND_TEST_ALL_PREFIXES(SpinLockPerfTest, WithCompetingThread);
+
+  constexpr SpinLock() = default;
+
   // This is called if the initial attempt to acquire the lock fails. It's
   // slower, but has a much better scheduling and power consumption behavior.
   void LockSlow();

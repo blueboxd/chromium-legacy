@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -132,11 +133,15 @@ id<GREYMatcher> NoBookmarksLabel() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Remove |fakeIdentity2| from the device.
-  [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity2)]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Remove account")]
-      performAction:grey_tap()];
+  if (base::FeatureList::IsEnabled(kEnableMyGoogle)) {
+    [SigninEarlGreyUI tapRemoveAccountFromDeviceWithFakeIdentity:fakeIdentity2];
+  } else {
+    [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity2)]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                            @"Remove account")]
+        performAction:grey_tap()];
+  }
 
   // Check that |fakeIdentity2| isn't available anymore on the Account Settings.
   [[EarlGrey
@@ -161,12 +166,15 @@ id<GREYMatcher> NoBookmarksLabel() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Remove |fakeIdentity| from the device.
-  [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity)]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Remove account")]
-      performAction:grey_tap()];
-
+  if (base::FeatureList::IsEnabled(kEnableMyGoogle)) {
+    [SigninEarlGreyUI tapRemoveAccountFromDeviceWithFakeIdentity:fakeIdentity];
+  } else {
+    [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity)]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
+                                            @"Remove account")]
+        performAction:grey_tap()];
+  }
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];

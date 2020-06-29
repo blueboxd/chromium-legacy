@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 
 namespace blink {
 
@@ -24,14 +25,21 @@ class CORE_EXPORT TextDecorationOffsetBase {
   ~TextDecorationOffsetBase() = default;
 
   virtual int ComputeUnderlineOffsetForUnder(
+      const Length& style_underline_offset,
+      float computed_font_size,
       float text_decoration_thickness,
       FontVerticalPositionType) const = 0;
 
   int ComputeUnderlineOffset(ResolvedUnderlinePosition,
+                             float computed_font_size,
                              const FontMetrics&,
+                             const Length& style_underline_offset,
                              float text_decoration_thickness) const;
 
  protected:
+  static float StyleUnderlineOffsetToPixels(
+      const Length& style_underline_offset,
+      float font_size);
   const ComputedStyle& style_;
 };
 

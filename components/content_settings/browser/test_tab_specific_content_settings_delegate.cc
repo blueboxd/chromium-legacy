@@ -60,4 +60,7 @@ TestTabSpecificContentSettingsDelegate::GetMicrophoneCameraState() {
 void TestTabSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
+void TestTabSpecificContentSettingsDelegate::OnCookieAccessAllowed(
+    const net::CookieList& accessed_cookies) {}
+
 }  // namespace content_settings

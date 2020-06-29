@@ -198,6 +198,7 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   void DestroyUI() override;
   version_info::Channel GetChannel() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
+  std::string GetChromeSignedInEmailAddress() const override;
   autofill_assistant::AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   password_manager::PasswordManagerClient* GetPasswordManagerClient()
@@ -207,6 +208,7 @@ class AutofillAssistantPrivateAPI : public BrowserContextKeyedAPI,
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;
   autofill_assistant::DeviceContext GetDeviceContext() const override;
+  bool IsAccessibilityEnabled() const override;
   void Shutdown(autofill_assistant::Metrics::DropOutReason reason) override;
   content::WebContents* GetWebContents() const override;
 

@@ -24,7 +24,6 @@ android_resources("java_resources") {
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/ConfirmInfoBar.java",
-    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/Snackbar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java",
@@ -36,10 +35,10 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
-    "//chrome/browser/ui:infobar_android_enums_java",
     "//chrome/browser/util:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java",
+    "//components/infobars/android:infobar_android_enums_java",
     "//components/infobars/android:java",
     "//components/infobars/core:infobar_enums_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -55,7 +54,6 @@ android_library("java") {
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/ConfirmInfoBar.java",
-    "java/src/org/chromium/chrome/browser/ui/messages/infobar/InfoBar.java",
     "java/src/org/chromium/chrome/browser/ui/messages/infobar/SimpleConfirmInfoBarBuilder.java",
   ]
 }

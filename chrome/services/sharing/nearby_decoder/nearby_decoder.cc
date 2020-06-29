@@ -10,9 +10,10 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "chrome/services/sharing/nearby_decoder/advertisement.h"
-#include "chrome/services/sharing/nearby_decoder/proto/wire_format.pb.h"
+#include "chrome/services/sharing/nearby_decoder/advertisement_decoder.h"
+#include "chrome/services/sharing/public/cpp/advertisement.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
+#include "chrome/services/sharing/public/proto/wire_format.pb.h"
 
 namespace sharing {
 
@@ -217,7 +218,7 @@ void NearbySharingDecoder::DecodeAdvertisement(
     const std::vector<uint8_t>& data,
     DecodeAdvertisementCallback callback) {
   std::unique_ptr<sharing::Advertisement> advertisement =
-      sharing::Advertisement::FromEndpointInfo(data);
+      sharing::AdvertisementDecoder::FromEndpointInfo(data);
 
   if (!advertisement) {
     LOG(ERROR) << "Failed to decode advertisement";

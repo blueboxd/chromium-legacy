@@ -45,6 +45,9 @@ id AXTextMarkerFrom(const BrowserAccessibilityCocoa* anchor,
                     int offset,
                     ax::mojom::TextAffinity affinity);
 
+// Returns AXTextMarkerRange for the given browser accessibility positions.
+id AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker);
+
 }  // namespace content
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility

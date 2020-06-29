@@ -49,19 +49,19 @@
   await testPreviewer('application/json', '[533,3223]', 200);
 
   TestRunner.addResult('MIME JSON');
-  await testPreviewer('application/vnd.document+json', '{foo0foo: 123}', 200);
+  await testPreviewer('application/vnd.document+json', '{"foo0foo": 123}', 200);
 
   TestRunner.addResult('Simple XML');
   await testPreviewer('text/xml', '<bar><foo/></bar>', 200);
 
   TestRunner.addResult('XML MIME But JSON');
-  await testPreviewer('text/xml', '{foo0: \'barr\', \'barr\': \'fooo\'}', 200);
+  await testPreviewer('text/xml', '{"foo0": "barr", "barr": "fooo"}', 200);
 
   TestRunner.addResult('HTML MIME But JSON');
-  await testPreviewer('text/html', '{hi: "hi"}', 200);
+  await testPreviewer('text/html', '{"hi": "hi"}', 200);
 
   TestRunner.addResult('TEXT MIME But JSON');
-  await testPreviewer('text/html', '{hi: "hi"}', 200);
+  await testPreviewer('text/html', '{"hi": "hi"}', 200);
 
   TestRunner.addResult('HTML MIME With 500 error');
   await testPreviewer('text/html', 'This\n<b>is a </b><br /><br />test.', 500);

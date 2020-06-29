@@ -107,7 +107,7 @@ void EmojiSuggester::OnEmojiDataLoaded(const std::string& emoji_data) {
 
 void EmojiSuggester::RecordAcceptanceIndex(int index) {
   base::UmaHistogramExactLinear(
-      "InputMethod.Assistive.EmojiSuggestAddition.AcceptancePosition", index,
+      "InputMethod.Assistive.EmojiSuggestAddition.AcceptanceIndex", index,
       kMaxSuggestionIndex);
 }
 

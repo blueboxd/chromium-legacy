@@ -6,15 +6,19 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/browsing_data/access_context_audit_service.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
 AccessContextAuditServiceFactory::AccessContextAuditServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "AccessContextAuditService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
+}
 
 AccessContextAuditServiceFactory*
 AccessContextAuditServiceFactory::GetInstance() {

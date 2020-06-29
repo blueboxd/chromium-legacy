@@ -7,6 +7,7 @@ from os import path as os_path
 import platform
 import subprocess
 import sys
+import os
 
 
 def GetBinaryPath():
@@ -20,7 +21,7 @@ def GetBinaryPath():
 def RunNode(cmd_parts, stdout=None):
   cmd = [GetBinaryPath()] + cmd_parts
   process = subprocess.Popen(
-      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      cmd, cwd=os.getcwd(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout, stderr = process.communicate()
 
   # TODO(crbug.com/1098074): Properly handle the returncode of
@@ -38,3 +39,6 @@ def RunNode(cmd_parts, stdout=None):
     raise RuntimeError('%s failed: %s' % (cmd, stderr))
 
   return stdout
+
+if __name__ == '__main__':
+  RunNode(sys.argv[1:])

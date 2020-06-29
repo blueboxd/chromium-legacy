@@ -237,29 +237,28 @@ class WebRtcSetDescriptionObserverHandlerTest
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
 
-  blink::WebMediaStreamTrack CreateLocalTrack(const std::string& id) {
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(
-        blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
-        blink::WebString::FromUTF8("local_audio_track"), false);
-    blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
-    // Takes ownership of |audio_source|.
-    web_source.SetPlatformSource(base::WrapUnique(audio_source));
+  MediaStreamComponent* CreateLocalTrack(const std::string& id) {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8(id), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("local_audio_track"), false);
+    auto audio_source = std::make_unique<MediaStreamAudioSource>(
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+    auto* audio_source_ptr = audio_source.get();
+    audio_source->SetOwner(source);
+    source->SetPlatformSource(std::move(audio_source));
 
-    blink::WebMediaStreamTrack web_track;
-    web_track.Initialize(web_source.Id(), web_source);
-    audio_source->ConnectToTrack(web_track);
-    return web_track;
+    auto* component =
+        MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
+    audio_source_ptr->ConnectToTrack(component);
+    return component;
   }
 
   void CreateTransceivers() {
     ASSERT_EQ(StateSurfacerType::kTransceivers, surfacer_type_);
 
-    auto web_local_track = CreateLocalTrack("local_track");
+    auto* component = CreateLocalTrack("local_track");
     auto local_track_adapter =
-        track_adapter_map_->GetOrCreateLocalTrackAdapter(web_local_track);
+        track_adapter_map_->GetOrCreateLocalTrackAdapter(component);
     scoped_refptr<webrtc::MediaStreamTrackInterface> local_track =
         local_track_adapter->webrtc_track();
     rtc::scoped_refptr<blink::FakeRtpSender> sender(

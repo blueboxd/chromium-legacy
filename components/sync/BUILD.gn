@@ -405,16 +405,10 @@ jumbo_static_library("rest_of_sync") {
     "//components/variations/net",
     "//services/network/public/cpp",
     "//sql",
-    "//third_party/cacheinvalidation",
     "//third_party/crc32c",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
   ]
-
-  if (is_android) {
-    deps += [ "//components/sync/android:jni_headers" ]
-    sources += [ "android/model_type_helper.cc" ]
-  }
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

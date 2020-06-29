@@ -67,6 +67,11 @@ typedef NS_ENUM(NSInteger, SignOutConfirmation) {
 // |signOutConfirmation| profile and signs out from the current identity.
 + (void)signOutWithSignOutConfirmation:(SignOutConfirmation)signOutConfirmation;
 
+// Taps "Remove account from this device" button and follow-up confirmation.
+// Assumes the user is on the Settings screen.
++ (void)tapRemoveAccountFromDeviceWithFakeIdentity:
+    (FakeChromeIdentity*)fakeIdentity;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_SIGNIN_EARL_GREY_UI_H_

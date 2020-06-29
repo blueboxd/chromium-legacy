@@ -764,10 +764,8 @@ void LayoutThemeMac::AdjustMenuListStyle(ComputedStyle& style,
   style.SetWhiteSpace(EWhiteSpace::kPre);
 
   // Set the foreground color to black or gray when we have the aqua look.
-  // Cast to RGB32 is to work around a compiler bug.
-  StyleColor color(e && !e->IsDisabledFormControl()
-                       ? static_cast<RGBA32>(Color::kBlack)
-                       : Color::kDarkGray);
+  StyleColor color(e && !e->IsDisabledFormControl() ? Color::kBlack
+                                                    : Color::kDarkGray);
   style.SetColor(color);
 
   // Set the button's vertical size.

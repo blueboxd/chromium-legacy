@@ -290,4 +290,31 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 )~~");
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       ParameterizedAttributes_TextMarkerRange) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p>Text</p>)~~",
+               {":2;AXStringForTextMarkerRange({anchor: {:2, 1, down}, focus: "
+                "{:2, 3, down}})=*"},
+               R"~~(AXWebArea
+++AXGroup AXStringForTextMarkerRange({anchor: {:2, 1, down}, focus: {:2, 3, down}})='ex'
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AccessibilityTreeFormatterMacBrowserTest,
+    ParameterizedAttributes_TextMarkerRange_WrongParameters) {
+  TestWrongParameters(
+      R"~~(data:text/html,
+                           <p>Text</p>)~~",
+      {"1, 2", "2", "{focus: {:2, 1, down}}", "{anchor: {:2, 1, down}}",
+       "{anchor: {2, 1, down}, focus: {2, 1, down}}"},
+      ":1;AXStringForTextMarkerRange(Argument)=*",
+      R"~~(AXWebArea AXStringForTextMarkerRange(Argument)=ERROR:FAILED_TO_PARSE_ARGS
+++AXGroup
+++++AXStaticText AXValue='Text'
+)~~");
+}
+
 }  // namespace content

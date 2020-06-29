@@ -154,7 +154,7 @@ void CSSDefaultStyleSheets::InitializeDefaultStyles() {
   default_quirks_style_ = MakeGarbageCollected<RuleSet>();
   default_print_style_ = MakeGarbageCollected<RuleSet>();
   default_forced_color_style_ = MakeGarbageCollected<RuleSet>();
-  default_pseudo_element_style_ = MakeGarbageCollected<RuleSet>();
+  default_pseudo_element_style_.Clear();
 
   default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
   default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
@@ -296,6 +296,8 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForPseudoElement(
         return false;
       marker_style_sheet_ =
           ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_MARKER_CSS));
+      if (!default_pseudo_element_style_)
+        default_pseudo_element_style_ = MakeGarbageCollected<RuleSet>();
       default_pseudo_element_style_->AddRulesFromSheet(MarkerStyleSheet(),
                                                        ScreenEval());
       return true;

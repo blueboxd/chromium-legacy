@@ -367,8 +367,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, NotSyncedThenSynced) {
             GetRegistrar(GetProfile(1)).GetAppUserDisplayMode(app_id));
 }
 
+// TODO(crbug.com/1099595): Fix flakiness on all platforms.
 IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
-                       PolicyAppPersistsUninstalledOnSync) {
+                       DISABLED_PolicyAppPersistsUninstalledOnSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());

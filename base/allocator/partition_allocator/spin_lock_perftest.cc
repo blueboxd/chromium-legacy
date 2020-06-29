@@ -10,6 +10,7 @@
 #include "testing/perf/perf_result_reporter.h"
 
 namespace base {
+namespace subtle {
 namespace {
 
 constexpr int kWarmupRuns = 1;
@@ -29,7 +30,7 @@ perf_test::PerfResultReporter SetUpReporter(const std::string& story_name) {
 
 class Spin : public PlatformThread::Delegate {
  public:
-  Spin(subtle::SpinLock* lock, size_t* data)
+  Spin(SpinLock* lock, size_t* data)
       : lock_(lock), data_(data), should_stop_(false) {}
   ~Spin() override = default;
 
@@ -44,7 +45,7 @@ class Spin : public PlatformThread::Delegate {
   void Stop() { should_stop_ = true; }
 
  private:
-  subtle::SpinLock* lock_;
+  SpinLock* lock_;
   size_t* data_;
   std::atomic<bool> should_stop_;
 };
@@ -55,7 +56,7 @@ TEST(SpinLockPerfTest, Simple) {
   LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
   size_t data = 0;
 
-  subtle::SpinLock lock;
+  SpinLock lock;
 
   do {
     lock.lock();
@@ -72,7 +73,7 @@ TEST(SpinLockPerfTest, WithCompetingThread) {
   LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
   size_t data = 0;
 
-  subtle::SpinLock lock;
+  SpinLock lock;
 
   // Starts a competing thread executing the same loop as this thread.
   Spin thread_main(&lock, &data);
@@ -92,5 +93,5 @@ TEST(SpinLockPerfTest, WithCompetingThread) {
   auto reporter = SetUpReporter(kStoryWithCompetingThread);
   reporter.AddResult(kMetricLockUnlockThroughput, timer.LapsPerSecond());
 }
-
+}  // namespace subtle
 }  // namespace base

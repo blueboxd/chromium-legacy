@@ -36,6 +36,7 @@ class TestTabSpecificContentSettingsDelegate
   TabSpecificContentSettings::MicrophoneCameraState GetMicrophoneCameraState()
       override;
   void OnContentBlocked(ContentSettingsType type) override;
+  void OnCookieAccessAllowed(const net::CookieList& accessed_cookies) override;
 
  private:
   PrefService* prefs_;

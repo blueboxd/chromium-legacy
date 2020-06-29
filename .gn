@@ -152,6 +152,7 @@ check_targets = [
   "//chrome/browser/offline_items_collection/*",
   "//chrome/browser/offline_pages/*",
   "//chrome/browser/page_load_metrics/*",
+  "//chrome/browser/password_check/*",
   "//chrome/browser/password_manager/*",
   "//chrome/browser/payments/*",
   "//chrome/browser/pdf/*",

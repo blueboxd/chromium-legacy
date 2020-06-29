@@ -380,11 +380,13 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     ContentSuggestionsDiscoverItem* discoverFeedItem =
         static_cast<ContentSuggestionsDiscoverItem*>(item);
     self.discoverFeedVC = discoverFeedItem.discoverFeed;
-    [self addChildViewController:self.discoverFeedVC];
-    UICollectionViewCell* cell = [super collectionView:collectionView
-                                cellForItemAtIndexPath:indexPath];
-    [self.discoverFeedVC didMoveToParentViewController:self];
-    return cell;
+    if (self.discoverFeedVC) {
+      [self addChildViewController:self.discoverFeedVC];
+      UICollectionViewCell* cell = [super collectionView:collectionView
+                                  cellForItemAtIndexPath:indexPath];
+      [self.discoverFeedVC didMoveToParentViewController:self];
+      return cell;
+    }
   }
 
   if ([self.collectionUpdater isContentSuggestionsSection:indexPath.section] &&

@@ -128,6 +128,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
@@ -355,6 +356,11 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   main_thread_profiler_->SetAuxUnwinderFactory(base::BindRepeating(
       &CreateV8Unwinder, base::Unretained(v8::Isolate::GetCurrent())));
+
+  // In the case of single process mode, the v8 unwinding will not work.
+  tracing::TracingSamplerProfiler::SetAuxUnwinderFactoryOnMainThread(
+      base::BindRepeating(&CreateV8Unwinder,
+                          base::Unretained(v8::Isolate::GetCurrent())));
 
   thread->SetRendererProcessType(
       IsStandaloneContentExtensionProcess()

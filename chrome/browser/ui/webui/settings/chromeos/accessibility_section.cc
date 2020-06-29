@@ -439,6 +439,8 @@ void AccessibilitySection::AddLoadTimeData(
       {"manageSwitchAccessSettings",
        IDS_SETTINGS_MANAGE_SWITCH_ACCESS_SETTINGS},
       {"switchAssignmentHeading", IDS_SETTINGS_SWITCH_ASSIGNMENT_HEADING},
+      {"switchAssignOptionPlaceholder",
+       IDS_SETTINGS_SWITCH_ASSIGN_OPTION_PLACEHOLDER},
       {"switchAssignOptionNone", IDS_SETTINGS_SWITCH_ASSIGN_OPTION_NONE},
       {"switchAssignOptionSpace", IDS_SETTINGS_SWITCH_ASSIGN_OPTION_SPACE},
       {"switchAssignOptionEnter", IDS_SETTINGS_SWITCH_ASSIGN_OPTION_ENTER},

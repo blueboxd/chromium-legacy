@@ -65,6 +65,7 @@
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
+#import "ios/chrome/browser/ui/page_info/features.h"
 #include "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -539,6 +540,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImprovedCookieControlsDescription,
      flag_descriptions::kImprovedCookieControlsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
+    {"page-info-refactoring", flag_descriptions::kPageInfoRefactoringName,
+     flag_descriptions::kPageInfoRefactoringDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kPageInfoRefactoring)},
     {"contained-browser-bvc", flag_descriptions::kContainedBVCName,
      flag_descriptions::kContainedBVCDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kContainedBVC)},

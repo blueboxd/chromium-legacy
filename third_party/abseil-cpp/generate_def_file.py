@@ -35,7 +35,7 @@ def _GenerateDefFile(cpu, is_debug):
   flavor = _DebugOrRelease(is_debug)
   gn_args = [
       'ffmpeg_branding = "Chrome"',
-      'is_component_build = false',
+      'is_component_build = true',
       'is_debug = {}'.format(str(is_debug).lower()),
       'proprietary_codecs = true',
       'symbol_level = 0',
@@ -49,7 +49,7 @@ def _GenerateDefFile(cpu, is_debug):
                           cwd=os.getcwd())
     logging.info('[%s - %s] gn gen completed', cpu, flavor)
     subprocess.check_call(
-        ['autoninja', '-C', out_dir, 'third_party/abseil-cpp:absl'],
+        ['autoninja', '-C', out_dir, 'third_party/abseil-cpp:absl_component_deps'],
         cwd=os.getcwd())
     logging.info('[%s - %s] autoninja completed', cpu, flavor)
 

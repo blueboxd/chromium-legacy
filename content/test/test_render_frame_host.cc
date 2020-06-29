@@ -245,8 +245,8 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
     const std::vector<url::Origin>& allowlist) {
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;
-  header[0].fallback_value = false;
-  header[0].opaque_value = false;
+  header[0].matches_all_origins = false;
+  header[0].matches_opaque_src = false;
   for (const auto& origin : allowlist) {
     header[0].allowed_origins.push_back(origin);
   }

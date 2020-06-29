@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/threading/platform_thread.h"
@@ -37,6 +38,7 @@ class BASE_EXPORT StackSampler {
       SamplingProfilerThreadToken thread_token,
       ModuleCache* module_cache,
       std::vector<std::unique_ptr<Unwinder>> core_unwinders,
+      RepeatingClosure record_sample_callback,
       StackSamplerTestDelegate* test_delegate);
 
   // Gets the required size of the stack buffer.

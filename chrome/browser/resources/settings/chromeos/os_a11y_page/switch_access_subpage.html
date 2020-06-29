@@ -8,6 +8,7 @@
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="switch_access_constants.html">
 
 <dom-module id="settings-switch-access-subpage">
   <template>
@@ -24,7 +25,7 @@
         </div>
         <settings-dropdown-menu label="$i18n{assignSelectSwitchLabel}"
             pref="{{prefs.settings.a11y.switch_access.select.setting}}"
-            menu-options="[[switchAssignOptions_]]">
+            menu-options="[[optionsForSelect_]]" id="selectAssignmentDropdown">
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
@@ -33,7 +34,7 @@
         </div>
         <settings-dropdown-menu label="$i18n{assignNextSwitchLabel}"
             pref="{{prefs.settings.a11y.switch_access.next.setting}}"
-            menu-options="[[switchAssignOptions_]]">
+            menu-options="[[optionsForNext_]]" id="nextAssignmentDropdown">
         </settings-dropdown-menu>
       </div>
       <div class="settings-box continuation list-item">
@@ -42,7 +43,8 @@
         </div>
         <settings-dropdown-menu label="$i18n{assignPreviousSwitchLabel}"
             pref="{{prefs.settings.a11y.switch_access.previous.setting}}"
-            menu-options="[[switchAssignOptions_]]">
+            menu-options="[[optionsForPrevious_]]"
+            id="previousAssignmentDropdown">
         </settings-dropdown-menu>
       </div>
     </div>

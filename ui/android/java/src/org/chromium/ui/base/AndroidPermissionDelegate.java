@@ -17,7 +17,6 @@ public interface AndroidPermissionDelegate {
 
     /**
      * Determine whether the specified permission can be requested.
-     *
      * <p>
      * A permission can be requested in the following states:
      * 1.) Default un-granted state, permission can be requested
@@ -39,6 +38,7 @@ public interface AndroidPermissionDelegate {
 
     /**
      * Requests the specified permissions are granted for further use.
+     *
      * @param permissions The list of permissions to request access to.
      * @param callback The callback to be notified whether the permissions were granted.
      */
@@ -46,9 +46,12 @@ public interface AndroidPermissionDelegate {
 
     /**
      * Handle the result from requesting permissions.
+     *
      * @param requestCode The request code passed in requestPermissions.
      * @param permissions The list of requested permissions.
-     * @param grantResults The grant results for the corresponding permissions.
+     * @param grantResults The grant results for the corresponding permissions which is either
+     *         {@link android.content.pm.PackageManager#PERMISSION_GRANTED} or {@link
+     *         android.content.pm.PackageManager#PERMISSION_DENIED}.
      * @return True if the result was handled.
      */
     boolean handlePermissionResult(int requestCode, String[] permissions, int[] grantResults);

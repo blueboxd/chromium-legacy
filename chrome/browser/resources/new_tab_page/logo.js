@@ -161,9 +161,9 @@ class LogoElement extends PolymerElement {
     this.pageHandler_.getDoodle().then(({doodle}) => {
       this.doodle_ = doodle;
       this.loaded_ = true;
-      if (this.doodle_ && this.doodle_.content.interactiveDoodle) {
-        this.width_ = `${this.doodle_.content.interactiveDoodle.width}px`;
-        this.height_ = `${this.doodle_.content.interactiveDoodle.height}px`;
+      if (this.doodle_ && this.doodle_.interactive) {
+        this.width_ = `${this.doodle_.interactive.width}px`;
+        this.height_ = `${this.doodle_.interactive.height}px`;
       }
     });
     /** @private {?string} */
@@ -243,9 +243,8 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeImageDoodle_() {
-    return this.doodle_ && this.doodle_.content.imageDoodle &&
-        (this.dark ? this.doodle_.content.imageDoodle.dark :
-                     this.doodle_.content.imageDoodle.light) ||
+    return this.doodle_ && this.doodle_.image &&
+        (this.dark ? this.doodle_.image.dark : this.doodle_.image.light) ||
         null;
   }
 
@@ -257,8 +256,7 @@ class LogoElement extends PolymerElement {
     return !!this.imageDoodle_ ||
         /* We hide interactive doodles when offline. Otherwise, the iframe
            would show an ugly error page. */
-        !!this.doodle_ && !!this.doodle_.content.interactiveDoodle &&
-        window.navigator.onLine;
+        !!this.doodle_ && !!this.doodle_.interactive && window.navigator.onLine;
   }
 
   /**
@@ -315,7 +313,7 @@ class LogoElement extends PolymerElement {
         this.showAnimation_ ? newTabPage.mojom.DoodleImageType.ANIMATION :
                               newTabPage.mojom.DoodleImageType.STATIC,
         null);
-    const onClickUrl = new URL(this.doodle_.content.imageDoodle.onClickUrl.url);
+    const onClickUrl = new URL(this.doodle_.image.onClickUrl.url);
     if (this.imageClickParams_) {
       for (const param of new URLSearchParams(this.imageClickParams_)) {
         onClickUrl.searchParams.append(param[0], param[1]);
@@ -361,8 +359,8 @@ class LogoElement extends PolymerElement {
    * @private
    */
   onShare_(e) {
-    const doodleId = new URL(this.doodle_.content.imageDoodle.onClickUrl.url)
-                         .searchParams.get('ct');
+    const doodleId =
+        new URL(this.doodle_.image.onClickUrl.url).searchParams.get('ct');
     if (!doodleId) {
       return;
     }
@@ -421,8 +419,8 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeIframeUrl_() {
-    if (this.doodle_ && this.doodle_.content.interactiveDoodle) {
-      const url = new URL(this.doodle_.content.interactiveDoodle.url.url);
+    if (this.doodle_ && this.doodle_.interactive) {
+      const url = new URL(this.doodle_.interactive.url.url);
       if (loadTimeData.getBoolean('themeModeDoodlesEnabled')) {
         url.searchParams.append('theme_messages', '0');
       }

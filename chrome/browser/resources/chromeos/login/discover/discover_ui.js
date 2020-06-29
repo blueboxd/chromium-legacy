@@ -101,8 +101,8 @@ function initializeDiscoverAPI() {
      * @override
      */
     onBeforeShow() {
-      this.propagateFullScreenMode('#discoverWelcome');
-      this.propagateFullScreenMode('.module');
+      this.propagateOnBeforeShow('#discoverWelcome');
+      this.propagateOnBeforeShow('.module');
 
       if (this.firstRun) {
         this.showModule_('pinSetup');

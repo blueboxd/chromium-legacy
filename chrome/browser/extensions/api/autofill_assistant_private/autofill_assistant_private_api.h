@@ -139,7 +139,12 @@ class AutofillAssistantPrivateEventRouter
   void OnDetailsChanged(const autofill_assistant::Details* details) override;
   void OnInfoBoxChanged(const autofill_assistant::InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
+  void OnProgressActiveStepChanged(int active_step) override;
   void OnProgressVisibilityChanged(bool visible) override;
+  void OnStepProgressBarConfigurationChanged(
+      const autofill_assistant::ShowProgressBarProto::
+          StepProgressBarConfiguration& configuration) override;
+  void OnProgressBarErrorStateChanged(bool error) override;
   void OnTouchableAreaChanged(
       const autofill_assistant::RectF& visual_viewport,
       const std::vector<autofill_assistant::RectF>& touchable_areas,

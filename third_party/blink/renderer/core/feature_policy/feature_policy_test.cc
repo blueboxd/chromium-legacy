@@ -99,8 +99,8 @@ class FeaturePolicyParserTest : public ::testing::Test {
 
 struct ParsedPolicyDeclarationForTest {
   mojom::blink::FeaturePolicyFeature feature;
-  bool fallback_value;
-  bool opaque_value;
+  bool matches_all_origins;
+  bool matches_opaque_src;
   std::vector<const char*> origins;
 };
 
@@ -164,8 +164,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
         },
@@ -179,8 +179,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ true,
-                /* opaque_value */ true,
+                /* matches_all_origins */ true,
+                /* matches_opaque_src */ true,
                 {},
             },
         },
@@ -197,20 +197,20 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ true,
-                /* opaque_value */ true,
+                /* matches_all_origins */ true,
+                /* matches_opaque_src */ true,
                 {},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kFullscreen,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_B, ORIGIN_C},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kPayment,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
         },
@@ -227,20 +227,20 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ true,
-                /* opaque_value */ true,
+                /* matches_all_origins */ true,
+                /* matches_opaque_src */ true,
                 {},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kFullscreen,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_B, ORIGIN_C},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kPayment,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
         },
@@ -254,20 +254,20 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kFullscreen,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
             {
                 mojom::blink::FeaturePolicyFeature::kPayment,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_A},
             },
         },
@@ -288,8 +288,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ true,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ true,
                 {},
             },
         },
@@ -303,8 +303,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ true,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ true,
                 {},
             },
         },
@@ -318,8 +318,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ true,
-                /* opaque_value */ true,
+                /* matches_all_origins */ true,
+                /* matches_opaque_src */ true,
                 {},
             },
         },
@@ -333,8 +333,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ false,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ false,
                 {ORIGIN_B, ORIGIN_C},
             },
         },
@@ -349,8 +349,8 @@ const FeaturePolicyParserTestCase FeaturePolicyParserParsingTest::kCases[] = {
         {
             {
                 mojom::blink::FeaturePolicyFeature::kGeolocation,
-                /* fallback_value */ false,
-                /* opaque_value */ true,
+                /* matches_all_origins */ false,
+                /* matches_opaque_src */ true,
                 {ORIGIN_B},
             },
         },
@@ -379,10 +379,10 @@ TEST_P(FeaturePolicyParserParsingTest, PolicyParsedCorrectly) {
     const auto& expected_declaration = expected[i];
 
     EXPECT_EQ(actual_declaration.feature, expected_declaration.feature);
-    EXPECT_EQ(actual_declaration.fallback_value,
-              expected_declaration.fallback_value);
-    EXPECT_EQ(actual_declaration.opaque_value,
-              expected_declaration.opaque_value);
+    EXPECT_EQ(actual_declaration.matches_all_origins,
+              expected_declaration.matches_all_origins);
+    EXPECT_EQ(actual_declaration.matches_opaque_src,
+              expected_declaration.matches_opaque_src);
 
     ASSERT_EQ(actual_declaration.allowed_origins.size(),
               expected_declaration.origins.size());
@@ -780,8 +780,8 @@ class FeaturePolicyMutationTest : public testing::Test {
     if (result == policy.end())
       return false;
 
-    return result->feature == feature && result->fallback_value &&
-           result->opaque_value && result->allowed_origins.empty();
+    return result->feature == feature && result->matches_all_origins &&
+           result->matches_opaque_src && result->allowed_origins.empty();
   }
 
   // Returns true if the policy contains a declaration for the feature which
@@ -795,8 +795,8 @@ class FeaturePolicyMutationTest : public testing::Test {
     if (result == policy.end())
       return false;
 
-    return result->feature == feature && !result->fallback_value &&
-           !result->opaque_value && result->allowed_origins.empty();
+    return result->feature == feature && !result->matches_all_origins &&
+           !result->matches_opaque_src && result->allowed_origins.empty();
   }
 
   ParsedFeaturePolicy test_policy = {

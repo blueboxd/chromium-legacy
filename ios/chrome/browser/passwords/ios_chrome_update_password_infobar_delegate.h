@@ -34,7 +34,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
       infobars::InfoBarManager* infobar_manager,
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       UIViewController* baseViewController,
-      id<ApplicationCommands> dispatcher);
+      id<ApplicationCommands> handler);
 
   ~IOSChromeUpdatePasswordInfoBarDelegate() override;
 

@@ -20,8 +20,10 @@ std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
     const FeaturePolicy::FeatureList& feature_list) {
   std::unique_ptr<FeaturePolicy::Allowlist> result =
       base::WrapUnique(new FeaturePolicy::Allowlist());
-  result->SetFallbackValue(parsed_declaration.fallback_value);
-  result->SetOpaqueValue(parsed_declaration.opaque_value);
+  if (parsed_declaration.matches_all_origins)
+    result->AddAll();
+  if (parsed_declaration.matches_opaque_src)
+    result->AddOpaqueSrc();
   for (const auto& value : parsed_declaration.allowed_origins)
     result->Add(value);
 
@@ -30,22 +32,21 @@ std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
 
 }  // namespace
 
-ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
-    : fallback_value(false), opaque_value(false) {}
+ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration() = default;
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     mojom::FeaturePolicyFeature feature)
-    : feature(feature), fallback_value(false), opaque_value(false) {}
+    : feature(feature) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     mojom::FeaturePolicyFeature feature,
     const std::vector<url::Origin>& allowed_origins,
-    bool fallback_value,
-    bool opaque_value)
+    bool matches_all_origins,
+    bool matches_opaque_src)
     : feature(feature),
       allowed_origins(allowed_origins),
-      fallback_value(fallback_value),
-      opaque_value(opaque_value) {}
+      matches_all_origins(matches_all_origins),
+      matches_opaque_src(matches_opaque_src) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     const ParsedFeaturePolicyDeclaration& rhs) = default;
@@ -57,14 +58,13 @@ ParsedFeaturePolicyDeclaration::~ParsedFeaturePolicyDeclaration() = default;
 
 bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
                 const ParsedFeaturePolicyDeclaration& rhs) {
-  return std::tie(lhs.feature, lhs.fallback_value, lhs.opaque_value,
+  return std::tie(lhs.feature, lhs.matches_all_origins, lhs.matches_opaque_src,
                   lhs.allowed_origins) ==
-         std::tie(rhs.feature, rhs.fallback_value, rhs.opaque_value,
+         std::tie(rhs.feature, rhs.matches_all_origins, rhs.matches_opaque_src,
                   rhs.allowed_origins);
 }
 
-FeaturePolicy::Allowlist::Allowlist()
-    : fallback_value_(false), opaque_value_(false) {}
+FeaturePolicy::Allowlist::Allowlist() = default;
 
 FeaturePolicy::Allowlist::Allowlist(const Allowlist& rhs) = default;
 
@@ -74,31 +74,30 @@ void FeaturePolicy::Allowlist::Add(const url::Origin& origin) {
   allowed_origins_.push_back(origin);
 }
 
-bool FeaturePolicy::Allowlist::GetValueForOrigin(
-    const url::Origin& origin) const {
+void FeaturePolicy::Allowlist::AddAll() {
+  matches_all_origins_ = true;
+}
+
+void FeaturePolicy::Allowlist::AddOpaqueSrc() {
+  matches_opaque_src_ = true;
+}
+
+bool FeaturePolicy::Allowlist::Contains(const url::Origin& origin) const {
   for (const auto& allowed_origin : allowed_origins_) {
     if (origin == allowed_origin)
       return true;
   }
   if (origin.opaque())
-    return opaque_value_;
-  return fallback_value_;
+    return matches_opaque_src_;
+  return matches_all_origins_;
 }
 
-bool FeaturePolicy::Allowlist::GetFallbackValue() const {
-  return fallback_value_;
+bool FeaturePolicy::Allowlist::MatchesAll() const {
+  return matches_all_origins_;
 }
 
-void FeaturePolicy::Allowlist::SetFallbackValue(bool fallback_value) {
-  fallback_value_ = fallback_value;
-}
-
-bool FeaturePolicy::Allowlist::GetOpaqueValue() const {
-  return opaque_value_;
-}
-
-void FeaturePolicy::Allowlist::SetOpaqueValue(bool opaque_value) {
-  opaque_value_ = opaque_value;
+bool FeaturePolicy::Allowlist::MatchesOpaqueSrc() const {
+  return matches_opaque_src_;
 }
 
 // static
@@ -141,8 +140,7 @@ bool FeaturePolicy::GetFeatureValueForOrigin(
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end()) {
-    auto specified_value = allowlist->second->GetValueForOrigin(origin);
-    return inherited_value && specified_value;
+    return inherited_value && allowlist->second->Contains(origin);
   }
 
   // If no "allowlist" is specified, return default feature value.
@@ -169,8 +167,7 @@ bool FeaturePolicy::GetProposedFeatureValueForOrigin(
   auto inherited_value = proposed_inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end()) {
-    auto specified_value = allowlist->second->GetValueForOrigin(origin);
-    return inherited_value && specified_value;
+    return inherited_value && allowlist->second->Contains(origin);
   }
 
   // If no allowlist is specified, return default feature value.
@@ -195,7 +192,7 @@ const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
   FeaturePolicy::Allowlist default_allowlist;
 
   if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll) {
-    default_allowlist.SetFallbackValue(true);
+    default_allowlist.AddAll();
   } else if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf) {
     default_allowlist.Add(origin_);
   }
@@ -308,7 +305,7 @@ void FeaturePolicy::AddContainerPolicy(
       proposed_inherited_value =
           proposed_inherited_value &&
           AllowlistFromDeclaration(parsed_declaration, feature_list_)
-              ->GetValueForOrigin(origin_);
+              ->Contains(origin_);
     }
     // End of metrics code
 
@@ -326,7 +323,7 @@ void FeaturePolicy::AddContainerPolicy(
     inherited_value = inherited_value || parent_value;
     inherited_value = inherited_value && AllowlistFromDeclaration(
                                              parsed_declaration, feature_list_)
-                                             ->GetValueForOrigin(origin_);
+                                             ->Contains(origin_);
   }
 }
 

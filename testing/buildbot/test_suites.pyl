@@ -2946,7 +2946,7 @@
       },
     },
 
-    'gpu_webgl_conformance_swangle_passthrough_telemetry_tests': {
+    'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
       'webgl_conformance_swangle_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
@@ -2955,6 +2955,32 @@
           # We are only interested in running a 'smoketest' to test swangle
           # integration, not the full conformance suite.
           '--test-filter=conformance/rendering/gl-drawelements.html',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_swangle_passthrough_telemetry_tests': {
+      'webgl_conformance_swangle_passthrough': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--extra-browser-args=--use-gl=angle --use-angle=swiftshader --use-cmd-decoder=passthrough',
+          '--xvfb',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_swiftshader_validating_telemetry_tests': {
+      'webgl_conformance_swiftshader_validating': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--extra-browser-args=--use-gl=swiftshader --use-cmd-decoder=validating',
+          '--xvfb',
         ],
         'swarming': {
           'shards': 1,
@@ -4844,7 +4870,7 @@
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
     'gpu_angle_perf_smoke_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
@@ -5077,7 +5103,7 @@
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
-      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
     'gpu_fyi_optional_linux_telemetry_tests': [
@@ -5091,7 +5117,7 @@
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
       # Not currently running
       # gpu_webgl2_conformance_gl_passthrough_telemetry_tests here due
       # to concerns about machine capacity.
@@ -5216,6 +5242,11 @@
     'gpu_skia_renderer_telemetry_tests': [
       'gpu_skia_renderer_non_vulkan_telemetry_tests',
       'gpu_skia_renderer_vulkan_telemetry_tests',
+    ],
+
+    'gpu_swangle_telemetry_tests': [
+      'gpu_webgl_conformance_swangle_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swiftshader_validating_telemetry_tests',
     ],
 
     'gpu_v8_desktop_passthrough_telemetry_tests': [

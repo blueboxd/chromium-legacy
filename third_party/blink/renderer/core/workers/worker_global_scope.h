@@ -117,6 +117,7 @@ class CORE_EXPORT WorkerGlobalScope
   const UserAgentMetadata& GetUserAgentMetadata() const { return ua_metadata_; }
   HttpsState GetHttpsState() const override { return https_state_; }
   scheduler::WorkerScheduler* GetScheduler() final;
+  ukm::UkmRecorder* UkmRecorder() final;
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
@@ -277,6 +278,8 @@ class CORE_EXPORT WorkerGlobalScope
   base::Optional<v8_inspector::V8StackTraceId> stack_id_;
 
   HttpsState https_state_;
+
+  std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 };
 
 template <>

@@ -29,6 +29,9 @@ SceneState* GetForegroundActiveScene();
 // Returns the foreground, active scene controller.
 SceneController* GetForegroundActiveSceneController();
 
+// Returns the number of regular Browsers for the default profile.
+NSUInteger RegularBrowserCount();
+
 // Returns the current, non-incognito ChromeBrowserState.
 ChromeBrowserState* GetOriginalBrowserState();
 

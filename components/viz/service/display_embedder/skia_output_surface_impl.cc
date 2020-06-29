@@ -506,7 +506,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
   } else {
     // Draw on the root render pass.
     current_buffer_modified_ = true;
-    std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
+    sk_sp<SkDeferredDisplayList> overdraw_ddl;
     if (renderer_settings_.show_overdraw_feedback) {
       overdraw_ddl = overdraw_surface_recorder_->detach();
       DCHECK(overdraw_ddl);

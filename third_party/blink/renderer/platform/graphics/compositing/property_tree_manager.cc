@@ -1081,8 +1081,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
     effect_node.clip_id = output_clip_id;
     effect_node.transform_id =
         EnsureCompositorTransformNode(next_effect.LocalTransformSpace());
-    effect_node.stable_id =
-        next_effect_arg.GetCompositorElementId().GetStableId();
+    effect_node.stable_id = next_effect.GetCompositorElementId().GetStableId();
   }
 
   if (!has_multiple_groups)

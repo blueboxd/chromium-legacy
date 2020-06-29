@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "base/profiler/unwinder.h"
 #include "base/sequence_checker.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -150,6 +151,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // Registers the TracingSamplerProfiler as a Perfetto data source
   static void RegisterDataSource();
 
+  // Sets a callback to create auxiliary unwinders on the main thread profiler,
+  // for handling additional, non-native-code unwind scenarios.
+  static void SetAuxUnwinderFactoryOnMainThread(
+      const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+          factory);
+
   // For tests.
   static void SetupStartupTracingForTesting();
   static void DeleteOnChildThreadForTesting();
@@ -173,6 +180,13 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
       base::SamplingProfilerThreadToken sampled_thread_token);
   virtual ~TracingSamplerProfiler();
 
+  // Sets a callback to create auxiliary unwinders, for handling additional,
+  // non-native-code unwind scenarios. Currently used to support
+  // unwinding V8 JavaScript frames.
+  void SetAuxUnwinderFactory(
+      const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+          factory);
+
   // The given callback will be called for every received sample, and can be
   // called on any thread. Must be called before tracing is started.
   void SetSampleCallbackForTesting(
@@ -184,6 +198,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
 
  private:
   const base::SamplingProfilerThreadToken sampled_thread_token_;
+
+  base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>
+      aux_unwinder_factory_;
 
   base::Lock lock_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|

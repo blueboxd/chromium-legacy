@@ -37,7 +37,8 @@ class ExtensionInstallEventLogManagerWrapper
 
   // Creates a new |ExtensionInstallEventLogManager| to handle extension install
   // event logging for |profile|. The object returned manages its own lifetime
-  // and self-destructs on logout.
+  // and self-destructs on logout. The reporting is supported only for cloud
+  // managed users on ChromeOS. Returns nullptr in other cases.
   static ExtensionInstallEventLogManagerWrapper* CreateForProfile(
       Profile* profile);
 

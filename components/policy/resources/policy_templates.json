@@ -16608,8 +16608,7 @@
           'caption': '''Authentication based on client certificates''',
         },
       ],
-      'supported_on':[],
-      'future': True,
+      'future_on': ['chrome_os'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -20249,6 +20248,46 @@
       This policy can only be set from the Google Admin console.'''
     },
     {
+      'name': 'EnterpriseRealTimeUrlCheckMode',
+      'owners': ['xinghuilu@chromium.org', 'file://components/safe_browsing/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1 ],
+      },
+      'items': [
+        {
+          'name': 'Disabled',
+          'value': 0,
+          'caption': '''Real time URL check is disabled.''',
+        },
+        {
+          'name': 'Enabled',
+          'value': 1,
+          'caption': '''Real time check for main frame URLs is enabled.''',
+        },
+      ],
+      'supported_on': [
+        'chrome.*:86-',
+        'chrome_os:86-'
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 1,
+      'id': 728,
+      'caption': '''Check Safe Browsing status of URLs in real time''',
+      'tags': [],
+      'desc': '''This policy controls checking URLs in real time to identify unsafe URLs.
+
+      If this policy is left not set or set to ‘Disabled’, the consumer Safe Browsing checks will be applied. Consumer Safe Browsing checks can still include real time lookups, depending on the value of the “Make searches and browsing better” setting and the value of the UrlKeyedAnonymizedDataCollectionEnabled policy.
+
+      If this policy is set to ‘Enabled’, URLs will be sent to be scanned in real time under enterprise ToS. It will result in Chrome sending URLs to Google Cloud or third parties of your choosing to check them in real time. The consumer version of Safe Browsing real time lookup will be switched off.
+
+      This policy can only be set from the Google Admin console.''',
+    },
+    {
       'name': 'RendererCodeIntegrityEnabled',
       'owners': ['wfh@chromium.org', 'adetaylor@chromium.org'],
       'type': 'main',
@@ -21632,10 +21671,10 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'owners': ['file://components/client_hints/OWNERS', 'yoavweiss@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:85-', 'chrome.*:85-', 'android:85-'],
+      'supported_on': ['chrome_os:84-', 'chrome.*:84-', 'android:84-'],
       'features': {
         'per_profile': False,
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
       },
       'example_value': True,
       'id': 725,
@@ -22553,6 +22592,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 727,
+  'highest_id_currently_used': 728,
   'highest_atomic_group_id_currently_used': 38
 }

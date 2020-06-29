@@ -2,9 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function getFirstNonZeroWidthHeightRect(rects) {
+  for (const rect of rects) {
+    if (rect.height > 0 && rect.width > 0) {
+      return rect;
+    }
+  }
+  return rects[0];
+}
+
 function getParentRect(element) {
   var parent = element.parentElement;
-  var parentRect = parent.getClientRects()[0];
+  var parentRect = getFirstNonZeroWidthHeightRect(parent.getClientRects());
   return parentRect;
 }
 
@@ -14,7 +23,7 @@ function getInViewPoint(element) {
     return false;
   }
 
-  var rect = rectangles[0];
+  var rect = getFirstNonZeroWidthHeightRect(rectangles);
   var left = Math.max(0, rect.left);
   var right = Math.min(window.innerWidth, rect.right);
   var top = Math.max(0, rect.top);

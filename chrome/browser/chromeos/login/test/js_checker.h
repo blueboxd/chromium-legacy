@@ -58,6 +58,38 @@ class JSChecker {
   void ExpectEQ(const std::string& expression, bool result);
   void ExpectNE(const std::string& expression, bool result);
 
+  // Evaluates value of element with |element_id|'s |attribute| and
+  // returns its result.
+  WARN_UNUSED_RESULT bool GetAttributeBool(
+      const std::string& attribute,
+      std::initializer_list<base::StringPiece> element_id);
+  WARN_UNUSED_RESULT int GetAttributeInt(
+      const std::string& attribute,
+      std::initializer_list<base::StringPiece> element_id);
+  WARN_UNUSED_RESULT std::string GetAttributeString(
+      const std::string& attribute,
+      std::initializer_list<base::StringPiece> element_id);
+
+  // Compares value of element with |element_id|'s |attribute| with |result|.
+  void ExpectAttributeEQ(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         int result);
+  void ExpectAttributeNE(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         int result);
+  void ExpectAttributeEQ(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         const std::string& result);
+  void ExpectAttributeNE(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         const std::string& result);
+  void ExpectAttributeEQ(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         bool result);
+  void ExpectAttributeNE(const std::string& attribute,
+                         std::initializer_list<base::StringPiece> element_id,
+                         bool result);
+
   // Checks test waiter that would await until |js_condition| evaluates
   // to true.
   WARN_UNUSED_RESULT std::unique_ptr<TestConditionWaiter> CreateWaiter(
@@ -219,6 +251,13 @@ void ExecuteOobeJSAsync(const std::string& script);
 // are searched by ID in parent). It is assumed that all intermediate elements
 // are Polymer-based.
 std::string GetOobeElementPath(
+    std::initializer_list<base::StringPiece> element_ids);
+
+// Generates JS expression that evaluates to attribute of the element in
+// hierarchy. It is assumed that all intermediate elements
+// are Polymer-based.
+std::string GetAttributeExpression(
+    const std::string& attribute,
     std::initializer_list<base::StringPiece> element_ids);
 
 // Creates a waiter that allows to wait until screen with |oobe_screen_id| is

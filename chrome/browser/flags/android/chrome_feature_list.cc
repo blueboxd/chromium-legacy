@@ -254,7 +254,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesEnableQueryEditing,
     &security_state::features::kMarkHttpAsFeature,
     &signin::kMobileIdentityConsistency,
-    &switches::kSyncErrorInfoBarAndroid,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };

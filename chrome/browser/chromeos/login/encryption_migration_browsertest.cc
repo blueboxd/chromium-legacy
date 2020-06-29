@@ -39,6 +39,11 @@ namespace chromeos {
 
 namespace {
 
+const test::UIPath kMigrationProgress = {"encryption-migration-element",
+                                         "migration-progress"};
+const test::UIPath kSkipButton = {"encryption-migration-element",
+                                  "skip-button"};
+
 OobeUI* GetOobeUI() {
   auto* host = LoginDisplayHost::default_host();
   return host ? host->GetOobeUI() : nullptr;
@@ -153,23 +158,17 @@ class EncryptionMigrationTest : public OobeBaseTest {
         5 /*total*/);
     EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-    std::initializer_list<base::StringPiece> migration_progress = {
-        "encryption-migration-element", "migration-progress"};
-    test::OobeJS().ExpectTrue(test::GetOobeElementPath(migration_progress) +
-                              ".indeterminate");
+    test::OobeJS().ExpectAttributeEQ("indeterminate", kMigrationProgress, true);
 
     FakeCryptohomeClient::Get()->NotifyDircryptoMigrationProgress(
         cryptohome::DIRCRYPTO_MIGRATION_IN_PROGRESS, 3 /*current*/,
         5 /*total*/);
     EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-    test::OobeJS().ExpectFalse(test::GetOobeElementPath(migration_progress) +
-                               ".indeterminate");
-
-    test::OobeJS().ExpectEQ(
-        test::GetOobeElementPath(migration_progress) + ".value * 100", 60);
-    test::OobeJS().ExpectEQ(
-        test::GetOobeElementPath(migration_progress) + ".max", 1);
+    test::OobeJS().ExpectAttributeEQ("indeterminate", kMigrationProgress,
+                                     false);
+    test::OobeJS().ExpectAttributeEQ("value * 100", kMigrationProgress, 60);
+    test::OobeJS().ExpectAttributeEQ("max", kMigrationProgress, 1);
 
     FakeCryptohomeClient::Get()->NotifyDircryptoMigrationProgress(
         cryptohome::DIRCRYPTO_MIGRATION_SUCCESS, 5 /*current*/, 5 /*total*/);
@@ -225,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, SkipWithNoPolicySet) {
   VerifyUiElementVisible("upgrade-button");
 
   // Click skip - this should start the user session.
-  test::OobeJS().TapOnPath({"encryption-migration-element", "skip-button"});
+  test::OobeJS().TapOnPath(kSkipButton);
 
   WaitForActiveSession();
 

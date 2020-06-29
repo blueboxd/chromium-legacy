@@ -136,8 +136,9 @@ TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRect) {
   // Covered by the first child of the second child is translucent.
   EXPECT_FALSE(
       ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 10, 10, 10)));
-  // Covered by the second child of the second child which is opaque.
-  EXPECT_TRUE(
+  // Though covered by the second child of the second child which is opaque,
+  // we ignore child layers.
+  EXPECT_FALSE(
       ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(20, 20, 10, 10)));
   // Not covered by any child.
   EXPECT_FALSE(

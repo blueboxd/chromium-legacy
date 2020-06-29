@@ -215,6 +215,7 @@ struct TestProfilerInfo {
                        completed.Signal();
                      })),
                  CreateCoreUnwindersForTesting(module_cache),
+                 RepeatingClosure(),
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
@@ -348,7 +349,8 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
                 profile = std::move(result_profile);
                 sampling_thread_completed.Signal();
               })),
-      CreateCoreUnwindersForTesting(module_cache), &test_delegate);
+      CreateCoreUnwindersForTesting(module_cache), RepeatingClosure(),
+      &test_delegate);
 
   profiler.Start();
 
@@ -1455,7 +1457,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
                       profile = std::move(result_profile);
                     })),
                 CreateCoreUnwindersForTesting(module_cache()),
-                &post_sample_invoker);
+                RepeatingClosure(), &post_sample_invoker);
             profiler.Start();
             // Wait for 5 samples to be collected.
             for (int i = 0; i < 5; ++i)

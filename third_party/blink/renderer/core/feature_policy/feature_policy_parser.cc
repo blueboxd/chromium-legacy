@@ -65,11 +65,10 @@ class ParsingContext {
 
   struct ParsedAllowlist {
     std::vector<url::Origin> allowed_origins;
-    bool fallback_value;
-    bool opaque_value;
+    bool matches_all_origins{false};
+    bool matches_opaque_src{false};
 
-    ParsedAllowlist()
-        : allowed_origins({}), fallback_value(false), opaque_value(false) {}
+    ParsedAllowlist() : allowed_origins({}) {}
   };
 
   base::Optional<mojom::blink::FeaturePolicyFeature> ParseFeatureName(
@@ -223,7 +222,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
     } else if (!src_origin_->IsOpaque()) {
       allowlist.allowed_origins.push_back(src_origin_->ToUrlOrigin());
     } else {
-      allowlist.opaque_value = true;
+      allowlist.matches_opaque_src = true;
     }
   } else {
     for (const String& origin_string : origin_strings) {
@@ -243,8 +242,8 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
       // If the iframe will have an opaque origin (for example, if it is
       // sandboxed, or has a data: URL), then 'src' needs to refer to the
       // opaque origin of the frame, which is not known yet. In this case,
-      // the |opaque_value| on the declaration is set, rather than adding
-      // an origin to the allowlist.
+      // the |matches_opaque_src| flag on the declaration is set, rather than
+      // adding an origin to the allowlist.
       bool target_is_opaque = false;
       bool target_is_all = false;
 
@@ -286,10 +285,10 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
       }
 
       if (target_is_all) {
-        allowlist.fallback_value = true;
-        allowlist.opaque_value = true;
+        allowlist.matches_all_origins = true;
+        allowlist.matches_opaque_src = true;
       } else if (target_is_opaque) {
-        allowlist.opaque_value = true;
+        allowlist.matches_opaque_src = true;
       } else {
         allowlist.allowed_origins.push_back(target_origin);
       }
@@ -297,7 +296,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
   }
 
   // Size reduction: remove all items in the allowlist if target is all.
-  if (allowlist.fallback_value)
+  if (allowlist.matches_all_origins)
     allowlist.allowed_origins.clear();
 
   // Sort |allowed_origins| in alphabetical order.
@@ -323,8 +322,8 @@ base::Optional<ParsedFeaturePolicyDeclaration> ParsingContext::ParseFeature(
 
   ParsedFeaturePolicyDeclaration parsed_feature(*feature);
   parsed_feature.allowed_origins = std::move(parsed_allowlist.allowed_origins);
-  parsed_feature.fallback_value = parsed_allowlist.fallback_value;
-  parsed_feature.opaque_value = parsed_allowlist.opaque_value;
+  parsed_feature.matches_all_origins = parsed_allowlist.matches_all_origins;
+  parsed_feature.matches_opaque_src = parsed_allowlist.matches_opaque_src;
 
   return parsed_feature;
 }
@@ -473,8 +472,8 @@ bool AllowFeatureEverywhereIfNotPresent(
   if (IsFeatureDeclared(feature, policy))
     return false;
   ParsedFeaturePolicyDeclaration allowlist(feature);
-  allowlist.fallback_value = true;
-  allowlist.opaque_value = true;
+  allowlist.matches_all_origins = true;
+  allowlist.matches_opaque_src = true;
   policy.push_back(allowlist);
   return true;
 }

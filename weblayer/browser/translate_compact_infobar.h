@@ -7,10 +7,10 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "components/infobars/android/infobar_android.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
-#include "weblayer/browser/infobar_android.h"
 
 namespace translate {
 class TranslateInfoBarDelegate;

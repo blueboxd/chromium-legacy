@@ -467,11 +467,9 @@ void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
   }
 }
 
-void ReadYUV(int* output_y_width,
-             int* output_y_height,
-             int* output_uv_width,
-             int* output_uv_height,
-             const char* image_file_path) {
+void ReadYUV(const char* image_file_path,
+             const IntSize& expected_y_size,
+             const IntSize& expected_uv_size) {
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
@@ -479,24 +477,20 @@ void ReadYUV(int* output_y_width,
       ImageDecoder::kAlphaNotPremultiplied, ImageDecoder::kDefaultBitDepth,
       ColorBehavior::Tag(), ImageDecoder::kNoDecodedImageByteLimit);
   decoder->SetData(data.get(), true);
-  ASSERT_TRUE(decoder->CanDecodeToYUV());
 
   ASSERT_TRUE(decoder->IsSizeAvailable());
+  ASSERT_TRUE(decoder->CanDecodeToYUV());
 
   IntSize size = decoder->DecodedSize();
   IntSize y_size = decoder->DecodedYUVSize(0);
   IntSize u_size = decoder->DecodedYUVSize(1);
   IntSize v_size = decoder->DecodedYUVSize(2);
 
-  EXPECT_EQ(size.Width(), y_size.Width());
-  EXPECT_EQ(size.Height(), y_size.Height());
-  EXPECT_EQ(u_size.Width(), v_size.Width());
-  EXPECT_EQ(u_size.Height(), v_size.Height());
+  EXPECT_EQ(size, y_size);
+  EXPECT_EQ(u_size, v_size);
 
-  *output_y_width = y_size.Width();
-  *output_y_height = y_size.Height();
-  *output_uv_width = u_size.Width();
-  *output_uv_height = u_size.Height();
+  EXPECT_EQ(expected_y_size, y_size);
+  EXPECT_EQ(expected_uv_size, u_size);
 
   size_t row_bytes[3];
   row_bytes[0] = decoder->DecodedYUVWidthBytes(0);
@@ -580,13 +574,7 @@ TEST(StaticAVIFTests, ValidImages) {
 TEST(StaticAVIFTests, YUV) {
   const char* avif_file =
       "/images/resources/avif/red-full-ranged-8bpc.avif";  // 3x3, YUV 4:2:0
-  int output_y_width, output_y_height, output_uv_width, output_uv_height;
-  ReadYUV(&output_y_width, &output_y_height, &output_uv_width,
-          &output_uv_height, avif_file);
-  EXPECT_EQ(3, output_y_width);
-  EXPECT_EQ(3, output_y_height);
-  EXPECT_EQ(2, output_uv_width);
-  EXPECT_EQ(2, output_uv_height);
+  ReadYUV(avif_file, IntSize(3, 3), IntSize(2, 2));
 }
 
 using StaticAVIFColorTests = ::testing::TestWithParam<StaticColorCheckParam>;

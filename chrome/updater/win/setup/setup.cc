@@ -49,7 +49,7 @@ void AddComServerWorkItems(HKEY root,
   }
 
   for (const auto& clsid :
-       {__uuidof(UpdaterClass), __uuidof(GoogleUpdate3WebUserClass)}) {
+       {__uuidof(UpdaterClass), CLSID_GoogleUpdate3WebUserClass}) {
     const base::string16 clsid_reg_path = GetComServerClsidRegistryPath(clsid);
 
     // Delete any old registrations first.
@@ -93,7 +93,7 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
   list->AddWorkItem(new installer::InstallServiceWorkItem(
       kWindowsServiceName, kWindowsServiceName,
       base::CommandLine(com_service_path), base::ASCIIToUTF16(UPDATER_KEY),
-      __uuidof(UpdaterServiceClass), GUID_NULL));
+      CLSID_UpdaterServiceClass, GUID_NULL));
 }
 
 // Adds work items to register the COM Interfaces with Windows.

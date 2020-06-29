@@ -189,8 +189,18 @@ void AutofillAssistantPrivateEventRouter::OnInfoBoxChanged(
 
 void AutofillAssistantPrivateEventRouter::OnProgressChanged(int progress) {}
 
+void AutofillAssistantPrivateEventRouter::OnProgressActiveStepChanged(
+    int active_step) {}
+
 void AutofillAssistantPrivateEventRouter::OnProgressVisibilityChanged(
     bool visible) {}
+
+void AutofillAssistantPrivateEventRouter::OnStepProgressBarConfigurationChanged(
+    const autofill_assistant::ShowProgressBarProto::
+        StepProgressBarConfiguration& configuration) {}
+
+void AutofillAssistantPrivateEventRouter::OnProgressBarErrorStateChanged(
+    bool error) {}
 
 void AutofillAssistantPrivateEventRouter::OnTouchableAreaChanged(
     const autofill_assistant::RectF& visual_viewport,

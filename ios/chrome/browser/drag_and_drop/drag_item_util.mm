@@ -28,7 +28,7 @@
 
 UIDragItem* CreateTabDragItem(web::WebState* web_state) {
   DCHECK(web_state);
-  NSURL* url = net::NSURLWithGURL(web_state->GetLastCommittedURL());
+  NSURL* url = net::NSURLWithGURL(web_state->GetVisibleURL());
   NSItemProvider* item_provider = [[NSItemProvider alloc] initWithObject:url];
   UIDragItem* drag_item =
       [[UIDragItem alloc] initWithItemProvider:item_provider];

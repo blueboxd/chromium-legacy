@@ -61,11 +61,13 @@ public class AutofillAssistantHeaderUiTest {
     private static class ViewHolder {
         private final TextView mStatusMessage;
         private final MaterialProgressBar mProgressBar;
+        private final View mStepProgressBar;
         private final View mProfileIcon;
 
         private ViewHolder(View rootView) {
             mStatusMessage = rootView.findViewById(R.id.status_message);
             mProgressBar = rootView.findViewById(R.id.progress_bar);
+            mStepProgressBar = rootView.findViewById(R.id.step_progress_bar);
             mProfileIcon = rootView.findViewById(R.id.profile_image);
         }
     }
@@ -122,6 +124,8 @@ public class AutofillAssistantHeaderUiTest {
                 .check(matches(isDisplayed()))
                 .check(matches(hasProgress(0)));
 
+        onView(is(viewHolder.mStepProgressBar)).check(matches(not(isDisplayed())));
+
         onView(is(viewHolder.mProfileIcon)).check(matches(isDisplayed()));
     }
 
@@ -148,6 +152,47 @@ public class AutofillAssistantHeaderUiTest {
         onView(is(viewHolder.mProgressBar))
                 .check(matches(isDisplayed()))
                 .check(matches(hasProgress(progress)));
+    }
+
+    @Test
+    @MediumTest
+    public void testProgressBarVisibility() {
+        AssistantHeaderModel model = new AssistantHeaderModel();
+        AssistantHeaderCoordinator coordinator = createCoordinator(model);
+        ViewHolder viewHolder = new ViewHolder(coordinator.getView());
+
+        onView(is(viewHolder.mProgressBar)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(not(isDisplayed())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.PROGRESS_VISIBLE, false));
+
+        onView(is(viewHolder.mProgressBar)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(not(isDisplayed())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.PROGRESS_VISIBLE, true));
+
+        onView(is(viewHolder.mProgressBar)).check(matches(isDisplayed()));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(not(isDisplayed())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.USE_STEP_PROGRESS_BAR, true));
+
+        onView(is(viewHolder.mProgressBar)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(isDisplayed()));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.PROGRESS_VISIBLE, false));
+
+        onView(is(viewHolder.mProgressBar)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(not(isDisplayed())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantHeaderModel.PROGRESS_VISIBLE, true));
+
+        onView(is(viewHolder.mProgressBar)).check(matches(not(isDisplayed())));
+        onView(is(viewHolder.mStepProgressBar)).check(matches(isDisplayed()));
     }
 
     @Test

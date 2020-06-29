@@ -43,11 +43,9 @@ void TabGroupViews::UpdateBounds() {
   highlight_->SetBoundsRect(bounds);
 }
 
-void TabGroupViews::UpdateVisuals() {
+void TabGroupViews::OnGroupVisualsChanged() {
   header_->VisualsChanged();
   underline_->SchedulePaint();
-  highlight_->SchedulePaint();
-
   const int active_index = tab_strip_->controller()->GetActiveIndex();
   if (active_index != TabStripModel::kNoTab)
     tab_strip_->tab_at(active_index)->SchedulePaint();

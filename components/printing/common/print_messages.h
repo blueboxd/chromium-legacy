@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
+#include "components/printing/common/printing_param_traits.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
@@ -263,16 +264,16 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidStartPreviewParams)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters to describe a rendered preview page.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPreviewPageParams)
   // Page's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
+  IPC_STRUCT_TRAITS_MEMBER(content)
 
   // |page_number| is zero-based and should not be negative.
-  IPC_STRUCT_MEMBER(int, page_number)
+  IPC_STRUCT_TRAITS_MEMBER(page_number)
 
   // Cookie for the document to ensure correctness.
-  IPC_STRUCT_MEMBER(int, document_cookie)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
+IPC_STRUCT_TRAITS_END()
 
 // Parameters to describe the final rendered preview document.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
@@ -402,7 +403,7 @@ IPC_MESSAGE_ROUTED4(
 
 // Notify the browser a print preview page has been rendered.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPreviewPage,
-                    PrintHostMsg_DidPreviewPage_Params /* params */,
+                    printing::mojom::DidPreviewPageParams /* params */,
                     PrintHostMsg_PreviewIds /* ids */)
 
 // Asks the browser whether the print preview has been cancelled.

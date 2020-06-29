@@ -159,6 +159,7 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
 
 // static
 bool RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+    const PrefService* pref_service,
     bool has_valid_dm_token,
     bool is_off_the_record) {
   if (is_off_the_record) {
@@ -173,8 +174,9 @@ bool RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
     return false;
   }
 
-  // TODO(crbug.com/1085261): Check the enterprise real time URL check policy.
-  return false;
+  return pref_service->GetInteger(
+             prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode) ==
+         REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED;
 }
 
 // static

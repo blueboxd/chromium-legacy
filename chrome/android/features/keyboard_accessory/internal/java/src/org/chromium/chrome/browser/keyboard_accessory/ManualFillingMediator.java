@@ -520,7 +520,6 @@ class ManualFillingMediator extends EmptyTabObserver
         }
         mKeyboardAccessory.setBottomOffset(newControlsOffset);
         mViewportInsetSupplier.set(newControlsHeight);
-        mActivity.getFullscreenManager().updateViewportSize();
     }
 
     /**

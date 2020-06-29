@@ -48,8 +48,8 @@
 - (BOOL)infoBarShownRecently;
 // Called when the application become active again.
 - (void)applicationWillEnterForeground:(NSNotification*)note;
-// The dispatcher for this object.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// The command handler for this object.
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 @end
 
 namespace {
@@ -217,7 +217,7 @@ class UpgradeInfoBarDismissObserver
   BOOL _inCallback;
 #endif
 }
-@synthesize dispatcher = _dispatcher;
+@synthesize handler = _handler;
 
 + (UpgradeCenter*)sharedInstance {
   static UpgradeCenter* obj;
@@ -285,9 +285,9 @@ class UpgradeInfoBarDismissObserver
 }
 
 - (void)registerClient:(id<UpgradeCenterClient>)client
-        withDispatcher:(id<ApplicationCommands>)dispatcher {
+           withHandler:(id<ApplicationCommands>)handler {
   [_clients addObject:client];
-  self.dispatcher = dispatcher;
+  self.handler = handler;
   if (_upgradeInfoBarIsVisible)
     [client showUpgrade:self];
 }
@@ -358,7 +358,7 @@ class UpgradeInfoBarDismissObserver
       // This URL can be opened in the application, just open in a new tab.
       OpenNewTabCommand* command =
           [OpenNewTabCommand commandWithURLFromChrome:URL];
-      [self.dispatcher openURLInNewTab:command];
+      [self.handler openURLInNewTab:command];
     } else {
       // This URL scheme is not understood, ask the system to open it.
       NSURL* launchURL = [NSURL URLWithString:urlString];

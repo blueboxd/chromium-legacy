@@ -178,8 +178,6 @@ source_set("weblayer_lib_base") {
     "browser/http_auth_handler_impl.h",
     "browser/i18n_util.cc",
     "browser/i18n_util.h",
-    "browser/infobar_android.cc",
-    "browser/infobar_android.h",
     "browser/infobar_container_android.cc",
     "browser/infobar_container_android.h",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",
@@ -613,6 +611,7 @@ if (is_android) {
     deps = [
       ":weblayer_lib_base",
       "//base",
+      "//components/infobars/android",
       "//components/infobars/core",
       "//components/translate/core/browser",
       "//content/public/browser",

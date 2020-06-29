@@ -69,7 +69,8 @@ class RealTimePolicyEngine {
       signin::IdentityManager* identity_manager,
       variations::VariationsService* variations_service);
 
-  static bool CanPerformEnterpriseFullURLLookup(bool has_valid_dm_token,
+  static bool CanPerformEnterpriseFullURLLookup(const PrefService* pref_service,
+                                                bool has_valid_dm_token,
                                                 bool is_off_the_record);
 
   friend class SafeBrowsingService;

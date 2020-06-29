@@ -19,6 +19,17 @@ enum class VerticalExpanderChevronStyle {
   NEVER = 2,
 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: (
+// org.chromium.chrome.browser.autofill_assistant.drawable)
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantDrawableIcon
+enum class DrawableIcon {
+  DRAWABLE_ICON_UNDEFINED = 0,
+  PROGRESSBAR_DEFAULT_INITIAL_STEP = 1,
+  PROGRESSBAR_DEFAULT_DATA_COLLECTION = 2,
+  PROGRESSBAR_DEFAULT_PAYMENT = 3,
+  PROGRESSBAR_DEFAULT_FINAL_STEP = 4
+};
+
 }  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_GENERIC_UI_JAVA_GENERATED_ENUMS_H_

@@ -12,9 +12,11 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/bind.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
+#include "weblayer/browser/android/resource_mapper.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/java/jni/TranslateCompactInfoBar_jni.h"
 #include "weblayer/browser/tab_impl.h"
@@ -33,7 +35,9 @@ const char kTranslateTabDefaultTextColor[] = "translate_tab_default_text_color";
 
 TranslateCompactInfoBar::TranslateCompactInfoBar(
     std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)), action_flags_(FLAG_NONE) {
+    : InfoBarAndroid(std::move(delegate),
+                     base::BindRepeating(&MapToJavaDrawableId)),
+      action_flags_(FLAG_NONE) {
   GetDelegate()->AddObserver(this);
 
   // Flip the translate bit if auto translate is enabled.

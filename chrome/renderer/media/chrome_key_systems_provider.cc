@@ -77,6 +77,6 @@ void ChromeKeySystemsProvider::SetTickClockForTesting(
 }
 
 void ChromeKeySystemsProvider::SetProviderDelegateForTesting(
-    const KeySystemsProviderDelegate& test_provider) {
-  test_provider_ = test_provider;
+    KeySystemsProviderDelegate test_provider) {
+  test_provider_ = std::move(test_provider);
 }

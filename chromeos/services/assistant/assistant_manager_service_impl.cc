@@ -815,19 +815,19 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
                      action_app_info, interaction);
   AndroidAppInfo app_info;
   app_info.package_name = action_app_info.package_name;
-  for (auto& it : interaction_subscribers_) {
-    bool success = it.OnOpenAppResponse(app_info);
 
-    std::string interaction_proto = CreateOpenProviderResponseInteraction(
-        interaction.interaction_id, success);
-    assistant_client::VoicelessOptions options;
-    options.obfuscated_gaia_id = interaction.user_id;
+  bool success = false;
+  for (auto& it : interaction_subscribers_)
+    success |= it.OnOpenAppResponse(app_info);
 
-    // TODO(xiaohuic): figure out if we can move this out of the loop.
-    assistant_manager_internal_->SendVoicelessInteraction(
-        interaction_proto, /*description=*/"open_provider_response", options,
-        [](auto) {});
-  }
+  std::string interaction_proto = CreateOpenProviderResponseInteraction(
+      interaction.interaction_id, success);
+  assistant_client::VoicelessOptions options;
+  options.obfuscated_gaia_id = interaction.user_id;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction_proto, /*description=*/"open_provider_response", options,
+      [](auto) {});
 }
 
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(

@@ -1261,8 +1261,8 @@ void NewTabPageHandler::OnLogoAvailable(
       std::move(callback).Run(nullptr);
       return;
     }
-    auto image_doodle_content = new_tab_page::mojom::ImageDoodleContent::New();
-    image_doodle_content->light = MakeImageDoodle(
+    auto image_doodle = new_tab_page::mojom::AllModeImageDoodle::New();
+    image_doodle->light = MakeImageDoodle(
         logo->metadata.type, logo->encoded_image->data(),
         logo->metadata.mime_type, logo->metadata.animated_url,
         logo->metadata.width_px, logo->metadata.height_px, "#ffffff",
@@ -1270,7 +1270,7 @@ void NewTabPageHandler::OnLogoAvailable(
         logo->metadata.share_button_icon, logo->metadata.share_button_bg,
         logo->metadata.log_url, logo->metadata.cta_log_url);
     if (logo->dark_encoded_image) {
-      image_doodle_content->dark = MakeImageDoodle(
+      image_doodle->dark = MakeImageDoodle(
           logo->metadata.type, logo->dark_encoded_image->data(),
           logo->metadata.dark_mime_type, logo->metadata.dark_animated_url,
           logo->metadata.dark_width_px, logo->metadata.dark_height_px,
@@ -1281,19 +1281,16 @@ void NewTabPageHandler::OnLogoAvailable(
           logo->metadata.dark_share_button_bg, logo->metadata.dark_log_url,
           logo->metadata.dark_cta_log_url);
     }
-    image_doodle_content->on_click_url = logo->metadata.on_click_url;
-    image_doodle_content->share_url = logo->metadata.short_link;
-    doodle->content = new_tab_page::mojom::DoodleContent::NewImageDoodle(
-        std::move(image_doodle_content));
+    image_doodle->on_click_url = logo->metadata.on_click_url;
+    image_doodle->share_url = logo->metadata.short_link;
+    doodle->image = std::move(image_doodle);
   } else if (logo->metadata.type ==
              search_provider_logos::LogoType::INTERACTIVE) {
-    auto interactive_doodle_content =
-        new_tab_page::mojom::InteractiveDoodleContent::New();
-    interactive_doodle_content->url = logo->metadata.full_page_url;
-    interactive_doodle_content->width = logo->metadata.iframe_width_px;
-    interactive_doodle_content->height = logo->metadata.iframe_height_px;
-    doodle->content = new_tab_page::mojom::DoodleContent::NewInteractiveDoodle(
-        std::move(interactive_doodle_content));
+    auto interactive_doodle = new_tab_page::mojom::InteractiveDoodle::New();
+    interactive_doodle->url = logo->metadata.full_page_url;
+    interactive_doodle->width = logo->metadata.iframe_width_px;
+    interactive_doodle->height = logo->metadata.iframe_height_px;
+    doodle->interactive = std::move(interactive_doodle);
   } else {
     std::move(callback).Run(nullptr);
     return;

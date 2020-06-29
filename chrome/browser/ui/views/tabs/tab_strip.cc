@@ -1344,20 +1344,15 @@ void TabStrip::OnGroupCreated(const tab_groups::TabGroupId& group) {
 }
 
 void TabStrip::OnGroupContentsChanged(const tab_groups::TabGroupId& group) {
-  DCHECK(group_views_[group]);
-
   // The group header may be in the wrong place if the tab didn't actually
   // move in terms of model indices.
   OnGroupMoved(group);
-
-  group_views_[group]->UpdateVisuals();
   UpdateIdealBounds();
   AnimateToIdealBounds();
 }
 
 void TabStrip::OnGroupVisualsChanged(const tab_groups::TabGroupId& group) {
-  DCHECK(group_views_[group]);
-  group_views_[group]->UpdateVisuals();
+  group_views_[group]->OnGroupVisualsChanged();
   // The group title may have changed size, so update bounds.
   UpdateIdealBounds();
   AnimateToIdealBounds();

@@ -74,6 +74,14 @@ message BitmapDrawableProto {
 
 // A drawable for use in backgrounds or in image views.
 message DrawableProto {
+  enum Icon {
+    DRAWABLE_ICON_UNDEFINED = 0;
+    PROGRESSBAR_DEFAULT_INITIAL_STEP = 1;
+    PROGRESSBAR_DEFAULT_DATA_COLLECTION = 2;
+    PROGRESSBAR_DEFAULT_PAYMENT = 3;
+    PROGRESSBAR_DEFAULT_FINAL_STEP = 4;
+  }
+
   oneof drawable {
     // The resource identifier of a drawable.
     string resource_identifier = 1;
@@ -81,6 +89,10 @@ message DrawableProto {
     BitmapDrawableProto bitmap = 2;
     // A shape, e.g., a rounded rectangle.
     ShapeDrawableProto shape = 3;
+    // An icon from a predefined set of known icons.
+    Icon icon = 4;
+    // A Base64 encoded image string.
+    bytes base64 = 5;
   }
 }
 

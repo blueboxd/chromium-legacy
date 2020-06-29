@@ -55,6 +55,16 @@ struct DidStartPreviewParams {
   int32 fit_to_page_scaling;
 };
 
+// Parameters to describe a rendered preview page.
+struct DidPreviewPageParams {
+  // Page's content including metafile data and subframe info.
+  DidPrintContentParams content;
+  // |page_number| is zero-based and should not be negative.
+  uint32 page_number;
+  // Cookie for the document to ensure correctness.
+  int32 document_cookie;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {

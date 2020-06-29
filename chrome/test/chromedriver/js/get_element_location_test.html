@@ -26,6 +26,27 @@
 <script src='get_element_location.js'></script>
 <script>
 
+function testGetFirstNonZeroWidthHeightRectDefault() {
+  var rects = [{id: 1}];
+  var rect = getFirstNonZeroWidthHeightRect(rects);
+  assertEquals(rect, rects[0]);
+}
+
+function testGetFirstNonZeroWidthHeightRectSecond() {
+  var rects = [{id: 1, width: 0, height: 0},
+               {id: 2, width: 1, height: 1}];
+  var rect = getFirstNonZeroWidthHeightRect(rects);
+  assertEquals(rect, rects[1]);
+}
+
+function testGetFirstNonZeroWidthHeightRectThird() {
+  var rects = [{id: 1, width: 0, height: 1},
+               {id: 2, width: 1, height: 0},
+               {id: 3, width: 1, height: 1}];
+  var rect = getFirstNonZeroWidthHeightRect(rects);
+  assertEquals(rect, rects[2]);
+}
+
 function testElementParentCenterLocation() {
   var parent = document.getElementById('parent');
   var location = getElementLocation(parent, true);

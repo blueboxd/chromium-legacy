@@ -6,7 +6,13 @@
     min-height: 100vh;
   }
 </style>
-<cr-view-manager>
-  <profile-picker-main-view slot="view" class="active">
+<cr-view-manager id="viewManager">
+  <profile-picker-main-view id="mainView" slot="view" class="active">
   </profile-picker-main-view>
+
+  <cr-lazy-render id="profileTypeChoice">
+    <template>
+      <profile-type-choice slot="view"></profile-type-choice>
+    </template>
+  </cr-lazy-render>
 </cr-view-manager>

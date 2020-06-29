@@ -189,8 +189,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   void RecordMetricsForBackgroundedRendererPurge() override;
 
-  std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
-      override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
 
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(

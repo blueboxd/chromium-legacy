@@ -29,6 +29,7 @@
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service_in_process.h"
+#include "chrome/updater/win/constants.h"
 #include "components/prefs/pref_service.h"
 
 namespace updater {
@@ -99,8 +100,7 @@ HRESULT ComServerApp::RegisterClassObjects() {
       std::extent<decltype(cookies_)>() == base::size(class_factories),
       "Arrays cookies_ and class_factories must be the same size.");
 
-  IID class_ids[] = {__uuidof(UpdaterClass),
-                     __uuidof(GoogleUpdate3WebUserClass)};
+  IID class_ids[] = {__uuidof(UpdaterClass), CLSID_GoogleUpdate3WebUserClass};
   DCHECK_EQ(base::size(cookies_), base::size(class_ids));
   static_assert(std::extent<decltype(cookies_)>() == base::size(class_ids),
                 "Arrays cookies_ and class_ids must be the same size.");

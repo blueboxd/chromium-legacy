@@ -1094,7 +1094,7 @@ suite('PasswordsSection', function() {
     });
 
     // Tests that the opt-in/opt-out buttons appear for signed-in (non-sync)
-    // users and that the description changes accordingly.
+    // users and that the text content changes accordingly.
     test('changeOptInButtonsBasedOnSignInAndAccountStorageOptIn', function() {
       // Feature flag enabled.
       loadTimeData.overrideValues({enableAccountStorage: true});
@@ -1132,49 +1132,12 @@ suite('PasswordsSection', function() {
       assertTrue(isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
       assertTrue(isDisplayed(passwordsSection.$.accountStorageOptOutBody));
       assertFalse(isDisplayed(passwordsSection.$.accountStorageOptInBody));
+      assertEquals('john@gmail.com', passwordsSection.$.accountEmail.innerText);
 
       // Sign out
       simulateStoredAccounts([]);
       assertFalse(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
-    });
-
-    // Tests that profile picture and account mail address are shown for the
-    // opt-in buttons.
-    test('showAccountImageAndEmailOnOptInButtons', function() {
-      // Create fake profile data.
-      const profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
-      ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
-      const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
-          'LAAAAAABAAEAAAICTAEAOw==';
-
-      // Feature flag enabled.
-      loadTimeData.overrideValues({enableAccountStorage: true});
-
-      const passwordsSection =
-          elementFactory.createPasswordsSection(passwordManager, [], []);
-
-      // Sync is disabled and the user is initially signed out.
-      simulateSyncStatus({signedIn: false});
-      const isDisplayed = element => !!element && !element.hidden;
-      assertFalse(
-          isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
-
-      // User signs in which updates the profile info.
-      simulateStoredAccounts([{
-        fullName: 'john doe',
-        givenName: 'john',
-        email: 'john@gmail.com',
-      }]);
-      webUIListenerCallback(
-          'profile-info-changed', {name: 'john doe', iconUrl: iconDataUrl});
-      flush();
-
-      passwordManager.setIsOptedInForAccountStorageAndNotify(false);
-      flush();
-      assertEquals('john@gmail.com', passwordsSection.$.accountEmail.innerText);
-      const bg = passwordsSection.$.profileIcon.style.backgroundImage;
-      assertTrue(bg.includes(iconDataUrl));
     });
 
     // Test verifies that enabling sync hides the buttons for account storage

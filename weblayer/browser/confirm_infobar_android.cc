@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
+#include "weblayer/browser/android/resource_mapper.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/java/jni/ConfirmInfoBar_jni.h"
 
@@ -31,7 +33,8 @@ std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 // ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(std::move(delegate),
+                     base::BindRepeating(&MapToJavaDrawableId)) {}
 
 ConfirmInfoBar::~ConfirmInfoBar() = default;
 

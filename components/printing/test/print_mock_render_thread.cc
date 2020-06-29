@@ -105,12 +105,13 @@ void PrintMockRenderThread::OnDidStartPreview(
 }
 
 void PrintMockRenderThread::OnDidPreviewPage(
-    const PrintHostMsg_DidPreviewPage_Params& params,
+    const printing::mojom::DidPreviewPageParams& params,
     const PrintHostMsg_PreviewIds& ids) {
-  DCHECK_GE(params.page_number, printing::FIRST_PAGE_INDEX);
+  int page_number = params.page_number;
+  DCHECK_GE(page_number, printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
   print_preview_pages_.emplace_back(
-      params.page_number, params.content.metafile_data_region.GetSize());
+      params.page_number, params.content->metafile_data_region.GetSize());
 }
 
 void PrintMockRenderThread::OnCheckForCancel(const PrintHostMsg_PreviewIds& ids,

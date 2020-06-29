@@ -20,12 +20,14 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -51,6 +53,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 namespace {
@@ -855,6 +861,31 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NewAppWindow) {
 }
 
 #endif
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PopupLocationBar) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  const GURL app_url = GetSecureAppURL();
+  const GURL in_scope =
+      https_server()->GetURL("app.com", "/ssl/page_with_subresource.html");
+  const AppId app_id = InstallPWA(app_url);
+
+  Browser* const popup_browser = web_app::CreateWebApplicationWindow(
+      profile(), app_id, WindowOpenDisposition::NEW_POPUP);
+
+  EXPECT_TRUE(
+      popup_browser->CanSupportWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  EXPECT_TRUE(
+      popup_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  FullscreenNotificationObserver waiter(popup_browser);
+  chrome::ToggleFullscreenMode(popup_browser);
+  waiter.Wait();
+
+  EXPECT_TRUE(
+      popup_browser->CanSupportWindowFeature(Browser::FEATURE_LOCATIONBAR));
+}
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WebAppBrowserTest,

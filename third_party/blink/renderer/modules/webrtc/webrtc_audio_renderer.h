@@ -29,8 +29,8 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -104,10 +104,10 @@ class MODULES_EXPORT WebRtcAudioRenderer
 
   WebRtcAudioRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
-      const blink::WebMediaStream& media_stream,
+      MediaStreamDescriptor* media_stream_descriptor,
       WebLocalFrame* web_frame,
       const base::UnguessableToken& session_id,
-      const std::string& device_id,
+      const String& device_id,
       base::RepeatingCallback<void()> on_render_error_callback);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
@@ -124,7 +124,8 @@ class MODULES_EXPORT WebRtcAudioRenderer
   // will ensure that Pause() is called followed by a call to Stop(), which
   // is the usage pattern that WebRtcAudioRenderer requires.
   scoped_refptr<blink::WebMediaStreamAudioRenderer>
-  CreateSharedAudioRendererProxy(const blink::WebMediaStream& media_stream);
+  CreateSharedAudioRendererProxy(
+      MediaStreamDescriptor* media_stream_descriptor);
 
   // Used to DCHECK on the expected state.
   bool IsStarted() const;
@@ -289,9 +290,9 @@ class MODULES_EXPORT WebRtcAudioRenderer
   // Called whenever the Play/Pause state changes of any of the renderers
   // or if the volume of any of them is changed.
   // Here we update the shared Play state and apply volume scaling to all audio
-  // sources associated with the |media_stream| based on the collective volume
-  // of playing renderers.
-  void OnPlayStateChanged(const blink::WebMediaStream& media_stream,
+  // sources associated with the |media_stream_descriptor| based on the
+  // collective volume of playing renderers.
+  void OnPlayStateChanged(MediaStreamDescriptor* media_stream_descriptor,
                           PlayingState* state);
 
   // Called when |state| is about to be destructed.
@@ -320,13 +321,13 @@ class MODULES_EXPORT WebRtcAudioRenderer
   scoped_refptr<media::AudioRendererSink> sink_;
 
   // The media stream that holds the audio tracks that this renderer renders.
-  const blink::WebMediaStream media_stream_;
+  Persistent<MediaStreamDescriptor> media_stream_descriptor_;
 
   // Contains a copy the unique id of the media stream. By taking a copy at
-  // construction, we can convert the id from a WebString to an std::string
-  // once and that saves resources when |media_stream_id_| is added to log
-  // messages.
-  std::string media_stream_id_;
+  // construction, we can convert the id from a WebString to an WTF::string
+  // once and that saves resources when |media_stream_descriptor_id_| is added
+  // to log messages.
+  String media_stream_descriptor_id_;
 
   // Audio data source from the browser process.
   //
@@ -363,7 +364,7 @@ class MODULES_EXPORT WebRtcAudioRenderer
 
   // The preferred device id of the output device or empty for the default
   // output device. Can change as a result of a SetSinkId() call.
-  std::string output_device_id_;
+  String output_device_id_;
 
   // Maps audio sources to a list of active audio renderers.
   // Pointers to PlayingState objects are only kept in this map while the

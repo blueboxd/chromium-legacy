@@ -256,22 +256,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Network -------------------------------------------------------------
 
-  // Returns the platform's default URLLoaderFactory. It is expected that the
-  // returned value is stored and to be used for all the CreateURLLoader
-  // requests for the same loading context.
-  //
-  // WARNING: This factory understands http(s) and blob URLs, but it does not
-  // understand URLs like chrome-extension:// and file:// as those are provided
-  // by the browser process on a per-frame or per-worker basis. If you require
-  // support for such URLs, you must add that support manually. Typically you
-  // get a factory bundle from the browser process, and compose a new factory
-  // using both the bundle and this default.
-  //
-  // TODO(kinuko): https://crbug.com/891872: See if we can deprecate this too.
-  virtual std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory() {
-    return nullptr;
-  }
-
   // Returns the CodeCacheLoader that is used to fetch data from code caches.
   // It is OK to return a nullptr. When a nullptr is returned, data would not
   // be fetched from code cache.

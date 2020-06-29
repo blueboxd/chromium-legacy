@@ -109,6 +109,7 @@ public class FullscreenManagerUnitTest {
                 R.dimen.control_container_height);
         mFullscreenManager.addObserver(mBrowserControlsStateProviderObserver);
         mFullscreenManager.setViewportSizeDelegate(() -> {
+            if (!BrowserControlsUtils.areBrowserControlsIdle(mFullscreenManager)) return;
             mControlsResizeView = BrowserControlsUtils.controlsResizeView(mFullscreenManager);
         });
         when(mFullscreenManager.getTab()).thenReturn(mTab);

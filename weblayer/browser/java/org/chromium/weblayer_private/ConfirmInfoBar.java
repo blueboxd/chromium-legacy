@@ -9,6 +9,8 @@ import android.graphics.Bitmap;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.infobar.ActionType;
+import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarLayout;
 
 /**

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/profiler/profile_builder.h"
@@ -77,8 +78,9 @@ class BASE_EXPORT StackSamplingProfiler {
   // Creates a profiler for the specified thread. |unwinders| is required on
   // Android since the unwinder is provided outside StackSamplingProfiler, but
   // must be empty on other platforms. When attempting to unwind, the relative
-  // priority of unwinders is the inverse of the order in |unwinders|. An
-  // optional |test_delegate| can be supplied by tests.
+  // priority of unwinders is the inverse of the order in |unwinders|.
+  // |record_sample_callback| is made for each sample right before recording the
+  // stack sample. An optional |test_delegate| can be supplied by tests.
   //
   // The caller must ensure that this object gets destroyed before the thread
   // exits.
@@ -87,6 +89,7 @@ class BASE_EXPORT StackSamplingProfiler {
       const SamplingParams& params,
       std::unique_ptr<ProfileBuilder> profile_builder,
       std::vector<std::unique_ptr<Unwinder>> core_unwinders = {},
+      RepeatingClosure record_sample_callback = RepeatingClosure(),
       StackSamplerTestDelegate* test_delegate = nullptr);
 
   // Same as above function, with custom |sampler| implementation. The sampler

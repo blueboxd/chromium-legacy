@@ -399,8 +399,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   // These delegate to the document_.
-  ukm::UkmRecorder* UkmRecorder();
-  ukm::SourceId UkmSourceID() const;
+  ukm::UkmRecorder* UkmRecorder() override;
+  ukm::SourceId UkmSourceID() const override;
 
  protected:
   // EventTarget overrides.

@@ -9,7 +9,10 @@
 
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/scoped_file.h"
+#include "base/synchronization/lock.h"
 #include "chromeos/chromeos_export.h"
+
+struct uffd_msg;
 
 namespace chromeos {
 namespace memory {
@@ -113,15 +116,22 @@ class CHROMEOS_EXPORT UserfaultFD {
 
   // CopyToRange will resolve a fault by using the UFFDIO_COPY ioctl. This
   // uses the default behavior of waking the blocked task after the fault has
-  // been resolved.
+  // been resolved. |copied| will contain the number of bytes copied. It's
+  // important to check |copied| when CopyToRange return false as it may have
+  // copied the pages; but it can still fail to wake the range causing an
+  // EAGAIN.
   bool CopyToRange(uintptr_t dest_range_start,
                    uint64_t len,
-                   uintptr_t src_range_start);
+                   uintptr_t src_range_start,
+                   int64_t* copied);
 
   // ZeroRange will zero fill a range to resolve a fault using the UFFDIO_ZERO
   // ioctl. Similarly to CopyToRange the blocked task will be woken after the
-  // fault is resolved.
-  bool ZeroRange(uintptr_t range_start, uint64_t len);
+  // fault is resolved. |zeored| will return the number of bytes zeroed, it's
+  // important to check |zeored| even when ZeroRange returns false as it may
+  // have only failed to wake the range and would return EAGAIN in that
+  // situation.
+  bool ZeroRange(uintptr_t range_start, uint64_t len, int64_t* zeroed);
 
   // Wake any blocked tasks on this range.
   bool WakeRange(uintptr_t range_start, uint64_t len);
@@ -155,6 +165,12 @@ class CHROMEOS_EXPORT UserfaultFD {
   explicit UserfaultFD(base::ScopedFD fd);
 
   void UserfaultFDReadable();
+
+  void DispatchMessage(const uffd_msg& msg);
+
+  // We need to make sure messages are read and posted in order so we prevent
+  // two different threads from simultaenously reading and posting.
+  base::Lock read_lock_;
 
   base::ScopedFD fd_;
 

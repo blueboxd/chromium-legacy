@@ -521,7 +521,7 @@ TEST_F(SnapshotCacheTest, GreyImageAllInBackground) {
   for (NSString* sessionID in testSessions_) {
     base::FilePath path([cache greyImagePathForSessionID:sessionID]);
     EXPECT_TRUE(base::PathExists(path));
-    base::DeleteFile(path, false);
+    base::DeleteFile(path);
   }
 }
 

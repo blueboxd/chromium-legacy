@@ -107,8 +107,8 @@ void SuppressDialogs() {
   if (dialogs_are_suppressed_)
     return;
 
-  assert_handler_ =
-      new ScopedLogAssertHandler(base::Bind(SilentRuntimeAssertHandler));
+  assert_handler_ = new ScopedLogAssertHandler(
+      base::BindRepeating(SilentRuntimeAssertHandler));
 
 #if defined(OS_WIN)
   UINT new_flags = SEM_FAILCRITICALERRORS |

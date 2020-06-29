@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 #include <memory>
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -280,6 +282,18 @@ void WorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
   // based on state from the document (the origin and CSP headers it passed
   // here), and use the document's origin for 'self' CSP checks.
   GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
+}
+
+ukm::UkmRecorder* WorkletGlobalScope::UkmRecorder() {
+  if (ukm_recorder_)
+    return ukm_recorder_.get();
+
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  GetBrowserInterfaceBroker().GetInterface(
+      recorder.InitWithNewPipeAndPassReceiver());
+  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+
+  return ukm_recorder_.get();
 }
 
 void WorkletGlobalScope::Trace(Visitor* visitor) const {

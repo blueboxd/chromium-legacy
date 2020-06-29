@@ -164,7 +164,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
         PeerConnectionDependencyFactory::GetInstance()
             ->GetWebRtcSignalingTaskRunner(),
         web_stream, web_frame, GetSessionIdForWebRtcAudioRenderer(),
-        device_id.Utf8(), std::move(on_render_error_callback));
+        String(device_id), std::move(on_render_error_callback));
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       SendLogMessage(String::Format(

@@ -25,6 +25,7 @@ class VulkanSurfaceX11 : public VulkanSurface {
   ~VulkanSurfaceX11() override;
 
   // VulkanSurface:
+  void Destroy() override;
   bool Reshape(const gfx::Size& size,
                gfx::OverlayTransform pre_transform) override;
 
@@ -34,7 +35,7 @@ class VulkanSurfaceX11 : public VulkanSurface {
   void ForwardXExposeEvent(const x11::Event* event);
 
   const x11::Window parent_window_;
-  const x11::Window window_;
+  x11::Window window_;
   std::unique_ptr<ExposeEventForwarder> expose_event_forwarder_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurfaceX11);

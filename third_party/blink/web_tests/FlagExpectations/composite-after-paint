@@ -46,10 +46,6 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
-external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
-
-transforms/3d/general/background-visibility-layers.html [ Failure ]
-
 # Raster invalidation doesn't work for huge layers.
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 

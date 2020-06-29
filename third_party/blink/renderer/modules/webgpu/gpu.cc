@@ -103,10 +103,13 @@ void GPU::ContextDestroyed() {
 }
 
 void GPU::OnRequestAdapterCallback(ScriptPromiseResolver* resolver,
-                                   uint32_t adapter_server_id,
+                                   int32_t adapter_server_id,
                                    const WGPUDeviceProperties& properties) {
-  auto* adapter = MakeGarbageCollected<GPUAdapter>(
-      "Default", adapter_server_id, properties, dawn_control_client_);
+  GPUAdapter* adapter = nullptr;
+  if (adapter_server_id >= 0) {
+    adapter = MakeGarbageCollected<GPUAdapter>(
+        "Default", adapter_server_id, properties, dawn_control_client_);
+  }
   resolver->Resolve(adapter);
 }
 

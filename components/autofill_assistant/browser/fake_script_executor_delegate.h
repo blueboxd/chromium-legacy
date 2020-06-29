@@ -46,7 +46,11 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
+  void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;

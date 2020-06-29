@@ -6,7 +6,7 @@
  /* File created by MIDL compiler version 8.xx.xxxx */
 /* at a redacted point in time
  */
-/* Compiler settings for ../../chrome/updater/app/server/win/updater_idl.idl:
+/* Compiler settings for gen/chrome/updater/app/server/win/updater_idl.idl:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -94,6 +94,18 @@ typedef interface IUpdater IUpdater;
 #endif 	/* __IUpdater_FWD_DEFINED__ */
 
 
+#ifndef __UpdaterClass_FWD_DEFINED__
+#define __UpdaterClass_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class UpdaterClass UpdaterClass;
+#else
+typedef struct UpdaterClass UpdaterClass;
+#endif /* __cplusplus */
+
+#endif 	/* __UpdaterClass_FWD_DEFINED__ */
+
+
 #ifndef __IUpdater_FWD_DEFINED__
 #define __IUpdater_FWD_DEFINED__
 typedef interface IUpdater IUpdater;
@@ -127,42 +139,6 @@ typedef interface IAppBundleWeb IAppBundleWeb;
 typedef interface IAppWeb IAppWeb;
 
 #endif 	/* __IAppWeb_FWD_DEFINED__ */
-
-
-#ifndef __UpdaterClass_FWD_DEFINED__
-#define __UpdaterClass_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class UpdaterClass UpdaterClass;
-#else
-typedef struct UpdaterClass UpdaterClass;
-#endif /* __cplusplus */
-
-#endif 	/* __UpdaterClass_FWD_DEFINED__ */
-
-
-#ifndef __UpdaterServiceClass_FWD_DEFINED__
-#define __UpdaterServiceClass_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class UpdaterServiceClass UpdaterServiceClass;
-#else
-typedef struct UpdaterServiceClass UpdaterServiceClass;
-#endif /* __cplusplus */
-
-#endif 	/* __UpdaterServiceClass_FWD_DEFINED__ */
-
-
-#ifndef __GoogleUpdate3WebUserClass_FWD_DEFINED__
-#define __GoogleUpdate3WebUserClass_FWD_DEFINED__
-
-#ifdef __cplusplus
-typedef class GoogleUpdate3WebUserClass GoogleUpdate3WebUserClass;
-#else
-typedef struct GoogleUpdate3WebUserClass GoogleUpdate3WebUserClass;
-#endif /* __cplusplus */
-
-#endif 	/* __GoogleUpdate3WebUserClass_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -1433,24 +1409,8 @@ EXTERN_C const CLSID CLSID_UpdaterClass;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("158428A4-6014-4978-83BA-9FAD0DABE791")
+class DECLSPEC_UUID("158428a4-6014-4978-83ba-9fad0dabe791")
 UpdaterClass;
-#endif
-
-EXTERN_C const CLSID CLSID_UpdaterServiceClass;
-
-#ifdef __cplusplus
-
-class DECLSPEC_UUID("415FD747-D79E-42D7-93AC-1BA6E5FD4E93")
-UpdaterServiceClass;
-#endif
-
-EXTERN_C const CLSID CLSID_GoogleUpdate3WebUserClass;
-
-#ifdef __cplusplus
-
-class DECLSPEC_UUID("22181302-A8A6-4f84-A541-E5CBFC70CC43")
-GoogleUpdate3WebUserClass;
 #endif
 #endif /* __UpdaterLib_LIBRARY_DEFINED__ */
 

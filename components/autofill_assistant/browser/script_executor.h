@@ -214,7 +214,11 @@ class ScriptExecutor : public ActionDelegate,
   void ClearInfoBox() override;
   void SetInfoBox(const InfoBox& info_box) override;
   void SetProgress(int progress) override;
+  void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;

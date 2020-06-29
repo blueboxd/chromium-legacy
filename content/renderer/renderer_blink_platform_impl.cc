@@ -206,18 +206,6 @@ void RendererBlinkPlatformImpl::Shutdown() {}
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactory() {
-  if (!RenderThreadImpl::current()) {
-    // RenderThreadImpl is null in some tests, the default factory impl
-    // takes care of that in the case.
-    return std::make_unique<WebURLLoaderFactoryImpl>(nullptr, nullptr);
-  }
-  return std::make_unique<WebURLLoaderFactoryImpl>(
-      RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
-      CreateDefaultURLLoaderFactoryBundle());
-}
-
 std::unique_ptr<blink::CodeCacheLoader>
 RendererBlinkPlatformImpl::CreateCodeCacheLoader() {
   return std::make_unique<CodeCacheLoaderImpl>();

@@ -13,7 +13,7 @@ bool DiscoverFeedProvider::IsDiscoverFeedEnabled() {
 }
 
 UIViewController* DiscoverFeedProvider::NewFeedViewController(
-    id<ApplicationCommands> dispatcher) {
+    id<ApplicationCommands> handler) {
   return nil;
 }
 

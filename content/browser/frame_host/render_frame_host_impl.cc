@@ -2367,7 +2367,6 @@ void RenderFrameHostImpl::OnCreateChildFrame(
 
 void RenderFrameHostImpl::DidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_same_document_navigation,
     bool did_create_new_document) {
   // Keep track of the last committed URL and origin in the RenderFrameHost
   // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
@@ -2386,23 +2385,21 @@ void RenderFrameHostImpl::DidNavigate(
   if (!params.url_is_unreachable)
     last_successful_url_ = params.url;
 
-  // After setting the last committed origin, reset the feature policy and
-  // sandbox flags in the RenderFrameHost to a blank policy based on the parent
-  // frame.
-  if (!is_same_document_navigation) {
+  if (did_create_new_document) {
+    // After setting the last committed origin, reset the feature policy and
+    // sandbox flags in the RenderFrameHost to a blank policy based on the
+    // parent frame or opener frame.
     ResetFeaturePolicy();
     active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
     document_policy_ = blink::DocumentPolicy::CreateWithHeaderPolicy({});
+
+    DCHECK(params.embedding_token.has_value());
+    SetEmbeddingToken(params.embedding_token.value());
   }
 
   // Reset the salt so that media device IDs are reset after the new navigation
   // if necessary.
   media_device_id_salt_base_ = BrowserContext::CreateRandomMediaDeviceIDSalt();
-
-  if (did_create_new_document) {
-    DCHECK(params.embedding_token.has_value());
-    SetEmbeddingToken(params.embedding_token.value());
-  }
 }
 
 void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {

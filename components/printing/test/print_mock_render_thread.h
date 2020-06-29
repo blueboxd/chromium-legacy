@@ -25,7 +25,6 @@ class DictionaryValue;
 }
 
 class MockPrinter;
-struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
@@ -83,7 +82,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids);
-  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params,
+  void OnDidPreviewPage(const printing::mojom::DidPreviewPageParams& params,
                         const PrintHostMsg_PreviewIds& ids);
   void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
 #endif

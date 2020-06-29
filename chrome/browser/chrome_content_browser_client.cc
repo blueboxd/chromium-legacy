@@ -4346,7 +4346,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     bool is_enterprise_lookup_enabled =
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
         safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-            safe_browsing::GetDMToken(profile).is_valid(),
+            profile->GetPrefs(), safe_browsing::GetDMToken(profile).is_valid(),
             profile->IsOffTheRecord());
 #else
         false;

@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -33,6 +34,7 @@ using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::HistoryEntry;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
+using chrome_test_util::OpenLinkInNewWindowButton;
 
 namespace {
 char kURL1[] = "http://firstURL";
@@ -385,6 +387,35 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
                                           _URL1.GetContent())]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests display and selection of 'Open in New Window' in a context menu on a
+// history entry.
+- (void)testContextMenuOpenInNewWindow {
+  if (!IsMultiwindowSupported())
+    return;
+
+  [self loadTestURLs];
+  [self openHistoryPanel];
+
+  [ChromeEarlGrey waitForBrowserCount:1];
+
+  // Long press on the history element.
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      performAction:grey_longPress()];
+
+  // Select "Open in New Window" and confirm that new tab is opened with
+  // selected URL in the new window.
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewWindowButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          _URL1.GetContent())]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForBrowserCount:2];
+
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey waitForBrowserCount:1];
 }
 
 // Tests display and selection of 'Open in New Incognito Tab' in a context menu

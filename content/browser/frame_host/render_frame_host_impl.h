@@ -539,7 +539,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // true the navigation was not same-document and was not served from the
   // back-forward cache.
   void DidNavigate(const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-                   bool is_same_document_navigation,
                    bool did_create_new_document);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_.get(); }

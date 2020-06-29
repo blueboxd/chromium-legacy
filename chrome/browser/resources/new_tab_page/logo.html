@@ -6,21 +6,20 @@
     min-height: var(--ntp-logo-height);
   }
 
-  #singleColoredLogo,
-  #multiColoredLogo {
+  #logo {
     height: 92px;
     margin-top: 108px;
     width: 272px;
   }
 
-  #singleColoredLogo {
+  :host([single-colored]) #logo {
     -webkit-mask-image: url(chrome://resources/images/google_logo.svg);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 100%;
     background-color: var(--ntp-logo-color);
   }
 
-  #multiColoredLogo {
+  :host(:not([single-colored])) #logo {
     background-image: url(chrome://resources/images/google_logo.svg);
   }
 
@@ -105,47 +104,38 @@
     width: var(--width, 100%);
   }
 </style>
-<dom-if if="[[showLogo_]]" restamp>
-  <template>
-    <div id="logo">
-      <div id="singleColoredLogo" hidden="[[!singleColored]]"></div>
-      <div id="multiColoredLogo" hidden="[[singleColored]]"></div>
-    </div>
-  </template>
-</dom-if>
-<dom-if if="[[showDoodle_]]" restamp>
-  <template>
-    <div id="doodle" title="[[doodle_.description]]">
-      <div id="imageDoodle" hidden="[[!imageDoodle_]]"
-          tabindex="0" on-click="onImageClick_" on-keydown="onImageKeydown_">
-        <div id="imageContainer">
-          <!-- The static image is always visible and the animated image is
-              stacked on top of the static image so that there is no flicker
-              when starting the animation. -->
-          <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_">
+
+<template is="dom-if" if="[[showLogo_]]" restamp>
+  <div id="logo"></div>
+</template>
+<template is="dom-if" if="[[showDoodle_]]" restamp>
+  <div id="doodle" title="[[doodle_.description]]">
+    <div id="imageDoodle" hidden="[[!imageDoodle_]]"
+        tabindex="0" on-click="onImageClick_" on-keydown="onImageKeydown_">
+      <div id="imageContainer">
+        <!-- The static image is always visible and the animated image is
+             stacked on top of the static image so that there is no flicker
+             when starting the animation. -->
+        <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_"></img>
+        <ntp-iframe id="animation" src="[[animationUrl_]]"
+            hidden="[[!showAnimation_]]">
+        </ntp-iframe>
+        <cr-button id="shareButton" title="$i18n{shareDoodle}"
+            on-click="onShareButtonClick_">
+          <img id="shareButtonImage"
+              src="[[imageDoodle_.shareButton.iconUrl.url]]">
           </img>
-          <ntp-iframe id="animation" src="[[animationUrl_]]"
-              hidden="[[!showAnimation_]]">
-          </ntp-iframe>
-          <cr-button id="shareButton" title="$i18n{shareDoodle}"
-              on-click="onShareButtonClick_">
-            <img id="shareButtonImage"
-                src="[[imageDoodle_.shareButton.iconUrl.url]]">
-            </img>
-          </cr-button>
-        </div>
+        </cr-button>
       </div>
-      <template is="dom-if" if="[[iframeUrl_]]" restamp>
-        <ntp-iframe id="iframe" src="[[iframeUrl_]]"></ntp-iframe>
-      </template>
     </div>
-  </template>
-</dom-if>
-<dom-if if="[[showShareDialog_]]" restamp>
-  <template>
-    <ntp-doodle-share-dialog title="[[doodle_.description]]"
-        url="[[doodle_.content.imageDoodle.shareUrl]]"
-        on-close="onShareDialogClose_" on-share="onShare_">
-    </ntp-doodle-share-dialog>
-  </template>
-</dom-if>
+    <template is="dom-if" if="[[iframeUrl_]]" restamp>
+      <ntp-iframe id="iframe" src="[[iframeUrl_]]"></ntp-iframe>
+    </template>
+  </div>
+</template>
+<template is="dom-if" if="[[showShareDialog_]]" restamp>
+  <ntp-doodle-share-dialog title="[[doodle_.description]]"
+      url="[[doodle_.image.shareUrl]]"
+      on-close="onShareDialogClose_" on-share="onShare_">
+  </ntp-doodle-share-dialog>
+</template>

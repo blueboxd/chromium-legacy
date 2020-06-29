@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -22,7 +23,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
@@ -74,10 +74,13 @@ public class IncognitoStorageLeakageTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
-    public void setUp() {
+    public void setUp() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mSiteDataTestPage = mTestServer.getURL(SITE_DATA_HTML_PATH);
-        mChromeActivityTestRule.startMainActivityOnBlankPage();
+
+        // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
+        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO));
     }
 
     @After
@@ -123,7 +126,6 @@ public class IncognitoStorageLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(TestParams.AllTypesToAllTypes.class)
-    @DisabledTest // https://crbug.com/1098751
     public void testStorageDoesNotLeakFromActivityToActivity(
             String activityType1, String activityType2) throws TimeoutException {
         ActivityType activity1 = ActivityType.valueOf(activityType1);

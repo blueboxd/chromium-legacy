@@ -626,6 +626,19 @@ JNI_WebContentsStateBridge_GetVirtualUrlFromByteBuffer(
   return result;
 }
 
+// Creates a historical tab entry from the serialized tab contents contained
+// within |state|.
+static void JNI_WebContentsStateBridge_CreateHistoricalTab(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& state,
+    jint saved_state_version) {
+  std::unique_ptr<WebContents> web_contents(WebContents::FromJavaWebContents(
+      WebContentsState::RestoreContentsFromByteBuffer(
+          env, state, saved_state_version, true)));
+  if (web_contents.get())
+    CreateHistoricalTab(web_contents.get());
+}
+
 // static
 static void JNI_WebContentsStateBridge_CreateHistoricalTabFromContents(
     JNIEnv* env,

@@ -157,7 +157,7 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
   ReservedTexture ReserveTexture(DawnDeviceClientID device_client_id) override;
   bool RequestAdapterAsync(
       PowerPreference power_preference,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+      base::OnceCallback<void(int32_t, const WGPUDeviceProperties&)>
           request_adapter_callback) override;
   bool RequestDeviceAsync(
       uint32_t requested_adapter_id,
@@ -188,9 +188,8 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
 
   LogSettings log_settings_;
 
-  base::flat_map<
-      DawnRequestAdapterSerial,
-      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>>
+  base::flat_map<DawnRequestAdapterSerial,
+                 base::OnceCallback<void(int32_t, const WGPUDeviceProperties&)>>
       request_adapter_callback_map_;
   DawnRequestAdapterSerial request_adapter_serial_ = 0;
 

@@ -188,9 +188,9 @@ TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_Crash) {
   EXPECT_EQ(GURL("https://incompatible-applications"), output[0].url);
 }
 
-// If Master Preferences specifies content, this should block all other
+// If initial preferences specify content, this should block all other
 // policies. The only exception is command line URLs, tested below.
-TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_MasterPrefs) {
+TEST(StartupBrowserCreatorImplTest, DetermineStartupTabs_InitialPrefs) {
   FakeStartupTabProvider provider(kOnboardingTabs | kDistributionFirstRunTabs |
                                   kResetTriggerTabs | kPinnedTabs |
                                   kPreferencesTabs | kNewTabPageTabs);

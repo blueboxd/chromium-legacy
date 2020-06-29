@@ -94,13 +94,13 @@ TEST(StartupTabProviderTest, GetStandardOnboardingTabsForState_Negative) {
   }
 }
 
-TEST(StartupTabProviderTest, GetMasterPrefsTabsForState) {
+TEST(StartupTabProviderTest, GetInitialPrefsTabsForState) {
   std::vector<GURL> input = {GURL(base::ASCIIToUTF16("https://new_tab_page")),
                              GURL(base::ASCIIToUTF16("https://www.google.com")),
                              GURL(base::ASCIIToUTF16("https://welcome_page"))};
 
   StartupTabs output =
-      StartupTabProviderImpl::GetMasterPrefsTabsForState(true, input);
+      StartupTabProviderImpl::GetInitialPrefsTabsForState(true, input);
 
   ASSERT_EQ(3U, output.size());
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), output[0].url);
@@ -111,12 +111,12 @@ TEST(StartupTabProviderTest, GetMasterPrefsTabsForState) {
   EXPECT_FALSE(output[2].is_pinned);
 }
 
-TEST(StartupTabProviderTest, GetMasterPrefsTabsForState_FirstRunOnly) {
+TEST(StartupTabProviderTest, GetInitialPrefsTabsForState_FirstRunOnly) {
   std::vector<GURL> input = {
       GURL(base::ASCIIToUTF16("https://www.google.com"))};
 
   StartupTabs output =
-      StartupTabProviderImpl::GetMasterPrefsTabsForState(false, input);
+      StartupTabProviderImpl::GetInitialPrefsTabsForState(false, input);
 
   EXPECT_TRUE(output.empty());
 }

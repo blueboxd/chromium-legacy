@@ -80,6 +80,9 @@
 // Returns the number of open incognito tabs.
 + (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
 
+// Returns the number of open browsers.
++ (NSUInteger)browserCount WARN_UNUSED_RESULT;
+
 // Simulates a backgrounding.
 // If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.

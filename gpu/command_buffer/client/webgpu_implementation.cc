@@ -604,7 +604,7 @@ DawnRequestAdapterSerial WebGPUImplementation::NextRequestAdapterSerial() {
 
 bool WebGPUImplementation::RequestAdapterAsync(
     PowerPreference power_preference,
-    base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+    base::OnceCallback<void(int32_t, const WGPUDeviceProperties&)>
         request_adapter_callback) {
   if (lost_) {
     return false;

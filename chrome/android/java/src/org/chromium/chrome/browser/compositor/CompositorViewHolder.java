@@ -32,6 +32,7 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.customview.widget.ExploreByTouchHelper;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
@@ -68,6 +69,7 @@ import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.EventOffsetHandler;
 import org.chromium.ui.base.WindowAndroid;
@@ -165,6 +167,10 @@ public class CompositorViewHolder extends FrameLayout
     private boolean mIsInVr;
 
     private boolean mControlsResizeView;
+    private boolean mInGesture;
+    private boolean mContentViewScrolling;
+    private ApplicationViewportInsetSupplier mApplicationBottomInsetSupplier;
+    private Callback<Integer> mViewportInsetObserver;
 
     // Indicates if ContentCaptureConsumer should be created, we only try to create it once.
     private boolean mShouldCreateContentCaptureConsumer = true;
@@ -279,6 +285,11 @@ public class CompositorViewHolder extends FrameLayout
             @Override
             public void onContentChanged(Tab tab) {
                 CompositorViewHolder.this.onContentChanged();
+            }
+
+            @Override
+            public void onContentViewScrollingStateChanged(boolean scrolling) {
+                mContentViewScrolling = scrolling;
             }
 
             @Override
@@ -495,6 +506,10 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void shutDown() {
         setTab(null);
+        if (mApplicationBottomInsetSupplier != null && mViewportInsetObserver != null) {
+            mApplicationBottomInsetSupplier.removeObserver(mViewportInsetObserver);
+        }
+
         if (mLayerTitleCache != null) mLayerTitleCache.shutDown();
         mCompositorView.shutDown();
         if (mLayoutManager != null) mLayoutManager.destroy();
@@ -530,6 +545,10 @@ public class CompositorViewHolder extends FrameLayout
             mCompositorView.getResourceManager().getDynamicResourceLoader().registerResource(
                     R.id.control_container, mControlContainer.getToolbarResourceAdapter());
         }
+
+        mApplicationBottomInsetSupplier = windowAndroid.getApplicationBottomInsetProvider();
+        mViewportInsetObserver = (inset) -> updateViewportSize();
+        mApplicationBottomInsetSupplier.addObserver(mViewportInsetObserver);
     }
 
     /**
@@ -585,7 +604,7 @@ public class CompositorViewHolder extends FrameLayout
             if (o.shouldInterceptTouchEvent(e)) return true;
         }
 
-        if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
+        updateIsInGesture(e);
 
         if (mLayoutManager == null) return false;
 
@@ -597,10 +616,21 @@ public class CompositorViewHolder extends FrameLayout
     public boolean onTouchEvent(MotionEvent e) {
         super.onTouchEvent(e);
 
-        if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
+        updateIsInGesture(e);
         boolean consumed = mLayoutManager != null && mLayoutManager.onTouchEvent(e);
         mEventOffsetHandler.onTouchEvent(e);
         return consumed;
+    }
+
+    private void updateIsInGesture(MotionEvent e) {
+        int eventAction = e.getActionMasked();
+        if (eventAction == MotionEvent.ACTION_DOWN
+                || eventAction == MotionEvent.ACTION_POINTER_DOWN) {
+            mInGesture = true;
+        } else if (eventAction == MotionEvent.ACTION_CANCEL
+                || eventAction == MotionEvent.ACTION_UP) {
+            mInGesture = false;
+        }
     }
 
     @Override
@@ -760,7 +790,7 @@ public class CompositorViewHolder extends FrameLayout
     public void onStart() {
         if (mFullscreenManager != null) {
             mFullscreenManager.addObserver(this);
-            mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
+            mFullscreenManager.setViewportSizeDelegate(this::updateViewportSize);
         }
         requestRender();
     }
@@ -813,8 +843,17 @@ public class CompositorViewHolder extends FrameLayout
         webContents.notifyBrowserControlsHeightChanged();
     }
 
-    private void onUpdateViewportSize() {
+    /**
+     * Updates viewport size to have it render the content correctly.
+     */
+    private void updateViewportSize() {
+        if (mInGesture || mContentViewScrolling) return;
+
         if (mFullscreenManager != null) {
+            // Update content viewport size only if the browser controls are not moving, i.e. not
+            // scrolling or animating.
+            if (!BrowserControlsUtils.areBrowserControlsIdle(mFullscreenManager)) return;
+
             mControlsResizeView = BrowserControlsUtils.controlsResizeView(mFullscreenManager);
         }
         // Reflect the changes that may have happened in in view/control size.
@@ -1002,7 +1041,7 @@ public class CompositorViewHolder extends FrameLayout
     public void setFullscreenHandler(ChromeFullscreenManager fullscreen) {
         mFullscreenManager = fullscreen;
         mFullscreenManager.addObserver(this);
-        mFullscreenManager.setViewportSizeDelegate(this::onUpdateViewportSize);
+        mFullscreenManager.setViewportSizeDelegate(this::updateViewportSize);
         onViewportChanged();
     }
 
@@ -1133,7 +1172,7 @@ public class CompositorViewHolder extends FrameLayout
                 if (webContents != null) {
                     assert !webContents.isDestroyed();
                     getContentView().setVisibility(View.VISIBLE);
-                    if (mFullscreenManager != null) mFullscreenManager.updateViewportSize();
+                    updateViewportSize();
                 }
 
                 // CompositorView always has index of 0.
@@ -1284,7 +1323,7 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void onExitVr() {
         mIsInVr = false;
-        onUpdateViewportSize();
+        updateViewportSize();
     }
 
     @Override

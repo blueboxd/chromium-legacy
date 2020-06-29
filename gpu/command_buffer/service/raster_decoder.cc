@@ -632,7 +632,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
-  std::unique_ptr<SkDeferredDisplayList> ddl_;
+  sk_sp<SkDeferredDisplayList> ddl_;
   base::Optional<SkDeferredDisplayList::ProgramIterator> program_iterator_;
   SkCanvas* raster_canvas_ = nullptr;  // ptr into recorder_ or sk_surface_
   std::vector<SkDiscardableHandleId> locked_handles_;
@@ -2872,7 +2872,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
       return;
     }
     TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM::DrawDDL");
-    sk_surface_->draw(ddl_.get());
+    sk_surface_->draw(std::move(ddl_));
   }
 
   {
@@ -2896,9 +2896,6 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
       gr_context()->submit();
       end_semaphores_.clear();
     }
-    // The DDL pins memory for the recorded ops so it must be kept alive until
-    // its flushed.
-    ddl_.reset();
   }
 
   shared_context_state_->UpdateSkiaOwnedMemorySize();

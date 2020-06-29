@@ -19,6 +19,7 @@ config("absl_component_build") {
 # marked testonly because we don't want them to be usable in Chromium.
 # Add an absl_flags component which depends on the main absl component.
 component("absl") {
+  public_deps = [ ":absl_component_deps" ]
   if (is_component_build) {
     public_configs = [ ":absl_component_build" ]
 
@@ -47,6 +48,16 @@ component("absl") {
     }
   }
 
+  # Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
+  # adding projects to this list please reach out to cxx@chromium.org and CC:
+  # - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
+  #
+  # More information can be found at:
+  # https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
+  visibility = absl_visibility
+}
+
+group("absl_component_deps") {
   public_deps = [
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/base:config",
@@ -75,14 +86,7 @@ component("absl") {
         "//third_party/abseil-cpp/absl/debugging:symbolize",
     ]
   }
-
-  # Usage of Abseil in Chromium is guarded by an explicit opt-in list, before
-  # adding projects to this list please reach out to cxx@chromium.org and CC:
-  # - https://cs.chromium.org/chromium/src/third_party/abseil-cpp/OWNERS
-  #
-  # More information can be found at:
-  # https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
-  visibility = absl_visibility
+  visibility = [ ":absl" ]
 }
 
 group("default") {

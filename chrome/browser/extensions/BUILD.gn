@@ -15,16 +15,6 @@ assert(enable_extensions)
 
 static_library("extensions") {
   sources = [
-    # TODO These references to files in //chrome/browser/ should either be
-    # moved to the browser target or the files moved to this directory.
-    "../accessibility/accessibility_extension_api.cc",
-    "../accessibility/accessibility_extension_api.h",
-    "../ui/app_icon_loader.cc",
-    "../ui/app_icon_loader.h",
-    "../ui/toolbar/toolbar_actions_model.cc",
-    "../ui/toolbar/toolbar_actions_model.h",
-    "../ui/toolbar/toolbar_actions_model_factory.cc",
-    "../ui/toolbar/toolbar_actions_model_factory.h",
     "active_install_data.cc",
     "active_install_data.h",
     "active_tab_permission_granter.cc",

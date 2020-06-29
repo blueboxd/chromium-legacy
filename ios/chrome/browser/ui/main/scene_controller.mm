@@ -880,7 +880,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         [SettingsNavigationController userFeedbackControllerForBrowser:browser
                                                               delegate:self
                                                     feedbackDataSource:self
-                                                            dispatcher:self];
+                                                               handler:self];
     [baseViewController presentViewController:self.settingsNavigationController
                                      animated:YES
                                    completion:nil];

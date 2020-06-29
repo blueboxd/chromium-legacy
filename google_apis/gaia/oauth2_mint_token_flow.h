@@ -38,8 +38,10 @@ enum class OAuth2MintTokenApiCallResult {
   kIssueAdviceKeyNotFoundFailure = 5,
   kParseMintTokenFailure = 6,
   kParseIssueAdviceFailure = 7,
-  kRemoteConsentFallback = 8,
-  kMaxValue = kRemoteConsentFallback
+  // DEPRECATED:
+  // kRemoteConsentFallback = 8
+  kParseRemoteConsentFailure = 9,
+  kMaxValue = kParseRemoteConsentFailure
 };
 
 // IssueAdvice: messages to show to the user to get a user's approval.

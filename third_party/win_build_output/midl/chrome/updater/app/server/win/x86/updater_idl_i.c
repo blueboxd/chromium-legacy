@@ -8,7 +8,7 @@
  /* File created by MIDL compiler version 8.xx.xxxx */
 /* at a redacted point in time
  */
-/* Compiler settings for ../../chrome/updater/app/server/win/updater_idl.idl:
+/* Compiler settings for gen/chrome/updater/app/server/win/updater_idl.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.xx.xxxx 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -92,12 +92,6 @@ MIDL_DEFINE_GUID(IID, LIBID_UpdaterLib,0x69464FF0,0xD9EC,0x4037,0xA3,0x5F,0x8A,0
 
 
 MIDL_DEFINE_GUID(CLSID, CLSID_UpdaterClass,0x158428A4,0x6014,0x4978,0x83,0xBA,0x9F,0xAD,0x0D,0xAB,0xE7,0x91);
-
-
-MIDL_DEFINE_GUID(CLSID, CLSID_UpdaterServiceClass,0x415FD747,0xD79E,0x42D7,0x93,0xAC,0x1B,0xA6,0xE5,0xFD,0x4E,0x93);
-
-
-MIDL_DEFINE_GUID(CLSID, CLSID_GoogleUpdate3WebUserClass,0x22181302,0xA8A6,0x4f84,0xA5,0x41,0xE5,0xCB,0xFC,0x70,0xCC,0x43);
 
 #undef MIDL_DEFINE_GUID
 

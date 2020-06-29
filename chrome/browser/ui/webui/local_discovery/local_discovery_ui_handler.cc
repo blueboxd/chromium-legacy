@@ -478,7 +478,7 @@ std::string LocalDiscoveryUIHandler::GetSyncAccount() const {
   return email;
 }
 
-// TODO(noamsml): Create master object for registration flow.
+// TODO(noamsml): Create main controller object for registration flow.
 void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
   if (current_register_operation_) {
     current_register_operation_->Cancel();

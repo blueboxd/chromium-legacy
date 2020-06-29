@@ -14,6 +14,6 @@ import "third_party/blink/public/mojom/feature_policy/feature_policy_feature.moj
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
   array<url.mojom.Origin> allowed_origins;
-  bool fallback_value;
-  bool opaque_value;
+  bool matches_all_origins;
+  bool matches_opaque_src;
 };

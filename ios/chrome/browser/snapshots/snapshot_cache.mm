@@ -406,8 +406,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
       FROM_HERE, base::BindOnce(^{
         for (size_t index = 0; index < base::size(kImageTypes); ++index) {
           base::DeleteFile(ImagePath(sessionID, kImageTypes[index],
-                                     snapshotsScale, cacheDirectory),
-                           false /* recursive */);
+                                     snapshotsScale, cacheDirectory));
         }
       }));
 }
@@ -475,7 +474,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
           base::FileEnumerator::FileInfo fileInfo = enumerator.GetInfo();
           if (fileInfo.GetLastModifiedTime() > dateCopy)
             continue;
-          base::DeleteFile(current_file, false);
+          base::DeleteFile(current_file);
         }
       }));
 }

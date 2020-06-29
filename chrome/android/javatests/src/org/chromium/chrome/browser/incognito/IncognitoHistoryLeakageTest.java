@@ -25,7 +25,6 @@ import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -78,11 +77,14 @@ public class IncognitoHistoryLeakageTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage1 = mTestServer.getURL(TEST_PAGE_1);
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
-        mChromeActivityTestRule.startMainActivityOnBlankPage();
+
+        // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
+        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO));
     }
 
     @After
@@ -165,7 +167,6 @@ public class IncognitoHistoryLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(AllTypesToAllTypes.class)
-    @DisabledTest // https://crbug.com/1098751
     public void testTabNavigationHistoryDoNotLeakBetweenActivities(
             String activityType1, String activityType2) throws TimeoutException {
         ActivityType activity1 = ActivityType.valueOf(activityType1);

@@ -4,35 +4,44 @@
 
 package org.chromium.chrome.browser.autofill_assistant.header;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantDrawable;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * State for the header of the Autofill Assistant.
  */
 @JNINamespace("autofill_assistant")
 public class AssistantHeaderModel extends PropertyModel {
-    @VisibleForTesting
     public static final WritableObjectPropertyKey<String> STATUS_MESSAGE =
             new WritableObjectPropertyKey<>();
 
     public static final WritableObjectPropertyKey<String> BUBBLE_MESSAGE =
             new WritableObjectPropertyKey<>();
 
-    @VisibleForTesting
     public static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 
-    @VisibleForTesting
+    public static final WritableIntPropertyKey PROGRESS_ACTIVE_STEP = new WritableIntPropertyKey();
+
+    public static final WritableBooleanPropertyKey PROGRESS_BAR_ERROR =
+            new WritableBooleanPropertyKey();
+
     public static final WritableBooleanPropertyKey PROGRESS_VISIBLE =
             new WritableBooleanPropertyKey();
 
+    public static final WritableBooleanPropertyKey USE_STEP_PROGRESS_BAR =
+            new WritableBooleanPropertyKey();
+
+    public static final WritableObjectPropertyKey<List<AssistantDrawable>> STEP_PROGRESS_BAR_ICONS =
+            new WritableObjectPropertyKey<>();
+
     static final WritableBooleanPropertyKey SPIN_POODLE = new WritableBooleanPropertyKey();
 
-    @VisibleForTesting
     public static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
@@ -41,12 +50,12 @@ public class AssistantHeaderModel extends PropertyModel {
 
     public static final WritableBooleanPropertyKey CHIP_VISIBLE = new WritableBooleanPropertyKey();
 
-    @VisibleForTesting
     public static final WritableBooleanPropertyKey DISABLE_ANIMATIONS_FOR_TESTING =
             new WritableBooleanPropertyKey();
 
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, BUBBLE_MESSAGE, PROGRESS, PROGRESS_VISIBLE, SPIN_POODLE,
+        super(STATUS_MESSAGE, BUBBLE_MESSAGE, PROGRESS, PROGRESS_ACTIVE_STEP, PROGRESS_BAR_ERROR,
+                PROGRESS_VISIBLE, USE_STEP_PROGRESS_BAR, STEP_PROGRESS_BAR_ICONS, SPIN_POODLE,
                 FEEDBACK_BUTTON_CALLBACK, CHIP, CHIP_VISIBLE, DISABLE_ANIMATIONS_FOR_TESTING);
     }
 
@@ -66,8 +75,39 @@ public class AssistantHeaderModel extends PropertyModel {
     }
 
     @CalledByNative
+    private void setProgressActiveStep(int activeStep) {
+        set(PROGRESS_ACTIVE_STEP, activeStep);
+    }
+
+    @CalledByNative
+    private void setProgressBarErrorState(boolean error) {
+        set(PROGRESS_BAR_ERROR, error);
+    }
+
+    @CalledByNative
     private void setProgressVisible(boolean visible) {
         set(PROGRESS_VISIBLE, visible);
+    }
+
+    @CalledByNative
+    private void setUseStepProgressBar(boolean useNewProgressBar) {
+        set(USE_STEP_PROGRESS_BAR, useNewProgressBar);
+    }
+
+    @CalledByNative
+    private static List<AssistantDrawable> createIconList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addStepProgressBarIcon(
+            List<AssistantDrawable> icons, AssistantDrawable icon) {
+        icons.add(icon);
+    }
+
+    @CalledByNative
+    private void setStepProgressBarIcons(List<AssistantDrawable> icons) {
+        set(STEP_PROGRESS_BAR_ICONS, icons);
     }
 
     @CalledByNative

@@ -129,6 +129,10 @@
 // a link.
 + (id<GREYMatcher>)openLinkInNewTabButton;
 
+// Matcher for the Open in New Window option in the context menu when long
+// pressing a link.
++ (id<GREYMatcher>)openLinkInNewWindowButton;
+
 // Matcher for the done button on the navigation bar.
 + (id<GREYMatcher>)navigationBarDoneButton;
 

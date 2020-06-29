@@ -247,10 +247,10 @@
 }
 
 - (void)presentPasswordSettings {
-  DCHECK(self.dispatcher);
+  DCHECK(self.handler);
   [self dismissInfobarModalAnimated:NO
                          completion:^{
-                           [self.dispatcher
+                           [self.handler
                                showSavedPasswordsSettingsFromViewController:
                                    self.baseViewController];
                          }];

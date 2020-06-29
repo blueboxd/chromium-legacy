@@ -752,7 +752,7 @@ StartupTabs StartupBrowserCreatorImpl::DetermineStartupTabs(
   // URLs passed on the command line supersede all others, except pinned tabs.
   AppendTabs(cmd_line_tabs, &tabs);
   if (cmd_line_tabs.empty()) {
-    // A Master Preferences file provided with this distribution may specify
+    // An initial preferences file provided with this distribution may specify
     // tabs to be displayed on first run, overriding all non-command-line tabs,
     // including the profile reset tab.
     StartupTabs distribution_tabs =

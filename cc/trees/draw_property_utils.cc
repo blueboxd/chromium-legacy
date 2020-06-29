@@ -939,8 +939,12 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
     bool skip_layer = !is_root && (skip_draw_properties_computation ||
                                    skip_for_invertibility);
 
-    layer->set_raster_even_if_not_drawn(skip_for_invertibility &&
-                                        !skip_draw_properties_computation);
+    // Raster layers that are animated but currently have a non-invertible
+    // matrix, or layers that have a will-change transform hint and might
+    // animate to not be backface visible soon.
+    layer->set_raster_even_if_not_drawn(
+        (skip_for_invertibility && !skip_draw_properties_computation) ||
+        layer->has_will_change_transform_hint());
     if (skip_layer)
       continue;
 

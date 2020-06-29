@@ -42,6 +42,7 @@ class AssistantHeaderViewBinder
         final ViewGroup mHeader;
         final TextView mStatusMessage;
         final AnimatedProgressBar mProgressBar;
+        final AssistantStepProgressBar mStepProgressBar;
         final View mProfileIconView;
         final PopupMenu mProfileIconMenu;
         @Nullable
@@ -55,6 +56,8 @@ class AssistantHeaderViewBinder
             mHeader = headerView;
             mStatusMessage = headerView.findViewById(R.id.status_message);
             mProgressBar = new AnimatedProgressBar(headerView.findViewById(R.id.progress_bar));
+            mStepProgressBar =
+                    new AssistantStepProgressBar(headerView.findViewById(R.id.step_progress_bar));
             mProfileIconView = headerView.findViewById(R.id.profile_image);
             mProfileIconMenu = new PopupMenu(context, mProfileIconView);
             mProfileIconMenu.inflate(R.menu.profile_icon_menu);
@@ -67,6 +70,16 @@ class AssistantHeaderViewBinder
             // {@link LogoView#setAnimationEnabled(boolean)} is private.
             mPoodle.getView().setVisibility(View.INVISIBLE);
         }
+
+        void updateProgressBarVisibility(boolean visible, boolean useStepProgressBar) {
+            if (visible && !useStepProgressBar) {
+                mProgressBar.show();
+            } else {
+                mProgressBar.hide();
+            }
+
+            mStepProgressBar.setVisible(visible && useStepProgressBar);
+        }
     }
 
     @Override
@@ -77,12 +90,18 @@ class AssistantHeaderViewBinder
             view.mStatusMessage.announceForAccessibility(view.mStatusMessage.getText());
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
-        } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey) {
-            if (model.get(AssistantHeaderModel.PROGRESS_VISIBLE)) {
-                view.mProgressBar.show();
-            } else {
-                view.mProgressBar.hide();
-            }
+        } else if (AssistantHeaderModel.PROGRESS_ACTIVE_STEP == propertyKey) {
+            view.mStepProgressBar.setActiveStep(
+                    model.get(AssistantHeaderModel.PROGRESS_ACTIVE_STEP));
+        } else if (AssistantHeaderModel.PROGRESS_BAR_ERROR == propertyKey) {
+            view.mStepProgressBar.setError(model.get(AssistantHeaderModel.PROGRESS_BAR_ERROR));
+        } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey
+                || AssistantHeaderModel.USE_STEP_PROGRESS_BAR == propertyKey) {
+            view.updateProgressBarVisibility(model.get(AssistantHeaderModel.PROGRESS_VISIBLE),
+                    model.get(AssistantHeaderModel.USE_STEP_PROGRESS_BAR));
+        } else if (AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS == propertyKey) {
+            view.mStepProgressBar.setSteps(model.get(AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS));
+            view.mStepProgressBar.setError(model.get(AssistantHeaderModel.PROGRESS_BAR_ERROR));
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {

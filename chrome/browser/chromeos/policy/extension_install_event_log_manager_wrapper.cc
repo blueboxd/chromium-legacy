@@ -24,6 +24,8 @@ ExtensionInstallEventLogManagerWrapper::
 // static
 ExtensionInstallEventLogManagerWrapper*
 ExtensionInstallEventLogManagerWrapper::CreateForProfile(Profile* profile) {
+  if (!profile->GetUserCloudPolicyManagerChromeOS())
+    return nullptr;
   ExtensionInstallEventLogManagerWrapper* wrapper =
       new ExtensionInstallEventLogManagerWrapper(profile);
   wrapper->Init();
@@ -34,7 +36,7 @@ ExtensionInstallEventLogManagerWrapper::CreateForProfile(Profile* profile) {
 void ExtensionInstallEventLogManagerWrapper::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kExtensionInstallEventLoggingEnabled,
-                                false);
+                                true);
 }
 
 void ExtensionInstallEventLogManagerWrapper::Observe(

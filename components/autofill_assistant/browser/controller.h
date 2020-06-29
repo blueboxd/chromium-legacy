@@ -119,7 +119,11 @@ class Controller : public ScriptExecutorDelegate,
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
+  void SetProgressActiveStep(int active_step) override;
   void SetProgressVisible(bool visible) override;
+  void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetViewportMode(ViewportMode mode) override;
@@ -162,7 +166,11 @@ class Controller : public ScriptExecutorDelegate,
   const Details* GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
+  base::Optional<int> GetProgressActiveStep() const override;
   bool GetProgressVisible() const override;
+  bool GetProgressBarErrorState() const override;
+  base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+  GetStepProgressBarConfiguration() const override;
   const std::vector<UserAction>& GetUserActions() const override;
   bool PerformUserActionWithContext(
       int index,
@@ -308,6 +316,8 @@ class Controller : public ScriptExecutorDelegate,
   // Clear out visible state and enter the stopped state.
   void EnterStoppedState();
 
+  void SetProgressBarErrorState(bool error);
+
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
   bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
@@ -370,9 +380,13 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current progress.
   int progress_ = 0;
+  base::Optional<int> progress_active_step_;
 
   // Current visibility of the progress bar. It is initially visible.
   bool progress_visible_ = true;
+  bool progress_bar_error_state_ = false;
+  base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+      step_progress_bar_configuration_;
 
   // Current set of user actions. May be null, but never empty.
   std::unique_ptr<std::vector<UserAction>> user_actions_;

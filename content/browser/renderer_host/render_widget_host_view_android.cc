@@ -260,7 +260,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
               .local_surface_id(),
-          GetCompositorViewportPixelSize());
+          GetCompositorViewportPixelSize(), UseOldContentForFallback());
     }
 
     // Let the page-level input event router know about our frame sink ID
@@ -349,7 +349,8 @@ bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
     delegated_frame_host_->EmbedSurface(
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id(),
-        GetCompositorViewportPixelSize(), deadline_policy);
+        GetCompositorViewportPixelSize(), deadline_policy,
+        UseOldContentForFallback());
   }
 
   return host()->SynchronizeVisualProperties();
@@ -489,9 +490,9 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   max_page_scale_ = metadata.max_page_scale_factor;
   current_surface_size_ = metadata.viewport_size_in_pixels;
 
-  // With SurfaceSync we no longer call EvictFrameIfNecessary on every metadata
-  // change. We must still call UpdateWebViewBackgroundColorIfNecessary to
-  // maintain the associated background color changes.
+  // With SurfaceSync we no longer call evict frame on every metadata change. We
+  // must still call UpdateWebViewBackgroundColorIfNecessary to maintain the
+  // associated background color changes.
   UpdateWebViewBackgroundColorIfNecessary();
 
   if (metadata.new_vertical_scroll_direction !=
@@ -1080,23 +1081,6 @@ bool RenderWidgetHostViewAndroid::ShouldRouteEvents() const {
          host()->delegate()->GetInputEventRouter();
 }
 
-void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
-  if (!host()->delegate()->IsFullscreenForCurrentTab() ||
-      current_surface_size_ == view_.GetPhysicalBackingSize()) {
-    return;
-  }
-  // When we're in a fullscreen and and doing a resize we show black
-  // instead of the incorrectly-sized frame. However when we are just
-  // adjusting the height we keep the frames because it is a less jarring
-  // experience for the user instead frames shown as black.
-  bool is_width_same =
-      current_surface_size_.width() == view_.GetPhysicalBackingSize().width();
-  if (!is_width_same) {
-    EvictDelegatedFrame();
-    SetContentBackgroundColor(SK_ColorBLACK);
-  }
-}
-
 void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
   // Android WebView had a bug the BG color was always set to black when
   // fullscreen (see https://crbug.com/961223#c5). As applications came to rely
@@ -1389,9 +1373,6 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     delegated_frame_host_->SetTopControlsVisibleHeight(
         metadata.top_controls_height * metadata.top_controls_shown_ratio);
   }
-  // We've just processed new RenderFrameMetadata and potentially embedded a
-  // new surface for that data. Check if we need to evict it.
-  EvictFrameIfNecessary();
 }
 
 void RenderWidgetHostViewAndroid::OnFinishGetContentBitmap(
@@ -1466,7 +1447,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     delegated_frame_host_->WasShown(
         local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
             .local_surface_id(),
-        GetCompositorViewportPixelSize());
+        GetCompositorViewportPixelSize(), UseOldContentForFallback());
   }
 
   if (view_.parent() && view_.GetWindowAndroid()) {
@@ -2025,14 +2006,6 @@ RenderWidgetHostViewAndroid::GetMouseWheelPhaseHandler() {
   return &mouse_wheel_phase_handler_;
 }
 
-void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
-  if (!delegated_frame_host_)
-    return;
-
-  delegated_frame_host_->EvictDelegatedFrame();
-  current_surface_size_.SetSize(0, 0);
-}
-
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
   return touch_selection_controller_client_manager_.get();
@@ -2089,7 +2062,6 @@ bool RenderWidgetHostViewAndroid::RequiresDoubleTapGestureEvents() const {
 }
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
-  EvictFrameIfNecessary();
   // We may need to update the background color to match pre-surface-sync
   // behavior of EvictFrameIfNecessary.
   UpdateWebViewBackgroundColorIfNecessary();
@@ -2165,10 +2137,6 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
   DCHECK(observing_root_window_);
   is_window_activity_started_ = true;
   ShowInternal();
-}
-
-void RenderWidgetHostViewAndroid::OnLostResources() {
-  EvictDelegatedFrame();
 }
 
 void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForStylus(
@@ -2416,6 +2384,12 @@ void RenderWidgetHostViewAndroid::SetWebContentsAccessibility(
 void RenderWidgetHostViewAndroid::SetNeedsBeginFrameForFlingProgress() {
   if (sync_compositor_)
     sync_compositor_->RequestOneBeginFrame();
+}
+
+bool RenderWidgetHostViewAndroid::UseOldContentForFallback() {
+  // When we're in a fullscreen and and doing a resize we show black instead of
+  // the incorrectly-sized frame.
+  return !host()->delegate()->IsFullscreenForCurrentTab();
 }
 
 }  // namespace content

@@ -174,10 +174,10 @@ void PrintPreviewMessageHandler::OnDidPrepareForDocumentToPdf(
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPreviewPage_Params& params,
+    const mojom::DidPreviewPageParams& params,
     const PrintHostMsg_PreviewIds& ids) {
   int page_number = params.page_number;
-  const mojom::DidPrintContentParams& content = params.content;
+  const mojom::DidPrintContentParams& content = *params.content;
   if (page_number < FIRST_PAGE_INDEX || !content.metafile_data_region.IsValid())
     return;
 

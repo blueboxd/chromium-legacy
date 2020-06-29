@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/thermal_resource.h"
+#include "third_party/blink/renderer/modules/peerconnection/thermal_uma_listener.h"
 #include "third_party/blink/renderer/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -289,6 +290,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
                            const String& error_text);
   void OnInterestingUsage(int usage_pattern);
 
+  // Protected for testing.
+  ThermalUmaListener* thermal_uma_listener() const;
+
  private:
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.
@@ -381,6 +385,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   std::unique_ptr<blink::RTCRtpTransceiverImpl> CreateOrUpdateTransceiver(
       blink::RtpTransceiverState transceiver_state,
       blink::TransceiverStateUpdateMode update_mode);
+  void MaybeCreateThermalUmaListner();
 
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.
@@ -461,6 +466,10 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // The Thermal Resource is lazily instantiated on platforms where thermal
   // signals are supported.
   scoped_refptr<ThermalResource> thermal_resource_ = nullptr;
+  // ThermalUmaListener is only tracked on peer connection that add a track.
+  std::unique_ptr<ThermalUmaListener> thermal_uma_listener_ = nullptr;
+  base::PowerObserver::DeviceThermalState last_thermal_state_ =
+      base::PowerObserver::DeviceThermalState::kUnknown;
 
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.  We only check

@@ -21,7 +21,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 const char RealtimeReportingJobConfiguration::kContextKey[] = "context";
-const char RealtimeReportingJobConfiguration::kEventListKey[] = "eventList";
+const char RealtimeReportingJobConfiguration::kEventListKey[] = "events";
 
 const char RealtimeReportingJobConfiguration::kBrowserIdKey[] =
     "browser.browserId";

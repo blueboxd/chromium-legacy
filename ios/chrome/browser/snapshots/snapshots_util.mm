@@ -31,7 +31,7 @@ const char* kOrientationDescriptions[] = {
 // Delete all files in |paths|.
 void DeleteAllFiles(std::vector<base::FilePath> paths) {
   for (const auto& path : paths) {
-    ignore_result(base::DeleteFile(path, false));
+    base::DeleteFile(path);
   }
 }
 }  // namespace

@@ -216,7 +216,7 @@ using signin_metrics::PromoAction;
 
 - (void)showSignIn {
   __weak __typeof(self) weakSelf = self;
-  DCHECK(self.dispatcher);
+  DCHECK(self.handler);
   signin_metrics::RecordSigninUserActionForAccessPoint(
       AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS,
       PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
@@ -228,8 +228,8 @@ using signin_metrics::PromoAction;
                callback:^(BOOL success) {
                  [weakSelf signinFinishedWithSuccess:success];
                }];
-  [self.dispatcher showSignin:command
-           baseViewController:self.googleServicesSettingsViewController];
+  [self.handler showSignin:command
+        baseViewController:self.googleServicesSettingsViewController];
 }
 
 - (void)signinFinishedWithSuccess:(BOOL)success {

@@ -431,8 +431,17 @@ void ScriptExecutor::SetProgress(int progress) {
   delegate_->SetProgress(progress);
 }
 
+void ScriptExecutor::SetProgressActiveStep(int active_step) {
+  delegate_->SetProgressActiveStep(active_step);
+}
+
 void ScriptExecutor::SetProgressVisible(bool visible) {
   delegate_->SetProgressVisible(visible);
+}
+
+void ScriptExecutor::SetStepProgressBarConfiguration(
+    const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
+  delegate_->SetStepProgressBarConfiguration(configuration);
 }
 
 void ScriptExecutor::GetFieldValue(

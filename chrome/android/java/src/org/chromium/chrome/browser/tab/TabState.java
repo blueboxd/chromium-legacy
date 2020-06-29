@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Color;
 
 import androidx.annotation.Nullable;
-
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.util.ColorUtils;
 
 /**
@@ -59,16 +57,13 @@ public class TabState {
      * Creates a historical tab from a tab being closed.
      */
     public static void createHistoricalTab(Tab tab) {
-        if (tab.isFrozen()) {
+        if (!tab.isFrozen()) {
+            WebContentsStateBridge.createHistoricalTabFromContents(tab.getWebContents());
+        } else {
             WebContentsState state = ((TabImpl) tab).getFrozenContentsState();
             if (state != null) {
-                WebContents webContents =
-                        WebContentsStateBridge.restoreContentsFromByteBuffer(state, true);
-                WebContentsStateBridge.createHistoricalTabFromContents(webContents);
-                webContents.destroy();
+                WebContentsStateBridge.createHistoricalTab(state);
             }
-        } else {
-            WebContentsStateBridge.createHistoricalTabFromContents(tab.getWebContents());
         }
     }
 }

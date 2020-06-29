@@ -16,7 +16,7 @@
 
 typedef std::vector<std::unique_ptr<media::KeySystemProperties>>
     KeySystemPropertiesVector;
-typedef base::Callback<void(KeySystemPropertiesVector*)>
+typedef base::RepeatingCallback<void(KeySystemPropertiesVector*)>
     KeySystemsProviderDelegate;
 
 class ChromeKeySystemsProvider {
@@ -34,8 +34,7 @@ class ChromeKeySystemsProvider {
 
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
-  void SetProviderDelegateForTesting(
-      const KeySystemsProviderDelegate& test_provider);
+  void SetProviderDelegateForTesting(KeySystemsProviderDelegate test_provider);
 
  private:
   // Whether AddSupportedKeySystems() has ever been called.

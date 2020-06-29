@@ -80,6 +80,11 @@ public class WebContentsStateBridge {
                 contentsState.buffer(), contentsState.version());
     }
 
+    public static void createHistoricalTab(WebContentsState contentsState) {
+        WebContentsStateBridgeJni.get().createHistoricalTab(
+                contentsState.buffer(), contentsState.version());
+    }
+
     public static void createHistoricalTabFromContents(WebContents webContents) {
         WebContentsStateBridgeJni.get().createHistoricalTabFromContents(webContents);
     }
@@ -94,6 +99,7 @@ public class WebContentsStateBridge {
                 int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
+        void createHistoricalTab(ByteBuffer state, int savedStateVersion);
         void createHistoricalTabFromContents(WebContents webContents);
     }
 }

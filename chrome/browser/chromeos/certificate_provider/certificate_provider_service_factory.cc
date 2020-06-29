@@ -192,7 +192,7 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 void DefaultDelegate::OnListenerRemoved(
     const extensions::EventListenerInfo& details) {
   if (!event_router_->ExtensionHasEventListener(
-          details.extension_id, api_cp::OnSignDigestRequested::kEventName))
+          details.extension_id, api_cp::OnCertificatesRequested::kEventName))
     service_->OnExtensionUnregistered(details.extension_id);
 }
 

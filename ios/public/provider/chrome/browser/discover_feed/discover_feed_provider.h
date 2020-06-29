@@ -25,7 +25,7 @@ class DiscoverFeedProvider {
   virtual bool IsDiscoverFeedEnabled();
   // Returns the Discover Feed ViewController.
   virtual UIViewController* NewFeedViewController(
-      id<ApplicationCommands> dispatcher) NS_RETURNS_RETAINED;
+      id<ApplicationCommands> handler) NS_RETURNS_RETAINED;
   // Refreshes the Discover Feed with completion.
   virtual void RefreshFeedWithCompletion(ProceduralBlock completion);
 };

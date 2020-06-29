@@ -1517,6 +1517,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnSecurityEventEnterpriseConnector,
           enterprise_connectors::kOnSecurityEventPref, chrome_schema));
+  handlers->AddHandler(
+      std::make_unique<
+          enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
+          key::kEnterpriseRealTimeUrlCheckMode,
+          prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode, chrome_schema));
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

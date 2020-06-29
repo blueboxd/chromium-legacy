@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -278,6 +279,8 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
   webrtc::PeerConnectionObserver* observer() {
     return native_peer_connection()->observer();
   }
+
+  bool HasThermalUmaListner() const { return thermal_uma_listener(); }
 };
 
 class RTCPeerConnectionHandlerTest : public ::testing::Test {
@@ -1329,6 +1332,15 @@ TEST_F(RTCPeerConnectionHandlerTest,
   EXPECT_EQ(2u, resource_listener.measurement_count());
   EXPECT_EQ(webrtc::ResourceUsageState::kUnderuse,
             resource_listener.latest_measurement());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest,
+       ThermalStateUmaListenerCreatedWhenVideoStreamAdded) {
+  base::HistogramTester histogram;
+  EXPECT_FALSE(pc_handler_->HasThermalUmaListner());
+  blink::WebMediaStream local_stream(CreateLocalMediaStream("local_stream"));
+  EXPECT_TRUE(AddStream(local_stream));
+  EXPECT_TRUE(pc_handler_->HasThermalUmaListner());
 }
 
 }  // namespace blink

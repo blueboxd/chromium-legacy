@@ -886,8 +886,8 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(const gfx::Size& size,
 }
 
 bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
-    std::unique_ptr<SkDeferredDisplayList> ddl,
-    std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
+    sk_sp<SkDeferredDisplayList> ddl,
+    sk_sp<SkDeferredDisplayList> overdraw_ddl,
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release,
@@ -941,7 +941,7 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     }
 
     // Draw will only fail if the SkSurface and SkDDL are incompatible.
-    bool draw_success = output_sk_surface()->draw(ddl.get());
+    bool draw_success = output_sk_surface()->draw(ddl);
     DCHECK(draw_success);
 
     destroy_after_swap_.emplace_back(std::move(ddl));
@@ -949,7 +949,7 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (overdraw_ddl) {
       sk_sp<SkSurface> overdraw_surface = SkSurface::MakeRenderTarget(
           gr_context(), overdraw_ddl->characterization(), SkBudgeted::kNo);
-      overdraw_surface->draw(overdraw_ddl.get());
+      overdraw_surface->draw(overdraw_ddl);
       destroy_after_swap_.emplace_back(std::move(overdraw_ddl));
 
       SkPaint paint;
@@ -1081,7 +1081,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     RenderPassId id,
-    std::unique_ptr<SkDeferredDisplayList> ddl,
+    sk_sp<SkDeferredDisplayList> ddl,
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release) {
@@ -1121,7 +1121,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
                                               begin_semaphores.data());
       DCHECK(result);
     }
-    offscreen.surface()->draw(ddl.get());
+    offscreen.surface()->draw(ddl);
     destroy_after_swap_.emplace_back(std::move(ddl));
 
     GrFlushInfo flush_info = {

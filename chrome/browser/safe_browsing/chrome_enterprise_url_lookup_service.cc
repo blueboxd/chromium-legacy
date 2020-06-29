@@ -38,7 +38,8 @@ void ChromeEnterpriseRealTimeUrlLookupService::StartLookup(
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-      GetDMToken().is_valid(), profile_->IsOffTheRecord());
+      profile_->GetPrefs(), GetDMToken().is_valid(),
+      profile_->IsOffTheRecord());
 }
 
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {

@@ -235,7 +235,7 @@ def UpdatePackage(package_name, host_os):
     try:
       GCLIENT_CONFIG = os.path.join(os.path.dirname(CHROMIUM_DIR), '.gclient')
       env = {}
-      execfile(GCLIENT_CONFIG, env, env)
+      exec (open(GCLIENT_CONFIG).read(), env, env)
       target_os = env.get('target_os', target_os)
     except:
       pass

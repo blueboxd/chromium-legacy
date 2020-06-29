@@ -3212,11 +3212,10 @@ void RTCPeerConnection::DidAddRemoteDataChannel(
 void RTCPeerConnection::DidNoteInterestingUsage(int usage_pattern) {
   if (!GetExecutionContext())
     return;
-  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
-  ukm::SourceId source_id = window->UkmSourceID();
+  ukm::SourceId source_id = GetExecutionContext()->UkmSourceID();
   ukm::builders::WebRTC_AddressHarvesting(source_id)
       .SetUsagePattern(usage_pattern)
-      .Record(window->UkmRecorder());
+      .Record(GetExecutionContext()->UkmRecorder());
 }
 
 void RTCPeerConnection::UnregisterPeerConnectionHandler() {

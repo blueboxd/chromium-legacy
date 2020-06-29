@@ -747,6 +747,9 @@
   <message name="IDS_SETTINGS_SWITCH_ASSIGNMENT_HEADING" desc="Heading for the settings section for Switch Access to assign switches to actions">
     Switch action assignment
   </message>
+  <message name="IDS_SETTINGS_SWITCH_ASSIGN_OPTION_PLACEHOLDER" desc="Placeholder for the options for switch assignment.">
+    Placeholder
+  </message>
   <message name="IDS_SETTINGS_SWITCH_ASSIGN_OPTION_NONE" desc="Label for the option to have no switch assigned to an action.">
     None
   </message>

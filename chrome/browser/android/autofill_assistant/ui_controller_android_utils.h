@@ -15,7 +15,6 @@
 #include "components/autofill_assistant/browser/view_layout.pb.h"
 
 namespace autofill_assistant {
-
 namespace ui_controller_android_utils {
 
 // Returns a 32-bit Integer representing |color_string| in Java, or null if
@@ -47,6 +46,13 @@ int GetPixelSizeOrDefault(
     const ClientDimensionProto& proto,
     int default_value);
 
+// Returns an instance of an |AssistantDrawable| or nullptr if it could not
+// be created.
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
+    JNIEnv* env,
+    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
+    const DrawableProto& proto);
+
 // Returns the java equivalent of |proto|.
 base::android::ScopedJavaLocalRef<jobject> ToJavaValue(JNIEnv* env,
                                                        const ValueProto& proto);
@@ -72,7 +78,6 @@ std::string SafeConvertJavaStringToNative(
     const base::android::JavaParamRef<jstring>& jstring);
 
 }  // namespace ui_controller_android_utils
-
 }  //  namespace autofill_assistant
 
 #endif  //  CHROME_BROWSER_ANDROID_AUTOFILL_ASSISTANT_UI_CONTROLLER_ANDROID_UTILS_H_

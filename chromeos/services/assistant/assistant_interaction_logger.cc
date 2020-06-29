@@ -76,7 +76,7 @@ void AssistantInteractionLogger::OnOpenUrlResponse(const GURL& url,
 bool AssistantInteractionLogger::OnOpenAppResponse(
     const AndroidAppInfo& app_info) {
   LOG_INTERACTION() << "with app '" << app_info.package_name << "'";
-  return true;
+  return false;
 }
 
 void AssistantInteractionLogger::OnSpeechRecognitionStarted() {

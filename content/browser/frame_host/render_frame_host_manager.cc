@@ -2393,6 +2393,24 @@ bool RenderFrameHostManager::InitRenderFrame(
     CHECK_NE(previous_sibling_routing_id, MSG_ROUTING_NONE);
   }
 
+  RenderFrameProxyHost* existing_proxy = GetRenderFrameProxyHost(site_instance);
+  if (existing_proxy && !existing_proxy->is_render_frame_proxy_live())
+    existing_proxy->InitRenderFrameProxy();
+
+  // Figure out the routing ID of the frame or proxy that this frame will
+  // replace. This will usually will be |existing_proxy|'s routing ID, but
+  // with RenderDocument it might also be a RenderFrameHost's routing ID.
+  int previous_routing_id =
+      GetReplacementRoutingId(existing_proxy, render_frame_host);
+
+  return delegate_->CreateRenderFrameForRenderManager(
+      render_frame_host, previous_routing_id, opener_frame_token,
+      parent_routing_id, previous_sibling_routing_id);
+}
+
+int RenderFrameHostManager::GetReplacementRoutingId(
+    RenderFrameProxyHost* existing_proxy,
+    RenderFrameHostImpl* render_frame_host) const {
   // Check whether there is an existing proxy for this frame in this
   // SiteInstance. If there is, the new RenderFrame needs to be able to find
   // the proxy it is replacing, so that it can fully initialize itself.
@@ -2400,23 +2418,39 @@ bool RenderFrameHostManager::InitRenderFrame(
   // SiteInstance as its RenderFrameHost. This is only the case until the
   // RenderFrameHost commits, at which point it will replace and delete the
   // RenderFrameProxyHost.
-  //
-  // RenderDocument: During a same-process RenderFrame swap, the
-  // |previous_routing_id| doesn't represent a proxy, but a frame.
-  int previous_routing_id = MSG_ROUTING_NONE;
-  RenderFrameProxyHost* existing_proxy = GetRenderFrameProxyHost(site_instance);
   if (existing_proxy) {
-    previous_routing_id = existing_proxy->GetRoutingID();
-    CHECK_NE(previous_routing_id, MSG_ROUTING_NONE);
-    if (!existing_proxy->is_render_frame_proxy_live())
-      existing_proxy->InitRenderFrameProxy();
-  } else if (CreateNewHostForSameSiteSubframe()) {
-    previous_routing_id = current_frame_host()->GetRoutingID();
+    // We are navigating cross-SiteInstance in a main frame or subframe.
+    int proxy_routing_id = existing_proxy->GetRoutingID();
+    CHECK_NE(proxy_routing_id, MSG_ROUTING_NONE);
+    return proxy_routing_id;
+  } else {
+    // No proxy means that this is a same-SiteInstance subframe navigation. A
+    // subframe navigation to a different SiteInstance would have had a proxy. A
+    // main frame navigation with no proxy would have its RenderFrame init
+    // handled by InitRenderView. This will change with RenderDocument for main
+    // frames.
+    DCHECK(frame_tree_node_->parent());
+    CHECK_EQ(render_frame_host->GetSiteInstance(),
+             current_frame_host()->GetSiteInstance());
+    if (current_frame_host()->IsRenderFrameLive()) {
+      // The new frame will replace an existing frame in the renderer. For now
+      // this can only be when RenderDocument-subframe is enabled.
+      DCHECK(CreateNewHostForSameSiteSubframe());
+      DCHECK_NE(render_frame_host, current_frame_host());
+      return current_frame_host()->GetRoutingID();
+    } else {
+      // The renderer crashed and there is no previous proxy or previous frame
+      // in the renderer to be replaced.
+      if (current_frame_host()->must_be_replaced()) {
+        DCHECK(CreateNewHostForCrashedFrame());
+        DCHECK_NE(render_frame_host, current_frame_host());
+      } else {
+        DCHECK(!CreateNewHostForCrashedFrame());
+        DCHECK_EQ(render_frame_host, current_frame_host());
+      }
+      return MSG_ROUTING_NONE;
+    }
   }
-
-  return delegate_->CreateRenderFrameForRenderManager(
-      render_frame_host, previous_routing_id, opener_frame_token,
-      parent_routing_id, previous_sibling_routing_id);
 }
 
 bool RenderFrameHostManager::ReinitializeRenderFrame(

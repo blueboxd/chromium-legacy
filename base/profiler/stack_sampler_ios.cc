@@ -14,6 +14,7 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
     std::vector<std::unique_ptr<Unwinder>> core_unwinders,
+    RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate) {
   return nullptr;
 }

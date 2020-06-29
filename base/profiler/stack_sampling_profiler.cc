@@ -734,11 +734,12 @@ StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
     std::vector<std::unique_ptr<Unwinder>> unwinders,
+    RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate)
     : StackSamplingProfiler(params, std::move(profile_builder), nullptr) {
-  sampler_ =
-      StackSampler::Create(thread_token, profile_builder_->GetModuleCache(),
-                           std::move(unwinders), test_delegate);
+  sampler_ = StackSampler::Create(
+      thread_token, profile_builder_->GetModuleCache(), std::move(unwinders),
+      std::move(record_sample_callback), test_delegate);
 }
 
 StackSamplingProfiler::StackSamplingProfiler(

@@ -3287,8 +3287,13 @@ static_library("browser") {
       "nearby_sharing/client/nearby_share_api_call_flow.h",
       "nearby_sharing/client/nearby_share_api_call_flow_impl.cc",
       "nearby_sharing/client/nearby_share_api_call_flow_impl.h",
+      "nearby_sharing/client/nearby_share_client.h",
+      "nearby_sharing/client/nearby_share_client_impl.cc",
+      "nearby_sharing/client/nearby_share_client_impl.h",
       "nearby_sharing/client/nearby_share_request_error.cc",
       "nearby_sharing/client/nearby_share_request_error.h",
+      "nearby_sharing/client/nearby_share_switches.cc",
+      "nearby_sharing/client/nearby_share_switches.h",
       "nearby_sharing/fast_initiation_manager.cc",
       "nearby_sharing/fast_initiation_manager.h",
       "nearby_sharing/file_attachment.cc",
@@ -4859,6 +4864,8 @@ static_library("browser") {
 
   if (enable_extensions) {
     sources += [
+      "accessibility/accessibility_extension_api.cc",
+      "accessibility/accessibility_extension_api.h",
       "accessibility/animation_policy_prefs.cc",
       "accessibility/animation_policy_prefs.h",
       "autocomplete/keyword_extensions_delegate_impl.cc",

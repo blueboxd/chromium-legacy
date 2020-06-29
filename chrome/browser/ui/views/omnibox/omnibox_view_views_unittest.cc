@@ -903,10 +903,18 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   // beginning of the RenderText.
   void SendMouseClick(int x_offset) {
     gfx::Point point = GetPointInTextAtXOffset(x_offset);
-    omnibox_textfield()->OnMousePressed(
-        CreateMouseEvent(ui::ET_MOUSE_PRESSED, point));
-    omnibox_textfield()->OnMouseReleased(
-        CreateMouseEvent(ui::ET_MOUSE_RELEASED, point));
+    SendMouseClickAtPoint(point, 1);
+  }
+
+  // Sends a mouse down and mouse up event at a point
+  // beginning of the RenderText.
+  void SendMouseClickAtPoint(gfx::Point point, int click_count) {
+    auto mouse_pressed = CreateMouseEvent(ui::ET_MOUSE_PRESSED, point);
+    mouse_pressed.SetClickCount(click_count);
+    omnibox_textfield()->OnMousePressed(mouse_pressed);
+    auto mouse_released = CreateMouseEvent(ui::ET_MOUSE_RELEASED, point);
+    mouse_released.SetClickCount(click_count);
+    omnibox_textfield()->OnMouseReleased(mouse_released);
   }
 
   // Used to access members that are marked private in views::TextField.
@@ -1074,10 +1082,39 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
   EXPECT_EQ(19U, end);
 }
 
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseSingleThenDoubleClick) {
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  auto point = GetPointInTextAtXOffset(4 * kCharacterWidth);
+  SendMouseClickAtPoint(point, 1);
+  EXPECT_TRUE(IsElidedUrlDisplayed());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"), omnibox_view()->GetText());
+
+  // Verify that the whole full URL is selected.
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+
+  // Advance the clock 5 seconds so the next click is not interpreted as a
+  // double click.
+  clock()->Advance(base::TimeDelta::FromSeconds(5));
+
+  // Double click
+  SendMouseClickAtPoint(point, 1);
+  ExpectFullUrlDisplayed();
+  SendMouseClickAtPoint(point, 2);
+  ExpectFullUrlDisplayed();
+
+  // Verify that the selection is https://www.|example|.com, since the
+  // double-click after the fourth character of the unelided text "example.com".
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(19U, end);
+}
+
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
-  SendMouseClick(4 * kCharacterWidth);
-  SendMouseClick(4 * kCharacterWidth);
-  SendMouseClick(4 * kCharacterWidth);
+  auto point = GetPointInTextAtXOffset(4 * kCharacterWidth);
+  SendMouseClickAtPoint(point, 1);
+  SendMouseClickAtPoint(point, 2);
+  SendMouseClickAtPoint(point, 3);
 
   ExpectFullUrlDisplayed();
 

@@ -1631,13 +1631,12 @@ void XRSession::OnFrame(
 }
 
 void XRSession::LogGetPose() const {
-  LocalDOMWindow* window = To<LocalDOMWindow>(GetExecutionContext());
-  if (!did_log_getViewerPose_ && window) {
+  if (!did_log_getViewerPose_ && GetExecutionContext()) {
     did_log_getViewerPose_ = true;
 
     ukm::builders::XR_WebXR(xr_->GetSourceId())
         .SetDidRequestPose(1)
-        .Record(window->UkmRecorder());
+        .Record(GetExecutionContext()->UkmRecorder());
   }
 }
 

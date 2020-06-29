@@ -125,6 +125,10 @@ id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
 // a link.
 id<GREYMatcher> OpenLinkInNewTabButton();
 
+// Matcher for the Open in New Window option in the context menu when long
+// pressing a link.
+id<GREYMatcher> OpenLinkInNewWindowButton();
+
 // Matcher for the done button on the navigation bar.
 id<GREYMatcher> NavigationBarDoneButton();
 

@@ -82,7 +82,7 @@ struct ClientSettings {
   base::Optional<OverlayImageProto> overlay_image;
 
   // Optional settings intended for integration tests.
-  base::Optional<ClientSettingsProto_IntegrationTestSettings>
+  base::Optional<ClientSettingsProto::IntegrationTestSettings>
       integration_test_settings;
 
   void UpdateFromProto(const ClientSettingsProto& proto);

@@ -300,8 +300,10 @@ INSTANTIATE_TEST_SUITE_P(ExecutingAllOperations,
 // only when permitted by the origin trials framework (either because
 // configuration specifies that no origin trial token is required, or because an
 // origin trial token is present in the executing context).
+//
+// Failing on all bots, https://crbug.com/1100405
 IN_PROC_BROWSER_TEST_P(TrustTokenOriginTrialBrowsertest,
-                       ProvidesParamsOnlyWhenAllowed) {
+                       DISABLED_ProvidesParamsOnlyWhenAllowed) {
   TestDescription test_description = std::get<1>(GetParam());
 
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(

@@ -51,4 +51,14 @@
       android:layout_height="2dp"
       android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
       android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"/>
+  <LinearLayout
+      android:id="@+id/step_progress_bar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:gravity="center"
+      android:animateLayoutChanges="true"
+      android:layout_marginStart="@dimen/autofill_assistant_bottombar_horizontal_spacing"
+      android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
+      android:visibility="gone"/>
 </LinearLayout>

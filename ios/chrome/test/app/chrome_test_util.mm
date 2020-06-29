@@ -21,6 +21,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -89,6 +91,13 @@ SceneState* GetForegroundActiveScene() {
 SceneController* GetForegroundActiveSceneController() {
   return MainApplicationDelegate.sharedAppState.foregroundActiveScene
       .controller;
+}
+
+NSUInteger RegularBrowserCount() {
+  return static_cast<NSUInteger>(
+      BrowserListFactory::GetForBrowserState(GetOriginalBrowserState())
+          ->AllRegularBrowsers()
+          .size());
 }
 
 ChromeBrowserState* GetOriginalBrowserState() {

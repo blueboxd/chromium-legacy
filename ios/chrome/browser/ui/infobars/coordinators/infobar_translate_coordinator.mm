@@ -585,7 +585,7 @@ NSString* const kTranslateNotificationSnackbarCategory =
   message.category = kTranslateNotificationSnackbarCategory;
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   id<SnackbarCommands> snackbarDispatcher =
-      static_cast<id<SnackbarCommands>>(self.dispatcher);
+      static_cast<id<SnackbarCommands>>(self.handler);
   [snackbarDispatcher showSnackbarMessage:message];
 }
 

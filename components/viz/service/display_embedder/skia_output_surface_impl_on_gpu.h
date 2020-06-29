@@ -31,11 +31,10 @@
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
+#include "third_party/skia/include/core/SkDeferredDisplayList.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
-
-class SkDeferredDisplayList;
 
 namespace gfx {
 class ColorSpace;
@@ -122,14 +121,13 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                gfx::BufferFormat format,
                bool use_stencil,
                gfx::OverlayTransform transform);
-  bool FinishPaintCurrentFrame(
-      std::unique_ptr<SkDeferredDisplayList> ddl,
-      std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
-      std::vector<ImageContextImpl*> image_contexts,
-      std::vector<gpu::SyncToken> sync_tokens,
-      uint64_t sync_fence_release,
-      base::OnceClosure on_finished,
-      base::Optional<gfx::Rect> draw_rectangle);
+  bool FinishPaintCurrentFrame(sk_sp<SkDeferredDisplayList> ddl,
+                               sk_sp<SkDeferredDisplayList> overdraw_ddl,
+                               std::vector<ImageContextImpl*> image_contexts,
+                               std::vector<gpu::SyncToken> sync_tokens,
+                               uint64_t sync_fence_release,
+                               base::OnceClosure on_finished,
+                               base::Optional<gfx::Rect> draw_rectangle);
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
@@ -143,7 +141,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,
-                             std::unique_ptr<SkDeferredDisplayList> ddl,
+                             sk_sp<SkDeferredDisplayList> ddl,
                              std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
                              uint64_t sync_fence_release);
@@ -350,7 +348,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   bool supports_alpha_ = false;
 
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
-  std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
+  std::vector<sk_sp<SkDeferredDisplayList>> destroy_after_swap_;
 
   const gpu::ContextUrl copier_active_url_;
 

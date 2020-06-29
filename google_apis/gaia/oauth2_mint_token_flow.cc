@@ -282,12 +282,11 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
       RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentSuccess);
       ReportRemoteConsentSuccess(resolution_data);
     } else {
-      // Fallback to the issue advice flow.
-      // TODO(https://crbug.com/1026237): Remove the fallback after making sure
-      // that the new flow works correctly.
-      RecordApiCallResult(OAuth2MintTokenApiCallResult::kRemoteConsentFallback);
-      IssueAdviceInfo empty_issue_advice;
-      ReportIssueAdviceSuccess(empty_issue_advice);
+      RecordApiCallResult(
+          OAuth2MintTokenApiCallResult::kParseRemoteConsentFailure);
+      ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
+          "Not able to parse the contents of remote consent from a service "
+          "response."));
     }
     return;
   }

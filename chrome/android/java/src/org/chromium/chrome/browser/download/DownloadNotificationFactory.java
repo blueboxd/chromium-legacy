@@ -30,8 +30,6 @@ import android.text.TextUtils;
 
 import androidx.core.app.NotificationCompat;
 
-import com.google.ipc.invalidation.util.Preconditions;
-
 import org.chromium.base.ContentUriUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -61,6 +59,18 @@ public final class DownloadNotificationFactory {
     // Limit the origin length so that the eTLD+1 cannot be hidden. If the origin exceeds this
     // length the eTLD+1 is extracted and shown.
     public static final int MAX_ORIGIN_LENGTH = 40;
+
+    private static <T> void checkNotNull(T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
+    }
+
+    private static void checkArgument(boolean expression) {
+        if (!expression) {
+            throw new IllegalArgumentException();
+        }
+    }
 
     /**
      * Builds a downloads notification based on the status of the download and its information. All
@@ -118,9 +128,9 @@ public final class DownloadNotificationFactory {
 
         switch (downloadStatus) {
             case DownloadNotificationService.DownloadStatus.IN_PROGRESS:
-                Preconditions.checkNotNull(downloadUpdate.getProgress());
-                Preconditions.checkNotNull(downloadUpdate.getContentId());
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkNotNull(downloadUpdate.getProgress());
+                checkNotNull(downloadUpdate.getContentId());
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 if (downloadUpdate.getIsDownloadPending()) {
                     contentText =
@@ -199,8 +209,8 @@ public final class DownloadNotificationFactory {
 
                 break;
             case DownloadNotificationService.DownloadStatus.PAUSED:
-                Preconditions.checkNotNull(downloadUpdate.getContentId());
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkNotNull(downloadUpdate.getContentId());
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 contentText =
                         context.getResources().getString(R.string.download_notification_paused);
@@ -238,7 +248,7 @@ public final class DownloadNotificationFactory {
 
                 break;
             case DownloadNotificationService.DownloadStatus.COMPLETED:
-                Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
+                checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 // Don't show file size in incognito mode.
                 if (downloadUpdate.getTotalBytes() > 0 && !downloadUpdate.getIsOffTheRecord()) {
@@ -258,8 +268,8 @@ public final class DownloadNotificationFactory {
                     if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())
                             && !ChromeFeatureList.isEnabled(
                                     ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-                        Preconditions.checkNotNull(downloadUpdate.getContentId());
-                        Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1
+                        checkNotNull(downloadUpdate.getContentId());
+                        checkArgument(downloadUpdate.getSystemDownloadId() != -1
                                 || ContentUriUtils.isContentUri(downloadUpdate.getFilePath()));
 
                         intent = new Intent(ACTION_NOTIFICATION_CLICKED);

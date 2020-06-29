@@ -859,19 +859,15 @@ TEST_P(SharedImageBackingFactoryGLTextureWithGMBTest,
                                       memory_type_tracker_.get());
   scoped_refptr<gl::GLImage> image = GetImageFromMailbox(mailbox);
   ASSERT_EQ(image->GetType(), gl::GLImage::Type::NONE);
-
-  // The GLImage is initialized as unbound.
   auto* stub_image = static_cast<StubImage*>(image.get());
-  EXPECT_FALSE(stub_image->bound());
-
-  // Doing an update will not bind the GLImage to the texture.
+  EXPECT_TRUE(stub_image->bound());
   int update_counter = stub_image->update_counter();
   ref->Update(nullptr);
   EXPECT_EQ(stub_image->update_counter(), update_counter);
-  EXPECT_FALSE(stub_image->bound());
+  EXPECT_TRUE(stub_image->bound());
 
-  // Creating a representation uses GL will trigger binding the GLImage to a
-  // texture.
+  // TODO(https://crbug.com/1092155): When we lazily bind the GLImage, this
+  // will be needed to trigger binding the GLImage.
   {
     auto skia_representation =
         shared_image_representation_factory_->ProduceSkia(mailbox,

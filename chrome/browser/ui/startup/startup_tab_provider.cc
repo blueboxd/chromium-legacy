@@ -90,7 +90,7 @@ StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
     StartupBrowserCreator* browser_creator) const {
   if (!browser_creator)
     return StartupTabs();
-  StartupTabs tabs = GetMasterPrefsTabsForState(
+  StartupTabs tabs = GetInitialPrefsTabsForState(
       first_run::IsChromeFirstRun(), browser_creator->first_run_tabs_);
   browser_creator->first_run_tabs_.clear();
   return tabs;
@@ -167,10 +167,10 @@ StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
 }
 
 // static
-StartupTabs StartupTabProviderImpl::GetMasterPrefsTabsForState(
+StartupTabs StartupTabProviderImpl::GetInitialPrefsTabsForState(
     bool is_first_run,
     const std::vector<GURL>& first_run_tabs) {
-  // Constants: Magic words used by Master Preferences files in place of a URL
+  // Constants: Magic words used by initial preferences files in place of a URL
   // host to indicate that internal pages should appear on first run.
   static constexpr char kNewTabUrlHost[] = "new_tab_page";
   static constexpr char kWelcomePageUrlHost[] = "welcome_page";

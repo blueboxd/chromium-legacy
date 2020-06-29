@@ -11,6 +11,8 @@ static_library("common") {
     "cloud_print_cdd_conversion.h",
     "print_messages.cc",
     "print_messages.h",
+    "printing_param_traits.cc",
+    "printing_param_traits.h",
     "printing_param_traits_macros.h",
   ]
 

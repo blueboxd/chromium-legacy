@@ -4684,9 +4684,6 @@ cr.define('login', function() {
       }
 
       this.handleAfterPodPlacement_();
-      // This is a hack for https://crbug.com/875128.
-      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
-        document.documentElement.removeAttribute('full-screen-dialog');
     },
 
     /**

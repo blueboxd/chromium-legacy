@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -32,12 +33,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface HandoffTableViewController () {
+@interface HandoffTableViewController () <BooleanObserver> {
   // Pref for whether Handoff is enabled.
-  BooleanPrefMember _handoffEnabled;
-}
+  PrefBackedBoolean* _handoffEnabled;
 
-- (void)switchChanged:(UISwitch*)switchView;
+  // Item for displaying handoff switch.
+  SettingsSwitchItem* _handoffSwitchItem;
+}
 
 @end
 
@@ -53,8 +55,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self = [super initWithStyle:style];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_OPTIONS_CONTINUITY_LABEL);
-    _handoffEnabled.Init(prefs::kIosHandoffToOtherDevices,
-                         browserState->GetPrefs());
+    _handoffEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:browserState->GetPrefs()
+                   prefName:prefs::kIosHandoffToOtherDevices];
+    [_handoffEnabled setObserver:self];
   }
   return self;
 }
@@ -75,12 +79,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSwitch];
-  SettingsSwitchItem* switchItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitch];
-  switchItem.text =
+  _handoffSwitchItem = [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitch];
+  _handoffSwitchItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES);
-  switchItem.on = _handoffEnabled.GetValue();
-  [model addItem:switchItem toSectionWithIdentifier:SectionIdentifierSwitch];
+  _handoffSwitchItem.on = _handoffEnabled.value;
+  [model addItem:_handoffSwitchItem
+      toSectionWithIdentifier:SectionIdentifierSwitch];
 
   TableViewLinkHeaderFooterItem* footer =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
@@ -112,7 +116,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Private
 
 - (void)switchChanged:(UISwitch*)switchView {
-  _handoffEnabled.SetValue(switchView.isOn);
+  _handoffEnabled.value = switchView.isOn;
+}
+
+#pragma mark - BooleanObserver
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  // Update the cell.
+  _handoffSwitchItem.on = _handoffEnabled.value;
+  [self reconfigureCellsForItems:@[ _handoffSwitchItem ]];
 }
 
 @end

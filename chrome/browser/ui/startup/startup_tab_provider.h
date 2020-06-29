@@ -25,7 +25,7 @@ class StartupTabProvider {
   // shown according to onboarding/first run policy.
   virtual StartupTabs GetOnboardingTabs(Profile* profile) const = 0;
 
-  // Gathers URLs from a Master Preferences file indicating first run logic
+  // Gathers URLs from a initial preferences file indicating first run logic
   // specific to this distribution. Transforms any such URLs per policy and
   // returns them. Also clears the value of first_run_urls_ in the provided
   // BrowserCreator.
@@ -99,9 +99,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
   static StartupTabs GetStandardOnboardingTabsForState(
       const StandardOnboardingTabsParams& params);
 
-  // Processes first run URLs specified in Master Preferences file, replacing
+  // Processes first run URLs specified in initial preferences file, replacing
   // any "magic word" URL hosts with appropriate URLs.
-  static StartupTabs GetMasterPrefsTabsForState(
+  static StartupTabs GetInitialPrefsTabsForState(
       bool is_first_run,
       const std::vector<GURL>& first_run_tabs);
 

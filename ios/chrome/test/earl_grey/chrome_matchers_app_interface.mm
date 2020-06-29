@@ -381,6 +381,11 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)];
 }
 
++ (id<GREYMatcher>)openLinkInNewWindowButton {
+  return [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)];
+}
+
 + (id<GREYMatcher>)navigationBarDoneButton {
   return grey_allOf(
       [ChromeMatchersAppInterface

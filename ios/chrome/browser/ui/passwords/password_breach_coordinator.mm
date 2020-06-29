@@ -66,12 +66,12 @@
   if (@available(iOS 13, *)) {
     self.viewController.modalInPresentation = YES;
   }
-  id<ApplicationCommands> dispatcher = HandlerForProtocol(
+  id<ApplicationCommands> handler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   self.mediator =
       [[PasswordBreachMediator alloc] initWithConsumer:self.viewController
                                              presenter:self
-                                            dispatcher:dispatcher
+                                               handler:handler
                                                    URL:URL
                                               leakType:leakType];
   self.viewController.actionHandler = self.mediator;

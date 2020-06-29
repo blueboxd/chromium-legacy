@@ -38,8 +38,9 @@ class TabGroupViews {
   // This currently includes both the underline and highlight.
   void UpdateBounds();
 
-  // Updates the visuals of each view in preparation for repainting.
-  void UpdateVisuals();
+  // Updates the group title and color and ensures that all elements that might
+  // need repainting are repainted.
+  void OnGroupVisualsChanged();
 
   // Returns the bounds of the entire group, including the header and all tabs.
   gfx::Rect GetBounds() const;

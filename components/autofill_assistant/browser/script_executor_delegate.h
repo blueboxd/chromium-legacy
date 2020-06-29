@@ -79,7 +79,11 @@ class ScriptExecutorDelegate {
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
   virtual void SetProgress(int progress) = 0;
+  virtual void SetProgressActiveStep(int active_step) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
+  virtual void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration&
+          configuration) = 0;
   virtual void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_action) = 0;
   virtual ViewportMode GetViewportMode() = 0;

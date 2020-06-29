@@ -30,13 +30,13 @@ class BLINK_COMMON_EXPORT
       const blink::ParsedFeaturePolicyDeclaration& policy) {
     return policy.allowed_origins;
   }
-  static bool fallback_value(
+  static bool matches_all_origins(
       const blink::ParsedFeaturePolicyDeclaration& policy) {
-    return policy.fallback_value;
+    return policy.matches_all_origins;
   }
-  static bool opaque_value(
+  static bool matches_opaque_src(
       const blink::ParsedFeaturePolicyDeclaration& policy) {
-    return policy.opaque_value;
+    return policy.matches_opaque_src;
   }
 
   static bool Read(blink::mojom::ParsedFeaturePolicyDeclarationDataView in,

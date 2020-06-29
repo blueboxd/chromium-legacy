@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":externs",
     ":manage_a11y_page",
     ":os_a11y_page",
+    ":switch_access_constants",
     ":switch_access_subpage",
     ":tts_subpage",
     "../../a11y_page:captions_subpage",
@@ -38,8 +39,12 @@ js_library("manage_a11y_page") {
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
+js_library("switch_access_constants") {
+}
+
 js_library("switch_access_subpage") {
   deps = [
+    ":switch_access_constants",
     "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",

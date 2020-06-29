@@ -72,7 +72,7 @@ class StartupBrowserCreatorImpl {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_Crash);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
-                           DetermineStartupTabs_MasterPrefs);
+                           DetermineStartupTabs_InitialPrefs);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_CommandLine);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,

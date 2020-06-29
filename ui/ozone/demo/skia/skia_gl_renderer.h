@@ -51,7 +51,7 @@ class SkiaGlRenderer : public RendererBase,
   void Draw(SkCanvas* canvas, float fraction);
   void StartDDLRenderThreadIfNecessary(SkSurface* sk_surface);
   void StopDDLRenderThread();
-  std::unique_ptr<SkDeferredDisplayList> GetDDL();
+  sk_sp<SkDeferredDisplayList> GetDDL();
 
   std::unique_ptr<PlatformWindowSurface> window_surface_;
 
@@ -80,7 +80,7 @@ class SkiaGlRenderer : public RendererBase,
   base::ConditionVariable condition_variable_;
 
   SkSurfaceCharacterization surface_charaterization_;
-  base::queue<std::unique_ptr<SkDeferredDisplayList>> ddls_;
+  base::queue<sk_sp<SkDeferredDisplayList>> ddls_;
 
   base::WeakPtrFactory<SkiaGlRenderer> weak_ptr_factory_{this};
 

@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
@@ -86,6 +88,27 @@ class SafetyCheckHandler
     // New enum values must go above here.
     kMaxValue = kBlocklistedReenabledAllByAdmin,
   };
+  enum class ChromeCleanerStatus {
+    kChecking = 0,
+    kInitial = 1,
+    kReporterFoundNothing = 2,
+    kReporterFailed = 3,
+    kScanningFoundNothing = 4,
+    kScanningFailed = 5,
+    kConnectionLost = 6,
+    kUserDeclinedCleanup = 7,
+    kCleaningFailed = 8,
+    kCleaningSucceeded = 9,
+    kCleanerDownloadFailed = 10,
+    kReporterRunning = 11,
+    kScanning = 12,
+    kInfected = 13,
+    kCleaning = 14,
+    kRebootRequired = 15,
+    kDisabledByAdmin = 16,
+    // New enum values must go above here.
+    kMaxValue = kDisabledByAdmin,
+  };
 
   SafetyCheckHandler();
   ~SafetyCheckHandler() override;
@@ -150,6 +173,11 @@ class SafetyCheckHandler
   // that case, if any of those were re-enabled.
   void CheckExtensions();
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Checks for unwanted software via the Chrome Cleanup Tool. Only on Windows.
+  void CheckChromeCleaner();
+#endif
+
   // Callbacks that get triggered when each check completes.
   void OnUpdateCheckResult(UpdateStatus status);
   void OnPasswordsCheckResult(PasswordsStatus status,
@@ -160,6 +188,9 @@ class SafetyCheckHandler
                                Blocklisted blocklisted,
                                ReenabledUser reenabled_user,
                                ReenabledAdmin reenabled_admin);
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  void OnChromeCleanerCheckResult(ChromeCleanerStatus status);
+#endif
 
   // Methods for building user-visible strings based on the safety check
   // state.
@@ -174,6 +205,9 @@ class SafetyCheckHandler
                                         Blocklisted blocklisted,
                                         ReenabledUser reenabled_user,
                                         ReenabledAdmin reenabled_admin);
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::string16 GetStringForChromeCleaner(ChromeCleanerStatus status);
+#endif
 
   // A generic error state often includes the offline state. This method is used
   // as a callback for |UpdateCheckHelper| to check connectivity.
@@ -229,6 +263,7 @@ class SafetyCheckHandler
   PasswordsStatus passwords_status_ = PasswordsStatus::kChecking;
   SafeBrowsingStatus safe_browsing_status_ = SafeBrowsingStatus::kChecking;
   ExtensionsStatus extensions_status_ = ExtensionsStatus::kChecking;
+  ChromeCleanerStatus chrome_cleaner_status_ = ChromeCleanerStatus::kChecking;
 
   // System time when safety check completed.
   base::Time safety_check_completion_time_;

@@ -6,9 +6,18 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "content/public/browser/navigation_handle.h"
+#include "net/http/http_status_code.h"
 #include "url/origin.h"
 
 namespace signin {
+
+namespace {
+
+bool IsExpectedResponseCode(int response_code) {
+  return response_code == net::HTTP_OK || response_code == net::HTTP_NO_CONTENT;
+}
+
+}  // namespace
 
 // static
 void ReauthTabHelper::CreateForWebContents(content::WebContents* web_contents,
@@ -63,12 +72,16 @@ void ReauthTabHelper::DidFinishNavigation(
   replacements.ClearQuery();
   GURL url_without_query =
       navigation_handle->GetURL().ReplaceComponents(replacements);
-  if (url_without_query == reauth_url_) {
-    // TODO(https://crbug.com/1045515): check for the HTTP_OK response code once
-    // Gaia implements a landing page.
-    CompleteReauth(signin::ReauthResult::kSuccess);
+  if (url_without_query != reauth_url_)
     return;
+
+  if (!navigation_handle->GetResponseHeaders() ||
+      !IsExpectedResponseCode(
+          navigation_handle->GetResponseHeaders()->response_code())) {
+    CompleteReauth(signin::ReauthResult::kUnexpectedResponse);
   }
+
+  CompleteReauth(signin::ReauthResult::kSuccess);
 }
 
 void ReauthTabHelper::WebContentsDestroyed() {

@@ -9,7 +9,8 @@
     {
       "name": "LayoutNGBlockFlow DIV class='accelerated-stacking-context'",
       "bounds": [784, 90],
-      "drawsContent": false,
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF",
       "transform": 1
     },
     {

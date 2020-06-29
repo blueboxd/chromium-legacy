@@ -10646,9 +10646,9 @@ bool GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
                                                     GLuint texture_unit) {
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
-    Texture::ImageState old_image_state;
-    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &old_image_state);
-    if (image && old_image_state == Texture::UNBOUND) {
+    Texture::ImageState image_state;
+    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
+    if (image && image_state == Texture::UNBOUND) {
       ScopedGLErrorSuppressor suppressor(
           "GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded", error_state_.get());
       if (texture_unit)
@@ -10657,7 +10657,7 @@ bool GLES2DecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
       if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
         bool rv = image->BindTexImage(textarget);
         DCHECK(rv) << "BindTexImage() failed";
-        texture->SetLevelImageState(textarget, 0, Texture::BOUND);
+        image_state = Texture::BOUND;
       } else {
         DoCopyTexImage(texture, textarget, image);
       }

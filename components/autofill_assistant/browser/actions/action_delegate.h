@@ -313,8 +313,16 @@ class ActionDelegate {
   // Show the progress bar and set it at |progress|%.
   virtual void SetProgress(int progress) = 0;
 
+  // Show the progress bar and set the |active_step| to active.
+  virtual void SetProgressActiveStep(int active_step) = 0;
+
   // Shows the progress bar when |visible| is true. Hides it when false.
   virtual void SetProgressVisible(bool visible) = 0;
+
+  // Sets a new step progress bar configuration.
+  virtual void SetStepProgressBarConfiguration(
+      const ShowProgressBarProto::StepProgressBarConfiguration&
+          configuration) = 0;
 
   // Set the viewport mode.
   virtual void SetViewportMode(ViewportMode mode) = 0;

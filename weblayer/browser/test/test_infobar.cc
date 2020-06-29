@@ -7,7 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "weblayer/browser/android/resource_mapper.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/java/test_jni/TestInfoBar_jni.h"
 
@@ -28,7 +30,8 @@ class TestInfoBarDelegate : public infobars::InfoBarDelegate {
 };
 
 TestInfoBar::TestInfoBar(std::unique_ptr<TestInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(std::move(delegate),
+                     base::BindRepeating(&MapToJavaDrawableId)) {}
 
 TestInfoBar::~TestInfoBar() {}
 

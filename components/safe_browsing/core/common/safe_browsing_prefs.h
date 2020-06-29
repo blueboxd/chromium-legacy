@@ -25,6 +25,11 @@ extern const char kSafeBrowsingEnabled[];
 // Boolean that is true when Safe Browsing Enhanced Protection is enabled.
 extern const char kSafeBrowsingEnhanced[];
 
+// Integer indicating the state of real time URL check. This is managed
+// by enterprise policy and has no effect on users who are not managed by
+// enterprise policy.
+extern const char kSafeBrowsingEnterpriseRealTimeUrlCheckMode[];
+
 // Boolean that tells us whether users are given the option to opt in to Safe
 // Browsing extended reporting. This is exposed as a preference that can be
 // overridden by enterprise policy.
@@ -243,6 +248,11 @@ enum SafeBrowsingState {
   STANDARD_PROTECTION = 1,
   // The user selected enhanced protection.
   ENHANCED_PROTECTION = 2,
+};
+
+enum EnterpriseRealTimeUrlCheckMode {
+  REAL_TIME_CHECK_DISABLED = 0,
+  REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED = 1,
 };
 
 SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs);

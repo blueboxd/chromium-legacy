@@ -27,7 +27,10 @@ enum class ReauthResult {
   // A caller canceled the reauth flow.
   kCancelled = 4,
 
-  kMaxValue = kCancelled,
+  // An unexpected response was received from Gaia.
+  kUnexpectedResponse = 5,
+
+  kMaxValue = kUnexpectedResponse,
 };
 
 }  // namespace signin

@@ -1144,13 +1144,41 @@ message ShowProgressBarProto {
   // Message to show on the progress bar while loading.
   optional string message = 3;
 
-  // Value between 0 and 100 indicating the current progress. Values above 100
-  // will be capped to 100, values below 0 will be capped to 0 by the client.
-  // NOTE: Setting |progress| to 100 is an equivalent of setting |done| to true.
-  optional int32 progress = 6;
+  oneof progress_indicator {
+    // Value between 0 and 100 indicating the current progress. Values above 100
+    // will be capped to 100, values below 0 will be capped to 0 by the client.
+    int32 progress = 6;
+
+    // Value between 0 and |N - 1| (where N is the size of the initial
+    // |step_icons|) indicating the current state the flow is in,
+    // marking all previous steps as active. Setting the value to 0 will mark
+    // only the first step as active, up to |N - 1|, which marks everything up
+    // to the final step as active.
+    // If this is used over |progress| the step progress bar will be used.
+    int32 active_step = 8;
+  }
 
   // Hide the progress bar in the UI.
   optional bool hide = 7;
+
+  // The configuration of the step progress bar. Only has an impact if the new
+  // progress bar is being used. This configuration should only be sent once in
+  // the initial call of the progress bar, as each appearance may cause the
+  // progress bar being rerendered. The previous configuration will be carried
+  // over in each new progress |ShowProgressBarAction|.
+  message StepProgressBarConfiguration {
+    // This boolean should always be true, unless you wish to switch to the
+    // old progress bar during the flow. This is not recommended!
+    optional bool use_step_progress_bar = 1;
+
+    // Set the icons for the new progress bar. The size of the |step_icons|
+    // gives the length of the progress bar. As such an empty list is not
+    // supported. The list needs to be at least 2 items long.
+    repeated DrawableProto step_icons = 2;
+  }
+  optional StepProgressBarConfiguration step_progress_bar_configuration = 9;
+
+  reserved 1, 2, 4, 5;
 }
 
 // Contain all arguments to perform a highlight element action.

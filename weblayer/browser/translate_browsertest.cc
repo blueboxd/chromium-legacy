@@ -22,9 +22,9 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "components/infobars/android/infobar_android.h"  // nogncheck
 #include "components/infobars/core/infobar_manager.h"  // nogncheck
 #include "components/translate/core/browser/translate_download_manager.h"
-#include "weblayer/browser/infobar_android.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/translate_compact_infobar.h"
 #endif

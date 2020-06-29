@@ -100,8 +100,8 @@ enum class InfobarBannerPresentationState;
 // baseViewController will be set on init.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// The commands handler for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 
 // The InfobarContainer for this InfobarCoordinator.
 @property(nonatomic, weak) id<InfobarContainer> infobarContainer;

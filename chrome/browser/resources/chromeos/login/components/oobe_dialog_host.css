@@ -9,18 +9,13 @@
 
 :host {
   background-color: white;
-  border-radius: unset;
+  border-radius: 4px;
   box-shadow: unset;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   position: relative;
   width: 100%;
-}
-
-:host(:not([full-screen-dialog])) {
-  border-radius: 4px;
-  box-shadow: 0 24px 24px rgba(0, 0, 0, .24), 0 0 24px rgba(0, 0, 0, .12);
 }
 
 .oobe-illustration {

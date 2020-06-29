@@ -105,8 +105,8 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   std::unique_ptr<TestKeySystemsProviderDelegate> provider_delegate(
       new TestKeySystemsProviderDelegate());
   key_systems_provider.SetProviderDelegateForTesting(
-      base::Bind(&TestKeySystemsProviderDelegate::AddTestKeySystems,
-                 base::Unretained(provider_delegate.get())));
+      base::BindRepeating(&TestKeySystemsProviderDelegate::AddTestKeySystems,
+                          base::Unretained(provider_delegate.get())));
 
   // IsKeySystemsUpdateNeeded() always returns true after construction.
   EXPECT_TRUE(key_systems_provider.IsKeySystemsUpdateNeeded());

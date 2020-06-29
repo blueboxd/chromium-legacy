@@ -1450,4 +1450,31 @@ TEST_F('OSSettingsManageAccessibilityPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// Test fixture for the Switch Access page.
+// eslint-disable-next-line no-var
+var OSSettingsSwitchAccessSubpageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_a11y_page/switch_access_subpage.html';
+  }
+
+  /** @override */
+  get commandLineSwitches() {
+    return ['enable-experimental-accessibility-switch-access'];
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'switch_access_subpage_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsSwitchAccessSubpageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 GEN('#endif  // defined(NDEBUG)');

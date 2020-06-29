@@ -169,7 +169,7 @@ class StartupBrowserCreatorTriggeredResetFirstRunTest
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetFirstRunTest,
                        TestTriggeredResetDoesNotShowWithFirstRunURLs) {
   // The presence of First Run tabs (in production code, these commonly come
-  // from master_preferences) should suppress the reset UI. Check that this is
+  // from initial preferences) should suppress the reset UI. Check that this is
   // the case.
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;

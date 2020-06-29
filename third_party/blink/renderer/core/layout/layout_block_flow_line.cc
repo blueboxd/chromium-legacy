@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/bidi_run_for_line.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1612,6 +1613,9 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
     LayoutUnit& max_logical_width) {
   LayoutUnit inline_max;
   LayoutUnit inline_min;
+
+  if (IsListItem())
+    ToLayoutListItem(this)->UpdateMarkerTextIfNeeded();
 
   const ComputedStyle& style_to_use = StyleRef();
 

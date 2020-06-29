@@ -764,9 +764,6 @@
         android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
         android:value="true"/>
     <meta-data
-        android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
-        android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
-    <meta-data
         android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
         android:value="5"/>
     <meta-data

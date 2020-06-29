@@ -8,13 +8,18 @@ import './icons.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {navigateTo, NavigationBehavior, Routes} from './navigation_behavior.js';
+
+
 Polymer({
   is: 'profile-picker-main-view',
 
   _template: html`{__html_template__}`,
 
+  behaviors: [NavigationBehavior],
+
   /** @private */
   onAddProfileClick_() {
-    // TODO(msalama): do something.
+    navigateTo(Routes.NEW_PROFILE);
   },
 });

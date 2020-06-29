@@ -88,28 +88,6 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
 };
 
-// TODO(kinuko,toyoshim): Deprecate this, all Blink tests should not rely
-// on this //content implementation.
-class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
- public:
-  explicit WebURLLoaderFactoryWithMock(base::WeakPtr<blink::Platform> platform)
-      : platform_(std::move(platform)) {}
-  ~WebURLLoaderFactoryWithMock() override = default;
-
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const blink::WebURLRequest& request,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          task_runner_handle) override {
-    DCHECK(platform_);
-    return blink::WebURLLoaderMockFactory::GetSingletonInstance()
-        ->CreateURLLoader();
-  }
-
- private:
-  base::WeakPtr<blink::Platform> platform_;
-  DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryWithMock);
-};
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
 constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
@@ -189,12 +167,6 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   if (main_thread_scheduler_)
     main_thread_scheduler_->Shutdown();
   g_test_platform = nullptr;
-}
-
-std::unique_ptr<blink::WebURLLoaderFactory>
-TestBlinkWebUnitTestSupport::CreateDefaultURLLoaderFactory() {
-  return std::make_unique<WebURLLoaderFactoryWithMock>(
-      weak_factory_.GetWeakPtr());
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {

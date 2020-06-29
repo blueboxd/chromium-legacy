@@ -377,8 +377,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
-  void EvictDelegatedFrame();
-
   bool ShouldRouteEvents() const;
 
   void UpdateTouchSelectionController(
@@ -407,8 +405,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void AttachLayers();
   void RemoveLayers();
 
-  void EvictFrameIfNecessary();
-
   // Helper function to update background color for WebView on fullscreen
   // changes. See https://crbug.com/961223.
   void UpdateWebViewBackgroundColorIfNecessary();
@@ -421,9 +417,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void MaybeCreateSynchronousCompositor();
   void ResetSynchronousCompositor();
-
-  void EvictDelegatedContent();
-  void OnLostResources();
 
   void StartObservingRootWindow();
   void StopObservingRootWindow();
@@ -447,6 +440,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTextHandlesHiddenInternal();
 
   void OnUpdateScopedSelectionHandles();
+
+  bool UseOldContentForFallback();
 
   bool is_showing_;
 

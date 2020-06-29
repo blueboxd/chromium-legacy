@@ -167,7 +167,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_EQ(1UL, container_policy1.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
             container_policy1[0].feature);
-  EXPECT_FALSE(container_policy1[0].fallback_value);
+  EXPECT_FALSE(container_policy1[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy1[0].allowed_origins.size());
   EXPECT_EQ("http://example.net",
             container_policy1[0].allowed_origins.begin()->Serialize());
@@ -189,7 +189,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   EXPECT_EQ(1UL, container_policy2[0].allowed_origins.size());
   EXPECT_EQ("http://example.net",
             container_policy2[0].allowed_origins.begin()->Serialize());
-  EXPECT_FALSE(container_policy2[1].fallback_value);
+  EXPECT_FALSE(container_policy2[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy2[1].allowed_origins.size());
   EXPECT_EQ("http://example.net",
             container_policy2[1].allowed_origins.begin()->Serialize());
@@ -234,8 +234,8 @@ TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
 
   const ParsedFeaturePolicyDeclaration item = *container_policy_item;
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen, item.feature);
-  EXPECT_FALSE(item.fallback_value);
-  EXPECT_TRUE(item.opaque_value);
+  EXPECT_FALSE(item.matches_all_origins);
+  EXPECT_TRUE(item.matches_opaque_src);
   EXPECT_EQ(0UL, item.allowed_origins.size());
 }
 
@@ -265,8 +265,8 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
 
   const ParsedFeaturePolicyDeclaration item = *container_policy_item;
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen, item.feature);
-  EXPECT_FALSE(item.fallback_value);
-  EXPECT_FALSE(item.opaque_value);
+  EXPECT_FALSE(item.matches_all_origins);
+  EXPECT_FALSE(item.matches_opaque_src);
   EXPECT_EQ(1UL, item.allowed_origins.size());
   EXPECT_FALSE(item.allowed_origins.begin()->opaque());
   EXPECT_EQ("http://example.net", item.allowed_origins.begin()->Serialize());
@@ -289,7 +289,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
             container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].fallback_value);
+  EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].allowed_origins.size());
   EXPECT_TRUE(container_policy[0].allowed_origins.begin()->IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element_)->ToUrlOrigin()));
@@ -310,7 +310,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
-  EXPECT_TRUE(container_policy[0].fallback_value);
+  EXPECT_TRUE(container_policy[0].matches_all_origins);
 }
 
 // Test the ConstructContainerPolicy method when the "allowpaymentrequest"
@@ -325,7 +325,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kUsb,
             container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].fallback_value);
+  EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].allowed_origins.size());
   EXPECT_TRUE(container_policy[0].allowed_origins.begin()->IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element_)->ToUrlOrigin()));
@@ -350,7 +350,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
   EXPECT_EQ(3UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
             container_policy[0].feature);
-  EXPECT_FALSE(container_policy[0].fallback_value);
+  EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].allowed_origins.size());
   EXPECT_TRUE(container_policy[0].allowed_origins.begin()->IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element_)->ToUrlOrigin()));

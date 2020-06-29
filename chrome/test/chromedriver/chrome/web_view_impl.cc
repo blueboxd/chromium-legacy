@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/cast_tracker.h"
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
@@ -677,12 +678,49 @@ Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
       ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
       code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
     }
+
+    bool is_ctrl_cmd_key_down = false;
+#if defined(OS_MACOSX)
+    if (it->modifiers & kMetaKeyModifierMask)
+      is_ctrl_cmd_key_down = true;
+#else
+    if (it->modifiers & kControlKeyModifierMask)
+      is_ctrl_cmd_key_down = true;
+#endif
     if (!code.empty())
       params.SetString("code", code);
     if (!it->key.empty())
       params.SetString("key", it->key);
     else if (it->is_from_action)
       params.SetString("key", it->modified_text);
+
+    if (is_ctrl_cmd_key_down) {
+      std::string command;
+      if (code == "KeyA") {
+        command = "SelectAll";
+      } else if (code == "KeyC") {
+        command = "Copy";
+      } else if (code == "KeyX") {
+        command = "Cut";
+      } else if (code == "KeyY") {
+        command = "Redo";
+      } else if (code == "KeyV") {
+        if (it->modifiers & kShiftKeyModifierMask)
+          command = "PasteAndMatchStyle";
+        else
+          command = "Paste";
+      } else if (code == "KeyZ") {
+        if (it->modifiers & kShiftKeyModifierMask)
+          command = "Redo";
+        else
+          command = "Undo";
+      }
+
+      std::unique_ptr<base::ListValue> command_list(new base::ListValue);
+      command_list->AppendString(command);
+      params.SetList("commands", std::move(command_list));
+    }
+
     if (it->location != 0) {
       // The |location| parameter in DevTools protocol only accepts 1 (left
       // modifiers) and 2 (right modifiers). For location 3 (numeric keypad),

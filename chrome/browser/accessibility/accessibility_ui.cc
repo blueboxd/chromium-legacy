@@ -345,8 +345,8 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);
   html_source->SetRequestFilter(
       base::BindRepeating(&ShouldHandleAccessibilityRequestCallback),
-      base::Bind(&HandleAccessibilityRequestCallback,
-                 web_ui->GetWebContents()->GetBrowserContext()));
+      base::BindRepeating(&HandleAccessibilityRequestCallback,
+                          web_ui->GetWebContents()->GetBrowserContext()));
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();

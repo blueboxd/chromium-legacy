@@ -1185,9 +1185,6 @@ extern const char kSuggestionsWithSubStringMatchDescription[];
 extern const char kSyncDeviceInfoInTransportModeName[];
 extern const char kSyncDeviceInfoInTransportModeDescription[];
 
-extern const char kSyncErrorInfoBarName[];
-extern const char kSyncErrorInfoBarDescription[];
-
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
@@ -1711,9 +1708,6 @@ extern const char kEnableAccessibilityLiveCaptionsDescription[];
 
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];
-
-extern const char kNtpConfirmSuggestionRemovalsName[];
-extern const char kNtpConfirmSuggestionRemovalsDescription[];
 
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];

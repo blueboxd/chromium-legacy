@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -18,21 +18,18 @@
 
 namespace reporting {
 
-// This class defines refcounted context for multiple actions executed on
-// a sequenced task runner with the ability to make asynchronous calls to
-// other threads and resuming sequenced execution by calling |Schedule| or
-// |ScheduleAfter|. Multiple actions can be scheduled at once; they will be
-// executed on the same sequenced task runner. Ends execution and self-destructs
-// when one of the actions calls |Response| (all previously scheduled actions
-// must be completed or cancelled by then, otherwise they will crash).
-//
-// Derived from RefCountedThreadSafe, because adding and releasing a reference
-// may take place on different threads.
+// This class defines context for multiple actions executed on a sequenced task
+// runner with the ability to make asynchronous calls to other threads and
+// resuming sequenced execution by calling |Schedule| or |ScheduleAfter|.
+// Multiple actions can be scheduled at once; they will be executed on the same
+// sequenced task runner. Ends execution and self-destructs when one of the
+// actions calls |Response| (all previously scheduled actions must be completed
+// or cancelled by then, otherwise they will crash).
 //
 // Code snippet:
 //
 // Declaration:
-// class SeriesOfActionsContext : public TaskRunnerContext<...> {
+// class SeriesOfActionsContext {
 //    public:
 //     SeriesOfActionsContext(
 //         ...,
@@ -51,9 +48,14 @@ namespace reporting {
 //         Response(...);
 //         return;
 //       }
-//       Schedule(&SeriesOfActionsContext::Action2, this, ...);
+//       Schedule(&SeriesOfActionsContext::Action2,
+//                base::Unretained(this),
+//                ...);
 //       ...
-//       ScheduleAfter(delay, &SeriesOfActionsContext::Action3, this, ...);
+//       ScheduleAfter(delay,
+//                     &SeriesOfActionsContext::Action3,
+//                     base::Unretained(this),
+//                     ...);
 //     }
 //
 //     void OnStart() override { Action1(...); }
@@ -66,8 +68,7 @@ namespace reporting {
 //       base::SequencedTaskRunnerHandle::Get());
 //
 template <typename ResponseType>
-class TaskRunnerContext
-    : public base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>> {
+class TaskRunnerContext {
  public:
   TaskRunnerContext(const TaskRunnerContext& other) = delete;
   TaskRunnerContext& operator=(const TaskRunnerContext& other) = delete;
@@ -100,7 +101,7 @@ class TaskRunnerContext
     std::move(callback_).Run(std::forward<ResponseType>(result));
 
     // Self-destruct.
-    base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>>::Release();
+    delete this;
   }
 
   // Helper method checks that the caller runs on valid sequence.
@@ -123,11 +124,10 @@ class TaskRunnerContext
   // Context can only be deleted by calling Response method.
   virtual ~TaskRunnerContext() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(callback_.is_null()) << "Released without responding to the caller";
+    DCHECK(callback_.is_null()) << "Deleted without responding to the caller";
   }
 
  private:
-  friend class base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>>;
   template <typename ContextType /* derived from TaskRunnerContext*/,
             class... Args>
   friend void Start(Args&&... args);
@@ -161,14 +161,13 @@ class TaskRunnerContext
 template <typename ContextType /* derived from TaskRunnerContext*/,
           class... Args>
 void Start(Args&&... args) {
-  scoped_refptr<ContextType> context =
-      base::WrapRefCounted(new ContextType(std::forward<Args>(args)...));
-  context->AddRef();  // To keep context alive until Response is called.
-  auto task_runner = context->task_runner_;
+  ContextType* const context = new ContextType(std::forward<Args>(args)...);
   // Start execution handing |context| over to the callback, in order
-  // to make sure final |Release| and destruct can only happen on |task_runner|.
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&ContextType::OnStartWrap, std::move(context)));
+  // to make sure final |OnStart| (with possible |Response| and self-destruct)
+  // can only happen on |task_runner|.
+  context->task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ContextType::OnStartWrap, base::Unretained(context)));
 }
 
 }  // namespace reporting

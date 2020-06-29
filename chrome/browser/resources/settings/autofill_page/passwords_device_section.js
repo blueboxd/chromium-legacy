@@ -14,13 +14,13 @@
 import './passwords_list_handler.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import '../settings_shared_css.m.js';
+import './avatar_icon.js';
 import './passwords_shared_css.js';
 import './password_list_item.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {getImage} from 'chrome://resources/js/icon.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
@@ -29,7 +29,6 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
-import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.m.js';
 import {StoredAccount, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
@@ -118,12 +117,6 @@ Polymer({
     /** @private */
     listBlurred_: Boolean,
 
-    /**
-     * The currently selected profile icon as CSS image set.
-     * @private
-     */
-    profileIcon_: String,
-
     /** @private */
     accountEmail_: String,
 
@@ -186,14 +179,6 @@ Polymer({
   attached() {
     this.addListenersForAccountStorageRequirements_();
     this.currentRoute_ = Router.getInstance().currentRoute;
-
-    /** @type {!function(!ProfileInfo):void} */
-    const extractIconFromProfileInfo = profileInfo => {
-      this.profileIcon_ = getImage(profileInfo.iconUrl);
-    };
-    ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
-        extractIconFromProfileInfo);
-    this.addWebUIListener('profile-info-changed', extractIconFromProfileInfo);
 
     /** @type {!function(!Array<!StoredAccount>):void} */
     const extractFirstStoredAccountEmail = accounts => {

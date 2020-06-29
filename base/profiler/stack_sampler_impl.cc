@@ -71,11 +71,13 @@ StackSamplerImpl::StackSamplerImpl(
     std::unique_ptr<StackCopier> stack_copier,
     std::vector<std::unique_ptr<Unwinder>> core_unwinders,
     ModuleCache* module_cache,
+    RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate)
     : stack_copier_(std::move(stack_copier)),
       unwinders_(std::make_move_iterator(core_unwinders.rbegin()),
                  std::make_move_iterator(core_unwinders.rend())),
       module_cache_(module_cache),
+      record_sample_callback_(std::move(record_sample_callback)),
       test_delegate_(test_delegate) {
   DCHECK(!unwinders_.empty());
   for (const auto& unwinder : unwinders_)
@@ -92,6 +94,9 @@ void StackSamplerImpl::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
 void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
                                          ProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
+
+  if (record_sample_callback_)
+    record_sample_callback_.Run();
 
   RegisterContext thread_context;
   uintptr_t stack_top;

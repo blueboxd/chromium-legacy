@@ -44,6 +44,7 @@ NSString* const kMultitaskingEarlGreyTestTargetName =
 NSArray* multitaskingTests = @[
   // Integration tests
   @"testContextMenuOpenInNewTab",        // ContextMenuTestCase
+  @"testContextMenuOpenInNewWindow",     // ContextMenuTestCase
   @"testSwitchToMain",                   // CookiesTestCase
   @"testSwitchToIncognito",              // CookiesTestCase
   @"testFindDefaultFormAssistControls",  // FormInputTestCase

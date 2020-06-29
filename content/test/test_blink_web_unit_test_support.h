@@ -42,8 +42,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       SchedulerType scheduler_type = SchedulerType::kMockScheduler);
   ~TestBlinkWebUnitTestSupport() override;
 
-  std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
-      override;
   blink::WebString UserAgent() override;
   blink::WebString QueryLocalizedString(int resource_id) override;
   blink::WebString QueryLocalizedString(int resource_id,

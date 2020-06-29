@@ -8,7 +8,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 // An action to show the current progress.
@@ -21,6 +21,9 @@ class ShowProgressBarAction : public Action {
  private:
   // Overrides Action:
   void InternalProcessAction(ProcessActionCallback callback) override;
+
+  void EndAction(ProcessActionCallback callback,
+                 ProcessedActionStatusProto status);
 
   DISALLOW_COPY_AND_ASSIGN(ShowProgressBarAction);
 };

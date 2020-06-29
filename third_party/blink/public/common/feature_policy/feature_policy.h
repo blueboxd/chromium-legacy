@@ -92,8 +92,8 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   explicit ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature);
   ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
                                  const std::vector<url::Origin>& values,
-                                 bool fallback_value,
-                                 bool opaque_value);
+                                 bool matches_all_origins,
+                                 bool matches_opaque_src);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ParsedFeaturePolicyDeclaration& operator=(
       const ParsedFeaturePolicyDeclaration& rhs);
@@ -104,13 +104,13 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   // An alphabetically sorted list of all the origins allowed.
   std::vector<url::Origin> allowed_origins;
   // Fallback value is used when feature is enabled for all or disabled for all.
-  bool fallback_value;
+  bool matches_all_origins{false};
   // This flag is set true for a declared policy on an <iframe sandbox>
   // container, for a feature which is supposed to be allowed in the sandboxed
   // document. Usually, the 'src' keyword in a declaration will cause the origin
   // of the iframe to be present in |origins|, but for sandboxed iframes, this
   // flag is set instead.
-  bool opaque_value;
+  bool matches_opaque_src{false};
 };
 
 using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
@@ -137,22 +137,22 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     // Adds a single origin to the allowlist.
     void Add(const url::Origin& origin);
 
-    // Returns the value of the given origin if specified, fallback value
-    // otherwise.
-    // fallback value should be set to maximum unless it is set to 'none'.
-    bool GetValueForOrigin(const url::Origin& origin) const;
+    // Adds all origins to the allowlist.
+    void AddAll();
 
-    // Returns the fallback value.
-    bool GetFallbackValue() const;
+    // Sets the allowlist to match the opaque origin implied by the 'src'
+    // keyword.
+    void AddOpaqueSrc();
 
-    // Sets the fallback value.
-    void SetFallbackValue(bool fallback_value);
+    // Returns true if the given origin has been added to the allowlist.
+    bool Contains(const url::Origin& origin) const;
 
-    // Returns the opaque value.
-    bool GetOpaqueValue() const;
+    // Returns true if the allowlist matches all origins.
+    bool MatchesAll() const;
 
-    // Sets the opaque value.
-    void SetOpaqueValue(bool opaque_value);
+    // Returns true if the allowlist should match the opaque origin implied by
+    // the 'src' keyword.
+    bool MatchesOpaqueSrc() const;
 
     const std::vector<url::Origin>& AllowedOrigins() const {
       return allowed_origins_;
@@ -160,8 +160,8 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
    private:
     std::vector<url::Origin> allowed_origins_;
-    bool fallback_value_;
-    bool opaque_value_;
+    bool matches_all_origins_{false};
+    bool matches_opaque_src_{false};
   };
 
   // The FeaturePolicy::FeatureDefault enum defines the default enable state for

@@ -4,14 +4,19 @@
 
 package org.chromium.chrome.browser.services.gcm;
 
-import android.os.Bundle;
-
-import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderService;
+import android.app.IntentService;
+import android.content.Intent;
 
 /**
- * Sends Upstream messages for Invalidations using GCM.
+ * In the past, this class sent upstream messages for Invalidations using GCM.
+ * It's now empty, but can't be deleted yet because it is listed in
+ * AndroidManifest.xml.
  */
-public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
+public class InvalidationGcmUpstreamSender extends IntentService {
+    InvalidationGcmUpstreamSender() {
+        super("GcmUpstreamService");
+    }
+
     @Override
-    public void deliverMessage(final String to, final Bundle data) {}
+    protected void onHandleIntent(Intent intent) {}
 }

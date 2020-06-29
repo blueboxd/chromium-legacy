@@ -17,8 +17,6 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.ipc.invalidation.util.Preconditions;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.download.DownloadNotificationService.DownloadStatus;
@@ -74,6 +72,12 @@ public class DownloadForegroundServiceManager {
 
     @VisibleForTesting
     final Map<Integer, DownloadUpdate> mDownloadUpdateQueue = new HashMap<>();
+
+    private static <T> void checkNotNull(T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
+    }
 
     public DownloadForegroundServiceManager() {}
 
@@ -253,7 +257,7 @@ public class DownloadForegroundServiceManager {
     @VisibleForTesting
     void stopAndUnbindService(@DownloadNotificationService.DownloadStatus int downloadStatus) {
         Log.w(TAG, "stopAndUnbindService status: " + downloadStatus);
-        Preconditions.checkNotNull(mBoundService);
+        checkNotNull(mBoundService);
         mIsServiceBound = false;
 
         @DownloadForegroundService.StopForegroundNotification

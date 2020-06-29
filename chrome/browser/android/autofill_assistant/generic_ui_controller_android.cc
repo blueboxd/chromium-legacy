@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "base/android/jni_string.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantDrawable_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantViewFactory_jni.h"
 #include "chrome/browser/android/autofill_assistant/assistant_generic_ui_delegate.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_events_android.h"
@@ -30,63 +29,6 @@ base::android::ScopedJavaGlobalRef<jobject> CreateViewHierarchy(
     InteractionHandlerAndroid* interaction_handler,
     ViewHandlerAndroid* view_handler,
     RadioButtonController* radio_button_controller);
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaDrawable(
-    JNIEnv* env,
-    const base::android::ScopedJavaLocalRef<jobject>& jcontext,
-    const DrawableProto& proto) {
-  switch (proto.drawable_case()) {
-    case DrawableProto::kResourceIdentifier:
-      if (!Java_AssistantDrawable_isValidDrawableResource(
-              env, jcontext,
-              base::android::ConvertUTF8ToJavaString(
-                  env, proto.resource_identifier()))) {
-        VLOG(1) << "Encountered invalid drawable resource identifier: "
-                << proto.resource_identifier();
-        return nullptr;
-      }
-      return Java_AssistantDrawable_createFromResource(
-          env, base::android::ConvertUTF8ToJavaString(
-                   env, proto.resource_identifier()));
-      break;
-    case DrawableProto::kBitmap: {
-      int width_pixels = ui_controller_android_utils::GetPixelSizeOrDefault(
-          env, jcontext, proto.bitmap().width(), 0);
-      int height_pixels = ui_controller_android_utils::GetPixelSizeOrDefault(
-          env, jcontext, proto.bitmap().height(), 0);
-      return Java_AssistantDrawable_createFromUrl(
-          env,
-          base::android::ConvertUTF8ToJavaString(env, proto.bitmap().url()),
-          width_pixels, height_pixels);
-    }
-    case DrawableProto::kShape: {
-      switch (proto.shape().shape_case()) {
-        case ShapeDrawableProto::kRectangle: {
-          auto jbackground_color = ui_controller_android_utils::GetJavaColor(
-              env, jcontext, proto.shape().background_color());
-          auto jstroke_color = ui_controller_android_utils::GetJavaColor(
-              env, jcontext, proto.shape().stroke_color());
-          int stroke_width_pixels =
-              ui_controller_android_utils::GetPixelSizeOrDefault(
-                  env, jcontext, proto.shape().stroke_width(), 0);
-          int corner_radius_pixels =
-              ui_controller_android_utils::GetPixelSizeOrDefault(
-                  env, jcontext, proto.shape().rectangle().corner_radius(), 0);
-          return Java_AssistantDrawable_createRectangleShape(
-              env, jbackground_color, jstroke_color, stroke_width_pixels,
-              corner_radius_pixels);
-          break;
-        }
-        case ShapeDrawableProto::SHAPE_NOT_SET:
-          return nullptr;
-      }
-      break;
-    }
-    case DrawableProto::DRAWABLE_NOT_SET:
-      return nullptr;
-      break;
-  }
-}
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaViewContainer(
     JNIEnv* env,
@@ -261,8 +203,8 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
                                                           jidentifier);
       break;
     case ViewProto::kImageView: {
-      auto jimage =
-          CreateJavaDrawable(env, jcontext, proto.image_view().image());
+      auto jimage = ui_controller_android_utils::CreateJavaDrawable(
+          env, jcontext, proto.image_view().image());
       if (!jimage) {
         VLOG(1) << "Failed to create image for " << proto.identifier();
         return nullptr;
@@ -310,7 +252,8 @@ base::android::ScopedJavaGlobalRef<jobject> CreateJavaView(
         env, jview, jcontext, proto.attributes().padding_start(),
         proto.attributes().padding_top(), proto.attributes().padding_end(),
         proto.attributes().padding_bottom(),
-        CreateJavaDrawable(env, jcontext, proto.attributes().background()),
+        ui_controller_android_utils::CreateJavaDrawable(
+            env, jcontext, proto.attributes().background()),
         proto.attributes().has_content_description()
             ? base::android::ConvertUTF8ToJavaString(
                   env, proto.attributes().content_description())

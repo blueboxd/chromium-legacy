@@ -168,7 +168,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
   void HandleEnableDebuggingScreen();
-  void HandleSetOobeBootstrappingSlave();
   void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
   void GetPrimaryDisplayNameCallback(
       const base::Value& callback_id,

@@ -14,17 +14,22 @@ import android.support.test.InstrumentationRegistry;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This class provides helper methods for launching any Urls in CCT or Tabs.
@@ -171,5 +176,29 @@ public class IncognitoDataTestUtils {
         if (activity == null) return;
         activity.getTabModelSelector().getModel(false).closeAllTabs();
         activity.getTabModelSelector().getModel(true).closeAllTabs();
+    }
+
+    // Warming up CCT so that the native is initialized before we access the CCT_INCOGNITO
+    // feature flag.
+    public static void fireAndWaitForCctWarmup() throws TimeoutException {
+        CallbackHelper startUpCallback = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowserStartupController.getInstance().addStartupCompletedObserver(
+                    new BrowserStartupController.StartupCallback() {
+                        @Override
+                        public void onSuccess() {
+                            startUpCallback.notifyCalled();
+                        }
+
+                        @Override
+                        public void onFailure() {
+                            // Need a successful startup for test.
+                            assert false;
+                        }
+                    });
+        });
+
+        CustomTabsConnection.getInstance().warmup(0);
+        startUpCallback.waitForCallback(0);
     }
 }

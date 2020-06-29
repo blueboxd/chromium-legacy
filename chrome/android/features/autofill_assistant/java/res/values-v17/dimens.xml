@@ -15,6 +15,10 @@
     <!-- The padding should match autofill_assistant_minimum_touch_target_size -
          autofill_assistant_profile_size * 2. -->
     <dimen name="autofill_assistant_profile_icon_padding">8dp</dimen>
+    <dimen name="autofill_assistant_progress_icon_size">18dp</dimen>
+    <dimen name="autofill_assistant_progress_icon_background_size">24dp</dimen>
+    <dimen name="autofill_assistant_progress_line_height">2dp</dimen>
+    <dimen name="autofill_assistant_progress_padding">0dp</dimen>
     <dimen name="autofill_assistant_filled_button_border_width">0dp</dimen>
     <dimen name="autofill_assistant_button_corner_radius">40dp</dimen>
     <!-- Sets drawable inset to 4dp so that min height of the button background drawable is 40dp

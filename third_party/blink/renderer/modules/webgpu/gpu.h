@@ -44,7 +44,7 @@ class GPU final : public ScriptWrappable,
 
  private:
   void OnRequestAdapterCallback(ScriptPromiseResolver* resolver,
-                                uint32_t adapter_server_id,
+                                int32_t adapter_server_id,
                                 const WGPUDeviceProperties& properties);
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;

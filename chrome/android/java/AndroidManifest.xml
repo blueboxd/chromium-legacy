@@ -976,8 +976,6 @@ by a child template that "extends" this file.
         </service>
         <service android:name="org.chromium.chrome.browser.services.gcm.GCMBackgroundService"
             android:exported="false"/>
-        <meta-data android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
-            android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender" />
         <service android:name="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"
             android:exported="false"/>
 

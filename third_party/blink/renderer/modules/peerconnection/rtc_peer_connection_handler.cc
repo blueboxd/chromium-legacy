@@ -1890,6 +1890,7 @@ RTCPeerConnectionHandler::AddTrack(
         native_peer_connection_, track_adapter_map_, std::move(sender_state),
         force_encoded_audio_insertable_streams_,
         force_encoded_video_insertable_streams_));
+    MaybeCreateThermalUmaListner();
     platform_transceiver = std::make_unique<blink::RTCRtpSenderOnlyTransceiver>(
         std::make_unique<blink::RTCRtpSenderImpl>(*rtp_senders_.back().get()));
   } else {
@@ -2086,10 +2087,35 @@ void RTCPeerConnectionHandler::CloseClientPeerConnection() {
     client_->ClosePeerConnection();
 }
 
+void RTCPeerConnectionHandler::MaybeCreateThermalUmaListner() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!thermal_uma_listener_) {
+    // Instantiate the thermal uma listener only if we are sending video.
+    for (const auto& sender : rtp_senders_) {
+      if (sender->Track() && sender->Track()->Source()->GetType() ==
+                                 MediaStreamSource::kTypeVideo) {
+        thermal_uma_listener_ = ThermalUmaListener::Create(task_runner_);
+        thermal_uma_listener_->OnThermalMeasurement(last_thermal_state_);
+        return;
+      }
+    }
+  }
+}
+
+ThermalUmaListener* RTCPeerConnectionHandler::thermal_uma_listener() const {
+  return thermal_uma_listener_.get();
+}
+
 void RTCPeerConnectionHandler::OnThermalStateChange(
     base::PowerObserver::DeviceThermalState thermal_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (is_closed_ || !base::FeatureList::IsEnabled(kWebRtcThermalResource))
+  if (is_closed_)
+    return;
+  last_thermal_state_ = thermal_state;
+  if (thermal_uma_listener_) {
+    thermal_uma_listener_->OnThermalMeasurement(thermal_state);
+  }
+  if (!base::FeatureList::IsEnabled(kWebRtcThermalResource))
     return;
   if (!thermal_resource_) {
     thermal_resource_ = ThermalResource::Create(task_runner_);
@@ -2665,6 +2691,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
            rtp_senders_.end());
     rtp_senders_.push_back(std::make_unique<blink::RTCRtpSenderImpl>(
         *transceiver->content_sender()));
+    MaybeCreateThermalUmaListner();
     DCHECK(FindReceiver(blink::RTCRtpReceiverImpl::getId(
                webrtc_receiver.get())) == rtp_receivers_.end());
     rtp_receivers_.push_back(std::make_unique<blink::RTCRtpReceiverImpl>(

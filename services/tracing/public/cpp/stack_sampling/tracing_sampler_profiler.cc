@@ -58,6 +58,9 @@ namespace tracing {
 
 namespace {
 
+// Pointer to the main thread instance, if any.
+TracingSamplerProfiler* g_main_thread_instance = nullptr;
+
 class TracingSamplerProfilerDataSource
     : public PerfettoTracedProcess::DataSourceBase {
  public:
@@ -553,6 +556,11 @@ TracingSamplerProfiler::CreateOnMainThread() {
   InitializeLoaderLockSampling();
   profiler->EnableLoaderLockSampling();
 #endif
+  // If running in single process mode, there may be multiple "main thread"
+  // profilers created. In this case, we assume the first created one is the
+  // browser one.
+  if (!g_main_thread_instance)
+    g_main_thread_instance = profiler.get();
   return profiler;
 }
 
@@ -575,6 +583,12 @@ void TracingSamplerProfiler::DeleteOnChildThreadForTesting() {
 void TracingSamplerProfiler::RegisterDataSource() {
   PerfettoTracedProcess::Get()->AddDataSource(
       TracingSamplerProfilerDataSource::Get());
+}
+
+void TracingSamplerProfiler::SetAuxUnwinderFactoryOnMainThread(
+    const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
+  DCHECK(g_main_thread_instance);
+  g_main_thread_instance->SetAuxUnwinderFactory(factory);
 }
 
 // static
@@ -615,6 +629,16 @@ TracingSamplerProfiler::TracingSamplerProfiler(
 
 TracingSamplerProfiler::~TracingSamplerProfiler() {
   TracingSamplerProfilerDataSource::Get()->UnregisterProfiler(this);
+  if (g_main_thread_instance == this)
+    g_main_thread_instance = nullptr;
+}
+
+void TracingSamplerProfiler::SetAuxUnwinderFactory(
+    const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
+  base::AutoLock lock(lock_);
+  aux_unwinder_factory_ = factory;
+  if (profiler_)
+    profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 }
 
 void TracingSamplerProfiler::SetSampleCallbackForTesting(
@@ -675,6 +699,8 @@ void TracingSamplerProfiler::StartTracing(
 #else   // defined(OS_ANDROID)
   profiler_ = std::make_unique<base::StackSamplingProfiler>(
       sampled_thread_token_, params, std::move(profile_builder));
+  if (aux_unwinder_factory_)
+    profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
   profiler_->Start();
 #endif  // defined(OS_ANDROID)
 }

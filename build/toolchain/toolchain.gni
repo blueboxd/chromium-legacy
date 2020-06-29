@@ -38,10 +38,8 @@ if (generate_linker_map) {
 }
 
 declare_args() {
-  if (is_clang) {
-    # Clang compiler version. Clang files are placed at version-dependent paths.
-    clang_version = "11.0.0"
-  }
+  # Clang compiler version. Clang files are placed at version-dependent paths.
+  clang_version = "11.0.0"
 }
 
 # Check target_os here instead of is_ios as this file is loaded for secondary

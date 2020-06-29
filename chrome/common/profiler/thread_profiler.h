@@ -133,7 +133,8 @@ class ThreadProfiler {
   // Creates a new periodic profiler and initiates a collection with it.
   void StartPeriodicSamplingCollection();
 
-  metrics::CallStackProfileParams::Thread thread_;
+  const metrics::CallStackProfileParams::Process process_;
+  const metrics::CallStackProfileParams::Thread thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 

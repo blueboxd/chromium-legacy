@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
@@ -353,8 +354,8 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
                            base::Unretained(uploader.get())),
             storage_queue->sequenced_task_runner_),
         uploader_(std::move(uploader)),
-        storage_queue_(storage_queue) {
-    DCHECK(storage_queue_);
+        storage_queue_weakptr_factory_{storage_queue.get()} {
+    DCHECK(storage_queue.get());
     DCHECK(uploader_.get());
     DETACH_FROM_SEQUENCE(read_sequence_checker_);
   }
@@ -365,11 +366,17 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
   void OnStart() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(read_sequence_checker_);
-    seq_number_ = storage_queue_->first_seq_number_;
+    base::WeakPtr<StorageQueue> storage_queue =
+        storage_queue_weakptr_factory_.GetWeakPtr();
+    if (!storage_queue) {
+      Response(Status(error::UNAVAILABLE, "StorageQueue shut down"));
+      return;
+    }
+    seq_number_ = storage_queue->first_seq_number_;
     // If the last file is not empty (has at least one record),
     // close it and create the new one, so that its records are
     // also included in the reading.
-    const Status last_status = storage_queue_->SwitchLastFileIfNotEmpty();
+    const Status last_status = storage_queue->SwitchLastFileIfNotEmpty();
     if (!last_status.ok()) {
       Response(last_status);
       return;
@@ -377,7 +384,7 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
     // Collect and set aside the files in the set that have data for the Upload.
     const uint64_t first_file_seq_number =
-        storage_queue_->CollectFilesForUpload(seq_number_, &files_);
+        storage_queue->CollectFilesForUpload(seq_number_, &files_);
     if (files_.empty()) {
       Response(Status(error::OUT_OF_RANGE,
                       "Sequence number not found in StorageQueue."));
@@ -385,7 +392,7 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
     }
 
     // Register with storage_queue, to make sure selected files are not removed.
-    ++(storage_queue_->active_read_operations_);
+    ++(storage_queue->active_read_operations_);
 
     // The first file is the current file now, and we are at its start.
     current_file_ = files_.begin();
@@ -414,8 +421,12 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
   void OnCompletion() override {
     // Unregister with storage_queue.
     if (!files_.empty()) {
-      auto count = --(storage_queue_->active_read_operations_);
-      DCHECK_GE(count, 0);
+      base::WeakPtr<StorageQueue> storage_queue =
+          storage_queue_weakptr_factory_.GetWeakPtr();
+      if (storage_queue) {
+        auto count = --(storage_queue->active_read_operations_);
+        DCHECK_GE(count, 0);
+      }
     }
   }
 
@@ -424,13 +435,14 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
   // schedule NextRecord to execute on the sequential thread runner of this
   // StorageQueue.
   void CallCurrentRecord(base::span<const uint8_t> blob) {
-    uploader_->ProcessBlob(
-        blob, base::BindOnce(&ReadContext::ScheduleNextRecord, this));
+    uploader_->ProcessBlob(blob,
+                           base::BindOnce(&ReadContext::ScheduleNextRecord,
+                                          base::Unretained(this)));
   }
 
   // Schedules NextRecord to execute on the StorageQueue sequential task runner.
   void ScheduleNextRecord(bool more_records) {
-    Schedule(&ReadContext::NextRecord, this, more_records);
+    Schedule(&ReadContext::NextRecord, base::Unretained(this), more_records);
   }
 
   // If more records are expected, retrieves the next record (if present) and
@@ -440,6 +452,12 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
     DCHECK_CALLED_ON_VALID_SEQUENCE(read_sequence_checker_);
     if (!more_records) {
       Response(Status::StatusOK());  // Requested to stop reading.
+      return;
+    }
+    base::WeakPtr<StorageQueue> storage_queue =
+        storage_queue_weakptr_factory_.GetWeakPtr();
+    if (!storage_queue) {
+      Response(Status(error::UNAVAILABLE, "StorageQueue shut down"));
       return;
     }
     auto blob = EnsureBlob(++seq_number_);
@@ -511,7 +529,7 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
   uint32_t current_pos_;
   std::vector<scoped_refptr<SingleFile>>::iterator current_file_;
   const std::unique_ptr<UploaderInterface> uploader_;
-  const scoped_refptr<StorageQueue> storage_queue_;
+  base::WeakPtrFactory<StorageQueue> storage_queue_weakptr_factory_;
 
   SEQUENCE_CHECKER(read_sequence_checker_);
 };
@@ -537,7 +555,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
                                   storage_queue->sequenced_task_runner_),
         storage_queue_(storage_queue),
         size_(data.size()) {
-    DCHECK(storage_queue_);
+    DCHECK(storage_queue.get());
     if (size_ > 0) {
       buffer_ = std::make_unique<uint8_t[]>(size_);
       memcpy(buffer_.get(), data.data(), size_);
@@ -593,7 +611,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     Response(Status::StatusOK());
   }
 
-  const scoped_refptr<StorageQueue> storage_queue_;
+  scoped_refptr<StorageQueue> storage_queue_;
 
   uint64_t size_;
   std::unique_ptr<uint8_t[]> buffer_;
@@ -669,7 +687,7 @@ class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
                                   storage_queue->sequenced_task_runner_),
         seq_number_(seq_number),
         storage_queue_(storage_queue) {
-    DCHECK(storage_queue_);
+    DCHECK(storage_queue.get());
     DETACH_FROM_SEQUENCE(confirm_sequence_checker_);
   }
 
@@ -685,7 +703,7 @@ class StorageQueue::ConfirmContext : public TaskRunnerContext<Status> {
   // Confirmed sequencing number.
   uint64_t seq_number_;
 
-  const scoped_refptr<StorageQueue> storage_queue_;
+  scoped_refptr<StorageQueue> storage_queue_;
 
   SEQUENCE_CHECKER(confirm_sequence_checker_);
 };

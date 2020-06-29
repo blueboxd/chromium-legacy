@@ -57,8 +57,6 @@ class ClientHints : public KeyedService,
       const std::vector<network::mojom::WebClientHintsType>& client_hints,
       base::TimeDelta expiration_duration) override;
 
-  void set_ua_ch_pref_enabled(bool);
-
  private:
   friend class content::WebContentsUserData<ClientHints>;
 

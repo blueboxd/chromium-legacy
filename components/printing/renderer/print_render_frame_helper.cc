@@ -2466,9 +2466,10 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
   }
 #endif
 
-  PrintHostMsg_DidPreviewPage_Params preview_page_params;
+  mojom::DidPreviewPageParams preview_page_params;
+  preview_page_params.content = mojom::DidPrintContentParams::New();
   if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
-                                           &preview_page_params.content)) {
+                                           preview_page_params.content.get())) {
     LOG(ERROR) << "CopyMetafileDataToReadOnlySharedMem failed";
     print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
     return false;

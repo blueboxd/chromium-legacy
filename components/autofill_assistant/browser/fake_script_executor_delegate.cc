@@ -103,7 +103,12 @@ void FakeScriptExecutorDelegate::ClearInfoBox() {
 
 void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
+void FakeScriptExecutorDelegate::SetProgressActiveStep(int active_step) {}
+
 void FakeScriptExecutorDelegate::SetProgressVisible(bool visible) {}
+
+void FakeScriptExecutorDelegate::SetStepProgressBarConfiguration(
+    const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {}
 
 void FakeScriptExecutorDelegate::SetUserActions(
     std::unique_ptr<std::vector<UserAction>> user_actions) {

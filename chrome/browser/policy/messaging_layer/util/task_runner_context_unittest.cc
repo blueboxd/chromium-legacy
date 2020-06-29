@@ -39,9 +39,6 @@ TEST_F(TaskRunner, SingleAction) {
     }
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~SingleActionContext() override = default;
-
     void OnStart() override { Response(true); }
   };
 
@@ -73,16 +70,14 @@ TEST_F(TaskRunner, SeriesOfActions) {
           init_value_(init_value) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~SeriesOfActionsContext() override = default;
-
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
         Response(log);
         return;
       }
-      Schedule(&SeriesOfActionsContext::Halve, this, value / 2, log + 1);
+      Schedule(&SeriesOfActionsContext::Halve, base::Unretained(this),
+               value / 2, log + 1);
     }
 
     void OnStart() override { Halve(init_value_, 0); }
@@ -118,9 +113,6 @@ TEST_F(TaskRunner, SeriesOfDelays) {
           delay_(base::TimeDelta::FromSecondsD(0.1)) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~SeriesOfDelaysContext() override = default;
-
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
@@ -128,8 +120,8 @@ TEST_F(TaskRunner, SeriesOfDelays) {
         return;
       }
       delay_ += base::TimeDelta::FromSecondsD(0.1);
-      ScheduleAfter(delay_, &SeriesOfDelaysContext::Halve, this, value / 2,
-                    log + 1);
+      ScheduleAfter(delay_, &SeriesOfDelaysContext::Halve,
+                    base::Unretained(this), value / 2, log + 1);
     }
 
     void OnStart() override { Halve(init_value_, 0); }
@@ -169,9 +161,6 @@ TEST_F(TaskRunner, SeriesOfAsyncs) {
           delay_(base::TimeDelta::FromSecondsD(0.1)) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~SeriesOfAsyncsContext() override = default;
-
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
@@ -184,16 +173,15 @@ TEST_F(TaskRunner, SeriesOfAsyncs) {
       base::ThreadPool::PostDelayedTask(
           FROM_HERE,
           base::BindOnce(
-              [](uint32_t value, uint32_t log,
-                 scoped_refptr<SeriesOfAsyncsContext> context) {
+              [](uint32_t value, uint32_t log, SeriesOfAsyncsContext* context) {
                 // Action executed asyncrhonously.
                 value /= 2;
                 ++log;
                 // Getting back to the sequence.
-                context->Schedule(&SeriesOfAsyncsContext::Halve, context.get(),
-                                  value, log);
+                context->Schedule(&SeriesOfAsyncsContext::Halve,
+                                  base::Unretained(context), value, log);
               },
-              value, log, base::WrapRefCounted<SeriesOfAsyncsContext>(this)),
+              value, log, base::Unretained(this)),
           delay_);
     }
 
@@ -235,8 +223,7 @@ TEST_F(TaskRunner, TreeOfActions) {
 
    protected:
     virtual ~Summator() {
-      DCHECK(!callback_.is_null())
-          << "Released without responding to the caller";
+      DCHECK(!callback_.is_null());
       std::move(callback_).Run(result_);
     }
 
@@ -258,9 +245,6 @@ TEST_F(TaskRunner, TreeOfActions) {
           init_value_(init_value) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~TreeOfActionsContext() override = default;
-
     void FibonacciSplit(uint32_t value, scoped_refptr<Summator> join) {
       CheckOnValidSequence();
       if (value < 2u) {
@@ -273,7 +257,8 @@ TEST_F(TaskRunner, TreeOfActions) {
       // callbacks, and when they complete, adds the results to its
       // own 'Summator' instance.
       for (const uint32_t subval : {value - 1, value - 2}) {
-        Schedule(&TreeOfActionsContext::FibonacciSplit, this, subval,
+        Schedule(&TreeOfActionsContext::FibonacciSplit, base::Unretained(this),
+                 subval,
                  base::MakeRefCounted<Summator>(
                      base::BindOnce(&Summator::AddIncoming, join)));
       }
@@ -281,7 +266,8 @@ TEST_F(TaskRunner, TreeOfActions) {
 
     void OnStart() override {
       FibonacciSplit(init_value_, base::MakeRefCounted<Summator>(base::BindOnce(
-                                      &TreeOfActionsContext::Response, this)));
+                                      &TreeOfActionsContext::Response,
+                                      base::Unretained(this))));
     }
 
     const uint32_t init_value_;
@@ -335,14 +321,12 @@ TEST_F(TaskRunner, ActionsWithStatus) {
           vector_(vector) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~ActionsWithStatusContext() override = default;
-
     void Pick(size_t index) {
       CheckOnValidSequence();
       if (index < vector_.size()) {
         if (vector_[index].ok()) {
-          Schedule(&ActionsWithStatusContext::Pick, this, index + 1);
+          Schedule(&ActionsWithStatusContext::Pick, base::Unretained(this),
+                   index + 1);
           return;
         }
         Response(vector_[index]);
@@ -402,14 +386,12 @@ TEST_F(TaskRunner, ActionsWithStatusOrPtr) {
           vector_(std::move(vector)) {}
 
    private:
-    // Context can only be deleted by calling Response method.
-    ~ActionsWithStatusOrContext() override = default;
-
     void Pick(size_t index) {
       CheckOnValidSequence();
       if (index < vector_->size()) {
         if (!vector_->at(index).ok()) {
-          Schedule(&ActionsWithStatusOrContext::Pick, this, index + 1);
+          Schedule(&ActionsWithStatusOrContext::Pick, base::Unretained(this),
+                   index + 1);
           return;
         }
         Response(std::move(vector_->at(index)));

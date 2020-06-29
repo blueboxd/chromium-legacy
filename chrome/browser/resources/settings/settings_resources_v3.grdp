@@ -52,6 +52,11 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/autofill_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_AVATAR_ICON_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/avatar_icon.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PAYMENTS_LIST_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/payments_list.js"
            use_base_dir="false"
@@ -594,6 +599,7 @@
            use_base_dir="false"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_PAGE_JS"
+           preprocess="true"
            file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_page.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />

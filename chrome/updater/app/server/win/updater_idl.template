@@ -259,15 +259,12 @@ interface IUpdater : IUnknown {
 library UpdaterLib {
   importlib("stdole2.tlb");
 
-  interface IUpdater;
-
-  interface ICurrentState;
-  interface IGoogleUpdate3Web;
-  interface IAppBundleWeb;
-  interface IAppWeb;
-
+  // The 'coclass' definition needs to be first when using the 'dynamic_guid'
+  // feature in midl.gni. Also, the 'dynamic_guid' feature only allows for a
+  // single 'coclass' definition. Any other coclasses need to be defined in
+  // constants.h/cc.
   [
-    uuid(UPDATER_CLSID),
+    uuid(@UPDATER_CLSID@),
     helpstring("Updater Class")
   ]
   coclass UpdaterClass
@@ -275,21 +272,10 @@ library UpdaterLib {
     [default] interface IUnknown;
   }
 
-  [
-    uuid(UPDATER_SERVICE_UUID),
-    helpstring("Updater Service Class")
-  ]
-  coclass UpdaterServiceClass
-  {
-    [default] interface IUnknown;
-  }
+  interface IUpdater;
 
-  [
-    uuid(GOOGLEUPDATE3WEBUSERCLASS_CLSID),
-    helpstring("GoogleUpdate3Web for user applications")
-  ]
-  coclass GoogleUpdate3WebUserClass {
-    [default] interface IDispatch;
-  }
-
+  interface ICurrentState;
+  interface IGoogleUpdate3Web;
+  interface IAppBundleWeb;
+  interface IAppWeb;
 };

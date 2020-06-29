@@ -8,10 +8,10 @@
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "weblayer/browser/infobar_android.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/java/jni/InfoBarContainer_jni.h"
 

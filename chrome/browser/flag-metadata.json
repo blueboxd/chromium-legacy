@@ -1641,8 +1641,8 @@
   },
   {
     "name": "enable-force-dark",
-    "owners": [ "gilmanmh@google.com" ],
-    "expiry_milestone": 85
+    "owners": [ "pdr" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-fs-nosymfollow",
@@ -3202,19 +3202,9 @@
     "expiry_milestone": 86
   },
   {
-    "name": "ntp-confirm-suggestion-removals",
-    "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 82
-  },
-  {
-    "name": "ntp-disable-initial-most-visited-fade-in",
-    "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "ntp-dismiss-promos",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "ntp-iframe-one-google-bar",
@@ -3229,17 +3219,17 @@
   {
     "name": "ntp-realbox",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "ntp-realbox-match-omnibox-theme",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "ntp-webui",
     "owners": [ "aee", "mahmadi", "tiborg" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "offline-indicator-always-http-probe",
@@ -3414,7 +3404,7 @@
   {
     "name": "omnibox-on-focus-suggestions",
     "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "omnibox-on-focus-suggestions-contextual-web",
@@ -3534,7 +3524,7 @@
   {
     "name": "omnibox-zero-suggestions-on-ntp-realbox",
     "owners": [ "mahmadi" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "omnibox-zero-suggestions-on-serp",
@@ -3592,6 +3582,11 @@
     "name": "page-info-performance-hints",
     "owners": [ "jds" ],
     "expiry_milestone": 90
+  },
+  {
+    "name": "page-info-refactoring",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 88
   },
   {
     "name": "page-info-version-2",
@@ -4238,11 +4233,6 @@
     "name": "suggested-content-toggle",
     "owners": [ "jiameng", "wrong" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "sync-error-infobar",
-    "owners": [ "triploblastic", "bsazonov" ],
-    "expiry_milestone": 85
   },
   {
     "name": "sync-setup-friendly-settings",

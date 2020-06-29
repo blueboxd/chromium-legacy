@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
 namespace blink {
 
@@ -36,18 +35,11 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   int Value() const;
 
-  const String& MarkerText() const;
-
   bool IsEmpty() const;
 
-  LayoutListMarker* Marker() const {
+  LayoutObject* Marker() const {
     Element* list_item = To<Element>(GetNode());
-    if (LayoutObject* marker =
-            list_item->PseudoElementLayoutObject(kPseudoIdMarker)) {
-      if (marker->IsListMarkerForNormalContent())
-        return ToLayoutListMarker(marker);
-    }
-    return nullptr;
+    return list_item->PseudoElementLayoutObject(kPseudoIdMarker);
   }
 
   ListItemOrdinal& Ordinal() { return ordinal_; }
@@ -57,12 +49,12 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void RecalcVisualOverflow() override;
 
+  void UpdateMarkerTextIfNeeded();
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectListItem || LayoutBlockFlow::IsOfType(type);
   }
-
-  void WillBeDestroyed() override;
 
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
@@ -85,6 +77,8 @@ class LayoutListItem final : public LayoutBlockFlow {
   void AlignMarkerInBlockDirection();
 
   bool PrepareForBlockDirectionAlign(const LayoutObject*);
+
+  void UpdateLayout() override;
 
   ListItemOrdinal ordinal_;
   bool need_block_direction_align_;

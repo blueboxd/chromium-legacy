@@ -64,6 +64,7 @@ class CORE_EXPORT WorkletGlobalScope
   CoreProbeSink* GetProbeSink() final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
   FrameOrWorkerScheduler* GetScheduler() final;
+  ukm::UkmRecorder* UkmRecorder() final;
 
   // WorkerOrWorkletGlobalScope
   void Dispose() override;
@@ -167,6 +168,8 @@ class CORE_EXPORT WorkletGlobalScope
   Member<LocalFrame> frame_;
   // |worker_thread_| is available only when |thread_type_| is kOffMainThread.
   WorkerThread* worker_thread_;
+
+  std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 };
 
 template <>

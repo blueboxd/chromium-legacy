@@ -733,8 +733,13 @@ void ForwardSmoothessAndReset(int64_t display_id, int smoothness) {
   auto it = infos->find(display_id);
   DCHECK(it != infos->end());
   DCHECK(it->second.callback);
-  std::move(it->second.callback).Run(smoothness);
+
+  // Moves the callback out and erases the mapping first to allow new tracking
+  // for |display_id| to start before |callback| run returns.
+  // See https://crbug.com/1098886.
+  auto callback = std::move(it->second.callback);
   infos->erase(it);
+  std::move(callback).Run(smoothness);
 }
 
 std::string ResolutionToString(
@@ -2576,7 +2581,7 @@ class AssistantInteractionHelper
       const chromeos::assistant::AndroidAppInfo& app_info) override {
     result_.SetKey("openAppResponse", base::Value(app_info.package_name));
     CheckResponseIsValid(__FUNCTION__);
-    return true;
+    return false;
   }
 
   void OnSpeechRecognitionFinalResult(

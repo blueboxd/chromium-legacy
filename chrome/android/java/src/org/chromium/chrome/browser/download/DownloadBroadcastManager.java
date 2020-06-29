@@ -28,8 +28,6 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.google.ipc.invalidation.util.Preconditions;
-
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -66,6 +64,12 @@ public class DownloadBroadcastManager extends Service {
             stopSelf();
         }
     };
+
+    public static <T> void checkNotNull(T reference) {
+        if (reference == null) {
+            throw new NullPointerException();
+        }
+    }
 
     public DownloadBroadcastManager() {
         mDownloadNotificationService = DownloadNotificationService.getInstance();
@@ -240,8 +244,8 @@ public class DownloadBroadcastManager extends Service {
                 : entry.isOffTheRecord;
         DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(id);
 
-        Preconditions.checkNotNull(downloadServiceDelegate);
-        Preconditions.checkNotNull(id);
+        checkNotNull(downloadServiceDelegate);
+        checkNotNull(id);
 
         // Handle all remaining actions.
         switch (action) {

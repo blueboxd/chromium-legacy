@@ -12,6 +12,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 
@@ -84,14 +85,17 @@ public class IncognitoPermissionLeakageTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
-    public void setUp() {
+    public void setUp() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mPermissionTestPage = mTestServer.getURL(PERMISSION_HTML_PATH);
-        mChromeActivityTestRule.startMainActivityOnBlankPage();
 
         // Permission related settings.
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+
+        // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
+        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO));
     }
 
     @After

@@ -338,7 +338,22 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
     OnBubbleMessageChanged(ui_delegate->GetBubbleMessage());
-    OnProgressChanged(ui_delegate->GetProgress());
+    auto step_progress_bar_configuration =
+        ui_delegate->GetStepProgressBarConfiguration();
+    if (step_progress_bar_configuration.has_value()) {
+      OnStepProgressBarConfigurationChanged(*step_progress_bar_configuration);
+      if (step_progress_bar_configuration->use_step_progress_bar()) {
+        auto active_step = ui_delegate_->GetProgressActiveStep();
+        if (active_step.has_value()) {
+          OnProgressActiveStepChanged(*active_step);
+        }
+        OnProgressBarErrorStateChanged(ui_delegate->GetProgressBarErrorState());
+      }
+    } else {
+      OnStepProgressBarConfigurationChanged(
+          ShowProgressBarProto::StepProgressBarConfiguration());
+      OnProgressChanged(ui_delegate->GetProgress());
+    }
     OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
     OnInfoBoxChanged(ui_delegate_->GetInfoBox());
     OnDetailsChanged(ui_delegate->GetDetails());
@@ -490,9 +505,38 @@ void UiControllerAndroid::OnProgressChanged(int progress) {
                                         progress);
 }
 
+void UiControllerAndroid::OnProgressActiveStepChanged(int active_step) {
+  Java_AssistantHeaderModel_setProgressActiveStep(
+      AttachCurrentThread(), GetHeaderModel(), active_step);
+}
+
 void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
   Java_AssistantHeaderModel_setProgressVisible(AttachCurrentThread(),
                                                GetHeaderModel(), visible);
+}
+
+void UiControllerAndroid::OnProgressBarErrorStateChanged(bool error) {
+  Java_AssistantHeaderModel_setProgressBarErrorState(AttachCurrentThread(),
+                                                     GetHeaderModel(), error);
+}
+
+void UiControllerAndroid::OnStepProgressBarConfigurationChanged(
+    const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetHeaderModel();
+  Java_AssistantHeaderModel_setUseStepProgressBar(
+      env, jmodel, configuration.use_step_progress_bar());
+  if (!configuration.step_icons().empty()) {
+    auto jcontext =
+        Java_AutofillAssistantUiController_getContext(env, java_object_);
+    auto jlist = Java_AssistantHeaderModel_createIconList(env);
+    for (const auto& icon : configuration.step_icons()) {
+      Java_AssistantHeaderModel_addStepProgressBarIcon(
+          env, jlist,
+          ui_controller_android_utils::CreateJavaDrawable(env, jcontext, icon));
+    }
+    Java_AssistantHeaderModel_setStepProgressBarIcons(env, jmodel, jlist);
+  }
 }
 
 void UiControllerAndroid::OnViewportModeChanged(ViewportMode mode) {

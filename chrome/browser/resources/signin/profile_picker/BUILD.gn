@@ -15,15 +15,25 @@ js_type_check("closure_compile") {
 
 js_library("profile_picker_main_view") {
   deps = [
+    ":navigation_behavior",
     "//third_party/polymer/v3_0/components-chromium/iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
 }
 
-js_library("profile_picker_app") {
+js_library("navigation_behavior") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+}
+
+js_library("profile_picker_app") {
+  deps = [
+    ":navigation_behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render.m",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
   ]
 }

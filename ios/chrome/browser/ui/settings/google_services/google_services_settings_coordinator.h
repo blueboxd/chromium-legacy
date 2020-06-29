@@ -32,7 +32,7 @@
 @property(nonatomic, weak) id<GoogleServicesSettingsCoordinatorDelegate>
     delegate;
 // Presenter which can show signin UI.
-@property(nonatomic, strong) id<ApplicationCommands> dispatcher;
+@property(nonatomic, strong) id<ApplicationCommands> handler;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;

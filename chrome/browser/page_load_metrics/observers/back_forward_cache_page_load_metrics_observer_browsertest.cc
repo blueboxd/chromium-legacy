@@ -63,13 +63,8 @@ class BackForwardCachePageLoadMetricsObserverBrowserTest
 
 }  // namespace
 
-#if defined(OS_MACOSX)
-#define MAYBE_FirstPaintAfterBackForwardCacheRestore DISABLED_FirstPaintAfterBackForwardCacheRestore
-#else
-#define MAYBE_FirstPaintAfterBackForwardCacheRestore FirstPaintAfterBackForwardCacheRestore
-#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
-                       MAYBE_FirstPaintAfterBackForwardCacheRestore) {
+                       FirstPaintAfterBackForwardCacheRestore) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));

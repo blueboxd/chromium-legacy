@@ -194,7 +194,7 @@ enum DoodleImageType {
   STATIC,
 };
 
-// An image doodle in either dark or light mode.
+// A simple or animated doodle in either dark or light mode.
 struct ImageDoodle {
   // Doodle image encoded as data URL.
   url.mojom.Url image_url;
@@ -213,8 +213,8 @@ struct ImageDoodle {
   url.mojom.Url? animation_impression_log_url;
 };
 
-// The contents of simple and animated doodles.
-struct ImageDoodleContent {
+// A simple or animated doodle in both dark and light mode.
+struct AllModeImageDoodle {
   // Doodles for respective modes.
   ImageDoodle light;
   ImageDoodle? dark;
@@ -224,8 +224,8 @@ struct ImageDoodleContent {
   url.mojom.Url share_url;
 };
 
-// The contents of interactive doodles.
-struct InteractiveDoodleContent {
+// An interactive doodle.
+struct InteractiveDoodle {
   // URL pointing to doodle page.
   url.mojom.Url url;
   // Initial width and height of the doodle iframe in pixels.
@@ -233,18 +233,12 @@ struct InteractiveDoodleContent {
   uint32 height;
 };
 
-// The contents of a doodle.
-union DoodleContent {
-  // Set for simple and animated doodles.
-  ImageDoodleContent image_doodle;
-  // Set for interactive doodles.
-  InteractiveDoodleContent interactive_doodle;
-};
-
 // A doodle. Retrieved from the Google doodle server.
 struct Doodle {
-  // The doodle content.
-  DoodleContent content;
+  // Set for simple and animated doodles.
+  AllModeImageDoodle? image;
+  // Set for interactive doodles.
+  InteractiveDoodle? interactive;
   // Localized description of the doodle.
   string description;
 };

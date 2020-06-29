@@ -3729,11 +3729,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
-    {"ntp-confirm-suggestion-removals",
-     flag_descriptions::kNtpConfirmSuggestionRemovalsName,
-     flag_descriptions::kNtpConfirmSuggestionRemovalsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(ntp_features::kConfirmSuggestionRemovals)},
-
     {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
      flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kDismissPromos)},
@@ -4651,12 +4646,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(signin::kMobileIdentityConsistency)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-    {"sync-error-infobar", flag_descriptions::kSyncErrorInfoBarName,
-     flag_descriptions::kSyncErrorInfoBarDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(switches::kSyncErrorInfoBarAndroid)},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-use-improved-label-disambiguation",

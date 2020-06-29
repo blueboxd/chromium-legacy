@@ -48,7 +48,7 @@ class UserFeedbackProvider {
   // on behalf of the UserFeedbackProvider.
   virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> data_source,
-      id<ApplicationCommands> dispatcher);
+      id<ApplicationCommands> handler);
   // Uploads collected feedback reports.
   virtual void Synchronize();
 

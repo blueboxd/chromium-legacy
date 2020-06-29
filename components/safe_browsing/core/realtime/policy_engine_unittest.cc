@@ -56,7 +56,7 @@ class RealTimePolicyEngineTest : public PlatformTest {
   bool CanPerformEnterpriseFullURLLookup(bool has_valid_dm_token,
                                          bool is_off_the_record) {
     return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
-        has_valid_dm_token, is_off_the_record);
+        &pref_service_, has_valid_dm_token, is_off_the_record);
   }
 
   bool IsInExcludedCountry(const std::string& country_code) {
@@ -362,6 +362,26 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformEnterpriseFullURLLookup) {
     feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
     EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
         /*has_valid_dm_token=*/false, /*is_off_the_record=*/false));
+  }
+  // Policy disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    pref_service_.SetUserPref(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(REAL_TIME_CHECK_DISABLED));
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
+  }
+  // Policy enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    pref_service_.SetUserPref(
+        prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+        std::make_unique<base::Value>(REAL_TIME_CHECK_FOR_MAINFRAME_ENABLED));
+    EXPECT_TRUE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
   }
 }
 

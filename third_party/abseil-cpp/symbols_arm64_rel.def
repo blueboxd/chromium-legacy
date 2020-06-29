@@ -22,9 +22,11 @@ EXPORTS
     ?CityHash64WithSeed@hash_internal@absl@@YA_KPEBD_K1@Z
     ?CityHash64WithSeeds@hash_internal@absl@@YA_KPEBD_K11@Z
     ?ClearCurrentThreadIdentity@base_internal@absl@@YAXXZ
+    ?CombineContiguousImpl@CityHashState@hash_internal@absl@@CA_K_KPEBE0U?$integral_constant@H$03@__1@std@@@Z
     ?CombineContiguousImpl@CityHashState@hash_internal@absl@@CA_K_KPEBE0U?$integral_constant@H$07@__1@std@@@Z
     ?CombineLargeContiguousImpl32@CityHashState@hash_internal@absl@@CA_K_KPEBE0@Z
     ?CombineLargeContiguousImpl64@CityHashState@hash_internal@absl@@CA_K_KPEBE0@Z
+    ?CurrentThreadIdentityIfPresent@base_internal@absl@@YAPEAUThreadIdentity@12@XZ
     ?DecodeWaitCycles@SpinLock@base_internal@absl@@KA_KI@Z
     ?Digits10@?$BigUnsigned@$03@strings_internal@absl@@SAHXZ
     ?Digits10@?$BigUnsigned@$0FE@@strings_internal@absl@@SAHXZ

@@ -60,6 +60,7 @@ std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
     return nullptr;
   }
   XMapWindow(display, window);
+  XFlush(display);
 
   VkSurfaceKHR vk_surface;
   VkXlibSurfaceCreateInfoKHR surface_create_info = {
@@ -86,17 +87,29 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
                     false /* use_protected_memory */),
       parent_window_(parent_window),
       window_(window),
-      expose_event_forwarder_(new ExposeEventForwarder(this)) {}
+      expose_event_forwarder_(std::make_unique<ExposeEventForwarder>(this)) {}
 
 VulkanSurfaceX11::~VulkanSurfaceX11() = default;
 
-// VulkanSurface:
+void VulkanSurfaceX11::Destroy() {
+  VulkanSurface::Destroy();
+  expose_event_forwarder_.reset();
+  if (window_ != x11::Window::None) {
+    Display* display = gfx::GetXDisplay();
+    XDestroyWindow(display, static_cast<uint32_t>(window_));
+    window_ = x11::Window::None;
+    XFlush(display);
+  }
+}
+
 bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
                                gfx::OverlayTransform pre_transform) {
   DCHECK_EQ(pre_transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  XResizeWindow(gfx::GetXDisplay(), static_cast<uint32_t>(window_),
-                size.width(), size.height());
+  Display* display = gfx::GetXDisplay();
+  XResizeWindow(display, static_cast<uint32_t>(window_), size.width(),
+                size.height());
+  XFlush(display);
   return VulkanSurface::Reshape(size, pre_transform);
 }
 

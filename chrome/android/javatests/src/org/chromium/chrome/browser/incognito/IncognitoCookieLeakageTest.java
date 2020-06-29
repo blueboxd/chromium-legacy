@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.incognito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
-import androidx.test.filters.MediumTest;
+import androidx.test.filters.LargeTest;
 
 import org.junit.After;
 import org.junit.Before;
@@ -73,10 +74,13 @@ public class IncognitoCookieLeakageTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
-    public void setUp() {
+    public void setUp() throws TimeoutException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mCookiesTestPage = mTestServer.getURL(COOKIES_SETTING_PATH);
-        mChromeActivityTestRule.startMainActivityOnBlankPage();
+
+        // Ensuring native is initialized before we access the CCT_INCOGNITO feature flag.
+        IncognitoDataTestUtils.fireAndWaitForCctWarmup();
+        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO));
     }
 
     @After
@@ -114,7 +118,7 @@ public class IncognitoCookieLeakageTest {
     // the session with other incognito sessions. Once, they are properly isolated we should change
     // the test to expect that cookies are not leaked from/to an incognito CCT session.
     @Test
-    @MediumTest
+    @LargeTest
     @UseMethodParameter(TestParams.IncognitoToIncognito.class)
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
             message = "TODO(crbug.com/1062357): The test is disabled in "
@@ -140,7 +144,7 @@ public class IncognitoCookieLeakageTest {
     // This test cookie does not leak from regular to incognito and from incognito to regular
     // session across different activity types.
     @Test
-    @MediumTest
+    @LargeTest
     @UseMethodParameter(IsolatedFlowsParams.class)
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP,
             message = "TODO(crbug.com/1062357): The test is disabled in "

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"

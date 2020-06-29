@@ -58,10 +58,7 @@ def FindTestCase(test_name):
       if cl.Name() == test_name:
         return cl
 
-
-def main():
-  FailIfScreenLockedOnMac()
-  rest_args = sys.argv[1:]
+def ProcessArgs(args):
   parser = argparse.ArgumentParser(
       description='Extra argument parser', add_help=False)
 
@@ -69,7 +66,7 @@ def main():
       '--write-run-test-arguments',
       action='store_true',
       help=('Write the test script arguments to the results file.'))
-  option, rest_args_filtered = parser.parse_known_args(rest_args)
+  option, rest_args_filtered = parser.parse_known_args(args)
 
   parser.add_argument('test', nargs='*', type=str, help=argparse.SUPPRESS)
   option, _ = parser.parse_known_args(rest_args_filtered)
@@ -92,6 +89,11 @@ def main():
   rest_args_filtered.extend(
       ['--repository-absolute-path',
        path_util.GetChromiumSrcDir()])
+  return rest_args_filtered
+
+def main():
+  FailIfScreenLockedOnMac()
+  rest_args_filtered = ProcessArgs(sys.argv[1:])
 
   retval = browser_test_runner.Run(gpu_project_config.CONFIG,
                                    rest_args_filtered)

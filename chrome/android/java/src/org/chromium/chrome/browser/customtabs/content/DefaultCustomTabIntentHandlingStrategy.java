@@ -43,8 +43,11 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
 
     @Override
     public void handleInitialIntent(BrowserServicesIntentDataProvider intentDataProvider) {
-        if (mTabProvider.getInitialTabCreationMode() == TabCreationMode.HIDDEN) {
-            handleInitialLoadForHiddedTab(intentDataProvider);
+        @TabCreationMode
+        int initialTabCreationMode = mTabProvider.getInitialTabCreationMode();
+        if (initialTabCreationMode == TabCreationMode.HIDDEN
+                || initialTabCreationMode == TabCreationMode.FROM_STARTUP_TAB_PRELOADER) {
+            handleInitialLoadForHiddedTab(initialTabCreationMode, intentDataProvider);
         } else {
             LoadUrlParams params = new LoadUrlParams(intentDataProvider.getUrlToLoad());
             mNavigationController.navigate(params, getTimestamp(intentDataProvider));
@@ -52,7 +55,7 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
     }
 
     // The hidden tab case needs a bit of special treatment.
-    private void handleInitialLoadForHiddedTab(
+    private void handleInitialLoadForHiddedTab(@TabCreationMode int initialTabCreationMode,
             BrowserServicesIntentDataProvider intentDataProvider) {
         Tab tab = mTabProvider.getTab();
         if (tab == null) {
@@ -70,7 +73,12 @@ public class DefaultCustomTabIntentHandlingStrategy implements CustomTabIntentHa
 
         // No actual load to do if the hidden tab already has the exact correct url.
         String speculatedUrl = mTabProvider.getSpeculatedUrl();
-        if (TextUtils.equals(speculatedUrl, url)) {
+        if (TextUtils.equals(speculatedUrl, url)
+                || initialTabCreationMode == TabCreationMode.FROM_STARTUP_TAB_PRELOADER) {
+            // In the TabCreationMode.FROM_STARTUP_TAB_PRELOADER case:
+            // - CustomActivityTabProvider#getSpeculatedUrl() is not set.
+            // - The tab creation mode is only set in CustomTabActivityTabController if the URL
+            // being loaded is the one we want.
             return;
         }
 

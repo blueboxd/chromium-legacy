@@ -35,6 +35,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
@@ -345,6 +347,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   // Implementation of WindowOrWorkerGlobalScope.crossOriginIsolated.
   bool IsCrossOriginIsolated() const;
+
+  virtual ukm::UkmRecorder* UkmRecorder() { return nullptr; }
+  virtual ukm::SourceId UkmSourceID() const { return ukm::kInvalidSourceId; }
 
  protected:
   explicit ExecutionContext(v8::Isolate* isolate, Agent*);

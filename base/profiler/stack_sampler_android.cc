@@ -19,6 +19,7 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
     std::vector<std::unique_ptr<Unwinder>> core_unwinders,
+    RepeatingClosure record_sample_callback,
     StackSamplerTestDelegate* test_delegate) {
   // |core_unwinders| must contain NativeUnwinderAndroid and
   // ChromeUnwinderAndroid, respectively.
@@ -26,7 +27,8 @@ std::unique_ptr<StackSampler> StackSampler::Create(
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSignal>(
           std::make_unique<ThreadDelegatePosix>(thread_token)),
-      std::move(core_unwinders), module_cache, test_delegate);
+      std::move(core_unwinders), module_cache,
+      std::move(record_sample_callback), test_delegate);
 }
 
 size_t StackSampler::GetStackBufferSize() {

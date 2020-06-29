@@ -88,7 +88,7 @@ class UiControllerAndroid : public ControllerObserver {
                      std::unique_ptr<TriggerContext> trigger_context,
                      Metrics::DropOutReason dropout_reason);
 
-  // Overrides UiController:
+  // Overrides ControllerObserver:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void OnBubbleMessageChanged(const std::string& message) override;
@@ -101,7 +101,12 @@ class UiControllerAndroid : public ControllerObserver {
   void OnDetailsChanged(const Details* details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
+  void OnProgressActiveStepChanged(int active_step) override;
   void OnProgressVisibilityChanged(bool visible) override;
+  void OnProgressBarErrorStateChanged(bool error) override;
+  void OnStepProgressBarConfigurationChanged(
+      const ShowProgressBarProto::StepProgressBarConfiguration& configuration)
+      override;
   void OnTouchableAreaChanged(
       const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,

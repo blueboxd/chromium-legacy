@@ -620,15 +620,14 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess_GoodRemoteConsent) {
       OAuth2MintTokenApiCallResult::kRemoteConsentSuccess, 1);
 }
 
-TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess_RemoteConsentFallback) {
+TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess_RemoteConsentFailure) {
   CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
-  IssueAdviceInfo empty_info;
-  EXPECT_CALL(delegate_, OnIssueAdviceSuccess(empty_info));
+  EXPECT_CALL(delegate_, OnMintTokenFailure(_));
   ProcessApiCallSuccess(head_200_.get(), std::make_unique<std::string>(
                                              kInvalidRemoteConsentResponse));
   histogram_tester_.ExpectUniqueSample(
       kOAuth2MintTokenApiCallResultHistogram,
-      OAuth2MintTokenApiCallResult::kRemoteConsentFallback, 1);
+      OAuth2MintTokenApiCallResult::kParseRemoteConsentFailure, 1);
 }
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure_NullDelegate) {

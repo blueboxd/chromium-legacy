@@ -40,7 +40,7 @@ constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 // Key names used for extensions when building the dictionary to pass to the
 // Chrome Reporting API.
 constexpr char kExtensionId[] = "extensionId";
-constexpr char kExtensionInstallEvent[] = "extensionInstallEvent";
+constexpr char kExtensionInstallEvent[] = "extensionAppInstallEvent";
 
 // Calculates hash for the given |event| and |context|, and stores the hash in
 // |hash|. Returns true if |event| and |context| are json serializable and

@@ -29,6 +29,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
@@ -572,6 +574,18 @@ TrustedTypePolicyFactory* WorkerGlobalScope::GetTrustedTypes() const {
         MakeGarbageCollected<TrustedTypePolicyFactory>(GetExecutionContext());
   }
   return trusted_types_.Get();
+}
+
+ukm::UkmRecorder* WorkerGlobalScope::UkmRecorder() {
+  if (ukm_recorder_)
+    return ukm_recorder_.get();
+
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  GetBrowserInterfaceBroker().GetInterface(
+      recorder.InitWithNewPipeAndPassReceiver());
+  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+
+  return ukm_recorder_.get();
 }
 
 void WorkerGlobalScope::Trace(Visitor* visitor) const {

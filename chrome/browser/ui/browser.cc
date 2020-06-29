@@ -2874,7 +2874,8 @@ bool Browser::AppPopupBrowserSupportsWindowFeature(
     case FEATURE_TITLEBAR:
       return check_can_support || !fullscreen;
     case FEATURE_LOCATIONBAR:
-      return false;
+      return app_controller_ && app_controller_->HasAppId() &&
+             (check_can_support || !fullscreen);
     default:
       return PopupBrowserSupportsWindowFeature(feature, check_can_support);
   }

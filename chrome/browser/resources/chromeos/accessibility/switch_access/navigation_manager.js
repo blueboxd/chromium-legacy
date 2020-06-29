@@ -41,8 +41,6 @@ class NavigationManager {
       return;
     }
 
-    SwitchAccessMetrics.recordMenuAction('EnterGroup');
-
     const newGroup = navigator.node_.asRootNode();
     if (newGroup) {
       navigator.history_.save(new FocusData(navigator.group_, navigator.node_));

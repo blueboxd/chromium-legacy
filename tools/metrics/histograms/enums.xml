@@ -20904,6 +20904,7 @@ Called by update_document_policy_enum.py.-->
   <int value="725" label="UserAgentClientHintsEnabled"/>
   <int value="726" label="SuggestedContentEnabled"/>
   <int value="727" label="ExtensionInstallEventLoggingEnabled"/>
+  <int value="728" label="EnterpriseRealTimeUrlCheckMode"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -50217,7 +50218,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="&quot;issueAdvice&quot; key not found"/>
   <int value="6" label="Parse mint token failure"/>
   <int value="7" label="Parse issue advice failure"/>
-  <int value="8" label="Remote consent fallback"/>
+  <int value="8" label="Remote consent fallback (deprecated 06/2020)"/>
+  <int value="9" label="Parse remote consent failure"/>
 </enum>
 
 <enum name="OAuthMultiloginResponseStatus">
@@ -63553,6 +63555,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="User dismissed Reauth"/>
   <int value="3" label="Reauth page failed to load"/>
   <int value="4" label="Reauth was cancelled"/>
+  <int value="5" label="Unexpected server response"/>
 </enum>
 
 <enum name="SigninReauthStates">
@@ -68100,6 +68103,13 @@ would be helpful to identify which type is being sent.
   <int value="1208419825" label="patts: Chrome OS US English"/>
   <int value="1417057269" label="patts: Chrome OS italiano"/>
   <int value="1835109015" label="patts: Chrome OS Indian English"/>
+</enum>
+
+<enum name="ThermalState">
+  <int value="0" label="Nominal"/>
+  <int value="1" label="Fair"/>
+  <int value="2" label="Serious"/>
+  <int value="3" label="Critical"/>
 </enum>
 
 <enum name="ThirdPartyStatus">

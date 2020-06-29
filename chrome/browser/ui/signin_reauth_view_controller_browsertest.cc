@@ -34,6 +34,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -54,6 +55,8 @@ const char kReauthGaiaNavigationDurationFromConfirmClickHistogramName[] =
 
 const base::TimeDelta kReauthDialogTimeout = base::TimeDelta::FromSeconds(30);
 const char kReauthDonePath[] = "/embedded/xreauth/chrome?done";
+const char kReauthUnexpectedResponsePath[] =
+    "/embedded/xreauth/chrome?unexpected";
 const char kReauthPath[] = "/embedded/xreauth/chrome";
 const char kChallengePath[] = "/challenge";
 constexpr char kTransactionalReauthResultToFillPasswordHistogram[] =
@@ -67,6 +70,13 @@ std::unique_ptr<net::test_server::BasicHttpResponse> CreateRedirectResponse(
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
   http_response->AddCustomHeader("Location", redirect_url.spec());
   http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+  return http_response;
+}
+
+std::unique_ptr<net::test_server::BasicHttpResponse> CreateEmptyResponse(
+    net::HttpStatusCode code) {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(code);
   return http_response;
 }
 
@@ -88,10 +98,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleReauthURL(
 
   if (parameter == "done") {
     // On success, the reauth returns HTTP_NO_CONTENT response.
-    auto http_response =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    http_response->set_code(net::HTTP_NO_CONTENT);
-    return http_response;
+    return CreateEmptyResponse(net::HTTP_NO_CONTENT);
+  }
+
+  if (parameter == "unexpected") {
+    // Returns a response that isn't expected by Chrome.
+    return CreateEmptyResponse(net::HTTP_NOT_IMPLEMENTED);
   }
 
   NOTREACHED();
@@ -519,4 +531,15 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   histograms.ExpectTotalCount(kTransactionalReauthResultToFillPasswordHistogram,
                               1);
   histograms.ExpectTotalCount(kTransactionalReauthResultHistogram, 1);
+}
+
+// Tests an unexpected response from Gaia.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       GaiaChallengeUnexpectedResponse) {
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(
+      https_server()->GetURL(kReauthUnexpectedResponsePath));
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kUnexpectedResponse);
 }

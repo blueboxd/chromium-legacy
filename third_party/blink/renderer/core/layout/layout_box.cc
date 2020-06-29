@@ -1967,32 +1967,16 @@ bool LayoutBox::TextIsKnownToBeOnOpaqueBackground() const {
 }
 
 static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
-  const ComputedStyle& child_style = child_box.StyleRef();
-  if (child_style.GetPosition() != EPosition::kStatic &&
-      child_box.ContainingBlock() != child_box.Parent())
+  // Skip all layers to simplify ForegroundIsKnownToBeOpaqueInRect(). This
+  // covers cases of clipped, transformed, translucent, composited, etc.
+  if (child_box.HasLayer())
     return false;
+  const ComputedStyle& child_style = child_box.StyleRef();
   if (child_style.Visibility() != EVisibility::kVisible ||
       child_style.ShapeOutside())
     return false;
-  // CSS clip is not considered in foreground or background opaqueness checks.
-  if (child_box.HasClip())
-    return false;
   if (child_box.Size().IsZero())
     return false;
-  if (PaintLayer* child_layer = child_box.Layer()) {
-    // FIXME: perhaps this could be less conservative?
-    if (child_layer->GetCompositingState() != kNotComposited)
-      return false;
-    // FIXME: Deal with z-index.
-    if (child_box.IsStackingContext())
-      return false;
-    if (child_layer->HasTransformRelatedProperty() ||
-        child_layer->IsTransparent() ||
-        child_layer->HasFilterInducingProperty())
-      return false;
-    if (child_box.HasOverflowClip() && child_style.HasBorderRadius())
-      return false;
-  }
   return true;
 }
 
@@ -2008,18 +1992,14 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
     LayoutBox* child_box = ToLayoutBox(child);
     if (!IsCandidateForOpaquenessTest(*child_box))
       continue;
-    PhysicalOffset child_location = child_box->PhysicalLocation();
-    if (child_box->IsInFlowPositioned())
-      child_location += child_box->OffsetForInFlowPosition();
+    DCHECK(!child_box->IsPositioned());
     PhysicalRect child_local_rect = local_rect;
-    child_local_rect.Move(-child_location);
+    child_local_rect.Move(-child_box->PhysicalLocation());
     if (child_local_rect.Y() < 0 || child_local_rect.X() < 0) {
       // If there is unobscured area above/left of a static positioned box then
       // the rect is probably not covered. This can cause false-negative in
       // non-horizontal-tb writing mode but is allowed.
-      if (!child_box->IsPositioned())
-        return false;
-      continue;
+      return false;
     }
     if (child_local_rect.Bottom() > child_box->Size().Height() ||
         child_local_rect.Right() > child_box->Size().Width())
@@ -2043,7 +2023,6 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
   // Root background painting is special.
   if (IsA<LayoutView>(this))
     return false;
-  // FIXME: box-shadow is painted while background painting.
   if (StyleRef().BoxShadow())
     return false;
   PhysicalRect background_rect;

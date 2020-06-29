@@ -232,6 +232,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface incognitoTabCount];
 }
 
+- (NSUInteger)browserCount {
+  return [ChromeEarlGreyAppInterface browserCount];
+}
+
 - (NSUInteger)evictedMainTabCount {
   return [ChromeEarlGreyAppInterface evictedMainTabCount];
 }
@@ -507,6 +511,30 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                   }];
   bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
+}
+
+- (void)waitForBrowserCount:(NSUInteger)count {
+  __block NSUInteger actualCount = [ChromeEarlGreyAppInterface browserCount];
+  NSString* conditionName = [NSString
+      stringWithFormat:@"Waiting for window count to become %" PRIuNS, count];
+
+  // Allow the UI to become idle, in case any tabs are being opened or closed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  GREYCondition* browserCountCheck = [GREYCondition
+      conditionWithName:conditionName
+                  block:^{
+                    actualCount = [ChromeEarlGreyAppInterface browserCount];
+                    return actualCount == count;
+                  }];
+  bool browserCountEqual =
+      [browserCountCheck waitWithTimeout:kWaitForUIElementTimeout];
+
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for window count to become %" PRIuNS
+                        "; actual count: %" PRIuNS,
+                       count, actualCount];
+  EG_TEST_HELPER_ASSERT_TRUE(browserCountEqual, errorString);
 }
 
 - (NSUInteger)indexOfActiveNormalTab {

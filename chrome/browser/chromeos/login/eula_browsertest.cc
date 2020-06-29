@@ -70,6 +70,20 @@ constexpr char kOfflineEULAWarning[] =
     "In official builds this space will show the terms of service.";
 #endif
 
+const test::UIPath kEulaWebview = {"oobe-eula-md", "crosEulaFrame"};
+const test::UIPath kAcceptEulaButton = {"oobe-eula-md", "acceptButton"};
+const test::UIPath kEulaTPMPassword = {"oobe-eula-md", "eula-password"};
+const test::UIPath kUsageStats = {"oobe-eula-md", "usageStats"};
+const test::UIPath kAdditionalTermsLink = {"oobe-eula-md", "additionalTerms"};
+const test::UIPath kAdditionalTermsDialog = {"oobe-eula-md", "additional-tos"};
+const test::UIPath kAdditionalTermsClose = {"oobe-eula-md",
+                                            "close-additional-tos"};
+const test::UIPath kInstallationSettingsLink = {"oobe-eula-md",
+                                                "installationSettings"};
+const test::UIPath kInstallationSettingsDialog = {"oobe-eula-md",
+                                                  "installationSettingsDialog"};
+const test::UIPath kLearnMoreLink = {"oobe-eula-md", "learn-more"};
+
 // Helper class to wait until the WebCotnents finishes loading.
 class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
  public:
@@ -272,8 +286,9 @@ IN_PROC_BROWSER_TEST_F(EulaOfflineTest, LoadOffline) {
   ShowEulaScreen();
 
   WaitForLocalWebviewLoad();
-  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
-                  .find(kOfflineEULAWarning) != std::string::npos);
+  EXPECT_TRUE(
+      test::GetWebViewContents(kEulaWebview).find(kOfflineEULAWarning) !=
+      std::string::npos);
 }
 
 #if defined(OS_CHROMEOS) && \
@@ -293,12 +308,9 @@ IN_PROC_BROWSER_TEST_F(EulaTest, MAYBE_LoadOnline) {
   WebContentsLoadFinishedWaiter(eula_contents).Wait();
 
   // Wait until the Accept button on the EULA frame becomes enabled.
-  chromeos::test::OobeJS()
-      .CreateEnabledWaiter(true, {"oobe-eula-md", "acceptButton"})
-      ->Wait();
+  chromeos::test::OobeJS().CreateEnabledWaiter(true, kAcceptEulaButton)->Wait();
 
-  const std::string webview_contents =
-      test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"});
+  const std::string webview_contents = test::GetWebViewContents(kEulaWebview);
   EXPECT_TRUE(webview_contents.find(kFakeOnlineEula) != std::string::npos);
 }
 
@@ -308,17 +320,15 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisplaysTpmPassword) {
   base::HistogramTester histogram_tester;
   ShowEulaScreen();
 
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "installationSettings"});
-  test::OobeJS().ExpectVisiblePath(
-      {"oobe-eula-md", "installationSettingsDialog"});
+  test::OobeJS().TapLinkOnPath(kInstallationSettingsLink);
+  test::OobeJS().ExpectVisiblePath(kInstallationSettingsDialog);
 
   test::OobeJS()
       .CreateWaiter(
           "$('oobe-eula-md').$$('#eula-password').textContent.trim() !== ''")
       ->Wait();
-  test::OobeJS().ExpectEQ(
-      "$('oobe-eula-md').$$('#eula-password').textContent.trim()",
-      std::string(FakeCryptohomeClient::kStubTpmPassword));
+  test::OobeJS().ExpectElementText(FakeCryptohomeClient::kStubTpmPassword,
+                                   kEulaTPMPassword);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("OOBE.EulaScreen.UserActions"),
       ElementsAre(base::Bucket(
@@ -332,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, EnableUsageStats) {
   ShowEulaScreen();
 
   // Verify that toggle is enabled by default.
-  test::OobeJS().ExpectTrue("$('oobe-eula-md').$$('#usageStats').checked");
+  test::OobeJS().ExpectAttributeEQ("checked", kUsageStats, true);
 
   ASSERT_TRUE(StatsReportingController::IsInitialized());
 
@@ -349,10 +359,10 @@ IN_PROC_BROWSER_TEST_F(EulaTest, EnableUsageStats) {
       StatsReportingController::Get()->AddObserver(runloop.QuitClosure());
 
   // Enable and disable usageStats that to see that metrics are recorded.
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "usageStats"});
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "usageStats"});
+  NonPolymerOobeJS().TapOnPath(kUsageStats);
+  NonPolymerOobeJS().TapOnPath(kUsageStats);
   // Advance to the next screen for changes to take effect.
-  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
+  test::OobeJS().TapOnPath(kAcceptEulaButton);
 
   // Wait for StartReporting update.
   runloop.Run();
@@ -381,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisableUsageStats) {
   ShowEulaScreen();
 
   // Verify that toggle is enabled by default.
-  test::OobeJS().ExpectTrue("$('oobe-eula-md').$$('#usageStats').checked");
+  test::OobeJS().ExpectAttributeEQ("checked", kUsageStats, true);
 
   ASSERT_TRUE(StatsReportingController::IsInitialized());
 
@@ -399,8 +409,8 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DisableUsageStats) {
 
   // Click on the toggle to disable stats collection and advance to the next
   // screen for changes to take effect.
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "usageStats"});
-  test::OobeJS().TapOnPath({"oobe-eula-md", "acceptButton"});
+  NonPolymerOobeJS().TapOnPath(kUsageStats);
+  test::OobeJS().TapOnPath(kAcceptEulaButton);
 
   // Wait for StartReportingController update.
   runloop.Run();
@@ -433,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LearnMore) {
   DialogWindowWaiter waiter(
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE));
 
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "learn-more"});
+  test::OobeJS().TapLinkOnPath(kLearnMoreLink);
 
   // Wait until help dialog is displayed.
   waiter.Wait();
@@ -449,20 +459,17 @@ IN_PROC_BROWSER_TEST_F(EulaTest, AdditionalToS) {
   base::HistogramTester histogram_tester;
   ShowEulaScreen();
 
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "additionalTerms"});
+  test::OobeJS().TapLinkOnPath(kAdditionalTermsLink);
 
   test::OobeJS()
-      .CreateWaiter(
-          test::GetOobeElementPath({"oobe-eula-md", "additional-tos"}) +
-          ".open")
+      .CreateWaiter(test::GetOobeElementPath(kAdditionalTermsDialog) + ".open")
       ->Wait();
 
-  NonPolymerOobeJS().TapOnPath({"oobe-eula-md", "close-additional-tos"});
+  NonPolymerOobeJS().TapOnPath(kAdditionalTermsClose);
 
   test::OobeJS()
-      .CreateWaiter(
-          test::GetOobeElementPath({"oobe-eula-md", "additional-tos"}) +
-          ".open === false")
+      .CreateWaiter(test::GetOobeElementPath(kAdditionalTermsDialog) +
+                    ".open === false")
       ->Wait();
 
   EXPECT_THAT(

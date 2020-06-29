@@ -7300,6 +7300,18 @@
     ]
   },
 
+  "EnterpriseRealTimeUrlCheckMode": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "EnterpriseRealTimeUrlCheckMode": 1 },
+        "prefs": {
+          "safebrowsing.enterprise_real_time_url_check_mode": { "value": 1 }
+        }
+      }
+    ]
+  },
+
   "RendererCodeIntegrityEnabled": {
     "os": ["win"],
     "policy_pref_mapping_test": [

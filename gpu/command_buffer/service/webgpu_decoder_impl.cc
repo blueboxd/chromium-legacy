@@ -554,7 +554,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       const WGPUDeviceProperties& requested_device_properties);
 
   void SendAdapterProperties(DawnRequestAdapterSerial request_adapter_serial,
-                             uint32_t adapter_service_id,
+                             int32_t adapter_service_id,
                              const dawn_native::Adapter& adapter);
   void SendRequestedDeviceInfo(DawnDeviceClientID device_client_id,
                                bool is_request_device_success);
@@ -813,9 +813,15 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 
 void WebGPUDecoderImpl::SendAdapterProperties(
     DawnRequestAdapterSerial request_adapter_serial,
-    uint32_t adapter_service_id,
+    int32_t adapter_service_id,
     const dawn_native::Adapter& adapter) {
-  WGPUDeviceProperties adapter_properties = adapter.GetAdapterProperties();
+  WGPUDeviceProperties adapter_properties =
+      (adapter) ? adapter.GetAdapterProperties() : WGPUDeviceProperties{};
+
+  if (!adapter) {
+    // If there's no adapter, the adapter_service_id should be -1
+    DCHECK_EQ(adapter_service_id, -1);
+  }
 
   size_t serialized_adapter_properties_size =
       dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
@@ -869,7 +875,10 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
 
   int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
   if (requested_adapter_index < 0) {
-    return error::kLostContext;
+    // There are no adapters to return since webgpu is not supported here
+    SendAdapterProperties(request_adapter_serial, requested_adapter_index,
+                          nullptr);
+    return error::kNoError;
   }
 
   // Currently we treat the index of the adapter in dawn_adapters_ as the id of
@@ -877,8 +886,7 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
   const dawn_native::Adapter& adapter = dawn_adapters_[requested_adapter_index];
-  SendAdapterProperties(request_adapter_serial,
-                        static_cast<uint32_t>(requested_adapter_index),
+  SendAdapterProperties(request_adapter_serial, requested_adapter_index,
                         adapter);
 
   return error::kNoError;

@@ -282,8 +282,8 @@ bool ServiceProcessState::StateData::WatchExecutable() {
     }
     if (!executable_watcher.Watch(
             executable_path, false,
-            base::Bind(&ExecFilePathWatcherCallback::NotifyPathChanged,
-                       base::Owned(callback.release())))) {
+            base::BindRepeating(&ExecFilePathWatcherCallback::NotifyPathChanged,
+                                base::Owned(callback.release())))) {
       DLOG(ERROR) << "executable_watcher.watch " << executable_path.value();
       return false;
     }

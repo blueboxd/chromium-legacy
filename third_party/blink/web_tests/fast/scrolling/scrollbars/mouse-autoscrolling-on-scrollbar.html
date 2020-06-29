@@ -57,6 +57,7 @@
     const down_arrow_x = scrollerRect.right - BUTTON_WIDTH / 2;
     const down_arrow_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
 
+    await mouseMoveTo(down_arrow_x, down_arrow_y);
     await mouseDownAt(down_arrow_x, down_arrow_y);
     await waitUntil(() => { return scroller.scrollTop > SCROLL_DELTA; },
     `scroller.scrollTop = ${scroller.scrollTop} never went beyond ${SCROLL_DELTA}`);
@@ -79,6 +80,7 @@
     const trackscroll_x = scrollerRect.right - BUTTON_WIDTH / 2;
     const trackscroll_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH;
 
+    await mouseMoveTo(trackscroll_x, trackscroll_y);
     await mouseDownAt(trackscroll_x, trackscroll_y);
     await waitUntil(() => { return scroller.scrollTop > SCROLL_DELTA; },
     `scroller.scrollTop = ${scroller.scrollTop} never went beyond ${SCROLL_DELTA}`);
@@ -119,6 +121,7 @@
     // Keep the mouse pressed. The previously scheduled scroller height increment kicks in
     // and at this point, the autoscrolling is expected to take place. This should prove
     // that scrolling occured *after* the scroller length was extended.
+    await mouseMoveTo(down_arrow_x, down_arrow_y);
     await mouseDownAt(down_arrow_x, down_arrow_y);
 
     // Verify that autoscroll took place beyond the old bounds. If there is a regression here,

@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -99,9 +98,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     private float mControlOffsetRatio;
     private boolean mOffsetsChanged;
     private ActivityTabTabObserver mActiveTabObserver;
-
-    private boolean mInGesture;
-    private boolean mContentViewScrolling;
 
     // Current ContentView. Updates when active tab is switched or WebContents is swapped
     // in the current Tab.
@@ -202,7 +198,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
 
             @Override
             public void onContentViewScrollingStateChanged(boolean scrolling) {
-                mContentViewScrolling = scrolling;
                 if (!scrolling) updateContentOffsetAndNotify();
             }
         };
@@ -501,29 +496,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         mViewportSizeDelegate = delegate;
     }
 
-    /**
-     * Updates viewport size to have it render the content correctly.
-     */
-    public void updateViewportSize() {
-        if (mInGesture || mContentViewScrolling) return;
-
-        // Update content viewport size only if the browser controls are not moving, i.e. not
-        // scrolling or animating.
-        if (!areBrowserControlsIdle()) return;
-
-        if (mViewportSizeDelegate != null) mViewportSizeDelegate.run();
-    }
-
-    /**
-     * @return Whether browser controls are currently idle, i.e. not scrolling or animating.
-     */
-    private boolean areBrowserControlsIdle() {
-        return (getContentOffset() == getTopControlsMinHeight()
-                       || getContentOffset() == getTopControlsHeight())
-                && (getBottomContentOffset() == getBottomControlsMinHeight()
-                        || getBottomContentOffset() == getBottomControlsHeight());
-    }
-
     // View.OnHierarchyChangeListener implementation
 
     @Override
@@ -548,7 +520,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         float bottomMargin = getBottomContentOffset();
         applyTranslationToTopChildViews(view, topViewsTranslation);
         applyMarginToFullChildViews(view, topViewsTranslation, bottomMargin);
-        updateViewportSize();
+        if (mViewportSizeDelegate != null) mViewportSizeDelegate.run();
     }
 
     /**
@@ -565,7 +537,10 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         mControlContainer.getView().postOnAnimation(mUpdateVisibilityRunnable);
     }
 
-    private void updateContentOffsetAndNotify() {
+    /**
+     * Updates top content offset and notify the change.
+     */
+    public void updateContentOffsetAndNotify() {
         TraceEvent.begin("FullscreenManager:updateContentOffsetAndNotify");
 
         updateContentViewChildrenState();
@@ -744,25 +719,6 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
             obs.onControlsOffsetChanged(getTopControlOffset(), getTopControlsMinHeightOffset(),
                     getBottomControlOffset(), getBottomControlsMinHeightOffset(), needsAnimate);
-        }
-    }
-
-    /**
-     * Notifies the fullscreen manager that a motion event has occurred.
-     * @param e The dispatched motion event.
-     */
-    public void onMotionEvent(MotionEvent e) {
-        int eventAction = e.getActionMasked();
-        if (eventAction == MotionEvent.ACTION_DOWN
-                || eventAction == MotionEvent.ACTION_POINTER_DOWN) {
-            mInGesture = true;
-            // TODO(qinmin): Probably there is no need to hide the toast as it will go away
-            // by itself.
-            mHtmlApiHandler.hideNotificationToast();
-        } else if (eventAction == MotionEvent.ACTION_CANCEL
-                || eventAction == MotionEvent.ACTION_UP) {
-            mInGesture = false;
-            updateContentOffsetAndNotify();
         }
     }
 

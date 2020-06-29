@@ -31,9 +31,6 @@ import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-ke
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
-// <if expr="chromeos">
-import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.m.js';
-// </if>
 import '../controls/extension_controlled_indicator.m.js';
 import '../controls/settings_toggle_button.m.js';
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
@@ -55,6 +52,7 @@ import './passwords_list_handler.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import './passwords_export_dialog.js';
 import './passwords_shared_css.js';
+import './avatar_icon.js';
 import {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.m.js';
 // <if expr="chromeos">
 import '../controls/password_prompt_dialog.m.js';
@@ -354,13 +352,6 @@ Polymer({
     syncBrowserProxy.sendSyncPrefsChanged();
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
 
-    /** @type {!ProfileInfoBrowserProxy} */ (
-        ProfileInfoBrowserProxyImpl.getInstance())
-        .getProfileInfo()
-        .then(this.extractImageFromProfileInfo_.bind(this));
-    this.addWebUIListener(
-        'profile-info-changed', this.extractImageFromProfileInfo_.bind(this));
-
     // For non-ChromeOS, also check whether accounts are available.
     // <if expr="not chromeos">
     const storedAccountsChanged = accounts => this.storedAccounts_ = accounts;
@@ -622,27 +613,6 @@ Polymer({
   /** @private */
   onOptOut_: function() {
     this.passwordManager_.optInForAccountStorage(false);
-  },
-
-  /**
-   * Updates the profile icon used in the opt-in/opt-out element based on the
-   * given profile info.
-   * @private
-   * @param {!ProfileInfo} info
-   */
-  extractImageFromProfileInfo_(info) {
-    /**
-     * Extract first frame from image by creating a single frame PNG using
-     * url as input if base64 encoded and potentially animated.
-     */
-    // <if expr="chromeos">
-    if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIcon_ = getImage(convertImageSequenceToPng([info.iconUrl]));
-      return;
-    }
-    // </if>
-
-    this.profileIcon_ = getImage(info.iconUrl);
   },
 
   /**

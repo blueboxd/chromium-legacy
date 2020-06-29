@@ -514,7 +514,7 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
     /**
      * Hides the notification toast.
      */
-    public void hideNotificationToast() {
+    private void hideNotificationToast() {
         if (mNotificationToast != null) {
             mNotificationToast.cancel();
             mNotificationToast = null;

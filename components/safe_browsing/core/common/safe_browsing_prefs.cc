@@ -73,6 +73,8 @@ GURL GetSimplifiedURL(const GURL& url) {
 namespace prefs {
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 const char kSafeBrowsingEnhanced[] = "safebrowsing.enhanced";
+const char kSafeBrowsingEnterpriseRealTimeUrlCheckMode[] =
+    "safebrowsing.enterprise_real_time_url_check_mode";
 const char kSafeBrowsingExtendedReportingOptInAllowed[] =
     "safebrowsing.extended_reporting_opt_in_allowed";
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
@@ -211,6 +213,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
                                 DO_NOT_SCAN);
   registry->RegisterBooleanPref(prefs::kAdvancedProtectionAllowed, true);
+  registry->RegisterIntegerPref(
+      prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
+      REAL_TIME_CHECK_DISABLED);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

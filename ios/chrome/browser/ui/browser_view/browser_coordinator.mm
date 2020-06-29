@@ -8,7 +8,6 @@
 
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
-#import "components/content_settings/core/common/features.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -52,6 +51,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
+#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
@@ -721,8 +721,7 @@
 }
 
 - (void)showPageInfo {
-  DCHECK(
-      base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls));
+  DCHECK(base::FeatureList::IsEnabled(kPageInfoRefactoring));
   PageInfoCoordinator* pageInfoCoordinator = [[PageInfoCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];

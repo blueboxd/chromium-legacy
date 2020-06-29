@@ -59,6 +59,7 @@ const test::UIPath kCellularPermissionNext = {"oobe-update",
                                               "cellular-permission-next"};
 const test::UIPath kCellularPermissionBack = {"oobe-update",
                                               "cellular-permission-back"};
+const test::UIPath kErrorMessage = {"error-message"};
 
 // These values should be kept in sync with the progress bar values in
 // chrome/browser/chromeos/login/version_updater/version_updater.cc.
@@ -493,12 +494,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("error-message");
+  test::OobeJS().ExpectVisiblePath(kErrorMessage);
   test::OobeJS().ExpectVisible("error-message-md");
-  test::OobeJS().ExpectTrue(
-      "$('error-message').classList.contains('ui-state-update')");
-  test::OobeJS().ExpectTrue(
-      "$('error-message').classList.contains('error-state-portal')");
+  test::OobeJS().ExpectHasClass("ui-state-update", kErrorMessage);
+  test::OobeJS().ExpectHasClass("error-state-portal", kErrorMessage);
 
   // Change active network to the wifi behind proxy.
   network_portal_detector_.SetDefaultNetwork(
@@ -506,8 +505,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED);
 
   test::OobeJS()
-      .CreateWaiter(
-          "$('error-message').classList.contains('error-state-proxy')")
+      .CreateHasClassWaiter(true, "error-state-proxy", kErrorMessage)
       ->Wait();
 
   EXPECT_FALSE(last_screen_result_.has_value());
@@ -537,12 +535,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
   error_screen_waiter.set_assert_next_screen();
   error_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("error-message");
+  test::OobeJS().ExpectVisiblePath(kErrorMessage);
   test::OobeJS().ExpectVisible("error-message-md");
-  test::OobeJS().ExpectTrue(
-      "$('error-message').classList.contains('ui-state-update')");
-  test::OobeJS().ExpectTrue(
-      "$('error-message').classList.contains('error-state-offline')");
+
+  test::OobeJS().ExpectHasClass("ui-state-update", kErrorMessage);
+  test::OobeJS().ExpectHasClass("error-state-offline", kErrorMessage);
 
   EXPECT_FALSE(last_screen_result_.has_value());
   histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",

@@ -27,8 +27,28 @@
           type="chrome_html"
           compress="false"/>
       <structure
+          name="IDR_PROFILE_PICKER_NAVIGATION_BEHAVIOR_JS"
+          file="navigation_behavior.js"
+          type="chrome_html"
+          compress="false"/>
+      <structure
           name="IDR_PROFILE_PICKER_ICONS_JS"
           file="icons.js"
+          type="chrome_html"
+          compress="false"/>
+      <structure
+          name="IDR_PROFILE_PICKER_LAZY_LOAD_JS"
+          file="profile_creation_flow/lazy_load.js"
+          type="chrome_html"
+          compress="false"/>
+      <structure
+          name="IDR_PROFILE_PICKER_ENSURE_LAZY_LOADED_JS"
+          file="profile_creation_flow/ensure_lazy_loaded.js"
+          type="chrome_html"
+          compress="false"/>
+      <structure
+          name="IDR_PROFILE_PICKER_PROFILE_TYPE_INPUT_JS"
+          file="profile_creation_flow/profile_type_choice.js"
           type="chrome_html"
           compress="false"/>
     </structures>

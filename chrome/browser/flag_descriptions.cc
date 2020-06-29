@@ -2043,11 +2043,6 @@ const char kSyncDeviceInfoInTransportModeDescription[] =
     "When enabled, allows syncing DeviceInfo datatype for users who are "
     "signed-in but not necessary sync-ing.";
 
-const char kSyncErrorInfoBarName[] = "Enable SyncErrorInfoBar.";
-const char kSyncErrorInfoBarDescription[] =
-    "When enabled, shows an infobar for sync errors that can be resolved "
-    "by user interaction in the settings page.";
-
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
@@ -2974,12 +2969,6 @@ const char kCastMediaRouteProviderDescription[] =
     "Enables the native Cast Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
 
-const char kNtpConfirmSuggestionRemovalsName[] =
-    "Confirm removing \"realbox\" suggestions on New Tab page";
-const char kNtpConfirmSuggestionRemovalsDescription[] =
-    "Show a confirmation dialog when removing suggestions from the \"realbox\" "
-    "on the New Tab page. Requires #ntp-realbox to be enabled.";
-
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =
     "Enables a UI to persistently dismiss [non-emergency] promos on the "
@@ -3367,7 +3356,7 @@ const char kBluetoothNextHandsfreeProfileName[] =
     "Enable next version of Bluetooth Handsfree profile";
 const char kBluetoothNextHandsfreeProfileDescription[] =
     "Enable next version of Bluetooth Handsfree profile 1.7 which includes "
-    "WBS(wideband speeech) feature";
+    "WBS(wideband speech) feature";
 
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =

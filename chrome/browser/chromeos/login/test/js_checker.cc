@@ -102,6 +102,24 @@ std::string JSChecker::GetString(const std::string& expression) {
   return result;
 }
 
+bool JSChecker::GetAttributeBool(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetBool(GetAttributeExpression(attribute, element_ids));
+}
+
+int JSChecker::GetAttributeInt(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetInt(GetAttributeExpression(attribute, element_ids));
+}
+
+std::string JSChecker::GetAttributeString(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  return GetString(GetAttributeExpression(attribute, element_ids));
+}
+
 void JSChecker::ExpectTrue(const std::string& expression) {
   EXPECT_TRUE(GetBool(expression)) << expression;
 }
@@ -134,6 +152,47 @@ void JSChecker::ExpectEQ(const std::string& expression, bool result) {
 
 void JSChecker::ExpectNE(const std::string& expression, bool result) {
   EXPECT_NE(GetBool(expression), result) << expression;
+}
+
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    int result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    int result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
+}
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    const std::string& result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    const std::string& result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeEQ(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    bool result) {
+  ExpectEQ(GetAttributeExpression(attribute, element_ids), result);
+}
+
+void JSChecker::ExpectAttributeNE(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids,
+    bool result) {
+  ExpectNE(GetAttributeExpression(attribute, element_ids), result);
 }
 
 std::unique_ptr<TestConditionWaiter> JSChecker::CreateWaiter(
@@ -284,22 +343,22 @@ void JSChecker::ExpectPathDisplayed(
 
 void JSChecker::ExpectDisabledPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectTrue(GetOobeElementPath(element_ids) + ".disabled");
+  ExpectAttributeEQ("disabled", element_ids, true);
 }
 
 void JSChecker::ExpectEnabledPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectFalse(GetOobeElementPath(element_ids) + ".disabled");
+  ExpectAttributeEQ("disabled", element_ids, false);
 }
 
 void JSChecker::ExpectInvalidPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectTrue(GetOobeElementPath(element_ids) + ".invalid");
+  ExpectAttributeEQ("invalid", element_ids, true);
 }
 
 void JSChecker::ExpectValidPath(
     std::initializer_list<base::StringPiece> element_ids) {
-  ExpectFalse(GetOobeElementPath(element_ids) + ".invalid");
+  ExpectAttributeEQ("invalid", element_ids, false);
 }
 
 void JSChecker::ExpectHasClass(
@@ -329,26 +388,21 @@ void JSChecker::ExpectHasNoAttribute(
 void JSChecker::ExpectElementText(
     const std::string& content,
     std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  const std::string expression = element_path + ".textContent.trim()";
-  ExpectEQ(expression, content);
+  ExpectAttributeEQ("textContent.trim()", element_ids, content);
 }
 
 void JSChecker::ExpectElementContainsText(
     const std::string& content,
     std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  const std::string expression = element_path + ".textContent.trim()";
-  const std::string message = GetString(expression);
+  const std::string message =
+      GetAttributeString("textContent.trim()", element_ids);
   EXPECT_TRUE(std::string::npos != message.find(content));
 }
 
 void JSChecker::ExpectElementValue(
     const std::string& value,
     std::initializer_list<base::StringPiece> element_ids) {
-  const std::string element_path = GetOobeElementPath(element_ids);
-  const std::string expression = element_path + ".value";
-  ExpectEQ(expression, value);
+  ExpectAttributeEQ("value", element_ids, value);
 }
 
 void JSChecker::ClickOnPath(
@@ -381,7 +435,8 @@ void JSChecker::TapLinkOnPath(
     std::initializer_list<base::StringPiece> element_ids) {
   ExpectVisiblePath(element_ids);
   // Make sure this method is used only on <a> html elements.
-  ExpectEQ(GetOobeElementPath(element_ids) + ".tagName", std::string("A"));
+  ExpectAttributeEQ("tagName", element_ids, std::string("A"));
+
   Evaluate(GetOobeElementPath(element_ids) + ".click()");
 }
 
@@ -462,6 +517,15 @@ std::string GetOobeElementPath(
   for (it++; it < element_ids.end(); it++) {
     result.append(".$$('#").append(std::string(*it)).append("')");
   }
+  return result;
+}
+
+std::string GetAttributeExpression(
+    const std::string& attribute,
+    std::initializer_list<base::StringPiece> element_ids) {
+  std::string result = GetOobeElementPath(element_ids);
+  result.append(".");
+  result.append(attribute);
   return result;
 }
 

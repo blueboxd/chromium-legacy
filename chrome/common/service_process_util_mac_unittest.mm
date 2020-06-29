@@ -57,7 +57,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
-        io_thread_.task_runner().get(), base::Closure()));
+        io_thread_.task_runner().get(), base::OnceClosure()));
     task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop_.QuitWhenIdleClosure(),
         TestTimeouts::action_max_timeout());

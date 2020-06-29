@@ -84,7 +84,7 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
         GetPolicy()->GetAllowlistForFeature(feature_name);
     const auto& allowed_origins = allowlist.AllowedOrigins();
     if (allowed_origins.empty()) {
-      if (allowlist.GetFallbackValue())
+      if (allowlist.MatchesAll())
         return Vector<String>({"*"});
     }
     Vector<String> result;

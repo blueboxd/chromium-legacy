@@ -164,7 +164,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                             delegate:(id<SettingsNavigationControllerDelegate>)
                                          delegate
                   feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                             handler:(id<ApplicationCommands>)handler {
   DCHECK(browser);
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetUserFeedbackProvider()
@@ -172,7 +172,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   UIViewController* controller =
       ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
-          ->CreateViewController(dataSource, dispatcher);
+          ->CreateViewController(dataSource, handler);
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -369,7 +369,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
           initWithBaseNavigationController:self
                                    browser:self.browser
                                       mode:GoogleServicesSettingsModeSettings];
-  self.googleServicesSettingsCoordinator.dispatcher =
+  self.googleServicesSettingsCoordinator.handler =
       _settingsNavigationDelegate.handlerForSettings;
   self.googleServicesSettingsCoordinator.delegate = self;
   [self.googleServicesSettingsCoordinator start];

@@ -833,6 +833,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   NSArray* collectionActions = [self collectionItems];
 
   if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+      GetApplicationContext()->GetBrowserPolicyConnector() &&
       GetApplicationContext()
           ->GetBrowserPolicyConnector()
           ->HasMachineLevelPolicies()) {

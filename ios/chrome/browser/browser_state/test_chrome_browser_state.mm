@@ -317,8 +317,7 @@ void TestChromeBrowserState::CreateWebDataService() {
 void TestChromeBrowserState::CreateBookmarkModel(bool delete_file) {
   if (delete_file) {
     base::DeleteFile(GetOriginalChromeBrowserState()->GetStatePath().Append(
-                         bookmarks::kBookmarksFileName),
-                     false /* recursive */);
+        bookmarks::kBookmarksFileName));
   }
   ignore_result(
       ios::BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -334,7 +333,7 @@ bool TestChromeBrowserState::CreateHistoryService(bool delete_file) {
     base::FilePath path =
         GetOriginalChromeBrowserState()->GetStatePath().Append(
             history::kHistoryFilename);
-    if (!base::DeleteFile(path, false) && base::PathExists(path))
+    if (!base::DeleteFile(path) && base::PathExists(path))
       return false;
   }
 

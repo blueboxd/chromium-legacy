@@ -19,6 +19,7 @@
 #include "base/win/win_util.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/win/constants.h"
 #include "chrome/updater/win/task_scheduler.h"
 
 namespace updater {
@@ -53,7 +54,7 @@ base::string16 GetComServerClsidRegistryPath(REFCLSID clsid) {
 }
 
 base::string16 GetComServiceClsid() {
-  return base::win::String16FromGUID(__uuidof(UpdaterServiceClass));
+  return base::win::String16FromGUID(CLSID_UpdaterServiceClass);
 }
 
 base::string16 GetComServiceClsidRegistryPath() {

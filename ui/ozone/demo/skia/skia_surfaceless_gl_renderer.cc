@@ -239,8 +239,7 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
   SkSurface* sk_surface = buffers_[back_buffer_]->sk_surface();
   if (use_ddl_) {
     StartDDLRenderThreadIfNecessary(sk_surface);
-    auto ddl = GetDDL();
-    sk_surface->draw(ddl.get());
+    sk_surface->draw(GetDDL());
   } else {
     Draw(sk_surface->getCanvas(), NextFraction());
   }

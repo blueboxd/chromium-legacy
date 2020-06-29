@@ -20,7 +20,7 @@ ShowProgressBarAction::ShowProgressBarAction(ActionDelegate* delegate,
   DCHECK(proto_.has_show_progress_bar());
 }
 
-ShowProgressBarAction::~ShowProgressBarAction() {}
+ShowProgressBarAction::~ShowProgressBarAction() = default;
 
 void ShowProgressBarAction::InternalProcessAction(
     ProcessActionCallback callback) {
@@ -29,14 +29,50 @@ void ShowProgressBarAction::InternalProcessAction(
     // use tell instead.
     delegate_->SetStatusMessage(proto_.show_progress_bar().message());
   }
-  int progress =
-      base::ClampToRange(proto_.show_progress_bar().progress(), 0, 100);
-  delegate_->SetProgress(progress);
+
   if (proto_.show_progress_bar().has_hide()) {
     delegate_->SetProgressVisible(!proto_.show_progress_bar().hide());
   }
+  if (proto_.show_progress_bar().has_step_progress_bar_configuration()) {
+    if (proto_.show_progress_bar()
+            .step_progress_bar_configuration()
+            .step_icons()
+            .size() < 2) {
+      EndAction(std::move(callback), INVALID_ACTION);
+      return;
+    }
+    delegate_->SetStepProgressBarConfiguration(
+        proto_.show_progress_bar().step_progress_bar_configuration());
+  }
 
-  UpdateProcessedAction(ACTION_APPLIED);
+  switch (proto_.show_progress_bar().progress_indicator_case()) {
+    case ShowProgressBarProto::ProgressIndicatorCase::kProgress: {
+      int progress =
+          base::ClampToRange(proto_.show_progress_bar().progress(), 0, 100);
+      delegate_->SetProgress(progress);
+      break;
+    }
+    case ShowProgressBarProto::ProgressIndicatorCase::kActiveStep: {
+      int active_step = proto_.show_progress_bar().active_step();
+      if (active_step < 0) {
+        EndAction(std::move(callback), INVALID_ACTION);
+        return;
+      }
+
+      delegate_->SetProgressActiveStep(active_step);
+      break;
+    }
+    default:
+      // Ignore.
+      break;
+  }
+
+  EndAction(std::move(callback), ACTION_APPLIED);
+}
+
+void ShowProgressBarAction::EndAction(ProcessActionCallback callback,
+                                      ProcessedActionStatusProto status) {
+  UpdateProcessedAction(status);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

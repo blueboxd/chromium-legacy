@@ -3609,6 +3609,7 @@ TEST_F(TransformInteropTest, BackfaceInvisibleTransform) {
 
   back_facing->SetShouldCheckBackfaceVisibility(true);
   back_facing_double_sided->SetShouldCheckBackfaceVisibility(false);
+  back_facing->SetHasWillChangeTransformHint(true);
   front_facing->SetShouldCheckBackfaceVisibility(true);
 
   auto& back_facing_transform_node = CreateTransformNode(back_facing);
@@ -3632,6 +3633,7 @@ TEST_F(TransformInteropTest, BackfaceInvisibleTransform) {
       front_facing, front_facing->transform_tree_index(),
       host_impl()->active_tree()->property_trees()));
 
+  EXPECT_TRUE(back_facing->raster_even_if_not_drawn());
   EXPECT_TRUE(
       draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
           back_facing, host_impl()->active_tree()->property_trees()));

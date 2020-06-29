@@ -692,7 +692,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 #pragma mark - Private methods
 
 // The dispatcher used for ApplicationCommands.
-- (id<ApplicationCommands>)applicationDispatcher {
+- (id<ApplicationCommands>)applicationCommandsHandler {
   DCHECK(self.browser);
   DCHECK(self.browser->GetCommandDispatcher());
   return HandlerForProtocol(self.browser->GetCommandDispatcher(),
@@ -806,7 +806,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     case PasswordInfoBarType::SAVE: {
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
           isSyncUser, /*password_update*/ false, std::move(form));
-      delegate->set_dispatcher(self.applicationDispatcher);
+      delegate->set_handler(self.applicationCommandsHandler);
 
       if (IsInfobarUIRebootEnabled()) {
         std::unique_ptr<InfoBarIOS> infobar;
@@ -839,7 +839,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       if (IsInfobarUIRebootEnabled()) {
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             isSyncUser, /*password_update*/ true, std::move(form));
-        delegate->set_dispatcher(self.applicationDispatcher);
+        delegate->set_handler(self.applicationCommandsHandler);
         InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
             alloc]
             initWithInfoBarDelegate:delegate.get()
@@ -852,7 +852,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       } else if (!manual) {
         IOSChromeUpdatePasswordInfoBarDelegate::Create(
             isSyncUser, infoBarManager, std::move(form),
-            self.baseViewController, self.applicationDispatcher);
+            self.baseViewController, self.applicationCommandsHandler);
       }
       break;
     }

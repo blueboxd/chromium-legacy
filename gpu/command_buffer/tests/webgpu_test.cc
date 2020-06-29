@@ -22,7 +22,7 @@ namespace gpu {
 
 namespace {
 
-void OnRequestAdapterCallback(uint32_t adapter_service_id,
+void OnRequestAdapterCallback(int32_t adapter_service_id,
                               const WGPUDeviceProperties& properties) {}
 
 void CountCallback(int* count) {

@@ -230,7 +230,11 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
   MOCK_METHOD0(ClearInfoBox, void());
   MOCK_METHOD1(SetProgress, void(int progress));
+  MOCK_METHOD1(SetProgressActiveStep, void(int active_step));
   MOCK_METHOD1(SetProgressVisible, void(bool visible));
+  MOCK_METHOD1(SetStepProgressBarConfiguration,
+               void(const ShowProgressBarProto::StepProgressBarConfiguration&
+                        configuration));
   MOCK_METHOD1(SetUserActions,
                void(std::unique_ptr<std::vector<UserAction>> user_action));
   MOCK_METHOD1(SetViewportMode, void(ViewportMode mode));

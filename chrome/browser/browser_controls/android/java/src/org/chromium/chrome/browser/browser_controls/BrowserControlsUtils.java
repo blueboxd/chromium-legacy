@@ -49,4 +49,16 @@ public class BrowserControlsUtils {
     public static int getBottomContentOffset(BrowserControlsStateProvider stateProvider) {
         return stateProvider.getBottomControlsHeight() - stateProvider.getBottomControlOffset();
     }
+
+    /**
+     * @return Whether browser controls are currently idle, i.e. not scrolling or animating.
+     */
+    public static boolean areBrowserControlsIdle(BrowserControlsStateProvider provider) {
+        return (provider.getContentOffset() == provider.getTopControlsMinHeight()
+                       || provider.getContentOffset() == provider.getTopControlsHeight())
+                && (BrowserControlsUtils.getBottomContentOffset(provider)
+                                == provider.getBottomControlsMinHeight()
+                        || BrowserControlsUtils.getBottomContentOffset(provider)
+                                == provider.getBottomControlsHeight());
+    }
 }

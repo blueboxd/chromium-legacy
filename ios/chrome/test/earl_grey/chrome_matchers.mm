@@ -163,6 +163,10 @@ id<GREYMatcher> OpenLinkInNewTabButton() {
   return [ChromeMatchersAppInterface openLinkInNewTabButton];
 }
 
+id<GREYMatcher> OpenLinkInNewWindowButton() {
+  return [ChromeMatchersAppInterface openLinkInNewWindowButton];
+}
+
 id<GREYMatcher> NavigationBarDoneButton() {
   return [ChromeMatchersAppInterface navigationBarDoneButton];
 }

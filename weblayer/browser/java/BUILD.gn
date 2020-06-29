@@ -65,7 +65,6 @@ java_strings_grd("weblayer_strings_grd") {
 java_cpp_enum("generated_enums") {
   sources = [
     "//weblayer/browser/controls_visibility_reason.h",
-    "//weblayer/browser/infobar_android.h",
     "//weblayer/browser/translate_utils.h",
     "//weblayer/public/download.h",
     "//weblayer/public/navigation.h",
@@ -95,7 +94,6 @@ android_library("java") {
     "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
-    "org/chromium/weblayer_private/InfoBar.java",
     "org/chromium/weblayer_private/InfoBarContainer.java",
     "org/chromium/weblayer_private/InfoBarContainerLayout.java",
     "org/chromium/weblayer_private/InfoBarContainerView.java",
@@ -174,6 +172,7 @@ android_library("java") {
     "//components/embedder_support/android/metrics:java",
     "//components/external_intents/android:java",
     "//components/find_in_page/android:java",
+    "//components/infobars/android:infobar_android_enums_java",
     "//components/infobars/android:java",
     "//components/infobars/core:infobar_enums_java",
     "//components/javascript_dialogs/android:java",
@@ -280,7 +279,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
-    "org/chromium/weblayer_private/InfoBar.java",
     "org/chromium/weblayer_private/InfoBarContainer.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
     "org/chromium/weblayer_private/MediaStreamManager.java",

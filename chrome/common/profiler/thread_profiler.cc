@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/no_destructor.h"
+#include "base/process/process.h"
 #include "base/profiler/sample_metadata.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/rand_util.h"
@@ -83,6 +84,22 @@ CallStackProfileParams::Process GetProcess() {
   return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
+bool IsCurrentProcessBackgrounded() {
+#if defined(OS_MACOSX)
+  // Port provider that returns the calling process's task port, ignoring its
+  // argument.
+  class SelfPortProvider : public base::PortProvider {
+    mach_port_t TaskForPid(base::ProcessHandle process) const override {
+      return mach_task_self();
+    }
+  };
+  SelfPortProvider provider;
+  return base::Process::Current().IsProcessBackgrounded(&provider);
+#else   // defined(OS_MACOSX)
+  return base::Process::Current().IsProcessBackgrounded();
+#endif  // defined(OS_MACOSX)
+}
+
 const base::RepeatingCallback<std::vector<std::unique_ptr<base::Unwinder>>()>&
 GetCoreUnwindersFactory() {
   const auto create_unwinders_factory = []() {
@@ -144,6 +161,18 @@ GetCoreUnwindersFactory() {
       native_unwinder_factory(create_unwinders_factory());
 
   return *native_unwinder_factory;
+}
+
+const base::RepeatingClosure GetApplyPerSampleMetadataCallback(
+    CallStackProfileParams::Process process) {
+  if (process != CallStackProfileParams::RENDERER_PROCESS)
+    return base::RepeatingClosure();
+  static const base::SampleMetadata process_backgrounded("ProcessBackgrounded");
+  return base::BindRepeating(
+      [](base::SampleMetadata process_backgrounded) {
+        process_backgrounded.Set(IsCurrentProcessBackgrounded());
+      },
+      process_backgrounded);
 }
 
 }  // namespace
@@ -309,7 +338,8 @@ void ThreadProfiler::SetCollectorForChildProcess(
 ThreadProfiler::ThreadProfiler(
     CallStackProfileParams::Thread thread,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
-    : thread_(thread),
+    : process_(GetProcess()),
+      thread_(thread),
       owning_thread_task_runner_(owning_thread_task_runner),
       work_id_recorder_(std::make_unique<WorkIdRecorder>(
           base::WorkIdProvider::GetForCurrentThread())) {
@@ -322,10 +352,11 @@ ThreadProfiler::ThreadProfiler(
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::GetSamplingProfilerCurrentThreadToken(), sampling_params,
       std::make_unique<CallStackProfileBuilder>(
-          CallStackProfileParams(GetProcess(), thread,
+          CallStackProfileParams(process_, thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
           work_id_recorder_.get()),
-      GetCoreUnwindersFactory().Run());
+      GetCoreUnwindersFactory().Run(),
+      GetApplyPerSampleMetadataCallback(process_));
 
   startup_profiler_->Start();
 
@@ -384,13 +415,14 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       base::GetSamplingProfilerCurrentThreadToken(),
       StackSamplingConfiguration::Get()->GetSamplingParams(),
       std::make_unique<CallStackProfileBuilder>(
-          CallStackProfileParams(GetProcess(), thread_,
+          CallStackProfileParams(process_, thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),
           work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())),
-      GetCoreUnwindersFactory().Run());
+      GetCoreUnwindersFactory().Run(),
+      GetApplyPerSampleMetadataCallback(process_));
   if (aux_unwinder_factory_)
     periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 

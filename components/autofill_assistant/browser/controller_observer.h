@@ -67,9 +67,19 @@ class ControllerObserver : public base::CheckedObserver {
   // percentage.
   virtual void OnProgressChanged(int progress) = 0;
 
+  // Called when the currently active progress step has changed.
+  virtual void OnProgressActiveStepChanged(int active_step) = 0;
+
   // Called when the current progress bar visibility has changed. If |visible|
   // is true, then the bar is now shown.
   virtual void OnProgressVisibilityChanged(bool visible) = 0;
+
+  virtual void OnStepProgressBarConfigurationChanged(
+      const ShowProgressBarProto::StepProgressBarConfiguration&
+          configuration) = 0;
+
+  // Called when  the progress bar error state changes.
+  virtual void OnProgressBarErrorStateChanged(bool error) = 0;
 
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.

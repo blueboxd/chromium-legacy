@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/view_layout.pb.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
@@ -42,14 +43,16 @@ namespace {
 static constexpr int kAutostartInitialProgress = 5;
 
 // Parameter that allows setting the color of the overlay.
-static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
+const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
 
 // Parameter that contains the current session username. Should be synced with
 // |SESSION_USERNAME_PARAMETER| from
 // .../password_manager/PasswordChangeLauncher.java
 // TODO(b/151401974): Eliminate duplicate parameter definitions.
-static const char* const kPasswordChangeUsernameParameterName =
-    "PASSWORD_CHANGE_USERNAME";
+const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
+
+// Experiment for toggling the new progress bar.
+const char kProgressBarExperiment[] = "4400697";
 
 // Returns true if the state requires a UI to be shown.
 //
@@ -240,6 +243,15 @@ int Controller::GetProgress() const {
   return progress_;
 }
 
+base::Optional<int> Controller::GetProgressActiveStep() const {
+  return progress_active_step_;
+}
+
+base::Optional<ShowProgressBarProto::StepProgressBarConfiguration>
+Controller::GetStepProgressBarConfiguration() const {
+  return step_progress_bar_configuration_;
+}
+
 void Controller::SetInfoBox(const InfoBox& info_box) {
   if (!info_box_) {
     info_box_ = std::make_unique<InfoBox>();
@@ -272,6 +284,18 @@ void Controller::SetProgress(int progress) {
   }
 }
 
+void Controller::SetProgressActiveStep(int active_step) {
+  // Step can only increase.
+  if (progress_active_step_ >= active_step) {
+    return;
+  }
+
+  progress_active_step_ = active_step;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnProgressActiveStepChanged(active_step);
+  }
+}
+
 void Controller::SetProgressVisible(bool visible) {
   if (progress_visible_ == visible)
     return;
@@ -284,6 +308,29 @@ void Controller::SetProgressVisible(bool visible) {
 
 bool Controller::GetProgressVisible() const {
   return progress_visible_;
+}
+
+void Controller::SetStepProgressBarConfiguration(
+    const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
+  step_progress_bar_configuration_ = configuration;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnStepProgressBarConfigurationChanged(configuration);
+  }
+}
+
+void Controller::SetProgressBarErrorState(bool error) {
+  if (progress_bar_error_state_ == error) {
+    return;
+  }
+
+  progress_bar_error_state_ = error;
+  for (ControllerObserver& observer : observers_) {
+    observer.OnProgressBarErrorStateChanged(error);
+  }
+}
+
+bool Controller::GetProgressBarErrorState() const {
+  return progress_bar_error_state_;
 }
 
 const std::vector<UserAction>& Controller::GetUserActions() const {
@@ -984,6 +1031,12 @@ void Controller::InitFromParameters() {
     user_data_->selected_login_.emplace(web_contents()->GetLastCommittedURL(),
                                         *password_change_username);
   }
+
+  if (trigger_context_->HasExperimentId(kProgressBarExperiment)) {
+    ShowProgressBarProto::StepProgressBarConfiguration mock_configuration;
+    mock_configuration.set_use_step_progress_bar(true);
+    SetStepProgressBarConfiguration(mock_configuration);
+  }
 }
 
 void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
@@ -1047,7 +1100,12 @@ void Controller::ShowFirstMessageAndStart() {
   SetStatusMessage(
       l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
                                 base::UTF8ToUTF16(GetCurrentURL().host())));
-  SetProgress(kAutostartInitialProgress);
+  if (step_progress_bar_configuration_.has_value() &&
+      step_progress_bar_configuration_->use_step_progress_bar()) {
+    SetProgressActiveStep(0);
+  } else {
+    SetProgress(kAutostartInitialProgress);
+  }
   EnterState(AutofillAssistantState::STARTING);
 }
 
@@ -1439,6 +1497,7 @@ void Controller::OnScriptError(const std::string& error_message,
 
   RequireUI();
   SetStatusMessage(error_message);
+  SetProgressBarErrorState(true);
   EnterStoppedState();
 
   if (tracking_) {
@@ -1458,6 +1517,7 @@ void Controller::OnFatalError(const std::string& error_message,
     return;
 
   SetStatusMessage(error_message);
+  SetProgressBarErrorState(true);
   EnterStoppedState();
 
   // If we haven't managed to check the set of scripts yet at this point, we

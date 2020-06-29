@@ -571,7 +571,7 @@ TEST_F(DownloadTaskImplTest, FileDeletion) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath temp_file = temp_dir.GetPath().AppendASCII("DownloadTaskImpl");
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
   ASSERT_FALSE(base::PathExists(temp_file));
   std::unique_ptr<net::URLFetcherResponseWriter> writer =
       std::make_unique<net::URLFetcherFileWriter>(

@@ -66,6 +66,18 @@ TEST_F('CrSettingsAboutPageV3Test', 'AboutPage_OfficialBuild', function() {
 GEN('#endif');
 
 // eslint-disable-next-line no-var
+var CrSettingsAvatarIconV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/avatar_icon_test.js';
+  }
+};
+
+TEST_F('CrSettingsAvatarIconV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsLanguagesPageV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {

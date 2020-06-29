@@ -981,14 +981,11 @@ String MarkerTextForListItem(Element* element) {
   element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
 
   LayoutObject* layout_object = element->GetLayoutObject();
-  if (layout_object) {
-    if (layout_object->IsListItem())
-      return ToLayoutListItem(layout_object)->MarkerText();
-    if (layout_object->IsLayoutNGListItem()) {
-      if (LayoutObject* marker = ToLayoutNGListItem(layout_object)->Marker())
-        return ListMarker::Get(marker)->MarkerTextWithoutSuffix(*marker);
-    }
-  }
+  LayoutObject* marker = ListMarker::MarkerFromListItem(layout_object);
+  if (ListMarker* list_marker = ListMarker::Get(marker))
+    return list_marker->MarkerTextWithoutSuffix(*marker);
+  if (marker && marker->IsListMarkerForNormalContent())
+    return ToLayoutListMarker(marker)->GetText();
   return String();
 }
 

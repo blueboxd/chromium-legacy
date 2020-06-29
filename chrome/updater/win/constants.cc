@@ -17,4 +17,19 @@ const base::char16 kRegistryValueName[] = L"name";
 const base::char16 kRegistryValueInstallerProgress[] = L"InstallerProgress";
 
 const base::char16 kWindowsServiceName[] = L"UpdaterService";
+
+// {415FD747-D79E-42D7-93AC-1BA6E5FD4E93}
+const CLSID CLSID_UpdaterServiceClass = {
+    0x415FD747,
+    0xD79E,
+    0x42D7,
+    {0x93, 0xAC, 0x1B, 0xA6, 0xE5, 0xFD, 0x4E, 0x93}};
+
+// {22181302-A8A6-4f84-A541-E5CBFC70CC43}
+const CLSID CLSID_GoogleUpdate3WebUserClass = {
+    0x22181302,
+    0xA8A6,
+    0x4f84,
+    {0xA5, 0x41, 0xE5, 0xCB, 0xFC, 0x70, 0xCC, 0x43}};
+
 }  // namespace updater

@@ -494,6 +494,16 @@ class OmniboxViewViews : public OmniboxView,
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_ = false;
 
+  // Keep track of the word that would be selected if URL is unelided between
+  // a single and double click. This is an edge case where the elided URL is
+  // selected. On the double click, unelision is performed in between the first
+  // and second clicks. This results in both the wrong word to be selected and
+  // the wrong selection length. For example, if example.com is shown and you
+  // try to double click on the "x", it unelides to https://example.com after
+  // the first click, resulting in "https" being selected.
+  size_t next_double_click_selection_len_ = 0;
+  size_t next_double_click_selection_offset_ = 0;
+
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;

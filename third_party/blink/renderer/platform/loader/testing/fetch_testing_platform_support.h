@@ -21,9 +21,7 @@ class FetchTestingPlatformSupport
   ~FetchTestingPlatformSupport() override;
 
   WebURLLoaderMockFactory* GetURLLoaderMockFactory();
-
-  // Platform:
-  std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory() override;
+  std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory();
 
  private:
   class FetchTestingWebURLLoaderMockFactory;

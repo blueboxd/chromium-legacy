@@ -69,14 +69,18 @@
 // See https://crbug.com/1095717 for details.
 - (NSRect)constrainFrameRect:(NSRect)rect toScreen:(NSScreen*)screen {
   if (!screen)
-    return rect;
+    screen = [NSScreen mainScreen];
+  // A small margin so that constraining kicks in before we're *all the way*
+  // to the edge of the screen.
+  static constexpr CGFloat kThreshold = 80;
   NSRect screenFrame = [screen frame];
   // Adjust if either the entire frame is offscreen, or the toolbar is
   // cut off at the top.
-  if (NSMaxY(rect) < NSMinY(screenFrame) ||  // Below the screen.
-      NSMaxX(rect) < NSMinX(screenFrame) ||  // To the left of the screen.
-      NSMinX(rect) > NSMaxX(screenFrame) ||  // To the right of the screen.
-      NSMaxY(rect) > NSMaxY(screenFrame)) {  // Top edge above the screen.
+  if (NSMaxY(rect) - kThreshold < NSMinY(screenFrame) ||  // Below the screen.
+      NSMaxX(rect) - kThreshold < NSMinX(screenFrame) ||  // Left of the screen.
+      NSMinX(rect) + kThreshold >
+          NSMaxX(screenFrame) ||  // Right of the screen.
+      NSMaxY(rect) + kThreshold > NSMaxY(screenFrame)) {  // Top above screen.
     return [super constrainFrameRect:rect toScreen:screen];
   }
   return rect;

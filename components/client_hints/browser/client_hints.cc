@@ -77,7 +77,7 @@ bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
 }
 
 bool ClientHints::UserAgentClientHintEnabled() {
-  // TODO(crbug.com/1097591): This extra path check is only herfe because the
+  // TODO(crbug.com/1097591): This extra path check is only here because the
   // pref is not being registered in //weblayer.
   bool pref_enabled = true;
   if (pref_service_->HasPrefPath(

@@ -258,7 +258,13 @@
       <structure name="IDR_OS_SETTINGS_MANAGE_A11Y_PAGE_HTML"
                  file="chromeos/os_a11y_page/manage_a11y_page.html"
                  compress="false" type="chrome_html" />
-      <structure name="IDS_OS_SETTINGS_SWITCH_ACCESS_SUBPAGE_JS"
+      <structure name="IDR_OS_SETTINGS_SWITCH_ACCESS_CONSTANTS_JS"
+                 file="chromeos/os_a11y_page/switch_access_constants.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SWITCH_ACCESS_CONSTANTS_HTML"
+                 file="chromeos/os_a11y_page/switch_access_constants.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SWITCH_ACCESS_SUBPAGE_JS"
                  file="chromeos/os_a11y_page/switch_access_subpage.js"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_SWITCH_ACCESS_SUBPAGE_HTML"

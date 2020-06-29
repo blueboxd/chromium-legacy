@@ -54,7 +54,7 @@ void DeleteAllReportsInDirectory(base::FilePath directory) {
   base::FilePath cur_file;
   while (!(cur_file = enumerator.Next()).value().empty()) {
     if (cur_file.BaseName().value() != kReporterLogFilename)
-      base::DeleteFile(cur_file, false);
+      base::DeleteFile(cur_file);
   }
 }
 

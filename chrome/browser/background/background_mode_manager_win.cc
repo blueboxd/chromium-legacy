@@ -32,8 +32,8 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   task_runner_->PostTask(
       FROM_HERE,
       should_launch
-          ? base::Bind(auto_launch_util::EnableBackgroundStartAtLogin)
-          : base::Bind(auto_launch_util::DisableBackgroundStartAtLogin));
+          ? base::BindOnce(auto_launch_util::EnableBackgroundStartAtLogin)
+          : base::BindOnce(auto_launch_util::DisableBackgroundStartAtLogin));
 }
 
 void BackgroundModeManager::DisplayClientInstalledNotification(

@@ -68,7 +68,7 @@ class SanityCheckSubscriber : public AssistantInteractionSubscriber {
   bool OnOpenAppResponse(
       const chromeos::assistant::AndroidAppInfo& app_info) override {
     CheckResponse();
-    return true;
+    return false;
   }
 
  private:

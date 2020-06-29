@@ -225,7 +225,7 @@ void ResetSettingsHandler::OnHideResetProfileBanner(
 void ResetSettingsHandler::OnSettingsFetched() {
   DCHECK(config_fetcher_);
   DCHECK(!config_fetcher_->IsActive());
-  // The master prefs is fetched. We are waiting for user pressing 'Reset'.
+  // The initial prefs is fetched. We are waiting for user pressing 'Reset'.
 }
 
 void ResetSettingsHandler::ResetProfile(

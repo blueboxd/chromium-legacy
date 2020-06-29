@@ -180,6 +180,10 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return chrome_test_util::GetIncognitoTabCount();
 }
 
++ (NSUInteger)browserCount {
+  return chrome_test_util::RegularBrowserCount();
+}
+
 + (NSUInteger)evictedMainTabCount {
   return chrome_test_util::GetEvictedMainTabCount();
 }

@@ -41,7 +41,7 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 @property(nonatomic, weak) id<PasswordBreachPresenter> presenter;
 
 // Dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands> handler;
 
 @end
 
@@ -49,13 +49,13 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
                        presenter:(id<PasswordBreachPresenter>)presenter
-                      dispatcher:(id<ApplicationCommands>)dispatcher
+                         handler:(id<ApplicationCommands>)handler
                              URL:(const GURL&)URL
                         leakType:(CredentialLeakType)leakType {
   self = [super init];
   if (self) {
     _presenter = presenter;
-    _dispatcher = dispatcher;
+    _handler = handler;
     _leakType = GetLeakDialogType(leakType);
     _dismissReason = LeakDialogDismissalReason::kNoDirectInteraction;
 
@@ -87,7 +87,7 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
   self.dismissReason = LeakDialogDismissalReason::kClickedCheckPasswords;
   OpenNewTabCommand* newTabCommand =
       [OpenNewTabCommand commandWithURLFromChrome:GetPasswordCheckupURL()];
-  [self.dispatcher openURLInNewTab:newTabCommand];
+  [self.handler openURLInNewTab:newTabCommand];
 }
 
 - (void)confirmationAlertLearnMoreAction {

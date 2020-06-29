@@ -11,39 +11,12 @@
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
+#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
 namespace assistant {
-
-// Enumeration of possible Assistant query sources. These values are persisted
-// to logs. Entries should not be renumbered and numeric values should never
-// be reused. Append new values to the end.
-enum class AssistantQuerySource {
-  kUnspecified = 0,
-  kMinValue = kUnspecified,
-  kDeepLink = 1,
-  kDialogPlateTextField = 2,
-  kStylus = 3,
-  kSuggestionChip = 4,
-  kVoiceInput = 5,
-  kProactiveSuggestions = 6,
-  kLibAssistantInitiated = 7,
-  kWarmerWelcome = 8,
-  kConversationStarter = 9,
-  kWhatsOnMyScreen = 10,
-  kQuickAnswers = 11,
-  kLauncherChip = 12,
-  kBetterOnboarding = 13,
-  kMaxValue = kBetterOnboarding,
-};
-
-// Enumeration of possible Assistant interaction types.
-enum class AssistantInteractionType {
-  kText,
-  kVoice,
-};
 
 // Describes an Assistant interaction.
 struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantInteractionMetadata {
@@ -60,27 +33,6 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantInteractionMetadata {
   AssistantInteractionType type{AssistantInteractionType::kText};
   AssistantQuerySource source{AssistantQuerySource::kUnspecified};
   std::string query;
-};
-
-// Enumeration of possible completions for an Assistant interaction.
-enum class AssistantInteractionResolution {
-  // Assistant interaction completed normally.
-  kNormal,
-  // Assistant interaction completed due to barge in or cancellation.
-  kInterruption,
-  // Assistant interaction completed due to error.
-  kError,
-  // Assistant interaction completed due to mic timeout.
-  kMicTimeout,
-  // Assistant interaction completed due to multi-device hotword loss.
-  kMultiDeviceHotwordLoss,
-};
-
-// Enumeration of possible Assistant suggestion types.
-enum class AssistantSuggestionType {
-  kUnspecified,
-  kConversationStarter,
-  kBetterOnboarding,
 };
 
 // Models an Assistant suggestion.
@@ -110,15 +62,6 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
   // Optional URL for action. e.g.
   // "https://www.google.com/search?query=action".
   GURL action_url;
-};
-
-// Models status of an app.
-enum class AppStatus {
-  kUnknown,
-  kAvailable,
-  kUnavailable,
-  kVersionMismatch,
-  kDisabled,
 };
 
 // Models an Android app.
@@ -228,49 +171,6 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantFeedback {
   // Screenshot if allowed by user.
   // Raw data (non-encoded binary octets)
   std::string screenshot_png;
-};
-
-// Enumeration of Assistant entry points. These values are persisted to logs.
-// Entries should not be renumbered and numeric values should never be reused.
-// Only append to this enum is allowed if the possible entry source grows.
-enum class AssistantEntryPoint {
-  kUnspecified = 0,
-  kMinValue = kUnspecified,
-  kDeepLink = 1,
-  kHotkey = 2,
-  kHotword = 3,
-  // kLauncherSearchBoxDeprecated = 4,
-  kLongPressLauncher = 5,
-  kSetup = 6,
-  kStylus = 7,
-  kLauncherSearchResult = 8,
-  kLauncherSearchBoxIcon = 9,
-  kProactiveSuggestions = 10,
-  kLauncherChip = 11,
-  kMaxValue = kLauncherChip,
-};
-
-// Enumeration of Assistant exit points. These values are persisted to logs.
-// Entries should not be renumbered and numeric values should never be reused.
-// Only append to this enum is allowed if the possible exit source grows.
-enum class AssistantExitPoint {
-  // Includes keyboard interruptions (e.g. launching Chrome OS feedback
-  // using keyboard shortcuts, pressing search button).
-  kUnspecified = 0,
-  kMinValue = kUnspecified,
-  kCloseButton = 1,
-  kHotkey = 2,
-  kNewBrowserTabFromServer = 3,
-  kNewBrowserTabFromUser = 4,
-  kOutsidePress = 5,
-  kSetup = 6,
-  kStylus = 7,
-  kBackInLauncher = 8,
-  kLauncherClose = 9,
-  kLauncherOpen = 10,
-  kScreenshot = 11,
-  kOverviewMode = 12,
-  kMaxValue = kOverviewMode,
 };
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {

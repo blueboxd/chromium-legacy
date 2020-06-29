@@ -828,6 +828,8 @@ static_library("ui") {
   } else {
     # !is_android
     sources += [
+      "app_icon_loader.cc",
+      "app_icon_loader.h",
       "apps/app_info_dialog.h",
       "apps/chrome_app_delegate.cc",
       "apps/chrome_app_delegate.h",
@@ -1250,6 +1252,10 @@ static_library("ui") {
       "toolbar/toolbar_actions_bar_bubble_delegate.h",
       "toolbar/toolbar_actions_bar_delegate.h",
       "toolbar/toolbar_actions_bar_observer.h",
+      "toolbar/toolbar_actions_model.cc",
+      "toolbar/toolbar_actions_model.h",
+      "toolbar/toolbar_actions_model_factory.cc",
+      "toolbar/toolbar_actions_model_factory.h",
       "translate/translate_bubble_factory.cc",
       "translate/translate_bubble_factory.h",
       "uma_browsing_activity_observer.cc",

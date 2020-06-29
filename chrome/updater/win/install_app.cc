@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
@@ -38,6 +39,8 @@
 #include "chrome/updater/installer.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_in_process.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/win/install_progress_observer.h"
 #include "chrome/updater/win/setup/setup.h"
@@ -45,11 +48,9 @@
 #include "chrome/updater/win/ui/resources/resources.grh"
 #include "chrome/updater/win/ui/splash_screen.h"
 #include "chrome/updater/win/ui/util.h"
+#include "chrome/updater/win/update_service_out_of_process.h"
 #include "chrome/updater/win/util.h"
 #include "components/prefs/pref_service.h"
-#include "components/update_client/configurator.h"
-#include "components/update_client/crx_update_item.h"
-#include "components/update_client/update_client.h"
 
 namespace updater {
 
@@ -60,6 +61,14 @@ namespace {
 constexpr base::char16 kAppNameChrome[] = L"Google Chrome";
 
 class InstallAppController;
+
+scoped_refptr<UpdateService> CreateUpdateService(
+    scoped_refptr<update_client::Configurator> config) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch))
+    return base::MakeRefCounted<UpdateServiceInProcess>(config);
+  else
+    return base::MakeRefCounted<UpdateServiceOutOfProcess>();
+}
 
 // Implements a simple inter-thread communication protocol based on Windows
 // messages exchanged between the application installer and its UI.
@@ -364,7 +373,7 @@ void InstallProgressObserverIPC::Invoke(WPARAM wparam, LPARAM lparam) {
 }
 
 // Implements installing a single application by invoking the code in
-// |update_client|, listening to |update_client| and UI events, and
+// |UpdateService|, listening to |UpdateService| and UI events, and
 // driving the UI code by calling the functions exposed by
 // |InstallProgressObserver|. This class receives state changes for an install
 // and it notifies the UI, which is an observer of this class.
@@ -391,8 +400,7 @@ class InstallAppController
       public ui::ProgressWndEvents,
       public WTL::CMessageFilter {
  public:
-  explicit InstallAppController(
-      scoped_refptr<update_client::Configurator> configurator);
+  explicit InstallAppController(scoped_refptr<Configurator> configurator);
 
   InstallAppController(const InstallAppController&) = delete;
   InstallAppController& operator=(const InstallAppController&) = delete;
@@ -430,15 +438,15 @@ class InstallAppController
 
   // These functions are called on the main updater thread.
   void DoInstallApp();
-  void InstallComplete();
-  void HandleInstallResult(const update_client::CrxUpdateItem& update_item);
+  void InstallComplete(UpdateService::Result result);
+  void HandleInstallResult(const UpdateService::UpdateState& update_state);
   void PrefsCommit();
 
   // Returns the thread id of the thread which owns the progress window.
   DWORD GetUIThreadID() const;
 
   // Receives the state changes during handling of the Install function call.
-  void StateChange(update_client::CrxUpdateItem crx_update_item);
+  void StateChange(UpdateService::UpdateState update_state);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -454,10 +462,10 @@ class InstallAppController
   std::string app_id_;
   const base::string16 app_name_;
 
-  // The |update_client| objects and dependencies.
-  scoped_refptr<update_client::Configurator> config_;
+  // The |UpdateService| objects and dependencies.
+  scoped_refptr<Configurator> config_;
   scoped_refptr<PersistedData> persisted_data_;
-  scoped_refptr<update_client::UpdateClient> update_client_;
+  scoped_refptr<UpdateService> update_service_;
 
   // The message loop associated with the UI.
   std::unique_ptr<WTL::CMessageLoop> ui_message_loop_;
@@ -476,7 +484,7 @@ class InstallAppController
 // TODO(sorin): fix the hardcoding of the application name.
 // https:crbug.com/1014298
 InstallAppController::InstallAppController(
-    scoped_refptr<update_client::Configurator> configurator)
+    scoped_refptr<Configurator> configurator)
     : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
@@ -511,113 +519,91 @@ void InstallAppController::DoInstallApp() {
   ui_task_runner_->PostTask(FROM_HERE,
                             base::BindOnce(&InstallAppController::RunUI, this));
 
-  update_client_ = update_client::UpdateClientFactory(config_);
+  update_service_ = CreateUpdateService(config_);
 
   install_progress_observer_ipc_ =
       std::make_unique<InstallProgressObserverIPC>(progress_wnd_.get());
 
-  update_client_->Install(
-      app_id_,
-      base::BindOnce(
-          [](scoped_refptr<PersistedData> persisted_data,
-             const std::vector<std::string>& ids)
-              -> std::vector<base::Optional<update_client::CrxComponent>> {
-            DCHECK_EQ(1u, ids.size());
-            return {base::MakeRefCounted<Installer>(ids[0], persisted_data)
-                        ->MakeCrxComponent()};
-          },
-          persisted_data_),
+  update_service_->Update(
+      app_id_, UpdateService::Priority::kForeground,
       base::BindRepeating(&InstallAppController::StateChange, this),
-      base::BindOnce(
-          [](scoped_refptr<InstallAppController> install_app_controller,
-             update_client::Error error) {
-            base::SequencedTaskRunnerHandle::Get()->PostTask(
-                FROM_HERE,
-                base::BindOnce(&InstallAppController::InstallComplete,
-                               install_app_controller));
-          },
-          base::WrapRefCounted(this)));
+      base::BindOnce(&InstallAppController::InstallComplete, this));
 }
 
-// This function is invoked after the |update_client::Install| call has been
-// fully handled and the state associated with the application ID has been
-// destroyed. The caller of |update_client::Install| must listen to
-// Observer::OnEvent to get completion status instead of querying the status
-// by calling UpdateClient::GetCrxUpdateState.
-void InstallAppController::InstallComplete() {
+void InstallAppController::InstallComplete(UpdateService::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PrefsCommit();
-  update_client_ = nullptr;
+  update_service_ = nullptr;
 }
 
 void InstallAppController::StateChange(
-    update_client::CrxUpdateItem crx_update_item) {
+    UpdateService::UpdateState update_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(install_progress_observer_ipc_);
 
-  CHECK_EQ(app_id_, crx_update_item.id);
+  CHECK_EQ(app_id_, update_state.app_id);
 
   const auto app_id = base::ASCIIToUTF16(app_id_);
-  switch (crx_update_item.state) {
-    case update_client::ComponentState::kChecking:
+  switch (update_state.state) {
+    case UpdateService::UpdateState::State::kCheckingForUpdates:
       install_progress_observer_ipc_->OnCheckingForUpdate();
       break;
 
-    case update_client::ComponentState::kCanUpdate:
+    case UpdateService::UpdateState::State::kUpdateAvailable:
       install_progress_observer_ipc_->OnUpdateAvailable(
           app_id, app_name_,
-          base::ASCIIToUTF16(crx_update_item.next_version.GetString()));
+          base::ASCIIToUTF16(update_state.next_version.GetString()));
       break;
 
-    case update_client::ComponentState::kDownloading: {
+    case UpdateService::UpdateState::State::kDownloading: {
       // TODO(sorin): handle time remaining https://crbug.com/1014590.
-      const auto pos = GetDownloadProgress(crx_update_item.downloaded_bytes,
-                                           crx_update_item.total_bytes);
+      const auto pos = GetDownloadProgress(update_state.downloaded_bytes,
+                                           update_state.total_bytes);
       install_progress_observer_ipc_->OnDownloading(app_id, app_name_, -1,
                                                     pos != -1 ? pos : 0);
     } break;
 
-    case update_client::ComponentState::kUpdating: {
+    case UpdateService::UpdateState::State::kInstalling: {
       // TODO(sorin): handle the install cancellation.
       // https://crbug.com/1014591
       bool can_start_install = false;
       install_progress_observer_ipc_->OnWaitingToInstall(app_id, app_name_,
                                                          &can_start_install);
-      const int pos = crx_update_item.install_progress;
+      const int pos = update_state.install_progress;
       install_progress_observer_ipc_->OnInstalling(app_id, app_name_, 0,
                                                    pos != -1 ? pos : 0);
       break;
     }
 
-    case update_client::ComponentState::kUpdated:
-    case update_client::ComponentState::kUpToDate:
-    case update_client::ComponentState::kUpdateError:
-      HandleInstallResult(crx_update_item);
+    case UpdateService::UpdateState::State::kUpdated:
+    case UpdateService::UpdateState::State::kNoUpdate:
+    case UpdateService::UpdateState::State::kUpdateError:
+      HandleInstallResult(update_state);
       break;
 
-    default:
-      NOTREACHED();
+    case UpdateService::UpdateState::State::kUnknown:
+    case UpdateService::UpdateState::State::kNotStarted:
       break;
   }
 }
 
 void InstallAppController::HandleInstallResult(
-    const update_client::CrxUpdateItem& update_item) {
+    const UpdateService::UpdateState& update_state) {
   CompletionCodes completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
   base::string16 completion_text;
-  switch (update_item.state) {
-    case update_client::ComponentState::kUpdated:
+  switch (update_state.state) {
+    case UpdateService::UpdateState::State::kUpdated:
       VLOG(1) << "Update success.";
       completion_code = CompletionCodes::COMPLETION_CODE_SUCCESS;
       ui::LoadString(IDS_BUNDLE_INSTALLED_SUCCESSFULLY, &completion_text);
       break;
-    case update_client::ComponentState::kUpToDate:
+    case UpdateService::UpdateState::State::kNoUpdate:
       VLOG(1) << "No updates.";
       completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
       ui::LoadString(IDS_NO_UPDATE_RESPONSE, &completion_text);
       break;
-    case update_client::ComponentState::kUpdateError:
-      VLOG(1) << "Updater error: " << update_item.error_code << ".";
+    case UpdateService::UpdateState::State::kUpdateError:
+      VLOG(1) << "Updater error: " << update_state.error_code << ".";
       completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
       ui::LoadString(IDS_INSTALL_FAILED, &completion_text);
       break;

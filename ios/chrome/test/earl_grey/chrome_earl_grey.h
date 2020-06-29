@@ -137,6 +137,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // GREYAssert is induced.
 - (void)waitForIncognitoTabCount:(NSUInteger)count;
 
+// Waits for there to be |count| number of browsers within a timeout,
+// or a GREYAssert is induced.
+- (void)waitForBrowserCount:(NSUInteger)count;
+
 // Loads |URL| as if it was opened from an external application.
 - (void)openURLFromExternalApp:(const GURL&)URL;
 
@@ -293,6 +297,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns the number of incognito tabs.
 - (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
+
+// Returns the number of browsers.
+- (NSUInteger)browserCount WARN_UNUSED_RESULT;
 
 // Returns the index of active tab in normal (non-incognito) mode.
 - (NSUInteger)indexOfActiveNormalTab;

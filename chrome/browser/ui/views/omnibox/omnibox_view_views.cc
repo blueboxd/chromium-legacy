@@ -1238,13 +1238,45 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
 
   bool handled = views::Textfield::OnMousePressed(event);
 
-  // This ensures that when the user makes a double-click partial select, we
-  // perform the unelision at the same time as we make the partial selection,
-  // which is on mousedown.
-  if (!select_all_on_mouse_release_ &&
-      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
-    TextChanged();
-    filter_drag_events_for_unelision_ = true;
+  if (!select_all_on_mouse_release_) {
+    if (UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
+      // This ensures that when the user makes a double-click partial select, we
+      // perform the unelision at the same time as we make the partial
+      // selection, which is on mousedown.
+      TextChanged();
+      filter_drag_events_for_unelision_ = true;
+    } else if (event.GetClickCount() == 1) {
+      // Select the current word and record it for later. Selection will be
+      // immediately reset to cursor position, so no need to clean up. This is
+      // done to handle an edge case where the wrong word is selected on a
+      // double click when the elided URL is selected prior to the dobule click.
+      // Unelision happens between the first and second click, causing the
+      // wrong word to be selected because it's based on the click position in
+      // the newly unelided URL. See https://crbug.com/1084406.
+      if (IsSelectAll()) {
+        SelectWordAt(event.location());
+        base::string16 shown_url = GetText();
+        base::string16 full_url =
+            controller()->GetLocationBarModel()->GetFormattedFullURL();
+        size_t offset = full_url.find(shown_url);
+        if (offset != base::string16::npos) {
+          next_double_click_selection_len_ = GetSelectedText().length();
+          next_double_click_selection_offset_ =
+              offset + GetCursorPosition() - next_double_click_selection_len_;
+        }
+      } else {
+        // Clear length so we don't try to use it again on later double clicks.
+        next_double_click_selection_len_ = 0;
+      }
+    } else if (event.GetClickCount() == 2) {
+      // If the user double clicked and we unelided between the first and second
+      // click, offset double click.
+      if (next_double_click_selection_len_ != 0) {
+        SetSelectedRange(gfx::Range(next_double_click_selection_offset_,
+                                    next_double_click_selection_offset_ +
+                                        next_double_click_selection_len_));
+      }
+    }
   }
 
   return handled;

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/register_context.h"
@@ -25,6 +26,7 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
                    std::vector<std::unique_ptr<Unwinder>> core_unwinders,
                    ModuleCache* module_cache,
+                   RepeatingClosure record_sample_callback = RepeatingClosure(),
                    StackSamplerTestDelegate* test_delegate = nullptr);
   ~StackSamplerImpl() override;
 
@@ -54,6 +56,7 @@ class BASE_EXPORT StackSamplerImpl : public StackSampler {
   // Store all unwinder in decreasing priority order.
   base::circular_deque<std::unique_ptr<Unwinder>> unwinders_;
   ModuleCache* const module_cache_;
+  const RepeatingClosure record_sample_callback_;
   StackSamplerTestDelegate* const test_delegate_;
 };
 

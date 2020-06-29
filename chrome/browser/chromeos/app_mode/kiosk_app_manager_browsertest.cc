@@ -649,12 +649,12 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
   CheckAppData(kAppId, kAppName, "1234");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_BadApp) {
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, BadApp) {
   AppDataLoadWaiter waiter(manager(), 2);
   manager()->AddApp("unknown_app", owner_settings_service_.get());
   waiter.Wait();
-  EXPECT_EQ(waiter.data_change_count(), 2);
-  EXPECT_EQ(waiter.data_load_failure_count(), 0);
+  EXPECT_EQ(waiter.data_change_count(), 1);
+  EXPECT_EQ(waiter.data_load_failure_count(), 1);
   EXPECT_FALSE(waiter.loaded());
   EXPECT_EQ("", GetAppIds());
 }
@@ -711,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
 }
 
 // Flaky https://crbug.com/1090937
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_RemoveApp) {
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
   // Add a new app.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;

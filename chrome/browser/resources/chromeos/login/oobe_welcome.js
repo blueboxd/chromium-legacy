@@ -110,9 +110,6 @@ Polymer({
     this.debuggingLinkVisible_ =
         data && 'isDeveloperMode' in data && data['isDeveloperMode'];
 
-    if (this.fullScreenDialog)
-      this.$.welcomeScreen.fullScreenDialog = true;
-
     cr.ui.login.invokePolymerMethod(this.$.welcomeScreen, 'onBeforeShow');
 
     let activeScreen = this.getActiveScreen_();

@@ -154,7 +154,8 @@ void Storage::Create(
             base::BindRepeating(&QueueUploaderInterface::ProvideUploader,
                                 /*priority=*/queue_options.first,
                                 storage_->start_upload_cb_),
-            base::BindOnce(&StorageInitContext::ScheduleAddQueue, this,
+            base::BindOnce(&StorageInitContext::ScheduleAddQueue,
+                           base::Unretained(this),
                            /*priority=*/queue_options.first));
       }
     }
@@ -162,7 +163,7 @@ void Storage::Create(
     void ScheduleAddQueue(
         Priority priority,
         StatusOr<scoped_refptr<StorageQueue>> storage_queue_result) {
-      Schedule(&StorageInitContext::AddQueue, this, priority,
+      Schedule(&StorageInitContext::AddQueue, base::Unretained(this), priority,
                std::move(storage_queue_result));
     }
 

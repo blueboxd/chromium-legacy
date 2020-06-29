@@ -201,6 +201,12 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #endif
 
+// This is temporarily required to land a change in MakeFromTexture's clean up
+// behavior.
+#ifndef SK_LEGACY_MAKEFROMTEXTURE_BEHAVIOR
+#define SK_LEGACY_MAKEFROMTEXTURE_BEHAVIOR
+#endif
+
 // Many layout tests and unit tests need to updated/rebased to move to less
 // buggy GPU blur.
 #ifndef SK_USE_LEGACY_GPU_BLUR
@@ -216,9 +222,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
-
-// Staging for migrating SkDeferredDisplayList from unique_ptr to sk_sp.
-#define SK_DDL_IS_UNIQUE_POINTER
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

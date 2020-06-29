@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "components/infobars/core/infobar_container.h"
 
-namespace weblayer {
-
 class InfoBarAndroid;
+
+namespace weblayer {
 
 class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:

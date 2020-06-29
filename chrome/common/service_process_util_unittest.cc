@@ -123,7 +123,7 @@ TEST_F(ServiceProcessStateTest, DISABLED_ReadyState) {
   ASSERT_FALSE(CheckServiceProcessReady());
   ServiceProcessState state;
   ASSERT_TRUE(state.Initialize());
-  ASSERT_TRUE(state.SignalReady(IOTaskRunner(), base::Closure()));
+  ASSERT_TRUE(state.SignalReady(IOTaskRunner(), base::OnceClosure()));
   LaunchAndWait("ServiceProcessStateTestReadyTrue");
   state.SignalStopped();
   LaunchAndWait("ServiceProcessStateTestReadyFalse");

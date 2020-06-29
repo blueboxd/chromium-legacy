@@ -94,7 +94,7 @@ void NetworkLogsMessageHandler::OnStoreLogs(const base::ListValue* list) {
   AllowJavascript();
 
   if (GetBoolOrFalse(options, "systemLogs")) {
-    bool scrub_data = GetBoolOrFalse(options, "scrubData");
+    bool scrub_data = GetBoolOrFalse(options, "filterPII");
     chromeos::system_logs_writer::WriteSystemLogs(
         out_dir_, scrub_data,
         base::BindOnce(&NetworkLogsMessageHandler::OnWriteSystemLogs,

@@ -1307,8 +1307,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorExtensionsCheckupExperimentTest,
             tab_strip->GetActiveWebContents()->GetLastCommittedURL());
 }
 
-// These tests are not applicable to Chrome OS as neither master_preferences nor
-// the onboarding promos exist there.
+// These tests are not applicable to Chrome OS as neither initial preferences
+// nor the onboarding promos exist there.
 #if !defined(OS_CHROMEOS)
 
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
@@ -1445,7 +1445,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsWithRestoreSession) {
-  // Simulate the following master_preferences:
+  // Simulate the following initial preferences:
   // {
   //  "first_run_tabs" : [
   //    "/title1.html"

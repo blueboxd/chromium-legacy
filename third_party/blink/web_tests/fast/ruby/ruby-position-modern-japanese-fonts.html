@@ -7,7 +7,14 @@
 }
 
 body {
-  font-size: 60px;
+  font-size: 40px;
+}
+
+.atomic {
+  display: inline-block;
+  height: 30px;
+  width: 20px;
+  background: lightblue;
 }
 
 .container-modern {
@@ -21,7 +28,15 @@ body {
 }
 
 .v {
+  display: inline-block;
   writing-mode: vertical-rl;
+  height: 5em;
+}
+
+.vlr {
+  display: inline-block;
+  writing-mode: vertical-lr;
+  height: 5em;
 }
 </style>
 <body>
@@ -32,12 +47,18 @@ body {
 -->
 <table border=0>
 <tr>
-<td class="container-modern"><ruby>焼肉定食<rt>じゃくにくきょうしょく</ruby>
-<td class="container-legacy"><ruby>焼肉定食<rt>じゃくにくきょうしょく</ruby>
+<td class="container-modern"><ruby>焼肉定食<rt>じゃくにくきょうしょく</ruby><br>
+  <ruby style="ruby-position:under;">和洋折衷<rt>わようせっちゅう</ruby><br>
+  <ruby style="ruby-position:under;">雨過天晴<rt>うか<span class="atomic"></span>てんせい</ruby>
+<td class="container-legacy"><ruby>焼肉定食<rt>じゃくにくきょうしょく</ruby><br>
+  <ruby style="ruby-position:under;">和洋折衷<rt>わようせっちゅう</ruby><br>
+  <ruby style="ruby-position:under;">雨過天晴<rt>うか<span class="atomic"></span>てんせい</ruby>
 
 <tr>
 <td><div class="container-modern v"><ruby>弱肉強食<rt>やきにくていしょく</ruby></div>
+<div class="container-modern vlr"><ruby>弱肉強食<rt>やきにくていしょく</ruby></div>
 <td><div class="container-legacy v"><ruby>弱肉強食<rt>やきにくていしょく</ruby></div>
+<div class="container-legacy vlr"><ruby>弱肉強食<rt>やきにくていしょく</ruby></div>
 </table>
 
 <script>

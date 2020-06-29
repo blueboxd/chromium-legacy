@@ -65,11 +65,13 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // computed when LineBox is generated because it needs container dimensions
   // to resolve relative position of its children.
   PhysicalRect ScrollableOverflow(const NGPhysicalBoxFragment& container,
-                                  const ComputedStyle& container_style) const;
+                                  const ComputedStyle& container_style,
+                                  TextHeightType height_type) const;
   PhysicalRect ScrollableOverflowForLine(const NGPhysicalBoxFragment& container,
                                          const ComputedStyle& container_style,
                                          const NGFragmentItem& line,
-                                         const NGInlineCursor& cursor) const;
+                                         const NGInlineCursor& cursor,
+                                         TextHeightType height_type) const;
 
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;

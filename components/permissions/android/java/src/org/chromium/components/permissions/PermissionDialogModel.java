@@ -6,14 +6,13 @@ package org.chromium.components.permissions;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.core.widget.TextViewCompat;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.modaldialog.R;
+import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -47,10 +46,6 @@ class PermissionDialogModel {
     }
 
     private static View loadDialogView(Context context) {
-        // LayoutInflater may access the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            LayoutInflater inflater = LayoutInflater.from(context);
-            return inflater.inflate(R.layout.permission_dialog, null);
-        }
+        return LayoutInflaterUtils.inflate(context, R.layout.permission_dialog, null);
     }
 }

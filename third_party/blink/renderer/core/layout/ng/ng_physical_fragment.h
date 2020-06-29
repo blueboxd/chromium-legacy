@@ -316,13 +316,23 @@ class CORE_EXPORT NGPhysicalFragment
     return LocalRect();
   }
 
+  // Specifies the type of scrollable overflow computation.
+  enum TextHeightType {
+    // Apply text fragment size as is.
+    kNormalHeight,
+    // Adjust text fragment size for 'em' height, and skip to unite
+    // container's bounding box. This type is useful for ruby annotation.
+    kEmHeight
+  };
   // Scrollable overflow. including contents, in the local coordinate.
-  PhysicalRect ScrollableOverflow() const;
+  PhysicalRect ScrollableOverflow(const NGPhysicalBoxFragment& container,
+                                  TextHeightType height_type) const;
 
   // ScrollableOverflow(), with transforms applied wrt container if needed.
   // This does not include any offsets from the parent (including relpos).
   PhysicalRect ScrollableOverflowForPropagation(
-      const NGPhysicalBoxFragment& container) const;
+      const NGPhysicalBoxFragment& container,
+      TextHeightType height_type) const;
   void AdjustScrollableOverflowForPropagation(
       const NGPhysicalBoxFragment& container,
       PhysicalRect* overflow) const;

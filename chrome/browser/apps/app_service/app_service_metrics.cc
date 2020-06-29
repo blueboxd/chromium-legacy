@@ -53,10 +53,11 @@ enum class DefaultAppName {
   kSlides = 35,
   kWebStore = 36,
   kYouTube = 37,
+  kYouTubeMusic = 38,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kYouTube,
+  kMaxValue = kYouTubeMusic,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -233,6 +234,8 @@ void RecordAppLaunch(const std::string& app_id,
            app_id == arc::kYoutubeAppId)
     RecordDefaultAppLaunch(DefaultAppName::kYouTube, launch_source);
 #endif  // OS_CHROMEOS
+  else if (app_id == chromeos::default_web_apps::kYoutubeMusicAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kYouTubeMusic, launch_source);
 
   // Above are default apps; below are built-in apps.
 

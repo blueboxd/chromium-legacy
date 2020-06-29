@@ -166,6 +166,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
       const NGFragmentItem& line,
       bool has_hanging,
       const NGInlineCursor& cursor,
+      TextHeightType height_type,
       PhysicalRect* overflow) const;
 
   static void AdjustScrollableOverflowForHanging(

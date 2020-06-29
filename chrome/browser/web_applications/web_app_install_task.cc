@@ -866,6 +866,11 @@ void WebAppInstallTask::OnUpdateFinalizedRegisterShortcutsMenu(
   if (ShouldStopInstall())
     return;
 
+  if (code != InstallResultCode::kSuccessAlreadyInstalled) {
+    CallInstallCallback(app_id, code);
+    return;
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       !shortcut_infos.empty()) {

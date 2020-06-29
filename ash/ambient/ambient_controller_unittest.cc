@@ -16,6 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ash {
 
@@ -213,6 +214,16 @@ TEST_F(AmbientControllerTest,
   UnlockScreen();
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
+TEST_F(AmbientControllerTest, ShouldDismissContainerViewWhenKeyPressed) {
+  ShowAmbientScreen();
+  EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
+
+  // Simulates a random keyboard press event.
+  GetEventGenerator()->PressKey(ui::VKEY_SPACE, /*flags=*/0);
+
+  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
 }
 
 }  // namespace ash

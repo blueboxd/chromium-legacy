@@ -13,11 +13,50 @@
 
 namespace blink {
 
-// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
-// LayoutRubyRun. However its result is not good with some fonts/platforms.
-// See crbug.com/1082087.
+PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
+                                       const ComputedStyle& style,
+                                       WritingMode writing_mode) {
+  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+  if (!font_data)
+    return rect;
+  const auto font_baseline = style.GetFontBaseline();
+  const LayoutUnit ascent =
+      font_data->GetFontMetrics().FixedAscent(font_baseline);
+  const LayoutUnit line_height = IsHorizontalWritingMode(writing_mode)
+                                     ? rect.size.height
+                                     : rect.size.width;
+  // Gap amount to avoid too dense result.
+  // TODO(crbug.com/1082087): Adjust the value.
+  constexpr int kGapPx = 1;
+  LayoutUnit over_diff(ascent - font_data->EmHeightAscent(font_baseline) -
+                       kGapPx);
+  // Floor() is better than Round().  We should not subtract pixels larger
+  // than |ascent - EmHeightAscent|.
+  over_diff = LayoutUnit(over_diff.ClampNegativeToZero().Floor());
+  LayoutUnit under_diff((line_height - ascent) -
+                        font_data->EmHeightDescent(font_baseline) - kGapPx);
+  under_diff = LayoutUnit(under_diff.ClampNegativeToZero().Floor());
+  const LayoutUnit new_line_height = line_height - over_diff - under_diff;
+
+  if (IsHorizontalWritingMode(writing_mode)) {
+    return {{rect.offset.left, rect.offset.top + over_diff},
+            PhysicalSize(rect.size.width, new_line_height)};
+  }
+  if (IsFlippedLinesWritingMode(writing_mode)) {
+    return {{rect.offset.left + under_diff, rect.offset.top},
+            PhysicalSize(new_line_height, rect.size.height)};
+  }
+  return {{rect.offset.left + over_diff, rect.offset.top},
+          PhysicalSize(new_line_height, rect.size.height)};
+}
+
+// TODO(tkent): Rename this function. 'LogicalBottom' should not be used in NG.
 LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
                                      LayoutUnit default_value) {
+  const NGPhysicalFragment::TextHeightType height_type =
+      RuntimeEnabledFeatures::LayoutNGRubyEmHeightEnabled()
+          ? NGPhysicalFragment::kEmHeight
+          : NGPhysicalFragment::kNormalHeight;
   const ComputedStyle& container_style = container.Style();
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     if (!container.Items())
@@ -31,7 +70,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
     DCHECK(line_item->LineBoxFragment());
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor);
+            container, container_style, *line_item, cursor, height_type);
     return container.ConvertChildToLogical(line_rect).BlockEndOffset();
   }
 
@@ -47,16 +86,19 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
   if (!last_line)
     return default_value;
   PhysicalRect line_rect =
-      last_line->ScrollableOverflow(container, container_style);
+      last_line->ScrollableOverflow(container, container_style, height_type);
+
   line_rect.Move(last_line_offset);
   return container.ConvertChildToLogical(line_rect).BlockEndOffset();
 }
 
-// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
-// LayoutRubyRun. However its result is not good with some fonts/platforms.
-// See crbug.com/1082087.
+// TODO(tkent): Rename this function. 'LogicalTop' should not be used in NG.
 LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
                                    LayoutUnit default_value) {
+  const NGPhysicalFragment::TextHeightType height_type =
+      RuntimeEnabledFeatures::LayoutNGRubyEmHeightEnabled()
+          ? NGPhysicalFragment::kEmHeight
+          : NGPhysicalFragment::kNormalHeight;
   const ComputedStyle& container_style = container.Style();
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     if (!container.Items())
@@ -70,14 +112,14 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
     DCHECK(line_item->LineBoxFragment());
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor);
+            container, container_style, *line_item, cursor, height_type);
     return container.ConvertChildToLogical(line_rect).offset.block_offset;
   }
 
   for (const auto& child_link : container.PostLayoutChildren()) {
     if (const auto* line = DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
       PhysicalRect line_rect =
-          line->ScrollableOverflow(container, container_style);
+          line->ScrollableOverflow(container, container_style, height_type);
       line_rect.Move(child_link.offset);
       return container.ConvertChildToLogical(line_rect).offset.block_offset;
     }

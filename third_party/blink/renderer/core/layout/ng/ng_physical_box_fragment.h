@@ -127,8 +127,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return is_inline_formatting_context_;
   }
 
-  PhysicalRect ScrollableOverflow() const;
-  PhysicalRect ScrollableOverflowFromChildren() const;
+  PhysicalRect ScrollableOverflow(TextHeightType height_type) const;
+  PhysicalRect ScrollableOverflowFromChildren(TextHeightType height_type) const;
 
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment

@@ -19,8 +19,11 @@
 #include "ash/shell.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/aura/window.h"
+#include "ui/events/event_observer.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/background.h"
+#include "ui/views/event_monitor.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -37,12 +40,44 @@ constexpr int kAssistantPreferredHeightDip = 128;
 
 }  // namespace
 
+// HostWidgetEventObserver----------------------------------
+
+// A pre target event handler installed on the hosting widget of
+// |AmbientContainerView| to capture key event regardless of whether
+// |AmbientContainerView| has focus.
+class AmbientContainerView::HostWidgetEventObserver : public ui::EventObserver {
+ public:
+  explicit HostWidgetEventObserver(AmbientContainerView* container)
+      : container_(container) {
+    DCHECK(container_);
+    event_monitor_ = views::EventMonitor::CreateWindowMonitor(
+        this, container_->GetWidget()->GetNativeWindow(), {ui::ET_KEY_PRESSED});
+  }
+
+  ~HostWidgetEventObserver() override = default;
+
+  HostWidgetEventObserver(const HostWidgetEventObserver&) = delete;
+  HostWidgetEventObserver& operator=(const HostWidgetEventObserver&) = delete;
+
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override {
+    DCHECK(event.type() == ui::ET_KEY_PRESSED);
+    container_->HandleKeyEvent();
+  }
+
+ private:
+  AmbientContainerView* const container_;
+  std::unique_ptr<views::EventMonitor> event_monitor_;
+};
+
 AmbientContainerView::AmbientContainerView(AmbientViewDelegate* delegate)
     : delegate_(delegate) {
   Init();
 }
 
-AmbientContainerView::~AmbientContainerView() = default;
+AmbientContainerView::~AmbientContainerView() {
+  event_observer_.reset();
+}
 
 const char* AmbientContainerView::GetClassName() const {
   return "AmbientContainerView";
@@ -65,9 +100,15 @@ void AmbientContainerView::Layout() {
   View::Layout();
 }
 
+void AmbientContainerView::AddedToWidget() {
+  event_observer_ = std::make_unique<HostWidgetEventObserver>(this);
+}
+
 void AmbientContainerView::Init() {
   // TODO(b/139954108): Choose a better dark mode theme color.
   SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
+  // Updates focus behavior to receive key press events.
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   photo_view_ = AddChildView(std::make_unique<PhotoView>(delegate_));
 
@@ -104,6 +145,10 @@ void AmbientContainerView::LayoutAssistantView() {
   int preferred_height = kAssistantPreferredHeightDip;
   ambient_assistant_container_view_->SetBoundsRect(
       gfx::Rect(0, 0, preferred_width, preferred_height));
+}
+
+void AmbientContainerView::HandleKeyEvent() {
+  delegate_->OnBackgroundPhotoEvents();
 }
 
 }  // namespace ash

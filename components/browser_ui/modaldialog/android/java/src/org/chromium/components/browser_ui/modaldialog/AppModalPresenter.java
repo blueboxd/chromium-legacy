@@ -7,13 +7,13 @@ package org.chromium.components.browser_ui.modaldialog;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.StrictModeContext;
+import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -48,11 +48,8 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
     }
 
     private ModalDialogView loadDialogView() {
-        // LayoutInflater may access the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return (ModalDialogView) LayoutInflater.from(mDialog.getContext())
-                    .inflate(R.layout.modal_dialog_view, null);
-        }
+        return (ModalDialogView) LayoutInflaterUtils.inflate(
+                mDialog.getContext(), R.layout.modal_dialog_view, null);
     }
 
     @Override

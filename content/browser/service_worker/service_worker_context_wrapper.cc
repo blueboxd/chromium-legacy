@@ -68,19 +68,22 @@ void StartActiveWorkerOnCoreThread(
     blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (status == blink::ServiceWorkerStatusCode::kOk) {
-    // Pass the reference of |registration| to WorkerStarted callback to prevent
-    // it from being deleted while starting the worker. If the refcount of
-    // |registration| is 1, it will be deleted after WorkerStarted is called.
-    registration->active_version()->StartWorker(
-        ServiceWorkerMetrics::EventType::UNKNOWN,
-        base::BindOnce(WorkerStarted, std::move(callback)));
+
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
+      !registration->active_version()) {
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       blink::ServiceWorkerStatusCode::kErrorNotFound));
     return;
   }
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     blink::ServiceWorkerStatusCode::kErrorNotFound));
+
+  // Pass the reference of |registration| to WorkerStarted callback to prevent
+  // it from being deleted while starting the worker. If the refcount of
+  // |registration| is 1, it will be deleted after WorkerStarted is called.
+  registration->active_version()->StartWorker(
+      ServiceWorkerMetrics::EventType::UNKNOWN,
+      base::BindOnce(WorkerStarted, std::move(callback)));
 }
 
 void SkipWaitingWorkerOnCoreThread(
@@ -1509,13 +1512,14 @@ void ServiceWorkerContextWrapper::
       key_prefix, std::move(callback));
 }
 
-void ServiceWorkerContextWrapper::StartServiceWorker(const GURL& scope,
-                                                     StatusCallback callback) {
+void ServiceWorkerContextWrapper::StartActiveServiceWorker(
+    const GURL& scope,
+    StatusCallback callback) {
   if (!BrowserThread::CurrentlyOn(GetCoreThreadId())) {
     base::PostTask(
         FROM_HERE, {GetCoreThreadId()},
-        base::BindOnce(&ServiceWorkerContextWrapper::StartServiceWorker, this,
-                       scope, std::move(callback)));
+        base::BindOnce(&ServiceWorkerContextWrapper::StartActiveServiceWorker,
+                       this, scope, std::move(callback)));
     return;
   }
   if (!context_core_) {

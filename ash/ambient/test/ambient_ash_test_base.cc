@@ -47,7 +47,10 @@ void AmbientAshTestBase::TearDown() {
 
 void AmbientAshTestBase::ShowAmbientScreen() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
-  ambient_controller()->CreateWidget();
+  ambient_controller()->ambient_ui_model()->SetUiVisibility(
+      AmbientUiVisibility::kShown);
+  // Flush the message loop to finish all async calls.
+  base::RunLoop().RunUntilIdle();
 }
 
 void AmbientAshTestBase::HideAmbientScreen() {

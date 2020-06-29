@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -162,6 +163,7 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
     const NGFragmentItem& line,
     bool has_hanging,
     const NGInlineCursor& cursor,
+    TextHeightType height_type,
     PhysicalRect* overflow) const {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK(IsLineBox() || IsInlineBox());
@@ -176,6 +178,10 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
     DCHECK(item);
     if (item->IsText()) {
       PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
+      if (height_type == TextHeightType::kEmHeight) {
+        child_scroll_overflow = AdjustTextRectForEmHeight(
+            child_scroll_overflow, item->Style(), container_writing_mode);
+      }
       if (UNLIKELY(has_hanging)) {
         AdjustScrollableOverflowForHanging(line.RectInContainerBlock(),
                                            container_writing_mode,
@@ -187,16 +193,19 @@ void NGPhysicalContainerFragment::AddScrollableOverflowForInlineChild(
     }
 
     if (const NGPhysicalBoxFragment* child_box = item->BoxFragment()) {
-      PhysicalRect child_scroll_overflow = item->RectInContainerBlock();
+      PhysicalRect child_scroll_overflow;
+      if (height_type == TextHeightType::kNormalHeight ||
+          child_box->BoxType() != kInlineBox)
+        child_scroll_overflow = item->RectInContainerBlock();
       if (child_box->IsInlineBox()) {
         child_box->AddScrollableOverflowForInlineChild(
             container, container_style, line, has_hanging, descendants,
-            &child_scroll_overflow);
+            height_type, &child_scroll_overflow);
         child_box->AdjustScrollableOverflowForPropagation(
             container, &child_scroll_overflow);
       } else {
         child_scroll_overflow =
-            child_box->ScrollableOverflowForPropagation(container);
+            child_box->ScrollableOverflowForPropagation(container, height_type);
         child_scroll_overflow.offset += item->OffsetInContainerBlock();
       }
       child_scroll_overflow.offset +=

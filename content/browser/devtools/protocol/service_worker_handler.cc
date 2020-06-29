@@ -256,7 +256,7 @@ Response ServiceWorkerHandler::StartWorker(const std::string& scope_url) {
     return CreateDomainNotEnabledErrorResponse();
   if (!context_)
     return CreateContextErrorResponse();
-  context_->StartServiceWorker(GURL(scope_url), base::DoNothing());
+  context_->StartActiveServiceWorker(GURL(scope_url), base::DoNothing());
   return Response::Success();
 }
 

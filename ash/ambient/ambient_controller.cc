@@ -381,6 +381,9 @@ void AmbientController::CreateWidget() {
   widget->SetContentsView(CreateContainerView());
 
   widget->Show();
+
+  // Requests keyboard focus for |container_view_| to receive keyboard events.
+  container_view_->RequestFocus();
 }
 
 void AmbientController::CleanUpOnClosed() {

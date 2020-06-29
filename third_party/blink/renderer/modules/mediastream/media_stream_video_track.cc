@@ -16,6 +16,7 @@
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -337,11 +338,10 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
-  WebMediaStreamTrack track;
-  track.Initialize(source->Owner());
-  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(source->Owner());
+  component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, std::move(callback), enabled));
-  return track;
+  return WebMediaStreamTrack(component);
 }
 
 // static
@@ -358,11 +358,11 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
-  track.Initialize(source->Owner());
-  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  auto* component = MakeGarbageCollected<MediaStreamComponent>(source->Owner());
+  component->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
       pan, tilt, zoom, pan_tilt_zoom_allowed, std::move(callback), enabled));
-  return track;
+  return WebMediaStreamTrack(component);
 }
 
 // static

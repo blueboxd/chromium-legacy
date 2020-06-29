@@ -18,9 +18,6 @@ TEST_F(AutotestAmbientApiTest,
 
   ShowAmbientScreen();
 
-  // Simulates locking screen to trigger the image refreshing.
-  LockScreen();
-
   // Wait for 10 photo transition animation to complete.
   base::RunLoop run_loop;
   test_api.WaitForPhotoTransitionAnimationCompleted(

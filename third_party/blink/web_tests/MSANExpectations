@@ -158,3 +158,8 @@ crbug.com/1066647 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/bre
 
 # Sheriff 2020-06-16
 crbug.com/1095518 [ Linux ] crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Crash ]
+
+# Sheriff 2020-06-29
+crbug.com/1100182 [ Linux ] external/wpt/mathml/relations/css-styling/displaystyle-2.html [ Crash ]
+crbug.com/1100182 [ Linux ] external/wpt/mathml/presentation-markup/scripts/subsup-parameters-1.html [ Crash ]
+crbug.com/1100182 [ Linux ] external/wpt/mathml/relations/css-styling/displaystyle-1.html [ Crash ]

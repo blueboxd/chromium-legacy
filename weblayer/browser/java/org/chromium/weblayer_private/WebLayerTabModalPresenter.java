@@ -5,16 +5,15 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.modaldialog.R;
 import org.chromium.components.browser_ui.modaldialog.TabModalPresenter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -53,11 +52,8 @@ public class WebLayerTabModalPresenter extends TabModalPresenter {
     }
 
     private FrameLayout loadDialogContainer() {
-        // LayoutInflater may trigger accessing the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return (FrameLayout) LayoutInflater.from(mContext).inflate(
-                    R.layout.modal_dialog_container, null);
-        }
+        return (FrameLayout) LayoutInflaterUtils.inflate(
+                mContext, R.layout.modal_dialog_container, null);
     }
 
     @Override

@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
@@ -20,7 +19,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.NativeMethods;
@@ -34,6 +32,7 @@ import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.LayoutInflaterUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -143,16 +142,12 @@ public class WarmupManager {
      */
     public static ViewGroup inflateViewHierarchy(
             Context baseContext, int toolbarContainerId, int toolbarId) {
-        // Inflating the view hierarchy causes StrictMode violations on some
-        // devices. Since layout inflation should happen on the UI thread, allow
-        // the disk reads. crbug.com/644243.
-        try (TraceEvent e = TraceEvent.scoped("WarmupManager.inflateViewHierarchy");
-                StrictModeContext c = StrictModeContext.allowDiskReads()) {
+        try (TraceEvent e = TraceEvent.scoped("WarmupManager.inflateViewHierarchy")) {
             ContextThemeWrapper context =
                     new ContextThemeWrapper(baseContext, ChromeActivity.getThemeId());
             FrameLayout contentHolder = new FrameLayout(context);
             ViewGroup mainView =
-                    (ViewGroup) LayoutInflater.from(context).inflate(R.layout.main, contentHolder);
+                    (ViewGroup) LayoutInflaterUtils.inflate(context, R.layout.main, contentHolder);
             if (toolbarContainerId != ChromeActivity.NO_CONTROL_CONTAINER) {
                 ViewStub stub = (ViewStub) mainView.findViewById(R.id.control_container_stub);
                 stub.setLayoutResource(toolbarContainerId);

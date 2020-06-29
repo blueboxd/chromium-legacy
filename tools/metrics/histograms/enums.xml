@@ -15439,6 +15439,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="35" label="Slides"/>
   <int value="36" label="Web Store"/>
   <int value="37" label="YouTube"/>
+  <int value="38" label="YouTube Music"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">

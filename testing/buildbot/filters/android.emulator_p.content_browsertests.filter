@@ -8,10 +8,10 @@
 -BackForwardCacheBrowserTest.VideoSuspendAndResume
 
 # crbug.com/1096612
--SitePerProcessBrowserTest.DetachedIframeUnloadHandlerABCB*
+-All/SitePerProcessBrowserTest.DetachedIframeUnloadHandlerABCB/*
 
 # crbug.com/1058447
--SitePerProcessBrowserTest.FrameViewportOffsetTestSimple
+-All/SitePerProcessBrowserTest.FrameViewportOffsetTestSimple/*
 
 # crbug.com/1056325
 -WebRtcAudioBrowserTest.EstablishAudioVideoCallAndVerifyLocalMutingWorks

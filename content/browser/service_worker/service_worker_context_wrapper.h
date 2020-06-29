@@ -338,7 +338,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
-  void StartServiceWorker(const GURL& scope, StatusCallback callback);
+  // Fails with kErrorNotFound if there is no active registration for the given
+  // scope. It means that there is no registration at all or that the
+  // registration doesn't have an active version yet (which is the case for
+  // installing service workers).
+  void StartActiveServiceWorker(const GURL& scope, StatusCallback callback);
 
   // These methods can be called from any thread.
   void SkipWaitingWorker(const GURL& scope);

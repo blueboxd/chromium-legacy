@@ -8,14 +8,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.StrictModeContext;
+import org.chromium.ui.LayoutInflaterUtils;
 
 /**
  * UI for the color chooser that shows on the Android platform as a result of
@@ -40,12 +39,7 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
     private int mCurrentColor;
 
     View inflateView(Context context, int id) {
-        // LayoutInflater may trigger accessing the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            LayoutInflater inflater =
-                    (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            return inflater.inflate(id, null);
-        }
+        return LayoutInflaterUtils.inflate(context, id, null);
     }
 
     /**

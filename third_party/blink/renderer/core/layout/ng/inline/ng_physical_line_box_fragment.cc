@@ -93,13 +93,14 @@ inline void AddInlineSizeToOverflow(const PhysicalRect& rect,
 
 PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
     const NGPhysicalBoxFragment& container,
-    const ComputedStyle& container_style) const {
+    const ComputedStyle& container_style,
+    TextHeightType height_type) const {
   const WritingMode container_writing_mode = container_style.GetWritingMode();
   const TextDirection container_direction = container_style.Direction();
   PhysicalRect overflow;
   for (const auto& child : Children()) {
     PhysicalRect child_scroll_overflow =
-        child->ScrollableOverflowForPropagation(container);
+        child->ScrollableOverflowForPropagation(container, height_type);
     child_scroll_overflow.offset += child.Offset();
 
     if (UNLIKELY(has_hanging_ && !child->IsFloatingOrOutOfFlowPositioned())) {
@@ -129,14 +130,16 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflowForLine(
     const NGPhysicalBoxFragment& container,
     const ComputedStyle& container_style,
     const NGFragmentItem& line,
-    const NGInlineCursor& cursor) const {
+    const NGInlineCursor& cursor,
+    TextHeightType height_type) const {
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_EQ(&line, cursor.CurrentItem());
   DCHECK_EQ(line.LineBoxFragment(), this);
 
   PhysicalRect overflow;
   AddScrollableOverflowForInlineChild(container, container_style, line,
-                                      has_hanging_, cursor, &overflow);
+                                      has_hanging_, cursor, height_type,
+                                      &overflow);
 
   // Make sure we include the inline-size of the line-box in the overflow.
   // Note, the bottom half-leading should not be included. crbug.com/996847

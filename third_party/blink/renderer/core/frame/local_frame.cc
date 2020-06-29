@@ -220,9 +220,10 @@ uint32_t GetCurrentCursorPositionInFrame(LocalFrame* local_frame) {
 // blob, so that it can be passed across processes.
 mojo::PendingRemote<mojom::blink::Blob> DataURLToBlob(const String& data_url) {
   auto blob_data = std::make_unique<BlobData>();
-  blob_data->AppendBytes(data_url.Utf8().data(), data_url.length());
+  StringUTF8Adaptor data_url_utf8(data_url);
+  blob_data->AppendBytes(data_url_utf8.data(), data_url_utf8.size());
   scoped_refptr<BlobDataHandle> blob_data_handle =
-      BlobDataHandle::Create(std::move(blob_data), data_url.length());
+      BlobDataHandle::Create(std::move(blob_data), data_url_utf8.size());
   return blob_data_handle->CloneBlobRemote();
 }
 

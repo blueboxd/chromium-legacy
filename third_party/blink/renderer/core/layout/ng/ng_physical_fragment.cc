@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -401,12 +402,17 @@ void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
 }
 #endif
 
-PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
+PhysicalRect NGPhysicalFragment::ScrollableOverflow(
+    const NGPhysicalBoxFragment& container,
+    TextHeightType height_type) const {
   switch (Type()) {
     case kFragmentBox:
-      return To<NGPhysicalBoxFragment>(*this).ScrollableOverflow();
+      return To<NGPhysicalBoxFragment>(*this).ScrollableOverflow(height_type);
     case kFragmentText:
-      return {{}, Size()};
+      if (height_type == TextHeightType::kNormalHeight)
+        return {{}, Size()};
+      return AdjustTextRectForEmHeight(LocalRect(), Style(),
+                                       container.Style().GetWritingMode());
     case kFragmentLineBox:
       NOTREACHED()
           << "You must call NGLineBoxFragment::ScrollableOverflow explicitly.";
@@ -417,8 +423,9 @@ PhysicalRect NGPhysicalFragment::ScrollableOverflow() const {
 }
 
 PhysicalRect NGPhysicalFragment::ScrollableOverflowForPropagation(
-    const NGPhysicalBoxFragment& container) const {
-  PhysicalRect overflow = ScrollableOverflow();
+    const NGPhysicalBoxFragment& container,
+    TextHeightType height_type) const {
+  PhysicalRect overflow = ScrollableOverflow(container, height_type);
   AdjustScrollableOverflowForPropagation(container, &overflow);
   return overflow;
 }

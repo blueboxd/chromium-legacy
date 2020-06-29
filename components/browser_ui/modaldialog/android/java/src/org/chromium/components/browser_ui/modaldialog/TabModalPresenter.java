@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -18,9 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -104,11 +103,8 @@ public abstract class TabModalPresenter extends ModalDialogManager.Presenter {
     }
 
     private ModalDialogView loadDialogView(int style) {
-        // LayoutInflater may access the disk.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return (ModalDialogView) LayoutInflater.from(new ContextThemeWrapper(mContext, style))
-                    .inflate(R.layout.modal_dialog_view, null);
-        }
+        return (ModalDialogView) LayoutInflaterUtils.inflate(
+                new ContextThemeWrapper(mContext, style), R.layout.modal_dialog_view, null);
     }
 
     @Override

@@ -109,6 +109,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    int64_t writer_resource_id,
     ResultCallback callback)
     : script_url_(script_url),
       is_main_script_(is_main_script),
@@ -214,6 +215,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
+      writer_resource_id,
       /*pause_when_not_identical=*/true);
 
   network_loader_ = ServiceWorkerUpdatedScriptLoader::

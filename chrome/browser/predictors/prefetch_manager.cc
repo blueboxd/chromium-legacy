@@ -19,6 +19,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/empty_url_loader_client.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -65,44 +66,77 @@ const net::NetworkTrafficAnnotationTag kPrefetchTrafficAnnotation =
 
 }  // namespace
 
+// Stores the status of all prefetches associated with a given |url|.
+struct PrefetchInfo {
+  PrefetchInfo(const GURL& url, PrefetchManager& manager)
+      : url(url),
+        stats(std::make_unique<PrefetchStats>(url)),
+        manager(&manager) {
+    DCHECK(url.is_valid());
+    DCHECK(url.SchemeIsHTTPOrHTTPS());
+  }
+
+  ~PrefetchInfo() = default;
+
+  PrefetchInfo(const PrefetchInfo&) = delete;
+  PrefetchInfo& operator=(const PrefetchInfo&) = delete;
+
+  void OnJobCreated() { job_count++; }
+
+  void OnJobDestroyed() {
+    job_count--;
+    if (is_done()) {
+      // Destroys |this|.
+      manager->AllPrefetchJobsForUrlFinished(*this);
+    }
+  }
+
+  bool is_done() const { return job_count == 0; }
+
+  GURL url;
+  size_t job_count = 0;
+  bool was_canceled = false;
+  std::unique_ptr<PrefetchStats> stats;
+  // Owns |this|.
+  PrefetchManager* const manager;
+
+  base::WeakPtrFactory<PrefetchInfo> weak_factory{this};
+};
+
+// Stores all data need for running a prefetch to a |url|.
+struct PrefetchJob {
+  PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo& info)
+      : url(prefetch_request.url),
+        network_isolation_key(
+            std::move(prefetch_request.network_isolation_key)),
+        destination(prefetch_request.destination),
+        info(info.weak_factory.GetWeakPtr()) {
+    DCHECK(url.is_valid());
+    DCHECK(url.SchemeIsHTTPOrHTTPS());
+    DCHECK(network_isolation_key.IsFullyPopulated());
+    info.OnJobCreated();
+  }
+
+  ~PrefetchJob() {
+    if (info)
+      info->OnJobDestroyed();
+  }
+
+  PrefetchJob(const PrefetchJob&) = delete;
+  PrefetchJob& operator=(const PrefetchJob&) = delete;
+
+  GURL url;
+  net::NetworkIsolationKey network_isolation_key;
+  network::mojom::RequestDestination destination;
+
+  // PrefetchJob lives until the URL load completes, so it can outlive the
+  // PrefetchManager and therefore the PrefetchInfo.
+  base::WeakPtr<PrefetchInfo> info;
+};
+
 PrefetchStats::PrefetchStats(const GURL& url)
     : url(url), start_time(base::TimeTicks::Now()) {}
 PrefetchStats::~PrefetchStats() = default;
-
-PrefetchInfo::PrefetchInfo(const GURL& url, PrefetchManager& manager)
-    : url(url), stats(std::make_unique<PrefetchStats>(url)), manager(&manager) {
-  DCHECK(url.is_valid());
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
-}
-
-PrefetchInfo::~PrefetchInfo() = default;
-
-void PrefetchInfo::OnJobCreated() {
-  job_count++;
-}
-
-void PrefetchInfo::OnJobDestroyed() {
-  job_count--;
-  if (is_done()) {
-    // Destroys |this|.
-    manager->AllPrefetchJobsForUrlFinished(*this);
-  }
-}
-
-PrefetchJob::PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo& info)
-    : url(prefetch_request.url),
-      network_isolation_key(std::move(prefetch_request.network_isolation_key)),
-      info(info.weak_factory.GetWeakPtr()) {
-  DCHECK(url.is_valid());
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
-  DCHECK(network_isolation_key.IsFullyPopulated());
-  info.OnJobCreated();
-}
-
-PrefetchJob::~PrefetchJob() {
-  if (info)
-    info->OnJobDestroyed();
-}
 
 PrefetchManager::PrefetchManager(base::WeakPtr<Delegate> delegate,
                                  Profile* profile)
@@ -143,6 +177,20 @@ void PrefetchManager::Stop(const GURL& url) {
   it->second->was_canceled = true;
 }
 
+blink::mojom::ResourceType GetResourceType(
+    network::mojom::RequestDestination destination) {
+  switch (destination) {
+    case network::mojom::RequestDestination::kEmpty:
+      return blink::mojom::ResourceType::kSubResource;
+    case network::mojom::RequestDestination::kScript:
+      return blink::mojom::ResourceType::kScript;
+    case network::mojom::RequestDestination::kStyle:
+      return blink::mojom::ResourceType::kStylesheet;
+    default:
+      NOTREACHED() << destination;
+  }
+  return blink::mojom::ResourceType::kSubResource;
+}
 void PrefetchManager::PrefetchUrl(
     std::unique_ptr<PrefetchJob> job,
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
@@ -162,11 +210,9 @@ void PrefetchManager::PrefetchUrl(
   request.headers.SetHeader("Purpose", "prefetch");
 
   request.load_flags = net::LOAD_PREFETCH;
-  // TODO(falken): Get the real resource type from the hint and set
-  // |destination| too.
-  // https://source.chromium.org/chromium/chromium/src/+/master:components/optimization_guide/proto/loading_predictor_metadata.proto;l=13;drc=f59ec65870df7152bcffa34e2b3f1923de07fea8
+  request.destination = job->destination;
   request.resource_type =
-      static_cast<int>(blink::mojom::ResourceType::kSubResource);
+      static_cast<int>(GetResourceType(request.destination));
 
   // TODO(falken): Support CORS?
   request.mode = network::mojom::RequestMode::kNoCors;

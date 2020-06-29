@@ -13,6 +13,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
@@ -64,7 +65,12 @@ ReloadButton::ReloadButton(CommandUpdater* command_updater,
       icon_style_(icon_style),
       double_click_timer_delay_(
           base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval())),
-      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)) {}
+      mode_switch_timer_delay_(base::TimeDelta::FromMilliseconds(1350)) {
+  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                              ui::EF_MIDDLE_MOUSE_BUTTON);
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
+  SetID(VIEW_ID_RELOAD_BUTTON);
+}
 
 ReloadButton::~ReloadButton() {}
 

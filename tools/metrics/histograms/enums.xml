@@ -39923,6 +39923,7 @@ from previous Chrome versions.
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
   <int value="-1438279809" label="GamepadExtensions:disabled"/>
+  <int value="-1437526584" label="HelpAppReleaseNotes:enabled"/>
   <int value="-1436251034" label="VoiceSearchOnLocalNtp:disabled"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433452630" label="AllowRemoteContextForNotifications:enabled"/>
@@ -41818,6 +41819,7 @@ from previous Chrome versions.
   <int value="651562604" label="RawClipboard:enabled"/>
   <int value="651844675" label="EasyUnlockPromotions:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
+  <int value="653795860" label="HelpAppReleaseNotes:disabled"/>
   <int value="654199907" label="AllowSyncXHRInPageDismissal:disabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>

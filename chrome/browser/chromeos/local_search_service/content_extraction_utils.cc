@@ -15,14 +15,13 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/inverted_index.h"
 #include "chrome/common/string_matching/tokenized_string.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
 
 std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens) {
-  std::unordered_map<base::string16, std::vector<TokenPosition>> dictionary;
+  std::unordered_map<base::string16, std::vector<Position>> dictionary;
   for (const auto& token : tokens) {
     dictionary[token.content].insert(dictionary[token.content].end(),
                                      token.positions.begin(),
@@ -60,9 +59,9 @@ std::vector<Token> ExtractContent(const std::string& content_id,
     if (IsStopword(word, locale))
       continue;
     tokens.push_back(Token(
-        word, {TokenPosition(content_id, tokenized_string.mappings()[i].start(),
-                             tokenized_string.mappings()[i].end() -
-                                 tokenized_string.mappings()[i].start())}));
+        word, {Position(content_id, tokenized_string.mappings()[i].start(),
+                        tokenized_string.mappings()[i].end() -
+                            tokenized_string.mappings()[i].start())}));
   }
 
   return tokens;

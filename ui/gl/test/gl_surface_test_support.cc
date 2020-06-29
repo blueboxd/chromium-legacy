@@ -26,6 +26,10 @@
 #include "ui/gfx/x/x11.h"  // nogncheck
 #endif
 
+#if defined(USE_X11) || defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace gl {
 
 namespace {
@@ -36,13 +40,16 @@ void InitializeOneOffHelper(bool init_extensions) {
   // Ozone/X11 is used, XThreads are initialized with the
   // OzonePlatform::InitializeForGPU call.
 #if defined(USE_X11)
-  XInitThreads();
+  if (!features::IsUsingOzonePlatform())
+    XInitThreads();
 #endif
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
 #if defined(OS_LINUX)
@@ -116,9 +123,11 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
 // static
 void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
@@ -127,9 +136,11 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
 // static
 void GLSurfaceTestSupport::InitializeOneOffWithStubBindings() {
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
   InitializeOneOffImplementation(kGLImplementationStubGL, false);

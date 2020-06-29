@@ -516,7 +516,6 @@ jumbo_component("platform") {
     "exported/web_encrypted_media_client.cc",
     "exported/web_encrypted_media_key_information.cc",
     "exported/web_encrypted_media_request.cc",
-    "exported/web_failing_url_loader_factory.cc",
     "exported/web_font.cc",
     "exported/web_font_description.cc",
     "exported/web_http_body.cc",

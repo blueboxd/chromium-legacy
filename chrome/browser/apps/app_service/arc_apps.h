@@ -165,6 +165,8 @@ class ArcApps : public KeyedService,
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info,
       bool update_icon = true);
+  IconEffects GetIconEffects(const std::string& app_id,
+                             const ArcAppListPrefs::AppInfo& app_info);
   void SetIconEffect(const std::string& app_id);
   void CloseTasks(const std::string& app_id);
   void UpdateAppIntentFilters(

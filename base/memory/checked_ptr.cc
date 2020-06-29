@@ -13,14 +13,17 @@ namespace internal {
 
 BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnabledForPtr(
     void* ptr) {
-  // CheckedPtr2Impl works only when memory is allocated by PartitionAlloc and
-  // only only if the pointer points to the beginning of the allocated slot.
+  // CheckedPtr2Impl works only when memory is allocated by PartitionAlloc *and*
+  // the pointer points to the beginning of the allocated slot.
   //
-  // TODO(bartekn): Add |&& PartitionAllocGetSlotOffset(ptr) == 0|
-  // CheckedPtr2Impl uses a fake implementation at the moment, which happens to
-  // work even for non-0 offsets, so skip this check for now to get a better
-  // coverage.
-  return IsManagedByPartitionAlloc(ptr);
+  // NOTE, CheckedPtr doesn't know which thread-safery PartitionAlloc variant
+  // it's dealing with. Just use ThreadSafe variant, because it's more common.
+  // NotThreadSafe is only used by Blink's layout, which is currently being
+  // transitioned to Oilpan. PartitionAllocGetSlotOffset is expected to return
+  // the same result regardless, anyway.
+  // TODO(bartekn): Figure out the thread-safety mismatch.
+  return IsManagedByPartitionAllocAndNotDirectMapped(ptr) &&
+         PartitionAllocGetSlotOffset<ThreadSafe>(ptr) == 0;
 }
 
 #endif

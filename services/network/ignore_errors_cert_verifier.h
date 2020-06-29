@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) IgnoreErrorsCertVerifier
  private:
   friend class IgnoreErrorsCertVerifierTest;
 
-  void SetAllowlistForTesting(const SPKIHashSet& whitelist);
+  void SetAllowlistForTesting(const SPKIHashSet& allowlist);
 
   std::unique_ptr<net::CertVerifier> verifier_;
   SPKIHashSet allowlist_;

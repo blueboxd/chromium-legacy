@@ -20,6 +20,7 @@ import org.chromium.chrome.ui.messages.R;
 import org.chromium.components.infobars.InfoBarCompactLayout;
 import org.chromium.components.infobars.InfoBarInteractionHandler;
 import org.chromium.components.infobars.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

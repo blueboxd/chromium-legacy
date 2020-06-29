@@ -41,7 +41,15 @@ void CallbackThunk(
 }
 }  // namespace
 
-VideoEncoderClientConfig::VideoEncoderClientConfig() = default;
+VideoEncoderClientConfig::VideoEncoderClientConfig(
+    const Video* video,
+    VideoCodecProfile output_profile)
+    : output_profile(output_profile),
+      framerate(video->FrameRate()),
+      num_frames_to_encode(video->NumFrames()) {}
+
+VideoEncoderClientConfig::VideoEncoderClientConfig(
+    const VideoEncoderClientConfig&) = default;
 
 VideoEncoderStats::VideoEncoderStats(uint32_t framerate)
     : framerate(framerate) {}

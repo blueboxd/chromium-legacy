@@ -17,7 +17,8 @@
 
 #if defined(USE_OZONE)
 #include "base/command_line.h"
-#include "mojo/core/embedder/embedder.h"                  // nogncheck
+#include "mojo/core/embedder/embedder.h"  // nogncheck
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -45,12 +46,14 @@ class GlTestSuite : public base::TestSuite {
     // process and it spawns and starts its own DRM thread. Note that this mode
     // still requires a mojo pipe for in-process communication between the host
     // and GPU components.
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
+    if (features::IsUsingOzonePlatform()) {
+      ui::OzonePlatform::InitParams params;
+      params.single_process = true;
 
-    // This initialization must be done after TaskEnvironment has
-    // initialized the UI thread.
-    ui::OzonePlatform::InitializeForUI(params);
+      // This initialization must be done after TaskEnvironment has
+      // initialized the UI thread.
+      ui::OzonePlatform::InitializeForUI(params);
+    }
 #endif
   }
 
@@ -68,7 +71,8 @@ class GlTestSuite : public base::TestSuite {
 
 int main(int argc, char** argv) {
 #if defined(USE_OZONE)
-  mojo::core::Init();
+  if (features::IsUsingOzonePlatform())
+    mojo::core::Init();
 #endif
 
   GlTestSuite test_suite(argc, argv);

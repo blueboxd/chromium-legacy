@@ -369,6 +369,14 @@ bool XOSExchangeDataProvider::HasCustomFormat(
   return !requested_types.empty();
 }
 
+#if defined(USE_X11)
+void XOSExchangeDataProvider::SetFileContents(
+    const base::FilePath& filename,
+    const std::string& file_contents) {
+  NOTREACHED();
+}
+#endif
+
 void XOSExchangeDataProvider::SetHtml(const base::string16& html,
                                       const GURL& base_url) {
   std::vector<unsigned char> bytes;

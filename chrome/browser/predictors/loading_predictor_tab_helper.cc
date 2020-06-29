@@ -72,6 +72,18 @@ bool IsHandledNavigation(content::NavigationHandle* navigation_handle) {
          navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
 }
 
+network::mojom::RequestDestination GetDestination(
+    optimization_guide::proto::ResourceType type) {
+  switch (type) {
+    case optimization_guide::proto::RESOURCE_TYPE_UNKNOWN:
+      return network::mojom::RequestDestination::kEmpty;
+    case optimization_guide::proto::RESOURCE_TYPE_CSS:
+      return network::mojom::RequestDestination::kStyle;
+    case optimization_guide::proto::RESOURCE_TYPE_SCRIPT:
+      return network::mojom::RequestDestination::kScript;
+  }
+}
+
 // Util class for recording the status for when we received optimization hints
 // for navigations that we requested them for.
 class ScopedOptimizationHintsReceiveStatusRecorder {
@@ -345,8 +357,9 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     predicted_subresources.push_back(subresource_url);
     if (base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
       // TODO(falken): Detect duplicates.
-      prediction.prefetch_requests.emplace_back(subresource_url,
-                                                network_isolation_key);
+      prediction.prefetch_requests.emplace_back(
+          subresource_url, network_isolation_key,
+          GetDestination(subresource.resource_type()));
     } else {
       url::Origin subresource_origin = url::Origin::Create(subresource_url);
       if (subresource_origin == main_frame_origin) {

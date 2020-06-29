@@ -7,13 +7,17 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/InstallableAmbientBadgeInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 InstallableAmbientBadgeInfoBar::InstallableAmbientBadgeInfoBar(
     std::unique_ptr<InstallableAmbientBadgeInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 InstallableAmbientBadgeInfoBar::~InstallableAmbientBadgeInfoBar() {}
 

@@ -165,6 +165,7 @@ ServiceWorkerCacheWriter::ServiceWorkerCacheWriter(
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    int64_t writer_resource_id,
     bool pause_when_not_identical)
     : state_(STATE_START),
       io_pending_(false),
@@ -172,28 +173,33 @@ ServiceWorkerCacheWriter::ServiceWorkerCacheWriter(
       pause_when_not_identical_(pause_when_not_identical),
       compare_reader_(std::move(compare_reader)),
       copy_reader_(std::move(copy_reader)),
-      writer_(std::move(writer)) {}
+      writer_(std::move(writer)),
+      writer_resource_id_(writer_resource_id) {}
 
 ServiceWorkerCacheWriter::~ServiceWorkerCacheWriter() {}
 
 std::unique_ptr<ServiceWorkerCacheWriter>
 ServiceWorkerCacheWriter::CreateForCopy(
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
-    std::unique_ptr<ServiceWorkerResponseWriter> writer) {
+    std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    int64_t writer_resource_id) {
   DCHECK(copy_reader);
   DCHECK(writer);
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader> null_remote;
   return base::WrapUnique(new ServiceWorkerCacheWriter(
       std::move(null_remote) /* compare_reader */, std::move(copy_reader),
-      std::move(writer), false /* pause_when_not_identical*/));
+      std::move(writer), writer_resource_id,
+      false /* pause_when_not_identical*/));
 }
 
 std::unique_ptr<ServiceWorkerCacheWriter>
 ServiceWorkerCacheWriter::CreateForWriteBack(
-    std::unique_ptr<ServiceWorkerResponseWriter> writer) {
+    std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    int64_t writer_resource_id) {
   DCHECK(writer);
   return base::WrapUnique(new ServiceWorkerCacheWriter(
       /*compare_reader=*/{}, /*copy_reader=*/{}, std::move(writer),
+      writer_resource_id,
       /* pause_when_not_identical=*/false));
 }
 
@@ -202,6 +208,7 @@ ServiceWorkerCacheWriter::CreateForComparison(
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
     mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
+    int64_t writer_resource_id,
     bool pause_when_not_identical) {
   // |compare_reader| reads data for the comparison. |copy_reader| reads
   // data for copy.
@@ -210,7 +217,7 @@ ServiceWorkerCacheWriter::CreateForComparison(
   DCHECK(writer);
   return base::WrapUnique(new ServiceWorkerCacheWriter(
       std::move(compare_reader), std::move(copy_reader), std::move(writer),
-      pause_when_not_identical));
+      writer_resource_id, pause_when_not_identical));
 }
 
 net::Error ServiceWorkerCacheWriter::MaybeWriteHeaders(
@@ -344,9 +351,9 @@ bool ServiceWorkerCacheWriter::IsCopying() const {
   return !compare_reader_ && copy_reader_;
 }
 
-int64_t ServiceWorkerCacheWriter::WriterResourceId() const {
-  DCHECK(writer_);
-  return writer_->response_id();
+int64_t ServiceWorkerCacheWriter::writer_resource_id() const {
+  DCHECK_NE(writer_resource_id_, blink::mojom::kInvalidServiceWorkerResourceId);
+  return writer_resource_id_;
 }
 
 int ServiceWorkerCacheWriter::DoStart(int result) {

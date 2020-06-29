@@ -2201,6 +2201,9 @@ extern const char kGaiaActionButtonsDescription[];
 extern const char kHelpAppName[];
 extern const char kHelpAppDescription[];
 
+extern const char kHelpAppReleaseNotesName[];
+extern const char kHelpAppReleaseNotesDescription[];
+
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
 

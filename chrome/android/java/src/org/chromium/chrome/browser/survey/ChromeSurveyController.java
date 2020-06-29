@@ -35,7 +35,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
+import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;

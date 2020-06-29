@@ -832,9 +832,17 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   EXPECT_LT(requested_size, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
   for (size_t offset = 0; offset < requested_size; ++offset) {
-    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
-        static_cast<char*>(ptr) + offset);
-    EXPECT_EQ(actual_offset, offset);
+    EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(static_cast<char*>(ptr) +
+                                                      offset),
+              offset);
+    // Testing the mismatched thread-safety variant here and below, because
+    // CheckedPtr2Impl may call the wrong variant and relies on the result to
+    // be identical.
+    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
+    // vartiant.
+    EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
+                  static_cast<char*>(ptr) + offset),
+              offset);
   }
 #endif
   allocator.root()->Free(ptr);
@@ -850,9 +858,14 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   EXPECT_EQ(requested_size, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
   for (size_t offset = 0; offset < requested_size; offset += 877) {
-    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
-        static_cast<char*>(ptr) + offset);
-    EXPECT_EQ(actual_offset, offset);
+    EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(static_cast<char*>(ptr) +
+                                                      offset),
+              offset);
+    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
+    // vartiant.
+    EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
+                  static_cast<char*>(ptr) + offset),
+              offset);
   }
 #endif
   allocator.root()->Free(ptr);
@@ -872,9 +885,14 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   EXPECT_EQ(requested_size + kSystemPageSize, actual_size);
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
   for (size_t offset = 0; offset < requested_size; offset += 4999) {
-    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
-        static_cast<char*>(ptr) + offset);
-    EXPECT_EQ(actual_offset, offset);
+    EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(static_cast<char*>(ptr) +
+                                                      offset),
+              offset);
+    // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
+    // vartiant.
+    EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(
+                  static_cast<char*>(ptr) + offset),
+              offset);
   }
 #endif
   // Check that we can write at the end of the reported size too.
@@ -922,9 +940,11 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
     char* ptr = static_cast<char*>(ptrs[i]);
     for (size_t offset = 0; offset < size; offset += 13) {
       EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr), size);
-      size_t actual_offset =
-          PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset);
-      EXPECT_EQ(actual_offset, offset);
+      EXPECT_EQ(PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset), offset);
+      // TODO(bartekn): Remove when CheckedPtr2Impl no longer calls mismatched
+      // vartiant.
+      EXPECT_EQ(PartitionAllocGetSlotOffset<NotThreadSafe>(ptr + offset),
+                offset);
     }
     allocator.root()->Free(ptr);
   }

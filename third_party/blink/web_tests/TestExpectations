@@ -6600,7 +6600,6 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
 
-crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Timeout ]
 crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1091665 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
@@ -6776,7 +6775,7 @@ crbug.com/1057060 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.htm
 # Sheriff 2020-06-05
 crbug.com/1091829 [ Mac ] fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
 crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
-crbug.com/1091250 [ Win10 ] virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
+crbug.com/1091250 virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
 crbug.com/1091948 [ Linux ] external/wpt/html/canvas/element/manual/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Timeout ]
 
 # Sheriff 2020-06-06

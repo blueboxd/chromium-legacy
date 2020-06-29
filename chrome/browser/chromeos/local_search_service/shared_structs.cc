@@ -15,22 +15,39 @@
 
 namespace local_search_service {
 
-local_search_service::Content::Content(const std::string& id,
-                                       const base::string16& content)
+Content::Content(const std::string& id, const base::string16& content)
     : id(id), content(content) {}
-local_search_service::Content::Content() = default;
-local_search_service::Content::Content(const Content& content) = default;
-local_search_service::Content::~Content() = default;
+Content::Content() = default;
+Content::Content(const Content& content) = default;
+Content::~Content() = default;
 
-local_search_service::Data::Data(
-    const std::string& id,
-    const std::vector<local_search_service::Content>& contents)
+Data::Data(const std::string& id, const std::vector<Content>& contents)
     : id(id), contents(contents) {}
-local_search_service::Data::Data() = default;
-local_search_service::Data::Data(const Data& data) = default;
-local_search_service::Data::~Data() = default;
-local_search_service::Result::Result() = default;
-local_search_service::Result::Result(const Result& result) = default;
-local_search_service::Result::~Result() = default;
+Data::Data() = default;
+Data::Data(const Data& data) = default;
+Data::~Data() = default;
+
+Position::Position() = default;
+Position::Position(const Position& position) = default;
+Position::Position(const std::string& content_id,
+                   uint32_t start,
+                   uint32_t length)
+    : content_id(content_id), start(start), length(length) {}
+Position::~Position() = default;
+
+Token::Token() = default;
+Token::Token(const base::string16& text, const std::vector<Position>& pos)
+    : content(text), positions(pos) {}
+Token::Token(const Token& token)
+    : content(token.content), positions(token.positions) {}
+Token::~Token() = default;
+
+Result::Result() = default;
+Result::Result(const Result& result) = default;
+Result::Result(const std::string& id,
+               double score,
+               const std::vector<Position>& positions)
+    : id(id), score(score), positions(positions) {}
+Result::~Result() = default;
 
 }  // namespace local_search_service

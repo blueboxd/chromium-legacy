@@ -29,8 +29,10 @@
 #include "net/base/network_isolation_key.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/origin.h"
 
 namespace predictors {
@@ -71,6 +73,12 @@ net::NetworkIsolationKey CreateNetworkIsolationKey(const GURL& main_frame_url) {
   return net::NetworkIsolationKey(origin, origin);
 }
 
+PrefetchRequest CreateScriptRequest(const GURL& url,
+                                    const GURL& main_frame_url) {
+  return PrefetchRequest(url, CreateNetworkIsolationKey(main_frame_url),
+                         network::mojom::RequestDestination::kScript);
+}
+
 }  // namespace
 
 // A test fixture for the PrefetchManager.
@@ -109,8 +117,8 @@ PrefetchManagerTest::PrefetchManagerTest()
 TEST_F(PrefetchManagerTest, OneMainFrameUrlOnePrefetch) {
   GURL main_frame_url("https://abc.invalid");
   GURL subresource_url("https://xyz.invalid/script.js");
-  PrefetchRequest request(subresource_url,
-                          CreateNetworkIsolationKey(main_frame_url));
+  PrefetchRequest request =
+      CreateScriptRequest(subresource_url, main_frame_url);
 
   base::RunLoop loop;
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
@@ -118,6 +126,14 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlOnePrefetch) {
         network::ResourceRequest& request = params->url_request;
         EXPECT_EQ(request.url, subresource_url);
         EXPECT_TRUE(request.load_flags & net::LOAD_PREFETCH);
+
+        EXPECT_EQ(request.destination,
+                  network::mojom::RequestDestination::kScript);
+        EXPECT_EQ(
+            static_cast<blink::mojom::ResourceType>(request.resource_type),
+            blink::mojom::ResourceType::kScript);
+
+        EXPECT_EQ(request.mode, network::mojom::RequestMode::kNoCors);
 
         std::string purpose;
         EXPECT_TRUE(request.headers.GetHeader("Purpose", &purpose));
@@ -161,7 +177,7 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlMultiplePrefetch) {
   // The request URLs can only be constructed after the server is started.
   for (size_t i = 0; i < responses.size(); i++) {
     GURL url = test_server.GetURL(paths[i]);
-    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+    requests.push_back(CreateScriptRequest(url, main_frame_url));
   }
 
   // Start the prefetching.
@@ -223,11 +239,11 @@ TEST_F(PrefetchManagerTest, MultipleMainFrameUrlMultiplePrefetch) {
   // The request URLs can only be constructed after the server is started.
   for (size_t i = 0; i < count; i++) {
     GURL url = test_server.GetURL(paths[i]);
-    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+    requests.push_back(CreateScriptRequest(url, main_frame_url));
   }
   {
     GURL url = test_server.GetURL(paths[count]);
-    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url2));
+    requests.push_back(CreateScriptRequest(url, main_frame_url2));
   }
 
   // Start the prefetching.
@@ -307,15 +323,15 @@ TEST_F(PrefetchManagerTest, Stop) {
   // The request URLs can only be constructed after the server is started.
   for (size_t i = 0; i < limit; i++) {
     GURL url = test_server.GetURL(paths[i]);
-    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+    requests.push_back(CreateScriptRequest(url, main_frame_url));
   }
   // This request should never be seen.
-  requests.emplace_back(test_server.GetURL("/should_be_cancelled"),
-                        CreateNetworkIsolationKey(main_frame_url));
+  requests.push_back(CreateScriptRequest(
+      test_server.GetURL("/should_be_cancelled"), main_frame_url));
 
   // The request from the second navigation.
-  PrefetchRequest request2(test_server.GetURL(path2),
-                           CreateNetworkIsolationKey(main_frame_url2));
+  PrefetchRequest request2 =
+      CreateScriptRequest(test_server.GetURL(path2), main_frame_url2);
 
   // Start URL1, URL2.
   prefetch_manager_->Start(main_frame_url, requests);
@@ -384,11 +400,11 @@ TEST_F(PrefetchManagerTest, StopAndStart) {
   // The request URLs can only be constructed after the server is started.
   for (size_t i = 0; i < limit; i++) {
     GURL url = test_server.GetURL(paths[i]);
-    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+    requests.push_back(CreateScriptRequest(url, main_frame_url));
   }
   // This request should never be seen.
-  requests.emplace_back(test_server.GetURL("/should_be_cancelled"),
-                        CreateNetworkIsolationKey(main_frame_url));
+  requests.push_back(CreateScriptRequest(
+      test_server.GetURL("/should_be_cancelled"), main_frame_url));
 
   // Start.
   prefetch_manager_->Start(main_frame_url, requests);
@@ -480,8 +496,7 @@ TEST_F(PrefetchManagerTest, Throttles) {
 
   GURL main_frame_url("https://abc.invalid");
   GURL prefetch_url = test_server.GetURL("/prefetch");
-  PrefetchRequest request(prefetch_url,
-                          CreateNetworkIsolationKey(main_frame_url));
+  PrefetchRequest request = CreateScriptRequest(prefetch_url, main_frame_url);
 
   prefetch_manager_->Start(main_frame_url, {request});
 

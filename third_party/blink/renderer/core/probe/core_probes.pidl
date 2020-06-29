@@ -182,4 +182,5 @@ interface CoreProbes {
   void PlayersCreated(ExecutionContext* context, const Vector<WebString>& players);
   void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request, const FetchInitiatorInfo&);
   void DidMutateStyleSheet(Document*, CSSStyleSheet* style_sheet);
+  void LocalFontsEnabled(ExecutionContext*, bool* result);
 }

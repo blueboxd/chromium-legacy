@@ -153,9 +153,11 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
       const std::string& engine_id,
       const chromeos::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
-    if (event.key_code == ui::VKEY_BROWSER_BACK &&
+    if (event.key_code == ui::VKEY_BROWSER_BACK && event.type == "keydown" &&
         owner_->IsVirtualKeyboardShown()) {
-      // Back button on the shelf is pressed.
+      // Back button on the shelf is pressed. We should consume only "keydown"
+      // events here to make sure that Android side receives "keyup" events
+      // always to prevent never-ending key repeat from happening.
       owner_->SendHideVirtualKeyboard();
       std::move(key_data).Run(true);
       return;

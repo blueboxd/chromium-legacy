@@ -124,6 +124,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      int64_t write_resource_id,
       ResultCallback callback);
 
   ~ServiceWorkerSingleScriptUpdateChecker() override;

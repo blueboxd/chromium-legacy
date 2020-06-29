@@ -20,7 +20,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
+import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
 import java.util.ArrayList;

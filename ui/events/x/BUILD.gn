@@ -20,6 +20,7 @@ component("x") {
   deps = [
     "//base",
     "//skia",
+    "//ui/base:features",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/events/devices",
@@ -46,6 +47,7 @@ source_set("unittests") {
   deps = [
     "//base/test:test_support",
     "//testing/gtest",
+    "//ui/base:features",
     "//ui/events:test_support",
     "//ui/events/devices/x11",
     "//ui/events/x:x",

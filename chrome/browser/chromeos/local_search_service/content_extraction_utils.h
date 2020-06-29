@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_CONTENT_EXTRACTION_UTILS_H_
 
 #include "base/strings/string16.h"
-#include "chrome/browser/chromeos/local_search_service/inverted_index.h"
+#include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 
 namespace local_search_service {
 

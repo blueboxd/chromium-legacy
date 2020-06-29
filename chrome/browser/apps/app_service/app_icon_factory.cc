@@ -310,7 +310,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void CompleteWithCompressed(std::vector<uint8_t> data);
 
-  void CompleteWithUncompressed(gfx::ImageSkia image);
+  void CompleteWithImageSkia(gfx::ImageSkia image);
 
   void MaybeLoadFallbackOrCompleteEmpty();
 
@@ -544,8 +544,9 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     apps::ApplyIconEffects(icon_effects_, size_hint_in_dip_, &processed_image);
   }
 
-  if (icon_compression_ == apps::mojom::IconCompression::kUncompressed) {
-    CompleteWithUncompressed(processed_image);
+  if (icon_compression_ == apps::mojom::IconCompression::kUncompressed ||
+      icon_compression_ == apps::mojom::IconCompression::kStandard) {
+    CompleteWithImageSkia(processed_image);
     return;
   }
 
@@ -570,14 +571,15 @@ void IconLoadingPipeline::CompleteWithCompressed(std::vector<uint8_t> data) {
   std::move(callback_).Run(std::move(iv));
 }
 
-void IconLoadingPipeline::CompleteWithUncompressed(gfx::ImageSkia image) {
-  DCHECK_EQ(icon_compression_, apps::mojom::IconCompression::kUncompressed);
+void IconLoadingPipeline::CompleteWithImageSkia(gfx::ImageSkia image) {
+  DCHECK_NE(icon_compression_, apps::mojom::IconCompression::kCompressed);
+  DCHECK_NE(icon_compression_, apps::mojom::IconCompression::kUnknown);
   if (image.isNull()) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+  iv->icon_compression = icon_compression_;
   iv->uncompressed = std::move(image);
   iv->is_placeholder_icon = is_placeholder_icon_;
   std::move(callback_).Run(std::move(iv));

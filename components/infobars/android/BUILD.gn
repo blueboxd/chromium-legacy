@@ -40,11 +40,13 @@ android_library("java") {
     "java/src/org/chromium/components/infobars/InfoBarInteractionHandler.java",
     "java/src/org/chromium/components/infobars/InfoBarLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarMessageView.java",
+    "java/src/org/chromium/components/infobars/InfoBarUiItem.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
     "//components/browser_ui/widget/android:java",
+    "//components/infobars/core:infobar_enums_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//ui/android:ui_java",

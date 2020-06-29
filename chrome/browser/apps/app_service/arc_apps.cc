@@ -39,6 +39,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 // TODO(crbug.com/826982): consider that, per khmel@, "App icon can be
 // overwritten (setTaskDescription) or by assigning the icon for the app
@@ -62,25 +63,40 @@ void OnArcAppIconCompletelyLoaded(
   iv->icon_compression = icon_compression;
   iv->is_placeholder_icon = false;
 
-  if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
-    iv->uncompressed = icon->image_skia();
-    if (icon_effects != apps::IconEffects::kNone) {
-      apps::ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
+  switch (icon_compression) {
+    case apps::mojom::IconCompression::kCompressed: {
+      auto& compressed_images = icon->compressed_images();
+      auto iter =
+          compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
+      if (iter == compressed_images.end()) {
+        std::move(callback).Run(apps::mojom::IconValue::New());
+        return;
+      }
+      const std::string& data = iter->second;
+      iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
+      if (icon_effects != apps::IconEffects::kNone) {
+        // TODO(crbug.com/988321): decompress the image, apply icon effects then
+        // re-compress.
+      }
+      break;
     }
-  } else {
-    auto& compressed_images = icon->compressed_images();
-    auto iter =
-        compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
-    if (iter == compressed_images.end()) {
-      std::move(callback).Run(apps::mojom::IconValue::New());
-      return;
+    case apps::mojom::IconCompression::kUncompressed:
+    case apps::mojom::IconCompression::kStandard: {
+      if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+        iv->uncompressed = gfx::ImageSkiaOperations::CreateSuperimposedImage(
+            icon->background_image_skia(), icon->foreground_image_skia());
+      } else {
+        iv->uncompressed = icon->image_skia();
+      }
+      if (icon_effects != apps::IconEffects::kNone) {
+        apps::ApplyIconEffects(icon_effects, size_hint_in_dip,
+                               &iv->uncompressed);
+      }
+      break;
     }
-    const std::string& data = iter->second;
-    iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
-    if (icon_effects != apps::IconEffects::kNone) {
-      // TODO(crbug.com/988321): decompress the image, apply icon effects then
-      // re-compress.
-    }
+    case apps::mojom::IconCompression::kUnknown:
+      NOTREACHED();
+      break;
   }
 
   std::move(callback).Run(std::move(iv));
@@ -556,7 +572,7 @@ void ArcApps::LoadIcon(const std::string& app_id,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (!icon_key) {
+  if (!icon_key || icon_compression == apps::mojom::IconCompression::kUnknown) {
     std::move(callback).Run(apps::mojom::IconValue::New());
     return;
   }
@@ -855,12 +871,7 @@ void ArcApps::OnAppRemoved(const std::string& app_id) {
 
 void ArcApps::OnAppIconUpdated(const std::string& app_id,
                                const ArcAppIconDescriptor& descriptor) {
-  static constexpr uint32_t icon_effects = 0;
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kArc;
-  app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
-  Publish(std::move(app), subscribers_);
+  SetIconEffect(app_id);
 }
 
 void ArcApps::OnAppNameUpdated(const std::string& app_id,
@@ -1174,16 +1185,8 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
                     : apps::mojom::OptionalBool::kFalse;
 
   if (update_icon) {
-    IconEffects icon_effects = IconEffects::kNone;
-    if (app_info.suspended) {
-      icon_effects =
-          static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
-    }
-    if (paused == apps::mojom::OptionalBool::kTrue) {
-      icon_effects =
-          static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
-    }
-    app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
+    app->icon_key =
+        icon_key_factory_.MakeIconKey(GetIconEffects(app_id, app_info));
   }
 
   app->last_launch_time = app_info.last_launch_time;
@@ -1236,6 +1239,24 @@ void ArcApps::ConvertAndPublishPackageApps(
   }
 }
 
+IconEffects ArcApps::GetIconEffects(const std::string& app_id,
+                                    const ArcAppListPrefs::AppInfo& app_info) {
+  IconEffects icon_effects = IconEffects::kNone;
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kCrOsStandardMask);
+  }
+  if (app_info.suspended) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
+  }
+  if (paused_apps_.IsPaused(app_id)) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
+  }
+  return icon_effects;
+}
+
 void ArcApps::SetIconEffect(const std::string& app_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
@@ -1246,20 +1267,11 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
     return;
   }
 
-  IconEffects icon_effects = IconEffects::kNone;
-  if (app_info->suspended) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
-  }
-  if (paused_apps_.IsPaused(app_id)) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
-  }
-
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
+  app->icon_key =
+      icon_key_factory_.MakeIconKey(GetIconEffects(app_id, *app_info));
   Publish(std::move(app), subscribers_);
 }
 

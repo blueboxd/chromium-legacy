@@ -14,6 +14,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "base/util/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -48,9 +49,9 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/views/toolbar/back_forward_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
-#include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
@@ -130,6 +131,16 @@ ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
   return ToolbarView::DisplayMode::LOCATION;
 }
 
+const base::flat_map<int, int>& GetViewCommandMap() {
+  static const base::NoDestructor<base::flat_map<int, int>> kViewCommandMap(
+      {{VIEW_ID_BACK_BUTTON, IDC_BACK},
+       {VIEW_ID_FORWARD_BUTTON, IDC_FORWARD},
+       {VIEW_ID_HOME_BUTTON, IDC_HOME},
+       {VIEW_ID_RELOAD_BUTTON, IDC_RELOAD},
+       {VIEW_ID_AVATAR_BUTTON, IDC_SHOW_AVATAR_MENU}});
+  return *kViewCommandMap;
+}
+
 }  // namespace
 
 // static
@@ -146,26 +157,24 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
       display_mode_(GetDisplayMode(browser)) {
   SetID(VIEW_ID_TOOLBAR);
 
-  chrome::AddCommandObserver(browser_, IDC_BACK, this);
-  chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
-  chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
-  chrome::AddCommandObserver(browser_, IDC_HOME, this);
-  chrome::AddCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
-
   UpgradeDetector::GetInstance()->AddObserver(this);
 
-  if (display_mode_ == DisplayMode::NORMAL)
+  if (display_mode_ == DisplayMode::NORMAL) {
     SetBackground(std::make_unique<TopContainerBackground>(browser_view));
+
+    for (const auto& view_and_command : GetViewCommandMap())
+      chrome::AddCommandObserver(browser_, view_and_command.second, this);
+  }
 }
 
 ToolbarView::~ToolbarView() {
   UpgradeDetector::GetInstance()->RemoveObserver(this);
 
-  chrome::RemoveCommandObserver(browser_, IDC_BACK, this);
-  chrome::RemoveCommandObserver(browser_, IDC_FORWARD, this);
-  chrome::RemoveCommandObserver(browser_, IDC_RELOAD, this);
-  chrome::RemoveCommandObserver(browser_, IDC_HOME, this);
-  chrome::RemoveCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
+  if (display_mode_ != DisplayMode::NORMAL)
+    return;
+
+  for (const auto& view_and_command : GetViewCommandMap())
+    chrome::RemoveCommandObserver(browser_, view_and_command.second, this);
 }
 
 void ToolbarView::Init() {
@@ -189,14 +198,17 @@ void ToolbarView::Init() {
     return;
   }
 
-  std::unique_ptr<ToolbarButton> back = CreateBackButton(this, browser_);
+  std::unique_ptr<ToolbarButton> back = std::make_unique<BackForwardButton>(
+      BackForwardButton::Direction::kBack, this, browser_);
 
-  std::unique_ptr<ToolbarButton> forward = CreateForwardButton(this, browser_);
+  std::unique_ptr<ToolbarButton> forward = std::make_unique<BackForwardButton>(
+      BackForwardButton::Direction::kForward, this, browser_);
 
-  std::unique_ptr<ReloadButton> reload =
-      CreateReloadButton(browser_, ReloadButton::IconStyle::kBrowser);
+  std::unique_ptr<ReloadButton> reload = std::make_unique<ReloadButton>(
+      browser_->command_controller(), ReloadButton::IconStyle::kBrowser);
 
-  std::unique_ptr<HomeButton> home = CreateHomeButton(this, browser_);
+  std::unique_ptr<HomeButton> home =
+      std::make_unique<HomeButton>(this, browser_);
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
   std::unique_ptr<BrowserActionsContainer> browser_actions;
@@ -240,10 +252,6 @@ void ToolbarView::Init() {
         std::make_unique<ToolbarAccountIconContainerView>(browser_);
   }
 
-  std::unique_ptr<AvatarToolbarButton> avatar;
-  if (show_avatar_toolbar_button)
-    avatar = std::make_unique<AvatarToolbarButton>(browser_);
-
   // Always add children in order from left to right, for accessibility.
   back_ = AddChildView(std::move(back));
   forward_ = AddChildView(std::move(forward));
@@ -265,12 +273,13 @@ void ToolbarView::Init() {
   if (toolbar_account_icon_container) {
     toolbar_account_icon_container_ =
         AddChildView(std::move(toolbar_account_icon_container));
+    avatar_ = toolbar_account_icon_container_->avatar_button();
+  } else {
+    // TODO(crbug.com/932818): Remove this once the
+    // |kAutofillEnableToolbarStatusChip| is fully launched.
+    avatar_ = AddChildView(std::make_unique<AvatarToolbarButton>(browser_));
+    avatar_->SetVisible(show_avatar_toolbar_button);
   }
-
-  // TODO(crbug.com/932818): Remove this once the
-  // |kAutofillEnableToolbarStatusChip| is fully launched.
-  if (avatar)
-    avatar_ = AddChildView(std::move(avatar));
 
   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
   app_menu_button->EnableCanvasFlippingForRTLUI(true);
@@ -305,6 +314,12 @@ void ToolbarView::Init() {
   UpdateHomeButtonVisibility();
 
   InitLayout();
+
+  for (auto* button : std::array<views::Button*, 5>{back_, forward_, reload_,
+                                                    home_, avatar_}) {
+    if (button)
+      button->set_tag(GetViewCommandMap().at(button->GetID()));
+  }
 
   initialized_ = true;
 }
@@ -479,26 +494,12 @@ std::unique_ptr<ToolbarActionsBar> ToolbarView::CreateToolbarActionsBar(
 // ToolbarView, CommandObserver implementation:
 
 void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
-  views::Button* button = nullptr;
-  switch (id) {
-    case IDC_BACK:
-      button = back_;
-      break;
-    case IDC_FORWARD:
-      button = forward_;
-      break;
-    case IDC_RELOAD:
-      button = reload_;
-      break;
-    case IDC_HOME:
-      button = home_;
-      break;
-    case IDC_SHOW_AVATAR_MENU:
-      button = GetAvatarToolbarButton();
-      break;
-  }
-  if (button)
-    button->SetEnabled(enabled);
+  DCHECK(display_mode_ == DisplayMode::NORMAL);
+  const std::array<views::Button*, 5> kButtons{back_, forward_, reload_, home_,
+                                               avatar_};
+  auto* button = *util::ranges::find(kButtons, id, &views::Button::tag);
+  DCHECK(button);
+  button->SetEnabled(enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

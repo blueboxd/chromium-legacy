@@ -22,12 +22,12 @@ namespace cors {
 // TODO(toyoshim): Remove all functions after Network Service is enabled.
 namespace legacy {
 
-// Registers whitelisted secure origins and hostname patterns for CORS checks in
+// Registers allowlisted secure origins and hostname patterns for CORS checks in
 // CorsURLLoader.
 COMPONENT_EXPORT(NETWORK_CPP)
 void RegisterSecureOrigins(const std::vector<std::string>& secure_origins);
 
-// Refers the registered whitelisted secure origins and hostname patterns.
+// Refers the registered allowlisted secure origins and hostname patterns.
 COMPONENT_EXPORT(NETWORK_CPP)
 const std::vector<std::string>& GetSecureOrigins();
 

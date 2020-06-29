@@ -9,8 +9,10 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/android/chrome_jni_headers/GeneratedPasswordSavedInfoBarDelegate_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -27,7 +29,9 @@ void GeneratedPasswordSavedInfoBarDelegateAndroid::Create(
 
 GeneratedPasswordSavedInfoBar::GeneratedPasswordSavedInfoBar(
     std::unique_ptr<GeneratedPasswordSavedInfoBarDelegateAndroid> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 GeneratedPasswordSavedInfoBar::~GeneratedPasswordSavedInfoBar() {
 }

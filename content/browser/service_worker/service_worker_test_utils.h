@@ -314,18 +314,17 @@ class MockServiceWorkerResponseReader
 // This class exposes the ability to expect writes (see ExpectWrite*Ok() below).
 // Each write to this class via WriteInfo() or WriteData() consumes another
 // expected write, in the order they were added, so:
-//   writer->ExpectWriteInfoOk(5, false);
-//   writer->ExpectWriteDataOk(6, false);
-//   writer->ExpectWriteDataOk(6, false);
+//   writer->ExpectWriteInfoOk(5);
+//   writer->ExpectWriteDataOk(6);
+//   writer->ExpectWriteDataOk(6);
 // Expects these calls, in this order:
 //   writer->WriteInfo(...);  // checks that |buf->response_data_size| == 5
 //   writer->WriteData(...);  // checks that 6 bytes are being written
 //   writer->WriteData(...);  // checks that another 6 bytes are being written
 // If this class receives an unexpected call to WriteInfo() or WriteData(), it
 // DCHECKs.
-// Expected writes marked async do not complete synchronously, but rather return
-// without running their callback and need to be completed with
-// CompletePendingWrite().
+// Expected writes do not complete synchronously, but rather return without
+// running their callback and need to be completed with CompletePendingWrite().
 // A convenience method AllExpectedWritesDone() is exposed so tests can ensure
 // that all expected writes have been consumed by matching calls to WriteInfo()
 // or WriteData().
@@ -342,10 +341,10 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
                  net::CompletionOnceCallback callback) override;
 
   // Enqueue expected writes.
-  void ExpectWriteInfoOk(size_t len, bool async);
-  void ExpectWriteInfo(size_t len, bool async, int result);
-  void ExpectWriteDataOk(size_t len, bool async);
-  void ExpectWriteData(size_t len, bool async, int result);
+  void ExpectWriteInfoOk(size_t len);
+  void ExpectWriteInfo(size_t len, int result);
+  void ExpectWriteDataOk(size_t len);
+  void ExpectWriteData(size_t len, int result);
 
   // Complete a pending asynchronous write. This method DCHECKs unless there is
   // a pending write (a write for which WriteInfo() or WriteData() has been
@@ -357,11 +356,10 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
 
  private:
   struct ExpectedWrite {
-    ExpectedWrite(bool is_info, size_t length, bool async, int result)
-        : is_info(is_info), length(length), async(async), result(result) {}
+    ExpectedWrite(bool is_info, size_t length, int result)
+        : is_info(is_info), length(length), result(result) {}
     bool is_info;
     size_t length;
-    bool async;
     int result;
   };
 

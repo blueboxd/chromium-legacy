@@ -26,6 +26,10 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace ui {
 
 // Ensure DomKey extraction happens lazily in Ozone X11, while in non-Ozone
@@ -41,10 +45,13 @@ TEST(XEventTranslationTest, KeyEventDomKeyExtraction) {
 
   KeyEventTestApi test(keyev.get());
 #if defined(USE_OZONE)
-  EXPECT_EQ(ui::DomKey::NONE, test.dom_key());
-#else
-  EXPECT_EQ(ui::DomKey::ENTER, test.dom_key());
+  if (features::IsUsingOzonePlatform()) {
+    EXPECT_EQ(ui::DomKey::NONE, test.dom_key());
+  } else
 #endif
+  {
+    EXPECT_EQ(ui::DomKey::ENTER, test.dom_key());
+  }
 
   EXPECT_EQ(13, keyev->GetCharacter());
   EXPECT_EQ("Enter", keyev->GetCodeString());

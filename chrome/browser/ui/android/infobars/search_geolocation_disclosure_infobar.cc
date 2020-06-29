@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/android/infobars/search_geolocation_disclosure_infobar.h"
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/SearchGeolocationDisclosureInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
 
 using base::android::JavaParamRef;
@@ -13,7 +15,9 @@ using base::android::ScopedJavaLocalRef;
 
 SearchGeolocationDisclosureInfoBar::SearchGeolocationDisclosureInfoBar(
     std::unique_ptr<SearchGeolocationDisclosureInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 SearchGeolocationDisclosureInfoBar::~SearchGeolocationDisclosureInfoBar() {
 }

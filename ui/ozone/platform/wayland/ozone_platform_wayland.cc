@@ -17,6 +17,7 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
@@ -87,7 +88,7 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
 
 class OzonePlatformWayland : public OzonePlatform {
  public:
-  OzonePlatformWayland() {}
+  OzonePlatformWayland() { CHECK(features::IsUsingOzonePlatform()); }
   ~OzonePlatformWayland() override {}
 
   // OzonePlatform

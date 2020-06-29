@@ -7,7 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/ReaderModeInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -32,7 +34,9 @@ class ReaderModeInfoBarDelegate : public infobars::InfoBarDelegate {
 
 ReaderModeInfoBar::ReaderModeInfoBar(
     std::unique_ptr<ReaderModeInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 ReaderModeInfoBar::~ReaderModeInfoBar() {}
 

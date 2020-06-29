@@ -680,8 +680,8 @@ which are distributed via JSON (which is CORB-protected).
 In the future CORB may be extended to protect additional resources as follows:
 
 * **Covering more MIME types**.
-  Instead of blacklisting HTML, XML, and JSON, CORB protection can be extended to
-  all MIME types, except MIME types that are whitelisted as usable in `<img>`,
+  Instead of blocklisting HTML, XML, and JSON, CORB protection can be extended to
+  all MIME types, except MIME types that are allowlisted as usable in `<img>`,
   `<audio>`, `<video>`, `<script>` and other similar elements that can be
   embedded cross-origin:
     * [JavaScript MIME type](https://html.spec.whatwg.org/#javascript-mime-type)

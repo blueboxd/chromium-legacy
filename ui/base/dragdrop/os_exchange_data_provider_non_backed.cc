@@ -160,6 +160,14 @@ bool OSExchangeDataProviderNonBacked::HasCustomFormat(
   return base::Contains(pickle_data_, format);
 }
 
+#if defined(USE_X11)
+void OSExchangeDataProviderNonBacked::SetFileContents(
+    const base::FilePath& filename,
+    const std::string& file_contents) {
+  NOTREACHED();
+}
+#endif
+
 void OSExchangeDataProviderNonBacked::SetHtml(const base::string16& html,
                                               const GURL& base_url) {
   formats_ |= OSExchangeData::HTML;

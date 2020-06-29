@@ -12,9 +12,9 @@ import androidx.core.view.ViewCompat;
 
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.infobars.InfoBarUiItem;
 
 /**
  * A helper class to managing showing and dismissing in-product help dialogs based on which infobar

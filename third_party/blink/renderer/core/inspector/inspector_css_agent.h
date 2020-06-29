@@ -126,6 +126,7 @@ class CORE_EXPORT InspectorCSSAgent final
   void SetCoverageEnabled(bool);
   void WillChangeStyleElement(Element*);
   void DidMutateStyleSheet(CSSStyleSheet* css_style_sheet);
+  void LocalFontsEnabled(bool* result);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   protocol::Response disable() override;
@@ -208,6 +209,8 @@ class CORE_EXPORT InspectorCSSAgent final
   protocol::Response stopRuleUsageTracking(
       std::unique_ptr<protocol::Array<protocol::CSS::RuleUsage>>* result)
       override;
+
+  protocol::Response setLocalFontsEnabled(bool enabled) override;
 
   void CollectMediaQueriesFromRule(CSSRule*,
                                    protocol::Array<protocol::CSS::CSSMedia>*);
@@ -337,6 +340,7 @@ class CORE_EXPORT InspectorCSSAgent final
   InspectorAgentState::Boolean enable_requested_;
   bool enable_completed_;
   InspectorAgentState::Boolean coverage_enabled_;
+  InspectorAgentState::Boolean local_fonts_enabled_;
 
   friend class InspectorResourceContentLoaderCallback;
   friend class StyleSheetBinder;

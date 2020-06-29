@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "net/base/network_isolation_key.h"
@@ -34,7 +33,8 @@ class SharedURLLoaderFactory;
 namespace predictors {
 
 struct PrefetchRequest;
-class PrefetchManager;
+struct PrefetchInfo;
+struct PrefetchJob;
 
 struct PrefetchStats {
   explicit PrefetchStats(const GURL& url);
@@ -47,44 +47,6 @@ struct PrefetchStats {
   base::TimeTicks start_time;
   // TODO(falken): Add stats about what was requested to measure
   // the accuracy.
-};
-
-// Stores the status of all prefetches associated with a given |url|.
-struct PrefetchInfo {
-  PrefetchInfo(const GURL& url, PrefetchManager& manager);
-  ~PrefetchInfo();
-
-  PrefetchInfo(const PrefetchInfo&) = delete;
-  PrefetchInfo& operator=(const PrefetchInfo&) = delete;
-
-  // Called by PrefetchJob only.
-  void OnJobCreated();
-  void OnJobDestroyed();
-
-  bool is_done() const { return job_count == 0; }
-
-  GURL url;
-  size_t job_count = 0;
-  bool was_canceled = false;
-  std::unique_ptr<PrefetchStats> stats;
-  // Owns |this|.
-  PrefetchManager* const manager;
-
-  base::WeakPtrFactory<PrefetchInfo> weak_factory{this};
-};
-
-// Stores all data need for running a prefetch to a |url|.
-struct PrefetchJob {
-  PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo& info);
-  ~PrefetchJob();
-
-  PrefetchJob(const PrefetchJob&) = delete;
-  PrefetchJob& operator=(const PrefetchJob&) = delete;
-
-  GURL url;
-  net::NetworkIsolationKey network_isolation_key;
-  // PrefetchJob can outlive PrefetchInfo.
-  base::WeakPtr<PrefetchInfo> info;
 };
 
 // PrefetchManager prefetches input lists of URLs.

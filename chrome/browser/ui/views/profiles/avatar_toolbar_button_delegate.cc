@@ -115,8 +115,6 @@ void AvatarToolbarButtonDelegate::Init(AvatarToolbarButton* button,
     // On CrOS this button should only show as badging for Incognito and Guest
     // sessions. It's only enabled for Incognito where a menu is available for
     // closing all Incognito windows.
-    DCHECK(state == AvatarToolbarButton::State::kIncognitoProfile ||
-           state == AvatarToolbarButton::State::kGuestSession);
     avatar_toolbar_button_->SetEnabled(
         state == AvatarToolbarButton::State::kIncognitoProfile);
   }

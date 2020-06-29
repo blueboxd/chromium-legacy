@@ -114,9 +114,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   ASSERT_EQ(cached_textfield, textfield);
   std::vector<AXAuraObjWrapper*> textfield_children;
   ax_tree.GetChildren(textfield, &textfield_children);
-  // The textfield has an extra child in Harmony, the focus ring.
-  const size_t expected_children = 2;
-  ASSERT_EQ(expected_children, textfield_children.size());
+  ASSERT_EQ(0u, textfield_children.size());
 
   ASSERT_EQ(content, textfield->GetParent());
 

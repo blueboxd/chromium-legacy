@@ -60,13 +60,13 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       "Blink.MainFrame.UpdateTime.AggregatedPreFCP", 0, 10000000, 50));
 
   // Set up the substrings to create the UMA names
-  const String uma_preamble = "Blink.";
-  const String uma_postscript = ".UpdateTime";
-  const String uma_prefcp_postscript = ".PreFCP";
-  const String uma_postfcp_postscript = ".PostFCP";
-  const String uma_pre_fcp_aggregated_postscript = ".AggregatedPreFCP";
-  const String uma_percentage_preamble = "Blink.MainFrame.";
-  const String uma_percentage_postscript = "Ratio";
+  const char* const uma_preamble = "Blink.";
+  const char* const uma_postscript = ".UpdateTime";
+  const char* const uma_prefcp_postscript = ".PreFCP";
+  const char* const uma_postfcp_postscript = ".PostFCP";
+  const char* const uma_pre_fcp_aggregated_postscript = ".AggregatedPreFCP";
+  const char* const uma_percentage_preamble = "Blink.MainFrame.";
+  const char* const uma_percentage_postscript = "Ratio";
 
   // Set up sub-strings for the bucketed UMA metrics
   Vector<String> threshold_substrings;
@@ -89,9 +89,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   // Populate all the sub-metrics.
   absolute_metric_records_.ReserveInitialCapacity(kCount);
   main_frame_percentage_records_.ReserveInitialCapacity(kCount);
-  for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    const MetricInitializationData& metric_data = metrics_data()[i];
-
+  for (const MetricInitializationData& metric_data : metrics_data()) {
     // Absolute records report the absolute time for each metric per frame.
     // They also aggregate the time spent in each stage between navigation
     // (LocalFrameView resets) and First Contentful Paint.

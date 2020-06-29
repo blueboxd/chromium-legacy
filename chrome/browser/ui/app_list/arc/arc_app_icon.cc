@@ -292,9 +292,11 @@ void ArcAppIcon::LoadSupportedScaleFactors() {
         LoadForScaleFactor(scale_factor.first);
       break;
     case IconType::kAdaptive:
-      for (auto scale_factor : incomplete_scale_factors_) {
+      for (auto scale_factor : foreground_incomplete_scale_factors_) {
         foreground_image_skia_.GetRepresentation(
             ui::GetScaleForScaleFactor(scale_factor.first));
+      }
+      for (auto scale_factor : background_incomplete_scale_factors_) {
         background_image_skia_.GetRepresentation(
             ui::GetScaleForScaleFactor(scale_factor.first));
       }

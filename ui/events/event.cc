@@ -31,6 +31,7 @@
 #include "ui/gfx/transform_util.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"                               // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"          // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
 #endif
@@ -346,9 +347,11 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
   ComputeEventLatencyOS(native_event);
 
 #if defined(USE_OZONE)
-  source_device_id_ = native_event->source_device_id();
-  if (auto* properties = native_event->properties())
-    properties_ = std::make_unique<Properties>(*properties);
+  if (features::IsUsingOzonePlatform()) {
+    source_device_id_ = native_event->source_device_id();
+    if (auto* properties = native_event->properties())
+      properties_ = std::make_unique<Properties>(*properties);
+  }
 #endif
 }
 
@@ -911,21 +914,25 @@ void KeyEvent::ApplyLayout() const {
     }
   }
   KeyboardCode dummy_key_code;
-#if defined(OS_WIN)
-// Native Windows character events always have is_char_ == true,
-// so this is a synthetic or native keystroke event.
-// Therefore, perform only the fallback action.
-#elif defined(USE_OZONE)
-  if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform() &&
+      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
           code, flags(), &key_, &dummy_key_code)) {
     return;
   }
-#else
+#endif
+
+#if !defined(OS_WIN)
+  // Native Windows character events always have is_char_ == true,
+  // so this is a synthetic or native keystroke event.
+  // Therefore, perform only the fallback action.
   if (native_event()) {
     DCHECK(EventTypeFromNative(native_event()) == ET_KEY_PRESSED ||
            EventTypeFromNative(native_event()) == ET_KEY_RELEASED);
   }
 #endif
+
   if (!DomCodeToUsLayoutDomKey(code, flags(), &key_, &dummy_key_code))
     key_ = DomKey::UNIDENTIFIED;
 }

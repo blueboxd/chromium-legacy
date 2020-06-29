@@ -29,7 +29,7 @@ class CorsOriginAccessPatterns;
 namespace cors {
 
 // A class to manage origin access allow / block lists. If these lists conflict,
-// blacklisting is respected. These lists are managed per source-origin basis.
+// blocklisting is respected. These lists are managed per source-origin basis.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
  public:
   using CorsOriginPatternPtr = mojo::StructPtr<mojom::CorsOriginPattern>;

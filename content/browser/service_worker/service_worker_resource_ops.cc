@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_resource_ops.h"
 
-#include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -236,18 +235,18 @@ ServiceWorkerResourceWriterImpl::~ServiceWorkerResourceWriterImpl() = default;
 void ServiceWorkerResourceWriterImpl::WriteResponseHead(
     network::mojom::URLResponseHeadPtr response_head,
     WriteResponseHeadCallback callback) {
-  blink::ServiceWorkerStatusCode service_worker_status;
-  network::URLLoaderCompletionStatus completion_status;
-  std::string error_message;
-  std::unique_ptr<net::HttpResponseInfo> response_info =
-      service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          *response_head, &service_worker_status, &completion_status,
-          &error_message);
-  if (!response_info) {
-    DCHECK_NE(net::OK, completion_status.error_code);
-    std::move(callback).Run(completion_status.error_code);
-    return;
-  }
+  // Convert URLResponseHead to HttpResponseInfo.
+  auto response_info = std::make_unique<net::HttpResponseInfo>();
+  response_info->headers = response_head->headers;
+  if (response_head->ssl_info.has_value())
+    response_info->ssl_info = *response_head->ssl_info;
+  response_info->was_fetched_via_spdy = response_head->was_fetched_via_spdy;
+  response_info->was_alpn_negotiated = response_head->was_alpn_negotiated;
+  response_info->alpn_negotiated_protocol =
+      response_head->alpn_negotiated_protocol;
+  response_info->connection_info = response_head->connection_info;
+  response_info->remote_endpoint = response_head->remote_endpoint;
+  response_info->response_time = response_head->response_time;
 
   auto info_buffer =
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info));

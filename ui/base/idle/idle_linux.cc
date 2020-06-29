@@ -9,29 +9,34 @@
 #if defined(USE_X11)
 #include "ui/base/idle/idle_query_x11.h"
 #include "ui/base/idle/screensaver_window_finder_x11.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace ui {
 
 int CalculateIdleTime() {
+// TODO(https://crbug.com/1098201): calculate idle time for Ozone/Linux.
 #if defined(USE_X11)
-  IdleQueryX11 idle_query;
-  return idle_query.IdleTime();
-#else
-  return 0;
+  if (!features::IsUsingOzonePlatform()) {
+    IdleQueryX11 idle_query;
+    return idle_query.IdleTime();
+  }
 #endif
+  return 0;
 }
 
 bool CheckIdleStateIsLocked() {
   if (IdleStateForTesting().has_value())
     return IdleStateForTesting().value() == IDLE_STATE_LOCKED;
 
+// TODO(https://crbug.com/1098202): fix screensaver.
 #if defined(USE_X11)
-  // Usually the screensaver is used to lock the screen.
-  return ScreensaverWindowFinder::ScreensaverWindowExists();
-#else
-  return false;
+  if (!features::IsUsingOzonePlatform()) {
+    // Usually the screensaver is used to lock the screen.
+    return ScreensaverWindowFinder::ScreensaverWindowExists();
+  }
 #endif
+  return false;
 }
 
 }  // namespace ui

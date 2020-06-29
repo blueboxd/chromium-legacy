@@ -14,7 +14,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -22,7 +21,6 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,7 +41,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
 #include "printing/mojom/print.mojom.h"
-#include "printing/printing_features.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/css/page_orientation.h"
@@ -51,7 +48,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_double_size.h"
-#include "third_party/blink/public/platform/web_failing_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -1031,17 +1027,8 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
-  if (base::FeatureList::IsEnabled(
-          features::kUseFrameAssociatedLoaderFactory)) {
-    blink::WebLocalFrame* frame = original_frame_.GetFrame();
-    UMA_HISTOGRAM_BOOLEAN("Printing.FrameIsActiveOnCreateLoaderFactory",
-                          !!frame);
-    if (!frame) {
-      return std::make_unique<blink::WebFailingURLLoaderFactory>();
-    }
-    return frame->Client()->CreateURLLoaderFactory();
-  }
-  return blink::Platform::Current()->CreateDefaultURLLoaderFactory();
+  blink::WebLocalFrame* frame = original_frame_.GetFrame();
+  return frame->Client()->CreateURLLoaderFactory();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {

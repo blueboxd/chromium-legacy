@@ -38,3 +38,9 @@
 
 # https://crbug.com/1021409
 -NavigationControllerBrowserTest.BrowserInitiatedLoadPostCommitErrorPageIgnoredForFramePendingDeletion
+
+# Not triaged
+-All/SitePerProcessBrowserTest.ActiveSandboxFlagsRetainedAfterUnload/*
+-All/SitePerProcessBrowserTest.NavigateMainFrameToChildSite/*
+-All/SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedUnloadACK/*
+-All/SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndSubframeWins/*

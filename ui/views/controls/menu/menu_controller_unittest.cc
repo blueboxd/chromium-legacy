@@ -53,11 +53,8 @@
 #include "ui/gfx/x/x11.h"  // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/ui_base_features.h"
-#endif
-
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -68,14 +65,15 @@ namespace {
 
 bool ShouldIgnoreScreenBoundsForMenus() {
 #if defined(USE_OZONE)
-  // Wayland requires placing menus is screen coordinates. See comment in
-  // ozone_platform_wayland.cc.
-  return ui::OzonePlatform::GetInstance()
-      ->GetPlatformProperties()
-      .ignore_screen_bounds_for_menus;
-#else
-  return false;
+  if (features::IsUsingOzonePlatform()) {
+    // Wayland requires placing menus is screen coordinates. See comment in
+    // ozone_platform_wayland.cc.
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .ignore_screen_bounds_for_menus;
+  }
 #endif
+  return false;
 }
 
 // Test implementation of MenuControllerDelegate that only reports the values

@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/back_forward_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/button_utils.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
@@ -336,9 +337,13 @@ WebAppFrameToolbarView::NavigationButtonContainer::NavigationButtonContainer(
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  back_button_ = AddChildView(CreateBackButton(this, browser_view_->browser()));
-  reload_button_ = AddChildView(CreateReloadButton(
-      browser_view_->browser(), ReloadButton::IconStyle::kMinimalUi));
+  back_button_ = AddChildView(std::make_unique<BackForwardButton>(
+      BackForwardButton::Direction::kBack, this, browser_view_->browser()));
+  back_button_->set_tag(IDC_BACK);
+  reload_button_ = AddChildView(std::make_unique<ReloadButton>(
+      browser_view_->browser()->command_controller(),
+      ReloadButton::IconStyle::kMinimalUi));
+  reload_button_->set_tag(IDC_RELOAD);
 
   const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
   SetInsetsForWebAppToolbarButton(back_button_, is_browser_focus_mode);

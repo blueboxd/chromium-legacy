@@ -227,7 +227,7 @@ ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
          body_writer_state_ == WriterState::kCompleted);
 
   version_->script_cache_map()->NotifyStartedCaching(
-      request_url_, cache_writer_->WriterResourceId());
+      request_url_, cache_writer_->writer_resource_id());
 
   // Resume the cache writer and observe its writes, so all data written
   // is sent to |client_|.

@@ -1218,9 +1218,10 @@ AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsInertOrAriaHidden()) {
     // Keep focusable elements that are aria-hidden in tree, so that they can
-    // still fire events such as focus and value changes.
-    const Element* elem = GetElement();
-    if (!elem || !elem->SupportsFocus() || elem->IsInert()) {
+    // still fire events such as focus and value changes. Handle the case where
+    // a <select> element is aria-hidden.
+    if (RoleValue() != ax::mojom::blink::Role::kMenuListPopup &&
+        !CanSetFocusAttribute()) {
       if (ignored_reasons)
         ComputeIsInertOrAriaHidden(ignored_reasons);
       return kIgnoreObject;

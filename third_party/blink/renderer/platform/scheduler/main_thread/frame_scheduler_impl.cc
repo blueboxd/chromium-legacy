@@ -887,13 +887,14 @@ void FrameSchedulerImpl::OnFirstContentfulPaint() {
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   waiting_for_meaningful_paint_ = false;
 
+  if (GetFrameType() != FrameScheduler::FrameType::kMainFrame)
+    return;
+
   bool force_policy_update = false;
-  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame) {
-    if (main_thread_scheduler_->agent_scheduling_strategy()
-            .OnMainFrameFirstMeaningfulPaint(*this) ==
-        AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
-      force_policy_update = true;
-    }
+  if (main_thread_scheduler_->agent_scheduling_strategy()
+          .OnMainFrameFirstMeaningfulPaint(*this) ==
+      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+    force_policy_update = true;
   }
 
   main_thread_scheduler_->OnMainFramePaint(force_policy_update);

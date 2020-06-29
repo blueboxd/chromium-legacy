@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/SurveyInfoBar_jni.h"
+#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -65,7 +67,9 @@ class SurveyInfoBarDelegate : public infobars::InfoBarDelegate {
 };
 
 SurveyInfoBar::SurveyInfoBar(std::unique_ptr<SurveyInfoBarDelegate> delegate)
-    : InfoBarAndroid(std::move(delegate)) {}
+    : InfoBarAndroid(
+          std::move(delegate),
+          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
 
 SurveyInfoBar::~SurveyInfoBar() {}
 

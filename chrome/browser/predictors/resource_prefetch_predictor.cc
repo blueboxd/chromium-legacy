@@ -25,6 +25,7 @@
 #include "components/history/core/browser/url_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -78,8 +79,11 @@ PreconnectRequest::PreconnectRequest(
 
 PrefetchRequest::PrefetchRequest(
     const GURL& url,
-    const net::NetworkIsolationKey& network_isolation_key)
-    : url(url), network_isolation_key(network_isolation_key) {
+    const net::NetworkIsolationKey& network_isolation_key,
+    network::mojom::RequestDestination destination)
+    : url(url),
+      network_isolation_key(network_isolation_key),
+      destination(destination) {
   DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
 }
 

@@ -60,6 +60,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -91,9 +92,11 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   mojo::core::Init();
 
 #if defined(USE_OZONE)
-  ui::OzonePlatform::InitParams params;
-  params.single_process = true;
-  ui::OzonePlatform::InitializeForGPU(params);
+  if (features::IsUsingOzonePlatform()) {
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
+  }
 #endif
 
   gl::init::InitializeGLOneOff();

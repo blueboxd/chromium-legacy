@@ -3,3 +3,4 @@ Document
 ++++Text Name='The dialog subtree should be the only text content in the accessibility tree. '
 ++++Hyperlink Name='Link inside the dialog.'
 ++++++Text Name='Link inside the dialog.' IsControlElement=false
+++Menu IsControlElement=false Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false

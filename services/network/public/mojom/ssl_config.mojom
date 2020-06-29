@@ -42,7 +42,7 @@ struct SSLConfig {
 
   // Patterns for matching hostnames to determine when to allow connection
   // coalescing when client certificates are also in use. Patterns follow
-  // the rules for host matching from the URL Blacklist filter format:
+  // the rules for host matching from the URL Blocklist filter format:
   // "example.com" matches "example.com" and all subdomains, while
   // ".example.net" matches exactly "example.net". Hostnames must be
   // canonicalized according to the rules used by GURL.

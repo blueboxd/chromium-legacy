@@ -70,6 +70,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #endif
 
@@ -330,6 +331,12 @@ Textfield::Textfield()
   AddAccelerator(ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN));
 #endif
+
+  // Sometimes there are additional ignored views, such as the View representing
+  // the cursor, inside the text field. These should always be ignored by
+  // accessibility since a plain text field should always be a leaf node in the
+  // accessibility trees of all the platforms we support.
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 Textfield::~Textfield() {
@@ -1027,6 +1034,7 @@ void Textfield::OnDragDone() {
 
 void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTextField;
+
   if (label_ax_id_) {
     node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                                    {label_ax_id_});
@@ -1233,7 +1241,8 @@ void Textfield::WriteDragDataForView(View* sender,
   SkColor color = SK_ColorTRANSPARENT;
 #if defined(USE_X11)
   // Fallback on the background color if the system doesn't support compositing.
-  if (!ui::XVisualManager::GetInstance()->ArgbVisualAvailable())
+  if (!::features::IsUsingOzonePlatform() &&
+      !ui::XVisualManager::GetInstance()->ArgbVisualAvailable())
     color = GetBackgroundColor();
 #endif
   label.Paint(PaintInfo::CreateRootPaintInfo(

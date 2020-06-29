@@ -3785,6 +3785,8 @@ static_library("ui") {
       "views/title_origin_label.h",
       "views/toolbar/app_menu.cc",
       "views/toolbar/app_menu.h",
+      "views/toolbar/back_forward_button.cc",
+      "views/toolbar/back_forward_button.h",
       "views/toolbar/browser_actions_container.cc",
       "views/toolbar/browser_actions_container.h",
       "views/toolbar/browser_app_menu_button.cc",

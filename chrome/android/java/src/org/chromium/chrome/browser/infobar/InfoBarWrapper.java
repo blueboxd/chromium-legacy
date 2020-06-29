@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
+import org.chromium.components.infobars.InfoBarUiItem;
 
 /**
  * Layout that holds an infobar's contents and provides a background color and a top shadow.

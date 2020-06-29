@@ -24,8 +24,7 @@ class ViewAXPlatformNodeDelegateAuraLinuxTest : public ViewsTestBase {
   }
 };
 
-TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest,
-       DISABLED_TextfieldAccessibility) {
+TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

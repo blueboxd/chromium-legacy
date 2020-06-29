@@ -26,6 +26,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_topmost_window_finder.h"
@@ -640,12 +641,18 @@ void X11Window::DispatchUiEvent(ui::Event* event, x11::Event* xev) {
   // data. See more discussion in https://crrev.com/c/853953
   if (event) {
     XWindow::UpdateWMUserTime(event);
+    bool event_dispatched = false;
 #if defined(USE_OZONE)
-    DispatchEventFromNativeUiEvent(
-        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                              base::Unretained(platform_window_delegate())));
-#else
-    platform_window_delegate_->DispatchEvent(event);
+    if (features::IsUsingOzonePlatform()) {
+      event_dispatched = true;
+      DispatchEventFromNativeUiEvent(
+          event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                                base::Unretained(platform_window_delegate())));
+    }
+#endif
+#if defined(USE_X11)
+    if (!event_dispatched)
+      platform_window_delegate_->DispatchEvent(event);
 #endif
   }
 }

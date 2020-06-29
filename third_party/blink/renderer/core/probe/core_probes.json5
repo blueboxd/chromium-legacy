@@ -56,6 +56,7 @@
         "ForcePseudoState",
         "MediaQueryResultChanged",
         "WillChangeStyleElement",
+        "LocalFontsEnabled",
       ]
     },
     InspectorDOMAgent: {

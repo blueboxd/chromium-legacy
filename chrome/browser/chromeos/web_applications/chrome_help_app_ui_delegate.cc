@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
@@ -62,6 +63,11 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   provider->GetMachineStatistic(chromeos::system::kHardwareClassKey, &hwid);
   source->AddString("customizationId", customization_id);
   source->AddString("hwid", hwid);
+
+  // Add any features that have been enabled.
+  source->AddBoolean(
+      "HelpAppReleaseNotes",
+      base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();

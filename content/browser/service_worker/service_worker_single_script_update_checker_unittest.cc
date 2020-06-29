@@ -144,6 +144,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
             loader_factory),
         WrapReader(std::move(compare_reader)),
         WrapReader(std::move(copy_reader)), std::move(writer),
+        /*writer_resource_id=*/0,
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
                const GURL& script_url,

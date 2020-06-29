@@ -13,34 +13,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 
 namespace local_search_service {
-// Stores the content id, start position and length of the token in original
-// documents.
-struct TokenPosition {
-  TokenPosition() = default;
-  TokenPosition(const std::string& id,
-                uint32_t start_value,
-                uint32_t length_value);
-  TokenPosition(const TokenPosition& token_position) = default;
-  std::string content_id;
-  uint32_t start;
-  uint32_t length;
-};
 
-// Stores the token (after processed). |positions| represents the token's
-// positions in one document.
-struct Token {
-  Token();
-  Token(const Token& token);
-  Token(const base::string16& text, const std::vector<TokenPosition>& pos);
-  ~Token();
-  base::string16 content;
-  std::vector<TokenPosition> positions;
-};
-
-// A posting is a list of TokenPosition.
-using Posting = std::vector<TokenPosition>;
+// A posting is a list of Position.
+using Posting = std::vector<Position>;
 
 // A map from document id to posting.
 using PostingList = std::unordered_map<std::string, Posting>;
@@ -62,6 +40,13 @@ class InvertedIndex {
 
   // Returns document ID and positions of a term.
   PostingList FindTerm(const base::string16& term) const;
+
+  // Returns documents that approximately match one or more terms in |terms|.
+  // Returned documents will be ranked.
+  std::vector<Result> FindMatchingDocumentsApproximately(
+      const std::unordered_set<base::string16>& terms,
+      double prefix_threshold,
+      double block_threshold) const;
 
   // Adds a new document to the inverted index. If the document ID is already in
   // the index, remove the existing and add the new one. All tokens must be

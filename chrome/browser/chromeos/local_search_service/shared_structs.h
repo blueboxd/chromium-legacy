@@ -49,11 +49,26 @@ struct SearchParams {
 };
 
 struct Position {
+  Position();
+  Position(const Position& position);
+  Position(const std::string& content_id, uint32_t start, uint32_t length);
+  ~Position();
   std::string content_id;
   // TODO(jiameng): |start| and |end| will be implemented for inverted index
   // later.
   uint32_t start;
   uint32_t length;
+};
+
+// Stores the token (after processed). |positions| represents the token's
+// positions in one document.
+struct Token {
+  Token();
+  Token(const Token& token);
+  Token(const base::string16& text, const std::vector<Position>& pos);
+  ~Token();
+  base::string16 content;
+  std::vector<Position> positions;
 };
 
 // Result is one item that matches a given query. It contains the id of the item
@@ -75,6 +90,9 @@ struct Result {
   std::vector<Position> positions;
   Result();
   Result(const Result& result);
+  Result(const std::string& id,
+         double score,
+         const std::vector<Position>& positions);
   ~Result();
 };
 

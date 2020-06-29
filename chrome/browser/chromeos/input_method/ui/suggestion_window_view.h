@@ -11,6 +11,7 @@
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/button_observer.h"
 
 namespace ui {
 namespace ime {
@@ -18,13 +19,15 @@ namespace ime {
 class AssistiveDelegate;
 class SettingLinkView;
 class SuggestionView;
-
 struct SuggestionDetails;
+
+const int kInvalid = -1;
 
 // SuggestionWindowView is the main container of the suggestion window UI.
 class UI_CHROMEOS_EXPORT SuggestionWindowView
     : public views::BubbleDialogDelegateView,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::ButtonObserver {
  public:
   SuggestionWindowView(gfx::NativeView parent, AssistiveDelegate* delegate);
   ~SuggestionWindowView() override;
@@ -38,15 +41,26 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
 
   void ShowMultipleCandidates(const std::vector<base::string16>& candidates);
 
+  // This highlights at most one candidate at any time.
+  // No-op if index is out of range.
   void HighlightCandidate(int index);
+
+  // This unhighlights the candidate at the given index.
+  // No-op if the candidate is currently not highlighted or index is out of
+  // range.
+  void UnhighlightCandidate(int index);
 
   void SetBounds(const gfx::Rect& cursor_bounds);
 
- private:
-  friend class SuggestionWindowViewTest;
+  views::View* GetCandidateAreaForTesting();
 
+ private:
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ButtonObserver's override:
+  void OnStateChanged(views::Button* observed_button,
+                      views::Button::ButtonState old_state) override;
 
   void MaybeInitializeSuggestionViews(size_t candidates_size);
 
@@ -67,7 +81,7 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // The items in view_
   std::vector<std::unique_ptr<SuggestionView>> candidate_views_;
 
-  int selected_index_ = -1;
+  int highlighted_index_ = kInvalid;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionWindowView);
 };

@@ -34,7 +34,10 @@ class AlignedDataHelper;
 // Video encoder client configuration.
 // TODO(dstaessens): Add extra parameters (e.g. h264 output level)
 struct VideoEncoderClientConfig {
-  VideoEncoderClientConfig();
+  VideoEncoderClientConfig(const Video* video,
+                           VideoCodecProfile output_profile);
+  VideoEncoderClientConfig(const VideoEncoderClientConfig&);
+
   // The output output profile to be used.
   VideoCodecProfile output_profile = VideoCodecProfile::H264PROFILE_MAIN;
   // The maximum number of bitstream buffer encodes that can be requested

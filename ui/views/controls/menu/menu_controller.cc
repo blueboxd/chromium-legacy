@@ -62,6 +62,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -108,12 +109,12 @@ bool ShouldIgnoreScreenBoundsForMenus() {
 #if defined(USE_OZONE)
   // Wayland requires placing menus is screen coordinates. See comment in
   // ozone_platform_wayland.cc.
-  return ui::OzonePlatform::GetInstance()
-      ->GetPlatformProperties()
-      .ignore_screen_bounds_for_menus;
-#else
-  return false;
+  if (features::IsUsingOzonePlatform())
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .ignore_screen_bounds_for_menus;
 #endif
+  return false;
 }
 
 // The amount of time the mouse should be down before a mouse release is

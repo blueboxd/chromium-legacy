@@ -72,12 +72,14 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // script is read by |copy_reader|.
   static std::unique_ptr<ServiceWorkerCacheWriter> CreateForCopy(
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer);
+      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      int64_t writer_resource_id);
 
   // Create a cache writer instance that unconditionally write back data
   // supplied to |MaybeWriteHeaders| and |MaybeWriteData| to storage.
   static std::unique_ptr<ServiceWorkerCacheWriter> CreateForWriteBack(
-      std::unique_ptr<ServiceWorkerResponseWriter> writer);
+      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      int64_t writer_resource_id);
 
   // Create a cache writer that compares between a script in storage and data
   // from network (supplied with |MaybeWriteHeaders| and |MaybeWriteData|).
@@ -93,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      int64_t writer_resource_id,
       bool pause_when_not_identical);
 
   ~ServiceWorkerCacheWriter();
@@ -139,7 +142,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   bool IsCopying() const;
 
   // Returns the resource ID being written to storage.
-  int64_t WriterResourceId() const;
+  int64_t writer_resource_id() const;
 
   void set_write_observer(WriteObserver* write_observer) {
     write_observer_ = write_observer;
@@ -212,6 +215,7 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      int64_t writer_resource_id,
       bool pause_when_not_identical);
 
   // Drives this class's state machine. This function steps the state machine
@@ -331,6 +335,9 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   std::unique_ptr<DataPipeReader> copy_data_pipe_reader_;
 
   std::unique_ptr<ServiceWorkerResponseWriter> writer_;
+  const int64_t writer_resource_id_ =
+      blink::mojom::kInvalidServiceWorkerResourceId;
+
   base::WeakPtrFactory<ServiceWorkerCacheWriter> weak_factory_{this};
 };
 

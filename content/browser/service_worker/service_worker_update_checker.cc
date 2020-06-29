@@ -283,7 +283,7 @@ void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
       force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,
       time_since_last_check_, default_headers_, browser_context_getter_,
       loader_factory_, std::move(compare_reader), std::move(copy_reader),
-      std::move(writer),
+      std::move(writer), new_resource_id,
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

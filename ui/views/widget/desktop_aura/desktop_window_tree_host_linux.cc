@@ -14,6 +14,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -158,6 +159,8 @@ void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
 
 base::flat_map<std::string, std::string>
 DesktopWindowTreeHostLinux::GetKeyboardLayoutMap() {
+  if (features::IsUsingOzonePlatform())
+    return DesktopWindowTreeHostPlatform::GetKeyboardLayoutMap();
   if (views::LinuxUI::instance())
     return views::LinuxUI::instance()->GetKeyboardLayoutMap();
   return {};

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -33,9 +34,9 @@ TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
   {
     std::vector<Token> sources = {
         Token(base::UTF8ToUTF16("A"),
-              {TokenPosition("ID1", 1u, 1u), TokenPosition("ID1", 3u, 1u)}),
-        Token(base::UTF8ToUTF16("B"), {TokenPosition("ID1", 5, 1)}),
-        Token(base::UTF8ToUTF16("A"), {TokenPosition("ID2", 10, 1)})};
+              {Position("ID1", 1u, 1u), Position("ID1", 3u, 1u)}),
+        Token(base::UTF8ToUTF16("B"), {Position("ID1", 5, 1)}),
+        Token(base::UTF8ToUTF16("A"), {Position("ID2", 10, 1)})};
     const auto tokens = ConsolidateToken(sources);
     EXPECT_EQ(tokens.size(), 2u);
 

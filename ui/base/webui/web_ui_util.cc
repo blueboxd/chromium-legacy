@@ -34,6 +34,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace webui {
 namespace {
 std::string GetWebUiCssTextDefaults(const std::string& css_template) {
@@ -228,9 +232,13 @@ std::string GetFontFamily() {
 
 // TODO(dnicoara) Remove Ozone check when PlatformFont support is introduced
 // into Ozone: crbug.com/320050
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
-  font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (!features::IsUsingOzonePlatform()) {
+    font_family = ui::ResourceBundle::GetSharedInstance()
+                      .GetFont(ui::ResourceBundle::BaseFont)
+                      .GetFontName() +
+                  ", " + font_family;
+  }
 #endif
 
   return font_family;

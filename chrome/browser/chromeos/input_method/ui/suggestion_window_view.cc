@@ -143,23 +143,40 @@ void SuggestionWindowView::ShowMultipleCandidates(
 
 void SuggestionWindowView::MaybeInitializeSuggestionViews(
     size_t candidates_size) {
-  if (candidate_views_.size() > candidates_size)
-    candidate_views_.resize(candidates_size);
+  UnhighlightCandidate(highlighted_index_);
+
+  while (candidate_views_.size() > candidates_size) {
+    candidate_views_.back()->RemoveButtonObserver(this);
+    candidate_views_.pop_back();
+  }
 
   while (candidate_views_.size() < candidates_size) {
     auto new_candidate = std::make_unique<SuggestionView>(this);
     candidate_area_->AddChildView(new_candidate.get());
+    new_candidate->AddButtonObserver(this);
     candidate_views_.push_back(std::move(new_candidate));
   }
 }
 
 void SuggestionWindowView::HighlightCandidate(int index) {
-  if (selected_index_ != -1)
-    candidate_views_[selected_index_]->SetHighlighted(false);
-  if (index < static_cast<int>(candidate_views_.size())) {
-    candidate_views_[index]->SetHighlighted(true);
-    selected_index_ = index;
+  if (index == highlighted_index_ || index < 0 ||
+      index >= static_cast<int>(candidate_views_.size())) {
+    return;
   }
+
+  UnhighlightCandidate(highlighted_index_);
+  candidate_views_[index]->SetHighlighted(true);
+  highlighted_index_ = index;
+}
+
+void SuggestionWindowView::UnhighlightCandidate(int index) {
+  if (index != highlighted_index_ || index < 0 ||
+      index >= static_cast<int>(candidate_views_.size())) {
+    return;
+  }
+
+  candidate_views_[index]->SetHighlighted(false);
+  highlighted_index_ = kInvalid;
 }
 
 void SuggestionWindowView::SetBounds(const gfx::Rect& cursor_bounds) {
@@ -178,6 +195,29 @@ void SuggestionWindowView::ButtonPressed(views::Button* sender,
       return;
     }
   }
+}
+
+// TODO(crbug/1099062): Add tests for mouse hovered and pressed.
+void SuggestionWindowView::OnStateChanged(
+    views::Button* observed_button,
+    views::Button::ButtonState old_state) {
+  for (size_t i = 0; i < candidate_views_.size(); i++) {
+    if (observed_button == candidate_views_[i].get()) {
+      switch (observed_button->state()) {
+        case views::Button::ButtonState::STATE_HOVERED:
+        case views::Button::ButtonState::STATE_PRESSED:
+          HighlightCandidate(i);
+          break;
+        default:
+          UnhighlightCandidate(i);
+      }
+      return;
+    }
+  }
+}
+
+views::View* SuggestionWindowView::GetCandidateAreaForTesting() {
+  return candidate_area_;
 }
 
 const char* SuggestionWindowView::GetClassName() const {

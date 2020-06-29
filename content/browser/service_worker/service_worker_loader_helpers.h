@@ -36,16 +36,6 @@ bool CheckResponseHead(
     network::URLLoaderCompletionStatus* out_completion_status,
     std::string* out_error_message);
 
-// Creates net::HttpResponseInfo from |response_head|. Returns nullptr when the
-// response is invalid.
-// TODO(crbug.com/1060076): Remove this once HttpResponseInfo dependencies are
-// gone.
-std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
-    const network::mojom::URLResponseHead& response_head,
-    blink::ServiceWorkerStatusCode* out_service_worker_status,
-    network::URLLoaderCompletionStatus* out_completion_status,
-    std::string* out_error_message);
-
 bool ShouldBypassCacheDueToUpdateViaCache(
     bool is_main_script,
     blink::mojom::ServiceWorkerUpdateViaCache cache_mode);

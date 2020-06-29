@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/infobars/core/infobar.h"
 
@@ -31,7 +32,11 @@ class InfoBarAndroid : public infobars::InfoBar {
     ACTION_TRANSLATE_SHOW_ORIGINAL = 4,
   };
 
-  explicit InfoBarAndroid(std::unique_ptr<infobars::InfoBarDelegate> delegate);
+  // A function that maps from Chromium IDs to Drawable IDs.
+  using ResourceIdMapper = base::RepeatingCallback<int(int)>;
+
+  InfoBarAndroid(std::unique_ptr<infobars::InfoBarDelegate> delegate,
+                 const ResourceIdMapper& resource_id_mapper);
   ~InfoBarAndroid() override;
 
   // InfoBar:
@@ -75,6 +80,7 @@ class InfoBarAndroid : public infobars::InfoBar {
   InfoBarAndroid* infobar_android() { return this; }
 
  private:
+  ResourceIdMapper resource_id_mapper_;
   base::android::ScopedJavaGlobalRef<jobject> java_info_bar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarAndroid);

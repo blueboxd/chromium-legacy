@@ -202,7 +202,8 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(
       std::move(reader),
-      context_->storage()->CreateResponseWriter(new_resource_id));
+      context_->storage()->CreateResponseWriter(new_resource_id),
+      new_resource_id);
 
   scoped_refptr<ServiceWorkerVersion> version = worker_host_->version();
   version->script_cache_map()->NotifyStartedCaching(url, new_resource_id);

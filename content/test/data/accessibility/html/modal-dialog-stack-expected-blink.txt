@@ -4,6 +4,8 @@ rootWebArea
 ++++++section ignored invisible
 ++++++++dialog ignored invisible name=' This was the top dialog and should not be in the tree. '
 ++++++++popUpButton collapsed ignored invisible value='This should be pruned out of the tree.'
+++++++++++menuListPopup invisible
+++++++++++++menuListOption ignored name='This should be pruned out of the tree.' selected=true
 ++++++button ignored invisible name='This button should not be in the tree.'
 ++++++dialog ignored invisible name=' This was the middle dialog and should not be in the tree. '
 ++++++dialog

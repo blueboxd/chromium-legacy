@@ -5,29 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_UTILS_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_UTILS_H_
 
-#include <memory>
-
 #include "build/build_config.h"
-#include "chrome/browser/ui/views/toolbar/reload_button.h"
-
-namespace views {
-class ButtonListener;
-}  // namespace views
-
-class Browser;
-class HomeButton;
-class ToolbarButton;
-
-std::unique_ptr<ToolbarButton> CreateBackButton(views::ButtonListener* listener,
-                                                Browser* browser);
-std::unique_ptr<ToolbarButton> CreateForwardButton(
-    views::ButtonListener* listener,
-    Browser* browser);
-std::unique_ptr<ReloadButton> CreateReloadButton(
-    Browser* browser,
-    ReloadButton::IconStyle icon_style);
-std::unique_ptr<HomeButton> CreateHomeButton(views::ButtonListener* listener,
-                                             Browser* browser);
 
 #if defined(OS_WIN)
 // For Windows 10 and later, we use custom icons for minimal-ui web app

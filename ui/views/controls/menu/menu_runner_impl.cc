@@ -24,6 +24,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/events/x/events_x_utils.h"  // nogncheck
 #endif
 
@@ -242,7 +243,9 @@ bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {
 #if defined(OS_WIN)
   show_mnemonics |= ui::win::IsAltPressed();
 #elif defined(USE_X11)
-  show_mnemonics |= ui::IsAltPressed();
+  // TODO(https://crbug.com/1098203): fix mnemonics for Ozone/Linux.
+  if (!features::IsUsingOzonePlatform())
+    show_mnemonics |= ui::IsAltPressed();
 #elif defined(OS_MACOSX)
   show_mnemonics = false;
 #endif

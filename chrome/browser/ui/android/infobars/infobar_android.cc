@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/ui/messages/android/jni_headers/InfoBar_jni.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -20,8 +19,10 @@ using base::android::JavaRef;
 // InfoBarAndroid -------------------------------------------------------------
 
 InfoBarAndroid::InfoBarAndroid(
-    std::unique_ptr<infobars::InfoBarDelegate> delegate)
-    : infobars::InfoBar(std::move(delegate)) {}
+    std::unique_ptr<infobars::InfoBarDelegate> delegate,
+    const ResourceIdMapper& resource_id_mapper)
+    : infobars::InfoBar(std::move(delegate)),
+      resource_id_mapper_(resource_id_mapper) {}
 
 InfoBarAndroid::~InfoBarAndroid() {
   if (!java_info_bar_.is_null()) {
@@ -83,5 +84,5 @@ void InfoBarAndroid::CloseJavaInfoBar() {
 }
 
 int InfoBarAndroid::GetJavaIconId() {
-  return ResourceMapper::MapToJavaDrawableId(delegate()->GetIconId());
+  return resource_id_mapper_.Run(delegate()->GetIconId());
 }

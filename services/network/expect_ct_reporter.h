@@ -26,7 +26,7 @@ namespace network {
 // the URLRequestContext that is passed to the constructor, so that it
 // can cancel its requests.
 //
-// Since reports are sent with a non-CORS-whitelisted Content-Type, this class
+// Since reports are sent with a non-CORS-allowlisted Content-Type, this class
 // sends CORS preflight requests before sending reports. Expect-CT is not
 // evaluated with a particular frame or request as context, so the preflight
 // request contains an `Origin: null` header instead of a particular origin.

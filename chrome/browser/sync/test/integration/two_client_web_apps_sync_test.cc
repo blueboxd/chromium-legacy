@@ -278,6 +278,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncFaviconOnly) {
     chrome::ExecuteCommand(browser, IDC_CREATE_SHORTCUT);
     app_id = installObserver.AwaitNextInstall();
     chrome::SetAutoAcceptWebAppDialogForTesting(false, false);
+    chrome::CloseWindow(browser);
   }
   EXPECT_EQ(GetRegistrar(sourceProfile).GetAppShortName(app_id),
             "Favicon only");

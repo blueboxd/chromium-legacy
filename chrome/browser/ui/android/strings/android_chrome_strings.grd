@@ -1606,9 +1606,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- InfoBar -->
-      <message name="IDS_BOTTOM_BAR_SCREEN_POSITION" desc="Accessibility label to inform users about the InfoBar location">
-        Options available near bottom of the screen
-      </message>
       <message name="IDS_TOP_BAR_SCREEN_POSITION" desc="Accessibility label to inform users about the InfoBar location">
         Options available near top of the screen
       </message>

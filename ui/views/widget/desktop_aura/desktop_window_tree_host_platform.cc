@@ -16,6 +16,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -252,7 +253,8 @@ void DesktopWindowTreeHostPlatform::CloseNow() {
     return;
 
 #if defined(USE_OZONE)
-  SetWmDropHandler(platform_window(), nullptr);
+  if (features::IsUsingOzonePlatform())
+    SetWmDropHandler(platform_window(), nullptr);
 #endif
 
   platform_window()->PrepareForShutdown();

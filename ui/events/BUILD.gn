@@ -61,7 +61,7 @@ static_library("dom_keyboard_layout") {
     "//base",
   ]
 
-  if (is_win || is_mac || use_ozone) {
+  if (is_win || is_mac || use_ozone || use_x11) {
     public += [ "keycodes/dom/dom_keyboard_layout_map.h" ]
 
     sources += [
@@ -292,6 +292,7 @@ jumbo_component("events") {
     public += [ "x/x11_event_translation.h" ]
     sources += [ "x/x11_event_translation.cc" ]
     deps += [
+      "//ui/base:features",
       "//ui/events/devices",
       "//ui/events/devices/x11",
       "//ui/events/x",
@@ -317,7 +318,10 @@ jumbo_component("events") {
       "ozone/events_ozone.cc",
       "ozone/keyboard_hook_ozone.cc",
     ]
-    deps += [ "//ui/events/ozone/layout" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/events/ozone/layout",
+    ]
   }
 
   if (use_aura) {
@@ -515,7 +519,10 @@ jumbo_static_library("test_support") {
   }
 
   if (use_ozone) {
-    deps += [ "//ui/events/ozone/layout" ]
+    deps += [
+      "//ui/base:features",
+      "//ui/events/ozone/layout",
+    ]
   }
 }
 

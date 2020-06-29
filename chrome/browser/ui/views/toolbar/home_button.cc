@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -143,7 +144,14 @@ void HomePageUndoBubble::WindowClosing() {
 // HomeButton -----------------------------------------------------------
 
 HomeButton::HomeButton(views::ButtonListener* listener, Browser* browser)
-    : ToolbarButton(listener), browser_(browser) {}
+    : ToolbarButton(listener), browser_(browser) {
+  set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                              ui::EF_MIDDLE_MOUSE_BUTTON);
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
+  SetID(VIEW_ID_HOME_BUTTON);
+  SizeToPreferredSize();
+}
 
 HomeButton::~HomeButton() {
 }

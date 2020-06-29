@@ -35,6 +35,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -86,12 +87,16 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
   // x11::Events for DragAndDrop client and raw key events. DragAndDrop could be
   // unified so that DragAndrDropClientOzone is used and x11::Event are handled
   // on platform level.
-  static_cast<ui::X11Window*>(platform_window())->SetXEventDelegate(this);
+  if (!features::IsUsingOzonePlatform())
+    static_cast<ui::X11Window*>(platform_window())->SetXEventDelegate(this);
 }
 
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
+  if (features::IsUsingOzonePlatform())
+    return DesktopWindowTreeHostLinux::CreateDragDropClient(cursor_manager);
+
   drag_drop_client_ = new DesktopDragDropClientAuraX11(window(), cursor_manager,
                                                        GetXWindow()->window());
   drag_drop_client_->Init();

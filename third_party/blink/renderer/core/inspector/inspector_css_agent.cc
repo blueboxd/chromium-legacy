@@ -677,7 +677,8 @@ InspectorCSSAgent::InspectorCSSAgent(
           resource_content_loader->CreateClientId()),
       enable_requested_(&agent_state_, /*default_value=*/false),
       enable_completed_(false),
-      coverage_enabled_(&agent_state_, /*default_value=*/false) {}
+      coverage_enabled_(&agent_state_, /*default_value=*/false),
+      local_fonts_enabled_(&agent_state_, /*default_value=*/true) {}
 
 InspectorCSSAgent::~InspectorCSSAgent() = default;
 
@@ -748,6 +749,7 @@ Response InspectorCSSAgent::disable() {
   enable_requested_.Set(false);
   resource_content_loader_->Cancel(resource_content_loader_client_id_);
   coverage_enabled_.Set(false);
+  local_fonts_enabled_.Set(true);
   SetCoverageEnabled(false);
   return Response::Success();
 }
@@ -2590,6 +2592,18 @@ void InspectorCSSAgent::Trace(Visitor* visitor) const {
   visitor->Trace(inspector_user_agent_style_sheet_);
   visitor->Trace(tracker_);
   InspectorBaseAgent::Trace(visitor);
+}
+
+void InspectorCSSAgent::LocalFontsEnabled(bool* result) {
+  if (!local_fonts_enabled_.Get())
+    *result = false;
+}
+
+Response InspectorCSSAgent::setLocalFontsEnabled(bool enabled) {
+  local_fonts_enabled_.Set(enabled);
+  // TODO(alexrudenko): how to rerender fonts so that
+  // local_fonts_enabled_ applies without page reload?
+  return Response::Success();
 }
 
 }  // namespace blink

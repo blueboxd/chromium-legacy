@@ -31,6 +31,7 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/sqlite_proto/key_value_data.h"
 #include "net/base/network_isolation_key.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -79,7 +80,8 @@ struct PreconnectRequest {
 
 struct PrefetchRequest {
   PrefetchRequest(const GURL& url,
-                  const net::NetworkIsolationKey& network_isolation_key);
+                  const net::NetworkIsolationKey& network_isolation_key,
+                  network::mojom::RequestDestination destination);
 
   PrefetchRequest(const PrefetchRequest&) = default;
   PrefetchRequest(PrefetchRequest&&) = default;
@@ -88,8 +90,7 @@ struct PrefetchRequest {
 
   GURL url;
   net::NetworkIsolationKey network_isolation_key;
-
-  // TODO(falken): Add resource type.
+  network::mojom::RequestDestination destination;
 };
 
 // Stores a result of preconnect prediction. The |requests| vector is the main

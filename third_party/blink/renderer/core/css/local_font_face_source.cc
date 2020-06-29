@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
@@ -70,6 +71,13 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
     const FontDescription& font_description,
     const FontSelectionCapabilities&) {
   if (!IsValid())
+    return nullptr;
+
+  bool local_fonts_enabled = true;
+  probe::LocalFontsEnabled(font_selector_->GetExecutionContext(),
+                           &local_fonts_enabled);
+
+  if (!local_fonts_enabled)
     return nullptr;
 
   if (IsValid() && IsLoading()) {

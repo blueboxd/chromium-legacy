@@ -19,6 +19,10 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -84,13 +88,19 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
   // In Ozone builds, keep DomCode/DomKey unset, so they are extracted lazily
   // in KeyEvent::ApplyLayout() which makes it possible for CrOS/Linux, for
   // example, to support host system keyboard layouts.
+  std::unique_ptr<KeyEvent> event;
 #if defined(USE_OZONE)
-  auto event = std::make_unique<KeyEvent>(event_type, key_code, event_flags,
-                                          EventTimeFromXEvent(x11_event));
-#else
-  auto event = std::make_unique<KeyEvent>(
-      event_type, key_code, CodeFromXEvent(&xev), event_flags,
-      GetDomKeyFromXEvent(&xev), EventTimeFromXEvent(x11_event));
+  if (features::IsUsingOzonePlatform()) {
+    event = std::make_unique<KeyEvent>(event_type, key_code, event_flags,
+                                       EventTimeFromXEvent(x11_event));
+  }
+#endif
+#if defined(USE_X11)
+  if (!event) {
+    event = std::make_unique<KeyEvent>(
+        event_type, key_code, CodeFromXEvent(&xev), event_flags,
+        GetDomKeyFromXEvent(&xev), EventTimeFromXEvent(x11_event));
+  }
 #endif
 
   DCHECK(event);
@@ -156,10 +166,12 @@ std::unique_ptr<TouchEvent> CreateTouchEvent(EventType type,
       type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       GetTouchPointerDetailsFromXEvent(xev));
 #if defined(USE_OZONE)
-  // Touch events don't usually have |root_location| set differently than
-  // |location|, since there is a touch device to display association, but this
-  // doesn't happen in Ozone X11.
-  event->set_root_location(EventSystemLocationFromXEvent(xev));
+  if (features::IsUsingOzonePlatform()) {
+    // Touch events don't usually have |root_location| set differently than
+    // |location|, since there is a touch device to display association, but
+    // this doesn't happen in Ozone X11.
+    event->set_root_location(EventSystemLocationFromXEvent(xev));
+  }
 #endif
   return event;
 }

@@ -223,6 +223,10 @@ const base::Feature kHelpAppV2{"HelpAppV2", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kHelpAppFirstRun{"HelpAppFirstRun",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable the release notes functionality in the Help app.
+const base::Feature kHelpAppReleaseNotes{"HelpAppReleaseNotes",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable Unified Input Logic for HMM decoder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",

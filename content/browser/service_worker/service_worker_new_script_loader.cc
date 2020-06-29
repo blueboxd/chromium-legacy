@@ -121,7 +121,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   ServiceWorkerStorage* storage = version_->context()->storage();
   cache_writer_ = ServiceWorkerCacheWriter::CreateForWriteBack(
-      storage->CreateResponseWriter(cache_resource_id));
+      storage->CreateResponseWriter(cache_resource_id), cache_resource_id);
 
   version_->script_cache_map()->NotifyStartedCaching(request_url_,
                                                      cache_resource_id);

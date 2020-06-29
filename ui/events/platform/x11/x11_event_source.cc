@@ -42,6 +42,10 @@
 #include "ui/events/ozone/chromeos/cursor_controller.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -466,8 +470,12 @@ ScopedXEventDispatcher::~ScopedXEventDispatcher() {
 }
 
 // static
-#if !defined(USE_OZONE)
+#if defined(USE_X11)
 std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform())
+    return nullptr;
+#endif
   return std::make_unique<X11EventSource>(gfx::GetXDisplay());
 }
 #endif

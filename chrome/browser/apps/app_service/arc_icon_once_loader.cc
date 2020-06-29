@@ -81,8 +81,7 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
       icon_type = ArcAppIcon::IconType::kCompressed;
       break;
     case apps::mojom::IconCompression::kStandard:
-      // TODO(crbug.com/1083331): Set icon_type as
-      // ArcAppIcon::IconType::kTwoLayer.
+      icon_type = ArcAppIcon::IconType::kAdaptive;
       break;
   }
   iter = icons_
@@ -193,11 +192,10 @@ void ArcIconOnceLoader::OnAppRemoved(const std::string& app_id) {
 void ArcIconOnceLoader::OnAppIconUpdated(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
-  for (int i = 0; i < 2; i++) {
-    auto icon_compression = i ? apps::mojom::IconCompression::kCompressed
-                              : apps::mojom::IconCompression::kUncompressed;
-    auto iter = size_specific_loaders_.find(
-        std::make_pair(descriptor.dip_size, icon_compression));
+  for (int i = static_cast<int>(apps::mojom::IconCompression::kUncompressed);
+       i <= static_cast<int>(apps::mojom::IconCompression::kStandard); ++i) {
+    auto iter = size_specific_loaders_.find(std::make_pair(
+        descriptor.dip_size, static_cast<apps::mojom::IconCompression>(i)));
     if (iter != size_specific_loaders_.end()) {
       iter->second->Reload(app_id, descriptor.scale_factor);
     }

@@ -12,6 +12,7 @@
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/arc_camera_client.h"
+#include "chromeos/dbus/arc_sensor_service_client.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
@@ -64,6 +65,7 @@ void InitializeDBus() {
   // NOTE: base::Feature is not initialized yet, so any non MultiProcessMash
   // dbus client initialization for Ash should be done in Shell::Init.
   InitializeDBusClient<ArcCameraClient>(bus);
+  InitializeDBusClient<ArcSensorServiceClient>(bus);
   InitializeDBusClient<AttestationClient>(bus);
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.

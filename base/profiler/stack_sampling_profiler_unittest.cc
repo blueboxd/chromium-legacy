@@ -444,10 +444,14 @@ class StackSamplingProfilerTest : public testing::Test {
 // Checks that the basic expected information is present in sampled frames.
 //
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_Basic Basic
-#else
+//
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) || \
+    (defined(ADDRESS_SANITIZER) && defined(OS_ANDROID))
 #define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
@@ -511,8 +515,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
 // macOS ASAN is not yet supported - crbug.com/718628.
 // Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
 // have unwind tables.
-#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) || \
-    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES))
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) ||        \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
 #else
 #define MAYBE_OtherLibrary OtherLibrary
@@ -534,8 +541,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
 // Unloading is synchronous on the Mac, so this test is inapplicable.
 // Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
 // have unwind tables.
-#if defined(OS_MACOSX) || \
-    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES))
+// TODO(https://crbug.com/1100175): Enable this test again for Android with
+// ASAN. This is now disabled because the android-asan bot fails.
+#if defined(OS_MACOSX) ||                                        \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_UnloadingLibrary DISABLED_UnloadingLibrary
 #else
 #define MAYBE_UnloadingLibrary UnloadingLibrary

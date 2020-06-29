@@ -8,6 +8,7 @@
 #include "base/notreached.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"  // nogncheck
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"  // nogncheck
 #endif
 
@@ -15,10 +16,13 @@ namespace ui {
 
 ScopedKeyboardLayout::ScopedKeyboardLayout(KeyboardLayout layout) {
 #if defined(USE_OZONE)
-  CHECK_EQ(layout, KEYBOARD_LAYOUT_ENGLISH_US);
-  auto keyboard_layout_engine = std::make_unique<StubKeyboardLayoutEngine>();
-  scoped_keyboard_layout_engine_ = std::make_unique<ScopedKeyboardLayoutEngine>(
-      std::move(keyboard_layout_engine));
+  if (features::IsUsingOzonePlatform()) {
+    CHECK_EQ(layout, KEYBOARD_LAYOUT_ENGLISH_US);
+    auto keyboard_layout_engine = std::make_unique<StubKeyboardLayoutEngine>();
+    scoped_keyboard_layout_engine_ =
+        std::make_unique<ScopedKeyboardLayoutEngine>(
+            std::move(keyboard_layout_engine));
+  }
 #elif defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   original_layout_ = GetActiveLayout();
   ActivateLayout(GetPlatformKeyboardLayout(layout));

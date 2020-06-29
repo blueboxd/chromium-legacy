@@ -2536,6 +2536,60 @@ TEST_F(FrameSchedulerImplTest, ThrottledJSTimerTasksRunTime) {
                              start + base::TimeDelta::FromMilliseconds(6000)));
 }
 
+namespace {
+class MockMainThreadScheduler : public MainThreadSchedulerImpl {
+ public:
+  explicit MockMainThreadScheduler(
+      base::test::TaskEnvironment& task_environment)
+      : MainThreadSchedulerImpl(
+            base::sequence_manager::SequenceManagerForTest::Create(
+                nullptr,
+                task_environment.GetMainThreadTaskRunner(),
+                task_environment.GetMockTickClock()),
+            base::nullopt) {}
+
+  MOCK_METHOD(void, OnMainFramePaint, (bool));
+};
+}  // namespace
+
+TEST_F(FrameSchedulerImplTest, ReportFMPAndFCPForMainFrames) {
+  MockMainThreadScheduler mock_main_thread_scheduler{task_environment_};
+  std::unique_ptr<PageSchedulerImpl> page_scheduler =
+      CreatePageScheduler(nullptr, &mock_main_thread_scheduler);
+
+  std::unique_ptr<FrameSchedulerImpl> main_frame_scheduler =
+      CreateFrameScheduler(page_scheduler.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kMainFrame);
+
+  EXPECT_CALL(mock_main_thread_scheduler, OnMainFramePaint).Times(2);
+
+  main_frame_scheduler->OnFirstMeaningfulPaint();
+  main_frame_scheduler->OnFirstContentfulPaint();
+
+  main_frame_scheduler = nullptr;
+  page_scheduler = nullptr;
+  mock_main_thread_scheduler.Shutdown();
+}
+
+TEST_F(FrameSchedulerImplTest, DontReportFMPAndFCPForSubframes) {
+  MockMainThreadScheduler mock_main_thread_scheduler{task_environment_};
+  std::unique_ptr<PageSchedulerImpl> page_scheduler =
+      CreatePageScheduler(nullptr, &mock_main_thread_scheduler);
+
+  std::unique_ptr<FrameSchedulerImpl> subframe_scheduler =
+      CreateFrameScheduler(page_scheduler.get(), nullptr, nullptr,
+                           FrameScheduler::FrameType::kSubframe);
+
+  EXPECT_CALL(mock_main_thread_scheduler, OnMainFramePaint).Times(0);
+
+  subframe_scheduler->OnFirstMeaningfulPaint();
+  subframe_scheduler->OnFirstContentfulPaint();
+
+  subframe_scheduler = nullptr;
+  page_scheduler = nullptr;
+  mock_main_thread_scheduler.Shutdown();
+}
+
 // Verify that tasks run at the expected time in frame that is same-origin with
 // the main frame with intensive wake up throttling.
 TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling,

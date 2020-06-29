@@ -106,8 +106,11 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  browser_view()->browser()->command_controller()->RemoveCommandObserver(
-      IDC_BACK, this);
+  if (browser_view()->browser()->deprecated_is_app() &&
+      IsV1AppBackButtonEnabled()) {
+    browser_view()->browser()->command_controller()->RemoveCommandObserver(
+        IDC_BACK, this);
+  }
 
   ash::TabletMode::Get()->RemoveObserver(this);
 

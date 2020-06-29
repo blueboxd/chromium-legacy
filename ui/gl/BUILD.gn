@@ -520,7 +520,10 @@ source_set("run_all_unittests") {
 
   sources = [ "test/run_all_unittests.cc" ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ui/base:features",
+  ]
 
   public_deps = [ "//base/test:test_support" ]
 

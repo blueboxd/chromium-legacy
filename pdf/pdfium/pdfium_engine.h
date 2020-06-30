@@ -48,7 +48,7 @@ class PDFiumPermissions;
 namespace draw_utils {
 class ShadowMatrix;
 struct PageInsetSizes;
-}
+}  // namespace draw_utils
 
 class PDFiumEngine : public PDFEngine,
                      public DocumentLoader::Client,

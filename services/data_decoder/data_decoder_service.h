@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/data_decoder/public/mojom/data_decoder_service.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/data_decoder/public/mojom/web_bundler.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 
@@ -50,8 +50,9 @@ class DataDecoderService : public mojom::DataDecoderService {
   // WebBundleParserFactory in subsequent
   // BindWebBundleParserFactory() calls.
   void SetWebBundleParserFactoryBinderForTesting(
-      base::RepeatingCallback<
-          void(mojo::PendingReceiver<mojom::WebBundleParserFactory>)> binder) {
+      base::RepeatingCallback<void(
+          mojo::PendingReceiver<web_package::mojom::WebBundleParserFactory>)>
+          binder) {
     web_bundle_parser_factory_binder_ = binder;
   }
 
@@ -71,7 +72,8 @@ class DataDecoderService : public mojom::DataDecoderService {
       mojo::PendingReceiver<mojom::JsonParser> receiver) override;
   void BindXmlParser(mojo::PendingReceiver<mojom::XmlParser> receiver) override;
   void BindWebBundleParserFactory(
-      mojo::PendingReceiver<mojom::WebBundleParserFactory> receiver) override;
+      mojo::PendingReceiver<web_package::mojom::WebBundleParserFactory>
+          receiver) override;
   void BindWebBundler(
       mojo::PendingReceiver<mojom::WebBundler> receiver) override;
 
@@ -87,7 +89,7 @@ class DataDecoderService : public mojom::DataDecoderService {
   bool drop_image_decoders_ = false;
   bool drop_json_parsers_ = false;
   base::RepeatingCallback<void(
-      mojo::PendingReceiver<mojom::WebBundleParserFactory>)>
+      mojo::PendingReceiver<web_package::mojom::WebBundleParserFactory>)>
       web_bundle_parser_factory_binder_;
   base::RepeatingCallback<void(mojo::PendingReceiver<mojom::WebBundler>)>
       web_bundler_binder_;

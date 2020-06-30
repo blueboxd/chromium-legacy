@@ -41,8 +41,15 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // WebUI call to signal js side is ready.
   void HandleInitialized(const base::ListValue* args);
 
+  // WebUI call to request photos containers, e.g. personal albums or art
+  // categories.
+  void RequestPhotosContainers(const base::ListValue* args);
+
   // WebUI call to sync topic source with server.
-  void HandleTopicSourceSelectedChanged(const base::ListValue* args);
+  void HandleSetSelectedTopicSource(const base::ListValue* args);
+
+  // WebUI call to sync photos containers with server.
+  void HandleSetSelectedPhotosContainers(const base::ListValue* args);
 
   // Retrieve the initial settings from server.
   void GetSettings();
@@ -54,14 +61,26 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // settings is retrieved.
   void SendTopicSource();
 
-  // Update the selected topic source to server.
-  void UpdateSettings(ash::AmbientModeTopicSource topic_source);
+  // Send the "photos-containers-changed" WebUIListener event when the personal
+  // albums are retrieved.
+  void SendPhotosContainers();
+
+  // Update the local |settings_| to server.
+  void UpdateSettings();
 
   // Called when the settings is updated.
-  // |topic_source| is the value to retry if the update was failed.
-  void OnUpdateSettings(ash::AmbientModeTopicSource topic_source, bool success);
+  void OnUpdateSettings(bool success);
+
+  void FetchPersonalAlbums();
+
+  void OnPersonalAlbumsFetched(ash::PersonalAlbums personal_albums);
+
+  // Whether the Javascript is inited from the ambientMode page.
+  bool init_from_ambient_mode_page_ = false;
 
   base::Optional<ash::AmbientSettings> settings_;
+
+  ash::PersonalAlbums personal_albums_;
 
   base::WeakPtrFactory<AmbientModeHandler> weak_factory_{this};
 };

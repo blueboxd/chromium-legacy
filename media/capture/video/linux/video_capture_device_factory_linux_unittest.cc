@@ -104,7 +104,7 @@ TEST_P(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2DeviceUsing) {
   ASSERT_EQ(1u, descriptors.size());
   EXPECT_EQ(descriptor.device_id, descriptors[0].device_id);
   EXPECT_EQ(descriptor.display_name(), descriptors[0].display_name());
-  EXPECT_EQ(descriptor.pan_tilt_zoom_supported().value(),
+  EXPECT_EQ(descriptor.pan_tilt_zoom_supported(),
             descriptors[0].pan_tilt_zoom_supported());
 }
 
@@ -115,12 +115,10 @@ INSTANTIATE_TEST_SUITE_P(
         VideoCaptureDeviceDescriptor("Fake Device 0",
                                      "/dev/video0",
                                      VideoCaptureApi::UNKNOWN,
-                                     VideoCaptureTransportType::OTHER_TRANSPORT,
                                      /*pan_tilt_zoom_supported=*/false),
         VideoCaptureDeviceDescriptor("Fake Device 0",
                                      "/dev/video0",
                                      VideoCaptureApi::UNKNOWN,
-                                     VideoCaptureTransportType::OTHER_TRANSPORT,
                                      /*pan_tilt_zoom_supported=*/true)));
 
 TEST_F(VideoCaptureDeviceFactoryLinuxTest,

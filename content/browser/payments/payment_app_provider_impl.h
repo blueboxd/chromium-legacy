@@ -42,6 +42,14 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       const SupportedDelegations& supported_delegations,
       RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) override;
+  void UpdatePaymentAppIcon(BrowserContext* browser_context,
+                            int64_t registration_id,
+                            const std::string& instrument_key,
+                            const std::string& name,
+                            const std::string& string_encoded_icon,
+                            const std::string& method_name,
+                            const SupportedDelegations& supported_delegations,
+                            UpdatePaymentAppIconCallback callback) override;
   void CanMakePayment(WebContents* web_contents,
                       int64_t registration_id,
                       const url::Origin& sw_origin,

@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync/syncable/nigori_util.h"
 #include "components/sync_sessions/synced_session.h"
 
 class GURL;

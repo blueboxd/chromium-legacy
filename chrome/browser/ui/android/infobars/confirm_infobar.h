@@ -11,16 +11,14 @@
 #include "components/infobars/android/infobar_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class TabAndroid;
-
 class ConfirmInfoBar : public InfoBarAndroid {
  public:
-  explicit ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate);
+  ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate,
+                 const ResourceIdMapper& resource_id_mapper);
   ~ConfirmInfoBar() override;
 
  protected:
   ConfirmInfoBarDelegate* GetDelegate();
-  TabAndroid* GetTab();
   base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
 
   // InfoBarAndroid overrides.

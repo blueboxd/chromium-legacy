@@ -266,8 +266,7 @@ void MediaDevicesDispatcherHost::FinalizeGetVideoInputCapabilities(
         media_stream_manager_->media_devices_manager()->GetVideoInputFormats(
             device_info.device_id, true /* try_in_use_first */);
     capabilities->facing_mode = device_info.video_facing;
-    capabilities->pan_tilt_zoom_supported =
-        device_info.pan_tilt_zoom_supported.value_or(false);
+    capabilities->pan_tilt_zoom_supported = device_info.pan_tilt_zoom_supported;
     if (device_info.device_id == default_device_id) {
       video_input_capabilities.insert(video_input_capabilities.begin(),
                                       std::move(capabilities));

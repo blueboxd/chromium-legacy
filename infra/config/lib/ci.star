@@ -421,6 +421,7 @@ def ci_builder(
     main_console_view=args.DEFAULT,
     cq_mirrors_console_view=args.DEFAULT,
     console_view_entry=None,
+    tree_closing=False,
     **kwargs):
   """Define a CI builder.
 
@@ -447,14 +448,21 @@ def ci_builder(
       has no effect on creating an entry to the main console view.
     console_view_entry - A structure providing the details of the entry
       to add to the console view. See `ci.console_view_entry` for details.
+    tree_closing - If true, failed builds from this builder that meet certain
+      criteria will close the tree and email the sheriff. See the
+      'chromium-tree-closer' config in notifiers.star for the full criteria.
   """
   # Define the builder first so that any validation of luci.builder arguments
   # (e.g. bucket) occurs before we try to use it
+  notifies = kwargs.pop('notifies', [])
+  if tree_closing:
+    notifies += ['chromium-tree-closer', 'chromium-tree-closer-email']
   ret = builders.builder(
       name = name,
       resultdb_bigquery_exports = [resultdb.export_test_results(
           bq_table = 'luci-resultdb.chromium.ci_test_results',
       )],
+      notifies = notifies,
       **kwargs
   )
 
@@ -766,22 +774,27 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
   )
 
 
-def gpu_builder(*, name, **kwargs):
+def gpu_builder(*, name, tree_closing=True, **kwargs):
+  notifies = kwargs.pop('notifies', [])
+  if tree_closing:
+    notifies.append('gpu-tree-closer-email')
   return ci.builder(
       name = name,
       goma_backend = builders.goma.backend.RBE_PROD,
       mastername = 'chromium.gpu',
+      tree_closing = tree_closing,
+      notifies = notifies,
       **kwargs
   )
 
-
 # Many of the GPU testers are thin testers, they use linux VMS regardless of the
 # actual OS that the tests are built for
-def gpu_thin_tester(*, name, **kwargs):
+def gpu_thin_tester(*, name, tree_closing=True, **kwargs):
   return gpu_builder(
       name = name,
       cores = 2,
       os = builders.os.LINUX_DEFAULT,
+      tree_closing = tree_closing,
       **kwargs
   )
 

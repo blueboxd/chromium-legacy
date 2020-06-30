@@ -6,12 +6,12 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_BUNDLE_INTERCEPTOR_FOR_HISTORY_NAVIGATION_FROM_NETWORK_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/browser/web_package/web_bundle_interceptor_for_history_navigation.h"
 #include "content/browser/web_package/web_bundle_url_loader_factory.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 class GURL;
@@ -91,7 +91,7 @@ class WebBundleInterceptorForHistoryNavigationFromNetwork final
       bool* will_return_and_handle_unsafe_redirect) override;
 
   void OnMetadataReady(network::ResourceRequest request,
-                       data_decoder::mojom::BundleMetadataParseErrorPtr error);
+                       web_package::mojom::BundleMetadataParseErrorPtr error);
 
   void StartRedirectResponse(
       const network::ResourceRequest& resource_request,

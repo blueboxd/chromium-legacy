@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -27,6 +28,11 @@ class PluginVmUtilTest : public testing::Test {
   MOCK_METHOD(void, OnPolicyChanged, (bool));
 
  protected:
+  struct ScopedDBusThreadManager {
+    ScopedDBusThreadManager() { chromeos::DBusThreadManager::Initialize(); }
+    ~ScopedDBusThreadManager() { chromeos::DBusThreadManager::Shutdown(); }
+  } dbus_thread_manager_;
+
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;

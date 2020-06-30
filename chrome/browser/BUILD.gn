@@ -1286,8 +1286,6 @@ static_library("browser") {
     "prerender/prerender_manager.h",
     "prerender/prerender_manager_factory.cc",
     "prerender/prerender_manager_factory.h",
-    "prerender/prerender_message_filter.cc",
-    "prerender/prerender_message_filter.h",
     "prerender/prerender_processor_impl.cc",
     "prerender/prerender_processor_impl.h",
     "prerender/prerender_tab_helper.cc",

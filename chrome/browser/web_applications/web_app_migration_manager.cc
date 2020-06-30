@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -119,18 +121,41 @@ void WebAppMigrationManager::OnBookmarkAppIconsRead(
     MigrateNextBookmarkAppIcons();
     return;
   }
-  // TODO(https://crbug.com/1069316): Support jump lists migration here: Convert
-  // old extension's representation to new web app representation (project BMO).
+
   web_app_icon_manager_->WriteData(
       app_id, std::move(icon_bitmaps),
       base::BindOnce(&WebAppMigrationManager::OnWebAppIconsWritten,
+                     weak_ptr_factory_.GetWeakPtr(), app_id));
+}
+
+void WebAppMigrationManager::OnWebAppIconsWritten(const AppId& app_id,
+                                                  bool success) {
+  if (!success)
+    DLOG(ERROR) << "Write web app icons failed.";
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    bookmark_app_icon_manager_.ReadAllShortcutsMenuIcons(
+        app_id,
+        base::BindOnce(
+            &WebAppMigrationManager::OnBookmarkAppShortcutsMenuIconsRead,
+            weak_ptr_factory_.GetWeakPtr(), app_id));
+  } else {
+    MigrateNextBookmarkAppIcons();
+  }
+}
+
+void WebAppMigrationManager::OnBookmarkAppShortcutsMenuIconsRead(
+    const AppId& app_id,
+    ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
+  web_app_icon_manager_->WriteShortcutsMenuIconsData(
+      app_id, std::move(shortcuts_menu_icons_bitmaps),
+      base::BindOnce(&WebAppMigrationManager::OnWebAppShortcutsMenuIconsWritten,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebAppMigrationManager::OnWebAppIconsWritten(bool success) {
+void WebAppMigrationManager::OnWebAppShortcutsMenuIconsWritten(bool success) {
   if (!success)
-    DLOG(ERROR) << "Write web app icons failed.";
-
+    DLOG(ERROR) << "Write web app shortcuts menu icons failed.";
   MigrateNextBookmarkAppIcons();
 }
 
@@ -212,6 +237,15 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   web_app->SetIconInfos(bookmark_app_registrar_.GetAppIconInfos(app_id));
   web_app->SetDownloadedIconSizes(
       bookmark_app_registrar_.GetAppDownloadedIconSizes(app_id));
+
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    web_app->SetShortcutInfos(
+        bookmark_app_registrar_.GetAppShortcutInfos(app_id));
+    web_app->SetDownloadedShortcutsMenuIconsSizes(
+        bookmark_app_registrar_.GetAppDownloadedShortcutsMenuIconsSizes(
+            app_id));
+  }
 
   web_app->SetUserPageOrdinal(
       bookmark_app_registrar_.GetUserPageOrdinal(app_id));

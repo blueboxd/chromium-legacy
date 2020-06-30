@@ -254,7 +254,6 @@ js_library("lazy_load") {
     "autofill_page:autofill_section",
     "autofill_page:payments_section",
     "privacy_page:cookies_page",
-    "privacy_page:safe_browsing_browser_proxy",
     "privacy_page:security_page",
     "site_settings:local_data_browser_proxy",
     "site_settings:protocol_handlers",

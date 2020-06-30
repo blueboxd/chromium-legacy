@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_INK_OVERFLOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_INK_OVERFLOW_H_
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 
@@ -13,33 +14,26 @@ namespace blink {
 class ComputedStyle;
 struct NGTextFragmentPaintInfo;
 
-// Represents an ink-overflow for objects without children, such as text runs.
-struct CORE_EXPORT NGInkOverflow {
-  USING_FAST_MALLOC(NGInkOverflow);
+// Represents an ink-overflow rectangle. Used for objects without children, such
+// as text runs.
+struct NGSelfInkOverflow {
+  USING_FAST_MALLOC(NGSelfInkOverflow);
 
  public:
-  NGInkOverflow(const PhysicalRect& self_ink_overflow)
-      : self_ink_overflow(self_ink_overflow) {}
-
-  static void ComputeTextInkOverflow(
-      const NGTextFragmentPaintInfo& text_info,
-      const ComputedStyle& style,
-      const PhysicalSize& size,
-      std::unique_ptr<NGInkOverflow>* ink_overflow_out);
+  explicit NGSelfInkOverflow(const PhysicalRect& ink_overflow)
+      : self_ink_overflow(ink_overflow) {}
 
   PhysicalRect self_ink_overflow;
 };
 
-// Represents an ink-overflow for objects with children, such as boxes. Keeps
-// ink-overflow for self and contents separately.
-struct CORE_EXPORT NGContainerInkOverflow : NGInkOverflow {
+// Represents two ink-overflow rectangles, to keep self and contents ink
+// overflow separately. Used for objects with children, such as boxes.
+struct NGContainerInkOverflow : NGSelfInkOverflow {
   USING_FAST_MALLOC(NGContainerInkOverflow);
 
  public:
-  NGContainerInkOverflow(const PhysicalRect& self_ink_overflow,
-                         const PhysicalRect& contents_ink_overflow)
-      : NGInkOverflow(self_ink_overflow),
-        contents_ink_overflow(contents_ink_overflow) {}
+  NGContainerInkOverflow(const PhysicalRect& self, const PhysicalRect& contents)
+      : NGSelfInkOverflow(self), contents_ink_overflow(contents) {}
 
   PhysicalRect SelfAndContentsInkOverflow() const {
     return UnionRect(self_ink_overflow, contents_ink_overflow);
@@ -47,6 +41,125 @@ struct CORE_EXPORT NGContainerInkOverflow : NGInkOverflow {
 
   PhysicalRect contents_ink_overflow;
 };
+
+// Represents multiple types of ink overflow in a size of a pointer.
+//
+// When no overflow, or when overflow is small, this class does not allocate
+// memory.
+//
+// In order to keep the instance small, callers must keep |Type| separately.
+// |Set*| functions return |Type|, which callers must keep and pass to following
+// function calls. Functions have DCHECKs to ensure callers pass the correct
+// |Type|.
+class CORE_EXPORT NGInkOverflow {
+ public:
+  enum Type {
+    kNotSet,
+    kNone,
+    kSmallSelf,
+    kSelf,
+    kSelfAndContents
+    // When adding values, make sure |NGFragmentItem| has enough storage.
+  };
+
+  NGInkOverflow() = default;
+#if DCHECK_IS_ON()
+  ~NGInkOverflow();
+#endif
+
+  // Regular copy is prohibited because |Type| is outside of the instance. Use
+  // functions with |Type| below instead.
+  NGInkOverflow(const NGInkOverflow&) = delete;
+  NGInkOverflow& operator=(const NGInkOverflow&) = delete;
+
+  // To copy, |Type| is required.
+  NGInkOverflow(Type source_type, const NGInkOverflow& source);
+
+  // Get ink overflow of various types.
+  PhysicalRect Self(Type type, const PhysicalSize& size) const;
+  PhysicalRect SelfAndContents(Type type, const PhysicalSize& size) const;
+
+  // Reset to |kNone|.
+  Type Reset(Type type);
+
+  // Set self ink overflow rect.
+  Type SetSelf(Type type, const PhysicalRect& self, const PhysicalSize& size);
+
+  // Set self and contents ink overflow rects.
+  Type Set(Type type,
+           const PhysicalRect& self,
+           const PhysicalRect& contents,
+           const PhysicalSize& size);
+
+  // Compute and set ink overflow for text.
+  Type SetTextInkOverflow(Type type,
+                          const NGTextFragmentPaintInfo& text_info,
+                          const ComputedStyle& style,
+                          const PhysicalSize& size,
+                          PhysicalRect* ink_overflow_out);
+
+  static base::Optional<PhysicalRect> ComputeTextInkOverflow(
+      const NGTextFragmentPaintInfo& text_info,
+      const ComputedStyle& style,
+      const PhysicalSize& size);
+
+ private:
+  PhysicalRect FromOutsets(const PhysicalSize& size) const;
+
+  void CheckType(Type type) const;
+  Type SetType(Type type);
+
+  bool TrySetOutsets(Type type,
+                     const PhysicalRect& ink_overflow,
+                     const PhysicalSize& size);
+  Type SetSingle(Type type,
+                 const PhysicalRect& ink_overflow,
+                 const PhysicalSize& size,
+                 Type new_type,
+                 Type new_small_type);
+
+  // |SmallRawValue| can store small values without allocating memory.
+  // |LayoutUnit| uses 6 bits (|kLayoutUnitFractionalBits|) for fraction.
+#if defined(ARCH_CPU_32_BITS)
+  // |uint8_t| can represent 0 to (4 - 1/64) using 2 bits for integer.
+  using SmallRawValue = uint8_t;
+#elif defined(ARCH_CPU_64_BITS)
+  // |uint16_t| can represent 0 to (1024 - 1/64) using 10 bits for integer.
+  using SmallRawValue = uint16_t;
+#else
+#error Only support 32/64 bits.
+#endif
+
+  union {
+    // When only self or contents overflow.
+    NGSelfInkOverflow* self_;
+    // When both self and contents overflow.
+    NGContainerInkOverflow* container_;
+    // Outsets in small |LayoutUnit|s when overflow is small.
+    SmallRawValue outsets_[4];
+    static_assert(sizeof(outsets_) == sizeof(self_),
+                  "outsets should be the size of a pointer");
+  };
+
+#if DCHECK_IS_ON()
+  Type type_ = Type::kNotSet;
+#endif
+};
+
+#if DCHECK_IS_ON()
+inline void NGInkOverflow::CheckType(Type type) const {
+  DCHECK_EQ(type, type_);
+}
+inline NGInkOverflow::Type NGInkOverflow::SetType(Type type) {
+  type_ = type;
+  return type;
+}
+#else
+inline void NGInkOverflow::CheckType(Type type) const {}
+inline NGInkOverflow::Type NGInkOverflow::SetType(Type type) {
+  return type;
+}
+#endif
 
 }  // namespace blink
 

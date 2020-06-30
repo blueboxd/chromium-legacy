@@ -929,6 +929,9 @@ extern const char kOopRasterizationDDLDescription[];
 extern const char kNewOsSettingsSearchName[];
 extern const char kNewOsSettingsSearchDescription[];
 
+extern const char kOsSettingsDeepLinkingName[];
+extern const char kOsSettingsDeepLinkingDescription[];
+
 extern const char kDlcSettingsUiName[];
 extern const char kDlcSettingsUiDescription[];
 
@@ -2041,6 +2044,9 @@ extern const char kEnableAmbientModeDescription[];
 extern const char kEnableAssistantAppSupportName[];
 extern const char kEnableAssistantAppSupportDescription[];
 
+extern const char kEnableAssistantBetterOnboardingName[];
+extern const char kEnableAssistantBetterOnboardingDescription[];
+
 extern const char kEnableAssistantLauncherIntegrationName[];
 extern const char kEnableAssistantLauncherIntegrationDescription[];
 
@@ -2052,6 +2058,9 @@ extern const char kEnableAssistantMediaSessionIntegrationDescription[];
 
 extern const char kEnableAssistantRoutinesName[];
 extern const char kEnableAssistantRoutinesDescription[];
+
+extern const char kEnableAssistantTimersV2Name[];
+extern const char kEnableAssistantTimersV2Description[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
@@ -2200,6 +2209,9 @@ extern const char kHelpAppDescription[];
 
 extern const char kHelpAppReleaseNotesName[];
 extern const char kHelpAppReleaseNotesDescription[];
+
+extern const char kHelpAppSearchServiceIntegrationName[];
+extern const char kHelpAppSearchServiceIntegrationDescription[];
 
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];

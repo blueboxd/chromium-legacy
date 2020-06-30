@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_impl.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -124,7 +125,12 @@ void PluginVmManagerImpl::LaunchPluginVm(LaunchPluginVmCallback callback) {
   // 3) Call ListVms to get the state of the VM.
   // 4) Start the VM if necessary.
   // 5) Show the UI.
-  InstallPluginVmDlc();
+  InstallDlcAndUpdateVmState(
+      base::BindOnce(&PluginVmManagerImpl::OnListVmsForLaunch,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PluginVmManagerImpl::LaunchFailed,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     PluginVmLaunchResult::kError));
 }
 
 void PluginVmManagerImpl::AddVmStartingObserver(
@@ -163,15 +169,20 @@ void PluginVmManagerImpl::UninstallPluginVm() {
   uninstaller_notification_ =
       std::make_unique<PluginVmUninstallerNotification>(profile_);
   // Uninstalling Plugin Vm goes through the following steps:
-  // 1) Start the Plugin Vm Dispatcher (no-op if already running)
-  // 2) Call ListVms to get the state of the VM
-  // 3) Stop the VM if necessary
-  // 4) Uninstall the VM
+  // 1) Ensure DLC is installed (otherwise we will not be able to start the
+  //    dispatcher). Potentially, we can check and skip to 5) if it is not
+  //    installed, but it is probably easier to just always go through the same
+  //    flow.
+  // 2) Start the Plugin Vm Dispatcher (no-op if already running)
+  // 3) Call ListVms to get the state of the VM
+  // 4) Stop the VM if necessary
+  // 5) Uninstall the VM
   // It does not stop the dispatcher, as it will be stopped upon next shutdown
-  UpdateVmState(base::BindOnce(&PluginVmManagerImpl::OnListVmsForUninstall,
-                               weak_ptr_factory_.GetWeakPtr()),
-                base::BindOnce(&PluginVmManagerImpl::UninstallFailed,
-                               weak_ptr_factory_.GetWeakPtr()));
+  InstallDlcAndUpdateVmState(
+      base::BindOnce(&PluginVmManagerImpl::OnListVmsForUninstall,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PluginVmManagerImpl::UninstallFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 uint64_t PluginVmManagerImpl::seneschal_server_handle() const {
@@ -254,6 +265,32 @@ vm_tools::plugin_dispatcher::VmState PluginVmManagerImpl::vm_state() const {
   return vm_state_;
 }
 
+void PluginVmManagerImpl::InstallDlcAndUpdateVmState(
+    base::OnceCallback<void(bool default_vm_exists)> success_callback,
+    base::OnceClosure error_callback) {
+  chromeos::DlcserviceClient::Get()->Install(
+      "pita",
+      base::BindOnce(&PluginVmManagerImpl::OnInstallPluginVmDlc,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(success_callback), std::move(error_callback)),
+      chromeos::DlcserviceClient::IgnoreProgress);
+}
+
+void PluginVmManagerImpl::OnInstallPluginVmDlc(
+    base::OnceCallback<void(bool default_vm_exists)> success_callback,
+    base::OnceClosure error_callback,
+    const chromeos::DlcserviceClient::InstallResult& install_result) {
+  if (install_result.error == dlcservice::kErrorNone) {
+    UpdateVmState(std::move(success_callback), std::move(error_callback));
+  } else {
+    // TODO(kimjae): Unify the dlcservice error handler with
+    // PluginVmInstaller.
+    LOG(ERROR) << "Couldn't install PluginVM DLC after import: "
+               << install_result.error;
+    std::move(error_callback).Run();
+  }
+}
+
 void PluginVmManagerImpl::OnStartDispatcher(
     base::OnceCallback<void(bool)> success_callback,
     base::OnceClosure error_callback,
@@ -301,30 +338,6 @@ void PluginVmManagerImpl::OnListVms(
   }
 }
 
-void PluginVmManagerImpl::InstallPluginVmDlc() {
-  chromeos::DlcserviceClient::Get()->Install(
-      "pita",
-      base::BindOnce(&PluginVmManagerImpl::OnInstallPluginVmDlc,
-                     weak_ptr_factory_.GetWeakPtr()),
-      chromeos::DlcserviceClient::IgnoreProgress);
-}
-
-void PluginVmManagerImpl::OnInstallPluginVmDlc(
-    const chromeos::DlcserviceClient::InstallResult& install_result) {
-  if (install_result.error == dlcservice::kErrorNone) {
-    UpdateVmState(base::BindOnce(&PluginVmManagerImpl::OnListVmsForLaunch,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                  base::BindOnce(&PluginVmManagerImpl::LaunchFailed,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 PluginVmLaunchResult::kError));
-  } else {
-    // TODO(kimjae): Unify the dlcservice error handler with
-    // PluginVmInstaller.
-    LOG(ERROR) << "Couldn't intall PluginVM DLC after import: "
-               << install_result.error;
-    LaunchFailed();
-  }
-}
 
 void PluginVmManagerImpl::OnListVmsForLaunch(bool default_vm_exists) {
   if (!default_vm_exists) {

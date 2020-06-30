@@ -74,7 +74,7 @@ bool WebBundleInterceptorForFile::MaybeCreateLoaderForResponse(
 
 void WebBundleInterceptorForFile::OnMetadataReady(
     const network::ResourceRequest& request,
-    data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error) {
+    web_package::mojom::BundleMetadataParseErrorPtr metadata_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (metadata_error) {
     web_bundle_utils::CompleteWithInvalidWebBundleError(

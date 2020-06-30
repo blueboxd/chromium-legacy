@@ -2222,6 +2222,52 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
             *policy_service->GetPolicies(ns).GetValue("string"));
 }
 
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginWarningShown) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  ExpandPublicSessionPod(false);
+
+  // Click the link that switches the pod to its advanced form. Verify that the
+  // pod switches from basic to advanced.
+  ash::LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton();
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced());
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsPublicSessionWarningShown());
+}
+
+class DeviceLocalAccountWarnings : public DeviceLocalAccountTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    DeviceLocalAccountTest::SetUpInProcessBrowserTestFixture();
+    SetManagedSessionsWarningDisabled();
+  }
+
+  void SetManagedSessionsWarningDisabled() {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    em::ManagedGuestSessionPrivacyWarningsProto* managed_sessions_warnings =
+        proto.mutable_managed_guest_session_privacy_warnings();
+    managed_sessions_warnings->set_enabled(false);
+    RefreshDevicePolicy();
+    ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountWarnings, NoLoginWarningShown) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  ExpandPublicSessionPod(false);
+
+  // Click the link that switches the pod to its advanced form. Verify that the
+  // pod switches from basic to advanced.
+  ash::LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton();
+  ASSERT_TRUE(ash::LoginScreenTestApi::IsExpandedPublicSessionAdvanced());
+  ASSERT_FALSE(ash::LoginScreenTestApi::IsPublicSessionWarningShown());
+}
+
 class ManagedSessionsTest : public DeviceLocalAccountTest {
  protected:
   class CertsObserver : public chromeos::PolicyCertificateProvider::Observer {

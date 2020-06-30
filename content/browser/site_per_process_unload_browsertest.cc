@@ -1350,7 +1350,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       WebContents::FromRenderFrameHost(web_contents()->GetMainFrame()));
 
   // All the documents must be properly deleted:
-  if (CreateNewHostForSameSiteSubframe())
+  if (ShouldCreateNewHostForSameSiteSubframe())
     delete_B2.WaitUntilDeleted();
   delete_B3.WaitUntilDeleted();
   delete_C4.WaitUntilDeleted();

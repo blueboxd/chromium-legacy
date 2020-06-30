@@ -239,7 +239,7 @@ void BookmarkAppIconManager::ReadAllShortcutsMenuIcons(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(ReadShortcutsMenuIconsBlocking, img_reps),
+      base::BindOnce(ReadShortcutsMenuIconsBlocking, std::move(img_reps)),
       std::move(callback));
 }
 

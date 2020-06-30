@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
@@ -25,11 +26,13 @@
 #include "components/payments/core/url_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/gfx/image/image.h"
 #include "url/url_canon.h"
 
 namespace payments {
@@ -270,13 +273,14 @@ class SelfDeletingServiceWorkerPaymentAppFinder
 
   void OnPaymentAppsCrawled(
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info,
-      std::map<GURL, std::unique_ptr<SkBitmap>> refetched_icons,
+      std::map<GURL, std::unique_ptr<RefetchedIcon>> refetched_icons,
       const std::string& error_message) {
     if (first_error_message_.empty())
       first_error_message_ = error_message;
 
     for (auto& refetched_icon : refetched_icons) {
       GURL web_app_manifest_url = refetched_icon.first;
+      RefetchedIcon* data = refetched_icon.second.get();
       for (auto& app : installed_apps_) {
         // It is possible (unlikely) to have multiple apps with same origins.
         // The proper validation is to store web_app_manifest_url in
@@ -284,15 +288,46 @@ class SelfDeletingServiceWorkerPaymentAppFinder
         // web_app_manifest_url from which icon is fetched.
         if (crawler_->IsSameOriginWith(GURL(app.second->scope),
                                        web_app_manifest_url)) {
-          // TODO(crbug.com/1069010): Update the payment app database with the
-          // new icon.
-          app.second->icon = std::move(refetched_icon.second);
+          UpdatePaymentAppIcon(app.second, data->icon, data->method_name);
+          app.second->icon = std::move(data->icon);
           break;
         }
       }
     }
     std::move(callback_).Run(std::move(installed_apps_), std::move(apps_info),
                              first_error_message_);
+  }
+
+  void UpdatePaymentAppIcon(
+      const std::unique_ptr<content::StoredPaymentApp>& app,
+      const std::unique_ptr<SkBitmap>& icon,
+      const std::string& method_name) {
+    number_of_app_icons_to_update_++;
+
+    DCHECK(!icon->empty());
+    std::string string_encoded_icon;
+    gfx::Image decoded_image = gfx::Image::CreateFrom1xBitmap(*(icon));
+    scoped_refptr<base::RefCountedMemory> raw_data =
+        decoded_image.As1xPNGBytes();
+    base::Base64Encode(
+        base::StringPiece(raw_data->front_as<char>(), raw_data->size()),
+        &string_encoded_icon);
+
+    auto* browser_context =
+        static_cast<content::WebContents*>(owner_)->GetBrowserContext();
+    content::PaymentAppProvider::GetInstance()->UpdatePaymentAppIcon(
+        browser_context, app->registration_id, app->scope.spec(), app->name,
+        string_encoded_icon, method_name, app->supported_delegations,
+        base::BindOnce(
+            &SelfDeletingServiceWorkerPaymentAppFinder::OnUpdatePaymentAppIcon,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnUpdatePaymentAppIcon(payments::mojom::PaymentHandlerStatus status) {
+    DCHECK(number_of_app_icons_to_update_ > 0);
+    number_of_app_icons_to_update_--;
+    if (number_of_app_icons_to_update_ == 0)
+      FinishUsingResourcesIfReady();
   }
 
   void OnPaymentAppsCrawlerFinishedUsingResources() {
@@ -312,7 +347,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder
   void FinishUsingResourcesIfReady() {
     if (is_payment_verifier_finished_using_resources_ &&
         is_payment_app_crawler_finished_using_resources_ &&
-        !finished_using_resources_callback_.is_null()) {
+        !finished_using_resources_callback_.is_null() &&
+        number_of_app_icons_to_update_ == 0) {
       downloader_.reset();
       parser_.reset();
       std::move(finished_using_resources_callback_).Run();
@@ -347,6 +383,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder
   bool ignore_port_in_origin_comparison_for_testing_ = false;
 
   content::PaymentAppProvider::PaymentApps installed_apps_;
+
+  size_t number_of_app_icons_to_update_ = 0;
 
   base::WeakPtrFactory<SelfDeletingServiceWorkerPaymentAppFinder>
       weak_ptr_factory_{this};

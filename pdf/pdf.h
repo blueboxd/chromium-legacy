@@ -25,7 +25,7 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 namespace gfx {
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace chrome_pdf {
 

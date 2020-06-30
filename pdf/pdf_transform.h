@@ -9,7 +9,7 @@ namespace gfx {
 class PointF;
 class Rect;
 class SizeF;
-}
+}  // namespace gfx
 
 namespace chrome_pdf {
 

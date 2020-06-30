@@ -517,8 +517,10 @@ testcase.transferDragAndDrop = async () => {
       'fakeMouseClick failed');
 
   // Drag and drop it.
+  const skipDrop = false;
   chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('fakeDragAndDrop', appId, [src, dst]),
+      await remoteCall.callRemoteTestUtil(
+          'fakeDragAndDrop', appId, [src, dst, skipDrop]),
       'fakeDragAndDrop failed');
 
   // Navigate to the dst folder.

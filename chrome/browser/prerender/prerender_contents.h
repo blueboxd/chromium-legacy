@@ -293,7 +293,8 @@ class PrerenderContents : public content::NotificationObserver,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
   // prerender::mojom::PrerenderCanceler:
-  void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
+  void CancelPrerenderForUnsupportedScheme() override;
+  void CancelPrerenderForNoStatePrefetch() override;
 
   mojo::ReceiverSet<prerender::mojom::PrerenderCanceler>
       prerender_canceler_receiver_set_;

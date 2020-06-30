@@ -403,6 +403,8 @@ var OSSettingsAppManagementPluginVmDetailViewTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'app_management/test_plugin_vm_browser_proxy.js',
       'app_management/plugin_vm_detail_view_test.js',
     ]);
   }

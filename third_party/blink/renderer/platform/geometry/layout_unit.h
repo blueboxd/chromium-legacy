@@ -133,6 +133,12 @@ class LayoutUnit {
     return v;
   }
 
+  static LayoutUnit FromRawValue(int raw_value) {
+    LayoutUnit v;
+    v.value_ = raw_value;
+    return v;
+  }
+
   constexpr int ToInt() const { return value_ / kFixedPointDenominator; }
   constexpr float ToFloat() const {
     return static_cast<float>(value_) / kFixedPointDenominator;

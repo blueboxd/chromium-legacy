@@ -149,7 +149,7 @@ WebBundleReader::WebBundleReader(
     : source_(std::move(source)),
       parser_(std::make_unique<data_decoder::SafeWebBundleParser>()) {
   DCHECK(source_->is_network());
-  mojo::PendingRemote<data_decoder::mojom::BundleDataSource> pending_remote;
+  mojo::PendingRemote<web_package::mojom::BundleDataSource> pending_remote;
   blob_data_source_ = std::make_unique<WebBundleBlobDataSource>(
       content_length, std::move(outer_response_body), std::move(endpoints),
       std::move(blob_context_getter));
@@ -191,12 +191,12 @@ void WebBundleReader::ReadResponse(
         FROM_HERE,
         base::BindOnce(
             std::move(callback), nullptr,
-            data_decoder::mojom::BundleResponseParseError::New(
-                data_decoder::mojom::BundleParseErrorType::kParserInternalError,
+            web_package::mojom::BundleResponseParseError::New(
+                web_package::mojom::BundleParseErrorType::kParserInternalError,
                 "Not found in Web Bundle file.")));
     return;
   }
-  const data_decoder::mojom::BundleIndexValuePtr& entry = it->second;
+  const web_package::mojom::BundleIndexValuePtr& entry = it->second;
 
   size_t response_index = 0;
   if (!entry->variants_value.empty()) {
@@ -209,8 +209,8 @@ void WebBundleReader::ReadResponse(
           FROM_HERE,
           base::BindOnce(
               std::move(callback), nullptr,
-              data_decoder::mojom::BundleResponseParseError::New(
-                  data_decoder::mojom::BundleParseErrorType::
+              web_package::mojom::BundleResponseParseError::New(
+                  web_package::mojom::BundleParseErrorType::
                       kParserInternalError,
                   "Cannot find a response that matches request headers.")));
       return;
@@ -232,7 +232,7 @@ void WebBundleReader::ReadResponse(
 }
 
 void WebBundleReader::ReadResponseInternal(
-    data_decoder::mojom::BundleResponseLocationPtr location,
+    web_package::mojom::BundleResponseLocationPtr location,
     ResponseCallback callback) {
   parser_->ParseResponse(
       location->offset, location->length,
@@ -251,7 +251,7 @@ void WebBundleReader::Reconnect() {
     return;
   }
   DCHECK(source_->is_network());
-  mojo::PendingRemote<data_decoder::mojom::BundleDataSource> pending_remote;
+  mojo::PendingRemote<web_package::mojom::BundleDataSource> pending_remote;
   blob_data_source_->AddReceiver(
       pending_remote.InitWithNewPipeAndPassReceiver());
   parser_->OpenDataSource(std::move(pending_remote));
@@ -281,8 +281,8 @@ void WebBundleReader::DidReconnect(base::Optional<std::string> error) {
       base::ThreadPool::PostTask(
           FROM_HERE,
           base::BindOnce(std::move(pair.second), nullptr,
-                         data_decoder::mojom::BundleResponseParseError::New(
-                             data_decoder::mojom::BundleParseErrorType::
+                         web_package::mojom::BundleResponseParseError::New(
+                             web_package::mojom::BundleParseErrorType::
                                  kParserInternalError,
                              *error)));
     }
@@ -297,7 +297,7 @@ void WebBundleReader::DidReconnect(base::Optional<std::string> error) {
 }
 
 void WebBundleReader::ReadResponseBody(
-    data_decoder::mojom::BundleResponsePtr response,
+    web_package::mojom::BundleResponsePtr response,
     mojo::ScopedDataPipeProducerHandle producer_handle,
     BodyCompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -355,8 +355,8 @@ void WebBundleReader::ReadMetadataInternal(MetadataCallback callback,
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
-            data_decoder::mojom::BundleMetadataParseError::New(
-                data_decoder::mojom::BundleParseErrorType::kParserInternalError,
+            web_package::mojom::BundleMetadataParseError::New(
+                web_package::mojom::BundleParseErrorType::kParserInternalError,
                 GURL() /* fallback_url */, base::File::ErrorToString(error))));
   } else {
     parser_->ParseMetadata(base::BindOnce(&WebBundleReader::OnMetadataParsed,
@@ -367,8 +367,8 @@ void WebBundleReader::ReadMetadataInternal(MetadataCallback callback,
 
 void WebBundleReader::OnMetadataParsed(
     MetadataCallback callback,
-    data_decoder::mojom::BundleMetadataPtr metadata,
-    data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    web_package::mojom::BundleMetadataPtr metadata,
+    web_package::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kInitial);
 
@@ -385,8 +385,8 @@ void WebBundleReader::OnMetadataParsed(
 
 void WebBundleReader::OnResponseParsed(
     ResponseCallback callback,
-    data_decoder::mojom::BundleResponsePtr response,
-    data_decoder::mojom::BundleResponseParseErrorPtr error) {
+    web_package::mojom::BundleResponsePtr response,
+    web_package::mojom::BundleResponseParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(state_, State::kInitial);
 

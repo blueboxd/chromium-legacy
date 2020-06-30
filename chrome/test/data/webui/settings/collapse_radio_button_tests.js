@@ -5,7 +5,6 @@
 // clang-format off
 import 'chrome://settings/lazy_load.js';
 
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {isChildVisible} from 'chrome://test/test_util.m.js';
 
@@ -90,17 +89,6 @@ suite('CrCollapseRadioButton', function() {
     assertTrue(collapse.opened);
   });
 
-  test('displayPolicyIndicator', function() {
-    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
-    assertEquals(
-        collapseRadioButton.policyIndicatorType, CrPolicyIndicatorType.NONE);
-
-    collapseRadioButton.policyIndicatorType =
-        CrPolicyIndicatorType.DEVICE_POLICY;
-    flush();
-    assertTrue(isChildVisible(collapseRadioButton, '#policyIndicator'));
-  });
-
   test('respectPreferenceState', function() {
     const togglePrefValue = 'pref_value';
     collapseRadioButton.name = togglePrefValue;
@@ -135,26 +123,5 @@ suite('CrCollapseRadioButton', function() {
     collapseRadioButton.set('pref.recommendedValue', togglePrefValue);
     assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
     assertFalse(collapseRadioButton.disabled);
-  });
-
-  test('singlePolicyIndicator', function() {
-    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
-    assertFalse(
-        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
-
-    collapseRadioButton.policyIndicatorType =
-        CrPolicyIndicatorType.DEVICE_POLICY;
-    flush();
-    assertTrue(isChildVisible(collapseRadioButton, '#policyIndicator'));
-    assertFalse(
-        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
-
-    collapseRadioButton.pref = {
-      enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-      controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
-    };
-    flush();
-    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
-    assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
   });
 });

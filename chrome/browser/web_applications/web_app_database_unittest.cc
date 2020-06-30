@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -32,6 +33,12 @@
 #include "url/gurl.h"
 
 namespace web_app {
+
+namespace {
+
+const int kIconSize = 64;
+
+}  // namespace
 
 class WebAppDatabaseTest : public WebAppTest {
  public:
@@ -87,6 +94,43 @@ class WebAppDatabaseTest : public WebAppTest {
     }
 
     return protocol_handlers;
+  }
+
+  static std::vector<WebApplicationShortcutsMenuItemInfo> CreateShortcutInfos(
+      const std::string& base_url,
+      int suffix) {
+    std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
+    for (unsigned int i = 0; i < 3; ++i) {
+      std::string suffix_str =
+          base::NumberToString(suffix) + base::NumberToString(i);
+      WebApplicationShortcutsMenuItemInfo shortcut_info;
+      shortcut_info.url = GURL(base_url + "/shortcut" + suffix_str);
+      shortcut_info.name = base::UTF8ToUTF16("shortcut" + suffix_str);
+      for (unsigned int j = 0; j < i; ++j) {
+        std::string icon_suffix_str = suffix_str + base::NumberToString(j);
+        WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon;
+        shortcut_icon.url =
+            GURL(base_url + "/shortcuts/icon" + icon_suffix_str);
+        shortcut_icon.square_size_px = kIconSize * (i + j);
+        shortcut_info.shortcut_icon_infos.emplace_back(
+            std::move(shortcut_icon));
+      }
+      shortcut_infos.emplace_back(std::move(shortcut_info));
+    }
+    return shortcut_infos;
+  }
+
+  static std::vector<std::vector<SquareSizePx>>
+  CreateDownloadedShortcutsMenuIconsSizes() {
+    std::vector<std::vector<SquareSizePx>> results;
+    for (unsigned int i = 0; i < 3; ++i) {
+      std::vector<SquareSizePx> result;
+      for (unsigned int j = 0; j < i; ++j) {
+        result.emplace_back(kIconSize * (i + j));
+      }
+      results.emplace_back(std::move(result));
+    }
+    return results;
   }
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
@@ -160,6 +204,10 @@ class WebAppDatabaseTest : public WebAppTest {
           "Foo_" + base::NumberToString(suffix) + "_" + base::NumberToString(i);
     }
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
+
+    app->SetShortcutInfos(CreateShortcutInfos(base_url, suffix));
+    app->SetDownloadedShortcutsMenuIconsSizes(
+        CreateDownloadedShortcutsMenuIconsSizes());
 
     if (IsChromeOs()) {
       auto chromeos_data = base::make_optional<WebAppChromeOsData>();
@@ -375,6 +423,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->protocol_handlers().empty());
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
+  EXPECT_TRUE(app->shortcut_infos().empty());
+  EXPECT_TRUE(app->downloaded_shortcuts_menu_icons_sizes().empty());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -423,6 +473,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->file_handlers().empty());
   EXPECT_TRUE(app_copy->additional_search_terms().empty());
   EXPECT_TRUE(app_copy->protocol_handlers().empty());
+  EXPECT_TRUE(app_copy->shortcut_infos().empty());
+  EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

@@ -53,10 +53,6 @@ PhysicalRect AdjustTextRectForEmHeight(const PhysicalRect& rect,
 // TODO(tkent): Rename this function. 'LogicalBottom' should not be used in NG.
 LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
                                      LayoutUnit default_value) {
-  const NGPhysicalFragment::TextHeightType height_type =
-      RuntimeEnabledFeatures::LayoutNGRubyEmHeightEnabled()
-          ? NGPhysicalFragment::kEmHeight
-          : NGPhysicalFragment::kNormalHeight;
   const ComputedStyle& container_style = container.Style();
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     if (!container.Items())
@@ -70,7 +66,8 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
     DCHECK(line_item->LineBoxFragment());
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor, height_type);
+            container, container_style, *line_item, cursor,
+            NGPhysicalFragment::kEmHeight);
     return container.ConvertChildToLogical(line_rect).BlockEndOffset();
   }
 
@@ -85,8 +82,8 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
   }
   if (!last_line)
     return default_value;
-  PhysicalRect line_rect =
-      last_line->ScrollableOverflow(container, container_style, height_type);
+  PhysicalRect line_rect = last_line->ScrollableOverflow(
+      container, container_style, NGPhysicalFragment::kEmHeight);
 
   line_rect.Move(last_line_offset);
   return container.ConvertChildToLogical(line_rect).BlockEndOffset();
@@ -95,10 +92,6 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
 // TODO(tkent): Rename this function. 'LogicalTop' should not be used in NG.
 LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
                                    LayoutUnit default_value) {
-  const NGPhysicalFragment::TextHeightType height_type =
-      RuntimeEnabledFeatures::LayoutNGRubyEmHeightEnabled()
-          ? NGPhysicalFragment::kEmHeight
-          : NGPhysicalFragment::kNormalHeight;
   const ComputedStyle& container_style = container.Style();
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     if (!container.Items())
@@ -112,14 +105,15 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
     DCHECK(line_item->LineBoxFragment());
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor, height_type);
+            container, container_style, *line_item, cursor,
+            NGPhysicalFragment::kEmHeight);
     return container.ConvertChildToLogical(line_rect).offset.block_offset;
   }
 
   for (const auto& child_link : container.PostLayoutChildren()) {
     if (const auto* line = DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
-      PhysicalRect line_rect =
-          line->ScrollableOverflow(container, container_style, height_type);
+      PhysicalRect line_rect = line->ScrollableOverflow(
+          container, container_style, NGPhysicalFragment::kEmHeight);
       line_rect.Move(child_link.offset);
       return container.ConvertChildToLogical(line_rect).offset.block_offset;
     }

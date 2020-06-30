@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   }
   EXPECT_EQ(initial_site_instance,
             child->current_frame_host()->GetSiteInstance());
-  if (CreateNewHostForSameSiteSubframe()) {
+  if (ShouldCreateNewHostForSameSiteSubframe()) {
     EXPECT_NE(initial_web_ui, child->current_frame_host()->web_ui());
   } else {
     EXPECT_EQ(initial_web_ui, child->current_frame_host()->web_ui());
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   }
   EXPECT_EQ(second_site_instance,
             child->current_frame_host()->GetSiteInstance());
-  if (CreateNewHostForSameSiteSubframe()) {
+  if (ShouldCreateNewHostForSameSiteSubframe()) {
     EXPECT_NE(second_web_ui, child->current_frame_host()->web_ui());
   } else {
     EXPECT_EQ(second_web_ui, child->current_frame_host()->web_ui());

@@ -64,7 +64,7 @@ enum class RenderDocumentLevel {
   // Also do not reuse RenderFrameHosts when navigating subframes.
   kSubframe = 2,
 };
-CONTENT_EXPORT bool CreateNewHostForSameSiteSubframe();
+CONTENT_EXPORT bool ShouldCreateNewHostForSameSiteSubframe();
 CONTENT_EXPORT RenderDocumentLevel GetRenderDocumentLevel();
 CONTENT_EXPORT std::string GetRenderDocumentLevelName(
     RenderDocumentLevel level);

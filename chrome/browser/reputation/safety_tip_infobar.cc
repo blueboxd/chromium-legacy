@@ -26,7 +26,7 @@ SafetyTipInfoBar::~SafetyTipInfoBar() {}
 
 SafetyTipInfoBar::SafetyTipInfoBar(
     std::unique_ptr<SafetyTipInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 ScopedJavaLocalRef<jobject> SafetyTipInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   ScopedJavaLocalRef<jstring> ok_button_text =

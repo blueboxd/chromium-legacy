@@ -57,7 +57,11 @@ class MODULES_EXPORT MediaStreamTrack
   MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
   MediaStreamTrack(ExecutionContext*,
                    MediaStreamComponent*,
-                   MediaStreamSource::ReadyState);
+                   base::OnceClosure callback);
+  MediaStreamTrack(ExecutionContext*,
+                   MediaStreamComponent*,
+                   MediaStreamSource::ReadyState,
+                   base::OnceClosure callback);
   ~MediaStreamTrack() override;
 
   String kind() const;

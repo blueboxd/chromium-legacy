@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_promo_infobar_delegate_android.h"
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 
-class DataReductionPromoInfoBar : public ConfirmInfoBar {
+class DataReductionPromoInfoBar : public ChromeConfirmInfoBar {
  public:
   explicit DataReductionPromoInfoBar(
       std::unique_ptr<DataReductionPromoInfoBarDelegateAndroid> delegate);

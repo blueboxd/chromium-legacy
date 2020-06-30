@@ -27,7 +27,7 @@ KnownInterceptionDisclosureInfoBar::CreateInfoBar(
 
 KnownInterceptionDisclosureInfoBar::KnownInterceptionDisclosureInfoBar(
     std::unique_ptr<KnownInterceptionDisclosureInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 ScopedJavaLocalRef<jobject>
 KnownInterceptionDisclosureInfoBar::CreateRenderInfoBar(JNIEnv* env) {

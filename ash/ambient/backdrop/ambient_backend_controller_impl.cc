@@ -352,13 +352,10 @@ void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
     return;
   }
 
-  // Comment this to land the public first.
-  // TODO: Will uncomment when the internal code landed.
-  BackdropClientConfig::Request request;
-  //  BackdropClientConfig::Request request =
-  //      backdrop_client_config_.CreateFetchPersonalAlbumsRequest(
-  //          banner_width, banner_height, num_albums, resume_token, gaia_id,
-  //          access_token);
+  BackdropClientConfig::Request request =
+      backdrop_client_config_.CreateFetchPersonalAlbumsRequest(
+          banner_width, banner_height, num_albums, resume_token, gaia_id,
+          access_token);
   std::unique_ptr<network::ResourceRequest> resource_request =
       CreateResourceRequest(request);
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
@@ -380,12 +377,9 @@ void AmbientBackendControllerImpl::OnPersonalAlbumsFetched(
   // Parse the |PersonalAlbumsResponse| out from the response string.
   // Note that the |personal_albums| can be a dummy instance if the parsing has
   // failed.
-  // Comment this to land the public first.
-  // TODO: Will uncomment when the internal code landed.
-  ash::PersonalAlbums personal_albums;
-  //  ash::PersonalAlbums personal_albums =
-  //      BackdropClientConfig::ParsePersonalAlbumsResponse(*response);
-  std::move(callback).Run(personal_albums);
+  ash::PersonalAlbums personal_albums =
+      BackdropClientConfig::ParsePersonalAlbumsResponse(*response);
+  std::move(callback).Run(std::move(personal_albums));
 }
 
 }  // namespace ash

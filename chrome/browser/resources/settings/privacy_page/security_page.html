@@ -61,18 +61,16 @@
     </picture>
     <div id="safeBrowsingSection">
       <h2>$i18n{safeBrowsingSectionLabel}</h2>
-      <cr-radio-group id="safeBrowsingRadio"
-          selected="[[selectSafeBrowsingRadio_]]"
+      <settings-radio-group id="safeBrowsingRadioGroup" no-set-pref
+          pref="{{prefs.generated.safe_browsing}}"
           selectable-elements="cr-radio-button, settings-collapse-radio-button"
-          on-selected-changed="onSafeBrowsingRadioChange_">
-        <settings-collapse-radio-button name="[[safeBrowsingEnum_.ENHANCED]]"
-            id="safeBrowsingEnhanced"
+          on-change="onSafeBrowsingRadioChange_">
+        <settings-collapse-radio-button id="safeBrowsingEnhanced"
+            name="[[safeBrowsingSettingEnum_.ENHANCED]]"
+            pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingEnhanced}"
             sub-label="$i18n{safeBrowsingEnhancedDesc}"
-            hidden="[[!safeBrowsingEnhancedEnabled_]]"
-            disabled="[[safeBrowsingRadioManagedState_.enhanced.disabled]]"
-            policy-indicator-type=
-                "[[safeBrowsingRadioManagedState_.enhanced.indicator]]">
+            hidden="[[!safeBrowsingEnhancedEnabled_]]">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="cr:security"></iron-icon>
@@ -106,14 +104,12 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button name="[[safeBrowsingEnum_.STANDARD]]"
-            id="safeBrowsingStandard"
+        <settings-collapse-radio-button id="safeBrowsingStandard"
+            name="[[safeBrowsingSettingEnum_.STANDARD]]"
+            pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingStandard}"
             sub-label="$i18n{safeBrowsingStandardDesc}"
-            info-opened="{{infoOpened_}}"
-            disabled="[[safeBrowsingRadioManagedState_.standard.disabled]]"
-            policy-indicator-type=
-                "[[safeBrowsingRadioManagedState_.standard.indicator]]">
+            info-opened="{{infoOpened_}}">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="cr:security"></iron-icon>
@@ -134,8 +130,8 @@
                 label="$i18n{safeBrowsingStandardReportingLabel}"
                 sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
                 on-change="onSafeBrowsingExtendedReportingChange_"
-                disabled="[[
-                    getDisabledExtendedSafeBrowsing_(prefs.safebrowsing.*)]]">
+                disabled="[[getDisabledExtendedSafeBrowsing_(
+                              prefs.generated.safe_browsing.*)]]">
             </settings-toggle-button>
             <settings-passwords-leak-detection-toggle id="passwordsLeakToggle"
                 class="collapsable"
@@ -144,13 +140,11 @@
             </settings-passwords-leak-detection-toggle>
           </div>
         </settings-collapse-radio-button>
-        <settings-collapse-radio-button name="[[safeBrowsingEnum_.DISABLED]]"
-            id="safeBrowsingDisabled" no-collapse
+        <settings-collapse-radio-button id="safeBrowsingDisabled" no-collapse
+            name="[[safeBrowsingSettingEnum_.DISABLED]]"
+            pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingNone}"
-            sub-label="$i18n{safeBrowsingNoneDesc}"
-            disabled="[[safeBrowsingRadioManagedState_.disabled.disabled]]"
-            policy-indicator-type=
-                "[[safeBrowsingRadioManagedState_.disabled.indicator]]">
+            sub-label="$i18n{safeBrowsingNoneDesc}">
         </settings-collapse-radio-button>
       </cr-radio-group>
     </div>

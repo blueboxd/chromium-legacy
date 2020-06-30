@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -195,6 +196,31 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
       for (const auto& file_extension : accept_entry.file_extensions)
         accept_entry_proto->add_file_extensions(file_extension);
+    }
+  }
+
+  for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
+       web_app.shortcut_infos()) {
+    WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
+        local_data->add_shortcut_infos();
+    shortcut_info_proto->set_name(base::UTF16ToUTF8(shortcut_info.name));
+    shortcut_info_proto->set_url(shortcut_info.url.spec());
+    for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
+         shortcut_info.shortcut_icon_infos) {
+      sync_pb::WebAppIconInfo* shortcut_icon_info_proto =
+          shortcut_info_proto->add_shortcut_icon_infos();
+      DCHECK(!icon_info.url.is_empty());
+      shortcut_icon_info_proto->set_url(icon_info.url.spec());
+      shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
+    }
+  }
+
+  for (const std::vector<SquareSizePx>& icon_sizes :
+       web_app.downloaded_shortcuts_menu_icons_sizes()) {
+    DownloadedShortcutsMenuIconSizesProto* icon_sizes_proto =
+        local_data->add_downloaded_shortcuts_menu_icons_sizes();
+    for (const SquareSizePx& icon_size : icon_sizes) {
+      icon_sizes_proto->add_icon_sizes(icon_size);
     }
   }
 
@@ -393,6 +419,36 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     file_handlers.push_back(std::move(file_handler));
   }
   web_app->SetFileHandlers(std::move(file_handlers));
+
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
+  for (const auto& shortcut_info_proto : local_data.shortcut_infos()) {
+    WebApplicationShortcutsMenuItemInfo shortcut_info;
+    shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
+    shortcut_info.url = GURL(shortcut_info_proto.url());
+    for (const auto& icon_info_proto :
+         shortcut_info_proto.shortcut_icon_infos()) {
+      WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
+      shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
+      shortcut_icon_info.url = GURL(icon_info_proto.url());
+      shortcut_info.shortcut_icon_infos.emplace_back(
+          std::move(shortcut_icon_info));
+    }
+    shortcut_infos.emplace_back(std::move(shortcut_info));
+  }
+  web_app->SetShortcutInfos(std::move(shortcut_infos));
+
+  std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
+  for (const auto& shortcuts_icon_sizes_proto :
+       local_data.downloaded_shortcuts_menu_icons_sizes()) {
+    std::vector<SquareSizePx> shortcuts_menu_icon_sizes;
+    for (const auto& icon_size : shortcuts_icon_sizes_proto.icon_sizes()) {
+      shortcuts_menu_icon_sizes.emplace_back(icon_size);
+    }
+    shortcuts_menu_icons_sizes.emplace_back(
+        std::move(shortcuts_menu_icon_sizes));
+  }
+  web_app->SetDownloadedShortcutsMenuIconsSizes(
+      std::move(shortcuts_menu_icons_sizes));
 
   std::vector<std::string> additional_search_terms;
   for (const std::string& additional_search_term :

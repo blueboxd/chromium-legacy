@@ -29,11 +29,6 @@ specific_include_rules = {
   "test_extension_system.cc": [
     "+services/data_decoder",
   ],
-  "cross_origin_read_blocking_browsertest.cc": [
-    # Mostly for helping the test verify UMA values from
-    # network::CrossOriginReadBlocking::Action enum.
-    "+services/network/cross_origin_read_blocking.h"
-  ],
   "webstore_private_apitest.cc" : [
     # TODO(crbug/1095814): Remove this layering violation.
     "+chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h",

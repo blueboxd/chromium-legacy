@@ -25,8 +25,8 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const std::string& display_name,
     const std::string& device_id,
     VideoCaptureApi capture_api,
-    VideoCaptureTransportType transport_type,
-    const base::Optional<bool>& pan_tilt_zoom_supported)
+    bool pan_tilt_zoom_supported,
+    VideoCaptureTransportType transport_type)
     : device_id(device_id),
       facing(VideoFacingMode::MEDIA_VIDEO_FACING_NONE),
       capture_api(capture_api),
@@ -39,9 +39,9 @@ VideoCaptureDeviceDescriptor::VideoCaptureDeviceDescriptor(
     const std::string& device_id,
     const std::string& model_id,
     VideoCaptureApi capture_api,
+    bool pan_tilt_zoom_supported,
     VideoCaptureTransportType transport_type,
-    VideoFacingMode facing,
-    const base::Optional<bool>& pan_tilt_zoom_supported)
+    VideoFacingMode facing)
     : device_id(device_id),
       model_id(model_id),
       facing(facing),

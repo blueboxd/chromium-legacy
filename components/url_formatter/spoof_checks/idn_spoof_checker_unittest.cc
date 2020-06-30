@@ -153,6 +153,8 @@ const IDNTestCase kIdnCases[] = {
     {"xn--0-6ee.com", L"੨0.com", kUnsafe},
     // Block fully numeric lookalikes (৪੨.com using U+09EA and U+0A68).
     {"xn--47b6w.com", L"৪੨.com", kUnsafe},
+    // Block single script digit lookalikes (using three U+0A68 characters).
+    {"xn--qccaa.com", L"੨੨੨.com", kUnsafe},
 
     // URL test with mostly numbers and one confusable character
     // Georgian 'd' 4000.com

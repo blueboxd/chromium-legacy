@@ -45,23 +45,13 @@
     }
   }
 
-  async function getTrackSetting(settingName) {
-    // |videoTrack|s settings retrieval is a process kicked right after
-    // creation, we introduce a small delay to allow for those to be collected.
-    // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-    await waitForImageCapture;
-
+  function getTrackSetting(settingName) {
     const videoTrack = stream.getVideoTracks()[0];
     const settings = videoTrack.getSettings();
     returnToTest(settings[settingName]);
   }
 
-  async function checkConstraints(expectedConstraints) {
-    // |videoTrack|s constraints retrieval is a process kicked right after
-    // creation, we introduce a small delay to allow for those to be collected.
-    // TODO(mcasas): this shouldn't be needed, https://crbug.com/711524.
-    await waitForImageCapture;
-
+  function checkConstraints(expectedConstraints) {
     const videoTrack = stream.getVideoTracks()[0];
     const constraints = videoTrack.getConstraints();
 

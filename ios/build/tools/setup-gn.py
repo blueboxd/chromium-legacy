@@ -307,6 +307,9 @@ def Main(args):
   parser.add_argument(
       '--gn-path', default=None,
       help='path to gn binary (default: look up in $PATH)')
+  parser.add_argument(
+      '--build-dir', default='out',
+      help='path where the build should be created (default: %(default)s)')
   args = parser.parse_args(args)
 
   # Load configuration (first global and then any user overrides).
@@ -340,7 +343,7 @@ def Main(args):
       sys.stderr.write('ERROR: cannot find gn in PATH\n')
       sys.exit(1)
 
-  out_dir = os.path.join(args.root, 'out')
+  out_dir = os.path.join(args.root, args.build_dir)
   if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 

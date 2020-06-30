@@ -55,18 +55,18 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
       const std::string& display_name,
       const std::string& device_id,
       VideoCaptureApi capture_api = VideoCaptureApi::UNKNOWN,
+      bool pan_tilt_zoom_supported = false,
       VideoCaptureTransportType transport_type =
-          VideoCaptureTransportType::OTHER_TRANSPORT,
-      const base::Optional<bool>& pan_tilt_zoom_supported = base::nullopt);
+          VideoCaptureTransportType::OTHER_TRANSPORT);
   VideoCaptureDeviceDescriptor(
       const std::string& display_name,
       const std::string& device_id,
       const std::string& model_id,
       VideoCaptureApi capture_api,
+      bool pan_tilt_zoom_supported,
       VideoCaptureTransportType transport_type =
           VideoCaptureTransportType::OTHER_TRANSPORT,
-      VideoFacingMode facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
-      const base::Optional<bool>& pan_tilt_zoom_supported = base::nullopt);
+      VideoFacingMode facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE);
   VideoCaptureDeviceDescriptor(const VideoCaptureDeviceDescriptor& other);
   ~VideoCaptureDeviceDescriptor();
 
@@ -86,9 +86,7 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
   const std::string& display_name() const { return display_name_; }
   void set_display_name(const std::string& name);
 
-  const base::Optional<bool>& pan_tilt_zoom_supported() const {
-    return pan_tilt_zoom_supported_;
-  }
+  bool pan_tilt_zoom_supported() const { return pan_tilt_zoom_supported_; }
   void set_pan_tilt_zoom_supported(bool supported) {
     pan_tilt_zoom_supported_ = supported;
   }
@@ -106,7 +104,7 @@ struct CAPTURE_EXPORT VideoCaptureDeviceDescriptor {
 
  private:
   std::string display_name_;  // Name that is intended for display in the UI
-  base::Optional<bool> pan_tilt_zoom_supported_;
+  bool pan_tilt_zoom_supported_ = false;
 };
 
 using VideoCaptureDeviceDescriptors = std::vector<VideoCaptureDeviceDescriptor>;

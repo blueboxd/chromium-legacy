@@ -21,7 +21,7 @@ using base::android::ScopedJavaLocalRef;
 AutofillCreditCardFillingInfoBar::AutofillCreditCardFillingInfoBar(
     std::unique_ptr<autofill::AutofillCreditCardFillingInfoBarDelegateMobile>
         delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 AutofillCreditCardFillingInfoBar::~AutofillCreditCardFillingInfoBar() {}
 

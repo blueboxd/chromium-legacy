@@ -10,4 +10,31 @@ PluginVmManager::PluginVmManager() = default;
 
 PluginVmManager::~PluginVmManager() = default;
 
+bool PluginVmManager::GetPermission(PermissionType permission_type) {
+  auto it = permissions_.find(permission_type);
+  DCHECK(it != permissions_.end());
+  return it->second;
+}
+
+void PluginVmManager::SetPermission(PermissionType permission_type,
+                                    bool value) {
+  auto it = permissions_.find(permission_type);
+  DCHECK(it != permissions_.end());
+  if (it->second == value) {
+    return;
+  }
+  it->second = value;
+  for (auto& observer : plugin_vm_permissions_observers_) {
+    observer.OnPluginVmPermissionsChanged(permission_type, value);
+  }
+}
+void PluginVmManager::AddPluginVmPermissionsObserver(
+    PluginVmPermissionsObserver* observer) {
+  plugin_vm_permissions_observers_.AddObserver(observer);
+}
+void PluginVmManager::RemovePluginVmPermissionsObserver(
+    PluginVmPermissionsObserver* observer) {
+  plugin_vm_permissions_observers_.RemoveObserver(observer);
+}
+
 }  // namespace plugin_vm

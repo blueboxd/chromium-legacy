@@ -68,6 +68,9 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
   source->AddBoolean(
       "HelpAppReleaseNotes",
       base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes));
+  source->AddBoolean("HelpAppSearchServiceIntegration",
+                     base::FeatureList::IsEnabled(
+                         chromeos::features::kHelpAppSearchServiceIntegration));
 
   Profile* profile = Profile::FromWebUI(web_ui_);
   PrefService* pref_service = profile->GetPrefs();

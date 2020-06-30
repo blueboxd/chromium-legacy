@@ -707,9 +707,8 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(
                 VideoCaptureDeviceMFWin::IsPanTiltZoomSupported(
                     std::move(source));
             device_descriptors->emplace_back(display_name, device_id, model_id,
-                                             api_attributes.first);
-            device_descriptors->back().set_pan_tilt_zoom_supported(
-                pan_tilt_zoom_supported);
+                                             api_attributes.first,
+                                             pan_tilt_zoom_supported);
           }
         }
       }
@@ -808,9 +807,8 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsDirectShow(
             std::move(capture_filter));
 
     device_descriptors->emplace_back(device_name, id, model_id,
-                                     VideoCaptureApi::WIN_DIRECT_SHOW);
-    device_descriptors->back().set_pan_tilt_zoom_supported(
-        pan_tilt_zoom_supported);
+                                     VideoCaptureApi::WIN_DIRECT_SHOW,
+                                     pan_tilt_zoom_supported);
   }
 }
 

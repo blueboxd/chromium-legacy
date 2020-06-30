@@ -74,6 +74,7 @@ enum Subpage {
   // Personalization section.
   kChangePicture = 500,
   kAmbientMode = 501,
+  kAmbientModePhotos= 502,
 
   // Search and Assistant section.
   kAssistant = 600,
@@ -171,6 +172,7 @@ const string kPowerSubpagePath = "power";
 const string kPersonalizationSectionPath = "personalization";
 const string kChangePictureSubpagePath = "changePicture";
 const string kAmbientModeSubpagePath = "ambientMode";
+const string kAmbientModePhotosSubpagePath = "ambientMode/photos";
 
 // Search and Assistant section.
 const string kSearchAndAssistantSectionPath = "osSearch";

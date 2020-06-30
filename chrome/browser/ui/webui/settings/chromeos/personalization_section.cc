@@ -60,6 +60,7 @@ const std::vector<SearchConcept>& GetPersonalizationSearchConcepts() {
   return *tags;
 }
 
+// TODO(b/159766700): Add search concepts for |kAmbientModePhotosSubpagePath|.
 const std::vector<SearchConcept>& GetAmbientModeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_AMBIENT_MODE,
@@ -237,6 +238,19 @@ void PersonalizationSection::RegisterHierarchy(
   };
   RegisterNestedSettingBulk(mojom::Subpage::kAmbientMode, kAmbientModeSettings,
                             generator);
+
+  // Note: The subpage name in the UI is updated dynamically based on the topic
+  // source.
+  // TODO(b/159766700): Create a string for the page title and strings for the
+  // search.
+  generator->RegisterNestedSubpage(
+      IDS_OS_SETTINGS_AMBIENT_MODE_TITLE, mojom::Subpage::kAmbientModePhotos,
+      mojom::Subpage::kAmbientMode, mojom::SearchResultIcon::kWallpaper,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kAmbientModePhotosSubpagePath);
+  generator->RegisterNestedSetting(
+      mojom::Setting::kAmbientModeUpdatePhotosContainers,
+      mojom::Subpage::kAmbientModePhotos);
 }
 
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {

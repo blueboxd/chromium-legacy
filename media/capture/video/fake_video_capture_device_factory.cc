@@ -219,8 +219,8 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
 #elif defined(OS_FUCHSIA)
         VideoCaptureApi::UNKNOWN,
 #endif
-        VideoCaptureTransportType::OTHER_TRANSPORT,
-        entry.photo_device_config.pan_tilt_zoom_supported);
+        entry.photo_device_config.pan_tilt_zoom_supported,
+        VideoCaptureTransportType::OTHER_TRANSPORT);
     entry_index++;
   }
 }

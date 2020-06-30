@@ -119,6 +119,7 @@ class MODULES_EXPORT UserMediaRequest final
   void Start();
 
   void Succeed(MediaStreamDescriptor*);
+  void OnMediaStreamInitialized(MediaStream* stream);
   void FailConstraint(const String& constraint_name, const String& message);
   void Fail(Error name, const String& message);
 

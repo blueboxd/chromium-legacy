@@ -21,7 +21,6 @@
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
 
@@ -61,40 +60,6 @@ class MockConnectionManager : public ServerConnectionManager {
   // (e.g. with SyncShare.) It allows to add further entity properties before
   // sync, using SetLastXXX() methods and/or GetMutableLastUpdate().
   sync_pb::SyncEntity* AddUpdateDirectory(
-      syncable::Id id,
-      syncable::Id parent_id,
-      const std::string& name,
-      int64_t version,
-      int64_t sync_ts,
-      const std::string& originator_cache_guid,
-      const std::string& originator_client_item_id);
-  sync_pb::SyncEntity* AddUpdateBookmark(
-      syncable::Id id,
-      syncable::Id parent_id,
-      const std::string& name,
-      int64_t version,
-      int64_t sync_ts,
-      const std::string& originator_cache_guid,
-      const std::string& originator_client_item_id);
-  // Versions of the AddUpdate functions that accept integer IDs.
-  sync_pb::SyncEntity* AddUpdateDirectory(
-      int id,
-      int parent_id,
-      const std::string& name,
-      int64_t version,
-      int64_t sync_ts,
-      const std::string& originator_cache_guid,
-      const std::string& originator_client_item_id);
-  sync_pb::SyncEntity* AddUpdateBookmark(
-      int id,
-      int parent_id,
-      const std::string& name,
-      int64_t version,
-      int64_t sync_ts,
-      const std::string& originator_cache_guid,
-      const std::string& originator_client_item_id);
-  // New protocol versions of the AddUpdate functions.
-  sync_pb::SyncEntity* AddUpdateDirectory(
       const std::string& id,
       const std::string& parent_id,
       const std::string& name,
@@ -112,8 +77,8 @@ class MockConnectionManager : public ServerConnectionManager {
       const std::string& originator_client_item_id);
   // Versions of the AddUpdate function that accept specifics.
   sync_pb::SyncEntity* AddUpdateSpecifics(
-      int id,
-      int parent_id,
+      const std::string& id,
+      const std::string& parent_id,
       const std::string& name,
       int64_t version,
       int64_t sync_ts,
@@ -121,8 +86,8 @@ class MockConnectionManager : public ServerConnectionManager {
       int64_t position,
       const sync_pb::EntitySpecifics& specifics);
   sync_pb::SyncEntity* AddUpdateSpecifics(
-      int id,
-      int parent_id,
+      const std::string& id,
+      const std::string& parent_id,
       const std::string& name,
       int64_t version,
       int64_t sync_ts,
@@ -131,7 +96,7 @@ class MockConnectionManager : public ServerConnectionManager {
       const sync_pb::EntitySpecifics& specifics,
       const std::string& originator_cache_guid,
       const std::string& originator_client_item_id);
-  sync_pb::SyncEntity* SetNigori(int id,
+  sync_pb::SyncEntity* SetNigori(const std::string& id,
                                  int64_t version,
                                  int64_t sync_ts,
                                  const sync_pb::EntitySpecifics& specifics);
@@ -150,7 +115,7 @@ class MockConnectionManager : public ServerConnectionManager {
   // Add a deleted item.  Deletion records typically contain no
   // additional information beyond the deletion, and no specifics.
   // The server may send the originator fields.
-  void AddUpdateTombstone(const syncable::Id& id, ModelType type);
+  void AddUpdateTombstone(const std::string& id, ModelType type);
 
   void SetLastUpdateDeleted();
   void SetLastUpdateServerTag(const std::string& tag);
@@ -178,9 +143,9 @@ class MockConnectionManager : public ServerConnectionManager {
   void SetGUClientCommand(std::unique_ptr<sync_pb::ClientCommand> command);
   void SetCommitClientCommand(std::unique_ptr<sync_pb::ClientCommand> command);
 
-  void SetTransientErrorId(syncable::Id);
+  void SetTransientErrorId(const std::string&);
 
-  const std::vector<syncable::Id>& committed_ids() const {
+  const std::vector<std::string>& committed_ids() const {
     return committed_ids_;
   }
   const std::vector<std::unique_ptr<sync_pb::CommitMessage>>& commit_messages()
@@ -269,12 +234,6 @@ class MockConnectionManager : public ServerConnectionManager {
   void ResetAccessToken() { ClearAccessToken(); }
 
  private:
-  sync_pb::SyncEntity* AddUpdateFull(syncable::Id id,
-                                     syncable::Id parentid,
-                                     const std::string& name,
-                                     int64_t version,
-                                     int64_t sync_ts,
-                                     bool is_dir);
   sync_pb::SyncEntity* AddUpdateFull(const std::string& id,
                                      const std::string& parentid,
                                      const std::string& name,
@@ -301,7 +260,7 @@ class MockConnectionManager : public ServerConnectionManager {
 
   // Determine if the given item's commit request should be refused with
   // a TRANSIENT_ERROR response.
-  bool ShouldTransientErrorThisId(syncable::Id id);
+  bool ShouldTransientErrorThisId(const std::string& id);
 
   // Generate a numeric position_in_parent value.  We use a global counter
   // that only decreases; this simulates new objects always being added to the
@@ -330,10 +289,10 @@ class MockConnectionManager : public ServerConnectionManager {
   bool server_reachable_;
 
   // All IDs that have been committed.
-  std::vector<syncable::Id> committed_ids_;
+  std::vector<std::string> committed_ids_;
 
   // List of IDs which should return a transient error.
-  std::vector<syncable::Id> transient_error_ids_;
+  std::vector<std::string> transient_error_ids_;
 
   // Control of when/if we return conflicts.
   bool conflict_all_commits_;

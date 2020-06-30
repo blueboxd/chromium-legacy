@@ -137,10 +137,8 @@ class FakeV4L2Impl::OpenedDevice {
       case V4L2_CID_PAN_ABSOLUTE:
       case V4L2_CID_TILT_ABSOLUTE:
       case V4L2_CID_ZOOM_ABSOLUTE:
-        if (!config_.descriptor.pan_tilt_zoom_supported().has_value() ||
-            !config_.descriptor.pan_tilt_zoom_supported().value()) {
+        if (!config_.descriptor.pan_tilt_zoom_supported())
           return EINVAL;
-        }
         control->flags = 0;
         control->minimum = 100;
         control->maximum = 400;

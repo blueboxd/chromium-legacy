@@ -202,8 +202,16 @@ void NGPhysicalTextFragment::ComputeSelfInkOverflow() const {
     return;
   }
 
-  NGInkOverflow::ComputeTextInkOverflow(PaintInfo(), Style(), Size(),
-                                        &ink_overflow_);
+  base::Optional<PhysicalRect> ink_overflow =
+      NGInkOverflow::ComputeTextInkOverflow(PaintInfo(), Style(), Size());
+  if (!ink_overflow) {
+    ink_overflow_.reset();
+    return;
+  }
+  if (ink_overflow_)
+    ink_overflow_->self_ink_overflow = *ink_overflow;
+  else
+    ink_overflow_ = std::make_unique<NGSelfInkOverflow>(*ink_overflow);
 }
 
 scoped_refptr<const NGPhysicalTextFragment>

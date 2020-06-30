@@ -29,17 +29,18 @@ base::File OpenTestFile(const base::FilePath& path) {
   base::FilePath test_data_dir;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
   test_data_dir = test_data_dir.Append(
-      base::FilePath(FILE_PATH_LITERAL("services/test/data/web_bundle")));
+      base::FilePath(FILE_PATH_LITERAL("components/test/data/web_package")));
   test_data_dir = test_data_dir.Append(path);
   return base::File(test_data_dir,
                     base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 
-class MockFactory final : public mojom::WebBundleParserFactory {
+class MockFactory final : public web_package::mojom::WebBundleParserFactory {
  public:
-  class MockParser final : public mojom::WebBundleParser {
+  class MockParser final : public web_package::mojom::WebBundleParser {
    public:
-    MockParser(mojo::PendingReceiver<mojom::WebBundleParser> receiver)
+    explicit MockParser(
+        mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver)
         : receiver_(this, std::move(receiver)) {}
 
     bool IsParseMetadataCalled() { return !metadata_callback_.is_null(); }
@@ -48,7 +49,7 @@ class MockFactory final : public mojom::WebBundleParserFactory {
     void Disconnect() { receiver_.reset(); }
 
    private:
-    // mojom::WebBundleParser implementation.
+    // web_package::mojom::WebBundleParser implementation.
     void ParseMetadata(ParseMetadataCallback callback) override {
       metadata_callback_ = std::move(callback);
     }
@@ -60,14 +61,15 @@ class MockFactory final : public mojom::WebBundleParserFactory {
 
     ParseMetadataCallback metadata_callback_;
     ParseResponseCallback response_callback_;
-    mojo::Receiver<mojom::WebBundleParser> receiver_;
+    mojo::Receiver<web_package::mojom::WebBundleParser> receiver_;
 
     DISALLOW_COPY_AND_ASSIGN(MockParser);
   };
 
   MockFactory() {}
   void AddReceiver(
-      mojo::PendingReceiver<mojom::WebBundleParserFactory> receiver) {
+      mojo::PendingReceiver<web_package::mojom::WebBundleParserFactory>
+          receiver) {
     receivers_.Add(this, std::move(receiver));
   }
   MockParser* GetCreatedParser() {
@@ -77,33 +79,36 @@ class MockFactory final : public mojom::WebBundleParserFactory {
   void DeleteParser() { parser_.reset(); }
 
  private:
-  // mojom::WebBundleParserFactory implementation.
-  void GetParserForFile(mojo::PendingReceiver<mojom::WebBundleParser> receiver,
-                        base::File file) override {
+  // web_package::mojom::WebBundleParserFactory implementation.
+  void GetParserForFile(
+      mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver,
+      base::File file) override {
     parser_ = std::make_unique<MockParser>(std::move(receiver));
   }
   void GetParserForDataSource(
-      mojo::PendingReceiver<mojom::WebBundleParser> receiver,
-      mojo::PendingRemote<mojom::BundleDataSource> data_source) override {
+      mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver,
+      mojo::PendingRemote<web_package::mojom::BundleDataSource> data_source)
+      override {
     parser_ = std::make_unique<MockParser>(std::move(receiver));
   }
 
   std::unique_ptr<MockParser> parser_;
-  mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
+  mojo::ReceiverSet<web_package::mojom::WebBundleParserFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockFactory);
 };
 
-class MockDataSource final : public mojom::BundleDataSource {
+class MockDataSource final : public web_package::mojom::BundleDataSource {
  public:
-  MockDataSource(mojo::PendingReceiver<mojom::BundleDataSource> receiver)
+  explicit MockDataSource(
+      mojo::PendingReceiver<web_package::mojom::BundleDataSource> receiver)
       : receiver_(this, std::move(receiver)) {}
 
  private:
-  // Implements mojom::BundledDataSource.
+  // Implements web_package::mojom::BundledDataSource.
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {}
 
-  mojo::Receiver<mojom::BundleDataSource> receiver_;
+  mojo::Receiver<web_package::mojom::BundleDataSource> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDataSource);
 };
@@ -135,14 +140,14 @@ TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
       OpenTestFile(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
   ASSERT_EQ(base::File::FILE_OK, parser.OpenFile(std::move(test_file)));
 
-  mojom::BundleMetadataPtr metadata_result;
+  web_package::mojom::BundleMetadataPtr metadata_result;
   {
     base::RunLoop run_loop;
     parser.ParseMetadata(base::BindOnce(
         [](base::OnceClosure quit_closure,
-           mojom::BundleMetadataPtr* metadata_result,
-           mojom::BundleMetadataPtr metadata,
-           mojom::BundleMetadataParseErrorPtr error) {
+           web_package::mojom::BundleMetadataPtr* metadata_result,
+           web_package::mojom::BundleMetadataPtr metadata,
+           web_package::mojom::BundleMetadataParseErrorPtr error) {
           EXPECT_TRUE(metadata);
           EXPECT_FALSE(error);
           if (metadata)
@@ -156,7 +161,7 @@ TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
   const auto& requests = metadata_result->requests;
   ASSERT_EQ(requests.size(), 4u);
 
-  std::map<std::string, mojom::BundleResponsePtr> responses;
+  std::map<std::string, web_package::mojom::BundleResponsePtr> responses;
   for (auto& entry : requests) {
     base::RunLoop run_loop;
     parser.ParseResponse(
@@ -164,9 +169,10 @@ TEST_F(SafeWebBundleParserTest, ParseGoldenFile) {
         entry.second->response_locations[0]->length,
         base::BindOnce(
             [](base::OnceClosure quit_closure, const std::string url,
-               std::map<std::string, mojom::BundleResponsePtr>* responses,
-               mojom::BundleResponsePtr response,
-               mojom::BundleResponseParseErrorPtr error) {
+               std::map<std::string, web_package::mojom::BundleResponsePtr>*
+                   responses,
+               web_package::mojom::BundleResponsePtr response,
+               web_package::mojom::BundleResponseParseErrorPtr error) {
               EXPECT_TRUE(response);
               EXPECT_FALSE(error);
               if (response)
@@ -196,8 +202,8 @@ TEST_F(SafeWebBundleParserTest, CallWithoutOpen) {
   SafeWebBundleParser parser;
   bool metadata_parsed = false;
   parser.ParseMetadata(base::BindOnce(
-      [](bool* metadata_parsed, mojom::BundleMetadataPtr metadata,
-         mojom::BundleMetadataParseErrorPtr error) {
+      [](bool* metadata_parsed, web_package::mojom::BundleMetadataPtr metadata,
+         web_package::mojom::BundleMetadataParseErrorPtr error) {
         EXPECT_FALSE(metadata);
         EXPECT_TRUE(error);
         if (error)
@@ -211,8 +217,9 @@ TEST_F(SafeWebBundleParserTest, CallWithoutOpen) {
   parser.ParseResponse(
       0u, 0u,
       base::BindOnce(
-          [](bool* response_parsed, mojom::BundleResponsePtr response,
-             mojom::BundleResponseParseErrorPtr error) {
+          [](bool* response_parsed,
+             web_package::mojom::BundleResponsePtr response,
+             web_package::mojom::BundleResponseParseErrorPtr error) {
             EXPECT_FALSE(response);
             EXPECT_TRUE(error);
             if (error)
@@ -250,7 +257,7 @@ TEST_F(SafeWebBundleParserTest, ConnectionError) {
   SafeWebBundleParser parser;
   MockFactory* raw_factory = InitializeMockFactory();
 
-  mojo::PendingRemote<mojom::BundleDataSource> remote_data_source;
+  mojo::PendingRemote<web_package::mojom::BundleDataSource> remote_data_source;
   auto data_source = std::make_unique<MockDataSource>(
       remote_data_source.InitWithNewPipeAndPassReceiver());
   parser.OpenDataSource(std::move(remote_data_source));
@@ -260,8 +267,8 @@ TEST_F(SafeWebBundleParserTest, ConnectionError) {
   bool parsed = false;
   parser.ParseMetadata(base::BindOnce(
       [](base::OnceClosure quit_closure, bool* parsed,
-         mojom::BundleMetadataPtr metadata,
-         mojom::BundleMetadataParseErrorPtr error) {
+         web_package::mojom::BundleMetadataPtr metadata,
+         web_package::mojom::BundleMetadataParseErrorPtr error) {
         EXPECT_FALSE(metadata);
         EXPECT_TRUE(error);
         if (error)

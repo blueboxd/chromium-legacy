@@ -745,6 +745,13 @@ class PluginVmAppTest : public ::testing::TestWithParam<ProviderType> {
   void TearDown() override { ResetBuilder(); }
 
  protected:
+  // Required to ensure that the Plugin VM manager can be accessed in order to
+  // retrieve permissions.
+  struct ScopedDBusThreadManager {
+    ScopedDBusThreadManager() { chromeos::DBusThreadManager::Initialize(); }
+    ~ScopedDBusThreadManager() { chromeos::DBusThreadManager::Shutdown(); }
+  } dbus_thread_manager_;
+
   // Destroys any existing builder in the correct order.
   void ResetBuilder() {
     builder_.reset();

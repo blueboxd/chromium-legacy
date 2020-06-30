@@ -2828,6 +2828,26 @@
             ]
         }
     ],
+    "FragmentItem": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200615",
+                    "enable_features": [
+                        "FragmentItem"
+                    ]
+                }
+            ]
+        }
+    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [

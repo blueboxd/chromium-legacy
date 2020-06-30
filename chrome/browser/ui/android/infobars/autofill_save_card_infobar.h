@@ -10,14 +10,14 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 
 namespace autofill {
 class AutofillSaveCardInfoBarDelegateMobile;
 }
 
 // Android implementation of the infobar for saving credit card information.
-class AutofillSaveCardInfoBar : public ConfirmInfoBar {
+class AutofillSaveCardInfoBar : public ChromeConfirmInfoBar {
  public:
   explicit AutofillSaveCardInfoBar(
       std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile>

@@ -17,7 +17,7 @@ using base::android::JavaParamRef;
 
 SavePasswordInfoBar::SavePasswordInfoBar(
     std::unique_ptr<SavePasswordInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 SavePasswordInfoBar::~SavePasswordInfoBar() {}
 

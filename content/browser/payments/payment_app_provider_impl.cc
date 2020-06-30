@@ -417,6 +417,31 @@ void GetAllPaymentAppsOnCoreThread(
       base::BindOnce(&DidGetAllPaymentAppsOnCoreThread, std::move(callback)));
 }
 
+void DidUpdatePaymentAppIconOnCoreThread(
+    PaymentAppProvider::UpdatePaymentAppIconCallback callback,
+    payments::mojom::PaymentHandlerStatus status) {
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), status));
+}
+
+void UpdatePaymentAppIconOnCoreThread(
+    scoped_refptr<PaymentAppContextImpl> payment_app_context,
+    int64_t registration_id,
+    const std::string& instrument_key,
+    const std::string& name,
+    const std::string& string_encoded_icon,
+    const std::string& method_name,
+    const SupportedDelegations& supported_delegations,
+    PaymentAppProvider::UpdatePaymentAppIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
+  payment_app_context->payment_app_database()
+      ->SetPaymentAppInfoForRegisteredServiceWorker(
+          registration_id, instrument_key, name, string_encoded_icon,
+          method_name, supported_delegations,
+          base::BindOnce(&DidUpdatePaymentAppIconOnCoreThread,
+                         std::move(callback)));
+}
+
 void DispatchAbortPaymentEvent(
     BrowserContext* browser_context,
     PaymentAppProvider::AbortCallback callback,
@@ -889,6 +914,27 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
       base::BindOnce(&OnInstallPaymentApp, url::Origin::Create(sw_scope),
                      std::move(event_data), std::move(registration_id_callback),
                      std::move(callback)));
+}
+
+void PaymentAppProviderImpl::UpdatePaymentAppIcon(
+    BrowserContext* browser_context,
+    int64_t registration_id,
+    const std::string& instrument_key,
+    const std::string& name,
+    const std::string& string_encoded_icon,
+    const std::string& method_name,
+    const SupportedDelegations& supported_delegations,
+    PaymentAppProvider::UpdatePaymentAppIconCallback callback) {
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context));
+  scoped_refptr<PaymentAppContextImpl> payment_app_context =
+      partition->GetPaymentAppContext();
+
+  RunOrPostTaskOnThread(
+      FROM_HERE, content::ServiceWorkerContext::GetCoreThreadId(),
+      base::BindOnce(&UpdatePaymentAppIconOnCoreThread, payment_app_context,
+                     registration_id, instrument_key, name, string_encoded_icon,
+                     method_name, supported_delegations, std::move(callback)));
 }
 
 void PaymentAppProviderImpl::CanMakePayment(

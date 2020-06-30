@@ -465,9 +465,13 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
   // always positive or 0.
   LayoutUnit available_width = AvailableWidth();
 
+#if DCHECK_IS_ON()
   // Text measurement is done using floats which may introduce small rounding
   // errors for near-saturated values.
-  DCHECK_EQ(position_.Round(), line_info->ComputeWidth().Round());
+  // See http://crbug.com/1098795
+  if (!LayoutUnit(line_info->ComputeWidthInFloat()).MightBeSaturated())
+    DCHECK_EQ(position_.Round(), line_info->ComputeWidth().Round());
+#endif
 
   line_info->SetWidth(available_width, position_);
   line_info->SetBfcOffset(

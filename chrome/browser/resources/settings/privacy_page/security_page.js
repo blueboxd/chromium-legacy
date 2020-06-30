@@ -27,16 +27,17 @@ import {routes} from '../route.js';
 import {Router} from '../router.m.js';
 
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.m.js';
-import {SafeBrowsingBrowserProxy, SafeBrowsingBrowserProxyImpl, SafeBrowsingRadioManagedState} from './safe_browsing_browser_proxy.js';
 
 /**
- * Enumeration of all safe browsing modes.
- * @enum {string}
+ * Enumeration of all safe browsing modes. Must be kept in sync with the enum
+ * of the same name located in:
+ * chrome/browser/safe_browsing/generated_safe_browsing_pref.h
+ * @enum {number}
  */
-const SafeBrowsing = {
-  ENHANCED: 'enhanced',
-  STANDARD: 'standard',
-  DISABLED: 'disabled',
+export const SafeBrowsingSetting = {
+  ENHANCED: 0,
+  STANDARD: 1,
+  DISABLED: 2,
 };
 
 Polymer({
@@ -76,15 +77,9 @@ Polymer({
      * Valid safe browsing states.
      * @private
      */
-    safeBrowsingEnum_: {
+    safeBrowsingSettingEnum_: {
       type: Object,
-      value: SafeBrowsing,
-    },
-
-    /** @private */
-    selectSafeBrowsingRadio_: {
-      type: String,
-      computed: 'computeSelectSafeBrowsingRadio_(prefs.safebrowsing.*)',
+      value: SafeBrowsingSetting,
     },
 
     /** @private */
@@ -95,9 +90,6 @@ Polymer({
         return loadTimeData.getBoolean('safeBrowsingEnhancedEnabled');
       },
     },
-
-    /** @private {!SafeBrowsingRadioManagedState} */
-    safeBrowsingRadioManagedState_: Object,
 
     /** @private */
     enableSecurityKeysSubpage_: {
@@ -117,10 +109,6 @@ Polymer({
     /** @private */
     showDisableSafebrowsingDialog_: Boolean,
   },
-
-  observers: [
-    'onSafeBrowsingPrefChange_(prefs.safebrowsing.*)',
-  ],
 
   /*
    * @param {!Map<string, string>} newConfig
@@ -144,21 +132,6 @@ Polymer({
     }
   },
 
-  /**
-   * @return {string}
-   * @private
-   */
-  computeSelectSafeBrowsingRadio_() {
-    if (this.prefs === undefined) {
-      return SafeBrowsing.STANDARD;
-    }
-    if (!this.getPref('safebrowsing.enabled').value) {
-      return SafeBrowsing.DISABLED;
-    }
-    return this.getPref('safebrowsing.enhanced').value ? SafeBrowsing.ENHANCED :
-                                                         SafeBrowsing.STANDARD;
-  },
-
   /** @private {PrivacyPageBrowserProxy} */
   browserProxy_: null,
 
@@ -172,26 +145,18 @@ Polymer({
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
   },
 
-  /** @override */
-  attached() {
-    SafeBrowsingBrowserProxyImpl.getInstance().validateSafeBrowsingEnhanced();
-  },
-
   /**
-   * Updates the various underlying cookie prefs based on the newly selected
-   * radio button.
-   * @param {!CustomEvent<{value: string}>} event
+   * Possibly displays the Safe Browsing disable dialog based on the users
+   * selection.
    * @private
    */
-  onSafeBrowsingRadioChange_: function(event) {
-    if (event.detail.value === SafeBrowsing.ENHANCED) {
-      this.setPrefValue('safebrowsing.enabled', true);
-      this.setPrefValue('safebrowsing.enhanced', true);
-    } else if (event.detail.value === SafeBrowsing.STANDARD) {
-      this.setPrefValue('safebrowsing.enabled', true);
-      this.setPrefValue('safebrowsing.enhanced', false);
-    } else {  // disabled state
+  onSafeBrowsingRadioChange_: function() {
+    const selected =
+        Number.parseInt(this.$.safeBrowsingRadioGroup.selected, 10);
+    if (selected === SafeBrowsingSetting.DISABLED) {
       this.showDisableSafebrowsingDialog_ = true;
+    } else {
+      this.$.safeBrowsingRadioGroup.sendPrefChange();
     }
   },
 
@@ -200,16 +165,8 @@ Polymer({
    * @private
    */
   getDisabledExtendedSafeBrowsing_() {
-    return !this.getPref('safebrowsing.enabled').value ||
-        !!this.getPref('safebrowsing.enhanced').value;
-  },
-
-  /** @private */
-  async onSafeBrowsingPrefChange_() {
-    // Retrieve and update safe browsing radio managed state.
-    this.safeBrowsingRadioManagedState_ =
-        await SafeBrowsingBrowserProxyImpl.getInstance()
-            .getSafeBrowsingRadioManagedState();
+    return this.getPref('generated.safe_browsing').value !==
+        SafeBrowsingSetting.STANDARD;
   },
 
   /** @private */
@@ -250,14 +207,12 @@ Polymer({
     // Check if the dialog was confirmed before closing it.
     if (/** @type {!SettingsDisableSafebrowsingDialogElement} */
         (this.$$('settings-disable-safebrowsing-dialog')).wasConfirmed()) {
-      this.setPrefValue('safebrowsing.enabled', false);
-      this.setPrefValue('safebrowsing.enhanced', false);
+      this.$.safeBrowsingRadioGroup.sendPrefChange();
+    } else {
+      this.$.safeBrowsingRadioGroup.resetToPrefValue();
     }
 
     this.showDisableSafebrowsingDialog_ = false;
-
-    // Have the correct radio button highlighted.
-    this.$.safeBrowsingRadio.selected = this.selectSafeBrowsingRadio_;
 
     // Set focus back to the no protection button regardless of user interaction
     // with the dialog, as it was the entry point to the dialog.

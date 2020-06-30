@@ -5345,11 +5345,11 @@ crbug.com/1047480 [ Fuchsia ] virtual/gpu-rasterization/images/drag-image-descen
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
 # Disable temporarily on Win7, will remove them when they are not flaky. 
-crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure ]
+crbug.com/1047176 crbug.com/1100783 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-mouse-operations.html [ Pass Failure ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.html [ Pass Failure ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Pass Failure ]
-crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure ]
+crbug.com/1047176 crbug.com/1100783 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 
 # Sheriff 2018-03-02
 crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]
@@ -6600,7 +6600,6 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
 
-crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1091665 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
 # [virtual/...]external/wpt/web-animation test flakes
@@ -6868,3 +6867,8 @@ crbug.com/1099689 [ Linux ] external/wpt/html/browsers/windows/nested-browsing-c
 
 #Sheriff 2020-06-25
 crbug.com/1010170 media/video-played-reset.html [ Pass Failure ]
+
+#Sheriff 2020-06-30
+crbug.com/1100774 [ Mac10.13 ] virtual/threaded-no-composited-antialiasing/animations/svg-attribute-interpolation/svg-d-interpolation.html [ Pass Failure ]
+crbug.com/1100786 [ Mac10.10 ] fast/scroll-snap/snaps-after-touchpad-scrolling.html [ Failure ]
+crbug.com/1100786 [ Mac10.10 ] storage/indexeddb/transaction-active-flag.html [ Timeout ]

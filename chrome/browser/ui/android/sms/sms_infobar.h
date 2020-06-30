@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 
 namespace content {
 class WebContents;
@@ -21,7 +21,7 @@ class Origin;
 
 class SmsInfoBarDelegate;
 
-class SmsInfoBar : public ConfirmInfoBar {
+class SmsInfoBar : public ChromeConfirmInfoBar {
  public:
   SmsInfoBar(content::WebContents* web_contents,
              std::unique_ptr<SmsInfoBarDelegate> delegate);

@@ -37,6 +37,7 @@ include_rules = [
   "+components/variations/variations_http_header_provider.h",
   "+components/variations/net",
   "+components/viz",
+  "+components/web_package",
   "+components/cbor",
   "+components/os_crypt/os_crypt_switches.h",
   # *********************************** NOTE ***********************************
@@ -141,13 +142,6 @@ specific_include_rules = {
   "browsing_data_(filter_builder|remover)_impl_unittest\.cc": [
     "+services/network/cookie_manager.h",
   ],
-  "cross_origin_read_blocking_checker\.(cc|h)": [
-    # TODO(crbug.com/1049894): Remove.
-    "+services/network/cross_origin_read_blocking.h",
-  ],
-  "cross_site_document_blocking_browsertest\.cc": [
-    "+services/network/cross_origin_read_blocking.h",
-  ],
   "navigation_url_loader_impl_unittest\.cc": [
     "+services/network/resource_scheduler/resource_scheduler_client.h",
     "+services/network/url_loader.h",
@@ -161,9 +155,6 @@ specific_include_rules = {
   ],
   "signed_exchange_handler_unittest\.cc": [
     "+services/network/network_context.h",
-  ],
-  "signed_exchange_subresource_prefetch_browsertest\.cc": [
-    "+services/network/cross_origin_read_blocking.h",
   ],
   # SiteInstance and BrowsingInstance should not depend on the types of things
   # that rely on them, like RenderFrameHostImpl or WebContentsImpl.

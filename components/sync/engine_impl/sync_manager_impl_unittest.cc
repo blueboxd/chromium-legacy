@@ -47,7 +47,6 @@
 #include "components/sync/test/callback_counter.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/fake_sync_scheduler.h"
-#include "components/sync/test/engine/test_id_factory.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"

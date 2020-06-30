@@ -72,7 +72,7 @@ void WebBundleInterceptorForHistoryNavigationFromFileOrFromTrustableFile::
 }
 
 void WebBundleInterceptorForHistoryNavigationFromFileOrFromTrustableFile::
-    OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    OnMetadataReady(web_package::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!url_loader_factory_);
 

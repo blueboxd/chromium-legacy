@@ -8345,7 +8345,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateCrashedSubframeToSameSite) {
   // TODO(https://crbug.com/1064944): Enable this when the fix is submitted.
-  if (CreateNewHostForSameSiteSubframe())
+  if (ShouldCreateNewHostForSameSiteSubframe())
     return;
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

@@ -227,6 +227,10 @@ const base::Feature kHelpAppFirstRun{"HelpAppFirstRun",
 const base::Feature kHelpAppReleaseNotes{"HelpAppReleaseNotes",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the search service integration in the Help app.
+const base::Feature kHelpAppSearchServiceIntegration{
+    "HelpAppSearchServiceIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable Unified Input Logic for HMM decoder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",
@@ -289,6 +293,11 @@ const base::Feature kOobeScreensPriority{"OobeScreensPriority",
 // exact string matching.
 const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables a unique URL for each path in CrOS settings.
+// This allows deep linking to individual settings, i.e. in settings search.
+const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable the Parental Controls section of settings.
 const base::Feature kParentalControlsSettings{

@@ -14,24 +14,23 @@ WebMediaDeviceInfo::WebMediaDeviceInfo(const WebMediaDeviceInfo& other) =
 
 WebMediaDeviceInfo::WebMediaDeviceInfo(WebMediaDeviceInfo&& other) = default;
 
-WebMediaDeviceInfo::WebMediaDeviceInfo(
-    const std::string& device_id,
-    const std::string& label,
-    const std::string& group_id,
-    media::VideoFacingMode video_facing,
-    const base::Optional<bool>& pan_tilt_zoom_supported)
+WebMediaDeviceInfo::WebMediaDeviceInfo(const std::string& device_id,
+                                       const std::string& label,
+                                       const std::string& group_id,
+                                       bool pan_tilt_zoom_supported,
+                                       media::VideoFacingMode video_facing)
     : device_id(device_id),
       label(label),
       group_id(group_id),
-      video_facing(video_facing),
-      pan_tilt_zoom_supported(pan_tilt_zoom_supported) {}
+      pan_tilt_zoom_supported(pan_tilt_zoom_supported),
+      video_facing(video_facing) {}
 
 WebMediaDeviceInfo::WebMediaDeviceInfo(
     const media::VideoCaptureDeviceDescriptor& descriptor)
     : device_id(descriptor.device_id),
       label(descriptor.GetNameAndModel()),
-      video_facing(descriptor.facing),
-      pan_tilt_zoom_supported(descriptor.pan_tilt_zoom_supported()) {}
+      pan_tilt_zoom_supported(descriptor.pan_tilt_zoom_supported()),
+      video_facing(descriptor.facing) {}
 
 WebMediaDeviceInfo::~WebMediaDeviceInfo() = default;
 

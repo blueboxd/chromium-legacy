@@ -1219,44 +1219,39 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName0));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
   // No IAMCameraControl and no IAMVideoProcAmp interfaces.
-  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
+  EXPECT_FALSE(it->pan_tilt_zoom_supported());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kMFDeviceId1));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName1));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
   // No pan/tilt/zoom in IAMCameraControl interface.
-  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
+  EXPECT_FALSE(it->pan_tilt_zoom_supported());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kMFDeviceId2));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName2));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().value());
+  EXPECT_TRUE(it->pan_tilt_zoom_supported());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kDirectShowDeviceId3));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName3));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
   // No ICameraControl interface.
-  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
+  EXPECT_FALSE(it->pan_tilt_zoom_supported());
 
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
                              base::SysWideToUTF8(kDirectShowDeviceId4));
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName4));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
   // No IVideoProcAmp interface.
-  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
+  EXPECT_FALSE(it->pan_tilt_zoom_supported());
 
   // Devices that are listed in MediaFoundation but only report supported
   // formats in DirectShow are expected to get enumerated with
@@ -1266,9 +1261,8 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName5));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
   // No pan, tilt, or zoom ranges in ICameraControl interface.
-  EXPECT_FALSE(it->pan_tilt_zoom_supported().value());
+  EXPECT_FALSE(it->pan_tilt_zoom_supported());
 
   // Devices that are listed in both MediaFoundation and DirectShow but are
   // blacklisted for use with MediaFoundation are expected to get enumerated
@@ -1278,8 +1272,7 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
   ASSERT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
   EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName6));
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().has_value());
-  EXPECT_TRUE(it->pan_tilt_zoom_supported().value());
+  EXPECT_TRUE(it->pan_tilt_zoom_supported());
 }
 
 }  // namespace media

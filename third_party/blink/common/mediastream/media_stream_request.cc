@@ -70,7 +70,7 @@ MediaStreamDevice::MediaStreamDevice(
     const std::string& name,
     media::VideoFacingMode facing,
     const base::Optional<std::string>& group_id,
-    const base::Optional<bool>& pan_tilt_zoom_supported)
+    bool pan_tilt_zoom_supported)
     : type(type),
       id(id),
       video_facing(facing),

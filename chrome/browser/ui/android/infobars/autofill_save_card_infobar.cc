@@ -32,7 +32,7 @@ std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
 
 AutofillSaveCardInfoBar::AutofillSaveCardInfoBar(
     std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 AutofillSaveCardInfoBar::~AutofillSaveCardInfoBar() {}
 

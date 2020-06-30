@@ -239,9 +239,6 @@ class ProfileSyncService : public SyncService,
 
   bool IsDataTypeControllerRunningForTest(ModelType type) const;
 
-  // Sometimes we need to wait for tasks on the |backend_task_runner_| in tests.
-  void FlushBackendTaskRunnerForTest() const;
-
   // Some tests rely on injecting calls to the encryption observer.
   SyncEncryptionHandler::Observer* GetEncryptionObserverForTest();
 

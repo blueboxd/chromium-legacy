@@ -64,6 +64,13 @@ constexpr char kHiddenAppInstallUrl[] =
 constexpr char kHiddenAppStartUrl[] =
     "https://www.google.com/chromebook/whatsnew/embedded/";
 
+constexpr char kManifestWithShortcutsMenuInstallUrl[] =
+    "https://example.org/manifest_test_page.html"
+    "?manifest=manifest_with_shortcuts.json";
+
+constexpr char kManifestWithShortcutsMenuStartUrl[] =
+    "https://example.org/start";
+
 // Performs blocking IO operations.
 base::FilePath GetDataFilePath(const base::FilePath& relative_path,
                                bool* path_exists) {
@@ -344,5 +351,106 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
 // TODO(crbug.com/1020037): Test policy installed bookmark apps with an external
 // install source to cover
 // WebAppMigrationManager::MigrateBookmarkAppInstallSource() logic.
+
+class WebAppMigrationManagerBrowserTestWithShortcutsMenu
+    : public WebAppMigrationManagerBrowserTest {
+ public:
+  WebAppMigrationManagerBrowserTestWithShortcutsMenu() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsAppIconShortcutsMenu);
+  }
+
+  void ReadAndVerifyDownloadedShortcutsMenuIcons(
+      const AppId& app_id,
+      std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes) {
+    EXPECT_EQ(
+        provider().registrar().GetAppDownloadedShortcutsMenuIconsSizes(app_id),
+        shortcuts_menu_icons_sizes);
+
+    base::RunLoop run_loop;
+    provider().icon_manager().ReadAllShortcutsMenuIcons(
+        app_id,
+        base::BindLambdaForTesting(
+            [&](ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps) {
+              EXPECT_EQ(2u, shortcuts_menu_icons_bitmaps.size());
+              for (size_t i = 0; i < shortcuts_menu_icons_bitmaps.size(); ++i) {
+                EXPECT_EQ(shortcuts_menu_icons_sizes[i].size(),
+                          shortcuts_menu_icons_bitmaps[i].size());
+                const std::vector<SquareSizePx>& icon_sizes =
+                    shortcuts_menu_icons_sizes[i];
+                const std::map<SquareSizePx, SkBitmap>& icon_maps =
+                    shortcuts_menu_icons_bitmaps[i];
+                for (const auto& icon_map : icon_maps) {
+                  const SquareSizePx& size_px = icon_map.first;
+                  EXPECT_TRUE(base::Contains(icon_sizes, size_px));
+
+                  const SkBitmap& bitmap = icon_map.second;
+                  EXPECT_FALSE(bitmap.empty());
+                  EXPECT_EQ(size_px, bitmap.width());
+                  EXPECT_EQ(size_px, bitmap.height());
+                }
+              }
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTestWithShortcutsMenu,
+                       PRE_DatabaseMigration_ManifestWithShortcutsMenu) {
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL{kManifestWithShortcutsMenuInstallUrl});
+  AppId app_id = InstallWebAppAsUserViaOmnibox();
+  EXPECT_EQ(GenerateAppIdFromURL(GURL{kManifestWithShortcutsMenuStartUrl}),
+            app_id);
+
+  EXPECT_TRUE(provider().registrar().AsBookmarkAppRegistrar());
+  EXPECT_FALSE(provider().registrar().AsWebAppRegistrar());
+
+  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
+
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos =
+      provider().registrar().GetAppShortcutInfos(app_id);
+  EXPECT_EQ(shortcut_infos.size(), 2u);
+  EXPECT_EQ(shortcut_infos[0].name, base::UTF8ToUTF16("shortcut1"));
+  EXPECT_EQ(shortcut_infos[0].shortcut_icon_infos.size(), 1u);
+  EXPECT_EQ(shortcut_infos[1].name, base::UTF8ToUTF16("shortcut2"));
+  EXPECT_EQ(shortcut_infos[1].shortcut_icon_infos.size(), 2u);
+
+  const std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes = {
+      {48}, {96, 144}};
+  ReadAndVerifyDownloadedShortcutsMenuIcons(app_id, shortcuts_menu_icons_sizes);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTestWithShortcutsMenu,
+                       DatabaseMigration_ManifestWithShortcutsMenu) {
+  AwaitRegistryReady();
+
+  AppId app_id = GenerateAppIdFromURL(GURL{kManifestWithShortcutsMenuStartUrl});
+  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
+
+  EXPECT_FALSE(provider().registrar().AsBookmarkAppRegistrar());
+  WebAppRegistrar* registrar = provider().registrar().AsWebAppRegistrar();
+  ASSERT_TRUE(registrar);
+
+  const WebApp* web_app = registrar->GetAppById(app_id);
+  ASSERT_TRUE(web_app);
+
+  EXPECT_EQ("Manifest test app with Shortcuts", web_app->name());
+  EXPECT_EQ(DisplayMode::kStandalone, web_app->display_mode());
+
+  EXPECT_EQ(web_app->shortcut_infos().size(), 2u);
+  EXPECT_EQ(web_app->shortcut_infos()[0].name, base::UTF8ToUTF16("shortcut1"));
+  EXPECT_EQ(web_app->shortcut_infos()[0].shortcut_icon_infos.size(), 1u);
+  EXPECT_EQ(web_app->shortcut_infos()[1].name, base::UTF8ToUTF16("shortcut2"));
+  EXPECT_EQ(web_app->shortcut_infos()[1].shortcut_icon_infos.size(), 2u);
+
+  const std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes = {
+      {48}, {96, 144}};
+  ReadAndVerifyDownloadedShortcutsMenuIcons(app_id, shortcuts_menu_icons_sizes);
+}
 
 }  // namespace web_app

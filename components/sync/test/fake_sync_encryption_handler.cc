@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
-#include "components/sync/syncable/nigori_util.h"
 
 namespace syncer {
 

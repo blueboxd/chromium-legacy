@@ -8,7 +8,6 @@ static_library("common") {
   sources = [
     "prerender_final_status.cc",
     "prerender_final_status.h",
-    "prerender_messages.h",
     "prerender_origin.cc",
     "prerender_origin.h",
   ]

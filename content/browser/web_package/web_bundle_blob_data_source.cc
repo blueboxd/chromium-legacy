@@ -43,11 +43,10 @@ class MojoBlobReaderDelegate : public storage::MojoBlobReader::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MojoBlobReaderDelegate);
 };
 
-void OnReadComplete(
-    data_decoder::mojom::BundleDataSource::ReadCallback callback,
-    std::unique_ptr<storage::BlobReader> blob_reader,
-    scoped_refptr<net::IOBufferWithSize> io_buf,
-    int bytes_read) {
+void OnReadComplete(web_package::mojom::BundleDataSource::ReadCallback callback,
+                    std::unique_ptr<storage::BlobReader> blob_reader,
+                    scoped_refptr<net::IOBufferWithSize> io_buf,
+                    int bytes_read) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (bytes_read != io_buf->size()) {
     std::move(callback).Run(base::nullopt);
@@ -62,7 +61,7 @@ void OnReadComplete(
 void OnCalculateSizeComplete(
     uint64_t offset,
     uint64_t length,
-    data_decoder::mojom::BundleDataSource::ReadCallback callback,
+    web_package::mojom::BundleDataSource::ReadCallback callback,
     std::unique_ptr<storage::BlobReader> blob_reader,
     int net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -129,7 +128,7 @@ WebBundleBlobDataSource::~WebBundleBlobDataSource() {
 }
 
 void WebBundleBlobDataSource::AddReceiver(
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+    mojo::PendingReceiver<web_package::mojom::BundleDataSource>
         pending_receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WaitForCore(base::BindOnce(&WebBundleBlobDataSource::AddReceiverImpl,
@@ -138,7 +137,7 @@ void WebBundleBlobDataSource::AddReceiver(
 }
 
 void WebBundleBlobDataSource::AddReceiverImpl(
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+    mojo::PendingReceiver<web_package::mojom::BundleDataSource>
         pending_receiver) {
   if (!core_)
     return;
@@ -273,7 +272,7 @@ void WebBundleBlobDataSource::BlobDataSourceCore::Start(
 }
 
 void WebBundleBlobDataSource::BlobDataSourceCore::AddReceiver(
-    mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+    mojo::PendingReceiver<web_package::mojom::BundleDataSource>
         pending_receiver) {
   receivers_.Add(this, std::move(pending_receiver));
 }

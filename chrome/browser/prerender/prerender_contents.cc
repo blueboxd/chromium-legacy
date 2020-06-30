@@ -30,7 +30,6 @@
 #include "chrome/common/prerender_util.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/prerender/common/prerender_final_status.h"
-#include "components/prerender/common/prerender_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -650,8 +649,12 @@ void PrerenderContents::PrepareForUse() {
   NotifyPrerenderStop();
 }
 
-void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
+void PrerenderContents::CancelPrerenderForUnsupportedScheme() {
   Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
+}
+
+void PrerenderContents::CancelPrerenderForNoStatePrefetch() {
+  Destroy(FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 }
 
 void PrerenderContents::AddPrerenderCancelerReceiver(

@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -55,7 +55,7 @@ void CompleteWithInvalidWebBundleError(
     const std::string& error_message);
 
 std::string GetMetadataParseErrorMessage(
-    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error);
+    const web_package::mojom::BundleMetadataParseErrorPtr& metadata_error);
 
 // On Android, returns true if the url scheme is file or content. On other
 // platforms, returns true if the url scheme is file.

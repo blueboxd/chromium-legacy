@@ -116,7 +116,7 @@ std::string GetRenderDocumentLevelName(RenderDocumentLevel level) {
   return render_document_level.GetName(level);
 }
 
-bool CreateNewHostForSameSiteSubframe() {
+bool ShouldCreateNewHostForSameSiteSubframe() {
   return GetRenderDocumentLevel() >= RenderDocumentLevel::kSubframe;
 }
 

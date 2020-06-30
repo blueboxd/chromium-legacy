@@ -775,7 +775,7 @@ const char* LifecycleStateToString(RenderFrameHostImpl::LifecycleState state) {
 
 }  // namespace
 
-bool CreateNewHostForCrashedFrame() {
+bool ShouldCreateNewHostForCrashedFrame() {
   return GetRenderDocumentLevel() >= RenderDocumentLevel::kCrashedFrame;
 }
 
@@ -1941,7 +1941,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   SetLastCommittedUrl(GURL());
   web_bundle_handle_.reset();
 
-  must_be_replaced_ = CreateNewHostForCrashedFrame();
+  must_be_replaced_ = ShouldCreateNewHostForCrashedFrame();
   has_committed_any_navigation_ = false;
 
 #if defined(OS_ANDROID)
@@ -2920,7 +2920,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   } else {
     // RenderDocument: After a local<->local swap, this function is called with
     // a null |proxy|.
-    CHECK(CreateNewHostForSameSiteSubframe());
+    CHECK(ShouldCreateNewHostForSameSiteSubframe());
 
     // The unload handlers already ran for this document during the
     // local<->local swap. Hence, there is no need to send

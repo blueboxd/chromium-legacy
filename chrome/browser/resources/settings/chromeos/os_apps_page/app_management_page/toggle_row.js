@@ -35,6 +35,13 @@ Polymer({
   },
 
   /**
+   * @param {boolean} value What to set the toggle to.
+   */
+  setToggle(value) {
+    this.$.toggle.checked = value;
+  },
+
+  /**
    * @param {MouseEvent} event
    * @private
    */

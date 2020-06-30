@@ -25,7 +25,7 @@ DuplicateDownloadInfoBar::~DuplicateDownloadInfoBar() {
 
 DuplicateDownloadInfoBar::DuplicateDownloadInfoBar(
     std::unique_ptr<DuplicateDownloadInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 base::android::ScopedJavaLocalRef<jobject>
 DuplicateDownloadInfoBar::CreateRenderInfoBar(JNIEnv* env) {

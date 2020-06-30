@@ -425,6 +425,16 @@ bool LoginScreenTestApi::IsExpandedPublicSessionAdvanced() {
   return expanded_test.advanced_view()->GetVisible();
 }
 
+bool LoginScreenTestApi::IsPublicSessionWarningShown() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginExpandedPublicAccountView::TestApi expanded_test(
+      lock_contents_test.expanded_view());
+  return expanded_test.monitoring_warning_icon() &&
+         expanded_test.monitoring_warning_label();
+}
+
 // static
 void LoginScreenTestApi::ClickPublicExpandedAdvancedViewButton() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());

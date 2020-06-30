@@ -218,13 +218,14 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
       device_descriptors->emplace_back(
           display_name, unique_id, model_id,
           VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
+          IsPanTiltZoomSupported(fd.get()),
           VideoCaptureTransportType::OTHER_TRANSPORT,
 #if defined(OS_CHROMEOS)
-          device_provider_->GetCameraFacing(unique_id, model_id),
+          device_provider_->GetCameraFacing(unique_id, model_id)
 #else
-          VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
+          VideoFacingMode::MEDIA_VIDEO_FACING_NONE
 #endif
-          IsPanTiltZoomSupported(fd.get()));
+      );
     }
   }
   // Since JS doesn't have API to get camera facing, we sort the list to make

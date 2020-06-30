@@ -584,7 +584,7 @@ async function loadOtherRelatedFiles(
 /**
  * Sets state for the files opened in the current directory.
  * @param {!FileSystemDirectoryHandle} directory
- * @param {!{file: !File, handle: !FileSystemFileHandle}} focusFile
+ * @param {{file: !File, handle: !FileSystemFileHandle}} focusFile
  */
 function setCurrentDirectory(directory, focusFile) {
   // Load currentFiles into the guest.

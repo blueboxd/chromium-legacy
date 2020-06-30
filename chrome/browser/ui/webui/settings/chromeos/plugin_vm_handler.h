@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
@@ -32,8 +34,14 @@ class PluginVmHandler : public ::settings::SettingsPageUIHandler {
   void HandleGetPluginVmSharedPathsDisplayText(const base::ListValue* args);
   // Remove a specified path from being shared.
   void HandleRemovePluginVmSharedPath(const base::ListValue* args);
+  // Checks if Plugin VM would need to be relaunched if the proposed changes are
+  // made.
+  void HandleWouldPermissionChangeRequireRelaunch(const base::ListValue* args);
+  // Sets the specified permission to the value proposed.
+  void HandleSetPluginVmPermission(const base::ListValue* args);
 
   Profile* profile_;
+
   // weak_ptr_factory_ should always be last member.
   base::WeakPtrFactory<PluginVmHandler> weak_ptr_factory_{this};
 

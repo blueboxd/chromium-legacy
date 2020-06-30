@@ -962,9 +962,13 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
       fps * (cc::VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit + 1);
   WTF::HashMap<uint32_t, viz::FrameTimingDetails> timing_details;
 
-  MakeSubmitter(
-      base::BindLambdaForTesting([&](int frames, base::TimeDelta duration,
-                                     double roughness) { reports++; }));
+  MakeSubmitter(base::BindLambdaForTesting(
+      [&](int frames, base::TimeDelta duration, double roughness, int hz,
+          gfx::Size frame_size) {
+        ASSERT_EQ(frame_size.width(), 8);
+        ASSERT_EQ(frame_size.height(), 8);
+        reports++;
+      }));
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
   submitter_->StartRendering();
   task_environment_.RunUntilIdle();

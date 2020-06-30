@@ -796,57 +796,86 @@ test.util.sync.rightClickOffset =
     };
 
 /**
- * Sends a drag'n'drop set of events from |srcTarget| to |dstTarget|.
+ * Sends drag and drop events to simulate dragging a source over a target.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {string} srcTarget Query to specify the element as the source to be
- *   dragged.
- * @param {string} dstTarget Query to specify the element as the destination
- *   to drop.
- * @param {boolean=} skipDrop True if it should only hover over dstTarget.
- *   to drop.
- * @return {boolean} True if the event is sent to the target, false otherwise.
+ * @param {string} sourceQuery Query to specify the source element.
+ * @param {string} targetQuery Query to specify the target element.
+ * @param {boolean} skipDrop Set true to drag over (hover) the target
+ *    element only, and not send it drop and dragEnd events.
+ * @param {function(boolean)} callback Function called with result
+ *    true on success, or false on failure.
  */
-test.util.sync.fakeDragAndDrop =
-    (contentWindow, srcTarget, dstTarget, skipDrop) => {
-      const options = {
+test.util.async.fakeDragAndDrop =
+    (contentWindow, sourceQuery, targetQuery, skipDrop, callback) => {
+      const source = contentWindow.document.querySelector(sourceQuery);
+      const target = contentWindow.document.querySelector(targetQuery);
+
+      if (!source || !target) {
+        setTimeout(() => {
+          callback(false);
+        }, 0);
+        return;
+      }
+
+      const targetOptions = {
         bubbles: true,
         composed: true,
         dataTransfer: new DataTransfer(),
       };
-      const srcElement = contentWindow.document &&
-          contentWindow.document.querySelector(srcTarget);
-      const dstElement = contentWindow.document &&
-          contentWindow.document.querySelector(dstTarget);
 
-      if (!srcElement || !dstElement) {
-        return false;
+      // Get the middle of the source element since some of Files app
+      // logic requires clientX and clientY.
+      const sourceRect = source.getBoundingClientRect();
+      const sourceOptions = Object.assign({}, targetOptions);
+      sourceOptions.clientX = sourceRect.left + (sourceRect.width / 2);
+      sourceOptions.clientY = sourceRect.top + (sourceRect.height / 2);
+
+      let dragEventPhase = 0;
+      let event = null;
+
+      function sendPhasedDragDropEvents() {
+        let result = true;
+        switch (dragEventPhase) {
+          case 0:
+            event = new DragEvent('dragstart', sourceOptions);
+            result = source.dispatchEvent(event);
+            break;
+          case 1:
+            event = new DragEvent('dragenter', targetOptions);
+            result = target.dispatchEvent(event);
+            break;
+          case 2:
+            event = new DragEvent('dragover', targetOptions);
+            result = target.dispatchEvent(event);
+            break;
+          case 3:
+            if (!skipDrop) {
+              event = new DragEvent('drop', targetOptions);
+              result = target.dispatchEvent(event);
+            }
+            break;
+          case 4:
+            if (!skipDrop) {
+              event = new DragEvent('dragEnd', sourceOptions);
+              result = source.dispatchEvent(event);
+            }
+            break;
+          default:
+            result = false;
+            break;
+        }
+
+        if (!result) {
+          callback(false);
+        } else if (++dragEventPhase <= 4) {
+          contentWindow.requestIdleCallback(sendPhasedDragDropEvents);
+        } else {
+          callback(true);
+        }
       }
 
-      // Get the middle of the src element, because some of Files app logic
-      // requires clientX and clientY.
-      const srcRect = srcElement.getBoundingClientRect();
-      const srcOptions = Object.assign(
-          {
-            clientX: srcRect.left + (srcRect.width / 2),
-            clientY: srcRect.top + (srcRect.height / 2),
-          },
-          options);
-
-      const dragStart = new DragEvent('dragstart', srcOptions);
-      const dragEnter = new DragEvent('dragenter', options);
-      const dragOver = new DragEvent('dragover', options);
-      const drop = new DragEvent('drop', options);
-      const dragEnd = new DragEvent('dragEnd', options);
-
-      srcElement.dispatchEvent(dragStart);
-      dstElement.dispatchEvent(dragEnter);
-      dstElement.dispatchEvent(dragOver);
-      if (!skipDrop) {
-        dstElement.dispatchEvent(drop);
-      }
-      srcElement.dispatchEvent(dragEnd);
-      return true;
+      sendPhasedDragDropEvents();
     };
 
 /**

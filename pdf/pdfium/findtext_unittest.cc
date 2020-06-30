@@ -9,8 +9,8 @@
 #include "pdf/test/test_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::InSequence;
 using testing::_;
+using testing::InSequence;
 
 namespace chrome_pdf {
 

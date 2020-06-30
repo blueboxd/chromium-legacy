@@ -65,6 +65,13 @@ class PluginVmManagerImpl
   }
 
  private:
+  void InstallDlcAndUpdateVmState(
+      base::OnceCallback<void(bool default_vm_exists)> success_callback,
+      base::OnceClosure error_callback);
+  void OnInstallPluginVmDlc(
+      base::OnceCallback<void(bool default_vm_exists)> success_callback,
+      base::OnceClosure error_callback,
+      const chromeos::DlcserviceClient::InstallResult& install_result);
   void OnStartDispatcher(
       base::OnceCallback<void(bool default_vm_exists)> success_callback,
       base::OnceClosure error_callback,
@@ -77,9 +84,6 @@ class PluginVmManagerImpl
   // The flow to launch a Plugin Vm. We'll probably want to add additional
   // abstraction around starting the services in the future but this is
   // sufficient for now.
-  void InstallPluginVmDlc();
-  void OnInstallPluginVmDlc(
-      const chromeos::DlcserviceClient::InstallResult& install_result);
   void OnListVmsForLaunch(bool default_vm_exists);
   void StartVm();
   void OnStartVm(

@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="../ambient_mode_page/ambient_mode_page.html">
+<link rel="import" href="../ambient_mode_page/ambient_mode_photos_page.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="change_picture.html">
@@ -65,6 +66,14 @@
             </settings-ambient-mode-page>
           </settings-subpage>
         </template>
+
+        <template is="dom-if" route-path="/ambientMode/photos">
+          <settings-subpage>
+            <settings-ambient-mode-photos-page>
+            </settings-ambient-mode-photos-page>
+          </settings-subpage>
+        </template>
+
       </template>
     </settings-animated-pages>
   </template>

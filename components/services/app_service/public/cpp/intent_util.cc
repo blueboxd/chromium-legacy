@@ -55,10 +55,16 @@ bool MimeTypeMatched(const std::string& mime_type1,
       base::SplitString(mime_type2, kMimeTypeSeparator, base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
 
-  const size_t kMimeTypeComponentSize = 2;
-  if (components1.size() != kMimeTypeComponentSize ||
-      components2.size() != kMimeTypeComponentSize) {
+  constexpr size_t kMimeTypeComponentSize = 2;
+  if (components1.size() > kMimeTypeComponentSize ||
+      components2.size() > kMimeTypeComponentSize || components1.size() == 0 ||
+      components2.size() == 0) {
     return false;
+  }
+
+  // For strings only contain the main mime type (i.e. no "/").
+  if (components1.size() == 1 || components2.size() == 1) {
+    return ComponentMatched(components1[0], components2[0]);
   }
 
   // Both intent and intent filter can use wildcard for mime type.

@@ -1205,6 +1205,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-assistant-better-onboarding",
+    "owners": ["croissant-eng"],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-assistant-dsp",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 88
@@ -1232,6 +1237,11 @@
   {
     "name": "enable-assistant-stereo-input",
     "owners": [ "croissant-eng" ],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "enable-assistant-timers-v2",
+    "owners": ["croissant-eng"],
     "expiry_milestone": 88
   },
   {
@@ -2819,6 +2829,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "help-app-search-service-integration",
+    "owners": [ "//chromeos/components/help_app_ui/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "homepage-promo-card",
     "owners": [ "wenyufu", "chrome-android-app@chromium.org" ],
     "expiry_milestone": 90
@@ -3545,6 +3560,11 @@
     "name": "open-downloads-in-files.app",
     "owners": [ "ewannpv", "gambard" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "os-settings-deep-linking",
+    "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
+    "expiry_milestone": 90
   },
   {
     "name": "overlay-new-layout",

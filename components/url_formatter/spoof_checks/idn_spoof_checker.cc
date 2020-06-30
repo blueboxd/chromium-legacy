@@ -425,6 +425,10 @@ IDNSpoofChecker::Result IDNSpoofChecker::SafeToDisplayAsUnicode(
         return Result::kWholeScriptConfusable;
       }
     }
+    // Disallow domains that contain only numbers and number-spoofs.
+    if (IsDigitLookalike(label_string))
+      return Result::kDigitLookalikes;
+
     return Result::kSafe;
   }
 

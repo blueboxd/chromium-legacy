@@ -16,10 +16,11 @@
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/crash_keys.h"
-#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
@@ -485,7 +486,8 @@ CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
       request_initiator_site_lock, request_initiator);
 
   if (result == InitiatorLockCompatibility::kIncorrectLock &&
-      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+      CrossOriginReadBlockingExceptionForPlugin::ShouldAllowForPlugin(
+          process_id)) {
     result = InitiatorLockCompatibility::kExcludedCorbForPlugin;
   }
 

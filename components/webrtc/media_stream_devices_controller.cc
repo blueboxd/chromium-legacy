@@ -551,8 +551,7 @@ bool MediaStreamDevicesController::HasAvailableDevices(
       continue;
     }
     if (content_type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM &&
-        device.pan_tilt_zoom_supported.has_value() &&
-        !device.pan_tilt_zoom_supported.value()) {
+        !device.pan_tilt_zoom_supported) {
       continue;
     }
     return true;

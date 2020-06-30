@@ -33,8 +33,8 @@ struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
       const std::string& device_id,
       const std::string& label,
       const std::string& group_id,
-      media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE,
-      const base::Optional<bool>& pan_tilt_zoom_supported = base::nullopt);
+      bool pan_tilt_zoom_supported = false,
+      media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE);
   explicit WebMediaDeviceInfo(
       const media::VideoCaptureDeviceDescriptor& descriptor);
   ~WebMediaDeviceInfo();
@@ -44,9 +44,9 @@ struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
   std::string device_id;
   std::string label;
   std::string group_id;
+  bool pan_tilt_zoom_supported = false;
   media::VideoFacingMode video_facing =
       media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
-  base::Optional<bool> pan_tilt_zoom_supported;
 };
 
 using WebMediaDeviceInfoArray = std::vector<WebMediaDeviceInfo>;

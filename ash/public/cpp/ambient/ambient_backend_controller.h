@@ -81,7 +81,7 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
       base::OnceCallback<void(const base::Optional<AmbientSettings>& settings)>;
   using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
   using OnPersonalAlbumsFetchedCallback =
-      base::OnceCallback<void(const PersonalAlbums&)>;
+      base::OnceCallback<void(PersonalAlbums)>;
 
   static AmbientBackendController* Get();
 

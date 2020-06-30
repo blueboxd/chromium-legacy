@@ -969,10 +969,6 @@
       status: "experimental",
     },
     {
-      name: "LayoutNGRubyEmHeight",
-      depends_on: ["LayoutNGRuby"],
-    },
-    {
       name: "LayoutNGTable",
     },
     {

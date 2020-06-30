@@ -16,8 +16,27 @@ cr.define('settings', function() {
      */
     onAmbientModePageReady() {}
 
-    /** Updates the selected topic source to server. */
-    onTopicSourceSelectedChanged(selected) {}
+    /**
+     * Updates the selected topic source to server.
+     * @param {!AmbientModeTopicSource} topicSource the selected topic source.
+     */
+    setSelectedTopicSource(topicSource) {}
+
+    /**
+     * Retrieves the personal album and art categories from server. As a
+     * response, the C++ sends the 'photos-containers-changed' WebUIListener
+     * event.
+     * @param {!AmbientModeTopicSource} topicSource the topic source for which
+     *     the containers requested
+     * for.
+     */
+    requestPhotosContainers(topicSource) {}
+
+    /**
+     * Updates the selected personal albums or art categories to server.
+     * @param {!Array<string>} containers the selected albums or categeries.
+     */
+    setSelectedPhotosContainers(containers) {}
   }
 
   /** @implements {settings.AmbientModeBrowserProxy} */
@@ -28,8 +47,18 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    onTopicSourceSelectedChanged(selected) {
-      chrome.send('onTopicSourceSelectedChanged', [selected]);
+    setSelectedTopicSource(topicSource) {
+      chrome.send('setSelectedTopicSource', [topicSource]);
+    }
+
+    /** @override */
+    requestPhotosContainers(topicSource) {
+      chrome.send('requestPhotosContainers', [topicSource]);
+    }
+
+    /** @override */
+    setSelectedPhotosContainers(containers) {
+      chrome.send('setSelectedPhotosContainers', containers);
     }
   }
 

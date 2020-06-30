@@ -1606,6 +1606,11 @@ const char kEnableDeJellyDescription[] =
     "bugs, visual artifacts, and performance cost. This implementation may be "
     "removed at any time.";
 
+const char kOsSettingsDeepLinkingName[] = "CrOS Settings Deep Linking";
+const char kOsSettingsDeepLinkingDescription[] =
+    "Enables a unique URL for each path in CrOS settings. "
+    "This allows deep linking to individual settings, i.e. in settings search.";
+
 const char kOverlayNewLayoutName[] = "Overlay new layout";
 const char kOverlayNewLayoutDescription[] =
     "Enables a new layout for the "
@@ -3520,6 +3525,11 @@ const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
 const char kEnableAssistantAppSupportDescription[] =
     "Enable the Assistant App Support feature";
 
+const char kEnableAssistantBetterOnboardingName[] =
+    "Enable Assistant Better Onboarding";
+const char kEnableAssistantBetterOnboardingDescription[] =
+    "Enables the Assistant better onboarding experience.";
+
 const char kEnableAssistantLauncherIntegrationName[] =
     "Assistant & Launcher integration";
 const char kEnableAssistantLauncherIntegrationDescription[] =
@@ -3538,6 +3548,10 @@ const char kEnableAssistantMediaSessionIntegrationDescription[] =
 
 const char kEnableAssistantRoutinesName[] = "Assistant Routines";
 const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
+
+const char kEnableAssistantTimersV2Name[] = "Enable Assistant Timers V2";
+const char kEnableAssistantTimersV2Description[] =
+    "Enables v2 of Assistant timers.";
 
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
@@ -3767,6 +3781,12 @@ const char kHelpAppDescription[] =
 const char kHelpAppReleaseNotesName[] = "Help App Release Notes";
 const char kHelpAppReleaseNotesDescription[] =
     "Enables release notes in the help app";
+
+const char kHelpAppSearchServiceIntegrationName[] =
+    "Help App search service integration";
+const char kHelpAppSearchServiceIntegrationDescription[] =
+    "Enables the integration between the help app and the local search"
+    " service. Includes using the search service for in app search.";
 
 const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
 const char kHideArcMediaNotificationsDescription[] =

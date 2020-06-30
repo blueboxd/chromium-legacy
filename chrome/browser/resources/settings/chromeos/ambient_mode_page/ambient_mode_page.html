@@ -5,6 +5,9 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="constants.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../controls/settings_radio_group.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../settings_shared_css.html">
@@ -33,19 +36,22 @@
       <label id="topicSourceDescription" class="cr-padded-text">
           $i18n{ambientModeTopicSourceTitle}
       </label>
+
+      <!-- TODO(b/159746638): Implement a new UI to pick topic source and open
+      subpage. -->
       <div class="list-frame">
         <!-- Disable the radio buttons before the selection is fetched from
         server. -->
         <cr-radio-group id="topicSourceRadioGroup"
             aria-labelledby="topicSourceDescription"
-            selected="[[topicSourceSelected_]]"
-            on-selected-changed="onTopicSourceSelectedChanged_"
-            disabled="[[!isValidTopicSource_(topicSourceSelected_)]]">
-          <cr-radio-button name="[[topicSource_.GOOGLE_PHOTOS]]"
+            selected="[[selectedTopicSource_]]"
+            on-click="onTopicSourceClicked_"
+            disabled="[[!isValidTopicSource_(selectedTopicSource_)]]">
+          <cr-radio-button name="[[AmbientModeTopicSource.GOOGLE_PHOTOS]]"
               class="list-item underbar"
               label="$i18n{ambientModeTopicSourceGooglePhotos}">
           </cr-radio-button>
-          <cr-radio-button name="[[topicSource_.ART_GALLERY]]"
+          <cr-radio-button name="[[AmbientModeTopicSource.ART_GALLERY]]"
               class="list-item underbar"
               label="$i18n{ambientModeTopicSourceArtGallery}">
           </cr-radio-button>

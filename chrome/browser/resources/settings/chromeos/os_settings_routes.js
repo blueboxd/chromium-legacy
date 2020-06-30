@@ -13,6 +13,8 @@
  *   ACCOUNTS: !settings.Route,
  *   ACCOUNT_MANAGER: !settings.Route,
  *   ADVANCED: !settings.Route,
+ *   AMBIENT_MODE: !settings.Route,
+ *   AMBIENT_MODE_PHOTOS: !settings.Route,
  *   APP_MANAGEMENT: !settings.Route,
  *   APP_MANAGEMENT_DETAIL: !settings.Route,
  *   APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS: !settings.Route,

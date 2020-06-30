@@ -105,24 +105,17 @@ suite('CrostiniPageTests', function() {
         showCrostiniDiskResize: true,
       });
 
-      const eventPromise = new Promise((resolve) => {
-                             const v = cr.addWebUIListener(
-                                 'crostini-installer-status-changed', () => {
-                                   resolve(v);
-                                 });
-                           }).then((v) => {
-        assertTrue(cr.removeWebUIListener(v));
-      });
-
+      console.log('Navigating');
       settings.Router.getInstance().navigateTo(settings.routes.CROSTINI);
+      console.log('Clicking');
       crostiniPage.$$('#crostini').click();
 
-      const pageLoadPromise = test_util.flushTasks().then(() => {
-        subpage = crostiniPage.$$('settings-crostini-subpage');
-        assertTrue(!!subpage);
-      });
+      console.log('Flushing page load');
+      await test_util.flushTasks();
+      subpage = crostiniPage.$$('settings-crostini-subpage');
+      assertTrue(!!subpage);
+      console.log('pageLoadPromise done');
 
-      await Promise.all([pageLoadPromise, eventPromise]);
     });
 
     suite('SubPageDefault', function() {
@@ -185,6 +178,14 @@ suite('CrostiniPageTests', function() {
 
         await test_util.flushTasks();
         assertFalse(button.disabled);
+      });
+
+      test('InstallerStatusQueriedOnAttach', async function() {
+        // We navigated the page during setup, so this request should've been
+        // triggered by here.
+        assertTrue(
+            crostiniBrowserProxy.getCallCount(
+                'requestCrostiniInstallerStatus') >= 1);
       });
 
       test('Export', async function() {

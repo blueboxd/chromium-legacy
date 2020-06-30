@@ -64,8 +64,8 @@
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
-using printing::kPointsPerInch;
 using printing::kPixelsPerInch;
+using printing::kPointsPerInch;
 
 namespace chrome_pdf {
 

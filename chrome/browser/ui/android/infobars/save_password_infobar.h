@@ -7,12 +7,12 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 
 class SavePasswordInfoBarDelegate;
 
 // The infobar to be used with SavePasswordInfoBarDelegate.
-class SavePasswordInfoBar : public ConfirmInfoBar {
+class SavePasswordInfoBar : public ChromeConfirmInfoBar {
  public:
   explicit SavePasswordInfoBar(
       std::unique_ptr<SavePasswordInfoBarDelegate> delegate);

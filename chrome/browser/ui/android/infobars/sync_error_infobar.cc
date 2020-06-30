@@ -6,7 +6,7 @@
 
 SyncErrorInfoBar::SyncErrorInfoBar(
     std::unique_ptr<SyncErrorInfoBarDelegateAndroid> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 SyncErrorInfoBar::~SyncErrorInfoBar() {}
 

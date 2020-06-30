@@ -1685,10 +1685,9 @@ bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
     return false;
   if (!data.ReadCaptureApi(&(output->capture_api)))
     return false;
+  output->set_pan_tilt_zoom_supported(data.pan_tilt_zoom_supported());
   if (!data.ReadTransportType(&(output->transport_type)))
     return false;
-  if (data.has_pan_tilt_zoom_supported())
-    output->set_pan_tilt_zoom_supported(data.pan_tilt_zoom_supported());
   return true;
 }
 

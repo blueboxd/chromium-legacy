@@ -213,6 +213,12 @@ class CORE_EXPORT NGLineInfo {
   // without clamping.
   LayoutUnit ComputeWidth() const;
 
+#if DCHECK_IS_ON()
+  // Returns width in float. This function is used for avoiding |LayoutUnit|
+  // saturated addition of items in line.
+  float ComputeWidthInFloat() const;
+#endif
+
   bool HasTrailingSpaces() const { return has_trailing_spaces_; }
   void SetHasTrailingSpaces() { has_trailing_spaces_ = true; }
   bool ShouldHangTrailingSpaces() const;

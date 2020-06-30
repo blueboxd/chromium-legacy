@@ -8,34 +8,17 @@
 #include <utility>
 
 #include "base/android/jni_string.h"
-#include "base/bind.h"
-#include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/messages/android/jni_headers/ConfirmInfoBar_jni.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/browser/web_contents.h"
-#include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-// InfoBarService -------------------------------------------------------------
-
-std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
-    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  return std::make_unique<ConfirmInfoBar>(std::move(delegate));
-}
-
-
-// ConfirmInfoBar -------------------------------------------------------------
-
-ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarAndroid(
-          std::move(delegate),
-          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
+ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate,
+                               const ResourceIdMapper& resource_id_mapper)
+    : InfoBarAndroid(std::move(delegate), resource_id_mapper) {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
 }
@@ -49,16 +32,6 @@ base::string16 ConfirmInfoBar::GetTextFor(
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
   return delegate()->AsConfirmInfoBarDelegate();
-}
-
-TabAndroid* ConfirmInfoBar::GetTab() {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(this);
-  DCHECK(web_contents);
-
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  DCHECK(tab);
-  return tab;
 }
 
 ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {

@@ -13,6 +13,7 @@
 #include "cc/cc_export.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace cc {
 
@@ -20,8 +21,14 @@ namespace cc {
 // |frames| - number of frames in the interval
 // |duration| - intended wallclock duration of the interval
 // |roughness| - roughness of the interval
-using PlaybackRoughnessReportingCallback = base::RepeatingCallback<
-    void(int frames, base::TimeDelta duration, double roughness)>;
+// |refresh_rate_hz| - display refresh rate, usually 60Hz
+// |frame_size| - size of the video frames in the interval
+using PlaybackRoughnessReportingCallback =
+    base::RepeatingCallback<void(int frames,
+                                 base::TimeDelta duration,
+                                 double roughness,
+                                 int refresh_rate_hz,
+                                 gfx::Size frame_size)>;
 
 // This class tracks moments when each frame was submitted
 // and when it was displayed. Then series of frames split into groups
@@ -91,12 +98,16 @@ class CC_EXPORT VideoPlaybackRoughnessReporter {
     base::Optional<base::TimeTicks> presentation_time;
     base::Optional<base::TimeDelta> actual_duration;
     base::Optional<base::TimeDelta> intended_duration;
+    int refresh_rate_hz = 60;
+    gfx::Size size;
   };
 
   struct ConsecutiveFramesWindow {
     int size;
     base::TimeTicks first_frame_time;
     base::TimeDelta intended_duration;
+    int refresh_rate_hz = 60;
+    gfx::Size frame_size;
 
     // Worst case difference between a frame's intended duration and
     // actual duration, calculated for all frames in the window.

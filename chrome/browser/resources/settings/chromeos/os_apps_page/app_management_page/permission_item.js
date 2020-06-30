@@ -113,6 +113,11 @@ Polymer({
     return app_management.util.getPermissionValueBool(app, permissionType);
   },
 
+  resetToggle() {
+    const currentValue = this.getValue_(this.app_, this.permissionType);
+    this.$$('#toggle-row').setToggle(currentValue);
+  },
+
   /**
    * @private
    */
@@ -125,6 +130,14 @@ Polymer({
    */
   togglePermission_() {
     assert(this.app_);
+    // Plugin VM handles microphone and camera permissions manually.
+    // TODO(crbug:1071872): remove in m86 when plugin_vm permissions are
+    // updated.
+    if (this.app_.type == AppType.kPluginVm &&
+        (this.permissionType == 'MICROPHONE' ||
+         this.permissionType == 'CAMERA')) {
+      return;
+    }
 
     /** @type {!Permission} */
     let newPermission;

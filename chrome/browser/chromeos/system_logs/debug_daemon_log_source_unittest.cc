@@ -36,7 +36,7 @@ TEST_F(DebugDaemonLogSourceTest, ReadEndOfFileSmall) {
   const char kTestData[] = "0123456789";  // Length of 10
   std::string read_data;
 
-  base::FilePath file_path = temp_dir_.GetPath().Append("test.txt");
+  base::FilePath file_path = temp_dir_.GetPath().Append("test_small.txt");
 
   WriteFile(file_path, kTestData, strlen(kTestData));
 
@@ -59,6 +59,36 @@ TEST_F(DebugDaemonLogSourceTest, ReadEndOfFileSmall) {
   read_data.clear();
   EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 5));
   EXPECT_EQ("56789", read_data);
+}
+
+TEST_F(DebugDaemonLogSourceTest, ReadEndOfFileWithZeros) {
+  const size_t test_size = 10;
+  std::string test_data("abcd\0\0\0\0hi", test_size);
+  std::string read_data;
+
+  base::FilePath file_path = temp_dir_.GetPath().Append("test_zero.txt");
+
+  WriteFile(file_path, test_data.data(), test_size);
+
+  read_data.clear();
+  EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 15));
+  EXPECT_EQ(test_data, read_data);
+
+  read_data.clear();
+  EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 10));
+  EXPECT_EQ(test_data, read_data);
+
+  read_data.clear();
+  EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 2));
+  EXPECT_EQ(test_data.substr(test_size - 2, 2), read_data);
+
+  read_data.clear();
+  EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 3));
+  EXPECT_EQ(test_data.substr(test_size - 3, 3), read_data);
+
+  read_data.clear();
+  EXPECT_TRUE(ReadEndOfFile(file_path, &read_data, 5));
+  EXPECT_EQ(test_data.substr(test_size - 5, 5), read_data);
 }
 
 TEST_F(DebugDaemonLogSourceTest, ReadEndOfFileMedium) {

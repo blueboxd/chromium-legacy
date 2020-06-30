@@ -204,10 +204,10 @@
   // |-traitCollectionDidChange:| is not properly called when the view rotates
   // while it is in a ViewController deeper in the ViewController hierarchy. Use
   // self.traitCollection since iOS 13 where the bug is fixed in UIKit.
-  return UIApplication.sharedApplication.keyWindow.traitCollection
-                 .verticalSizeClass == UIUserInterfaceSizeClassRegular &&
-         UIApplication.sharedApplication.keyWindow.traitCollection
-                 .horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+  return self.window.traitCollection.verticalSizeClass ==
+             UIUserInterfaceSizeClassRegular &&
+         self.window.traitCollection.horizontalSizeClass ==
+             UIUserInterfaceSizeClassCompact;
 }
 
 @end

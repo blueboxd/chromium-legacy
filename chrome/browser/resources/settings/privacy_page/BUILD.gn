@@ -49,7 +49,6 @@ js_type_check("closure_compile_module") {
     ":personalization_options.m",
     ":privacy_page",
     ":privacy_page_browser_proxy.m",
-    ":safe_browsing_browser_proxy",
     ":secure_dns",
     ":secure_dns_input",
     ":security_keys_bio_enroll_dialog",
@@ -177,13 +176,6 @@ js_library("privacy_page_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("safe_browsing_browser_proxy") {
-  deps = [
-    "../site_settings:site_settings_prefs_browser_proxy",
-    "//ui/webui/resources/js:cr.m",
-  ]
-}
-
 js_library("security_keys_bio_enroll_dialog") {
   deps = [
     ":security_keys_browser_proxy",
@@ -249,7 +241,6 @@ js_library("security_page") {
   deps = [
     ":disable_safebrowsing_dialog",
     ":privacy_page_browser_proxy.m",
-    ":safe_browsing_browser_proxy",
     "..:i18n_setup",
     "..:metrics_browser_proxy",
     "..:route",

@@ -60,7 +60,7 @@ class WebBundleInterceptorForTrustableFile final
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
-  void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
+  void OnMetadataReady(web_package::mojom::BundleMetadataParseErrorPtr error);
 
   std::unique_ptr<WebBundleSource> source_;
   scoped_refptr<WebBundleReader> reader_;
@@ -74,7 +74,7 @@ class WebBundleInterceptorForTrustableFile final
   std::unique_ptr<WebBundleURLLoaderFactory> url_loader_factory_;
 
   GURL primary_url_;
-  data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
+  web_package::mojom::BundleMetadataParseErrorPtr metadata_error_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

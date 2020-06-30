@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/cbor",
+  "+components/web_package",
   "+device/bluetooth/public",
   "+gin",
   "+net",

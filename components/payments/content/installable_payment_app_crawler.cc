@@ -33,6 +33,9 @@
 
 namespace payments {
 
+RefetchedIcon::RefetchedIcon() = default;
+RefetchedIcon::~RefetchedIcon() = default;
+
 // TODO(crbug.com/782270): Use cache to accelerate crawling procedure.
 InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     const url::Origin& merchant_origin,
@@ -514,8 +517,11 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
                 "\" for payment handler manifest \"" +
                 method_manifest_url.spec() + "\".");
     } else {
-      refetched_icons_.insert(std::pair<GURL, std::unique_ptr<SkBitmap>>(
-          web_app_manifest_url, std::make_unique<SkBitmap>(icon)));
+      auto refetched_icon = std::make_unique<RefetchedIcon>();
+      refetched_icon->method_name = method_manifest_url.spec();
+      refetched_icon->icon = std::make_unique<SkBitmap>(icon);
+      refetched_icons_.insert(
+          std::make_pair(web_app_manifest_url, std::move(refetched_icon)));
     }
   }
 

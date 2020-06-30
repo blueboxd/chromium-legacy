@@ -290,6 +290,7 @@ test("components_unittests") {
       "//components/ukm/content:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
+      "//components/web_package:unit_tests",
       "//components/webcrypto:unit_tests",
     ]
 

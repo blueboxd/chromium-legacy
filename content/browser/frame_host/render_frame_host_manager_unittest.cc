@@ -291,26 +291,26 @@ class RenderDocumentFeatureTest : public testing::Test {
 };
 
 TEST_F(RenderDocumentFeatureTest, FeatureDisabled) {
-  EXPECT_FALSE(CreateNewHostForCrashedFrame());
-  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+  EXPECT_FALSE(ShouldCreateNewHostForCrashedFrame());
+  EXPECT_FALSE(ShouldCreateNewHostForSameSiteSubframe());
 }
 
 TEST_F(RenderDocumentFeatureTest, LevelDisabled) {
   SetLevel(RenderDocumentLevel::kDisabled);
-  EXPECT_FALSE(CreateNewHostForCrashedFrame());
-  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+  EXPECT_FALSE(ShouldCreateNewHostForCrashedFrame());
+  EXPECT_FALSE(ShouldCreateNewHostForSameSiteSubframe());
 }
 
 TEST_F(RenderDocumentFeatureTest, LevelCrashed) {
   SetLevel(RenderDocumentLevel::kCrashedFrame);
-  EXPECT_TRUE(CreateNewHostForCrashedFrame());
-  EXPECT_FALSE(CreateNewHostForSameSiteSubframe());
+  EXPECT_TRUE(ShouldCreateNewHostForCrashedFrame());
+  EXPECT_FALSE(ShouldCreateNewHostForSameSiteSubframe());
 }
 
 TEST_F(RenderDocumentFeatureTest, LevelSub) {
   SetLevel(RenderDocumentLevel::kSubframe);
-  EXPECT_TRUE(CreateNewHostForCrashedFrame());
-  EXPECT_TRUE(CreateNewHostForSameSiteSubframe());
+  EXPECT_TRUE(ShouldCreateNewHostForCrashedFrame());
+  EXPECT_TRUE(ShouldCreateNewHostForSameSiteSubframe());
 }
 
 class RenderFrameHostManagerTest
@@ -1977,7 +1977,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
   EXPECT_EQ((bool)contents1->GetMainFrame()->GetView(),
-            CreateNewHostForCrashedFrame());
+            ShouldCreateNewHostForCrashedFrame());
   EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // |contents1| creates an out of process iframe.

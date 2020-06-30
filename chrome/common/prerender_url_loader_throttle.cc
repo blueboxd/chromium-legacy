@@ -24,10 +24,9 @@ const char kPurposeHeaderName[] = "Purpose";
 const char kPurposeHeaderValue[] = "prefetch";
 
 void CallCancelPrerenderForUnsupportedScheme(
-    mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler,
-    const GURL& url) {
+    mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler) {
   mojo::Remote<prerender::mojom::PrerenderCanceler>(std::move(canceler))
-      ->CancelPrerenderForUnsupportedScheme(url);
+      ->CancelPrerenderForUnsupportedScheme();
 }
 
 // Returns true if the response has a "no-store" cache control header.
@@ -96,7 +95,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // WillRedirectRequest() and PrerenderContents::CheckURL(). See
     // http://crbug.com/673771.
     delegate_->CancelWithError(net::ERR_ABORTED);
-    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_), request->url);
+    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_));
     return;
   }
 
@@ -154,8 +153,7 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
   // Abort any prerenders with requests which redirect to invalid schemes.
   if (!DoesURLHaveValidScheme(redirect_info->new_url)) {
     delegate_->CancelWithError(net::ERR_ABORTED);
-    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_),
-                                            redirect_info->new_url);
+    CallCancelPrerenderForUnsupportedScheme(std::move(canceler_));
   } else if (follow_only_when_prerender_shown_header == "1" &&
              resource_type_ != blink::mojom::ResourceType::kMainFrame) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown

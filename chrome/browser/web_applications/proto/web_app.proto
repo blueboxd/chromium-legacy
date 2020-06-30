@@ -49,6 +49,18 @@ message ChromeOSDataProto {
   required bool is_disabled = 4;
 }
 
+// Properties for a WebApp's shortcuts menu item.
+message WebAppShortcutsMenuItemInfoProto {
+  required string name = 1;
+  required string url = 2;
+  repeated sync_pb.WebAppIconInfo shortcut_icon_infos = 3;
+}
+
+// List of icon sizes downloaded to disk for a shortcuts menu item.
+message DownloadedShortcutsMenuIconSizesProto {
+  repeated int32 icon_sizes = 1;
+}
+
 // Full WebApp object data. See detailed comments in
 // chrome/browser/web_applications/web_app.h. Note on database identities:
 // app_id is a hash of launch_url. app_id is the client tag for sync system.
@@ -106,4 +118,10 @@ message WebAppProto {
   repeated WebAppProtocolHandler protocol_handlers = 17;
 
   required bool is_generated_icon = 18;
+
+  // A list of Shortcuts Menu items specified in the Web App Manifest.
+  repeated WebAppShortcutsMenuItemInfoProto shortcut_infos = 19;
+  // A list of icon sizes we successfully downloaded to store on disk.
+  repeated DownloadedShortcutsMenuIconSizesProto
+      downloaded_shortcuts_menu_icons_sizes = 20;
 }

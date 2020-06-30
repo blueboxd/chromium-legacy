@@ -222,11 +222,21 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,
                        component,
-                       component->Source()->GetReadyState()) {}
+                       component->Source()->GetReadyState(),
+                       /*callback=*/base::DoNothing()) {}
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component,
-                                   MediaStreamSource::ReadyState ready_state)
+                                   base::OnceClosure callback)
+    : MediaStreamTrack(context,
+                       component,
+                       component->Source()->GetReadyState(),
+                       std::move(callback)) {}
+
+MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
+                                   MediaStreamComponent* component,
+                                   MediaStreamSource::ReadyState ready_state,
+                                   base::OnceClosure callback)
     : ready_state_(ready_state),
       component_(component),
       execution_context_(context) {
@@ -244,8 +254,10 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
     bool pan_tilt_zoom_allowed =
         image_capture_ ? image_capture_->HasPanTiltZoomPermissionGranted()
                        : video_track->pan_tilt_zoom_allowed();
-    image_capture_ = MakeGarbageCollected<ImageCapture>(context, this,
-                                                        pan_tilt_zoom_allowed);
+    image_capture_ = MakeGarbageCollected<ImageCapture>(
+        context, this, pan_tilt_zoom_allowed, std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
 }
 
@@ -401,7 +413,8 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   MediaStreamComponent* cloned_component = Component()->Clone();
   MediaStreamTrack* cloned_track = MakeGarbageCollected<MediaStreamTrack>(
-      ExecutionContext::From(script_state), cloned_component, ready_state_);
+      ExecutionContext::From(script_state), cloned_component, ready_state_,
+      base::DoNothing());
   DidCloneMediaStreamTrack(Component(), cloned_component);
   return cloned_track;
 }

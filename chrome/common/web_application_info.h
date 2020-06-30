@@ -140,6 +140,8 @@ struct WebApplicationInfo {
   std::vector<std::string> additional_search_terms;
 
   // Set of shortcut infos populated using shortcuts specified in the manifest.
+  //
+  // TODO(https://crbug.com/1100751): Rename this to shortcuts_menu_item_infos.
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
 
   // Vector of shortcut icon bitmaps keyed by their square size. The index of a

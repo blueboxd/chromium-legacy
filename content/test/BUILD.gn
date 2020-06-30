@@ -1198,6 +1198,7 @@ test("content_browsertests") {
     "//components/url_formatter:url_formatter",
     "//components/viz/host",
     "//components/viz/test:test_support",
+    "//components/web_package:test_support",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",

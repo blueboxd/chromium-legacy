@@ -48,7 +48,7 @@
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/crl_set_distributor.h"
-#include "services/network/cross_origin_read_blocking.h"
+#include "services/network/cross_origin_read_blocking_exception_for_plugin.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/legacy_tls_config_distributor.h"
@@ -56,6 +56,7 @@
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
+#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
@@ -670,7 +671,7 @@ void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
 
 void NetworkService::AddCorbExceptionForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
+  CrossOriginReadBlockingExceptionForPlugin::AddExceptionForPlugin(process_id);
 }
 
 void NetworkService::AddAllowedRequestInitiatorForPlugin(
@@ -684,7 +685,8 @@ void NetworkService::AddAllowedRequestInitiatorForPlugin(
 void NetworkService::RemoveSecurityExceptionsForPlugin(int32_t process_id) {
   DCHECK_NE(mojom::kBrowserProcessId, process_id);
 
-  CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
+  CrossOriginReadBlockingExceptionForPlugin::RemoveExceptionForPlugin(
+      process_id);
 
   std::map<int, std::set<url::Origin>>& map = plugin_origins_;
   map.erase(process_id);

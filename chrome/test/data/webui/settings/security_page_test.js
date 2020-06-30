@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
@@ -15,7 +14,6 @@ import {flushTasks} from '../test_util.m.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
-import {TestSafeBrowsingBrowserProxy} from './test_safe_browsing_browser_proxy.js';
 import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
@@ -29,9 +27,6 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
   /** @type {!TestPrivacyPageBrowserProxy} */
   let testPrivacyBrowserProxy;
-
-  /** @type {!TestSafeBrowsingBrowserProxy} */
-  let testSafeBrowsingBrowserProxy;
 
   /** @type {!SettingsSecurityPageElement} */
   let page;
@@ -49,13 +44,11 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     PrivacyPageBrowserProxyImpl.instance_ = testPrivacyBrowserProxy;
     syncBrowserProxy = new TestSyncBrowserProxy();
     SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
-    testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
-    SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
     document.body.innerHTML = '';
     page = /** @type {!SettingsSecurityPageElement} */ (
         document.createElement('settings-security-page'));
     page.prefs = {
-      profile: {password_manager_leak_detection: {value: true}},
+      profile: {password_manager_leak_detection: {value: false}},
       signin: {
         allowed_on_next_startup:
             {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
@@ -64,6 +57,12 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
         enabled: {value: true},
         scout_reporting_enabled: {value: true},
         enhanced: {value: false}
+      },
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
       },
       dns_over_https:
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
@@ -107,34 +106,34 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
   test('safeBrowsingReportingToggle', function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+
     const safeBrowsingReportingToggle = page.$$('#safeBrowsingReportingToggle');
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
+
     // This could also be set to disabled, anything other than standard.
     page.$$('#safeBrowsingEnhanced').click();
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
     flush();
-
-    assertFalse(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
     assertTrue(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
     assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
-    page.$$('#safeBrowsingStandard').click();
-    flush();
 
-    assertTrue(
-        page.prefs.safebrowsing.enabled.value &&
-        !page.prefs.safebrowsing.enhanced.value);
+    page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
+    flush();
     assertFalse(safeBrowsingReportingToggle.disabled);
     assertTrue(safeBrowsingReportingToggle.checked);
   });
 
   test('DisableSafebrowsingDialog_Confirm', async function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
@@ -153,13 +152,14 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertFalse(page.$$('#safeBrowsingEnhanced').checked);
     assertFalse(page.$$('#safeBrowsingStandard').checked);
     assertTrue(page.$$('#safeBrowsingDisabled').checked);
-
-    assertFalse(page.prefs.safebrowsing.enabled.value);
-    assertFalse(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.DISABLED, page.prefs.generated.safe_browsing.value);
   });
 
   test('DisableSafebrowsingDialog_CancelFromEnhanced', async function() {
     page.$$('#safeBrowsingEnhanced').click();
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
@@ -178,13 +178,14 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertTrue(page.$$('#safeBrowsingEnhanced').checked);
     assertFalse(page.$$('#safeBrowsingStandard').checked);
     assertFalse(page.$$('#safeBrowsingDisabled').checked);
-
-    assertTrue(page.prefs.safebrowsing.enabled.value);
-    assertTrue(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
   });
 
   test('DisableSafebrowsingDialog_CancelFromStandard', async function() {
     page.$$('#safeBrowsingStandard').click();
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
     flush();
 
     page.$$('#safeBrowsingDisabled').click();
@@ -203,9 +204,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertFalse(page.$$('#safeBrowsingEnhanced').checked);
     assertTrue(page.$$('#safeBrowsingStandard').checked);
     assertFalse(page.$$('#safeBrowsingDisabled').checked);
-
-    assertTrue(page.prefs.safebrowsing.enabled.value);
-    assertFalse(page.prefs.safebrowsing.enhanced.value);
+    assertEquals(
+        SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
   });
 
   test('noControlSafeBrowsingReportingInEnhanced', function() {
@@ -301,107 +301,12 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertTrue(
         page.prefs.profile.password_manager_leak_detection.value === previous);
   });
-
-  test('SafeBrowsingRadio_PreferenceUpdate', function() {
-    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
-    const standardRadio = page.$$('#safeBrowsingStandard');
-    const disabledRadio = page.$$('#safeBrowsingDisabled');
-
-    // Set an enhanced protection preference state and ensure the radio buttons
-    // correctly reflect this.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    page.set('prefs.safebrowsing.enhanced.value', true);
-    flush();
-    assertTrue(enhancedRadio.checked);
-    assertFalse(standardRadio.checked);
-    assertFalse(disabledRadio.checked);
-
-    // As above but for an enabled protection state.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    page.set('prefs.safebrowsing.enhanced.value', false);
-    flush();
-    assertFalse(enhancedRadio.checked);
-    assertTrue(standardRadio.checked);
-    assertFalse(disabledRadio.checked);
-
-    // As above but for a safebrowsing disabled state.
-    page.set('prefs.safebrowsing.enabled.value', false);
-    page.set('prefs.safebrowsing.enhanced.value', false);
-    flush();
-    assertFalse(enhancedRadio.checked);
-    assertFalse(standardRadio.checked);
-    assertTrue(disabledRadio.checked);
-  });
-
-  test('SafeBrowsingRadio_ManagedState', async function() {
-    const enhancedRadio = page.$$('#safeBrowsingEnhanced');
-    const standardRadio = page.$$('#safeBrowsingStandard');
-    const disabledRadio = page.$$('#safeBrowsingDisabled');
-
-    const managedRadioState = {
-      enhanced:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-      standard:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-      disabled:
-          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
-    };
-
-    // Make sure the element has requested the managed state from its init.
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-
-    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
-        managedRadioState);
-    // Change an arbitrary Safe Browsing pref to trigger managed state update.
-    page.set('prefs.safebrowsing.enabled.value', false);
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-    flush();
-
-    assertTrue(enhancedRadio.disabled);
-    assertEquals(
-        enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
-    assertTrue(standardRadio.disabled);
-    assertEquals(
-        standardRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
-    assertTrue(disabledRadio.disabled);
-    assertEquals(
-        disabledRadio.policyIndicatorType, CrPolicyIndicatorType.DEVICE_POLICY);
-
-    // Ensure reverting to an unmanaged state is correctly handled.
-    const unmanagedRadioState = {
-      enhanced: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-      standard: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-      disabled: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
-    };
-    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
-        unmanagedRadioState);
-    // Change an arbitrary Safe Browsing pref to trigger managed state update.
-    page.set('prefs.safebrowsing.enabled.value', true);
-    await testSafeBrowsingBrowserProxy.whenCalled(
-        'getSafeBrowsingRadioManagedState');
-    testSafeBrowsingBrowserProxy.reset();
-    flush();
-
-    assertFalse(enhancedRadio.disabled);
-    assertEquals(enhancedRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
-    assertFalse(standardRadio.disabled);
-    assertEquals(standardRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
-    assertFalse(disabledRadio.disabled);
-    assertEquals(disabledRadio.policyIndicatorType, CrPolicyIndicatorType.NONE);
-  });
 });
 
 
 suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
   /** @type {!SettingsSecurityPageElement} */
   let page;
-
-  /** @type {!TestSafeBrowsingBrowserProxy} */
-  let testSafeBrowsingBrowserProxy;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -410,8 +315,6 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
   });
 
   setup(function() {
-    testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
-    SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
     document.body.innerHTML = '';
     page = /** @type {!SettingsSecurityPageElement} */ (
         document.createElement('settings-security-page'));
@@ -426,6 +329,12 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
         scout_reporting_enabled: {value: true},
         enhanced: {value: false}
       },
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+      },
       dns_over_https:
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
@@ -439,10 +348,5 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
 
   test('enhancedHiddenWhenDisbled', function() {
     assertTrue(page.$$('#safeBrowsingEnhanced').hidden);
-  });
-
-  test('validateSafeBrowsingEnhanced', function() {
-    return testSafeBrowsingBrowserProxy.whenCalled(
-        'validateSafeBrowsingEnhanced');
   });
 });

@@ -2801,6 +2801,14 @@
     App details
   </message>
 
+  <!-- Apps > Manage your apps > Parallels -->
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_CAMERA_LABEL" desc="Label for the Parallels permissions dialog when camera permissions are being adjusted">
+    The change in camera setting requires Parallels Desktop to relaunch
+  </message>
+  <message name="IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_MICROPHONE_LABEL" desc="Label for the Parallels permissions dialog when microphone permissions are being adjusted">
+    The change in microphone setting requires Parallels Desktop to relaunch
+  </message>
+
   <!-- Apps > Manage your apps > Parallels > Shared folders -->
   <message name="IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS" desc="Label for managing shared folders for Parallels.">
     Manage shared folders

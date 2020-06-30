@@ -246,4 +246,14 @@ LayoutUnit NGLineInfo::ComputeWidth() const {
   return inline_size;
 }
 
+#if DCHECK_IS_ON()
+float NGLineInfo::ComputeWidthInFloat() const {
+  float inline_size = TextIndent();
+  for (const NGInlineItemResult& item_result : Results())
+    inline_size += item_result.inline_size.ToFloat();
+
+  return inline_size;
+}
+#endif
+
 }  // namespace blink

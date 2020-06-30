@@ -14,7 +14,7 @@ using base::android::JavaParamRef;
 
 AdsBlockedInfoBar::AdsBlockedInfoBar(
     std::unique_ptr<AdsBlockedInfobarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 AdsBlockedInfoBar::~AdsBlockedInfoBar() {}
 

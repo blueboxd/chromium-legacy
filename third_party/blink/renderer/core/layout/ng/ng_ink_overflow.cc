@@ -11,12 +11,243 @@
 
 namespace blink {
 
-// static
-void NGInkOverflow::ComputeTextInkOverflow(
+namespace {
+
+struct SameSizeAsNGInkOverflow {
+  void* pointer;
+#if DCHECK_IS_ON()
+  NGInkOverflow::Type type;
+#endif
+};
+
+static_assert(sizeof(NGInkOverflow) == sizeof(SameSizeAsNGInkOverflow),
+              "NGInkOverflow should stay small");
+
+inline bool HasOverflow(const PhysicalRect& rect, const PhysicalSize& size) {
+  return rect.X() < 0 || rect.Y() < 0 || rect.Right() > size.width ||
+         rect.Bottom() > size.height;
+}
+
+}  // namespace
+
+#if DCHECK_IS_ON()
+NGInkOverflow::~NGInkOverflow() {
+  // Because |Type| is kept outside of the instance, callers must call |Reset|
+  // before destructing.
+  DCHECK(type_ == kNotSet || type_ == kNone) << type_;
+}
+#endif
+
+NGInkOverflow::NGInkOverflow(Type source_type, const NGInkOverflow& source) {
+  source.CheckType(source_type);
+  new (this) NGInkOverflow();
+  switch (source_type) {
+    case kNotSet:
+    case kNone:
+      break;
+    case kSmallSelf:
+      static_assert(sizeof(outsets_) == sizeof(self_),
+                    "outsets should be the size of a pointer");
+      self_ = source.self_;
+#if DCHECK_IS_ON()
+      for (wtf_size_t i = 0; i < base::size(outsets_); ++i)
+        DCHECK_EQ(outsets_[i], source.outsets_[i]);
+#endif
+      break;
+    case kSelf:
+      self_ = new NGSelfInkOverflow(*source.self_);
+      break;
+    case kSelfAndContents:
+      container_ = new NGContainerInkOverflow(*source.container_);
+      break;
+  }
+  SetType(source_type);
+}
+
+NGInkOverflow::Type NGInkOverflow::Reset(Type type) {
+  CheckType(type);
+  switch (type) {
+    case kNotSet:
+    case kSmallSelf:
+      break;
+    case kNone:
+      return kNone;
+    case kSelf:
+      delete self_;
+      break;
+    case kSelfAndContents:
+      delete container_;
+      break;
+  }
+  return SetType(kNone);
+}
+
+PhysicalRect NGInkOverflow::FromOutsets(const PhysicalSize& size) const {
+  const LayoutUnit left_outset(LayoutUnit::FromRawValue(outsets_[0]));
+  const LayoutUnit top_outset(LayoutUnit::FromRawValue(outsets_[1]));
+  return {-left_outset, -top_outset,
+          left_outset + size.width + LayoutUnit::FromRawValue(outsets_[2]),
+          top_outset + size.height + LayoutUnit::FromRawValue(outsets_[3])};
+}
+
+PhysicalRect NGInkOverflow::Self(Type type, const PhysicalSize& size) const {
+  CheckType(type);
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/829028): Should compute all ink overflow when
+  // NGBlockFragmentation is enabled.
+  if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
+    DCHECK_NE(type, kNotSet);
+#endif
+  switch (type) {
+    case kNotSet:
+    case kNone:
+      return {PhysicalOffset(), size};
+    case kSmallSelf:
+      return FromOutsets(size);
+    case kSelf:
+    case kSelfAndContents:
+      DCHECK(self_);
+      return self_->self_ink_overflow;
+  }
+  NOTREACHED();
+  return {PhysicalOffset(), size};
+}
+
+PhysicalRect NGInkOverflow::SelfAndContents(Type type,
+                                            const PhysicalSize& size) const {
+  CheckType(type);
+  switch (type) {
+    case kNotSet:
+      // It is fine to read |kNotSet|, because
+      // |PaintLayer::UpdateDescendantDependentFlags| needs to know the old
+      // value before it computes ink overflow.
+    case kNone:
+      return {PhysicalOffset(), size};
+    case kSmallSelf:
+      return FromOutsets(size);
+    case kSelf:
+      DCHECK(self_);
+      return self_->self_ink_overflow;
+    case kSelfAndContents:
+      DCHECK(container_);
+      return container_->SelfAndContentsInkOverflow();
+  }
+  NOTREACHED();
+  return {PhysicalOffset(), size};
+}
+
+// Store |ink_overflow| as |SmallRawValue| if possible and returns |true|.
+// Returns |false| if |ink_overflow| is too large for |SmallRawValue|.
+bool NGInkOverflow::TrySetOutsets(Type type,
+                                  const PhysicalRect& ink_overflow,
+                                  const PhysicalSize& size) {
+  CheckType(type);
+  const LayoutUnit max_small_value(
+      LayoutUnit::FromRawValue(std::numeric_limits<SmallRawValue>::max()));
+  const LayoutUnit left_outset = -ink_overflow.X();
+  if (left_outset > max_small_value)
+    return false;
+  const LayoutUnit top_outset = -ink_overflow.Y();
+  if (top_outset > max_small_value)
+    return false;
+  const LayoutUnit right_outset = ink_overflow.Right() - size.width;
+  if (right_outset > max_small_value)
+    return false;
+  const LayoutUnit bottom_outset = ink_overflow.Bottom() - size.height;
+  if (bottom_outset > max_small_value)
+    return false;
+  Reset(type);
+  outsets_[0] = left_outset.ClampNegativeToZero().RawValue();
+  outsets_[1] = top_outset.ClampNegativeToZero().RawValue();
+  outsets_[2] = right_outset.ClampNegativeToZero().RawValue();
+  outsets_[3] = bottom_outset.ClampNegativeToZero().RawValue();
+  return true;
+}
+
+NGInkOverflow::Type NGInkOverflow::SetSingle(Type type,
+                                             const PhysicalRect& ink_overflow,
+                                             const PhysicalSize& size,
+                                             Type new_type,
+                                             Type new_small_type) {
+  CheckType(type);
+  DCHECK(HasOverflow(ink_overflow, size));
+
+  if (TrySetOutsets(type, ink_overflow, size))
+    return SetType(new_small_type);
+
+  switch (type) {
+    case kSelfAndContents:
+      Reset(type);
+      FALLTHROUGH;
+    case kNotSet:
+    case kNone:
+    case kSmallSelf:
+      self_ = new NGSelfInkOverflow(ink_overflow);
+      return SetType(new_type);
+    case kSelf:
+      DCHECK(self_);
+      self_->self_ink_overflow = ink_overflow;
+      return SetType(new_type);
+  }
+  NOTREACHED();
+}
+
+NGInkOverflow::Type NGInkOverflow::SetSelf(Type type,
+                                           const PhysicalRect& ink_overflow,
+                                           const PhysicalSize& size) {
+  CheckType(type);
+  if (!HasOverflow(ink_overflow, size))
+    return Reset(type);
+  return SetSingle(type, ink_overflow, size, kSelf, kSmallSelf);
+}
+
+NGInkOverflow::Type NGInkOverflow::Set(Type type,
+                                       const PhysicalRect& self,
+                                       const PhysicalRect& contents,
+                                       const PhysicalSize& size) {
+  CheckType(type);
+
+  switch (type) {
+    case kSelf:
+      Reset(type);
+      FALLTHROUGH;
+    case kNotSet:
+    case kNone:
+    case kSmallSelf:
+      container_ = new NGContainerInkOverflow(self, contents);
+      return SetType(kSelfAndContents);
+    case kSelfAndContents:
+      DCHECK(container_);
+      container_->self_ink_overflow = self;
+      container_->contents_ink_overflow = contents;
+      return kSelfAndContents;
+  }
+  NOTREACHED();
+}
+
+NGInkOverflow::Type NGInkOverflow::SetTextInkOverflow(
+    Type type,
     const NGTextFragmentPaintInfo& text_info,
     const ComputedStyle& style,
     const PhysicalSize& size,
-    std::unique_ptr<NGInkOverflow>* ink_overflow_out) {
+    PhysicalRect* ink_overflow_out) {
+  CheckType(type);
+  DCHECK_EQ(type, kNotSet);
+  base::Optional<PhysicalRect> ink_overflow =
+      ComputeTextInkOverflow(text_info, style, size);
+  if (!ink_overflow) {
+    *ink_overflow_out = {PhysicalOffset(), size};
+    return Reset(type);
+  }
+  *ink_overflow_out = *ink_overflow;
+  return SetSelf(type, *ink_overflow, size);
+}
+
+// static
+base::Optional<PhysicalRect> NGInkOverflow::ComputeTextInkOverflow(
+    const NGTextFragmentPaintInfo& text_info,
+    const ComputedStyle& style,
+    const PhysicalSize& size) {
   // Glyph bounds is in logical coordinate, origin at the alphabetic baseline.
   const Font& font = style.GetFont();
   const FloatRect text_ink_bounds = font.TextInkBounds(text_info);
@@ -64,18 +295,12 @@ void NGInkOverflow::ComputeTextInkOverflow(
 
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.
-  PhysicalRect local_rect(PhysicalOffset(), size);
-  if (local_rect.Contains(local_ink_overflow)) {
-    *ink_overflow_out = nullptr;
-    return;
-  }
-  local_ink_overflow.Unite(local_rect);
+  if (!HasOverflow(local_ink_overflow, size))
+    return base::nullopt;
+
+  local_ink_overflow.Unite({{}, size});
   local_ink_overflow.ExpandEdgesToPixelBoundaries();
-  if (!*ink_overflow_out) {
-    *ink_overflow_out = std::make_unique<NGInkOverflow>(local_ink_overflow);
-    return;
-  }
-  (*ink_overflow_out)->self_ink_overflow = local_ink_overflow;
+  return local_ink_overflow;
 }
 
 }  // namespace blink

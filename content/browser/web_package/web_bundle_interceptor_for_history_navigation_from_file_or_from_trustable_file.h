@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_BUNDLE_INTERCEPTOR_FOR_HISTORY_NAVIGATION_FROM_FILE_OR_FROM_TRUSTABLE_FILE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/browser/web_package/web_bundle_interceptor_for_history_navigation.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -62,7 +62,7 @@ class WebBundleInterceptorForHistoryNavigationFromFileOrFromTrustableFile final
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
-  void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
+  void OnMetadataReady(web_package::mojom::BundleMetadataParseErrorPtr error);
 
   scoped_refptr<WebBundleReader> reader_;
 
@@ -70,7 +70,7 @@ class WebBundleInterceptorForHistoryNavigationFromFileOrFromTrustableFile final
   mojo::PendingReceiver<network::mojom::URLLoader> pending_receiver_;
   mojo::PendingRemote<network::mojom::URLLoaderClient> pending_client_;
 
-  data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
+  web_package::mojom::BundleMetadataParseErrorPtr metadata_error_;
 
   base::WeakPtrFactory<
       WebBundleInterceptorForHistoryNavigationFromFileOrFromTrustableFile>

@@ -56,6 +56,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool HidePublicSessionExpandedPod();
   static bool IsPublicSessionExpanded();
   static bool IsExpandedPublicSessionAdvanced();
+  static bool IsPublicSessionWarningShown();
   static void ClickPublicExpandedAdvancedViewButton();
   static void ClickPublicExpandedSubmitButton();
   static void SetPublicSessionLocale(const std::string& locale);

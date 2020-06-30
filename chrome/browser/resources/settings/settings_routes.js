@@ -12,7 +12,6 @@ import {Route} from './router.m.js';
  *   ACCESSIBILITY: !Route,
  *   ADVANCED: !Route,
  *   ADDRESSES: !Route,
- *   AMBIENT_MODE: !Route,
  *   APPEARANCE: !Route,
  *   AUTOFILL: !Route,
  *   BASIC: !Route,

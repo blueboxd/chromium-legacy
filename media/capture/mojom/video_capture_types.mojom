@@ -303,9 +303,8 @@ struct VideoCaptureDeviceDescriptor {
   string model_id;
   VideoFacingMode facing_mode;
   VideoCaptureApi capture_api;
-  VideoCaptureTransportType transport_type;
-  bool has_pan_tilt_zoom_supported;
   bool pan_tilt_zoom_supported;
+  VideoCaptureTransportType transport_type;
 };
 
 // Bundles a VideoCaptureDeviceDescriptor with corresponding supported

@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -31,6 +32,15 @@ void PluginVmHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "removePluginVmSharedPath",
       base::BindRepeating(&PluginVmHandler::HandleRemovePluginVmSharedPath,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "wouldPermissionChangeRequireRelaunch",
+      base::BindRepeating(
+          &PluginVmHandler::HandleWouldPermissionChangeRequireRelaunch,
+          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "setPluginVmPermission",
+      base::BindRepeating(&PluginVmHandler::HandleSetPluginVmPermission,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -66,6 +76,39 @@ void PluginVmHandler::HandleRemovePluginVmSharedPath(
             }
           },
           path));
+}
+
+void PluginVmHandler::HandleWouldPermissionChangeRequireRelaunch(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(3U, args->GetSize());
+  std::string callback_id = args->GetList()[0].GetString();
+  plugin_vm::PermissionType permission_type =
+      static_cast<plugin_vm::PermissionType>(args->GetList()[1].GetInt());
+  DCHECK(permission_type == plugin_vm::PermissionType::kCamera ||
+         permission_type == plugin_vm::PermissionType::kMicrophone);
+  bool proposed_value = args->GetList()[2].GetBool();
+  bool current_value =
+      plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->GetPermission(
+          permission_type);
+  // This can probably incorrectly return false in a small window during
+  // startup.
+  bool requires_relaunch =
+      plugin_vm::IsPluginVmRunning(profile_) && proposed_value != current_value;
+
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(requires_relaunch));
+}
+
+void PluginVmHandler::HandleSetPluginVmPermission(const base::ListValue* args) {
+  CHECK_EQ(2U, args->GetSize());
+  plugin_vm::PermissionType permission_type =
+      static_cast<plugin_vm::PermissionType>(args->GetList()[0].GetInt());
+  bool proposed_value = args->GetList()[1].GetBool();
+  DCHECK(permission_type == plugin_vm::PermissionType::kCamera ||
+         permission_type == plugin_vm::PermissionType::kMicrophone);
+  plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->SetPermission(
+      permission_type, proposed_value);
 }
 
 }  // namespace settings

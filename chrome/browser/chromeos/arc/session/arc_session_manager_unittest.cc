@@ -325,9 +325,10 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
             arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   arc_session_manager()->StartArcForTesting();
 
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
+  EXPECT_FALSE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
@@ -509,7 +510,9 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
             arc_session_manager()->state());
+  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   arc_session_manager()->StartArcForTesting();
+  EXPECT_FALSE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Here, provisining is not yet completed, so kArcSignedIn should be false.
@@ -521,7 +524,6 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 }
 

@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/web_package/test_support/web_bundle_builder.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -39,7 +40,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
-#include "services/data_decoder/public/cpp/test_support/web_bundle_builder.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
@@ -142,13 +142,13 @@ class DownloadObserver : public DownloadManager::Observer {
 
 class MockParserFactory;
 
-class MockParser final : public data_decoder::mojom::WebBundleParser {
+class MockParser final : public web_package::mojom::WebBundleParser {
  public:
-  using Index = base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr>;
+  using Index = base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr>;
 
   MockParser(
       MockParserFactory* factory,
-      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
+      mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver,
       const Index& index,
       const GURL& primary_url,
       bool simulate_parse_metadata_crash,
@@ -162,14 +162,14 @@ class MockParser final : public data_decoder::mojom::WebBundleParser {
   ~MockParser() override = default;
 
  private:
-  // data_decoder::mojom::WebBundleParser implementation.
+  // web_package::mojom::WebBundleParser implementation.
   void ParseMetadata(ParseMetadataCallback callback) override;
   void ParseResponse(uint64_t response_offset,
                      uint64_t response_length,
                      ParseResponseCallback callback) override;
 
   MockParserFactory* factory_;
-  mojo::Receiver<data_decoder::mojom::WebBundleParser> receiver_;
+  mojo::Receiver<web_package::mojom::WebBundleParser> receiver_;
   const Index& index_;
   const GURL primary_url_;
   const bool simulate_parse_metadata_crash_;
@@ -179,7 +179,7 @@ class MockParser final : public data_decoder::mojom::WebBundleParser {
 };
 
 class MockParserFactory final
-    : public data_decoder::mojom::WebBundleParserFactory {
+    : public web_package::mojom::WebBundleParserFactory {
  public:
   MockParserFactory(std::vector<GURL> urls,
                     const base::FilePath& response_body_file)
@@ -189,10 +189,10 @@ class MockParserFactory final
     EXPECT_TRUE(
         base::GetFileSize(response_body_file, &response_body_file_size));
     for (const auto& url : urls) {
-      data_decoder::mojom::BundleIndexValuePtr item =
-          data_decoder::mojom::BundleIndexValue::New();
+      web_package::mojom::BundleIndexValuePtr item =
+          web_package::mojom::BundleIndexValue::New();
       item->response_locations.push_back(
-          data_decoder::mojom::BundleResponseLocation::New(
+          web_package::mojom::BundleResponseLocation::New(
               0u, response_body_file_size));
       index_.insert({url, std::move(item)});
     }
@@ -206,10 +206,10 @@ class MockParserFactory final
       : primary_url_(items[0].first) {
     uint64_t offset = 0;
     for (const auto& item : items) {
-      data_decoder::mojom::BundleIndexValuePtr index_value =
-          data_decoder::mojom::BundleIndexValue::New();
+      web_package::mojom::BundleIndexValuePtr index_value =
+          web_package::mojom::BundleIndexValue::New();
       index_value->response_locations.push_back(
-          data_decoder::mojom::BundleResponseLocation::New(
+          web_package::mojom::BundleResponseLocation::New(
               offset, item.second.length()));
       offset += item.second.length();
       index_.insert({item.first, std::move(index_value)});
@@ -228,14 +228,14 @@ class MockParserFactory final
 
  private:
   void BindWebBundleParserFactory(
-      mojo::PendingReceiver<data_decoder::mojom::WebBundleParserFactory>
+      mojo::PendingReceiver<web_package::mojom::WebBundleParserFactory>
           receiver) {
     receivers_.Add(this, std::move(receiver));
   }
 
-  // data_decoder::mojom::WebBundleParserFactory implementation.
+  // web_package::mojom::WebBundleParserFactory implementation.
   void GetParserForFile(
-      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
+      mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver,
       base::File file) override {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
@@ -249,8 +249,8 @@ class MockParserFactory final
   }
 
   void GetParserForDataSource(
-      mojo::PendingReceiver<data_decoder::mojom::WebBundleParser> receiver,
-      mojo::PendingRemote<data_decoder::mojom::BundleDataSource> data_source)
+      mojo::PendingReceiver<web_package::mojom::WebBundleParser> receiver,
+      mojo::PendingRemote<web_package::mojom::BundleDataSource> data_source)
       override {
     DCHECK(!parser_);
     parser_ = std::make_unique<MockParser>(
@@ -260,12 +260,12 @@ class MockParserFactory final
   }
 
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  mojo::ReceiverSet<data_decoder::mojom::WebBundleParserFactory> receivers_;
+  mojo::ReceiverSet<web_package::mojom::WebBundleParserFactory> receivers_;
   bool simulate_parse_metadata_crash_ = false;
   bool simulate_parse_response_crash_ = false;
   std::unique_ptr<MockParser> parser_;
   int parser_creation_count_ = 0;
-  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> index_;
+  base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> index_;
   const GURL primary_url_;
 
   DISALLOW_COPY_AND_ASSIGN(MockParserFactory);
@@ -277,13 +277,13 @@ void MockParser::ParseMetadata(ParseMetadataCallback callback) {
     return;
   }
 
-  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
+  base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> items;
   for (const auto& item : index_) {
     items.insert({item.first, item.second.Clone()});
   }
 
-  data_decoder::mojom::BundleMetadataPtr metadata =
-      data_decoder::mojom::BundleMetadata::New();
+  web_package::mojom::BundleMetadataPtr metadata =
+      web_package::mojom::BundleMetadata::New();
   metadata->primary_url = primary_url_;
   metadata->requests = std::move(items);
 
@@ -297,8 +297,8 @@ void MockParser::ParseResponse(uint64_t response_offset,
     factory_->SimulateParserDisconnect();
     return;
   }
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->response_headers.insert({"content-type", "text/html"});
   response->payload_offset = response_offset;
@@ -460,7 +460,7 @@ FrameTreeNode* GetFirstChild(WebContents* web_contents) {
 }
 
 std::string CreateSimpleWebBundle(const GURL& primary_url) {
-  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  web_package::test::WebBundleBuilder builder(primary_url.spec(), "");
   builder.AddExchange(primary_url.spec(),
                       {{":status", "200"}, {"content-type", "text/html"}},
                       "<title>Ready</title>");
@@ -468,7 +468,7 @@ std::string CreateSimpleWebBundle(const GURL& primary_url) {
   return std::string(bundle.begin(), bundle.end());
 }
 
-void AddHtmlFile(data_decoder::test::WebBundleBuilder* builder,
+void AddHtmlFile(web_package::test::WebBundleBuilder* builder,
                  const GURL& base_url,
                  const std::string& path,
                  const std::string& content) {
@@ -477,7 +477,7 @@ void AddHtmlFile(data_decoder::test::WebBundleBuilder* builder,
                        content);
 }
 
-void AddScriptFile(data_decoder::test::WebBundleBuilder* builder,
+void AddScriptFile(web_package::test::WebBundleBuilder* builder,
                    const GURL& base_url,
                    const std::string& path,
                    const std::string& content) {
@@ -489,7 +489,7 @@ void AddScriptFile(data_decoder::test::WebBundleBuilder* builder,
 
 std::string CreatePathTestWebBundle(const GURL& base_url) {
   const std::string primary_url_path = "/web_bundle/path_test/in_scope/";
-  data_decoder::test::WebBundleBuilder builder(
+  web_package::test::WebBundleBuilder builder(
       base_url.Resolve(primary_url_path).spec(), "");
   AddHtmlFile(&builder, base_url, primary_url_path, "<title>Ready</title>");
   AddHtmlFile(
@@ -591,7 +591,7 @@ void SetUpSubPageTest(net::EmbeddedTestServer* primary_server,
   *primary_url_origin = primary_server->GetURL("/");
   *third_party_origin = third_party_server->GetURL("/");
 
-  data_decoder::test::WebBundleBuilder builder(
+  web_package::test::WebBundleBuilder builder(
       primary_url_origin->Resolve("/top").spec(), "");
   AddHtmlFile(&builder, *primary_url_origin, "/top", R"(
     <script>
@@ -718,7 +718,7 @@ std::string CreateScriptForNavigationTest(const std::string& script_info) {
 }
 
 void AddHtmlAndScriptForNavigationTest(
-    data_decoder::test::WebBundleBuilder* builder,
+    web_package::test::WebBundleBuilder* builder,
     const GURL& base_url,
     const std::string& path,
     const std::string& additional_html) {
@@ -820,7 +820,7 @@ void SetUpSharedNavigationsTest(net::EmbeddedTestServer* server,
                                 GURL* url_origin,
                                 std::string* web_bundle_content) {
   SetUpNavigationTestServer(server, url_origin);
-  data_decoder::test::WebBundleBuilder builder(
+  web_package::test::WebBundleBuilder builder(
       url_origin->Resolve("/top-page/").spec(), "");
   for (const auto& path : pathes)
     AddHtmlAndScriptForNavigationTest(&builder, *url_origin, path, "");
@@ -1193,7 +1193,7 @@ void SetUpIframeNavigationTest(net::EmbeddedTestServer* server,
                                GURL* url_origin,
                                std::string* web_bundle_content) {
   SetUpNavigationTestServer(server, url_origin);
-  data_decoder::test::WebBundleBuilder builder(
+  web_package::test::WebBundleBuilder builder(
       url_origin->Resolve("/top-page/").spec(), "");
   const std::vector<std::string> pathes = {"/top-page/", "/1-page/",
                                            "/2-page/"};
@@ -2338,7 +2338,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, SimpleWithScript) {
   const GURL script_url =
       embedded_test_server()->GetURL("/web_bundle/script.js");
 
-  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  web_package::test::WebBundleBuilder builder(primary_url.spec(), "");
   builder.AddExchange(primary_url.spec(),
                       {{":status", "200"}, {"content-type", "text/html"}},
                       "<script src=\"script.js\"></script>");
@@ -2431,7 +2431,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, PrimaryURLNotFound) {
   const GURL primary_url = embedded_test_server()->GetURL(primary_url_path);
   const GURL inner_url =
       embedded_test_server()->GetURL("/web_bundle/inner.html");
-  data_decoder::test::WebBundleBuilder builder(primary_url.spec(), "");
+  web_package::test::WebBundleBuilder builder(primary_url.spec(), "");
   builder.AddExchange(inner_url.spec(),
                       {{":status", "200"}, {"content-type", "text/html"}},
                       "<title>Ready</title>");
@@ -2843,7 +2843,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, OutScopeSubPage) {
   RegisterRequestHandlerForSubPageTest(embedded_test_server(), "");
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL origin = embedded_test_server()->GetURL("/");
-  data_decoder::test::WebBundleBuilder builder(
+  web_package::test::WebBundleBuilder builder(
       origin.Resolve(primary_url_path).spec(), "");
   AddHtmlFile(&builder, origin, primary_url_path, R"(
     <script>

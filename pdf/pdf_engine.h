@@ -47,12 +47,12 @@ struct PP_PdfPrintSettings_Dev;
 namespace gfx {
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace pp {
 class InputEvent;
 class VarDictionary;
-}
+}  // namespace pp
 
 namespace chrome_pdf {
 

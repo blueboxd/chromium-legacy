@@ -32,7 +32,7 @@ void SmsInfoBar::Create(content::WebContents* web_contents,
 
 SmsInfoBar::SmsInfoBar(content::WebContents* web_contents,
                        std::unique_ptr<SmsInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)), web_contents_(web_contents) {}
+    : ChromeConfirmInfoBar(std::move(delegate)), web_contents_(web_contents) {}
 
 SmsInfoBar::~SmsInfoBar() = default;
 

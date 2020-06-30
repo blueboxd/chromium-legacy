@@ -1935,6 +1935,7 @@ ci.gpu_builder(
     console_view_entry = ci.console_view_entry(
         category = 'Linux',
     ),
+    tree_closing = False,
 )
 
 ci.gpu_builder(
@@ -1944,6 +1945,7 @@ ci.gpu_builder(
     ),
     cores = None,
     os = os.MAC_ANY,
+    tree_closing = False,
 )
 
 ci.gpu_builder(
@@ -1953,6 +1955,7 @@ ci.gpu_builder(
         category = 'Windows',
     ),
     os = os.WINDOWS_ANY,
+    tree_closing = False,
 )
 
 
@@ -1962,6 +1965,7 @@ ci.gpu_thin_tester(
         category = 'Linux',
     ),
     triggered_by = ['GPU Linux Builder (dbg)'],
+    tree_closing = False,
 )
 
 ci.gpu_thin_tester(
@@ -1970,6 +1974,7 @@ ci.gpu_thin_tester(
         category = 'Mac',
     ),
     triggered_by = ['GPU Mac Builder (dbg)'],
+    tree_closing = False,
 )
 
 ci.gpu_thin_tester(
@@ -1978,6 +1983,7 @@ ci.gpu_thin_tester(
         category = 'Mac',
     ),
     triggered_by = ['GPU Mac Builder (dbg)'],
+    tree_closing = False,
 )
 
 ci.gpu_thin_tester(
@@ -1986,6 +1992,7 @@ ci.gpu_thin_tester(
         category = 'Windows',
     ),
     triggered_by = ['GPU Win x64 Builder (dbg)'],
+    tree_closing = False,
 )
 
 

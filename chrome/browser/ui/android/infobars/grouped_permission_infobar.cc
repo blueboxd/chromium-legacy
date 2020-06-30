@@ -64,7 +64,7 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
 
 GroupedPermissionInfoBar::GroupedPermissionInfoBar(
     std::unique_ptr<GroupedPermissionInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 GroupedPermissionInfoBar::~GroupedPermissionInfoBar() {}
 

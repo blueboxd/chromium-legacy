@@ -33,7 +33,7 @@ namespace {
 constexpr char kCrLf[] = "\r\n";
 
 network::mojom::URLResponseHeadPtr CreateResourceResponse(
-    const data_decoder::mojom::BundleResponsePtr& response) {
+    const web_package::mojom::BundleResponsePtr& response) {
   DCHECK_EQ(net::HTTP_OK, response->response_code);
 
   std::vector<std::string> header_strings;
@@ -62,7 +62,7 @@ network::mojom::URLResponseHeadPtr CreateResourceResponse(
 
 void AddResponseParseErrorMessageToConsole(
     int frame_tree_node_id,
-    const data_decoder::mojom::BundleResponseParseErrorPtr& error) {
+    const web_package::mojom::BundleResponseParseErrorPtr& error) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (!web_contents)
@@ -121,8 +121,8 @@ class WebBundleURLLoaderFactory::EntryLoader final
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
 
-  void OnResponseReady(data_decoder::mojom::BundleResponsePtr response,
-                       data_decoder::mojom::BundleResponseParseErrorPtr error) {
+  void OnResponseReady(web_package::mojom::BundleResponsePtr response,
+                       web_package::mojom::BundleResponseParseErrorPtr error) {
     if (!factory_ || !loader_client_.is_connected())
       return;
 

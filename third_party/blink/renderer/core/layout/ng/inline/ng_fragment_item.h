@@ -385,6 +385,15 @@ class CORE_EXPORT NGFragmentItem {
                  const PhysicalSize& size,
                  bool is_hidden_for_paint);
 
+  NGInkOverflow::Type InkOverflowType() const {
+    return static_cast<NGInkOverflow::Type>(ink_overflow_type_);
+  }
+  bool IsInkOverflowComputed() const {
+    return InkOverflowType() != NGInkOverflow::kNotSet;
+  }
+  bool HasInkOverflow() const {
+    return InkOverflowType() != NGInkOverflow::kNone;
+  }
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();
 
@@ -407,7 +416,7 @@ class CORE_EXPORT NGFragmentItem {
 
   PhysicalRect rect_;
 
-  std::unique_ptr<NGInkOverflow> ink_overflow_;
+  NGInkOverflow ink_overflow_;
 
   mutable wtf_size_t fragment_id_ = 0;
 
@@ -423,8 +432,7 @@ class CORE_EXPORT NGFragmentItem {
   // |ShapeResult::Direction()|.
   unsigned text_direction_ : 1;  // TextDirection.
 
-  // Used only when |IsText()| to avoid re-computing ink overflow.
-  unsigned ink_overflow_computed_ : 1;
+  unsigned ink_overflow_type_ : 3;  // NGInkOverflow::Type
 
   mutable unsigned is_dirty_ : 1;
 

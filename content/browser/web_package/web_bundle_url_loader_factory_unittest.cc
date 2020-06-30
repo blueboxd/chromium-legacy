@@ -38,15 +38,15 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
     loader_factory_ = std::make_unique<WebBundleURLLoaderFactory>(
         std::move(reader), FrameTreeNode::kFrameTreeNodeInvalidId);
 
-    base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
-    data_decoder::mojom::BundleIndexValuePtr item =
-        data_decoder::mojom::BundleIndexValue::New();
+    base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> items;
+    web_package::mojom::BundleIndexValuePtr item =
+        web_package::mojom::BundleIndexValue::New();
     item->response_locations.push_back(
-        data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
+        web_package::mojom::BundleResponseLocation::New(573u, 765u));
     items.insert({primary_url_, std::move(item)});
 
-    data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New();
+    web_package::mojom::BundleMetadataPtr metadata =
+        web_package::mojom::BundleMetadata::New();
     metadata->primary_url = primary_url_;
     metadata->requests = std::move(items);
 
@@ -55,7 +55,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
         reader_, std::move(metadata),
         base::BindOnce(
             [](base::OnceClosure quit_closure,
-               data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+               web_package::mojom::BundleMetadataParseErrorPtr error) {
               std::move(quit_closure).Run();
             },
             run_loop.QuitClosure()));
@@ -78,7 +78,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
   // is given. |response| can contain nullptr to simulate the case ReadResponse
   // fails.
   mojo::Remote<network::mojom::URLLoader> CreateLoaderAndStart(
-      base::Optional<data_decoder::mojom::BundleResponsePtr> response,
+      base::Optional<web_package::mojom::BundleResponsePtr> response,
       bool clone = false) {
     mojo::Remote<network::mojom::URLLoader> loader;
 
@@ -102,7 +102,7 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
 
     if (response)
       mock_factory_->FullfillResponse(
-          data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+          web_package::mojom::BundleResponseLocation::New(573u, 765u),
           std::move(*response));
     return loader;
   }
@@ -177,8 +177,8 @@ class WebBundleURLLoaderFactoryTest : public testing::Test {
 };
 
 TEST_F(WebBundleURLLoaderFactoryTest, CreateEntryLoader) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
@@ -189,8 +189,8 @@ TEST_F(WebBundleURLLoaderFactoryTest, CreateEntryLoader) {
 }
 
 TEST_F(WebBundleURLLoaderFactoryTest, RangeRequest) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
@@ -210,8 +210,8 @@ TEST_F(WebBundleURLLoaderFactoryTest, RangeRequest) {
 
 TEST_F(WebBundleURLLoaderFactoryTest,
        CreateEntryLoaderForURLContainingUserAndPass) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
@@ -225,8 +225,8 @@ TEST_F(WebBundleURLLoaderFactoryTest,
 
 TEST_F(WebBundleURLLoaderFactoryTest,
        CreateEntryLoaderForURLContainingFragment) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0;
   response->payload_length = GetBody().size();
@@ -283,8 +283,8 @@ TEST_F(WebBundleURLLoaderFactoryTest, CreateFallbackLoader) {
 }
 
 TEST_F(WebBundleURLLoaderFactoryTest, CreateByClonedFactory) {
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0;
   response->payload_length = GetBody().size();

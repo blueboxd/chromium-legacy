@@ -68,7 +68,7 @@ class WebBundleInterceptorForNetwork final
       bool* will_return_and_handle_unsafe_redirect) override;
 
   void OnMetadataReady(network::ResourceRequest request,
-                       data_decoder::mojom::BundleMetadataParseErrorPtr error);
+                       web_package::mojom::BundleMetadataParseErrorPtr error);
 
   void StartResponse(
       const network::ResourceRequest& resource_request,

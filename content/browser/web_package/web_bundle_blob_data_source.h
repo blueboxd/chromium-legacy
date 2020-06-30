@@ -9,13 +9,13 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace storage {
@@ -40,7 +40,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
       BrowserContext::BlobContextGetter blob_context_getter);
   ~WebBundleBlobDataSource();
 
-  void AddReceiver(mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+  void AddReceiver(mojo::PendingReceiver<web_package::mojom::BundleDataSource>
                        pending_receiver);
   void ReadToDataPipe(uint64_t offset,
                       uint64_t length,
@@ -49,7 +49,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
 
  private:
   // This class lives on the IO thread.
-  class BlobDataSourceCore : public data_decoder::mojom::BundleDataSource {
+  class BlobDataSourceCore : public web_package::mojom::BundleDataSource {
    public:
     BlobDataSourceCore(uint64_t length_hint,
                        network::mojom::URLLoaderClientEndpointsPtr endpoints,
@@ -57,9 +57,8 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
     ~BlobDataSourceCore() override;
 
     void Start(mojo::ScopedDataPipeConsumerHandle outer_response_body);
-    void AddReceiver(
-        mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
-            pending_receiver);
+    void AddReceiver(mojo::PendingReceiver<web_package::mojom::BundleDataSource>
+                         pending_receiver);
 
     void ReadToDataPipe(uint64_t offset,
                         uint64_t length,
@@ -69,7 +68,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
     base::WeakPtr<BlobDataSourceCore> GetWeakPtr();
 
    private:
-    // Implements data_decoder::mojom::BundleDataSource.
+    // Implements web_package::mojom::BundleDataSource.
     void Read(uint64_t offset, uint64_t length, ReadCallback callback) override;
 
     void StreamingBlobDone(storage::BlobBuilderFromStream* builder,
@@ -88,7 +87,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
     const uint64_t length_hint_;
     // Used to keep the ongoing network request.
     network::mojom::URLLoaderClientEndpointsPtr endpoints_;
-    mojo::ReceiverSet<data_decoder::mojom::BundleDataSource> receivers_;
+    mojo::ReceiverSet<web_package::mojom::BundleDataSource> receivers_;
     std::unique_ptr<storage::BlobBuilderFromStream> blob_builder_from_stream_;
 
     std::unique_ptr<storage::BlobDataHandle> blob_;
@@ -123,7 +122,7 @@ class CONTENT_EXPORT WebBundleBlobDataSource {
                        std::unique_ptr<BlobDataSourceCore> core);
 
   void AddReceiverImpl(
-      mojo::PendingReceiver<data_decoder::mojom::BundleDataSource>
+      mojo::PendingReceiver<web_package::mojom::BundleDataSource>
           pending_receiver);
 
   // Used to call BlobDataSourceCore's method on the IO thread.

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/components/web_applications/system_apps.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
@@ -86,20 +87,11 @@ mojom("mojo_bindings") {
   sources = [ "media_app_ui.mojom" ]
 }
 
-# Note we compile with reportUnknownTypes while it works, but if dependencies
-# get more complex, we should remove it and only enable in developer builds.
+media_test_closure_flags = system_app_closure_flags_strict + [ "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js" ]
+
 js_type_check("closure_compile_tests") {
   testonly = true
-  closure_flags = default_closure_args + [
-                    "jscomp_error=strictCheckTypes",
-                    "jscomp_error=reportUnknownTypes",
-                    "language_in=ECMASCRIPT_2018",
-
-                    # TODO(crbug/1048973): Remove these when the mojo bindings
-                    # js is updated to pass a closure compile check.
-                    "hide_warnings_for=mojo/public/js/",
-                    "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js",
-                  ]
+  closure_flags = media_test_closure_flags
   deps = [
     ":test_driver_api_js",
     ":test_driver_js",

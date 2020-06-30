@@ -67,9 +67,6 @@ void WriteIpcMessageIdAsProtozero(uint32_t message_id,
     case TextInputClientMsgStart:
       message_class = ChromeLegacyIpc::CLASS_TEXT_INPUT_CLIENT;
       break;
-    case PrerenderMsgStart:
-      message_class = ChromeLegacyIpc::CLASS_PRERENDER;
-      break;
     case ChromotingMsgStart:
       message_class = ChromeLegacyIpc::CLASS_CHROMOTING;
       break;

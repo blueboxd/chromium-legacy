@@ -12,29 +12,28 @@ Polymer({
   behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
+    /** Preferences state. */
     prefs: Object,
 
     /**
-     * Enum values for topicSourceRadioGroup.
-     * Values need to stay in sync with the enum |ash::AmbientModeTopicSource|.
-     * @private {!Object<string, number>}
+     * Used to refer to the enum values in the HTML.
+     * @private {!Object}
      */
-    topicSource_: {
+    AmbientModeTopicSource: {
       type: Object,
-      value: {
-        UNKNOWN: -1,
-        GOOGLE_PHOTOS: 0,
-        ART_GALLERY: 1,
-      },
-      readOnly: true,
+      value: AmbientModeTopicSource,
     },
 
-    /** @private */
-    topicSourceSelected_: {
-      type: String,
-      value() {
-        return this.topicSource_.UNKNOWN;
-      },
+    /** @private {!AmbientModeTopicSource} */
+    selectedTopicSource_: {
+      type: AmbientModeTopicSource,
+      value: AmbientModeTopicSource.UNKNOWN,
+    },
+
+    /** @private {!AmbientModeTopicSource} */
+    previousTopicSource_: {
+      type: AmbientModeTopicSource,
+      value: AmbientModeTopicSource.UNKNOWN,
     },
   },
 
@@ -49,7 +48,8 @@ Polymer({
   /** @override */
   ready() {
     this.addWebUIListener('topic-source-changed', (topicSource) => {
-      this.topicSourceSelected_ = topicSource;
+      this.selectedTopicSource_ = topicSource;
+      this.previousTopicSource_ = topicSource;
     });
 
     this.browserProxy_.onAmbientModePageReady();
@@ -65,9 +65,23 @@ Polymer({
   },
 
   /** @private */
-  onTopicSourceSelectedChanged_() {
-    return this.browserProxy_.onTopicSourceSelectedChanged(
-        this.$$('#topicSourceRadioGroup').selected);
+  onTopicSourceClicked_() {
+    const selectedTopicSource = this.$$('#topicSourceRadioGroup').selected;
+    if (selectedTopicSource === '0') {
+      this.selectedTopicSource_ = AmbientModeTopicSource.GOOGLE_PHOTOS;
+    } else if (selectedTopicSource === '1') {
+      this.selectedTopicSource_ = AmbientModeTopicSource.ART_GALLERY;
+    }
+
+    if (this.selectedTopicSource_ !== this.previousTopicSource_) {
+      this.previousTopicSource_ = this.selectedTopicSource_;
+      this.browserProxy_.setSelectedTopicSource(this.selectedTopicSource_);
+    }
+
+    const params = new URLSearchParams();
+    params.append('topicSource', JSON.stringify(this.selectedTopicSource_));
+    settings.Router.getInstance().navigateTo(
+        settings.routes.AMBIENT_MODE_PHOTOS, params);
   },
 
   /**
@@ -76,6 +90,6 @@ Polymer({
    * @private
    */
   isValidTopicSource_(topicSource) {
-    return this.topicSourceSelected_ !== this.topicSource_.UNKNOWN;
+    return topicSource !== AmbientModeTopicSource.UNKNOWN;
   },
 });

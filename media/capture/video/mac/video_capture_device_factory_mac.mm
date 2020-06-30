@@ -123,9 +123,8 @@ void VideoCaptureDeviceFactoryMac::GetDeviceDescriptors(
         device_id, capture_api, device_transport_type);
     VideoCaptureDeviceDescriptor descriptor(
         [[[capture_devices valueForKey:key] deviceName] UTF8String], device_id,
-        model_id, capture_api, device_transport_type,
-        VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
-        /*pan_tilt_zoom_supported=*/false);
+        model_id, capture_api,
+        /*pan_tilt_zoom_supported=*/false, device_transport_type);
     if (IsDeviceBlacklisted(descriptor))
       continue;
     device_descriptors->push_back(descriptor);

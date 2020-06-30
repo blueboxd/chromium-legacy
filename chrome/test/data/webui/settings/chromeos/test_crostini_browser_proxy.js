@@ -31,6 +31,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
       'shutdownCrostini',
       'setCrostiniMicSharingEnabled',
       'getCrostiniMicSharingEnabled',
+      'requestCrostiniInstallerStatus',
     ]);
     this.sharedUsbDevices = [];
     this.removeSharedPathResult = true;
@@ -124,6 +125,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   requestCrostiniInstallerStatus() {
+    this.methodCalled('requestCrostiniInstallerStatus');
     cr.webUIListenerCallback('crostini-installer-status-changed', false);
   }
 

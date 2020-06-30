@@ -12,10 +12,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/test/task_environment.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/browser/web_package/mock_web_bundle_reader_factory.h"
 #include "content/browser/web_package/web_bundle_source.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -37,24 +37,24 @@ class WebBundleReaderTest : public testing::Test {
   }
 
   void ReadMetadata() {
-    base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
-    data_decoder::mojom::BundleIndexValuePtr item =
-        data_decoder::mojom::BundleIndexValue::New();
+    base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> items;
+    web_package::mojom::BundleIndexValuePtr item =
+        web_package::mojom::BundleIndexValue::New();
     item->variants_value = "Accept;text/html;image/png";
     item->response_locations.push_back(
-        data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
+        web_package::mojom::BundleResponseLocation::New(573u, 765u));
     item->response_locations.push_back(
-        data_decoder::mojom::BundleResponseLocation::New(333u, 222u));
+        web_package::mojom::BundleResponseLocation::New(333u, 222u));
     items.insert({primary_url_, std::move(item)});
 
-    data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New();
+    web_package::mojom::BundleMetadataPtr metadata =
+        web_package::mojom::BundleMetadata::New();
     metadata->primary_url = primary_url_;
     metadata->requests = std::move(items);
     reader_factory_->ReadAndFullfillMetadata(
         reader_.get(), std::move(metadata),
         base::BindOnce(
-            [](data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+            [](web_package::mojom::BundleMetadataParseErrorPtr error) {
               EXPECT_FALSE(error);
             }));
   }
@@ -85,8 +85,8 @@ TEST_F(WebBundleReaderTest, ReadResponse) {
   ReadMetadata();
   ASSERT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
 
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
@@ -96,19 +96,18 @@ TEST_F(WebBundleReaderTest, ReadResponse) {
 
   GetMockFactory()->ReadAndFullfillResponse(
       GetReader(), resource_request,
-      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      web_package::mojom::BundleResponseLocation::New(573u, 765u),
       std::move(response),
-      base::BindOnce(
-          [](data_decoder::mojom::BundleResponsePtr response,
-             data_decoder::mojom::BundleResponseParseErrorPtr error) {
-            EXPECT_TRUE(response);
-            EXPECT_FALSE(error);
-            if (response) {
-              EXPECT_EQ(200, response->response_code);
-              EXPECT_EQ(0xdeadu, response->payload_offset);
-              EXPECT_EQ(0xbeafu, response->payload_length);
-            }
-          }));
+      base::BindOnce([](web_package::mojom::BundleResponsePtr response,
+                        web_package::mojom::BundleResponseParseErrorPtr error) {
+        EXPECT_TRUE(response);
+        EXPECT_FALSE(error);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
 }
 
 TEST_F(WebBundleReaderTest, ReadResponseForURLContainingUserAndPass) {
@@ -117,8 +116,8 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingUserAndPass) {
   ReadMetadata();
   ASSERT_TRUE(GetReader()->HasEntry(url));
 
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
@@ -128,19 +127,18 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingUserAndPass) {
 
   GetMockFactory()->ReadAndFullfillResponse(
       GetReader(), resource_request,
-      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      web_package::mojom::BundleResponseLocation::New(573u, 765u),
       std::move(response),
-      base::BindOnce(
-          [](data_decoder::mojom::BundleResponsePtr response,
-             data_decoder::mojom::BundleResponseParseErrorPtr error) {
-            EXPECT_TRUE(response);
-            EXPECT_FALSE(error);
-            if (response) {
-              EXPECT_EQ(200, response->response_code);
-              EXPECT_EQ(0xdeadu, response->payload_offset);
-              EXPECT_EQ(0xbeafu, response->payload_length);
-            }
-          }));
+      base::BindOnce([](web_package::mojom::BundleResponsePtr response,
+                        web_package::mojom::BundleResponseParseErrorPtr error) {
+        EXPECT_TRUE(response);
+        EXPECT_FALSE(error);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
 }
 
 TEST_F(WebBundleReaderTest, ReadResponseForURLContainingFragment) {
@@ -149,8 +147,8 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingFragment) {
   ReadMetadata();
   ASSERT_TRUE(GetReader()->HasEntry(url));
 
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
@@ -160,27 +158,26 @@ TEST_F(WebBundleReaderTest, ReadResponseForURLContainingFragment) {
 
   GetMockFactory()->ReadAndFullfillResponse(
       GetReader(), resource_request,
-      data_decoder::mojom::BundleResponseLocation::New(573u, 765u),
+      web_package::mojom::BundleResponseLocation::New(573u, 765u),
       std::move(response),
-      base::BindOnce(
-          [](data_decoder::mojom::BundleResponsePtr response,
-             data_decoder::mojom::BundleResponseParseErrorPtr error) {
-            EXPECT_TRUE(response);
-            EXPECT_FALSE(error);
-            if (response) {
-              EXPECT_EQ(200, response->response_code);
-              EXPECT_EQ(0xdeadu, response->payload_offset);
-              EXPECT_EQ(0xbeafu, response->payload_length);
-            }
-          }));
+      base::BindOnce([](web_package::mojom::BundleResponsePtr response,
+                        web_package::mojom::BundleResponseParseErrorPtr error) {
+        EXPECT_TRUE(response);
+        EXPECT_FALSE(error);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
 }
 
 TEST_F(WebBundleReaderTest, ReadResponseForSecondVariant) {
   ReadMetadata();
   ASSERT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
 
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
@@ -191,26 +188,25 @@ TEST_F(WebBundleReaderTest, ReadResponseForSecondVariant) {
 
   GetMockFactory()->ReadAndFullfillResponse(
       GetReader(), resource_request,
-      data_decoder::mojom::BundleResponseLocation::New(333u, 222u),
+      web_package::mojom::BundleResponseLocation::New(333u, 222u),
       std::move(response),
-      base::BindOnce(
-          [](data_decoder::mojom::BundleResponsePtr response,
-             data_decoder::mojom::BundleResponseParseErrorPtr error) {
-            EXPECT_TRUE(response);
-            EXPECT_FALSE(error);
-            if (response) {
-              EXPECT_EQ(200, response->response_code);
-              EXPECT_EQ(0xdeadu, response->payload_offset);
-              EXPECT_EQ(0xbeafu, response->payload_length);
-            }
-          }));
+      base::BindOnce([](web_package::mojom::BundleResponsePtr response,
+                        web_package::mojom::BundleResponseParseErrorPtr error) {
+        EXPECT_TRUE(response);
+        EXPECT_FALSE(error);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
 }
 
 TEST_F(WebBundleReaderTest, ReadResponseBody) {
   ReadMetadata();
 
-  data_decoder::mojom::BundleResponsePtr response =
-      data_decoder::mojom::BundleResponse::New();
+  web_package::mojom::BundleResponsePtr response =
+      web_package::mojom::BundleResponse::New();
   constexpr size_t expected_offset = 4;
   const size_t expected_length = GetBody().size() - 8;
   response->payload_offset = expected_offset;

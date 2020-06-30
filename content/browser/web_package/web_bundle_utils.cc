@@ -143,7 +143,7 @@ void CompleteWithInvalidWebBundleError(
 }
 
 std::string GetMetadataParseErrorMessage(
-    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
+    const web_package::mojom::BundleMetadataParseErrorPtr& metadata_error) {
   return std::string("Failed to read metadata of Web Bundle file: ") +
          metadata_error->message;
 }

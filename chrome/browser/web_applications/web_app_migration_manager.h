@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MIGRATION_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MIGRATION_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -54,7 +55,11 @@ class WebAppMigrationManager {
   void MigrateNextBookmarkAppIcons();
   void OnBookmarkAppIconsRead(const AppId& app_id,
                               std::map<SquareSizePx, SkBitmap> icon_bitmaps);
-  void OnWebAppIconsWritten(bool success);
+  void OnWebAppIconsWritten(const AppId& app_id, bool success);
+  void OnBookmarkAppShortcutsMenuIconsRead(
+      const AppId& app_id,
+      ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps);
+  void OnWebAppShortcutsMenuIconsWritten(bool success);
 
   void MigrateBookmarkAppInstallSource(const AppId& app_id, WebApp* web_app);
   bool CanMigrateBookmarkApp(const AppId& app_id) const;

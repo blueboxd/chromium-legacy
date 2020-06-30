@@ -88,7 +88,7 @@ void WebBundleInterceptorForTrustableFile::CreateURLLoader(
 }
 
 void WebBundleInterceptorForTrustableFile::OnMetadataReady(
-    data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    web_package::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!url_loader_factory_);
 

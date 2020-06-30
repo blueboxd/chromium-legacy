@@ -12,7 +12,7 @@
 
 PreviewsLitePageInfoBar::PreviewsLitePageInfoBar(
     std::unique_ptr<PreviewsLitePageInfoBarDelegate> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 PreviewsLitePageInfoBar::~PreviewsLitePageInfoBar() {}
 

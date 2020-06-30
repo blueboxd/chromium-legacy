@@ -83,16 +83,19 @@ bool ReadEndOfFile(const base::FilePath& path,
   chunk[0] = '\0';
   last_chunk[0] = '\0';
 
+  size_t total_bytes_read = 0;
   size_t bytes_read = 0;
 
   // Since most logs are not seekable, read until the end keeping tracking of
   // last two chunks.
   while ((bytes_read = fread(chunk.get(), 1, max_size, fp.get())) == max_size) {
+    total_bytes_read += bytes_read;
     last_chunk.swap(chunk);
     chunk[0] = '\0';
   }
+  total_bytes_read += bytes_read;
 
-  if (last_chunk[0] == '\0') {
+  if (total_bytes_read < max_size) {
     // File is smaller than max_size
     contents->assign(chunk.get(), bytes_read);
   } else if (bytes_read == 0) {

@@ -226,11 +226,15 @@ TEST_F(IntentUtilTest, MimeTypeMatch) {
   std::string mime_type2 = "image/jpeg";
   std::string mime_type_sub_wildcard = "text/*";
   std::string mime_type_all_wildcard = "*/*";
+  std::string mime_type_only_main_type = "text";
+  std::string mime_type_only_star = "*";
 
   auto intent1 = CreateShareIntent(mime_type1);
   auto intent2 = CreateShareIntent(mime_type2);
   auto intent_sub_wildcard = CreateShareIntent(mime_type_sub_wildcard);
   auto intent_all_wildcard = CreateShareIntent(mime_type_all_wildcard);
+  auto intent_only_main_type = CreateShareIntent(mime_type_only_main_type);
+  auto intent_only_star = CreateShareIntent(mime_type_only_star);
 
   auto filter1 = CreateIntentFilterForShareTarget(mime_type1);
 
@@ -238,6 +242,8 @@ TEST_F(IntentUtilTest, MimeTypeMatch) {
   EXPECT_FALSE(apps_util::IntentMatchesFilter(intent2, filter1));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_sub_wildcard, filter1));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_all_wildcard, filter1));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_main_type, filter1));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_star, filter1));
 
   auto filter2 = CreateIntentFilterForShareTarget(mime_type2);
 
@@ -245,6 +251,8 @@ TEST_F(IntentUtilTest, MimeTypeMatch) {
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent2, filter2));
   EXPECT_FALSE(apps_util::IntentMatchesFilter(intent_sub_wildcard, filter2));
   EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_all_wildcard, filter2));
+  EXPECT_FALSE(apps_util::IntentMatchesFilter(intent_only_main_type, filter2));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_star, filter2));
 
   auto filter_sub_wildcard =
       CreateIntentFilterForShareTarget(mime_type_sub_wildcard);
@@ -255,6 +263,10 @@ TEST_F(IntentUtilTest, MimeTypeMatch) {
       apps_util::IntentMatchesFilter(intent_sub_wildcard, filter_sub_wildcard));
   EXPECT_TRUE(
       apps_util::IntentMatchesFilter(intent_all_wildcard, filter_sub_wildcard));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_main_type,
+                                             filter_sub_wildcard));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_only_star, filter_sub_wildcard));
 
   auto filter_all_wildcard =
       CreateIntentFilterForShareTarget(mime_type_all_wildcard);
@@ -265,4 +277,35 @@ TEST_F(IntentUtilTest, MimeTypeMatch) {
       apps_util::IntentMatchesFilter(intent_sub_wildcard, filter_all_wildcard));
   EXPECT_TRUE(
       apps_util::IntentMatchesFilter(intent_all_wildcard, filter_all_wildcard));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_main_type,
+                                             filter_all_wildcard));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_only_star, filter_all_wildcard));
+
+  auto filter_only_main_type =
+      CreateIntentFilterForShareTarget(mime_type_only_main_type);
+
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent1, filter_only_main_type));
+  EXPECT_FALSE(apps_util::IntentMatchesFilter(intent2, filter_only_main_type));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_sub_wildcard,
+                                             filter_only_main_type));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_all_wildcard,
+                                             filter_only_main_type));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent_only_main_type,
+                                             filter_only_main_type));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_only_star, filter_only_main_type));
+
+  auto filter_only_star = CreateIntentFilterForShareTarget(mime_type_only_star);
+
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent1, filter_only_star));
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent2, filter_only_star));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_sub_wildcard, filter_only_star));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_all_wildcard, filter_only_star));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_only_main_type, filter_only_star));
+  EXPECT_TRUE(
+      apps_util::IntentMatchesFilter(intent_only_star, filter_only_star));
 }

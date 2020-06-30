@@ -17,9 +17,9 @@
 
 using ::testing::_;
 using ::testing::Mock;
-using ::testing::Sequence;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::Sequence;
 
 namespace chrome_pdf {
 

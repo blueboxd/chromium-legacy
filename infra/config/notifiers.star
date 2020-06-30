@@ -39,3 +39,34 @@ luci.notifier(
     on_new_status = ['FAILURE'],
     notify_emails = ['chromium-component-mapping@google.com'],
 )
+
+TREE_CLOSING_STEPS = [
+    'bot_update',
+    'compile',
+    'gclient runhooks',
+    'runhooks',
+    'update',
+]
+
+luci.tree_closer(
+    name = 'chromium-tree-closer',
+    tree_status_host = 'chromium-status.appspot.com',
+    failed_step_regexp = TREE_CLOSING_STEPS
+)
+
+luci.notifier(
+    name = 'chromium-tree-closer-email',
+    on_occurrence = ['FAILURE'],
+    # Stand-in for the chromium build sheriff, while testing.
+    notify_emails = ['orodley+test-tree-closing-notifier@chromium.org'],
+    failed_step_regexp = TREE_CLOSING_STEPS,
+)
+
+luci.notifier(
+    name = 'gpu-tree-closer-email',
+    on_occurrence = ['FAILURE'],
+    # Stand-in for chrome-gpu-build-failures@google.com and the GPU build
+    # sheriff, while testing.
+    notify_emails = ['orodley+gpu-test-tree-closing-notifier@chromium.org'],
+    failed_step_regexp = TREE_CLOSING_STEPS,
+)

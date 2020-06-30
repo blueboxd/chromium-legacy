@@ -33,6 +33,13 @@ class WebContents;
 
 namespace payments {
 
+struct RefetchedIcon {
+  RefetchedIcon();
+  ~RefetchedIcon();
+  std::string method_name;
+  std::unique_ptr<SkBitmap> icon;
+};
+
 // Crawls installable web payment apps. First, fetches and parses the payment
 // method manifests to get 'default_applications' manifest urls. Then, fetches
 // and parses the web app manifests to get the installable payment apps' info.
@@ -40,7 +47,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
  public:
   using FinishedCrawlingCallback = base::OnceCallback<void(
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>,
-      std::map<GURL, std::unique_ptr<SkBitmap>>,
+      std::map<GURL, std::unique_ptr<RefetchedIcon>>,
       const std::string& error_message)>;
 
   enum class CrawlingMode {
@@ -138,7 +145,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
   size_t number_of_web_app_icons_to_download_and_decode_;
   std::set<GURL> downloaded_web_app_manifests_;
   std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> installable_apps_;
-  std::map<GURL, std::unique_ptr<SkBitmap>> refetched_icons_;
+  std::map<GURL, std::unique_ptr<RefetchedIcon>> refetched_icons_;
   std::set<GURL> method_manifest_urls_for_icon_refetch_;
 
   // The first error message (if any) to be forwarded to the merchant when

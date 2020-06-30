@@ -205,8 +205,8 @@ void OnNavigationRequestFailed(
             .SetDetails(issueDetails.Build())
             .Build();
 
-    DispatchToAgents(ftn, &protocol::AuditsHandler::OnIssueAdded,
-                     inspector_issue.get());
+    ReportBrowserInitiatedIssue(ftn->current_frame_host(),
+                                inspector_issue.get());
   }
 
   DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,

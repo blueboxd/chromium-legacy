@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -34,13 +33,21 @@ struct PermissionInfo {
   const char* pref_name;
 };
 
+struct PluginVmHandledPermissionInfo {
+  app_management::mojom::PluginVmPermissionType permission;
+  plugin_vm::PermissionType permission_type;
+};
+
 constexpr PermissionInfo permission_infos[] = {
     {app_management::mojom::PluginVmPermissionType::PRINTING,
      plugin_vm::prefs::kPluginVmPrintersAllowed},
+};
+
+constexpr PluginVmHandledPermissionInfo plugin_vm_handled_permission_infos[] = {
     {app_management::mojom::PluginVmPermissionType::CAMERA,
-     plugin_vm::prefs::kPluginVmCameraAllowed},
+     plugin_vm::PermissionType::kCamera},
     {app_management::mojom::PluginVmPermissionType::MICROPHONE,
-     plugin_vm::prefs::kPluginVmMicrophoneAllowed},
+     plugin_vm::PermissionType::kMicrophone},
 };
 
 const char* PermissionToPrefName(
@@ -75,13 +82,30 @@ void SetShowInAppManagement(apps::mojom::App* app, bool installed) {
                                       : apps::mojom::OptionalBool::kFalse;
 }
 
-void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
+void PopulatePermissions(apps::mojom::App* app,
+                         Profile* profile,
+                         bool allowed) {
   for (const PermissionInfo& info : permission_infos) {
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(info.permission);
     permission->value_type = apps::mojom::PermissionValueType::kBool;
     permission->value =
         static_cast<uint32_t>(profile->GetPrefs()->GetBoolean(info.pref_name));
+    permission->is_managed = false;
+    app->permissions.push_back(std::move(permission));
+  }
+  for (const PluginVmHandledPermissionInfo& info :
+       plugin_vm_handled_permission_infos) {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_id = static_cast<uint32_t>(info.permission);
+    permission->value_type = apps::mojom::PermissionValueType::kBool;
+    if (allowed) {
+      permission->value = static_cast<uint32_t>(
+          plugin_vm::PluginVmManagerFactory::GetForProfile(profile)
+              ->GetPermission(info.permission_type));
+    } else {
+      permission->value = static_cast<uint32_t>(false);
+    }
     permission->is_managed = false;
     app->permissions.push_back(std::move(permission));
   }
@@ -100,7 +124,7 @@ apps::mojom::AppPtr GetPluginVmApp(Profile* profile, bool allowed) {
       IDR_LOGO_PLUGIN_VM_DEFAULT_192, apps::IconEffects::kNone);
 
   SetShowInAppManagement(app.get(), plugin_vm::IsPluginVmConfigured(profile));
-  PopulatePermissions(app.get(), profile);
+  PopulatePermissions(app.get(), profile, allowed);
   SetAppAllowed(app.get(), allowed);
 
   return app;
@@ -113,7 +137,7 @@ namespace apps {
 PluginVmApps::PluginVmApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), permissions_observer_(this) {
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kPluginVm);
 
   // Register for Plugin VM changes to policy and installed state, so that we
@@ -130,6 +154,10 @@ PluginVmApps::PluginVmApps(
                           base::Unretained(this)));
 
   is_allowed_ = plugin_vm::IsPluginVmAllowedForProfile(profile_);
+  if (is_allowed_) {
+    permissions_observer_.Add(
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile_));
+  }
 }
 
 PluginVmApps::~PluginVmApps() = default;
@@ -191,7 +219,7 @@ void PluginVmApps::SetPermission(const std::string& app_id,
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kPluginVm;
   app->app_id = plugin_vm::kPluginVmShelfAppId;
-  PopulatePermissions(app.get(), profile_);
+  PopulatePermissions(app.get(), profile_, is_allowed_);
   Publish(std::move(app), subscribers_);
 }
 
@@ -248,6 +276,16 @@ void PluginVmApps::OnPluginVmConfiguredChanged() {
   app->app_type = apps::mojom::AppType::kPluginVm;
   app->app_id = plugin_vm::kPluginVmShelfAppId;
   SetShowInAppManagement(app.get(), plugin_vm::IsPluginVmConfigured(profile_));
+  Publish(std::move(app), subscribers_);
+}
+
+void PluginVmApps::OnPluginVmPermissionsChanged(
+    plugin_vm::PermissionType permission_type,
+    bool allowed) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kPluginVm;
+  app->app_id = plugin_vm::kPluginVmShelfAppId;
+  PopulatePermissions(app.get(), profile_, is_allowed_);
   Publish(std::move(app), subscribers_);
 }
 

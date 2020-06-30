@@ -7,10 +7,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/web_package/web_bundle_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/data_decoder/public/mojom/web_bundle_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
@@ -70,7 +70,7 @@ class WebBundleInterceptorForFile final : public NavigationLoaderInterceptor {
 
   void OnMetadataReady(
       const network::ResourceRequest& request,
-      data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error);
+      web_package::mojom::BundleMetadataParseErrorPtr metadata_error);
 
   void StartResponse(
       const network::ResourceRequest& resource_request,

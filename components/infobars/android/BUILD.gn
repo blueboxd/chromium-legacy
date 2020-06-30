@@ -16,6 +16,7 @@ android_resources("java_resources") {
     "res/drawable-xxhdpi/infobar_shadow_top.png",
     "res/drawable-xxxhdpi/infobar_shadow_left.9.png",
     "res/drawable-xxxhdpi/infobar_shadow_top.png",
+    "res/drawable/infobar_wrapper_bg.xml",
     "res/layout/infobar_control_icon_with_description.xml",
     "res/layout/infobar_control_message.xml",
     "res/layout/infobar_control_spinner.xml",
@@ -56,6 +57,7 @@ android_library("java") {
     "java/src/org/chromium/components/infobars/InfoBarLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarMessageView.java",
     "java/src/org/chromium/components/infobars/InfoBarUiItem.java",
+    "java/src/org/chromium/components/infobars/InfoBarWrapper.java",
   ]
   deps = [
     ":infobar_android_enums_java",

@@ -149,6 +149,9 @@ cr.define('settings', function() {
       r.AMBIENT_MODE = createSubpage(
           r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
           Subpage.kAmbientMode);
+      r.AMBIENT_MODE_PHOTOS = createSubpage(
+          r.AMBIENT_MODE, mojom.AMBIENT_MODE_PHOTOS_SUBPAGE_PATH,
+          Subpage.kAmbientModePhotos);
     }
 
     // Search and Assistant section.

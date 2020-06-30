@@ -3,6 +3,22 @@
 // found in the LICENSE file.
 
 /**
+ * These values should remain consistent with their C++ counterpart
+ * (chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h).
+ * @enum {number}
+ */
+const PermissionType = {
+  CAMERA: 0,
+  MICROPHONE: 1,
+};
+
+/**
+ * @typedef {{permissionType: !PermissionType,
+ *            proposedValue: boolean}}
+ */
+let PermissionSetting;
+
+/**
  * @fileoverview A helper object used by the Plugin VM section
  * to manage the Plugin VM.
  */
@@ -20,6 +36,20 @@ cr.define('settings', function() {
      * @param {string} path Path to stop sharing.
      */
     removePluginVmSharedPath(vmName, path) {}
+
+    /**
+     * @param {!PermissionSetting} permissionSetting The proposed change to
+     *     permissions
+     * @return {!Promise<boolean>} Whether Plugin VM needs to be relaunched for
+     *     permissions to take effect.
+     */
+    wouldPermissionChangeRequireRelaunch(permissionSetting) {}
+
+    /**
+     * @param {!PermissionSetting} permissionSetting The change to make to the
+     *     permissions
+     */
+    setPluginVmPermission(permissionSetting) {}
   }
 
   /** @implements {settings.PluginVmBrowserProxy} */
@@ -32,6 +62,20 @@ cr.define('settings', function() {
     /** @override */
     removePluginVmSharedPath(vmName, path) {
       chrome.send('removePluginVmSharedPath', [vmName, path]);
+    }
+
+    /** @override */
+    wouldPermissionChangeRequireRelaunch(permissionSetting) {
+      return cr.sendWithPromise(
+          'wouldPermissionChangeRequireRelaunch',
+          permissionSetting.permissionType, permissionSetting.proposedValue);
+    }
+
+    /** @override */
+    setPluginVmPermission(permissionSetting) {
+      chrome.send(
+          'setPluginVmPermission',
+          [permissionSetting.permissionType, permissionSetting.proposedValue]);
     }
   }
 

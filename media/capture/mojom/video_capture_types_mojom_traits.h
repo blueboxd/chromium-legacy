@@ -184,19 +184,14 @@ struct COMPONENT_EXPORT(MEDIA_CAPTURE_MOJOM_TRAITS)
     return input.capture_api;
   }
 
+  static bool pan_tilt_zoom_supported(
+      const media::VideoCaptureDeviceDescriptor& input) {
+    return input.pan_tilt_zoom_supported();
+  }
+
   static media::VideoCaptureTransportType transport_type(
       const media::VideoCaptureDeviceDescriptor& input) {
     return input.transport_type;
-  }
-
-  static bool has_pan_tilt_zoom_supported(
-      const media::VideoCaptureDeviceDescriptor& input) {
-    return input.pan_tilt_zoom_supported().has_value();
-  }
-
-  static bool pan_tilt_zoom_supported(
-      const media::VideoCaptureDeviceDescriptor& input) {
-    return input.pan_tilt_zoom_supported().value_or(false);
   }
 
   static bool Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,

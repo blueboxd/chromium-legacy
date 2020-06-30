@@ -105,8 +105,8 @@ ImageCapture* ImageCapture::Create(ExecutionContext* context,
       (track->GetImageCapture() &&
        track->GetImageCapture()->HasPanTiltZoomPermissionGranted());
 
-  return MakeGarbageCollected<ImageCapture>(context, track,
-                                            pan_tilt_zoom_allowed);
+  return MakeGarbageCollected<ImageCapture>(
+      context, track, pan_tilt_zoom_allowed, base::DoNothing());
 }
 
 ImageCapture::~ImageCapture() {
@@ -697,8 +697,9 @@ void ImageCapture::SetMediaTrackConstraints(
 }
 
 void ImageCapture::SetPanTiltZoomSettingsFromTrack(
+    base::OnceClosure initialized_callback,
     media::mojom::blink::PhotoStatePtr photo_state) {
-  UpdateMediaTrackCapabilities(std::move(photo_state));
+  UpdateMediaTrackCapabilities(base::DoNothing(), std::move(photo_state));
 
   MediaStreamVideoTrack* video_track = MediaStreamVideoTrack::GetVideoTrack(
       WebMediaStreamTrack(stream_track_->Component()));
@@ -708,8 +709,16 @@ void ImageCapture::SetPanTiltZoomSettingsFromTrack(
   base::Optional<double> tilt = video_track->tilt();
   base::Optional<double> zoom = video_track->zoom();
 
-  if (!pan.has_value() && !tilt.has_value() && !zoom.has_value())
+  const bool ptz_requested =
+      pan.has_value() || tilt.has_value() || zoom.has_value();
+  const bool ptz_supported = capabilities_->hasPan() ||
+                             capabilities_->hasTilt() ||
+                             capabilities_->hasZoom();
+  if (!ptz_supported || !ptz_requested || !HasPanTiltZoomPermissionGranted() ||
+      !service_.is_bound()) {
+    std::move(initialized_callback).Run();
     return;
+  }
 
   ExecutionContext* context = GetExecutionContext();
   if (pan.has_value())
@@ -718,17 +727,6 @@ void ImageCapture::SetPanTiltZoomSettingsFromTrack(
     UseCounter::Count(context, WebFeature::kImageCaptureTilt);
   if (zoom.has_value())
     UseCounter::Count(context, WebFeature::kImageCaptureZoom);
-
-  if (!HasPanTiltZoomPermissionGranted())
-    return;
-
-  if (!capabilities_->hasPan() && !capabilities_->hasTilt() &&
-      !capabilities_->hasZoom()) {
-    return;
-  }
-
-  if (!service_.is_bound())
-    return;
 
   auto settings = media::mojom::blink::PhotoSettings::New();
 
@@ -754,13 +752,16 @@ void ImageCapture::SetPanTiltZoomSettingsFromTrack(
   service_->SetOptions(
       stream_track_->Component()->Source()->Id(), std::move(settings),
       WTF::Bind(&ImageCapture::OnSetPanTiltZoomSettingsFromTrack,
-                WrapPersistent(this)));
+                WrapPersistent(this), std::move(initialized_callback)));
 }
 
-void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(bool result) {
-  service_->GetPhotoState(stream_track_->Component()->Source()->Id(),
-                          WTF::Bind(&ImageCapture::UpdateMediaTrackCapabilities,
-                                    WrapPersistent(this)));
+void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(
+    base::OnceClosure done_callback,
+    bool result) {
+  service_->GetPhotoState(
+      stream_track_->Component()->Source()->Id(),
+      WTF::Bind(&ImageCapture::UpdateMediaTrackCapabilities,
+                WrapPersistent(this), std::move(done_callback)));
 }
 
 const MediaTrackConstraintSet* ImageCapture::GetMediaTrackConstraints() const {
@@ -828,7 +829,8 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
 
 ImageCapture::ImageCapture(ExecutionContext* context,
                            MediaStreamTrack* track,
-                           bool pan_tilt_zoom_allowed)
+                           bool pan_tilt_zoom_allowed,
+                           base::OnceClosure initialized_callback)
     : ExecutionContextLifecycleObserver(context),
       stream_track_(track),
       service_(context),
@@ -861,7 +863,7 @@ ImageCapture::ImageCapture(ExecutionContext* context,
   service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
       WTF::Bind(&ImageCapture::SetPanTiltZoomSettingsFromTrack,
-                WrapPersistent(this)));
+                WrapPersistent(this), std::move(initialized_callback)));
 
   ConnectToPermissionService(
       context, permission_service_.BindNewPipeAndPassReceiver(
@@ -924,7 +926,7 @@ void ImageCapture::OnMojoGetPhotoState(
     photo_capabilities_->SetFillLightMode(photo_state->fill_light_mode);
 
   // Update the local track photo_state cache.
-  UpdateMediaTrackCapabilities(std::move(photo_state));
+  UpdateMediaTrackCapabilities(base::DoNothing(), std::move(photo_state));
 
   if (trigger_take_photo) {
     service_->TakePhoto(
@@ -983,9 +985,12 @@ void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
 }
 
 void ImageCapture::UpdateMediaTrackCapabilities(
+    base::OnceClosure initialized_callback,
     media::mojom::blink::PhotoStatePtr photo_state) {
-  if (!photo_state)
+  if (!photo_state) {
+    std::move(initialized_callback).Run();
     return;
+  }
 
   WTF::Vector<WTF::String> supported_white_balance_modes;
   supported_white_balance_modes.ReserveInitialCapacity(
@@ -1104,6 +1109,8 @@ void ImageCapture::UpdateMediaTrackCapabilities(
     capabilities_->setTorch(photo_state->supports_torch);
   if (photo_state->supports_torch)
     settings_->setTorch(photo_state->torch);
+
+  std::move(initialized_callback).Run();
 }
 
 void ImageCapture::OnServiceConnectionError() {

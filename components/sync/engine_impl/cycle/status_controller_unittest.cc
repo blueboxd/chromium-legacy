@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
-#include "components/sync/test/engine/test_id_factory.h"
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

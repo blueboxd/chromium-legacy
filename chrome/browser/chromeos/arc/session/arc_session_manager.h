@@ -374,6 +374,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // is fixed.
   void MaybeReenableArc();
 
+  // Starts a timer to check if provisioning takes too long.
+  // The timer will not be set if this device was previously provisioned
+  // successfully.
+  void MaybeStartTimer();
+
   // Requests the support host (if it exists) to show the error, and notifies
   // the observers.
   void ShowArcSupportHostError(ArcSupportHost::Error error,

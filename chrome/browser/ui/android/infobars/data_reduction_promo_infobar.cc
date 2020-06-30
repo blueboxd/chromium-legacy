@@ -17,7 +17,7 @@
 
 DataReductionPromoInfoBar::DataReductionPromoInfoBar(
     std::unique_ptr<DataReductionPromoInfoBarDelegateAndroid> delegate)
-    : ConfirmInfoBar(std::move(delegate)) {}
+    : ChromeConfirmInfoBar(std::move(delegate)) {}
 
 DataReductionPromoInfoBar::~DataReductionPromoInfoBar() {
 }

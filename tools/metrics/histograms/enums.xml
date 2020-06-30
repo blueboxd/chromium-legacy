@@ -39458,6 +39458,7 @@ from previous Chrome versions.
   <int value="-1940377152" label="MacRTL:enabled"/>
   <int value="-1940291343" label="SpeculativeResourcePrefetching:enabled"/>
   <int value="-1939533266" label="LauncherSettingsSearch:enabled"/>
+  <int value="-1939525844" label="AssistantTimersV2:enabled"/>
   <int value="-1939016096"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
@@ -40108,6 +40109,7 @@ from previous Chrome versions.
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
   <int value="-1254640444"
       label="OmniboxEnableClipboardProviderTextSuggestions:disabled"/>
+  <int value="-1254221389" label="AssistantBetterOnboarding:enabled"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1253608371" label="IncognitoStrings:disabled"/>
   <int value="-1252976780" label="ShillSandboxing:disabled"/>
@@ -40335,6 +40337,7 @@ from previous Chrome versions.
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
+  <int value="-1025125875" label="AssistantTimersV2:disabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
@@ -41023,6 +41026,7 @@ from previous Chrome versions.
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-257478609" label="TextfieldFocusOnTapUp:enabled"/>
+  <int value="-256940675" label="HelpAppSearchServiceIntegration:disabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
   <int value="-254158542" label="SubresourceRedirectPreviews:enabled"/>
@@ -41947,6 +41951,7 @@ from previous Chrome versions.
   <int value="773743944" label="show-android-files-in-files-app"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="775075949" label="ImeInputLogicHmm:enabled"/>
+  <int value="775148009" label="OsSettingsDeepLinking:disabled"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="779703052" label="ChromeOSAmbientMode:enabled"/>
@@ -42403,6 +42408,7 @@ from previous Chrome versions.
   <int value="1284910808" label="disable-checker-imaging"/>
   <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
+  <int value="1289495171" label="AssistantBetterOnboarding:disabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
   <int value="1291761696" label="CCTModuleDexLoading:disabled"/>
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
@@ -42740,6 +42746,7 @@ from previous Chrome versions.
   <int value="1661925474" label="silent-debugger-extension-api"/>
   <int value="1664401033" label="ColorCorrectRendering:enabled"/>
   <int value="1665349789" label="spurious-power-button-window"/>
+  <int value="1665400247" label="OsSettingsDeepLinking:enabled"/>
   <int value="1667584730" label="WebXR:disabled"/>
   <int value="1668611601" label="enable-encrypted-media"/>
   <int value="1669767166" label="NewTabPageBackgrounds:disabled"/>
@@ -43152,6 +43159,7 @@ from previous Chrome versions.
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
   <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2115848376" label="LacrosSupport:disabled"/>
+  <int value="2118287149" label="HelpAppSearchServiceIntegration:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2120659210" label="BackForwardCache:enabled"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
@@ -51685,6 +51693,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="501" label="Ambient Mode On/Off"/>
   <int value="502" label="Ambient Mode Source"/>
   <int value="503" label="Change Device Account Image"/>
+  <int value="504" label="Ambient Mode Update Photos Containers"/>
   <int value="600" label="Preferred Search Engine"/>
   <int value="601" label="Assistant: On/Off"/>
   <int value="602" label="Assistant: Related Info"/>
@@ -51841,6 +51850,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="407" label="Power"/>
   <int value="500" label="Change Picture"/>
   <int value="501" label="Ambient Mode"/>
+  <int value="502" label="Ambient Mode Photos"/>
   <int value="600" label="Assistant"/>
   <int value="700" label="App Management"/>
   <int value="701" label="App Details"/>

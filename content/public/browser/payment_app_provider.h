@@ -49,6 +49,8 @@ class CONTENT_EXPORT PaymentAppProvider {
   using CanMakePaymentCallback =
       base::OnceCallback<void(payments::mojom::CanMakePaymentResponsePtr)>;
   using AbortCallback = base::OnceCallback<void(bool)>;
+  using UpdatePaymentAppIconCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus status)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
@@ -71,6 +73,15 @@ class CONTENT_EXPORT PaymentAppProvider {
       const SupportedDelegations& supported_delegations,
       RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) = 0;
+  virtual void UpdatePaymentAppIcon(
+      BrowserContext* browser_context,
+      int64_t registration_id,
+      const std::string& instrument_key,
+      const std::string& name,
+      const std::string& string_encoded_icon,
+      const std::string& method_name,
+      const SupportedDelegations& supported_delegations,
+      UpdatePaymentAppIconCallback callback) = 0;
   virtual void CanMakePayment(
       WebContents* web_contents,
       int64_t registration_id,

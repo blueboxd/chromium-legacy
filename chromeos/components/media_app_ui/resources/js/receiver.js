@@ -192,7 +192,7 @@ const DELEGATE = {
    * @param {!mediaApp.AbstractFile} abstractFile
    * @return {!Promise<undefined>}
    */
-  async saveCopy(/** !mediaApp.AbstractFile */ abstractFile) {
+  async saveCopy(abstractFile) {
     /** @type {!SaveCopyMessage} */
     const msg = {blob: abstractFile.blob, suggestedName: abstractFile.name};
     await parentMessagePipe.sendMessage(Message.SAVE_COPY, msg);

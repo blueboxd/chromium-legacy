@@ -1256,6 +1256,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/ng_fieldset_layout_algorithm_test.cc",
     "layout/ng/ng_fragment_child_iterator_test.cc",
     "layout/ng/ng_fragmentation_test.cc",
+    "layout/ng/ng_ink_overflow_test.cc",
     "layout/ng/ng_inline_layout_test.cc",
     "layout/ng/ng_layout_result_caching_test.cc",
     "layout/ng/ng_layout_test.h",

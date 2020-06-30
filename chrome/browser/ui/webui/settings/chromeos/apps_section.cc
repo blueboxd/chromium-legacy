@@ -314,6 +314,10 @@ void AppsSection::AddPluginVmLoadTimeData(
        IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_REMOVE_SHARING},
       {"pluginVmSharedPathsListEmptyMessage",
        IDS_SETTINGS_APPS_PLUGIN_VM_SHARED_PATHS_LIST_EMPTY_MESSAGE},
+      {"pluginVmPermissionDialogCameraLabel",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_CAMERA_LABEL},
+      {"pluginVmPermissionDialogMicrophoneLabel",
+       IDS_SETTINGS_APPS_PLUGIN_VM_PERMISSION_DIALOG_MICROPHONE_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

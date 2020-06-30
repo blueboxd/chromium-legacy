@@ -77,11 +77,7 @@ source_set("test_support") {
   sources = [
     "test_support/in_process_data_decoder.cc",
     "test_support/in_process_data_decoder.h",
-    "test_support/web_bundle_builder.cc",
-    "test_support/web_bundle_builder.h",
   ]
-
-  deps = [ "//components/cbor" ]
 
   public_deps = [
     ":cpp",

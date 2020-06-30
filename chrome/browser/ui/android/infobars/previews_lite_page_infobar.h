@@ -10,11 +10,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/previews/previews_lite_page_infobar_delegate.h"
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
 
 // This InfoBar notifies the user that Data Saver now also applies to HTTPS
 // pages.
-class PreviewsLitePageInfoBar : public ConfirmInfoBar {
+class PreviewsLitePageInfoBar : public ChromeConfirmInfoBar {
  public:
   explicit PreviewsLitePageInfoBar(
       std::unique_ptr<PreviewsLitePageInfoBarDelegate> delegate);

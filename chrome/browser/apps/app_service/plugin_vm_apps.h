@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
@@ -24,7 +26,8 @@ namespace apps {
 // An app publisher (in the App Service sense) of Plugin VM apps.
 //
 // See components/services/app_service/README.md.
-class PluginVmApps : public apps::PublisherBase {
+class PluginVmApps : public apps::PublisherBase,
+                     public plugin_vm::PluginVmPermissionsObserver {
  public:
   PluginVmApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                Profile* profile);
@@ -59,6 +62,9 @@ class PluginVmApps : public apps::PublisherBase {
 
   void OnPluginVmAllowedChanged(bool is_allowed);
   void OnPluginVmConfiguredChanged();
+  // plugin_vm::PluginVmPermissionsObserver
+  void OnPluginVmPermissionsChanged(plugin_vm::PermissionType permission_type,
+                                    bool allowed) override;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -66,6 +72,12 @@ class PluginVmApps : public apps::PublisherBase {
 
   // Whether the Plugin VM app is allowed by policy.
   bool is_allowed_;
+
+  ScopedObserver<plugin_vm::PluginVmManager,
+                 plugin_vm::PluginVmPermissionsObserver,
+                 &plugin_vm::PluginVmManager::AddPluginVmPermissionsObserver,
+                 &plugin_vm::PluginVmManager::RemovePluginVmPermissionsObserver>
+      permissions_observer_;
 
   std::unique_ptr<plugin_vm::PluginVmPolicySubscription> policy_subscription_;
   PrefChangeRegistrar pref_registrar_;

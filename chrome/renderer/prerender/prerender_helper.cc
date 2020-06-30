@@ -7,7 +7,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
-#include "components/prerender/common/prerender_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -134,8 +133,11 @@ void PrerenderHelper::SendPrefetchFinished() {
   DCHECK(prefetch_count_ == 0 && prefetch_finished_);
   UMA_HISTOGRAM_MEDIUM_TIMES("Prerender.NoStatePrefetchRendererParseTime",
                              parsed_time_ - start_time_);
-  // TODO(darin): Perhaps this should be a routed message (frame level).
-  content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
+
+  mojo::Remote<prerender::mojom::PrerenderCanceler> canceler;
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      canceler.BindNewPipeAndPassReceiver());
+  canceler->CancelPrerenderForNoStatePrefetch();
 }
 
 }  // namespace prerender

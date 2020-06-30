@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
@@ -1961,14 +1960,6 @@ bool ProfileSyncService::IsPassphrasePrompted() const {
 
 void ProfileSyncService::SetPassphrasePrompted(bool prompted) {
   sync_prefs_.SetPassphrasePrompted(prompted);
-}
-
-void ProfileSyncService::FlushBackendTaskRunnerForTest() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::RunLoop run_loop;
-
-  backend_task_runner_->PostTask(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
 }
 
 SyncEncryptionHandler::Observer*

@@ -51,15 +51,15 @@ class CONTENT_EXPORT WebBundleReader final
   // |error| is set only on failures.
   // Other methods below are only available after this |callback| invocation.
   using MetadataCallback = base::OnceCallback<void(
-      data_decoder::mojom::BundleMetadataParseErrorPtr error)>;
+      web_package::mojom::BundleMetadataParseErrorPtr error)>;
   void ReadMetadata(MetadataCallback callback);
 
-  // Gets data_decoder::mojom::BundleResponsePtr for the given |url| that
+  // Gets web_package::mojom::BundleResponsePtr for the given |url| that
   // contains response headers and range information for its body.
   // Should be called after ReadMetadata finishes.
-  using ResponseCallback = base::OnceCallback<void(
-      data_decoder::mojom::BundleResponsePtr,
-      data_decoder::mojom::BundleResponseParseErrorPtr)>;
+  using ResponseCallback =
+      base::OnceCallback<void(web_package::mojom::BundleResponsePtr,
+                              web_package::mojom::BundleResponseParseErrorPtr)>;
   void ReadResponse(const network::ResourceRequest& resource_request,
                     const std::string& accept_langs,
                     ResponseCallback callback);
@@ -68,7 +68,7 @@ class CONTENT_EXPORT WebBundleReader final
   // ReadResponse above beforehand. Body will be written into |producer_handle|.
   // After all body data is written, |callback| will be invoked.
   using BodyCompletionCallback = base::OnceCallback<void(net::Error net_error)>;
-  void ReadResponseBody(data_decoder::mojom::BundleResponsePtr response,
+  void ReadResponseBody(web_package::mojom::BundleResponsePtr response,
                         mojo::ScopedDataPipeProducerHandle producer_handle,
                         BodyCompletionCallback callback);
 
@@ -123,15 +123,15 @@ class CONTENT_EXPORT WebBundleReader final
 
   void ReadMetadataInternal(MetadataCallback callback, base::File file);
   void ReadResponseInternal(
-      data_decoder::mojom::BundleResponseLocationPtr location,
+      web_package::mojom::BundleResponseLocationPtr location,
       ResponseCallback callback);
 
   void OnMetadataParsed(MetadataCallback callback,
-                        data_decoder::mojom::BundleMetadataPtr metadata,
-                        data_decoder::mojom::BundleMetadataParseErrorPtr error);
+                        web_package::mojom::BundleMetadataPtr metadata,
+                        web_package::mojom::BundleMetadataParseErrorPtr error);
   void OnResponseParsed(ResponseCallback callback,
-                        data_decoder::mojom::BundleResponsePtr response,
-                        data_decoder::mojom::BundleResponseParseErrorPtr error);
+                        web_package::mojom::BundleResponsePtr response,
+                        web_package::mojom::BundleResponseParseErrorPtr error);
   void OnParserDisconnected();
   void Reconnect();
   void ReconnectForFile(base::File file);
@@ -149,9 +149,9 @@ class CONTENT_EXPORT WebBundleReader final
   std::unique_ptr<WebBundleBlobDataSource> blob_data_source_;
 
   GURL primary_url_;
-  base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
+  base::flat_map<GURL, web_package::mojom::BundleIndexValuePtr> entries_;
   // Accumulates ReadResponse() requests while the parser is disconnected.
-  std::vector<std::pair<data_decoder::mojom::BundleResponseLocationPtr,
+  std::vector<std::pair<web_package::mojom::BundleResponseLocationPtr,
                         ResponseCallback>>
       pending_read_responses_;
 

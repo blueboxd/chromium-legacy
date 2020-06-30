@@ -356,7 +356,7 @@ suite(extension_detail_view_tests.suiteName, function() {
   test(assert(extension_detail_view_tests.TestNames.Indicator), function() {
     const indicator = item.$$('cr-tooltip-icon');
     expectTrue(indicator.hidden);
-    item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+    item.set('data.controlledInfo', {text: 'policy'});
     flush();
     expectFalse(indicator.hidden);
   });

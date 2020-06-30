@@ -201,20 +201,20 @@ void CronetEnvironment::StopNetLogOnNetworkThread(
   if (file_net_log_observer_) {
     DLOG(WARNING) << "Stopped NetLog.";
     file_net_log_observer_->StopObserving(
-        GetNetLogInfo(), base::BindOnce(&SignalEvent, log_stopped_event));
+        base::Value::ToUniquePtrValue(GetNetLogInfo()),
+        base::BindOnce(&SignalEvent, log_stopped_event));
     file_net_log_observer_.reset();
   } else {
     log_stopped_event->Signal();
   }
 }
 
-std::unique_ptr<base::DictionaryValue> CronetEnvironment::GetNetLogInfo()
-    const {
-  std::unique_ptr<base::DictionaryValue> net_info =
+base::Value CronetEnvironment::GetNetLogInfo() const {
+  base::Value net_info =
       net::GetNetInfo(main_context_.get(), net::NET_INFO_ALL_SOURCES);
   if (effective_experimental_options_) {
-    net_info->Set("cronetExperimentalParams",
-                  effective_experimental_options_->CreateDeepCopy());
+    net_info.SetKey("cronetExperimentalParams",
+                    effective_experimental_options_->Clone());
   }
   return net_info;
 }

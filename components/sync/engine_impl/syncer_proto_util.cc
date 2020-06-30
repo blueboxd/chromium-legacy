@@ -19,8 +19,6 @@
 #include "components/sync/engine_impl/traffic_logger.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
-#include "components/sync/syncable/entry.h"
-#include "components/sync/syncable/syncable_proto_util.h"
 #include "google_apis/google_api_keys.h"
 
 using std::string;
@@ -29,16 +27,6 @@ using sync_pb::ClientToServerMessage;
 using sync_pb::ClientToServerResponse;
 
 namespace syncer {
-
-using syncable::BASE_VERSION;
-using syncable::CTIME;
-using syncable::ID;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNSYNCED;
-using syncable::MTIME;
-using syncable::PARENT_ID;
-
 namespace {
 
 // Time to backoff syncing after receiving a throttled response.

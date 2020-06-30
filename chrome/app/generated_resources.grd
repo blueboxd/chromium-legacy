@@ -6931,7 +6931,7 @@ the Bookmarks menu.">
         <message name="IDS_EXTENSIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
           Installed by a third party.
         </message>
-        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
+        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining that the installation of the extension came from an enterprise policy.">
           Installed by enterprise policy.
         </message>
         <message name="IDS_EXTENSIONS_INSTALL_LOCATION_SHARED_MODULE" desc="The text explaining the the installation of the extension was because of extensions that depend on this shared module">

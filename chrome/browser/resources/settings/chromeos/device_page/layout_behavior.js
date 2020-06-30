@@ -708,8 +708,10 @@ const LayoutBehavior = {
   highlightEdge_(id, layoutPosition) {
     for (let i = 0; i < this.layouts.length; ++i) {
       const layout = this.layouts[i];
-      const highlight = (layout.id == id) ? layoutPosition : undefined;
-      const div = this.$$('#_' + layout.id);
+      const highlight = (layout.id == id || layout.parentId == id) ?
+          layoutPosition :
+          undefined;
+      const div = id ? this.$$('#_' + id) : this.$$('#_' + layout.id);
       div.classList.toggle(
           'highlight-right',
           highlight == chrome.system.display.LayoutPosition.RIGHT);

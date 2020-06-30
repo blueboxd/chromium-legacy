@@ -13,7 +13,8 @@ import java.lang.annotation.RetentionPolicy;
  * @hide
  */
 @IntDef({SettingType.BASIC_SAFE_BROWSING_ENABLED, SettingType.UKM_ENABLED,
-        SettingType.EXTENDED_REPORTING_SAFE_BROWSING_ENABLED})
+        SettingType.EXTENDED_REPORTING_SAFE_BROWSING_ENABLED,
+        SettingType.REAL_TIME_SAFE_BROWSING_ENABLED})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SettingType {
     /**
@@ -40,4 +41,11 @@ public @interface SettingType {
     int EXTENDED_REPORTING_SAFE_BROWSING_ENABLED =
             org.chromium.weblayer_private.interfaces.SettingType
                     .EXTENDED_REPORTING_SAFE_BROWSING_ENABLED;
+
+    /**
+     * Allows the embedder to set whether it wants to enable/disable the Safe Browsing Real-time URL
+     * checks. This functionality is disabled by default.
+     */
+    int REAL_TIME_SAFE_BROWSING_ENABLED =
+            org.chromium.weblayer_private.interfaces.SettingType.REAL_TIME_SAFE_BROWSING_ENABLED;
 }

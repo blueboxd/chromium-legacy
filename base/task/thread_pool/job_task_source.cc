@@ -4,10 +4,12 @@
 
 #include "base/task/thread_pool/job_task_source.h"
 
+#include <type_traits>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/bits.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/common/checked_lock.h"
@@ -19,6 +21,18 @@
 
 namespace base {
 namespace internal {
+
+namespace {
+
+// Capped to allow assigning task_ids from a bitfield.
+constexpr size_t kMaxWorkersPerJob = 32;
+static_assert(
+    kMaxWorkersPerJob <=
+        std::numeric_limits<std::result_of<
+            decltype (&JobDelegate::GetTaskId)(JobDelegate)>::type>::max(),
+    "AcquireTaskId return type isn't big enough to fit kMaxWorkersPerJob");
+
+}  // namespace
 
 // Memory ordering on |state_| operations
 //
@@ -317,7 +331,30 @@ void JobTaskSource::NotifyConcurrencyIncrease() {
 }
 
 size_t JobTaskSource::GetMaxConcurrency() const {
-  return max_concurrency_callback_.Run();
+  return std::min(max_concurrency_callback_.Run(), kMaxWorkersPerJob);
+}
+
+uint8_t JobTaskSource::AcquireTaskId() {
+  static_assert(kMaxWorkersPerJob <= sizeof(assigned_task_ids_) * 8,
+                "TaskId bitfield isn't big enough to fit kMaxWorkersPerJob.");
+  uint32_t assigned_task_ids =
+      assigned_task_ids_.load(std::memory_order_relaxed);
+  uint32_t new_assigned_task_ids = 0;
+  uint8_t task_id = 0;
+  do {
+    // Count trailing one bits. This is the id of the right-most 0-bit in
+    // |assigned_task_ids|.
+    task_id = bits::CountTrailingZeroBits(~assigned_task_ids);
+    new_assigned_task_ids = assigned_task_ids | (uint32_t(1) << task_id);
+  } while (assigned_task_ids_.compare_exchange_weak(
+      assigned_task_ids, new_assigned_task_ids, std::memory_order_relaxed));
+  return task_id;
+}
+
+void JobTaskSource::ReleaseTaskId(uint8_t task_id) {
+  uint32_t previous_task_ids =
+      assigned_task_ids_.fetch_and(~(uint32_t(1) << task_id));
+  DCHECK(previous_task_ids & (uint32_t(1) << task_id));
 }
 
 bool JobTaskSource::ShouldYield() {

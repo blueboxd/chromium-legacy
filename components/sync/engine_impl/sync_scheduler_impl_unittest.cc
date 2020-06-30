@@ -26,11 +26,11 @@
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
-#include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
+#include "components/sync/test/fake_sync_encryption_handler.h"
 #include "components/sync/test/mock_invalidation.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -125,7 +125,6 @@ class SyncSchedulerImplTest : public testing::Test {
   };
 
   void SetUp() override {
-    test_user_share_.SetUp();
     delay_ = nullptr;
     extensions_activity_ = new ExtensionsActivity();
 
@@ -134,12 +133,12 @@ class SyncSchedulerImplTest : public testing::Test {
         base::MakeRefCounted<FakeModelWorker>(GROUP_NON_BLOCKING));
     workers_.push_back(base::MakeRefCounted<FakeModelWorker>(GROUP_PASSIVE));
 
-    connection_ = std::make_unique<MockConnectionManager>(directory());
+    connection_ = std::make_unique<MockConnectionManager>();
     connection_->SetServerReachable();
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-        workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        &cancelation_signal_, test_user_share_.keystore_keys_handler());
+        workers_, &mock_nudge_handler_, &cancelation_signal_,
+        &encryption_handler_);
     model_type_registry_->ConnectNonBlockingType(
         HISTORY_DELETE_DIRECTIVES,
         MakeFakeActivationResponse(HISTORY_DELETE_DIRECTIVES));
@@ -151,10 +150,10 @@ class SyncSchedulerImplTest : public testing::Test {
         TYPED_URLS, MakeFakeActivationResponse(TYPED_URLS));
 
     context_ = std::make_unique<SyncCycleContext>(
-        connection_.get(), directory(), extensions_activity_.get(),
+        connection_.get(), extensions_activity_.get(),
         std::vector<SyncEngineEventListener*>(), nullptr,
         model_type_registry_.get(), "fake_invalidator_client_id",
-        "fake_birthday", "fake_bag_of_chips",
+        "fake_cache_guid", "fake_birthday", "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
@@ -186,7 +185,6 @@ class SyncSchedulerImplTest : public testing::Test {
     PumpLoop();
     scheduler_.reset();
     PumpLoop();
-    test_user_share_.TearDown();
   }
 
   void AnalyzePollRun(const SyncShareTimes& times,
@@ -328,11 +326,7 @@ class SyncSchedulerImplTest : public testing::Test {
     return tick_clock_->NowTicks();
   }
 
-  syncable::Directory* directory() {
-    return test_user_share_.user_share()->directory.get();
-  }
-
-  TestUserShare test_user_share_;
+  FakeSyncEncryptionHandler encryption_handler_;
   CancelationSignal cancelation_signal_;
   std::unique_ptr<MockConnectionManager> connection_;
   std::unique_ptr<ModelTypeRegistry> model_type_registry_;

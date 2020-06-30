@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/sync/syncable/change_processor.h"
-#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
@@ -120,33 +118,6 @@ void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
   }
 }
 
-bool SyncBackendRegistrar::IsTypeActivatedForTest(ModelType type) const {
-  return GetProcessor(type) != nullptr;
-}
-
-void SyncBackendRegistrar::OnChangesApplied(
-    ModelType model_type,
-    int64_t model_version,
-    const BaseTransaction* trans,
-    const ImmutableChangeRecordList& changes) {
-  ChangeProcessor* processor = GetProcessor(model_type);
-  if (!processor)
-    return;
-
-  processor->ApplyChangesFromSyncModel(trans, model_version, changes);
-}
-
-void SyncBackendRegistrar::OnChangesComplete(ModelType model_type) {
-  ChangeProcessor* processor = GetProcessor(model_type);
-  if (!processor)
-    return;
-
-  // This call just notifies the processor that it can commit; it
-  // already buffered any changes it plans to makes so needs no
-  // further information.
-  processor->CommitChangesFromSyncModel();
-}
-
 void SyncBackendRegistrar::GetWorkers(
     std::vector<scoped_refptr<ModelSafeWorker>>* out) {
   base::AutoLock lock(lock_);
@@ -160,35 +131,6 @@ void SyncBackendRegistrar::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
   base::AutoLock lock(lock_);
   ModelSafeRoutingInfo copy(routing_info_);
   out->swap(copy);
-}
-
-ChangeProcessor* SyncBackendRegistrar::GetProcessor(ModelType type) const {
-  base::AutoLock lock(lock_);
-  ChangeProcessor* processor = GetProcessorUnsafe(type);
-  if (!processor)
-    return nullptr;
-
-  // We can only check if |processor| exists, as otherwise the type is
-  // mapped to GROUP_PASSIVE.
-  DCHECK(IsCurrentThreadSafeForModel(type));
-  return processor;
-}
-
-ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
-    ModelType type) const {
-  lock_.AssertAcquired();
-  auto it = processors_.find(type);
-
-  // Until model association happens for a datatype, it will not
-  // appear in the processors list.  During this time, it is OK to
-  // drop changes on the floor (since model association has not
-  // happened yet).  When the data type is activated, model
-  // association takes place then the change processor is added to the
-  // |processors_| list.
-  if (it == processors_.end())
-    return nullptr;
-
-  return it->second;
 }
 
 bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
@@ -207,8 +149,6 @@ bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
 }
 
 SyncBackendRegistrar::~SyncBackendRegistrar() {
-  // All data types should have been deactivated by now.
-  DCHECK(processors_.empty());
 }
 
 void SyncBackendRegistrar::MaybeAddWorker(ModelSafeWorkerFactory worker_factory,

@@ -56,10 +56,12 @@ class NonClientFrameViewAshTestWidgetDelegate
   NonClientFrameViewAshTestWidgetDelegate() = default;
   ~NonClientFrameViewAshTestWidgetDelegate() override = default;
 
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    non_client_frame_view_ = new NonClientFrameViewAsh(widget);
-    return non_client_frame_view_;
+    auto non_client_frame_view =
+        std::make_unique<NonClientFrameViewAsh>(widget);
+    non_client_frame_view_ = non_client_frame_view.get();
+    return non_client_frame_view;
   }
 
   int GetNonClientFrameViewTopBorderHeight() {
@@ -776,7 +778,7 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
     if (custom_) {
       WindowState* window_state = WindowState::Get(widget->GetNativeWindow());

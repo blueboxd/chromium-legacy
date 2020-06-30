@@ -24,7 +24,7 @@ executable("updater") {
   configs += [ "//build/config/win:windowed" ]
 
   deps = [
-    ":install_app",
+    ":app_install",
     ":lib",
     ":version_resources",
     "//build/win:default_exe_manifest",
@@ -131,10 +131,10 @@ source_set("install_progress_observer") {
 # dependency of ATL in the UI so ATL headers are not visible in the
 # compilation units outside the UI itself.
 # TODO(sorin): https://crbug.com/1014311
-source_set("install_app") {
+source_set("app_install") {
   sources = [
-    "install_app.cc",
-    "install_app.h",
+    "app_install.cc",
+    "app_install.h",
   ]
 
   deps = [
@@ -164,8 +164,8 @@ source_set("updater_tests") {
   ]
 
   deps = [
+    ":app_install",
     ":constants",
-    ":install_app",
     ":lib",
     "//base/test:test_support",
     "//testing/gtest",
@@ -189,7 +189,7 @@ test("updater_unittests") {
   ]
 
   deps = [
-    ":install_app",
+    ":app_install",
     ":lib",
     "//base",
     "//base/test:test_support",

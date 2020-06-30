@@ -53,17 +53,23 @@ const base::Feature kVizForWebView{"VizForWebView",
 const base::Feature kVizFrameSubmissionForWebView{
     "VizFrameSubmissionForWebView", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUsePreferredIntervalForVideo{
+    "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether we should use the real buffers corresponding to overlay candidates in
 // order to do a pageflip test rather than allocating test buffers.
 const base::Feature kUseRealBuffersForPageFlipTest{
     "UseRealBuffersForPageFlipTest", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_FUCHSIA)
+// Enables SkiaOutputDeviceBufferQueue instead of Vulkan swapchain on Fuchsia.
+const base::Feature kUseSkiaOutputDeviceBufferQueue{
+    "UseSkiaOutputDeviceBufferQueue", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Whether we should split partially occluded quads to reduce overdraw.
 const base::Feature kSplitPartiallyOccludedQuads{
     "SplitPartiallyOccludedQuads", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kUsePreferredIntervalForVideo{
-    "UsePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether we should log extra debug information to webrtc native log.
 const base::Feature kWebRtcLogCapturePipeline{

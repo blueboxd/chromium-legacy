@@ -67,8 +67,8 @@ class ChromeRenderFrameObserverTest : public ChromeRenderViewTest {
         ->GetBrowserInterfaceBroker()
         ->SetBinderForTesting(
             translate::mojom::ContentTranslateDriver::Name_,
-            base::Bind(&FakeContentTranslateDriver::BindHandle,
-                       base::Unretained(&fake_translate_driver_)));
+            base::BindRepeating(&FakeContentTranslateDriver::BindHandle,
+                                base::Unretained(&fake_translate_driver_)));
   }
 
   void TearDown() override {

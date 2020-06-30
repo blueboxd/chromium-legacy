@@ -144,8 +144,8 @@
       <div class="layout horizontal">
         <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
             tooltip-text="[[data.controlledInfo.text]]"
-            icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
-            icon-aria-label="[[data.controlledInfo.type]]">
+            icon-class="cr20:domain"
+            icon-aria-label="[[data.controlledInfo.text]]">
         </cr-tooltip-icon>
         <template is="dom-if" if="[[showReloadButton_(data.state)]]">
           <cr-button id="terminated-reload-button" class="action-button"

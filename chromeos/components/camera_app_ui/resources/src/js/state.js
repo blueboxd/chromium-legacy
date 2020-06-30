@@ -44,6 +44,7 @@ export const State = {
   SHOULD_HANDLE_INTENT_RESULT: 'should-handle-intent-result',
   SHOW_METADATA: 'show-metadata',
   SQUARE_PREVIEW: 'square-preview',
+  SCREEN_OFF_AUTO: 'screen-off-auto',
   STREAMING: 'streaming',
   SUSPEND: 'suspend',
   TABLET: 'tablet',

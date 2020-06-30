@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/public/cpp/screen_backlight.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
@@ -19,6 +20,7 @@ class Window;
 namespace chromeos_camera {
 
 class CameraAppHelperImpl : public ash::TabletModeObserver,
+                            public ash::ScreenBacklightObserver,
                             public mojom::CameraAppHelper {
  public:
   using CameraResultCallback =
@@ -27,6 +29,7 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
                                    const std::vector<uint8_t>&,
                                    HandleCameraResultCallback)>;
   using TabletModeMonitor = mojom::TabletModeMonitor;
+  using ScreenStateMonitor = mojom::ScreenStateMonitor;
 
   CameraAppHelperImpl(CameraResultCallback camera_result_callback,
                       aura::Window* window);
@@ -42,15 +45,21 @@ class CameraAppHelperImpl : public ash::TabletModeObserver,
   void StopPerfEventTrace(const std::string& event) override;
   void SetTabletMonitor(mojo::PendingRemote<TabletModeMonitor> monitor,
                         SetTabletMonitorCallback callback) override;
+  void SetScreenStateMonitor(mojo::PendingRemote<ScreenStateMonitor> monitor,
+                             SetScreenStateMonitorCallback callback) override;
 
  private:
   // ash::TabletModeObserver overrides;
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  // ash::ScreenBacklightObserver overrides;
+  void OnScreenStateChanged(ash::ScreenState screen_state) override;
+
   CameraResultCallback camera_result_callback_;
 
-  mojo::Remote<TabletModeMonitor> monitor_;
+  mojo::Remote<TabletModeMonitor> tablet_monitor_;
+  mojo::Remote<ScreenStateMonitor> screen_state_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraAppHelperImpl);
 };

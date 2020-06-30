@@ -749,10 +749,11 @@ DeviceSection::DeviceSection(Profile* profile,
                              PrefService* pref_service)
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {
-  registry()->AddSearchTags(GetDeviceSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetDeviceSearchConcepts());
 
   if (features::ShouldShowExternalStorageSettings(profile))
-    registry()->AddSearchTags(GetExternalStorageSearchConcepts());
+    updater.AddSearchTags(GetExternalStorageSearchConcepts());
 
   PowerManagerClient* power_manager_client = PowerManagerClient::Get();
   if (power_manager_client) {
@@ -983,17 +984,21 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 }
 
 void DeviceSection::TouchpadExists(bool exists) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (exists)
-    registry()->AddSearchTags(GetTouchpadSearchConcepts());
+    updater.AddSearchTags(GetTouchpadSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetTouchpadSearchConcepts());
+    updater.RemoveSearchTags(GetTouchpadSearchConcepts());
 }
 
 void DeviceSection::MouseExists(bool exists) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (exists)
-    registry()->AddSearchTags(GetMouseSearchConcepts());
+    updater.AddSearchTags(GetMouseSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetMouseSearchConcepts());
+    updater.RemoveSearchTags(GetMouseSearchConcepts());
 }
 
 void DeviceSection::OnDeviceListsComplete() {
@@ -1013,21 +1018,25 @@ void DeviceSection::OnDisplayConfigChanged() {
 
 void DeviceSection::PowerChanged(
     const power_manager::PowerSupplyProperties& properties) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (properties.battery_state() !=
       power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT) {
-    registry()->AddSearchTags(GetPowerWithBatterySearchConcepts());
+    updater.AddSearchTags(GetPowerWithBatterySearchConcepts());
   }
 }
 
 void DeviceSection::OnGetExistingDlcs(
     const std::string& err,
     const dlcservice::DlcsWithContent& dlcs_with_content) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (err != dlcservice::kErrorNone ||
       dlcs_with_content.dlc_infos_size() == 0) {
-    registry()->RemoveSearchTags(GetDlcSearchConcepts());
+    updater.RemoveSearchTags(GetDlcSearchConcepts());
     return;
   }
-  registry()->AddSearchTags(GetDlcSearchConcepts());
+  updater.AddSearchTags(GetDlcSearchConcepts());
 }
 
 void DeviceSection::OnDlcStateChanged(const dlcservice::DlcState& dlc_state) {
@@ -1064,67 +1073,71 @@ void DeviceSection::OnGetDisplayLayoutInfo(
                                 ash::mojom::DisplayLayoutMode::kUnified;
   }
 
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   // Arrangement UI.
   if (has_multiple_displays || is_mirrored)
-    registry()->AddSearchTags(GetDisplayArrangementSearchConcepts());
+    updater.AddSearchTags(GetDisplayArrangementSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayArrangementSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayArrangementSearchConcepts());
 
   // Mirror toggle.
   if (is_mirrored || (!unified_desktop_mode && has_multiple_displays))
-    registry()->AddSearchTags(GetDisplayMirrorSearchConcepts());
+    updater.AddSearchTags(GetDisplayMirrorSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayMirrorSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayMirrorSearchConcepts());
 
   // Unified Desktop toggle.
   if (unified_desktop_mode ||
       (IsUnifiedDesktopAvailable() && has_multiple_displays && !is_mirrored)) {
-    registry()->AddSearchTags(GetDisplayUnifiedDesktopSearchConcepts());
+    updater.AddSearchTags(GetDisplayUnifiedDesktopSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetDisplayUnifiedDesktopSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayUnifiedDesktopSearchConcepts());
   }
 
   // External display settings.
   if (has_external_display)
-    registry()->AddSearchTags(GetDisplayExternalSearchConcepts());
+    updater.AddSearchTags(GetDisplayExternalSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayExternalSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayExternalSearchConcepts());
 
   // Refresh Rate dropdown.
   if (has_external_display && IsListAllDisplayModesEnabled())
-    registry()->AddSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
+    updater.AddSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
 
   // Orientation settings.
   if (!unified_desktop_mode)
-    registry()->AddSearchTags(GetDisplayOrientationSearchConcepts());
+    updater.AddSearchTags(GetDisplayOrientationSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayOrientationSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayOrientationSearchConcepts());
 
   // Ambient color settings.
   if (DoesDeviceSupportAmbientColor() && has_internal_display)
-    registry()->AddSearchTags(GetDisplayAmbientSearchConcepts());
+    updater.AddSearchTags(GetDisplayAmbientSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayAmbientSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayAmbientSearchConcepts());
 
   // Touch calibration settings.
   if (IsTouchCalibrationAvailable())
-    registry()->AddSearchTags(GetDisplayTouchCalibrationSearchConcepts());
+    updater.AddSearchTags(GetDisplayTouchCalibrationSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayTouchCalibrationSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayTouchCalibrationSearchConcepts());
 
   // Night Light on settings.
   if (ash::NightLightController::GetInstance()->GetEnabled())
-    registry()->AddSearchTags(GetDisplayNightLightOnSearchConcepts());
+    updater.AddSearchTags(GetDisplayNightLightOnSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetDisplayNightLightOnSearchConcepts());
+    updater.RemoveSearchTags(GetDisplayNightLightOnSearchConcepts());
 }
 
 void DeviceSection::OnGotSwitchStates(
     base::Optional<PowerManagerClient::SwitchStates> result) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (result && result->lid_state != PowerManagerClient::LidState::NOT_PRESENT)
-    registry()->AddSearchTags(GetPowerWithLaptopLidSearchConcepts());
+    updater.AddSearchTags(GetPowerWithLaptopLidSearchConcepts());
 }
 
 void DeviceSection::UpdateStylusSearchTags() {
@@ -1132,13 +1145,15 @@ void DeviceSection::UpdateStylusSearchTags() {
   if (!ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete())
     return;
 
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   // TODO(https://crbug.com/1071905): Only show stylus settings if a stylus has
   // been set up. HasStylusInput() will return true for any stylus-compatible
   // device, even if it doesn't have a stylus.
   if (ash::stylus_utils::HasStylusInput())
-    registry()->AddSearchTags(GetStylusSearchConcepts());
+    updater.AddSearchTags(GetStylusSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetStylusSearchConcepts());
+    updater.RemoveSearchTags(GetStylusSearchConcepts());
 }
 
 void DeviceSection::AddDevicePointersStrings(

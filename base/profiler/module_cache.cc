@@ -33,13 +33,8 @@ ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
 const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
-  const auto non_native_module_loc = non_native_modules_.find(address);
-  if (non_native_module_loc != non_native_modules_.end())
-    return non_native_module_loc->get();
-
-  const auto native_module_loc = native_modules_.find(address);
-  if (native_module_loc != native_modules_.end())
-    return native_module_loc->get();
+  if (const ModuleCache::Module* module = GetExistingModuleForAddress(address))
+    return module;
 
   std::unique_ptr<const Module> new_module = CreateModuleForAddress(address);
   if (!new_module)
@@ -95,6 +90,19 @@ void ModuleCache::UpdateNonNativeModules(
 
 void ModuleCache::AddCustomNativeModule(std::unique_ptr<const Module> module) {
   native_modules_.insert(std::move(module));
+}
+
+const ModuleCache::Module* ModuleCache::GetExistingModuleForAddress(
+    uintptr_t address) const {
+  const auto non_native_module_loc = non_native_modules_.find(address);
+  if (non_native_module_loc != non_native_modules_.end())
+    return non_native_module_loc->get();
+
+  const auto native_module_loc = native_modules_.find(address);
+  if (native_module_loc != native_modules_.end())
+    return native_module_loc->get();
+
+  return nullptr;
 }
 
 bool ModuleCache::ModuleAndAddressCompare::operator()(

@@ -330,9 +330,9 @@ BubbleDialogDelegate* BubbleDialogDelegate::AsBubbleDialogDelegate() {
   return this;
 }
 
-NonClientFrameView* BubbleDialogDelegate::CreateNonClientFrameView(
-    Widget* widget) {
-  BubbleFrameView* frame = new BubbleDialogFrameView(title_margins_);
+std::unique_ptr<NonClientFrameView>
+BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
+  auto frame = std::make_unique<BubbleDialogFrameView>(title_margins_);
   LayoutProvider* provider = LayoutProvider::Get();
 
   frame->set_footnote_margins(

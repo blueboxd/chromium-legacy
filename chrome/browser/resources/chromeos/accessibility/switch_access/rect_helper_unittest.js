@@ -2,23 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Test fixture for rect_helper.js.
- * @constructor
- * @extends {testing.Test}
- */
-function SwitchAccessRectHelperUnitTest() {
-  testing.Test.call(this);
-}
+/** Test fixture for rect_helper.js. */
+SwitchAccessRectHelperUnitTest = class extends testing.Test {};
 
-SwitchAccessRectHelperUnitTest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /** @override */
-  extraLibraries: [
-    'rect_helper.js',
-  ],
-};
+/** @override */
+SwitchAccessRectHelperUnitTest.prototype.extraLibraries = ['rect_helper.js'];
 
 TEST_F('SwitchAccessRectHelperUnitTest', 'Adjacent', function() {
   const baseRect = {left: 10, top: 10, width: 10, height: 10};

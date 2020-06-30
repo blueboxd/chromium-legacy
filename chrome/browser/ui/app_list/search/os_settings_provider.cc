@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -188,10 +189,13 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (app_service_proxy_) {
     Observe(&app_service_proxy_->AppRegistryCache());
+    auto icon_type =
+        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+            ? apps::mojom::IconType::kStandard
+            : apps::mojom::IconType::kUncompressed;
     app_service_proxy_->LoadIcon(
         apps::mojom::AppType::kWeb,
-        chromeos::default_web_apps::kOsSettingsAppId,
-        apps::mojom::IconCompression::kUncompressed,
+        chromeos::default_web_apps::kOsSettingsAppId, icon_type,
         ash::AppListConfig::instance().search_list_icon_dimension(),
         /*allow_placeholder_icon=*/false,
         base::BindOnce(&OsSettingsProvider::OnLoadIcon,
@@ -278,10 +282,13 @@ void OsSettingsProvider::OnAppUpdate(const apps::AppUpdate& update) {
       update.AppId() == chromeos::default_web_apps::kOsSettingsAppId &&
       update.ReadinessChanged() &&
       update.Readiness() == apps::mojom::Readiness::kReady) {
+    auto icon_type =
+        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+            ? apps::mojom::IconType::kStandard
+            : apps::mojom::IconType::kUncompressed;
     app_service_proxy_->LoadIcon(
         apps::mojom::AppType::kWeb,
-        chromeos::default_web_apps::kOsSettingsAppId,
-        apps::mojom::IconCompression::kUncompressed,
+        chromeos::default_web_apps::kOsSettingsAppId, icon_type,
         ash::AppListConfig::instance().search_list_icon_dimension(),
         /*allow_placeholder_icon=*/false,
         base::BindOnce(&OsSettingsProvider::OnLoadIcon,
@@ -364,8 +371,11 @@ OsSettingsProvider::FilterResults(
 }
 
 void OsSettingsProvider::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression ==
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type == icon_type) {
     icon_ = icon_value->uncompressed;
   }
 }

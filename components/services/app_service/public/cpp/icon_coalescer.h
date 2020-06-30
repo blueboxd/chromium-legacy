@@ -20,7 +20,7 @@
 
 namespace apps {
 
-// An IconLoader that coalesces the apps::mojom::IconCompression::kUncompressed
+// An IconLoader that coalesces the apps::mojom::IconType::kUncompressed
 // results of another (wrapped) IconLoader.
 //
 // This is similar to, but different from, an IconCache. Both types are related
@@ -54,7 +54,7 @@ class IconCoalescer : public IconLoader {
       apps::mojom::AppType app_type,
       const std::string& app_id,
       apps::mojom::IconKeyPtr icon_key,
-      apps::mojom::IconCompression icon_compression,
+      apps::mojom::IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) override;

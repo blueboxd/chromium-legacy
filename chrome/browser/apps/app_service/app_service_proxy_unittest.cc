@@ -20,7 +20,7 @@ class AppServiceProxyTest : public testing::Test {
     void FlushPendingCallbacks() {
       for (auto& callback : pending_callbacks_) {
         auto iv = apps::mojom::IconValue::New();
-        iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+        iv->icon_type = apps::mojom::IconType::kUncompressed;
         iv->uncompressed =
             gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
         iv->is_placeholder_icon = false;
@@ -43,11 +43,11 @@ class AppServiceProxyTest : public testing::Test {
         apps::mojom::AppType app_type,
         const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override {
-      if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
+      if (icon_type == apps::mojom::IconType::kUncompressed) {
         pending_callbacks_.push_back(std::move(callback));
       }
       return nullptr;
@@ -59,13 +59,12 @@ class AppServiceProxyTest : public testing::Test {
 
   UniqueReleaser LoadIcon(apps::IconLoader* loader, const std::string& app_id) {
     static constexpr auto app_type = apps::mojom::AppType::kWeb;
-    static constexpr auto icon_compression =
-        apps::mojom::IconCompression::kUncompressed;
+    static constexpr auto icon_type = apps::mojom::IconType::kUncompressed;
     static constexpr int32_t size_hint_in_dip = 1;
     static bool allow_placeholder_icon = false;
 
-    return loader->LoadIcon(app_type, app_id, icon_compression,
-                            size_hint_in_dip, allow_placeholder_icon,
+    return loader->LoadIcon(app_type, app_id, icon_type, size_hint_in_dip,
+                            allow_placeholder_icon,
                             base::BindOnce(&AppServiceProxyTest::OnLoadIcon,
                                            base::Unretained(this)));
   }

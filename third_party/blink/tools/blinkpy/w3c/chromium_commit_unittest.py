@@ -57,7 +57,7 @@ class ChromiumCommitTest(unittest.TestCase):
         self.assertEqual(chromium_commit.sha,
                          'c881563d734a86f7d9cd57ac509653a61c45c240')
 
-    def test_filtered_changed_files_blacklist(self):
+    def test_filtered_changed_files_skips_special_files(self):
         host = MockHost()
 
         fake_files = ['file1', 'MANIFEST.json', 'file3', 'OWNERS']

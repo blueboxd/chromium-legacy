@@ -72,11 +72,16 @@ class AssistantAlarmTimerControllerImpl
                                const std::string& alarm_timer_id,
                                const base::Optional<base::TimeDelta>& duration);
 
+  void ScheduleNextTick(const AssistantTimer& timer);
+  void Tick(const std::string& timer_id);
+
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
 
   AssistantAlarmTimerModel model_;
 
-  base::RepeatingTimer ticker_;
+  // We independently tick timers in our |model_| to update their respective
+  // remaining times. This map contains these tickers, keyed by timer id.
+  std::map<std::string, base::OneShotTimer> tickers_;
 
   // Owned by AssistantService.
   chromeos::assistant::Assistant* assistant_;

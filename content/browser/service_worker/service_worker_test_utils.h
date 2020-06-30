@@ -328,10 +328,15 @@ class MockServiceWorkerResponseReader
 // A convenience method AllExpectedWritesDone() is exposed so tests can ensure
 // that all expected writes have been consumed by matching calls to WriteInfo()
 // or WriteData().
-class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
+class MockServiceWorkerResponseWriter
+    : public ServiceWorkerResponseWriter,
+      public storage::mojom::ServiceWorkerResourceWriter {
  public:
   MockServiceWorkerResponseWriter();
   ~MockServiceWorkerResponseWriter() override;
+
+  mojo::PendingRemote<storage::mojom::ServiceWorkerResourceWriter>
+  BindNewPipeAndPassRemote(base::OnceClosure disconnect_handler);
 
   // ServiceWorkerResponseWriter overrides
   void WriteInfo(HttpResponseInfoIOBuffer* info_buf,
@@ -339,6 +344,12 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
   void WriteData(net::IOBuffer* buf,
                  int buf_len,
                  net::CompletionOnceCallback callback) override;
+
+  // ServiceWorkerResourceWriter overrides:
+  void WriteResponseHead(network::mojom::URLResponseHeadPtr response_head,
+                         WriteResponseHeadCallback callback) override;
+  void WriteData(mojo_base::BigBuffer data,
+                 WriteDataCallback callback) override;
 
   // Enqueue expected writes.
   void ExpectWriteInfoOk(size_t len);
@@ -369,6 +380,8 @@ class MockServiceWorkerResponseWriter : public ServiceWorkerResponseWriter {
   size_t data_written_;
 
   net::CompletionOnceCallback pending_callback_;
+
+  mojo::Receiver<storage::mojom::ServiceWorkerResourceWriter> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseWriter);
 };

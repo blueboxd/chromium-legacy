@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_IMAGE_CONTEXT_IMPL_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,6 +71,11 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   }
   SkPromiseImageTexture* promise_image_texture() const {
     return promise_image_texture_;
+  }
+  GrBackendSurfaceMutableState* end_access_state() const {
+    return representation_scoped_read_access_
+               ? representation_scoped_read_access_->end_state()
+               : nullptr;
   }
 
   void BeginAccessIfNecessary(

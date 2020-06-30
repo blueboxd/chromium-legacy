@@ -372,7 +372,7 @@ TEST_F(QuicTransportTest, FailByCSP) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
   scope.GetExecutionContext()
-      ->GetContentSecurityPolicyForWorld()
+      ->GetContentSecurityPolicyForCurrentWorld()
       ->DidReceiveHeader("connect-src 'none'",
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);
@@ -393,7 +393,7 @@ TEST_F(QuicTransportTest, PassCSP) {
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/connect-src.
   auto& exception_state = scope.GetExceptionState();
   scope.GetExecutionContext()
-      ->GetContentSecurityPolicyForWorld()
+      ->GetContentSecurityPolicyForCurrentWorld()
       ->DidReceiveHeader("connect-src quic-transport://example.com",
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);

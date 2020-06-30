@@ -4,8 +4,7 @@
 
 #include "ash/assistant/assistant_alarm_timer_controller_impl.h"
 
-#include <map>
-#include <string>
+#include <cmath>
 #include <utility>
 
 #include "ash/assistant/assistant_controller_impl.h"
@@ -14,6 +13,7 @@
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/message_formatter.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -42,9 +42,6 @@ using chromeos::assistant::mojom::AssistantNotificationPtr;
 // Grouping key and ID prefix for timer notifications.
 constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
 constexpr char kTimerNotificationIdPrefix[] = "assistant/timer";
-
-// Interval at which alarms/timers are ticked.
-constexpr base::TimeDelta kTickInterval = base::TimeDelta::FromSeconds(1);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -374,11 +371,8 @@ void AssistantAlarmTimerControllerImpl::OnAssistantStatusChanged(
 
 void AssistantAlarmTimerControllerImpl::OnTimerAdded(
     const AssistantTimer& timer) {
-  // Schedule a repeating timer to tick the tracked timers.
-  if (!ticker_.IsRunning()) {
-    ticker_.Start(FROM_HERE, kTickInterval, &model_,
-                  &AssistantAlarmTimerModel::Tick);
-  }
+  // Schedule the next tick of |timer|.
+  ScheduleNextTick(timer);
 
   // Create a notification for the added alarm/timer.
   assistant_controller_->notification_controller()->AddOrUpdateNotification(
@@ -387,6 +381,9 @@ void AssistantAlarmTimerControllerImpl::OnTimerAdded(
 
 void AssistantAlarmTimerControllerImpl::OnTimerUpdated(
     const AssistantTimer& timer) {
+  // Schedule the next tick of |timer|.
+  ScheduleNextTick(timer);
+
   // When a |timer| is updated we need to update the corresponding notification
   // unless it has already been dismissed by the user.
   auto* notification_controller =
@@ -400,9 +397,8 @@ void AssistantAlarmTimerControllerImpl::OnTimerUpdated(
 
 void AssistantAlarmTimerControllerImpl::OnTimerRemoved(
     const AssistantTimer& timer) {
-  // If our model is empty, we no longer need tick updates.
-  if (model_.empty())
-    ticker_.Stop();
+  // Clean up the ticker for |timer|, if one exists.
+  tickers_.erase(timer.id);
 
   // Remove any notification associated w/ |timer|.
   assistant_controller_->notification_controller()->RemoveNotificationById(
@@ -436,6 +432,47 @@ void AssistantAlarmTimerControllerImpl::PerformAlarmTimerAction(
       assistant_->ResumeTimer(alarm_timer_id);
       break;
   }
+}
+
+void AssistantAlarmTimerControllerImpl::ScheduleNextTick(
+    const AssistantTimer& timer) {
+  auto& ticker = tickers_[timer.id];
+  if (ticker.IsRunning())
+    return;
+
+  // The next tick of |timer| should occur at its next full second of remaining
+  // time. Here we are calculating the number of milliseconds to that next full
+  // second.
+  int millis_to_next_full_sec = timer.remaining_time.InMilliseconds() % 1000;
+
+  // If |timer| has already fired, |millis_to_next_full_sec| will be negative.
+  // In this case, we take the inverse of the value to get the correct number of
+  // milliseconds to the next full second of remaining time.
+  if (millis_to_next_full_sec < 0)
+    millis_to_next_full_sec = 1000 + millis_to_next_full_sec;
+
+  // NOTE: We pass a copy of |timer.id| here as |timer| may no longer exist
+  // when Tick() is called due to the possibility of the |model_| being updated
+  // via a call to OnTimerStateChanged(), such as might happen if a timer is
+  // created, paused, resumed, or removed by LibAssistant.
+  ticker.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(millis_to_next_full_sec),
+               base::BindOnce(&AssistantAlarmTimerControllerImpl::Tick,
+                              base::Unretained(this), timer.id));
+}
+
+void AssistantAlarmTimerControllerImpl::Tick(const std::string& timer_id) {
+  const auto* timer = model_.GetTimerById(timer_id);
+  DCHECK(timer);
+
+  // We don't tick paused timers. Once the |timer| resumes, ticking will resume.
+  if (timer->state == AssistantTimerState::kPaused)
+    return;
+
+  // Update |timer| to reflect the new amount of |remaining_time|.
+  AssistantTimerPtr updated_timer = std::make_unique<AssistantTimer>(*timer);
+  updated_timer->remaining_time = updated_timer->fire_time - base::Time::Now();
+  model_.AddOrUpdateTimer(std::move(updated_timer));
 }
 
 }  // namespace ash

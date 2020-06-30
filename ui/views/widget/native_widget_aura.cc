@@ -269,7 +269,8 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
 
 void NativeWidgetAura::OnWidgetInitDone() {}
 
-NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
+std::unique_ptr<NonClientFrameView>
+NativeWidgetAura::CreateNonClientFrameView() {
   return nullptr;
 }
 

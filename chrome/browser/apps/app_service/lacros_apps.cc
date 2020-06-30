@@ -84,16 +84,16 @@ void LacrosApps::Connect(
 
 void LacrosApps::LoadIcon(const std::string& app_id,
                           apps::mojom::IconKeyPtr icon_key,
-                          apps::mojom::IconCompression icon_compression,
+                          apps::mojom::IconType icon_type,
                           int32_t size_hint_in_dip,
                           bool allow_placeholder_icon,
                           LoadIconCallback callback) {
   if (icon_key &&
       icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId) {
-    LoadIconFromResource(
-        icon_compression, size_hint_in_dip, icon_key->resource_id,
-        /*is_placeholder_icon=*/false,
-        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
+    LoadIconFromResource(icon_type, size_hint_in_dip, icon_key->resource_id,
+                         /*is_placeholder_icon=*/false,
+                         static_cast<IconEffects>(icon_key->icon_effects),
+                         std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

@@ -898,9 +898,8 @@ void Widget::ClearNativeFocus() {
   native_widget_->ClearNativeFocus();
 }
 
-NonClientFrameView* Widget::CreateNonClientFrameView() {
-  NonClientFrameView* frame_view =
-      widget_delegate_->CreateNonClientFrameView(this);
+std::unique_ptr<NonClientFrameView> Widget::CreateNonClientFrameView() {
+  auto frame_view = widget_delegate_->CreateNonClientFrameView(this);
   if (!frame_view)
     frame_view = native_widget_->CreateNonClientFrameView();
   if (!frame_view) {
@@ -910,7 +909,7 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
   if (frame_view)
     return frame_view;
 
-  CustomFrameView* custom_frame_view = new CustomFrameView;
+  auto custom_frame_view = std::make_unique<CustomFrameView>();
   custom_frame_view->Init(this);
   return custom_frame_view;
 }

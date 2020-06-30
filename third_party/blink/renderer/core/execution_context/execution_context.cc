@@ -231,7 +231,8 @@ ExecutionContext::GetContentSecurityPolicyDelegate() {
   return *csp_delegate_;
 }
 
-ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld() {
+ContentSecurityPolicy*
+ExecutionContext::GetContentSecurityPolicyForCurrentWorld() {
   v8::Isolate* isolate = GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();

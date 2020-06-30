@@ -4,17 +4,8 @@
 
 GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessTextNavigationManagerTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessTextNavigationManagerTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-
+/** Text fixture for the text navigation manager. */
+SwitchAccessTextNavigationManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   setUp() {
     TextNavigationManager.initialize();

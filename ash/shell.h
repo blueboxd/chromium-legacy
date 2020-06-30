@@ -266,7 +266,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
-  views::NonClientFrameView* CreateDefaultNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateDefaultNonClientFrameView(
       views::Widget* widget);
 
   // Sets work area insets of the display containing |window|, pings observers.

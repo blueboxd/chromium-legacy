@@ -610,6 +610,11 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
     const char* method,
     ExceptionState& exception_state) {
   DCHECK(context_element);
+  if (IsA<HTMLTemplateElement>(*context_element) &&
+      !context_element->GetExecutionContext()) {
+    return nullptr;
+  }
+
   Document& document =
       IsA<HTMLTemplateElement>(*context_element)
           ? context_element->GetDocument().EnsureTemplateDocument()

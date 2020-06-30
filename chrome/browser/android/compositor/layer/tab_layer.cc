@@ -25,7 +25,6 @@
 #include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 

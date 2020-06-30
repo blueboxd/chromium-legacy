@@ -122,9 +122,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView:
   bool CanActivate() const override { return true; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new NonClientFrameViewAsh(widget);
+    return std::make_unique<NonClientFrameViewAsh>(widget);
   }
 
  private:

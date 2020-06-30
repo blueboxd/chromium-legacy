@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SEARCH_SEARCH_TAG_REGISTRY_H_
 
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -34,6 +35,33 @@ class SearchTagRegistry {
     virtual void OnRegistryUpdated() = 0;
   };
 
+  class ScopedTagUpdater {
+   public:
+    ScopedTagUpdater(ScopedTagUpdater&&);
+    ScopedTagUpdater(const ScopedTagUpdater&) = delete;
+    ScopedTagUpdater& operator=(const ScopedTagUpdater&) = delete;
+    ~ScopedTagUpdater();
+
+    void AddSearchTags(const std::vector<SearchConcept>& search_tags);
+    void RemoveSearchTags(const std::vector<SearchConcept>& search_tags);
+
+   private:
+    friend class SearchTagRegistry;
+
+    explicit ScopedTagUpdater(SearchTagRegistry* registry);
+
+    void ProcessPendingSearchTags(const std::vector<SearchConcept>& search_tags,
+                                  bool is_pending_add);
+
+    SearchTagRegistry* registry_;
+
+    // A SearchConcept along with a bool of the pending update state. If the
+    // bool is true, the concept should be added; if the bool is false, the
+    // concept should be removed.
+    using ConceptWithShouldAddBool = std::pair<const SearchConcept*, bool>;
+    std::unordered_map<std::string, ConceptWithShouldAddBool> pending_updates_;
+  };
+
   SearchTagRegistry(
       local_search_service::LocalSearchService* local_search_service);
   SearchTagRegistry(const SearchTagRegistry& other) = delete;
@@ -43,21 +71,26 @@ class SearchTagRegistry {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  void AddSearchTags(const std::vector<SearchConcept>& search_tags);
-  void RemoveSearchTags(const std::vector<SearchConcept>& search_tags);
+  // Starts a tag update, which allows clients to add/remove search tags. The
+  // ScopedTagUpdater object is returned by value and only updates tags when it
+  // goes out of scope, so clients should not hold onto it outside the scope of
+  // a function.
+  ScopedTagUpdater StartUpdate();
 
   // Returns the tag metadata associated with |result_id|, which is the ID
   // returned by the LocalSearchService. If no metadata is available, null is
   // returned.
   const SearchConcept* GetTagMetadata(const std::string& result_id) const;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SearchTagRegistryTest, AddAndRemove);
 
   static std::string ToResultId(const SearchConcept& concept);
 
+  void AddSearchTags(const std::vector<const SearchConcept*>& search_tags);
+  void RemoveSearchTags(const std::vector<const SearchConcept*>& search_tags);
+
   std::vector<local_search_service::Data> ConceptVectorToDataVector(
-      const std::vector<SearchConcept>& search_tags);
+      const std::vector<const SearchConcept*>& search_tags);
   void NotifyRegistryUpdated();
 
   // Index used by the LocalSearchService for string matching.

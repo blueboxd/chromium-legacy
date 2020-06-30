@@ -279,10 +279,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
     true)
 
-// If true, use idle network detector to detect handshake timeout and idle
-// network timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_idle_network_detector, true)
-
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
 
@@ -302,23 +298,11 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_fewer_startup_round_trips,
           false)
 
-// Replace the usage of ConnectionData::encryption_level in
-// quic_time_wait_list_manager with a new TimeWaitAction.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_replace_time_wait_list_encryption_level,
-          true)
-
 // If true, enables support for TLS resumption in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption_v2, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
-
-// If true, do not change ACK in PostProcessAckFrame if an ACK has been queued.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, true)
-
-// If true, reject IETF QUIC connections with invalid SNI.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tls_enforce_valid_sni, true)
 
 // If true, support for IETF QUIC 0-rtt is enabled.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, true)
@@ -338,29 +322,12 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_google_transport_param_send_new,
           true)
 
-// If true, check ShouldGeneratePacket for every crypto packet.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_checking_should_generate_packet,
-          true)
-
-// If true, notify stream ID manager even connection disconnects.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_notify_stream_id_manager_when_disconnected,
-    true)
-
 // If true, return from QuicCryptoStream::WritePendingCryptoRetransmission after
 // partial writes.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_fix_write_pending_crypto_retransmission,
     true)
-
-// If true, clear last_inflight_packets_sent_time_ of a packet number space when
-// there is no bytes in flight.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_last_inflight_packets_sent_time,
-          true)
 
 // If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
 // is not called.
@@ -464,3 +431,11 @@ QUIC_FLAG(
 
 // If true, update packet size when the first frame gets queued.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, false)
+
+// If true, use 0 as ack_delay when calculate PTO timeout for INITIAL and
+// HANDSHAKE packet number space.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_pto_timeout, true)
+
+// If true, consider frame expansion when calculating extra padding bytes to
+// meet minimum plaintext packet size required for header protection.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_extra_padding_bytes, false)

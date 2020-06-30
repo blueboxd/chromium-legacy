@@ -32,6 +32,9 @@ message RTLookupRequest {
 
   // Deprecated
   optional string DEPRECATED_scoped_oauth_token = 4 [deprecated = true];
+
+  // The DM Token for Enterprise-enrolled devices (go/uss-dmtoken).
+  optional string dm_token = 5;
 }
 
 message RTLookupResponse {

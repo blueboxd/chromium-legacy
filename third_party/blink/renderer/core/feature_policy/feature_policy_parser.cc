@@ -8,6 +8,7 @@
 
 #include <bitset>
 #include "base/metrics/histogram_macros.h"
+#include "net/http/structured_headers.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -50,12 +51,11 @@ class ParsingContext {
 
   ~ParsingContext() = default;
 
-  ParsedFeaturePolicy Parse(const String& policy);
+  ParsedFeaturePolicy ParseIR(const internal::FeaturePolicyNode& root);
+  internal::FeaturePolicyNode ParseFeaturePolicyToIR(const String& policy);
+  internal::FeaturePolicyNode ParsePermissionsPolicyToIR(const String& policy);
 
  private:
-  ParsedFeaturePolicy ParseIR(const internal::FeaturePolicyNode& root);
-  internal::FeaturePolicyNode ParseToIR(const String& policy);
-
   // normally 1 char = 1 byte
   // max length to parse = 2^16 = 64 kB
   static constexpr wtf_size_t MAX_LENGTH_PARSE = 1 << 16;
@@ -328,10 +328,6 @@ base::Optional<ParsedFeaturePolicyDeclaration> ParsingContext::ParseFeature(
   return parsed_feature;
 }
 
-ParsedFeaturePolicy ParsingContext::Parse(const String& policy) {
-  return ParseIR(ParseToIR(policy));
-}
-
 ParsedFeaturePolicy ParsingContext::ParseIR(
     const internal::FeaturePolicyNode& root) {
   ParsedFeaturePolicy parsed_policy;
@@ -347,7 +343,8 @@ ParsedFeaturePolicy ParsingContext::ParseIR(
   return parsed_policy;
 }
 
-internal::FeaturePolicyNode ParsingContext::ParseToIR(const String& policy) {
+internal::FeaturePolicyNode ParsingContext::ParseFeaturePolicyToIR(
+    const String& policy) {
   internal::FeaturePolicyNode root;
 
   if (policy.length() > MAX_LENGTH_PARSE) {
@@ -403,15 +400,87 @@ internal::FeaturePolicyNode ParsingContext::ParseToIR(const String& policy) {
   return root;
 }
 
+internal::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
+    const String& policy) {
+  auto root = net::structured_headers::ParseDictionary(policy.Utf8());
+  if (!root) {
+    logger_.Error(
+        "Parse of permission policy failed because of errors reported by "
+        "strctured header parser.");
+    return {};
+  }
+
+  internal::FeaturePolicyNode ir_root;
+  for (const auto& feature_entry : root.value()) {
+    const auto& key = feature_entry.first;
+    const char* feature_name = key.c_str();
+    const auto& value = feature_entry.second;
+
+    if (!value.params.empty()) {
+      logger_.Warn(
+          String::Format("Feature %s's parameters are ignored.", feature_name));
+    }
+
+    Vector<String> allowlist;
+    for (const auto& parameterized_item : value.member) {
+      if (!parameterized_item.params.empty()) {
+        logger_.Warn(String::Format("Feature %s's parameters are ignored.",
+                                    feature_name));
+      }
+
+      String allowlist_item;
+      if (parameterized_item.item.is_token()) {
+        // All special keyword appears as token, i.e. self, src and *.
+        const std::string& token_value = parameterized_item.item.GetString();
+        if (token_value != "*" && token_value != "self") {
+          logger_.Warn(String::Format(
+              "Invalid allowlist item(%s) for feature %s. Allowlist item "
+              "must be *, self or quoted url.",
+              token_value.c_str(), feature_name));
+          continue;
+        }
+
+        if (token_value == "*") {
+          allowlist_item = "*";
+        } else {
+          allowlist_item = String::Format("'%s'", token_value.c_str());
+        }
+      } else if (parameterized_item.item.is_string()) {
+        allowlist_item = parameterized_item.item.GetString().c_str();
+      } else {
+        logger_.Warn(
+            String::Format("Invalid allowlist item for feature %s. Allowlist "
+                           "item must be *, self, or quoted url.",
+                           feature_name));
+        continue;
+      }
+      allowlist.push_back(allowlist_item);
+    }
+
+    if (allowlist.IsEmpty())
+      allowlist.push_back("'none'");
+
+    ir_root.push_back(
+        internal::FeaturePolicyDeclarationNode{feature_name, allowlist});
+  }
+
+  return ir_root;
+}
+
 }  // namespace
 
 ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
-    const String& policy,
+    const String& feature_policy_header,
     scoped_refptr<const SecurityOrigin> origin,
     PolicyParserMessageBuffer& logger,
-    FeaturePolicyParserDelegate* delegate) {
-  return Parse(policy, origin, nullptr, logger, GetDefaultFeatureNameMap(),
-               delegate);
+    FeaturePolicyParserDelegate* delegate,
+    const String& permissions_policy_header) {
+  ParsingContext context(logger, origin, nullptr, GetDefaultFeatureNameMap(),
+                         delegate);
+  auto policy_ir =
+      context.ParsePermissionsPolicyToIR(permissions_policy_header);
+  policy_ir.AppendVector(context.ParseFeaturePolicyToIR(feature_policy_header));
+  return context.ParseIR(policy_ir);
 }
 
 ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
@@ -420,21 +489,33 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
     FeaturePolicyParserDelegate* delegate) {
-  return Parse(policy, self_origin, src_origin, logger,
-               GetDefaultFeatureNameMap(), delegate);
+  ParsingContext context(logger, self_origin, src_origin,
+                         GetDefaultFeatureNameMap(), delegate);
+  return context.ParseIR(context.ParseFeaturePolicyToIR(policy));
 }
 
-// static
-ParsedFeaturePolicy FeaturePolicyParser::Parse(
+ParsedFeaturePolicy FeaturePolicyParser::ParseFeaturePolicyForTest(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
     const FeatureNameMap& feature_names,
     FeaturePolicyParserDelegate* delegate) {
-  return ParsingContext(logger, self_origin, src_origin, feature_names,
-                        delegate)
-      .Parse(policy);
+  ParsingContext context(logger, self_origin, src_origin, feature_names,
+                         delegate);
+  return context.ParseIR(context.ParseFeaturePolicyToIR(policy));
+}
+
+ParsedFeaturePolicy FeaturePolicyParser::ParsePermissionsPolicyForTest(
+    const String& policy,
+    scoped_refptr<const SecurityOrigin> self_origin,
+    scoped_refptr<const SecurityOrigin> src_origin,
+    PolicyParserMessageBuffer& logger,
+    const FeatureNameMap& feature_names,
+    FeaturePolicyParserDelegate* delegate) {
+  ParsingContext context(logger, self_origin, src_origin, feature_names,
+                         delegate);
+  return context.ParseIR(context.ParsePermissionsPolicyToIR(policy));
 }
 
 bool IsFeatureDeclared(mojom::blink::FeaturePolicyFeature feature,

@@ -622,6 +622,11 @@ bool MenuController::IsContextMenu() const {
   return state_.context_menu;
 }
 
+void MenuController::SelectItemAndOpenSubmenu(MenuItemView* item) {
+  DCHECK(item);
+  SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+}
+
 bool MenuController::OnMousePressed(SubmenuView* source,
                                     const ui::MouseEvent& event) {
   // We should either have no current_mouse_event_target_, or should have a

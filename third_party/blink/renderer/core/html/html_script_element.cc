@@ -270,9 +270,10 @@ bool HTMLScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
     const String& script_content) {
-  return GetExecutionContext()->GetContentSecurityPolicyForWorld()->AllowInline(
-      ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
-      GetDocument().Url(), context_line);
+  return GetExecutionContext()
+      ->GetContentSecurityPolicyForCurrentWorld()
+      ->AllowInline(ContentSecurityPolicy::InlineType::kScript, this,
+                    script_content, nonce, GetDocument().Url(), context_line);
 }
 
 Document& HTMLScriptElement::GetDocument() const {

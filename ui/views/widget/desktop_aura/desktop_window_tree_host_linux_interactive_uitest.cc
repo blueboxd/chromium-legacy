@@ -131,11 +131,13 @@ class HitTestWidgetDelegate : public WidgetDelegate {
   bool CanResize() const override { return can_resize_; }
   Widget* GetWidget() override { return widget_; }
   Widget* GetWidget() const override { return widget_; }
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
-    DCHECK(widget_ == widget);
-    if (!frame_view_)
-      frame_view_ = new HitTestNonClientFrameView(widget);
-    return frame_view_;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override {
+    DCHECK_EQ(widget_, widget);
+    DCHECK(!frame_view_);
+    auto frame_view = std::make_unique<HitTestNonClientFrameView>(widget);
+    frame_view_ = frame_view.get();
+    return frame_view;
   }
   void DeleteDelegate() override { delete this; }
 

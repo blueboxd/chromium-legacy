@@ -1294,31 +1294,11 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
     'modifications': {
-      # TODO(https://crbug.com/1099762): Remove the --expected-device-id args
-      # once JSON generation properly handles multiple GPUs.
-      'ANGLE GPU Win10 x64 Release (Intel HD 630)': {
+      'ChromeOS FYI Release (amd64-generic)': {
         'args': [
-          '--expected-device-id', '3e92',
-        ],
-      },
-      'Optional Win10 x64 Release (Intel HD 630)': {
-        'args': [
-          '--expected-device-id', '3e92',
-        ],
-      },
-      'Win10 FYI x64 Exp Release (Intel HD 630)': {
-        'args': [
-          '--expected-device-id', '3e92',
-        ],
-      },
-      'Win10 FYI x64 Release (Intel HD 630)': {
-        'args': [
-          '--expected-device-id', '3e92',
-        ],
-      },
-      'Win10 FYI x64 dEQP Release (Intel HD 630)': {
-        'args': [
-          '--expected-device-id', '3e92',
+          # Swarming does not report a GPU since tests are run in a VM, but
+          # the VM does report that a GPU is present.
+          '--expected-device-id', '1050',
         ],
       },
       'Win10 x64 Debug (NVIDIA)': {
@@ -1335,7 +1315,9 @@
           # Swarming does not report a GPU since tests are run in a VM, but
           # the VM does report that a GPU is present.
           '--expected-vendor-id': '1af4',
-          '--expected-device-id': '1050',
+          # Magic substitution happens after regular replacement, so remove it
+          # now since we are manually applying the expected device ID above.
+          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
         },
       }
     },
@@ -2228,6 +2210,15 @@
           '--target',
           'Release_x64',
         ],
+      },
+    },
+  },
+  'storage_service_unsandboxed_content_browsertests': {
+    'modifications': {
+      'Linux Tests (dbg)(1)': {
+        'swarming': {
+          'shards': 4,
+        },
       },
     },
   },

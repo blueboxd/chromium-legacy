@@ -36,6 +36,7 @@ class ScreenshotShareSheetView extends FrameLayout {
         setNoArgOperationListener(NoArgOperation.SAVE, R.id.save, noArgOperationCallback);
         setNoArgOperationListener(NoArgOperation.DELETE, R.id.delete, noArgOperationCallback);
         setNoArgOperationListener(NoArgOperation.DELETE, R.id.close_button, noArgOperationCallback);
+        setNoArgOperationListener(NoArgOperation.INSTALL, R.id.edit, noArgOperationCallback);
     }
 
     /**

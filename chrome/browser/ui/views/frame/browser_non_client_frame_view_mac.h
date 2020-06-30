@@ -28,7 +28,7 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   void OnFullscreenStateChanged() override;
   bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const override;
+      const gfx::Size& tabstrip_minimum_size) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateFullscreenTopUI() override;

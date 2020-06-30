@@ -243,12 +243,12 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript() &&
-      opener_frame.DomWindow()->GetContentSecurityPolicyForWorld()) {
+      opener_frame.DomWindow()->GetContentSecurityPolicyForCurrentWorld()) {
     String script_source = DecodeURLEscapeSequences(
         url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
     if (!opener_frame.DomWindow()
-             ->GetContentSecurityPolicyForWorld()
+             ->GetContentSecurityPolicyForCurrentWorld()
              ->AllowInline(
                  ContentSecurityPolicy::InlineType::kNavigation,
                  nullptr /* element */, script_source, String() /* nonce */,

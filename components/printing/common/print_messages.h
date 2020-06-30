@@ -276,16 +276,16 @@ IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPreviewPageParams)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters to describe the final rendered preview document.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPreviewDocumentParams)
   // Document's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
+  IPC_STRUCT_TRAITS_MEMBER(content)
 
   // Cookie for the document to ensure correctness.
-  IPC_STRUCT_MEMBER(int, document_cookie)
+  IPC_STRUCT_TRAITS_MEMBER(document_cookie)
 
   // Store the expected pages count.
-  IPC_STRUCT_MEMBER(int, expected_pages_count)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(expected_pages_count)
+IPC_STRUCT_TRAITS_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // Parameters to describe a rendered page.
@@ -415,7 +415,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_CheckForCancel,
 // used for printing) that was requested by a PrintMsg_PrintPreview message.
 // The memory handle in this message is already valid in the browser process.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_MetafileReadyForPrinting,
-                    PrintHostMsg_DidPreviewDocument_Params /* params */,
+                    printing::mojom::DidPreviewDocumentParams /* params */,
                     PrintHostMsg_PreviewIds /* ids */)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

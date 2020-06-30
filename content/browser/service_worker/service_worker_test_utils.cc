@@ -691,6 +691,14 @@ MockServiceWorkerResponseWriter::MockServiceWorkerResponseWriter()
 
 MockServiceWorkerResponseWriter::~MockServiceWorkerResponseWriter() = default;
 
+mojo::PendingRemote<storage::mojom::ServiceWorkerResourceWriter>
+MockServiceWorkerResponseWriter::BindNewPipeAndPassRemote(
+    base::OnceClosure disconnect_handler) {
+  auto remote = receiver_.BindNewPipeAndPassRemote();
+  receiver_.set_disconnect_handler(std::move(disconnect_handler));
+  return remote;
+}
+
 void MockServiceWorkerResponseWriter::WriteInfo(
     HttpResponseInfoIOBuffer* info_buf,
     net::CompletionOnceCallback callback) {
@@ -718,6 +726,31 @@ void MockServiceWorkerResponseWriter::WriteData(
   pending_callback_ = std::move(callback);
 }
 
+void MockServiceWorkerResponseWriter::WriteResponseHead(
+    network::mojom::URLResponseHeadPtr response_head,
+    WriteResponseHeadCallback callback) {
+  DCHECK(!expected_writes_.empty());
+  ExpectedWrite write = expected_writes_.front();
+  EXPECT_TRUE(write.is_info);
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, static_cast<size_t>(response_head->content_length));
+    info_written_ += response_head->content_length;
+  }
+  pending_callback_ = std::move(callback);
+}
+
+void MockServiceWorkerResponseWriter::WriteData(mojo_base::BigBuffer data,
+                                                WriteDataCallback callback) {
+  DCHECK(!expected_writes_.empty());
+  ExpectedWrite write = expected_writes_.front();
+  EXPECT_FALSE(write.is_info);
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, data.size());
+    data_written_ += data.size();
+  }
+  pending_callback_ = std::move(callback);
+}
+
 void MockServiceWorkerResponseWriter::ExpectWriteInfoOk(size_t length) {
   ExpectWriteInfo(length, length);
 }
@@ -741,10 +774,16 @@ void MockServiceWorkerResponseWriter::ExpectWriteData(size_t length,
 }
 
 void MockServiceWorkerResponseWriter::CompletePendingWrite() {
+  // Make sure that all messages are received at this point.
+  receiver_.FlushForTesting();
+
   DCHECK(!expected_writes_.empty());
+  DCHECK(pending_callback_);
   ExpectedWrite write = expected_writes_.front();
   expected_writes_.pop();
   std::move(pending_callback_).Run(write.result);
+  // Wait until |pending_callback_| finishes.
+  base::RunLoop().RunUntilIdle();
 }
 
 ServiceWorkerUpdateCheckTestUtils::ServiceWorkerUpdateCheckTestUtils() =
@@ -775,10 +814,15 @@ ServiceWorkerUpdateCheckTestUtils::CreatePausedCacheWriter(
       ->CreateResourceReader(old_resource_id,
                              copy_reader.BindNewPipeAndPassReceiver());
 
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  worker_test_helper->context()
+      ->registry()
+      ->GetRemoteStorageControl()
+      ->CreateResourceWriter(new_resource_id,
+                             writer.BindNewPipeAndPassReceiver());
+
   auto cache_writer = ServiceWorkerCacheWriter::CreateForComparison(
-      std::move(compare_reader), std::move(copy_reader),
-      worker_test_helper->context()->storage()->CreateResponseWriter(
-          new_resource_id),
+      std::move(compare_reader), std::move(copy_reader), std::move(writer),
       new_resource_id, true /* pause_when_not_identical */);
   cache_writer->response_head_to_write_ =
       network::mojom::URLResponseHead::New();

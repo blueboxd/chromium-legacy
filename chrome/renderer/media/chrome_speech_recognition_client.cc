@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_types.mojom.h"
@@ -46,6 +47,10 @@ ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
       caption_host_.BindNewPipeAndPassReceiver());
   is_website_blocked_ = IsUrlBlocked(
       render_frame->GetWebFrame()->GetSecurityOrigin().ToString().Utf8());
+
+  send_audio_callback_ = media::BindToCurrentLoop(base::BindRepeating(
+      &ChromeSpeechRecognitionClient::SendAudioToSpeechRecognitionService,
+      weak_factory_.GetWeakPtr()));
 }
 
 void ChromeSpeechRecognitionClient::OnRecognizerBound(
@@ -62,10 +67,7 @@ ChromeSpeechRecognitionClient::~ChromeSpeechRecognitionClient() = default;
 void ChromeSpeechRecognitionClient::AddAudio(
     scoped_refptr<media::AudioBuffer> buffer) {
   DCHECK(buffer);
-  if (IsSpeechRecognitionAvailable()) {
-    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
-        ConvertToAudioDataS16(std::move(buffer)));
-  }
+  send_audio_callback_.Run(ConvertToAudioDataS16(std::move(buffer)));
 }
 
 void ChromeSpeechRecognitionClient::AddAudio(
@@ -73,17 +75,14 @@ void ChromeSpeechRecognitionClient::AddAudio(
     int sample_rate,
     media::ChannelLayout channel_layout) {
   DCHECK(audio_bus);
-  if (IsSpeechRecognitionAvailable()) {
-    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
-        ConvertToAudioDataS16(std::move(audio_bus), sample_rate,
-                              channel_layout));
-  }
+  send_audio_callback_.Run(
+      ConvertToAudioDataS16(std::move(audio_bus), sample_rate, channel_layout));
 }
 
 bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
   // TODO(evliu): Check if SODA is available.
   return !is_website_blocked_ && is_browser_requesting_transcription_ &&
-         is_recognizer_bound_ && speech_recognition_recognizer_.is_connected();
+         is_recognizer_bound_;
 }
 
 // The OnReadyCallback is set by the owner of |this| and is executed when speech
@@ -137,6 +136,15 @@ void ChromeSpeechRecognitionClient::ResetChannelMixer(
     channel_layout_ = channel_layout;
     channel_mixer_ = std::make_unique<media::ChannelMixer>(
         channel_layout, media::CHANNEL_LAYOUT_MONO);
+  }
+}
+
+void ChromeSpeechRecognitionClient::SendAudioToSpeechRecognitionService(
+    media::mojom::AudioDataS16Ptr audio_data) {
+  DCHECK(audio_data);
+  if (IsSpeechRecognitionAvailable()) {
+    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
+        std::move(audio_data));
   }
 }
 

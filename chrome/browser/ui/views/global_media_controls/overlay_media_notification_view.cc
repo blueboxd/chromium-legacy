@@ -64,9 +64,9 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
   bool ShouldShowWindowTitle() const override { return false; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new OverlayMediaNotificationFrameView();
+    return std::make_unique<OverlayMediaNotificationFrameView>();
   }
   void DeleteDelegate() override { delete this; }
 

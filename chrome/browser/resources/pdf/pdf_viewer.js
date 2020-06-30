@@ -221,11 +221,6 @@ class PDFViewerElement extends PDFViewerBaseElement {
   }
 
   /** @override */
-  getZoomToolbar() {
-    return /** @type {!ViewerZoomToolbarElement} */ (this.$$('#zoom-toolbar'));
-  }
-
-  /** @override */
   getErrorScreen() {
     return /** @type {!ViewerErrorScreenElement} */ (this.$$('#error-screen'));
   }
@@ -236,6 +231,14 @@ class PDFViewerElement extends PDFViewerBaseElement {
    */
   getToolbar_() {
     return /** @type {!ViewerPdfToolbarElement} */ (this.$$('#toolbar'));
+  }
+
+  /**
+   * @return {!ViewerZoomToolbarElement}
+   * @private
+   */
+  getZoomToolbar_() {
+    return /** @type {!ViewerZoomToolbarElement} */ (this.$$('#zoom-toolbar'));
   }
 
   /** @override */
@@ -290,9 +293,10 @@ class PDFViewerElement extends PDFViewerBaseElement {
       }
     });
 
-    this.toolbarManager_ = new ToolbarManager(
-        window, this.pdfViewerUpdateEnabled_ ? null : this.getToolbar_(),
-        this.getZoomToolbar());
+    if (!this.pdfViewerUpdateEnabled_) {
+      this.toolbarManager_ = new ToolbarManager(
+          window, this.getToolbar_(), this.getZoomToolbar_());
+    }
 
     // Setup the keyboard event listener.
     document.addEventListener(
@@ -312,20 +316,14 @@ class PDFViewerElement extends PDFViewerBaseElement {
   }
 
   /**
-   * Handle key events. These may come from the user directly or via the
-   * scripting API.
+   * Helper for handleKeyEvent_ dealing with events that control toolbars.
    * @param {!KeyboardEvent} e the event to handle.
    * @private
    */
-  handleKeyEvent_(e) {
-    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented) {
-      return;
-    }
-
-    this.toolbarManager_.hideToolbarsAfterTimeout();
-
-    // Let the viewport handle directional key events.
-    if (this.viewport.handleDirectionalKeyEvent(e, this.isFormFieldFocused_)) {
+  handleToolbarKeyEvent_(e) {
+    if (this.pdfViewerUpdateEnabled_) {
+      // TODO: Add handling for any relevant hotkeys for the new unified
+      // toolbar.
       return;
     }
 
@@ -336,6 +334,46 @@ class PDFViewerElement extends PDFViewerBaseElement {
       case 'Escape':
         this.toolbarManager_.hideSingleToolbarLayer();
         return;
+      case 'g':
+        if (this.toolbarEnabled_ && (e.ctrlKey || e.metaKey) && e.altKey) {
+          this.toolbarManager_.showToolbars();
+          this.getToolbar_().selectPageNumber();
+        }
+        return;
+      case '\\':
+        if (e.ctrlKey) {
+          this.getZoomToolbar_().fitToggleFromHotKey();
+        }
+        return;
+    }
+
+    // Show toolbars as a fallback.
+    if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
+      this.toolbarManager_.showToolbars();
+    }
+  }
+
+  /**
+   * Handle key events. These may come from the user directly or via the
+   * scripting API.
+   * @param {!KeyboardEvent} e the event to handle.
+   * @private
+   */
+  handleKeyEvent_(e) {
+    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented) {
+      return;
+    }
+
+    if (!this.pdfViewerUpdateEnabled_) {
+      this.toolbarManager_.hideToolbarsAfterTimeout();
+    }
+
+    // Let the viewport handle directional key events.
+    if (this.viewport.handleDirectionalKeyEvent(e, this.isFormFieldFocused_)) {
+      return;
+    }
+
+    switch (e.key) {
       case 'a':
         if (e.ctrlKey || e.metaKey) {
           this.pluginController.selectAll();
@@ -343,20 +381,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
           e.preventDefault();
         }
         return;
-      case 'g':
-        if (this.toolbarEnabled_ && (e.ctrlKey || e.metaKey) && e.altKey) {
-          this.toolbarManager_.showToolbars();
-          this.getToolbar_().selectPageNumber();
-        }
-        return;
       case '[':
         if (e.ctrlKey) {
           this.rotateCounterclockwise();
-        }
-        return;
-      case '\\':
-        if (e.ctrlKey) {
-          this.getZoomToolbar().fitToggleFromHotKey();
         }
         return;
       case ']':
@@ -366,10 +393,8 @@ class PDFViewerElement extends PDFViewerBaseElement {
         return;
     }
 
-    // Show toolbars as a fallback.
-    if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
-      this.toolbarManager_.showToolbars();
-    }
+    // Handle toolbar related key events.
+    this.handleToolbarKeyEvent_(e);
   }
 
   /**
@@ -452,6 +477,10 @@ class PDFViewerElement extends PDFViewerBaseElement {
   onFitToChanged(e) {
     super.onFitToChanged(e);
 
+    if (this.pdfViewerUpdateEnabled_) {
+      return;
+    }
+
     if (e.detail.fittingType === FittingType.FIT_TO_PAGE ||
         e.detail.fittingType === FittingType.FIT_TO_HEIGHT) {
       this.toolbarManager_.forceHideTopToolbar();
@@ -467,7 +496,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
   onTwoUpViewChanged_(e) {
     this.currentController.setTwoUpView(
         e.detail === TwoUpViewAction.TWO_UP_VIEW_ENABLE);
-    this.toolbarManager_.forceHideTopToolbar();
+    if (!this.pdfViewerUpdateEnabled_) {
+      this.toolbarManager_.forceHideTopToolbar();
+    }
     this.getToolbar_().annotationAvailable =
         (e.detail !== TwoUpViewAction.TWO_UP_VIEW_ENABLE);
 
@@ -514,7 +545,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
       this.getToolbar_().loadProgress = progress;
     }
     super.updateProgress(progress);
-    if (progress === 100) {
+    if (progress === 100 && !this.pdfViewerUpdateEnabled_) {
       this.toolbarManager_.hideToolbarsAfterTimeout();
     }
   }
@@ -538,23 +569,25 @@ class PDFViewerElement extends PDFViewerBaseElement {
     const horizontalScrollbarWidth =
         hasScrollbars.horizontal ? scrollbarWidth : 0;
 
-    // Shift the zoom toolbar to the left by half a scrollbar width. This
-    // gives a compromise: if there is no scrollbar visible then the toolbar
-    // will be half a scrollbar width further left than the spec but if there
-    // is a scrollbar visible it will be half a scrollbar width further right
-    // than the spec. In RTL layout normally, the zoom toolbar is on the left
-    // left side, but the scrollbar is still on the right, so this is not
-    // necessary.
-    const zoomToolbar = this.getZoomToolbar();
-    if (!isRTL()) {
-      zoomToolbar.style.right =
-          -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
+    if (!this.pdfViewerUpdateEnabled_) {
+      // Shift the zoom toolbar to the left by half a scrollbar width. This
+      // gives a compromise: if there is no scrollbar visible then the toolbar
+      // will be half a scrollbar width further left than the spec but if there
+      // is a scrollbar visible it will be half a scrollbar width further right
+      // than the spec. In RTL layout normally, the zoom toolbar is on the left
+      // left side, but the scrollbar is still on the right, so this is not
+      // necessary.
+      const zoomToolbar = this.getZoomToolbar_();
+      if (!isRTL()) {
+        zoomToolbar.style.right =
+            -verticalScrollbarWidth + (scrollbarWidth / 2) + 'px';
+      }
+      // Having a horizontal scrollbar is much rarer so we don't offset the
+      // toolbar from the bottom any more than what the spec says. This means
+      // that when there is a scrollbar visible, it will be a full scrollbar
+      // width closer to the bottom of the screen than usual, but this is ok.
+      zoomToolbar.style.bottom = -horizontalScrollbarWidth + 'px';
     }
-    // Having a horizontal scrollbar is much rarer so we don't offset the
-    // toolbar from the bottom any more than what the spec says. This means
-    // that when there is a scrollbar visible, it will be a full scrollbar
-    // width closer to the bottom of the screen than usual, but this is ok.
-    zoomToolbar.style.bottom = -horizontalScrollbarWidth + 'px';
 
     // Update the page indicator.
     const visiblePage = this.viewport.getMostVisiblePage();
@@ -642,6 +675,14 @@ class PDFViewerElement extends PDFViewerBaseElement {
         return;
     }
     assertNotReached('Unknown message type received: ' + data.type);
+  }
+
+  /** @override */
+  forceFit(view) {
+    if (!this.pdfViewerUpdateEnabled_) {
+      this.getZoomToolbar_().forceFit(view);
+    }
+    // TODO: Add handling for the case where the new toolbar is enabled.
   }
 
   /** @override */

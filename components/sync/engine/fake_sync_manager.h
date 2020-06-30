@@ -45,10 +45,6 @@ class FakeSyncManager : public SyncManager {
                   bool should_fail_on_init);
   ~FakeSyncManager() override;
 
-  // Returns those types that have been purged from the directory since the last
-  // call to GetAndResetPurgedTypes(), or since startup if never called.
-  ModelTypeSet GetAndResetPurgedTypes();
-
   // Returns those types that have been downloaded since the last call to
   // GetAndResetDownloadedTypes(), or since startup if never called.
   ModelTypeSet GetAndResetDownloadedTypes();
@@ -71,10 +67,6 @@ class FakeSyncManager : public SyncManager {
   // loop for purposes of callbacks.
   void Init(InitArgs* args) override;
   ModelTypeSet InitialSyncEndedTypes() override;
-  ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet types) override;
-  void PurgePartiallySyncedTypes() override;
-  void PurgeDisabledTypes(ModelTypeSet to_purge) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void InvalidateCredentials() override;
   void StartSyncingNormally(base::Time last_poll_time) override;
@@ -108,7 +100,6 @@ class FakeSyncManager : public SyncManager {
       TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
-  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
   void UpdateInvalidationClientId(const std::string&) override;
 
  private:
@@ -125,8 +116,7 @@ class FakeSyncManager : public SyncManager {
   // The types that should fail configuration attempts. These types will not
   // have their progress markers or initial_sync_ended bits set.
   ModelTypeSet configure_fail_types_;
-  // The set of types that have been purged.
-  ModelTypeSet purged_types_;
+
   // The set of types that have been downloaded.
   ModelTypeSet downloaded_types_;
 

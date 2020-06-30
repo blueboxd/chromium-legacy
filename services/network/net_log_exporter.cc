@@ -90,13 +90,13 @@ void NetLogExporter::Stop(base::Value polled_data_value,
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> net_info = net::GetNetInfo(
+  base::Value net_info = net::GetNetInfo(
       network_context_->url_request_context(), net::NET_INFO_ALL_SOURCES);
   if (polled_data)
-    net_info->MergeDictionary(polled_data);
+    net_info.MergeDictionary(polled_data);
 
   file_net_observer_->StopObserving(
-      std::move(net_info),
+      base::Value::ToUniquePtrValue(std::move(net_info)),
       base::BindOnce([](StopCallback sc) { std::move(sc).Run(net::OK); },
                      std::move(callback)));
   file_net_observer_ = nullptr;

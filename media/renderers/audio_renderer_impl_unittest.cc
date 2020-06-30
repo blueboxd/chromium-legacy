@@ -133,9 +133,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         main_thread_task_runner_, sink_.get(),
         base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
                             base::Unretained(this)),
-        &media_log_,
-        base::BindRepeating(&AudioRendererImplTest::TranscribeAudioCallback,
-                            base::Unretained(this))));
+        &media_log_, nullptr));
     renderer_->tick_clock_ = &tick_clock_;
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
   }
@@ -162,9 +160,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         main_thread_task_runner_, sink_.get(),
         base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
                             base::Unretained(this)),
-        &media_log_,
-        base::BindRepeating(&AudioRendererImplTest::TranscribeAudioCallback,
-                            base::Unretained(this))));
+        &media_log_, nullptr));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(false);
   }
@@ -178,9 +174,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         main_thread_task_runner_, sink_.get(),
         base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
                             base::Unretained(this)),
-        &media_log_,
-        base::BindRepeating(&AudioRendererImplTest::TranscribeAudioCallback,
-                            base::Unretained(this))));
+        &media_log_, nullptr));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(true);
   }
@@ -191,9 +185,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         main_thread_task_runner_, mock_sink_.get(),
         base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
                             base::Unretained(this)),
-        &media_log_,
-        base::BindRepeating(&AudioRendererImplTest::TranscribeAudioCallback,
-                            base::Unretained(this))));
+        &media_log_, nullptr));
     testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
     ConfigureDemuxerStream(true);
   }
@@ -255,9 +247,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
         main_thread_task_runner_, sink_.get(),
         base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
                             base::Unretained(this)),
-        &media_log_,
-        base::BindRepeating(&AudioRendererImplTest::TranscribeAudioCallback,
-                            base::Unretained(this))));
+        &media_log_, nullptr));
 
     Initialize();
   }
@@ -676,7 +666,7 @@ TEST_F(AudioRendererImplTest, StartTicking) {
 
 TEST_F(AudioRendererImplTest, TranscribeAudioCallback) {
   Initialize();
-  EXPECT_CALL(*this, TranscribeAudioCallback(_)).Times(testing::AtLeast(1));
+  EXPECT_CALL(*this, TranscribeAudioCallback(_)).Times(0);
 
   Preroll();
   StartTicking();

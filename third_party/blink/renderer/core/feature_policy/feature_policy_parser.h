@@ -58,10 +58,11 @@ class CORE_EXPORT FeaturePolicyParser {
   // parsing. Example of a feature policy string:
   //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
   static ParsedFeaturePolicy ParseHeader(
-      const String& policy,
+      const String& feature_policy_header,
       scoped_refptr<const SecurityOrigin>,
       PolicyParserMessageBuffer& logger,
-      FeaturePolicyParserDelegate* delegate = nullptr);
+      FeaturePolicyParserDelegate* delegate = nullptr,
+      const String& permission_policy_header = g_empty_string);
 
   // Converts a container policy string into a vector of allowlists, given self
   // and src origins provided, one for each feature specified. Unrecognized
@@ -75,13 +76,15 @@ class CORE_EXPORT FeaturePolicyParser {
       PolicyParserMessageBuffer& logger,
       FeaturePolicyParserDelegate* delegate = nullptr);
 
-  // Converts a feature policy string into a vector of allowlists (see comments
-  // above), with an explicit FeatureNameMap. This algorithm is called by both
-  // header policy parsing and container policy parsing. |self_origin|,
-  // |src_origin|, and |execution_context| are nullable. The optional
-  // ExecutionContext is used to determine if any origin trials affect the
-  // parsing.
-  static ParsedFeaturePolicy Parse(
+  static ParsedFeaturePolicy ParseFeaturePolicyForTest(
+      const String& policy,
+      scoped_refptr<const SecurityOrigin> self_origin,
+      scoped_refptr<const SecurityOrigin> src_origin,
+      PolicyParserMessageBuffer& logger,
+      const FeatureNameMap& feature_names,
+      FeaturePolicyParserDelegate* delegate = nullptr);
+
+  static ParsedFeaturePolicy ParsePermissionsPolicyForTest(
       const String& policy,
       scoped_refptr<const SecurityOrigin> self_origin,
       scoped_refptr<const SecurityOrigin> src_origin,
@@ -89,6 +92,7 @@ class CORE_EXPORT FeaturePolicyParser {
       const FeatureNameMap& feature_names,
       FeaturePolicyParserDelegate* delegate = nullptr);
 };
+
 // Returns true iff any declaration in the policy is for the given feature.
 CORE_EXPORT bool IsFeatureDeclared(mojom::blink::FeaturePolicyFeature,
                                    const ParsedFeaturePolicy&);

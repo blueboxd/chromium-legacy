@@ -82,7 +82,17 @@ class SearchTagRegistryTest : public testing::Test {
 
 TEST_F(SearchTagRegistryTest, AddAndRemove) {
   // Add search tags; size of the index should increase.
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  {
+    SearchTagRegistry::ScopedTagUpdater updater =
+        search_tag_registry_.StartUpdate();
+    updater.AddSearchTags(GetPrintingSearchConcepts());
+
+    // Nothing should have happened yet, since |updater| has not gone out of
+    // scope.
+    EXPECT_EQ(0u, index_->GetSize());
+    EXPECT_EQ(0u, observer_.num_calls());
+  }
+  // Now that it went out of scope, the update should have occurred.
   EXPECT_EQ(3u, index_->GetSize());
   EXPECT_EQ(1u, observer_.num_calls());
 
@@ -96,7 +106,17 @@ TEST_F(SearchTagRegistryTest, AddAndRemove) {
   EXPECT_EQ(mojom::Setting::kAddPrinter, add_printer_concept->id.setting);
 
   // Remove search tag; size should go back to 0.
-  search_tag_registry_.RemoveSearchTags(GetPrintingSearchConcepts());
+  {
+    SearchTagRegistry::ScopedTagUpdater updater =
+        search_tag_registry_.StartUpdate();
+    updater.RemoveSearchTags(GetPrintingSearchConcepts());
+
+    // Tags should not have been removed yet, since |updater| has not gone out
+    // of scope.
+    EXPECT_EQ(3u, index_->GetSize());
+    EXPECT_EQ(1u, observer_.num_calls());
+  }
+  // Now that it went out of scope, the update should have occurred.
   EXPECT_EQ(0u, index_->GetSize());
   EXPECT_EQ(2u, observer_.num_calls());
 

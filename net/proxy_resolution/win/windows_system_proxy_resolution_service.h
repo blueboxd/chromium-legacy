@@ -47,8 +47,7 @@ class NET_EXPORT WindowsSystemProxyResolutionService
       const NetLogWithSource& net_log) override;
   void ClearBadProxiesCache() override;
   const ProxyRetryInfoMap& proxy_retry_info() const override;
-  std::unique_ptr<base::DictionaryValue> GetProxyNetLogValues(
-      int info_sources) override;
+  base::Value GetProxyNetLogValues(int info_sources) override;
   bool CastToConfiguredProxyResolutionService(
       ConfiguredProxyResolutionService** configured_proxy_resolution_service)
       override WARN_UNUSED_RESULT;

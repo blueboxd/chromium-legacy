@@ -475,5 +475,54 @@ TEST_F(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
   EXPECT_DCHECK_DEATH(registered_task_source.DidProcessTask());
 }
 
+TEST_F(ThreadPoolJobTaskSourceTest, AcquireTaskId) {
+  auto job_task =
+      base::MakeRefCounted<test::MockJobTask>(DoNothing(),
+                                              /* num_tasks_to_run */ 4);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, {}, &pooled_task_runner_delegate_);
+
+  EXPECT_EQ(0U, task_source->AcquireTaskId());
+  EXPECT_EQ(1U, task_source->AcquireTaskId());
+  EXPECT_EQ(2U, task_source->AcquireTaskId());
+  EXPECT_EQ(3U, task_source->AcquireTaskId());
+  EXPECT_EQ(4U, task_source->AcquireTaskId());
+  task_source->ReleaseTaskId(1);
+  task_source->ReleaseTaskId(3);
+  EXPECT_EQ(1U, task_source->AcquireTaskId());
+  EXPECT_EQ(3U, task_source->AcquireTaskId());
+  EXPECT_EQ(5U, task_source->AcquireTaskId());
+}
+
+// Verifies that task id is released after worker_task returns.
+TEST_F(ThreadPoolJobTaskSourceTest, GetTaskId) {
+  auto task_source = MakeRefCounted<JobTaskSource>(
+      FROM_HERE, TaskTraits{}, BindRepeating([](JobDelegate* delegate) {
+        // Confirm that task id 0 is reused on the second run.
+        EXPECT_EQ(0U, delegate->GetTaskId());
+
+        // Allow running the task again.
+        delegate->NotifyConcurrencyIncrease();
+      }),
+      BindRepeating([]() -> size_t { return 1; }),
+      &pooled_task_runner_delegate_);
+
+  auto registered_task_source =
+      RegisteredTaskSource::CreateForTesting(task_source);
+
+  // Run the worker_task twice.
+  ASSERT_EQ(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kAllowedSaturated);
+  auto task1 = registered_task_source.TakeTask();
+  std::move(task1.task).Run();
+  registered_task_source.DidProcessTask();
+
+  ASSERT_EQ(registered_task_source.WillRunTask(),
+            TaskSource::RunStatus::kAllowedSaturated);
+  auto task2 = registered_task_source.TakeTask();
+  std::move(task2.task).Run();
+  registered_task_source.DidProcessTask();
+}
+
 }  // namespace internal
 }  // namespace base

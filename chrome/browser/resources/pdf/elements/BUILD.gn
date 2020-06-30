@@ -64,7 +64,6 @@ js_library("viewer-page-indicator") {
 }
 
 js_library("viewer-page-selector") {
-  deps = [ "//ui/webui/resources/cr_elements/cr_input:cr_input.m" ]
 }
 
 js_library("viewer-password-screen") {

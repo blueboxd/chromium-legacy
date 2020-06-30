@@ -50,7 +50,8 @@ class SysmemBufferCollection
                   VkDevice vk_device,
                   zx::channel token,
                   gfx::BufferFormat format,
-                  gfx::BufferUsage usage);
+                  gfx::BufferUsage usage,
+                  bool force_protected);
 
   // Must not be called more than once.
   void SetOnDeletedCallback(base::OnceClosure on_deleted);
@@ -72,7 +73,7 @@ class SysmemBufferCollection
 
   gfx::SysmemBufferCollectionId id() const { return id_; }
   size_t num_buffers() const { return buffers_info_.buffer_count; }
-  gfx::Size size() const { return size_; }
+  gfx::Size size() const { return image_size_; }
   gfx::BufferFormat format() const { return format_; }
   size_t buffer_size() const {
     return buffers_info_.settings.buffer_settings.size_bytes;
@@ -98,10 +99,11 @@ class SysmemBufferCollection
 
   const gfx::SysmemBufferCollectionId id_;
 
-  gfx::Size size_;
+  // Image size passed to vkSetBufferCollectionConstraintsFUCHSIA(). The actual
+  // buffers size may be larger depending on constraints set by other
+  // sysmem clients. Size of the image is passed to CreateVkImage().
+  gfx::Size min_size_;
 
-  // Valid only for owned buffer collections, i.e. those that  that were
-  // initialized using the first Initialize() methods.
   gfx::BufferFormat format_ = gfx::BufferFormat::RGBA_8888;
   gfx::BufferUsage usage_ = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 
@@ -120,6 +122,7 @@ class SysmemBufferCollection
   // threads.
   THREAD_CHECKER(vulkan_thread_checker_);
 
+  gfx::Size image_size_;
   size_t buffer_size_ = 0;
   bool is_protected_ = false;
 

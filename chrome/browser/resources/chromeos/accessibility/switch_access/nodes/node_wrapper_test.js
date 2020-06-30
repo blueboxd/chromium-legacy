@@ -4,17 +4,8 @@
 
 GEN_INCLUDE(['../switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessNodeWrapperTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessNodeWrapperTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-};
+/** Test fixture for the node wrapper type. */
+SwitchAccessNodeWrapperTest = class extends SwitchAccessE2ETest {};
 
 TEST_F('SwitchAccessNodeWrapperTest', 'AsRootNode', function() {
   const website = `<div aria-label="outer">

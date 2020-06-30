@@ -23,12 +23,9 @@
 
 namespace syncer {
 
-class ChangeProcessor;
-
-// A class that keep track of the workers, change processors, and
-// routing info for the enabled sync types, and also routes change
-// events to the right processors.
-class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
+// A class that keep track of the workers and routing info for the enabled sync
+// types.
+class SyncBackendRegistrar {
  public:
   using ModelSafeWorkerFactory =
       base::RepeatingCallback<scoped_refptr<ModelSafeWorker>(ModelSafeGroup)>;
@@ -48,7 +45,7 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   //   4) Post a task to delete the SyncBackendRegistrar on the sync thread.
   //      When this task runs, there are no remaining pointers to the
   //      SyncBackendRegistrar.
-  ~SyncBackendRegistrar() override;
+  ~SyncBackendRegistrar();
 
   // Adds |type| to set of non-blocking types. These types are assigned to
   // GROUP_NON_BLOCKING model safe group and will be treated differently in
@@ -86,18 +83,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // Must be called from the UI thread. (See destructor comment.)
   void RequestWorkerStopOnUIThread();
 
-  // Returns true only between calls to ActivateDataType(type, ...)
-  // and DeactivateDataType(type).  Used only by tests.
-  bool IsTypeActivatedForTest(ModelType type) const;
-
-  // SyncManager::ChangeDelegate implementation.  May be called from
-  // any thread.
-  void OnChangesApplied(ModelType model_type,
-                        int64_t model_version,
-                        const BaseTransaction* trans,
-                        const ImmutableChangeRecordList& changes) override;
-  void OnChangesComplete(ModelType model_type) override;
-
   void GetWorkers(std::vector<scoped_refptr<ModelSafeWorker>>* out);
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
@@ -106,15 +91,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // by |worker_factory|.
   void MaybeAddWorker(ModelSafeWorkerFactory worker_factory,
                       ModelSafeGroup group);
-
-  // Returns the change processor for the given model, or null if none
-  // exists.  Must be called from |group|'s native thread.
-  ChangeProcessor* GetProcessor(ModelType type) const;
-
-  // Must be called with |lock_| held.  Simply returns the change
-  // processor for the given type, if it exists.  May be called from
-  // any thread.
-  ChangeProcessor* GetProcessorUnsafe(ModelType type) const;
 
   // Return true if |model_type| lives on the current thread.  Must be
   // called with |lock_| held.  May be called on any thread.
@@ -137,9 +113,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // Workers created by this SyncBackendRegistrar.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_;
 
-  // The change processors that handle the different data types.
-  std::map<ModelType, ChangeProcessor*> processors_;
-
   // Maps ModelType to ModelSafeGroup.
   ModelSafeRoutingInfo routing_info_;
 
@@ -147,8 +120,7 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   // call to ConfigureDataTypes as well as SetInitialTypes.
   ModelTypeSet last_configured_types_;
 
-  // Set of types with non-blocking implementation (as opposed to directory
-  // based).
+  // Set of types with non-blocking implementation.
   ModelTypeSet non_blocking_types_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendRegistrar);

@@ -56,8 +56,9 @@ bool IsPowerwashAllowed() {
 ResetSection::ResetSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   if (IsPowerwashAllowed())
-    registry()->AddSearchTags(GetResetSearchConcepts());
+    updater.AddSearchTags(GetResetSearchConcepts());
 }
 
 ResetSection::~ResetSection() = default;

@@ -548,7 +548,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
 
   // "- should fetching |request| be blocked as content security returns
   //    blocked"
-  if (!execution_context_->GetContentSecurityPolicyForWorld()
+  if (!execution_context_->GetContentSecurityPolicyForCurrentWorld()
            ->AllowConnectToSource(fetch_request_data_->Url(),
                                   fetch_request_data_->Url(),
                                   RedirectStatus::kNoRedirect)) {

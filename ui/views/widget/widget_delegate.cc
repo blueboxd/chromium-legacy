@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/widget_delegate.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -203,7 +206,8 @@ ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
   return new ClientView(widget, GetContentsView());
 }
 
-NonClientFrameView* WidgetDelegate::CreateNonClientFrameView(Widget* widget) {
+std::unique_ptr<NonClientFrameView> WidgetDelegate::CreateNonClientFrameView(
+    Widget* widget) {
   return nullptr;
 }
 

@@ -16,8 +16,9 @@
 #include <type_traits>
 
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 
-#ifdef __asmjs__
+#if defined(OS_ASMJS)
 // Optimized safe math instructions are incompatible with asmjs.
 #define BASE_HAS_OPTIMIZED_SAFE_MATH (0)
 // Where available use builtin math overflow support on Clang and GCC.

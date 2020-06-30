@@ -14,11 +14,11 @@
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -40,8 +40,8 @@ using chromeos::assistant::mojom::AssistantNotificationPriority;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
 
 // Constants.
-constexpr char kTimerId[] = "1";
-constexpr char kClientId[] = "assistant/timer1";
+constexpr char kClientId[] = "assistant/timer<timer-id>";
+constexpr char kTimerId[] = "<timer-id>";
 
 // Mocks -----------------------------------------------------------------------
 
@@ -154,6 +154,8 @@ class ExpectedNotification {
       os << "\npriority: '" << notif.priority_.value() << "'";
     if (notif.remove_on_click_.has_value())
       os << "\nremove_on_click: '" << notif.remove_on_click_.value() << "'";
+    if (notif.title_.has_value())
+      os << "\ntitle: '" << notif.title_.value() << "'";
     return os;
   }
 
@@ -311,28 +313,45 @@ class ScopedNotificationModelObserver
 
 // AssistantAlarmTimerControllerTest -------------------------------------------
 
-class AssistantAlarmTimerControllerTest : public AshTestBase {
+class AssistantAlarmTimerControllerTest : public AssistantAshTestBase {
  protected:
   AssistantAlarmTimerControllerTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AssistantAshTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~AssistantAlarmTimerControllerTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
-
+    AssistantAshTestBase::SetUp();
     feature_list_.InitAndDisableFeature(
         chromeos::assistant::features::kAssistantTimersV2);
   }
 
-  // Advances the clock by |time_delta|, running any sequenced tasks in the
-  // queue. Note that we don't use |TaskEnvironment::FastForwardBy| because that
-  // API will hang when |time_delta| is sufficiently large, ultimately resulting
-  // in unittest timeout.
-  void AdvanceClock(base::TimeDelta time_delta) {
+  void TearDown() override {
+    controller()->OnTimerStateChanged({});
+    AssistantAshTestBase::TearDown();
+  }
+
+  // Advances the clock by |time_delta| and waits for the next timer update.
+  // NOTE: If |time_delta| is zero, this method is a no-op.
+  void AdvanceClockAndWaitForTimerUpdate(base::TimeDelta time_delta) {
+    if (time_delta.is_zero())
+      return;
+
     task_environment()->AdvanceClock(time_delta);
-    task_environment()->RunUntilIdle();
+
+    MockAssistantAlarmTimerModelObserver observer;
+    controller()->GetModel()->AddObserver(&observer);
+
+    base::RunLoop run_loop;
+    EXPECT_CALL(observer, OnTimerUpdated)
+        .WillOnce(testing::Invoke([&](const AssistantTimer& timer) {
+          run_loop.QuitClosure().Run();
+        }));
+    run_loop.Run();
+
+    controller()->GetModel()->RemoveObserver(&observer);
   }
 
   AssistantAlarmTimerController* controller() {
@@ -391,7 +410,7 @@ TEST_F(AssistantAlarmTimerControllerTest, UpdatedTimersShouldHaveCreationTime) {
   ScheduleTimer(kTimerId).WithCreationTime(creation_time);
 
   // Advance clock.
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
+  AdvanceClockAndWaitForTimerUpdate(base::TimeDelta::FromMinutes(1));
 
   // If unspecified, |creation_time| should carry forward on update.
   EXPECT_CALL(mock, OnTimerUpdated)
@@ -494,7 +513,7 @@ TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedTitleV2) {
     // Run each tick of the clock in the test.
     for (auto& tick : i18n_test_case.ticks) {
       // Advance clock to next tick.
-      AdvanceClock(tick.advance_clock);
+      AdvanceClockAndWaitForTimerUpdate(tick.advance_clock);
 
       // Make assertions about the notification.
       EXPECT_EQ(ExpectedNotification().WithClientId(kClientId).WithTitle(
@@ -550,7 +569,7 @@ TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedMessage) {
     // Run each tick of the clock in the test.
     for (auto& tick : i18n_test_case.ticks) {
       // Advance clock to next tick.
-      AdvanceClock(tick.advance_clock);
+      AdvanceClockAndWaitForTimerUpdate(tick.advance_clock);
 
       // Make assertions about the notification.
       EXPECT_EQ(ExpectedNotification().WithClientId(kClientId).WithMessage(
@@ -909,7 +928,7 @@ TEST_F(AssistantAlarmTimerControllerTest,
 
   // Advance the clock.
   // NOTE: Six seconds is the threshold for popping up our notification.
-  AdvanceClock(base::TimeDelta::FromSeconds(6));
+  AdvanceClockAndWaitForTimerUpdate(base::TimeDelta::FromSeconds(6));
 
   // Make assertions about the notification.
   EXPECT_EQ(ExpectedNotification().WithClientId(kClientId).WithPriority(

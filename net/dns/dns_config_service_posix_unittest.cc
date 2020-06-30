@@ -241,7 +241,7 @@ class DnsConfigServicePosixTest : public testing::Test {
     service_.reset(new DnsConfigServicePosix());
   }
 
-  void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_, false)); }
+  void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_)); }
 
   base::test::TaskEnvironment task_environment_;
   bool seen_config_;

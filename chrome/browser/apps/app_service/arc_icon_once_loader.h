@@ -45,7 +45,7 @@ class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
   // loaded.
   void LoadIcon(const std::string& app_id,
                 int32_t size_in_dip,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 base::OnceCallback<void(ArcAppIcon*)> callback);
 
   // ArcAppListPrefs::Observer overrides.
@@ -56,11 +56,11 @@ class ArcIconOnceLoader : public ArcAppListPrefs::Observer {
  private:
   class SizeSpecificLoader;
 
-  using SizeAndCompression = std::pair<int32_t, apps::mojom::IconCompression>;
+  using SizeAndType = std::pair<int32_t, apps::mojom::IconType>;
 
   Profile* const profile_;
   bool stop_observing_called_;
-  std::map<SizeAndCompression, std::unique_ptr<SizeSpecificLoader>>
+  std::map<SizeAndType, std::unique_ptr<SizeSpecificLoader>>
       size_specific_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIconOnceLoader);

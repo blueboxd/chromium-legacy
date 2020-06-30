@@ -156,7 +156,7 @@ class CronetEnvironment {
   void StartNetLogOnNetworkThread(const base::FilePath&, bool log_bytes);
   void StopNetLogOnNetworkThread(base::WaitableEvent* log_stopped_event);
 
-  std::unique_ptr<base::DictionaryValue> GetNetLogInfo() const;
+  base::Value GetNetLogInfo() const;
 
   // Returns the HttpNetworkSession object from the passed in
   // URLRequestContext or NULL if none exists.

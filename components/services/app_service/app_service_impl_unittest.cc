@@ -72,7 +72,7 @@ class FakePublisher : public apps::PublisherBase {
 
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override {
@@ -249,7 +249,7 @@ TEST_F(AppServiceImplTest, PubSub) {
     constexpr bool allow_placeholder_icon = false;
     impl.LoadIcon(
         app_type, "o", std::move(icon_key),
-        apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,
+        apps::mojom::IconType::kUncompressed, size_hint_in_dip,
         allow_placeholder_icon,
         base::BindOnce(
             [](bool* ran, apps::mojom::IconValuePtr iv) { *ran = true; },

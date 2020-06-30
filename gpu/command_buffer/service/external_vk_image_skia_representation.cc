@@ -34,7 +34,8 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   auto* gr_context = backing_impl()->context_state()->gr_context();
   if (gr_context->abandoned()) {
     LOG(ERROR) << "GrContext is abandonded.";
@@ -79,6 +80,15 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
   ALLOW_UNUSED_LOCAL(count);
 
   access_mode_ = kWrite;
+
+  // If Vulkan and GLSet share the same memory backing, we need set |end_state|
+  // VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the VkImage to
+  // VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
+  if (!backing_impl()->use_separate_gl_texture()) {
+    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_QUEUE_FAMILY_EXTERNAL);
+  }
+
   return surface;
 }
 
@@ -97,7 +107,8 @@ void ExternalVkImageSkiaRepresentation::EndWriteAccess(
 
 sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
-    std::vector<GrBackendSemaphore>* end_semaphores) {
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   if (access_mode_ != kNone) {
     LOG(DFATAL) << "Previous access is not finished. mode=" << access_mode_;
     return nullptr;
@@ -109,6 +120,15 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
     LOG(ERROR) << "BeginAccess failed";
     return nullptr;
   }
+
+  // If Vulkan and GLSet share the same memory backing, we need set |end_state|
+  // VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the VkImage to
+  // VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
+  if (!backing_impl()->use_separate_gl_texture()) {
+    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_QUEUE_FAMILY_EXTERNAL);
+  }
+
   access_mode_ = kRead;
   return promise_texture;
 }

@@ -43,6 +43,7 @@ from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.common.system.system_host import SystemHost
 
+from blinkpy.w3c.wpt_manifest import MANIFEST_NAME
 from blinkpy.web_tests import run_web_tests
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -2296,6 +2297,14 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             baseline_full_path = '%s/%s' % (test.WEB_TEST_DIR, baseline)
             self.assertIsNone(written_files.get(baseline_full_path))
 
+    def assert_wpt_manifests_not_written(self, host, written_files):
+        external_manifest = host.filesystem.join(test.WEB_TEST_DIR,
+                                                 'external/wpt', MANIFEST_NAME)
+        internal_manifest = host.filesystem.join(test.WEB_TEST_DIR,
+                                                 'wpt_internal', MANIFEST_NAME)
+        self.assertNotIn(external_manifest, written_files)
+        self.assertNotIn(internal_manifest, written_files)
+
     def test_reset_results_basic(self):
         # Test that we update baselines in place when the test fails
         # (text and image mismatch).
@@ -2310,6 +2319,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # baselines, it's OK for actual results to not match baselines.
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(written_files.keys()), 7)
+        self.assert_wpt_manifests_not_written(host, written_files)
         self.assert_baselines(
             written_files,
             log_stream,
@@ -2703,7 +2713,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
                                              host=host)
         written_files = host.filesystem.written_files
         self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(written_files.keys()), 9)
+        self.assertEqual(len(written_files.keys()), 7)
         # We should create new image baseline only.
         self.assert_baselines(
             written_files,
@@ -2792,7 +2802,8 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertFalse(host.filesystem.exists(virtual_baseline_txt))
         written_files = host.filesystem.written_files
-        self.assertEqual(len(written_files.keys()), 10)
+        self.assertEqual(len(written_files.keys()), 8)
+        self.assert_wpt_manifests_not_written(host, written_files)
         # We should create new image baseline only.
         self.assert_baselines(
             written_files,

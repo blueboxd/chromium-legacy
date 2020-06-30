@@ -62,7 +62,7 @@ public class ScreenshotCoordinator {
             launchEditor();
         } else if (sInstallAttempts < MAX_INSTALL_ATTEMPTS) {
             sInstallAttempts++;
-            installEditor();
+            installEditor(true);
         } else {
             launchSharesheet();
         }
@@ -83,17 +83,25 @@ public class ScreenshotCoordinator {
      */
     private void launchSharesheet() {
         ScreenshotShareSheetDialogCoordinator shareSheet =
-                new ScreenshotShareSheetDialogCoordinator(
-                        mActivity, mScreenshot, mTab, mChromeOptionShareCallback);
+                new ScreenshotShareSheetDialogCoordinator(mActivity, mScreenshot, mTab,
+                        mChromeOptionShareCallback, this::retryInstallEditor);
         shareSheet.showShareSheet();
         mScreenshot = null;
     }
 
     /**
+     * Runnable friendly helper function to retry the installation after going to the fallback.
+     */
+    protected void retryInstallEditor() {
+        installEditor(false);
+    }
+
+    /**
      * Installs the DFM and shows UI (i.e. toasts and a retry dialog) informing the
      * user of the installation status.
+     * @param showFallback The fallback will be shown on a unsuccessful installation.
      */
-    private void installEditor() {
+    private void installEditor(boolean showFallback) {
         final ModuleInstallUi ui = new ModuleInstallUi(
                 mTab, R.string.image_editor_module_title, new ModuleInstallUi.FailureUiListener() {
                     @Override
@@ -101,8 +109,8 @@ public class ScreenshotCoordinator {
                         if (retry) {
                             // User initiated retries are not counted toward the maximum number
                             // of install attempts per session.
-                            installEditor();
-                        } else {
+                            installEditor(showFallback);
+                        } else if (showFallback) {
                             launchSharesheet();
                         }
                     }
@@ -113,7 +121,7 @@ public class ScreenshotCoordinator {
             if (success) {
                 ui.showInstallSuccessUi();
                 launchEditor();
-            } else {
+            } else if (showFallback) {
                 launchSharesheet();
             }
         });

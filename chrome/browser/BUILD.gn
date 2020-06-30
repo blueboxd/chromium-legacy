@@ -3980,6 +3980,8 @@ static_library("browser") {
 
   if (chromeos_is_browser_only) {
     sources += [
+      "chrome_browser_main_extra_parts_lacros.cc",
+      "chrome_browser_main_extra_parts_lacros.h",
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
     ]
@@ -4271,6 +4273,8 @@ static_library("browser") {
       "mac/dock.mm",
       "mac/exception_processor.h",
       "mac/exception_processor.mm",
+      "mac/initial_prefs.h",
+      "mac/initial_prefs.mm",
       "mac/install_from_dmg.h",
       "mac/install_from_dmg.mm",
       "mac/keystone_glue.h",
@@ -4279,8 +4283,6 @@ static_library("browser") {
       "mac/keystone_registration.mm",
       "mac/mac_startup_profiler.cc",
       "mac/mac_startup_profiler.h",
-      "mac/master_prefs.h",
-      "mac/master_prefs.mm",
       "mac/nsprocessinfo_additions.h",
       "mac/nsprocessinfo_additions.mm",
       "mac/relauncher.h",

@@ -136,10 +136,11 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   }
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsAuraAsh::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame = new apps::AppWindowFrameView(widget(), this,
-      HasFrameColor(), ActiveFrameColor(), InactiveFrameColor());
+  auto frame = std::make_unique<apps::AppWindowFrameView>(
+      widget(), this, HasFrameColor(), ActiveFrameColor(),
+      InactiveFrameColor());
   frame->Init();
 
   // For Aura windows on the Ash desktop the sizes are different and the user
@@ -267,7 +268,7 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForViewImpl(
 
 ///////////////////////////////////////////////////////////////////////////////
 // WidgetDelegate implementation:
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     views::Widget* widget) {
   if (IsFrameless())
@@ -275,8 +276,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
 
   observed_window_state_.Add(ash::WindowState::Get(GetNativeWindow()));
 
-  ash::NonClientFrameViewAsh* custom_frame_view =
-      new ash::NonClientFrameViewAsh(widget);
+  auto custom_frame_view = std::make_unique<ash::NonClientFrameViewAsh>(widget);
 
   custom_frame_view->GetHeaderView()->set_context_menu_controller(this);
 

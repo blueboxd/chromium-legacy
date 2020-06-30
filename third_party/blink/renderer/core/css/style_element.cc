@@ -133,7 +133,8 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
 
   const ContentSecurityPolicy* csp =
       element.GetExecutionContext()
-          ? element.GetExecutionContext()->GetContentSecurityPolicyForWorld()
+          ? element.GetExecutionContext()
+                ->GetContentSecurityPolicyForCurrentWorld()
           : nullptr;
 
   // CSP is bypassed for style elements in user agent shadow DOM.

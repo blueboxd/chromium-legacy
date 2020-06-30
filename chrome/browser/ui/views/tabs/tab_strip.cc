@@ -2285,13 +2285,7 @@ gfx::Size TabStrip::GetMinimumSize() const {
           ? GetStackableTabWidth() + (2 * kStackedPadding * kMaxStackedCount)
           : layout_helper_->CalculateMinimumWidth();
 
-  // Cap the tabstrip minimum width to a reasonable value so browser windows
-  // aren't forced to grow arbitrarily wide.
-  const int max_min_width = 520;
-  const int capped_minimum_width =
-      std::min(minimum_tab_area_width, max_min_width);
-
-  return gfx::Size(capped_minimum_width + GetRightSideReservedWidth(),
+  return gfx::Size(minimum_tab_area_width + GetRightSideReservedWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 

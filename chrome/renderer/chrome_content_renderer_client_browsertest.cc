@@ -147,7 +147,7 @@ class ChromeContentRendererClientBrowserTest :
     host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    https_server_->RegisterRequestMonitor(base::Bind(
+    https_server_->RegisterRequestMonitor(base::BindRepeating(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());

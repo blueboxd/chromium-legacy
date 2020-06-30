@@ -443,7 +443,7 @@ class URLFetcherTest : public TestWithTaskEnvironment {
 
     // Cleanup.
     if (base::PathExists(out_path))
-      base::DeleteFile(out_path, false);
+      base::DeleteFile(out_path);
   }
 
   // Returns a URL that hangs on DNS resolution when using a context created by

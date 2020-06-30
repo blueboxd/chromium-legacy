@@ -65,7 +65,6 @@ constexpr LayoutUnit NGTableTypes::kTableMaxInlineSize;
 // "outer min-content and outer max-content widths for colgroups"
 NGTableTypes::Column NGTableTypes::CreateColumn(
     const ComputedStyle& style,
-    bool is_fixed_layout,
     base::Optional<LayoutUnit> default_inline_size) {
   base::Optional<LayoutUnit> inline_size;
   base::Optional<LayoutUnit> min_inline_size;

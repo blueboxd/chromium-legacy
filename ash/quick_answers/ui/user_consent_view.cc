@@ -62,9 +62,13 @@ constexpr int kButtonFontSizeDelta = 1;
 
 // Manage-Settings button.
 constexpr SkColor kSettingsButtonTextColor = gfx::kGoogleBlue600;
+constexpr char kA11ySettingsButtonDescText[] =
+    "Click to open Google Assistant settings.";
 
 // Grant-Consent button.
 constexpr SkColor kConsentButtonTextColor = gfx::kGoogleGrey200;
+constexpr char kA11yConsentButtonDescTemplate[] =
+    "%s. Click to see the information for the current selection now.";
 
 // Dogfood button.
 constexpr int kDogfoodButtonMarginDip = 4;
@@ -73,7 +77,13 @@ constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 
 // Accessibility.
 // TODO(siabhijeet): Move to grd after finalizing with UX.
-constexpr char kA11yInfoNameTemplate[] = "New feature: %s";
+constexpr char kA11yInfoAlertText[] =
+    "New feature: %s. Use Up or Down arrow keys to navigate to the feature "
+    "from within the menu.";
+constexpr char kA11yInfoDescTemplate[] =
+    "%s To manage these settings or to start using the feature, use Left/Right "
+    "arrow keys to navigate to the buttons that say 'Manage Settings' or 'Got "
+    "it'.";
 
 // Create and return a simple label with provided specs.
 std::unique_ptr<views::Label> CreateLabel(const base::string16& text,
@@ -153,12 +163,9 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
       reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
 
   // Read out user-consent notice if screen-reader is active.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
-  GetViewAccessibility().OverrideName(base::StringPrintf(
-      kA11yInfoNameTemplate, base::UTF16ToUTF8(title_).c_str()));
-  GetViewAccessibility().OverrideDescription(l10n_util::GetStringUTF8(
-      IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT));
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  auto announcement =
+      base::StringPrintf(kA11yInfoAlertText, base::UTF16ToUTF8(title_).c_str());
+  GetViewAccessibility().AnnounceText(base::UTF8ToUTF16(announcement));
 }
 
 UserConsentView::~UserConsentView() = default;
@@ -182,6 +189,17 @@ void UserConsentView::OnFocus() {
 
 views::FocusTraversable* UserConsentView::GetPaneFocusTraversable() {
   return focus_search_.get();
+}
+
+void UserConsentView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kDialog;
+  node_data->SetName(title_);
+  auto desc =
+      base::StringPrintf(kA11yInfoDescTemplate,
+                         l10n_util::GetStringUTF8(
+                             IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT)
+                             .c_str());
+  node_data->SetDescription(desc);
 }
 
 std::vector<views::View*> UserConsentView::GetFocusableViews() {
@@ -297,6 +315,8 @@ void UserConsentView::InitButtonBar() {
       l10n_util::GetStringUTF16(
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_MANAGE_SETTINGS_BUTTON),
       kSettingsButtonTextColor);
+  settings_button->GetViewAccessibility().OverrideDescription(
+      kA11ySettingsButtonDescText);
   settings_button_ = button_bar->AddChildView(std::move(settings_button));
 
   // Grant-Consent button.
@@ -306,6 +326,11 @@ void UserConsentView::InitButtonBar() {
           IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_GRANT_CONSENT_BUTTON),
       kConsentButtonTextColor);
   consent_button->SetProminent(true);
+  consent_button->GetViewAccessibility().OverrideDescription(
+      base::StringPrintf(kA11yConsentButtonDescTemplate,
+                         l10n_util::GetStringUTF8(
+                             IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT)
+                             .c_str()));
   consent_button_ = button_bar->AddChildView(std::move(consent_button));
 }
 

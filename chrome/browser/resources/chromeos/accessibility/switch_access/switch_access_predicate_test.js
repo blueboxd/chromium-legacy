@@ -4,17 +4,8 @@
 
 GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessPredicateTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessPredicateTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype
-};
+/** Test fixture for the Switch Access predicates. */
+SwitchAccessPredicateTest = class extends SwitchAccessE2ETest {};
 
 function fakeLoc(x) {
   return {left: x, top: x, width: x, height: x};

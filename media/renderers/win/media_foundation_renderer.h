@@ -18,6 +18,7 @@
 #include "base/unguessable_token.h"
 #include "base/win/windows_types.h"
 #include "media/base/buffering_state.h"
+#include "media/base/media_export.h"
 #include "media/base/media_resource.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
@@ -33,8 +34,9 @@ namespace media {
 
 // MediaFoundationRenderer bridges the Renderer and Windows MFMediaEngine
 // interfaces.
-class MediaFoundationRenderer : public Renderer,
-                                public MediaFoundationRendererExtension {
+class MEDIA_EXPORT MediaFoundationRenderer
+    : public Renderer,
+      public MediaFoundationRendererExtension {
  public:
   // Whether MediaFoundationRenderer() is supported on the current device.
   static bool IsSupported();

@@ -72,7 +72,16 @@ constexpr int kDogfoodButtonSizeDip = 20;
 constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 
 // Accessibility.
+// TODO(siabhijeet): Move to grd (tracked in b/149758492).
+constexpr char kA11yAlertAnnouncement[] =
+    "Quick Answer available for text-selection. Use Up or Down arrow keys to "
+    "navigate to the feature from within the menu.";
 constexpr char kA11yNameTemplate[] = "Quick Answer: %s";
+constexpr char kA11yDescTemplate[] =
+    "%s; Click the dialog to see the result in Assistant.";
+constexpr char kA11yRetryLabelName[] = "Quick Answers: Retry";
+constexpr char kA11yRetryLabelDesc[] =
+    "Cannot connect to the internet. Click to try again.";
 
 // Maximum height QuickAnswersView can expand to.
 int MaximumViewHeight() {
@@ -137,11 +146,6 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
   InitLayout();
   InitWidget();
 
-  // Accessibility.
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
-  GetViewAccessibility().OverrideName(
-      base::StringPrintf(kA11yNameTemplate, title_.c_str()));
-
   // Focus.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(false);
@@ -182,6 +186,20 @@ void QuickAnswersView::OnBlur() {
 
 views::FocusTraversable* QuickAnswersView::GetPaneFocusTraversable() {
   return focus_search_.get();
+}
+
+void QuickAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // The view itself is not focused for retry-mode, so should not be announced
+  // by the screen reader.
+  if (retry_label_) {
+    node_data->role = ax::mojom::Role::kNone;
+    node_data->SetName(std::string());
+    node_data->SetDescription(std::string());
+    return;
+  }
+
+  node_data->role = ax::mojom::Role::kDialog;
+  node_data->SetName(base::StringPrintf(kA11yNameTemplate, title_.c_str()));
 }
 
 std::vector<views::View*> QuickAnswersView::GetFocusableViews() {
@@ -279,6 +297,8 @@ void QuickAnswersView::ShowRetryView() {
   retry_label_->SetFocusForPlatform();
   retry_label_->set_request_focus_on_press(true);
   SetButtonNotifyActionToOnPress(retry_label_);
+  retry_label_->SetAccessibleName(base::UTF8ToUTF16(kA11yRetryLabelName));
+  retry_label_->GetViewAccessibility().OverrideDescription(kA11yRetryLabelDesc);
 }
 
 void QuickAnswersView::AddAssistantIcon() {
@@ -412,7 +432,8 @@ void QuickAnswersView::UpdateQuickAnswerResult(
     // Update answer announcement.
     auto* answer_label =
         static_cast<Label*>(first_answer_view->children().front());
-    GetViewAccessibility().OverrideDescription(answer_label->GetText());
+    GetViewAccessibility().OverrideDescription(base::StringPrintf(
+        kA11yDescTemplate, base::UTF16ToUTF8(answer_label->GetText()).c_str()));
   }
 
   // Add second row answer.
@@ -431,8 +452,13 @@ void QuickAnswersView::UpdateQuickAnswerResult(
   }
 
   // Restore focus if the view had one prior to updating the answer.
-  if (pane_already_had_focus)
+  if (pane_already_had_focus) {
     RequestFocus();
+  } else {
+    // Announce that a Quick Answer is available.
+    GetViewAccessibility().AnnounceText(
+        base::UTF8ToUTF16(kA11yAlertAnnouncement));
+  }
 }
 
 void QuickAnswersView::SetBackgroundState(bool highlight) {

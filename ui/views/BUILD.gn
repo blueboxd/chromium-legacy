@@ -1231,6 +1231,7 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += [
+      "accessibility/accessibility_alert_window_unittest.cc",
       "accessibility/ax_aura_obj_cache_unittest.cc",
       "accessibility/ax_tree_source_views_unittest.cc",
       "controls/native/native_view_host_aura_unittest.cc",

@@ -26,6 +26,8 @@ JobDelegate::JobDelegate(
 }
 
 JobDelegate::~JobDelegate() {
+  if (task_id_ != kInvalidTaskId)
+    task_source_->ReleaseTaskId(task_id_);
 #if DCHECK_IS_ON()
   // When ShouldYield() returns false, the worker task is expected to do
   // work before returning.
@@ -58,6 +60,12 @@ void JobDelegate::YieldIfNeeded() {
 
 void JobDelegate::NotifyConcurrencyIncrease() {
   task_source_->NotifyConcurrencyIncrease();
+}
+
+uint8_t JobDelegate::GetTaskId() {
+  if (task_id_ == kInvalidTaskId)
+    task_id_ = task_source_->AcquireTaskId();
+  return task_id_;
 }
 
 void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {

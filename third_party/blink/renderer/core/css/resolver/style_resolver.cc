@@ -794,7 +794,10 @@ static const ComputedStyle* CachedAnimationBaseComputedStyle(
   if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
     return nullptr;
   ElementAnimations* element_animations = GetElementAnimations(state);
-  return element_animations ? element_animations->BaseComputedStyle() : nullptr;
+  if (!element_animations)
+    return nullptr;
+
+  return element_animations->BaseComputedStyle();
 }
 
 static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
@@ -1368,11 +1371,14 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
   // resolving style for, or null if we are resolving style for a pseudo
   // element which is not represented by a PseudoElement like scrollbar pseudo
   // elements.
-  const Element* animating_element = state.GetAnimatingElement();
+  Element* animating_element = state.GetAnimatingElement();
   DCHECK(animating_element == &element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
   if (!HasAnimationsOrTransitions(state)) {
+    // Ensure that the base computed style is not stale even if not currently
+    // running an animation or transition. This ensures that any new transitions
+    // use the correct starting point based on the "before change" style.
     UpdateAnimationBaseComputedStyle(state, cascade, false);
     return false;
   }
@@ -1932,7 +1938,7 @@ void StyleResolver::ApplyMatchedAnimationProperties(
 }
 
 void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
-  const Element* animating_element = state.GetAnimatingElement();
+  Element* animating_element = state.GetAnimatingElement();
 
   DCHECK(state.Style()->Animations() || state.Style()->Transitions() ||
          (animating_element && animating_element->HasAnimations()));
@@ -2171,21 +2177,42 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
   StyleResolverState state(GetDocument(), element);
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
+  ApplyBaseComputedStyle(
+      &element, state,
+      RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr,
+      cascade.MutableMatchResult(), kMatchAllRules, true);
+  ApplyInterpolations(state, cascade, interpolations);
+
+  return state.TakeStyle();
+}
+
+void StyleResolver::ApplyInterpolations(
+    StyleResolverState& state,
+    StyleCascade& cascade,
+    ActiveInterpolationsMap& interpolations) {
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    ApplyBaseComputedStyle(&element, state, &cascade,
-                           cascade.MutableMatchResult(), kMatchAllRules, true);
     cascade.AddInterpolations(&interpolations, CascadeOrigin::kAnimation);
     cascade.Apply();
   } else {
-    ApplyBaseComputedStyle(&element, state, nullptr /* cascade */,
-                           cascade.MutableMatchResult(), kMatchAllRules, true);
     ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
                                                            interpolations);
     UpdateFont(state);
     ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
                                                           interpolations);
   }
+}
 
+scoped_refptr<ComputedStyle>
+StyleResolver::BeforeChangeStyleForTransitionUpdate(
+    Element& element,
+    const ComputedStyle& base_style,
+    ActiveInterpolationsMap& transition_interpolations) {
+  StyleResolverState state(GetDocument(), element);
+  STACK_UNINITIALIZED StyleCascade cascade(state);
+  state.SetStyle(ComputedStyle::Clone(base_style));
+  // TODO(crbug.com/1098937): Include active CSS animations in a separate
+  // interpolations map and add each map at the appropriate CascadeOrigin.
+  ApplyInterpolations(state, cascade, transition_interpolations);
   return state.TakeStyle();
 }
 

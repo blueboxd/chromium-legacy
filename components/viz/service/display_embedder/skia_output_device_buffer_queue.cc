@@ -211,7 +211,7 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
           submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
           std::move(committed_overlays_))));
   presenter_->CommitOverlayPlanes(swap_completion_callbacks_.back()->callback(),
-                                  std::move(feedback), std::move(latency_info));
+                                  std::move(feedback));
 
   committed_overlays_.clear();
   std::swap(committed_overlays_, pending_overlays_);

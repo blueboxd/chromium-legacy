@@ -46,6 +46,7 @@ class UserConsentView : public views::View, public views::ButtonListener {
   gfx::Size CalculatePreferredSize() const override;
   void OnFocus() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

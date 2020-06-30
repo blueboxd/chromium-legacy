@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
@@ -37,7 +38,7 @@ namespace {
 // Tab strip bounds depend on the window frame sizes.
 gfx::Point ExpectedTabStripRegionOrigin(BrowserView* browser_view) {
   gfx::Rect tabstrip_bounds(browser_view->frame()->GetBoundsForTabStripRegion(
-      browser_view->tabstrip()));
+      browser_view->tab_strip_region_view()->GetMinimumSize()));
   gfx::Point tabstrip_region_origin(tabstrip_bounds.origin());
   views::View::ConvertPointToTarget(browser_view->parent(), browser_view,
                                     &tabstrip_region_origin);

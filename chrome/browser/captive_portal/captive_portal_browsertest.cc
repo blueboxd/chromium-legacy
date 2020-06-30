@@ -439,8 +439,8 @@ CaptivePortalObserver::CaptivePortalObserver(Profile* profile)
           CaptivePortalServiceFactory::GetForProfile(profile)),
       captive_portal_result_(
           captive_portal_service_->last_detection_result()) {
-  subscription_ = captive_portal_service_->RegisterCallback(
-      base::Bind(&CaptivePortalObserver::Observe, base::Unretained(this)));
+  subscription_ = captive_portal_service_->RegisterCallback(base::BindRepeating(
+      &CaptivePortalObserver::Observe, base::Unretained(this)));
 }
 
 void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {

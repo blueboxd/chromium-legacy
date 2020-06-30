@@ -305,20 +305,6 @@ Polymer({
   },
 
   /**
-   * @param {chrome.developerPrivate.ControllerType} type
-   * @return {string}
-   * @private
-   */
-  getIndicatorIcon_(type) {
-    switch (type) {
-      case 'POLICY':
-        return 'cr20:domain';
-      default:
-        return '';
-    }
-  },
-
-  /**
    * @return {boolean}
    * @private
    */

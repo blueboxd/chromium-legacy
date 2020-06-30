@@ -91,9 +91,9 @@ class MaxSizeWidgetDelegate : public views::WidgetDelegateView {
 
  private:
   void DeleteDelegate() override { delete this; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new MaxSizeNCFV;
+    return std::make_unique<MaxSizeNCFV>();
   }
 
   DISALLOW_COPY_AND_ASSIGN(MaxSizeWidgetDelegate);

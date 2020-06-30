@@ -15,6 +15,7 @@ mojom("types") {
     "//ui/gfx/image/mojom",
     "//ui/gfx/mojom",
     "//ui/gfx/range/mojom",
+    "//url/mojom:url_mojom_gurl",
   ]
 }
 

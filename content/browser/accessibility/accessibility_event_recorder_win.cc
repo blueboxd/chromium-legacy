@@ -41,7 +41,7 @@ std::string RoleVariantToString(const base::win::ScopedVariant& role) {
 
 HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
-  HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
+  HRESULT hr = accessible->QueryInterface(IID_PPV_ARGS(&service_provider));
   return SUCCEEDED(hr)
              ? service_provider->QueryService(IID_IAccessible2, accessible2)
              : hr;
@@ -50,7 +50,7 @@ HRESULT QueryIAccessible2(IAccessible* accessible, IAccessible2** accessible2) {
 HRESULT QueryIAccessibleText(IAccessible* accessible,
                              IAccessibleText** accessible_text) {
   Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
-  HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
+  HRESULT hr = accessible->QueryInterface(IID_PPV_ARGS(&service_provider));
   return SUCCEEDED(hr) ? service_provider->QueryService(IID_IAccessibleText,
                                                         accessible_text)
                        : hr;
@@ -199,8 +199,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
                                                    DWORD event_time) {
   Microsoft::WRL::ComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindowWrapper(
-      hwnd, obj_id, IID_IAccessible,
-      reinterpret_cast<void**>(browser_accessible.GetAddressOf()));
+      hwnd, obj_id, IID_PPV_ARGS(&browser_accessible));
   if (FAILED(hr)) {
     // Note: our event hook will pick up some superfluous events we
     // don't care about, so it's safe to just ignore these failures.
@@ -211,8 +210,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
 
   base::win::ScopedVariant childid_variant(child_id);
   Microsoft::WRL::ComPtr<IDispatch> dispatch;
-  hr = browser_accessible->get_accChild(childid_variant,
-                                        dispatch.GetAddressOf());
+  hr = browser_accessible->get_accChild(childid_variant, &dispatch);
   if (hr != S_OK || !dispatch) {
     VLOG(1) << "Ignoring result " << hr << " and result " << dispatch.Get()
             << " from get_accChild";
@@ -220,7 +218,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
   }
 
   Microsoft::WRL::ComPtr<IAccessible> iaccessible;
-  hr = dispatch.CopyTo(iaccessible.GetAddressOf());
+  hr = dispatch.As(&iaccessible);
   if (FAILED(hr)) {
     VLOG(1) << "Ignoring result " << hr << " from QueryInterface";
     return;
@@ -257,13 +255,13 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
       return;
 
     Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
-    hr = iaccessible->QueryInterface(service_provider.GetAddressOf());
+    hr = iaccessible->QueryInterface(IID_PPV_ARGS(&service_provider));
     if (FAILED(hr))
       return;
 
     Microsoft::WRL::ComPtr<IAccessible> content_document;
     hr = service_provider->QueryService(GUID_IAccessibleContentDocument,
-                                        content_document.GetAddressOf());
+                                        IID_PPV_ARGS(&content_document));
     if (FAILED(hr))
       return;
   }
@@ -291,7 +289,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
 
   AccessibleStates ia2_state = 0;
   Microsoft::WRL::ComPtr<IAccessible2> iaccessible2;
-  hr = QueryIAccessible2(iaccessible.Get(), iaccessible2.GetAddressOf());
+  hr = QueryIAccessible2(iaccessible.Get(), &iaccessible2);
   bool has_ia2 = SUCCEEDED(hr) && iaccessible2;
 
   base::string16 html_tag;
@@ -367,7 +365,7 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
   // For TEXT_REMOVED and TEXT_INSERTED events, query the text that was
   // inserted or removed and include that in the log.
   Microsoft::WRL::ComPtr<IAccessibleText> accessible_text;
-  hr = QueryIAccessibleText(iaccessible.Get(), accessible_text.GetAddressOf());
+  hr = QueryIAccessibleText(iaccessible.Get(), &accessible_text);
   if (SUCCEEDED(hr)) {
     if (event == IA2_EVENT_TEXT_REMOVED) {
       IA2TextSegment old_text;

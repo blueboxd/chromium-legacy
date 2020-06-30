@@ -110,7 +110,7 @@ void AppendToFileThenDelete(const base::FilePath& source_path,
 
   // Now that it has been copied, delete the source file.
   source_file.reset();
-  base::DeleteFile(source_path, false);
+  base::DeleteFile(source_path);
 }
 
 base::FilePath SiblingInprogressDirectory(const base::FilePath& log_path) {
@@ -634,7 +634,7 @@ void FileNetLogObserver::FileWriter::DeleteAllFiles() {
   // Only delete |final_log_file_| if it was created internally.
   // (If it was provided as a base::File by the caller, don't try to delete it).
   if (!final_log_path_.empty())
-    base::DeleteFile(final_log_path_, false);
+    base::DeleteFile(final_log_path_);
 }
 
 void FileNetLogObserver::FileWriter::FlushThenStop(

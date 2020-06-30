@@ -42,6 +42,7 @@
 #include "base/android/path_utils.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/permissions/contexts/geolocation_permission_context_android.h"
+#include "components/unified_consent/pref_names.h"
 #elif defined(OS_WIN)
 #include <KnownFolders.h>
 #include <shlobj.h>
@@ -256,6 +257,8 @@ void BrowserContextImpl::RegisterPrefs(
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry);
   permissions::GeolocationPermissionContextAndroid::RegisterProfilePrefs(
       pref_registry);
+  pref_registry->RegisterBooleanPref(
+      unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
 #endif
 
   BrowserContextDependencyManager::GetInstance()

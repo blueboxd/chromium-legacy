@@ -376,7 +376,7 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
     // See crbug.com/982388.)
 
     if (ContentSecurityPolicy* policy =
-            execution_context->GetContentSecurityPolicyForWorld()) {
+            execution_context->GetContentSecurityPolicyForCurrentWorld()) {
       v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,

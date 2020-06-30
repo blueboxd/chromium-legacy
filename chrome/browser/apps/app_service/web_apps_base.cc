@@ -196,14 +196,14 @@ void WebAppsBase::Connect(
 
 void WebAppsBase::LoadIcon(const std::string& app_id,
                            apps::mojom::IconKeyPtr icon_key,
-                           apps::mojom::IconCompression icon_compression,
+                           apps::mojom::IconType icon_type,
                            int32_t size_hint_in_dip,
                            bool allow_placeholder_icon,
                            LoadIconCallback callback) {
   DCHECK(provider_);
 
   if (icon_key) {
-    LoadIconFromWebApp(profile_, icon_compression, size_hint_in_dip, app_id,
+    LoadIconFromWebApp(profile_, icon_type, size_hint_in_dip, app_id,
                        static_cast<IconEffects>(icon_key->icon_effects),
                        std::move(callback));
     return;

@@ -73,9 +73,10 @@ PrintingSection::PrintingSection(Profile* profile,
                                  CupsPrintersManager* printers_manager)
     : OsSettingsSection(profile, search_tag_registry),
       printers_manager_(printers_manager) {
-  registry()->AddSearchTags(GetPrintingSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetPrintingSearchConcepts());
   if (IsPrintManagementEnabled())
-    registry()->AddSearchTags(GetPrintingManagementSearchConcepts());
+    updater.AddSearchTags(GetPrintingManagementSearchConcepts());
 }
 
 PrintingSection::~PrintingSection() = default;

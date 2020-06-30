@@ -15,7 +15,6 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_event_handler.h"
-#include "components/sync/syncable/change_record.h"
 
 namespace syncer {
 

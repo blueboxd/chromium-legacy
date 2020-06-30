@@ -194,11 +194,10 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
   return new DialogClientView(widget, GetContentsView());
 }
 
-NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  if (use_custom_frame())
-    return CreateDialogFrameView(widget);
-
-  return WidgetDelegate::CreateNonClientFrameView(widget);
+std::unique_ptr<NonClientFrameView> DialogDelegate::CreateNonClientFrameView(
+    Widget* widget) {
+  return use_custom_frame() ? CreateDialogFrameView(widget)
+                            : WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
 void DialogDelegate::WindowWillClose() {
@@ -232,9 +231,10 @@ void DialogDelegate::WindowWillClose() {
 }
 
 // static
-NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
+std::unique_ptr<NonClientFrameView> DialogDelegate::CreateDialogFrameView(
+    Widget* widget) {
   LayoutProvider* provider = LayoutProvider::Get();
-  BubbleFrameView* frame = new BubbleFrameView(
+  auto frame = std::make_unique<BubbleFrameView>(
       provider->GetInsetsMetric(INSETS_DIALOG_TITLE), gfx::Insets());
 
   const BubbleBorder::Shadow kShadow = BubbleBorder::DIALOG_SHADOW;

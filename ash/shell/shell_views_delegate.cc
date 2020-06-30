@@ -13,8 +13,8 @@ ShellViewsDelegate::ShellViewsDelegate() = default;
 
 ShellViewsDelegate::~ShellViewsDelegate() = default;
 
-views::NonClientFrameView* ShellViewsDelegate::CreateDefaultNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ShellViewsDelegate::CreateDefaultNonClientFrameView(views::Widget* widget) {
   return ash::Shell::Get()->CreateDefaultNonClientFrameView(widget);
 }
 

@@ -392,30 +392,6 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   return model;
 }
 
-// Sample the given |animation| at the given |inherited_time|. Returns nullptr
-// if the |inherited_time| falls outside of the animation.
-std::unique_ptr<TypedInterpolationValue> SampleAnimation(
-    Animation* animation,
-    double inherited_time) {
-  auto* effect = To<KeyframeEffect>(animation->effect());
-  auto* inert_animation_for_sampling = MakeGarbageCollected<InertEffect>(
-      effect->Model(), effect->SpecifiedTiming(), false, inherited_time);
-  HeapVector<Member<Interpolation>> sample;
-  inert_animation_for_sampling->Sample(sample);
-  // Transition animation has only animated a single property or is not in
-  // effect.
-  DCHECK_LE(sample.size(), 1u);
-  if (sample.IsEmpty())
-    return nullptr;
-  if (auto* transition_interpolation =
-          DynamicTo<TransitionInterpolation>(*sample.at(0)))
-    return transition_interpolation->GetInterpolatedValue();
-  // TODO(crbug.com/1086167): The *sample.at(0) could be
-  // InvalidtableInterpolation pointer. In this case, we currently return a
-  // nullptr, but we will need to support the InvalidtableInterpolation type.
-  return nullptr;
-}
-
 // Returns the start time of an animation given the start delay. A negative
 // start delay results in the animation starting with non-zero progress.
 AnimationTimeDelta StartTimeFromDelay(double start_delay) {
@@ -816,11 +792,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         MakeGarbageCollected<RunningAnimation>(animation, entry));
   }
 
-  // Transitions that are run on the compositor only update main-thread state
-  // lazily. However, we need the new state to know what the from state shoud
-  // be when transitions are retargeted. Instead of triggering complete style
-  // recalculation, we find these cases by searching for new transitions that
-  // have matching cancelled animation property IDs on the compositor.
+  // Track retargeted transitions that are running on the compositor in order
+  // to update their start times.
   HashSet<PropertyHandle> retargeted_compositor_transitions;
   for (const PropertyHandle& property :
        pending_update_.CancelledTransitions()) {
@@ -836,7 +809,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     }
     animation->ClearOwningElement();
     animation->cancel();
-    // after cancelation, transitions must be downgraded or they'll fail
+    // After cancellation, transitions must be downgraded or they'll fail
     // to be considered when retriggering themselves. This can happen if
     // the transition is captured through getAnimations then played.
     if (auto* effect = DynamicTo<KeyframeEffect>(animation->effect()))
@@ -933,7 +906,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   }
 
   const RunningTransition* interrupted_transition = nullptr;
-  const RunningTransition* retargeted_compositor_transition = nullptr;
   if (state.active_transitions) {
     TransitionMap::const_iterator active_transition_iter =
         state.active_transitions->find(property);
@@ -945,10 +917,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         return;
       }
       state.update.CancelTransition(property);
-      auto* effect =
-          To<KeyframeEffect>(running_transition->animation->effect());
-      if (effect && effect->HasActiveAnimationsOnCompositor())
-        retargeted_compositor_transition = running_transition;
       DCHECK(!state.animating_element->GetElementAnimations() ||
              !state.animating_element->GetElementAnimations()
                   ->IsAnimationStyleChange());
@@ -969,61 +937,55 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     }
   }
 
-  if (CSSPropertyEquality::PropertiesEqual(property, state.old_style,
+  // Lazy evaluation of the before change style. We only need to update where
+  // we are transitioning from if the final destination is changing.
+  if (!state.before_change_style) {
+    ElementAnimations* element_animations =
+        state.animating_element->GetElementAnimations();
+    if (element_animations) {
+      const ComputedStyle* base_style = element_animations->BaseComputedStyle();
+      if (base_style) {
+        state.before_change_style =
+            CalculateBeforeChangeStyle(state.animating_element, *base_style);
+      }
+    }
+    // Use the style from the previous frame if no base style is found.
+    // Elements that have not been animated will not have a base style.
+    // Elements that were previously animated, but where all previously running
+    // animations have stopped may also be missing a base style. In both cases,
+    // the old style is equivalent to the base computed style.
+    if (!state.before_change_style) {
+      state.before_change_style =
+          CalculateBeforeChangeStyle(state.animating_element, state.old_style);
+    }
+  }
+
+  if (CSSPropertyEquality::PropertiesEqual(property, *state.before_change_style,
                                            state.style)) {
     return;
   }
 
   CSSInterpolationTypesMap map(registry,
                                state.animating_element->GetDocument());
-  CSSInterpolationEnvironment old_environment(map, state.old_style);
+  CSSInterpolationEnvironment old_environment(map, *state.before_change_style);
   CSSInterpolationEnvironment new_environment(map, state.style);
   const InterpolationType* transition_type = nullptr;
   InterpolationValue start = nullptr;
   InterpolationValue end = nullptr;
-  if (retargeted_compositor_transition) {
-    base::Optional<double> old_start_time =
-        retargeted_compositor_transition->animation->StartTimeInternal();
-    // TODO(flackr): This should be able to just use
-    // animation->currentTime() / 1000 rather than trying to calculate current
-    // time.
-    double inherited_time = old_start_time.has_value()
-                                ? state.animating_element->GetDocument()
-                                          .Timeline()
-                                          .CurrentTimeSeconds()
-                                          .value() -
-                                      old_start_time.value()
-                                : 0;
-    std::unique_ptr<TypedInterpolationValue> retargeted_start = SampleAnimation(
-        retargeted_compositor_transition->animation, inherited_time);
-    if (retargeted_start) {
-      const InterpolationType& interpolation_type = retargeted_start->GetType();
-      start = retargeted_start->Value().Clone();
-      end = interpolation_type.MaybeConvertUnderlyingValue(new_environment);
-      if (end &&
-          interpolation_type.MaybeMergeSingles(start.Clone(), end.Clone()))
-        transition_type = &interpolation_type;
-    } else {
-      // If the previous transition was not in effect it is not used for
-      // retargeting.
-      retargeted_compositor_transition = nullptr;
+
+  for (const auto& interpolation_type : map.Get(property)) {
+    start = interpolation_type->MaybeConvertUnderlyingValue(old_environment);
+    if (!start) {
+      continue;
     }
-  }
-  if (!retargeted_compositor_transition) {
-    for (const auto& interpolation_type : map.Get(property)) {
-      start = interpolation_type->MaybeConvertUnderlyingValue(old_environment);
-      if (!start) {
-        continue;
-      }
-      end = interpolation_type->MaybeConvertUnderlyingValue(new_environment);
-      if (!end) {
-        continue;
-      }
-      // Merge will only succeed if the two values are considered interpolable.
-      if (interpolation_type->MaybeMergeSingles(start.Clone(), end.Clone())) {
-        transition_type = interpolation_type.get();
-        break;
-      }
+    end = interpolation_type->MaybeConvertUnderlyingValue(new_environment);
+    if (!end) {
+      continue;
+    }
+    // Merge will only succeed if the two values are considered interpolable.
+    if (interpolation_type->MaybeMergeSingles(start.Clone(), end.Clone())) {
+      transition_type = interpolation_type.get();
+      break;
     }
   }
 
@@ -1049,7 +1011,8 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     return;
   }
 
-  const ComputedStyle* reversing_adjusted_start_value = &state.old_style;
+  const ComputedStyle* reversing_adjusted_start_value =
+      state.before_change_style.get();
   double reversing_shortening_factor = 1;
   if (interrupted_transition) {
     AnimationEffect* effect = interrupted_transition->animation->effect();
@@ -1088,8 +1051,8 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (property.GetCSSProperty().IsCompositableProperty()) {
-    CompositorKeyframeValue* from =
-        CompositorKeyframeValueFactory::Create(property, state.old_style);
+    CompositorKeyframeValue* from = CompositorKeyframeValueFactory::Create(
+        property, *state.before_change_style);
     CompositorKeyframeValue* to =
         CompositorKeyframeValueFactory::Create(property, state.style);
     start_keyframe->SetCompositorValue(from);
@@ -1101,7 +1064,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     state.cloned_style = ComputedStyle::Clone(state.style);
   }
   state.update.StartTransition(
-      property, &state.old_style, state.cloned_style,
+      property, state.before_change_style, state.cloned_style,
       reversing_adjusted_start_value, reversing_shortening_factor,
       *MakeGarbageCollected<InertEffect>(model, timing, false, 0));
   DCHECK(!state.animating_element->GetElementAnimations() ||
@@ -1166,7 +1129,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
 
 void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
                                               PropertyPass property_pass,
-                                              const Element* animating_element,
+                                              Element* animating_element,
                                               const ComputedStyle& style) {
   if (!animating_element)
     return;
@@ -1189,9 +1152,15 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
   const ComputedStyle* old_style = animating_element->GetComputedStyle();
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
       old_style && !old_style->IsEnsuredInDisplayNone() && transition_data) {
-    TransitionUpdateState state = {
-        update,  animating_element,  *old_style,        style,
-        nullptr, active_transitions, listed_properties, *transition_data};
+    TransitionUpdateState state = {update,
+                                   animating_element,
+                                   *old_style,
+                                   style,
+                                   /*before_change_style=*/nullptr,
+                                   /*cloned_style=*/nullptr,
+                                   active_transitions,
+                                   listed_properties,
+                                   *transition_data};
 
     for (wtf_size_t transition_index = 0;
          transition_index < transition_data->PropertyList().size();
@@ -1222,7 +1191,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
       if (!any_transition_had_transition_all && !animation_style_recalc &&
           !listed_properties.Contains(property)) {
         update.CancelTransition(property);
-        // Measure how often transitions are cancelled by removing their style.
+        // Measure how often transitions are canceled by removing their style.
         // See https://crbug.com/934700.
         if (!transition_data) {
           UseCounter::Count(animating_element->GetDocument(),
@@ -1236,6 +1205,67 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
 
   CalculateTransitionActiveInterpolations(update, property_pass,
                                           animating_element);
+}
+
+scoped_refptr<const ComputedStyle> CSSAnimations::CalculateBeforeChangeStyle(
+    Element* animating_element,
+    const ComputedStyle& base_style) {
+  ActiveInterpolationsMap interpolations_map;
+  ElementAnimations* element_animations =
+      animating_element->GetElementAnimations();
+  if (element_animations) {
+    const TransitionMap& transition_map =
+        element_animations->CssAnimations().transitions_;
+
+    // Assemble list of animations in composite ordering.
+    // TODO(crbug.com/1082401): Per spec, the before change style should include
+    // all declarative animations. Currently, only including transitions.
+    HeapVector<Member<Animation>> animations;
+    for (const auto& entry : transition_map) {
+      RunningTransition transition = entry.value;
+      Animation* animation = transition.animation;
+      animations.push_back(animation);
+    }
+    std::sort(animations.begin(), animations.end(),
+              [](Animation* a, Animation* b) {
+                return Animation::HasLowerCompositeOrdering(
+                    a, b, Animation::CompareAnimationsOrdering::kPointerOrder);
+              });
+
+    // Sample animations and add to the interpolations map.
+    for (Animation* animation : animations) {
+      base::Optional<double> current_time = animation->currentTime();
+      if (!current_time)
+        continue;
+
+      auto* effect = DynamicTo<KeyframeEffect>(animation->effect());
+      if (!effect)
+        continue;
+
+      auto* inert_animation_for_sampling = MakeGarbageCollected<InertEffect>(
+          effect->Model(), effect->SpecifiedTiming(), false,
+          current_time.value() / 1000);
+
+      HeapVector<Member<Interpolation>> sample;
+      inert_animation_for_sampling->Sample(sample);
+
+      for (const auto& interpolation : sample) {
+        PropertyHandle handle = interpolation->GetProperty();
+        auto interpolation_map_entry =
+            interpolations_map.insert(handle, ActiveInterpolations());
+        auto& active_interpolations =
+            interpolation_map_entry.stored_value->value;
+        if (!interpolation->DependsOnUnderlyingValue())
+          active_interpolations.clear();
+        active_interpolations.push_back(interpolation);
+      }
+    }
+  }
+
+  StyleResolver& resolver =
+      animating_element->GetDocument().EnsureStyleResolver();
+  return resolver.BeforeChangeStyleForTransitionUpdate(
+      *animating_element, base_style, interpolations_map);
 }
 
 void CSSAnimations::Cancel() {

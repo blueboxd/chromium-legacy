@@ -37,8 +37,8 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
   return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
 }
 
-views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ChromeViewsDelegate::CreateDefaultNonClientFrameView(views::Widget* widget) {
   return ash::Shell::Get()->CreateDefaultNonClientFrameView(widget);
 }
 

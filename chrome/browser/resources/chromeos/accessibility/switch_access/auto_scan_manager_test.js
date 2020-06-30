@@ -6,17 +6,8 @@ GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
 UNDEFINED_INTERVAL_DELAY = -1;
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessAutoScanManagerTest() {
-  SwitchAccessE2ETest.call(this);
-}
-
-SwitchAccessAutoScanManagerTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-
+/** Test fixture for auto scan manager. */
+SwitchAccessAutoScanManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   setUp() {
     AutoScanManager.instance.primaryScanTime_ = 1000;

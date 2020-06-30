@@ -27,7 +27,6 @@ import java.util.ArrayList;
  */
 public class QrCodeDialog extends DialogFragment {
     private ArrayList<QrCodeDialogTab> mTabs;
-    private Context mContext;
     private TabLayoutPageListener mTabLayoutPageListener;
 
     /**
@@ -38,20 +37,8 @@ public class QrCodeDialog extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context;
-
-        QrCodeShareCoordinator shareCoordinator =
-                new QrCodeShareCoordinator(context, this::dismiss);
-        QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context, this::dismiss);
-
-        mTabs.add(shareCoordinator);
-        mTabs.add(scanCoordinator);
-    }
-
-    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        initTabs();
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_Fullscreen);
         builder.setView(getDialogView());
@@ -72,7 +59,6 @@ public class QrCodeDialog extends DialogFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mContext = null;
         for (QrCodeDialogTab tab : mTabs) {
             tab.onDestroy();
         }
@@ -103,5 +89,16 @@ public class QrCodeDialog extends DialogFragment {
         viewPager.addOnPageChangeListener(mTabLayoutPageListener);
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
         return dialogView;
+    }
+
+    private void initTabs() {
+        Context context = getActivity();
+
+        QrCodeShareCoordinator shareCoordinator =
+                new QrCodeShareCoordinator(context, this::dismiss);
+        QrCodeScanCoordinator scanCoordinator = new QrCodeScanCoordinator(context, this::dismiss);
+
+        mTabs.add(shareCoordinator);
+        mTabs.add(scanCoordinator);
     }
 }

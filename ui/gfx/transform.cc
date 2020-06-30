@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"

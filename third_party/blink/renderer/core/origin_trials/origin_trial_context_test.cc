@@ -428,8 +428,8 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
 
   PolicyParserMessageBuffer logger;
   ParsedFeaturePolicy result;
-  result = FeaturePolicyParser::Parse("frobulate", security_origin, nullptr,
-                                      logger, feature_map, window);
+  result = FeaturePolicyParser::ParseFeaturePolicyForTest(
+      "frobulate", security_origin, nullptr, logger, feature_map, window);
   EXPECT_TRUE(logger.GetMessages().IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);

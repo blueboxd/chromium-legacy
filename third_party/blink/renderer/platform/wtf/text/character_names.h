@@ -172,6 +172,8 @@ const UChar kZeroWidthJoinerCharacter = 0x200D;
 const UChar kZeroWidthNonJoinerCharacter = 0x200C;
 const UChar kZeroWidthSpaceCharacter = 0x200B;
 const UChar kZeroWidthNoBreakSpaceCharacter = 0xFEFF;
+const UChar kPrivateUseFirstCharacter = 0xE000;
+const UChar kPrivateUseLastCharacter = 0xF8FF;
 const UChar32 kMaxCodepoint = 0x10ffff;
 
 }  // namespace unicode
@@ -270,6 +272,8 @@ using WTF::unicode::kParagraphSeparator;
 using WTF::unicode::kPartialDifferential;
 using WTF::unicode::kPopDirectionalFormattingCharacter;
 using WTF::unicode::kPopDirectionalIsolateCharacter;
+using WTF::unicode::kPrivateUseFirstCharacter;
+using WTF::unicode::kPrivateUseLastCharacter;
 using WTF::unicode::kRainbowCharacter;
 using WTF::unicode::kReplacementCharacter;
 using WTF::unicode::kReverseSolidusCharacter;

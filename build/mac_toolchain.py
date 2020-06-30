@@ -101,7 +101,7 @@ def PrintError(message):
   sys.stderr.flush()
 
 
-def InstallXcodeBinaries(version):
+def InstallXcodeBinaries(version, binaries_root=None):
   """Installs the Xcode binaries needed to build Chrome and accepts the license.
 
   This is the replacement for InstallXcode that installs a trimmed down version
@@ -109,7 +109,8 @@ def InstallXcodeBinaries(version):
   """
   # First make sure the directory exists. It will serve as the cipd root. This
   # also ensures that there will be no conflicts of cipd root.
-  binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
+  if binaries_root is None:
+    binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
   if not os.path.exists(binaries_root):
     os.makedirs(binaries_root)
 

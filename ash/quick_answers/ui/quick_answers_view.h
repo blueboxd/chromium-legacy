@@ -47,6 +47,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   void OnFocus() override;
   void OnBlur() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::Button:
   void StateChanged(views::Button::ButtonState old_state) override;

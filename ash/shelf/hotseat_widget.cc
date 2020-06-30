@@ -432,7 +432,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
   if (translucent_background_.rounded_corner_radii() != rounded_corners)
     translucent_background_.SetRoundedCornerRadius(rounded_corners);
 
-  if (translucent_background_.bounds() != background_bounds)
+  if (translucent_background_.GetTargetBounds() != background_bounds)
     translucent_background_.SetBounds(background_bounds);
 }
 

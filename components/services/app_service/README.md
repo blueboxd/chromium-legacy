@@ -274,7 +274,7 @@ further image processing effects such as desaturation to gray.
           AppType app_type,
           string app_id,
           IconKey icon_key,
-          IconCompression icon_compression,
+          IconType icon_type,
           int32 size_hint_in_dip,
           bool allow_placeholder_icon) => (IconValue icon_value);
 
@@ -286,7 +286,7 @@ further image processing effects such as desaturation to gray.
       LoadIcon(
           string app_id,
           IconKey icon_key,
-          IconCompression icon_compression,
+          IconType icon_type,
           int32 size_hint_in_dip,
           bool allow_placeholder_icon) => (IconValue icon_value);
 
@@ -318,14 +318,15 @@ further image processing effects such as desaturation to gray.
       uint32 icon_effects;
     };
 
-    enum IconCompression {
+    enum IconType {
       kUnknown,
       kUncompressed,
       kCompressed,
+      kStandard,
     };
 
     struct IconValue {
-      IconCompression icon_compression;
+      IconType icon_type;
       gfx.mojom.ImageSkia? uncompressed;
       array<uint8>? compressed;
       bool is_placeholder_icon;

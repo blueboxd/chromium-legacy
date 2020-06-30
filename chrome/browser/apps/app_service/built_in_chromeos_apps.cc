@@ -117,20 +117,18 @@ void BuiltInChromeOsApps::Connect(
   // lifetime of the Chrome OS session. There won't be any further updates.
 }
 
-void BuiltInChromeOsApps::LoadIcon(
-    const std::string& app_id,
-    apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconCompression icon_compression,
-    int32_t size_hint_in_dip,
-    bool allow_placeholder_icon,
-    LoadIconCallback callback) {
+void BuiltInChromeOsApps::LoadIcon(const std::string& app_id,
+                                   apps::mojom::IconKeyPtr icon_key,
+                                   apps::mojom::IconType icon_type,
+                                   int32_t size_hint_in_dip,
+                                   bool allow_placeholder_icon,
+                                   LoadIconCallback callback) {
   constexpr bool is_placeholder_icon = false;
   if (icon_key &&
       (icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId)) {
-    LoadIconFromResource(icon_compression, size_hint_in_dip,
-                         icon_key->resource_id, is_placeholder_icon,
-                         static_cast<IconEffects>(icon_key->icon_effects),
-                         std::move(callback));
+    LoadIconFromResource(
+        icon_type, size_hint_in_dip, icon_key->resource_id, is_placeholder_icon,
+        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

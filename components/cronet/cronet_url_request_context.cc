@@ -676,7 +676,7 @@ void CronetURLRequestContext::NetworkTasks::StopNetLog() {
   if (!net_log_file_observer_)
     return;
   net_log_file_observer_->StopObserving(
-      GetNetLogInfo(),
+      base::Value::ToUniquePtrValue(GetNetLogInfo()),
       base::BindOnce(
           &CronetURLRequestContext::NetworkTasks::StopNetLogCompleted,
           base::Unretained(this)));
@@ -688,13 +688,12 @@ void CronetURLRequestContext::NetworkTasks::StopNetLogCompleted() {
   callback_->OnStopNetLogCompleted();
 }
 
-std::unique_ptr<base::DictionaryValue>
-CronetURLRequestContext::NetworkTasks::GetNetLogInfo() const {
-  std::unique_ptr<base::DictionaryValue> net_info =
+base::Value CronetURLRequestContext::NetworkTasks::GetNetLogInfo() const {
+  base::Value net_info =
       net::GetNetInfo(context_.get(), net::NET_INFO_ALL_SOURCES);
   if (effective_experimental_options_) {
-    net_info->Set("cronetExperimentalParams",
-                  effective_experimental_options_->CreateDeepCopy());
+    net_info.SetKey("cronetExperimentalParams",
+                    effective_experimental_options_->Clone());
   }
   return net_info;
 }

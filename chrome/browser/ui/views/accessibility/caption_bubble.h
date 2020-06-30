@@ -70,7 +70,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   void Init() override;
   bool ShouldShowCloseButton() const override;
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   gfx::Rect GetBubbleBounds() override;
   void OnWidgetBoundsChanged(views::Widget* widget,

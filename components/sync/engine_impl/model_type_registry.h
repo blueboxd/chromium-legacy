@@ -21,7 +21,6 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine_impl/nudge_handler.h"
-#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
@@ -40,7 +39,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
                           public SyncEncryptionHandler::Observer {
  public:
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-                    UserShare* user_share,
                     NudgeHandler* nudge_handler,
                     CancelationSignal* cancelation_signal,
                     KeystoreKeysHandler* keystore_keys_handler);
@@ -109,10 +107,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
 
   ModelTypeSet GetEnabledNonBlockingTypes() const;
 
-  syncable::Directory* directory() const {
-    return user_share_->directory.get();
-  }
-
   // Enabled proxy types, which don't have a worker.
   ModelTypeSet enabled_proxy_types_;
 
@@ -129,8 +123,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
 
   // The known ModelSafeWorkers.
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_map_;
-
-  UserShare* const user_share_;
 
   // A copy of the directory's most recent cryptographer.
   std::unique_ptr<Cryptographer> cryptographer_;

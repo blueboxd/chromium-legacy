@@ -79,9 +79,7 @@ export function userCanChangeEnablement(item) {
  * @return {SourceType}
  */
 export function getItemSource(item) {
-  if (item.controlledInfo &&
-      item.controlledInfo.type ===
-          chrome.developerPrivate.ControllerType.POLICY) {
+  if (item.controlledInfo) {
     return SourceType.POLICY;
   }
 

@@ -19,7 +19,7 @@ class NGBlockNode;
 class NGLayoutInputNode;
 
 // Define constraint classes for NGTableLayoutAlgorithm.
-class NGTableTypes {
+class CORE_EXPORT NGTableTypes {
  public:
   static constexpr LayoutUnit kTableMaxInlineSize = LayoutUnit::Max();
 
@@ -182,7 +182,6 @@ class NGTableTypes {
   };
 
   static Column CreateColumn(const ComputedStyle&,
-                             bool is_fixed_layout,
                              base::Optional<LayoutUnit> default_inline_size);
 
   static CellInlineConstraint CreateCellInlineConstraint(

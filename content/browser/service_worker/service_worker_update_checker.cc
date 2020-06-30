@@ -265,7 +265,6 @@ void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
   // cache map and it doesn't issue network request.
   const bool is_main_script = url == main_script_url_;
 
-  ServiceWorkerStorage* storage = version_to_update_->context()->storage();
   ServiceWorkerRegistry* registry = version_to_update_->context()->registry();
 
   // We need two identical readers for comparing and reading the resource for
@@ -277,7 +276,10 @@ void ServiceWorkerUpdateChecker::OnResourceIdAssignedForOneScriptCheck(
   registry->GetRemoteStorageControl()->CreateResourceReader(
       resource_id, copy_reader.BindNewPipeAndPassReceiver());
 
-  auto writer = storage->CreateResponseWriter(new_resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  registry->GetRemoteStorageControl()->CreateResourceWriter(
+      new_resource_id, writer.BindNewPipeAndPassReceiver());
+
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
       force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,

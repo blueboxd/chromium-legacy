@@ -318,19 +318,30 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
 }
 
 bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain) {
-  const url_formatter::IDNSpoofChecker::Result spoof_check_result =
-      navigated_domain.idn_result.spoof_check_result;
   // Here, only a subset of spoof checks that cause an IDN to fallback to
   // punycode are configured to show an interstitial.
-  if (spoof_check_result ==
-      url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks) {
-    // If the eTLD+1 contains only a mix of ASCII + Emoji, allow.
-    return !IsASCIIAndEmojiOnly(navigated_domain.idn_result.result);
+  switch (navigated_domain.idn_result.spoof_check_result) {
+    case url_formatter::IDNSpoofChecker::Result::kNone:
+    case url_formatter::IDNSpoofChecker::Result::kSafe:
+      return false;
+
+    case url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks:
+      // If the eTLD+1 contains only a mix of ASCII + Emoji, allow.
+      return !IsASCIIAndEmojiOnly(navigated_domain.idn_result.result);
+
+    case url_formatter::IDNSpoofChecker::Result::kDeviationCharacters:
+      // Failures because of deviation characters, especially ß, is common.
+      return false;
+
+    case url_formatter::IDNSpoofChecker::Result::kTLDSpecificCharacters:
+    case url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot:
+    case url_formatter::IDNSpoofChecker::Result::kWholeScriptConfusable:
+    case url_formatter::IDNSpoofChecker::Result::kDigitLookalikes:
+    case url_formatter::IDNSpoofChecker::Result::
+        kNonAsciiLatinCharMixedWithNonLatin:
+    case url_formatter::IDNSpoofChecker::Result::kDangerousPattern:
+      return true;
   }
-  return spoof_check_result ==
-             url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot ||
-         spoof_check_result ==
-             url_formatter::IDNSpoofChecker::Result::kTLDSpecificCharacters;
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(

@@ -11,7 +11,6 @@
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/engine_impl/syncer.h"
-#include "components/sync/syncable/on_disk_directory_backing_store.h"
 
 namespace syncer {
 
@@ -45,35 +44,19 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
 
 std::unique_ptr<SyncCycleContext> EngineComponentsFactoryImpl::BuildContext(
     ServerConnectionManager* connection_manager,
-    syncable::Directory* directory,
     ExtensionsActivity* extensions_activity,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidation_client_id,
+    const std::string& cache_guid,
     const std::string& store_birthday,
     const std::string& bag_of_chips,
     base::TimeDelta poll_interval) {
   return std::make_unique<SyncCycleContext>(
-      connection_manager, directory, extensions_activity, listeners,
-      debug_info_getter, model_type_registry, invalidation_client_id,
-      store_birthday, bag_of_chips, poll_interval);
-}
-
-std::unique_ptr<syncable::DirectoryBackingStore>
-EngineComponentsFactoryImpl::BuildDirectoryBackingStore(
-    StorageOption storage,
-    const std::string& dir_name,
-    const std::string& cache_guid,
-    const base::FilePath& backing_filepath) {
-  if (storage == STORAGE_ON_DISK) {
-    return std::unique_ptr<syncable::DirectoryBackingStore>(
-        new syncable::OnDiskDirectoryBackingStore(dir_name, cache_guid,
-                                                  backing_filepath));
-  } else {
-    NOTREACHED();
-    return std::unique_ptr<syncable::DirectoryBackingStore>();
-  }
+      connection_manager, extensions_activity, listeners, debug_info_getter,
+      model_type_registry, invalidation_client_id, cache_guid, store_birthday,
+      bag_of_chips, poll_interval);
 }
 
 }  // namespace syncer

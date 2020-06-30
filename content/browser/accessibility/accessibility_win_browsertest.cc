@@ -2697,19 +2697,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelectionRanges) {
   ranges = nullptr;
   n_ranges = 0;
 
-  // For native plain text fields, e.g. input and textarea, anchor and active
-  // offsets are always swapped to be in ascending order by the renderer. The
-  // selection's directionality is lost.
   hr = ax_input->get_selectionRanges(&ranges, &n_ranges);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_input.Get(), ranges[0].anchor);
-  EXPECT_EQ(1, ranges[0].anchorOffset);
+  EXPECT_EQ(contents_string_length, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_input.Get(), ranges[0].active);
-  EXPECT_EQ(contents_string_length, ranges[0].activeOffset);
+  EXPECT_EQ(1, ranges[0].activeOffset);
 
   ranges[0].anchor->Release();
   ranges[0].active->Release();
@@ -2816,19 +2813,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ranges = nullptr;
   n_ranges = 0;
 
-  // For native plain text fields, e.g. input and textarea, anchor and active
-  // offsets are always swapped to be in ascending order by the renderer. The
-  // selection's directionality is lost.
   hr = ax_textarea->get_selectionRanges(&ranges, &n_ranges);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].anchor);
-  EXPECT_EQ(0, ranges[0].anchorOffset);
+  EXPECT_EQ(contents_string_length - 1, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].active);
-  EXPECT_EQ(contents_string_length - 1, ranges[0].activeOffset);
+  EXPECT_EQ(0, ranges[0].activeOffset);
 
   ranges[0].anchor->Release();
   ranges[0].active->Release();

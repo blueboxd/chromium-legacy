@@ -36,6 +36,7 @@ class ScreenshotShareSheetViewProperties {
         int SHARE = 1;
         int SAVE = 2;
         int DELETE = 3;
+        int INSTALL = 4;
     }
 
     public static final PropertyKey[] ALL_KEYS =

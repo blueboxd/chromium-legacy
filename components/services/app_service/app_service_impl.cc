@@ -174,7 +174,7 @@ void AppServiceImpl::RegisterSubscriber(
 void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,
                               const std::string& app_id,
                               apps::mojom::IconKeyPtr icon_key,
-                              apps::mojom::IconCompression icon_compression,
+                              apps::mojom::IconType icon_type,
                               int32_t size_hint_in_dip,
                               bool allow_placeholder_icon,
                               LoadIconCallback callback) {
@@ -183,7 +183,7 @@ void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,
     std::move(callback).Run(apps::mojom::IconValue::New());
     return;
   }
-  iter->second->LoadIcon(app_id, std::move(icon_key), icon_compression,
+  iter->second->LoadIcon(app_id, std::move(icon_key), icon_type,
                          size_hint_in_dip, allow_placeholder_icon,
                          std::move(callback));
 }

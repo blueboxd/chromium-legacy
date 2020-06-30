@@ -40,7 +40,7 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
 }
 
 bool DeleteCacheFile(const base::FilePath& name) {
-  return base::DeleteFile(name, false);
+  return base::DeleteFile(name);
 }
 
 }  // namespace disk_cache

@@ -26,9 +26,6 @@ class ScriptContext;
 // The custom hooks for the chrome.app API.
 class AppHooksDelegate : public APIBindingHooksDelegate {
  public:
-  using GetterCallback =
-      base::Callback<void(const v8::PropertyCallbackInfo<v8::Value>& info)>;
-
   AppHooksDelegate(Dispatcher* dispatcher, APIRequestHandler* request_handler);
   ~AppHooksDelegate() override;
 
@@ -97,8 +94,6 @@ class AppHooksDelegate : public APIBindingHooksDelegate {
   APIRequestHandler* request_handler_ = nullptr;
 
   IPCHelper ipc_helper_;
-
-  GetterCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppHooksDelegate);
 };

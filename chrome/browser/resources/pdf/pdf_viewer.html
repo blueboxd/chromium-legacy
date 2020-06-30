@@ -43,13 +43,12 @@
     on-password-submitted="onPasswordSubmitted_">
 </viewer-password-screen>
 
-<viewer-zoom-toolbar id="zoom-toolbar" strings="[[strings]]"
-    annotation-mode="[[annotationMode_]]"
-    on-fit-to-changed="onFitToChanged"
-    on-two-up-view-changed="onTwoUpViewChanged_"
-    on-zoom-in="onZoomIn" on-zoom-out="onZoomOut"
-    hidden>
-</viewer-zoom-toolbar>
+<template is="dom-if" if="[[!pdfViewerUpdateEnabled_]]">
+  <viewer-zoom-toolbar id="zoom-toolbar"
+      on-fit-to-changed="onFitToChanged"
+      on-zoom-in="onZoomIn" on-zoom-out="onZoomOut">
+  </viewer-zoom-toolbar>
+</template>
 
 <viewer-error-screen id="error-screen"></viewer-error-screen>
 

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -433,7 +434,13 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, AllFramesGetDefaultZoom) {
   );
 }
 
-IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SiblingFramesZoom) {
+// Flaky on mac, https://crbug.com/1055282
+#if defined(OS_MACOSX)
+#define MAYBE_SiblingFramesZoom DISABLED_SiblingFramesZoom
+#else
+#define MAYBE_SiblingFramesZoom SiblingFramesZoom
+#endif
+IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, MAYBE_SiblingFramesZoom) {
   std::string top_level_host("a.com");
   GURL main_url(embedded_test_server()->GetURL(
       top_level_host, "/cross_site_iframe_factory.html?a(b,b)"));

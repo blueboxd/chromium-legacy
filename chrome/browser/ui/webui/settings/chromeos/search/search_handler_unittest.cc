@@ -119,6 +119,18 @@ class SearchHandlerTest : public testing::Test {
     handler_remote_.FlushForTesting();
   }
 
+  void AddSearchTags(const std::vector<SearchConcept>& search_tags) {
+    SearchTagRegistry::ScopedTagUpdater updater =
+        search_tag_registry_.StartUpdate();
+    updater.AddSearchTags(search_tags);
+  }
+
+  void RemoveSearchTags(const std::vector<SearchConcept>& search_tags) {
+    SearchTagRegistry::ScopedTagUpdater updater =
+        search_tag_registry_.StartUpdate();
+    updater.RemoveSearchTags(search_tags);
+  }
+
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   local_search_service::LocalSearchService local_search_service_;
@@ -132,7 +144,7 @@ class SearchHandlerTest : public testing::Test {
 
 TEST_F(SearchHandlerTest, AddAndRemove) {
   // Add printing search tags to registry and search for "Print".
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  AddSearchTags(GetPrintingSearchConcepts());
   handler_remote_.FlushForTesting();
   EXPECT_EQ(1u, observer_.num_calls());
 
@@ -164,7 +176,7 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
 
   // Remove printing search tags to registry and verify that no results are
   // returned for "Printing".
-  search_tag_registry_.RemoveSearchTags(GetPrintingSearchConcepts());
+  RemoveSearchTags(GetPrintingSearchConcepts());
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
       .Search(base::ASCIIToUTF16("Print"),
               /*max_num_results=*/3u,
@@ -176,7 +188,7 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
 
 TEST_F(SearchHandlerTest, UrlModification) {
   // Add printing search tags to registry and search for "Saved".
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
       .Search(base::ASCIIToUTF16("Saved"),
@@ -196,7 +208,7 @@ TEST_F(SearchHandlerTest, UrlModification) {
 
 TEST_F(SearchHandlerTest, AltTagMatch) {
   // Add printing search tags to registry.
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
 
   // Search for "CUPS". The IDS_OS_SETTINGS_TAG_PRINTING result has an alternate
@@ -218,7 +230,7 @@ TEST_F(SearchHandlerTest, AltTagMatch) {
 
 TEST_F(SearchHandlerTest, AllowParentResult) {
   // Add printing search tags to registry.
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
 
   // Search for "Saved", which should only apply to the "saved printers" item.
@@ -235,7 +247,7 @@ TEST_F(SearchHandlerTest, AllowParentResult) {
 
 TEST_F(SearchHandlerTest, DefaultRank) {
   // Add printing search tags to registry.
-  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
 
   // Search for "Print". Only the IDS_OS_SETTINGS_TAG_PRINTING result

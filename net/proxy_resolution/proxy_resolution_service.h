@@ -18,10 +18,6 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "url/gurl.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace net {
 
 class ConfiguredProxyResolutionService;
@@ -99,8 +95,7 @@ class NET_EXPORT ProxyResolutionService {
   // Returns proxy related debug information to be included in the NetLog. The
   // data should be appropriate for any capture mode. |info_sources| is a bit
   // field of NET_INFO_SOURCE.
-  virtual std::unique_ptr<base::DictionaryValue> GetProxyNetLogValues(
-      int info_sources) = 0;
+  virtual base::Value GetProxyNetLogValues(int info_sources) = 0;
 
   // Returns true if |this| is an instance of ConfiguredProxyResolutionService
   // and assigns |this| to the out parameter. Otherwise returns false and sets

@@ -574,9 +574,9 @@ void XWindow::Activate() {
         ->SetInputFocus({x11::InputFocus::Parent, xwindow_,
                          static_cast<x11::Time>(timestamp)})
         .IgnoreError();
-    // At this point, we know we will receive focus, and some
-    // webdriver tests depend on a window being IsActive() immediately
-    // after an Activate(), so just set this state now.
+    // At this point, we know we will receive focus, and some webdriver tests
+    // depend on a window being IsActive() immediately after an Activate(), so
+    // just set this state now.
     has_pointer_focus_ = false;
     has_window_focus_ = true;
     window_mapped_in_server_ = true;
@@ -603,6 +603,7 @@ bool XWindow::IsActive() const {
   // stacking order in addition to changing the focus state.
   return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 }
+
 void XWindow::SetSize(const gfx::Size& size_in_pixels) {
   connection_->ConfigureWindow({.window = xwindow_,
                                 .width = size_in_pixels.width(),
@@ -1088,12 +1089,6 @@ void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
   DoWMMoveResize(connection_, x_root_window_, xwindow_, location, direction);
 }
 
-// In Ozone, there are no *Event constructors receiving XEvent* as input,
-// in this case PlatformEvent is expected. Furthermore,
-// X11EventSourceLibevent is used in that case, which already translates
-// Mouse/Key/Touch/Scroll events into Events so they should not be handled
-// by PlatformWindow, which is supposed to use XWindow in Ozone builds. So
-// handling these events is disabled for Ozone.
 void XWindow::ProcessEvent(x11::Event* xev) {
   // We can lose track of the window's position when the window is reparented.
   // When the parent window is moved, we won't get an event, so the window's
@@ -1346,14 +1341,13 @@ void XWindow::NotifySwapAfterResize() {
   }
 }
 
-// Removes |delayed_resize_task_| from the task queue (if it's in
-// the queue) and adds it back at the end of the queue.
+// Removes |delayed_resize_task_| from the task queue (if it's in the queue) and
+// adds it back at the end of the queue.
 void XWindow::DispatchResize() {
   if (update_counter_ == x11::Sync::Counter{} ||
       configure_counter_value_ == 0) {
-    // WM doesn't support _NET_WM_SYNC_REQUEST.
-    // Or we are too slow, so _NET_WM_SYNC_REQUEST is disabled by the
-    // compositor.
+    // WM doesn't support _NET_WM_SYNC_REQUEST. Or we are too slow, so
+    // _NET_WM_SYNC_REQUEST is disabled by the compositor.
     delayed_resize_task_.Reset(base::BindOnce(
         &XWindow::DelayedResize, base::Unretained(this), bounds_in_pixels_));
     base::ThreadTaskRunnerHandle::Get()->PostTask(

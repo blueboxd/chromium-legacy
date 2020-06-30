@@ -204,8 +204,11 @@ void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   if (proxy) {
-    proxy->LoadIcon(app_type_, id(),
-                    apps::mojom::IconCompression::kUncompressed,
+    auto icon_type =
+        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+            ? apps::mojom::IconType::kStandard
+            : apps::mojom::IconType::kUncompressed;
+    proxy->LoadIcon(app_type_, id(), icon_type,
                     ash::AppListConfig::instance().grid_icon_dimension(),
                     allow_placeholder_icon,
                     base::BindOnce(&AppServiceAppItem::OnLoadIcon,
@@ -214,8 +217,11 @@ void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     return;
   }
   SetIcon(icon_value->uncompressed);

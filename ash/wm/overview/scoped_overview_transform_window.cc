@@ -33,7 +33,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"

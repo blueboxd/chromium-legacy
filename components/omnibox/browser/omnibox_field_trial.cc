@@ -823,12 +823,15 @@ bool OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() {
       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction);
 }
 
-int OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs() {
+bool OmniboxFieldTrial::ShouldElideToRegistrableDomain() {
+  return base::FeatureList::IsEnabled(omnibox::kElideToRegistrableDomain);
+}
+
+int OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() {
   const int kDefaultThresholdMs = 150;
   int threshold = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-      kOmniboxUIRevealPathQueryAndRefOnHoverThresholdMsParam,
-      kDefaultThresholdMs);
+      kOmniboxUIUnelideURLOnHoverThresholdMsParam, kDefaultThresholdMs);
   return threshold < 0 ? kDefaultThresholdMs : threshold;
 }
 
@@ -930,9 +933,8 @@ const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix[] =
 const char OmniboxFieldTrial::kImageSearchSuggestionThumbnail[] =
     "ImageSearchSuggestionThumbnail";
 
-const char OmniboxFieldTrial::
-    kOmniboxUIRevealPathQueryAndRefOnHoverThresholdMsParam[] =
-        "OmniboxUIRevealPathQueryAndRefOnHoverThresholdMs";
+const char OmniboxFieldTrial::kOmniboxUIUnelideURLOnHoverThresholdMsParam[] =
+    "OmniboxUIUnelideURLOnHoverThresholdMsdMs";
 
 std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,

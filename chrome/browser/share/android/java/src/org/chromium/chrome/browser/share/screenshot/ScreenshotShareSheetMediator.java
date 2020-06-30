@@ -26,6 +26,7 @@ class ScreenshotShareSheetMediator {
     private final Context mContext;
     private final Runnable mSaveRunnable;
     private final Runnable mDeleteRunnable;
+    private final Runnable mInstallRunnable;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private Tab mTab;
 
@@ -37,13 +38,14 @@ class ScreenshotShareSheetMediator {
      */
     ScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
             Runnable deleteRunnable, Runnable saveRunnable, Tab tab,
-            ChromeOptionShareCallback chromeOptionShareCallback) {
+            ChromeOptionShareCallback chromeOptionShareCallback, Runnable installRunnable) {
         mDeleteRunnable = deleteRunnable;
         mSaveRunnable = saveRunnable;
         mContext = context;
         mModel = propertyModel;
         mTab = tab;
         mChromeOptionShareCallback = chromeOptionShareCallback;
+        mInstallRunnable = installRunnable;
         mModel.set(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER,
                 operation -> { performNoArgOperation(operation); });
     }
@@ -61,6 +63,8 @@ class ScreenshotShareSheetMediator {
             mSaveRunnable.run();
         } else if (NoArgOperation.DELETE == operation) {
             mDeleteRunnable.run();
+        } else if (NoArgOperation.INSTALL == operation) {
+            mInstallRunnable.run();
         }
     }
 

@@ -42,18 +42,6 @@ const base::Feature kHideSteadyStateUrlTrivialSubdomains{
     "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature used to reveal the path, query and ref from steady state URLs
-// on hover.
-const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover{
-    "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to hide the path, query and ref from steady state URLs
-// on interaction with the page.
-const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
-    "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
 // entity suggestion 'starbucks near disneyland \n starbucks * Anaheim, CA'.
@@ -377,5 +365,25 @@ const base::Feature kOmniboxAssistantVoiceSearch{
 // elisions.
 const base::Feature kOmniboxContextMenuShowFullUrls{
     "OmniboxContextMenuShowFullUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to reveal the path, query and ref from steady state URLs
+// on hover.
+const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover{
+    "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to hide the path, query and ref from steady state URLs
+// on interaction with the page.
+const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
+    "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to elide not just the path, query, and ref from steady state
+// URLs, but also subdomains beyond the registrable domain. Has no effect unless
+// kRevealSteadyStateUrlPathQueryAndRefOnHover and/or
+// kHideSteadyStateUrlPathQueryAndRefOnInteraction are enabled.
+const base::Feature kElideToRegistrableDomain{
+    "OmniboxUIExperimentElideToRegistrableDomain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

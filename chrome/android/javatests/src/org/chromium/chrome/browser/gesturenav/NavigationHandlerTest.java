@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.app.Activity;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.util.DisplayMetrics;
 
@@ -24,11 +22,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -36,7 +33,6 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -54,6 +50,7 @@ public class NavigationHandlerTest {
     private static final int PAGELOAD_TIMEOUT_MS = 4000;
 
     private EmbeddedTestServer mTestServer;
+    private NavigationHandler mNavigationHandler;
     private float mEdgeWidthPx;
 
     @Rule
@@ -67,6 +64,11 @@ public class NavigationHandlerTest {
         mActivityTestRule.getActivity().getWindowManager().getDefaultDisplay().getMetrics(
                 displayMetrics);
         mEdgeWidthPx = displayMetrics.density * NavigationHandler.EDGE_WIDTH_DP;
+        TabbedRootUiCoordinator uiCoordinator =
+                (TabbedRootUiCoordinator) mActivityTestRule.getActivity()
+                        .getRootUiCoordinatorForTesting();
+        mNavigationHandler = uiCoordinator.getHistoryNavigationCoordinatorForTesting()
+                                     .getNavigationHandlerForTesting();
     }
 
     @After
@@ -94,16 +96,19 @@ public class NavigationHandlerTest {
         mActivityTestRule.getActivity().getWindowManager().getDefaultDisplay().getSize(size);
 
         // Swipe from an edge toward the middle of the screen.
-        float dragStartX = leftEdge ? mEdgeWidthPx / 2 : size.x - mEdgeWidthPx / 2;
-        float dragEndX = size.x / 2;
-        float dragStartY = size.y / 2;
-        float dragEndY = size.y / 2;
-        long downTime = SystemClock.uptimeMillis();
+        final int eventCounts = 100;
+        final float startx = leftEdge ? mEdgeWidthPx / 2 : size.x - mEdgeWidthPx / 2;
+        final float y = size.y / 2;
+        final float step = (size.x / 2 - startx) / eventCounts;
 
-        TouchCommon.dragStart(mActivityTestRule.getActivity(), dragStartX, dragStartY, downTime);
-        TouchCommon.dragTo(mActivityTestRule.getActivity(), dragStartX, dragEndX, dragStartY,
-                dragEndY, /* stepCount= */ 100, downTime);
-        TouchCommon.dragEnd(mActivityTestRule.getActivity(), dragEndX, dragEndY, downTime);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mNavigationHandler.onDown();
+            float endx = startx + step;
+            for (int i = 0; i < eventCounts; i++, endx += step) {
+                mNavigationHandler.onScroll(startx, -step, 0, endx, y);
+            }
+            mNavigationHandler.release(true);
+        });
     }
 
     @Test
@@ -120,7 +125,6 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Flaky, see https://crbug.com/1041233 and https://crbug.com/1091417")
     public void testSwipeNavigateOnNativePage() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
@@ -130,8 +134,6 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "Flaky on P crbug.com/1041233")
     public void testSwipeNavigateOnRenderedPage() {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());

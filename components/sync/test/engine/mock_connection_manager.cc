@@ -32,7 +32,7 @@ namespace syncer {
 static char kValidAccessToken[] = "AccessToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
-MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
+MockConnectionManager::MockConnectionManager()
     : server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
@@ -41,7 +41,6 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       store_birthday_sent_(false),
       client_stuck_(false),
       countdown_to_postbuffer_fail_(0),
-      directory_(directory),
       mid_commit_observer_(nullptr),
       throttling_(false),
       partial_failure_(false),
@@ -96,18 +95,6 @@ bool MockConnectionManager::PostBufferToPath(const std::string& buffer_in,
   client_stuck_ = post.sync_problem_detected();
   sync_pb::ClientToServerResponse client_to_server_response;
   client_to_server_response.Clear();
-
-  if (directory_) {
-    // If the Directory's locked when we do this, it's a problem as in normal
-    // use this function could take a while to return because it accesses the
-    // network. As we can't test this we do the next best thing and hang here
-    // when there's an issue.
-    if (!directory_->good()) {
-      ADD_FAILURE();
-      return false;
-    }
-    syncable::WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
-  }
 
   if (access_token.empty()) {
     http_response->server_status = HttpResponse::SYNC_AUTH_ERROR;

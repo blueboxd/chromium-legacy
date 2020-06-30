@@ -278,7 +278,8 @@ class ScopedTempFile {
 
 class WebApkInstallerTest : public ::testing::Test {
  public:
-  typedef base::Callback<std::unique_ptr<net::test_server::HttpResponse>(void)>
+  typedef base::RepeatingCallback<
+      std::unique_ptr<net::test_server::HttpResponse>(void)>
       WebApkResponseBuilder;
 
   WebApkInstallerTest()
@@ -326,7 +327,7 @@ class WebApkInstallerTest : public ::testing::Test {
 
   // Sets the function that should be used to build the response to the
   // WebAPK creation request.
-  void SetWebApkResponseBuilder(const WebApkResponseBuilder& builder) {
+  void SetWebApkResponseBuilder(WebApkResponseBuilder builder) {
     webapk_response_builder_ = builder;
   }
 
@@ -341,7 +342,8 @@ class WebApkInstallerTest : public ::testing::Test {
   // Sets default configuration for running WebApkInstaller.
   void SetDefaults() {
     SetWebApkServerUrl(test_server_.GetURL(kServerUrl));
-    SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, kToken));
+    SetWebApkResponseBuilder(
+        base::BindRepeating(&BuildValidWebApkResponse, kToken));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleWebApkRequest(

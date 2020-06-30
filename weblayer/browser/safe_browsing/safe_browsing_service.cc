@@ -11,6 +11,7 @@
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,7 +97,8 @@ void SafeBrowsingService::Initialize() {
 std::unique_ptr<blink::URLLoaderThrottle>
 SafeBrowsingService::CreateURLLoaderThrottle(
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   return safe_browsing::BrowserURLLoaderThrottle::Create(
@@ -106,10 +108,7 @@ SafeBrowsingService::CreateURLLoaderThrottle(
           },
           base::Unretained(this)),
       wc_getter, frame_tree_node_id,
-      // rt_lookup_service are used to
-      // perform real time url check, which is gated by UKM opted in. Since
-      // WebLayer currently doesn't support UKM, this feature is not enabled.
-      /*rt_lookup_service*/ nullptr);
+      url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr);
 }
 
 std::unique_ptr<content::NavigationThrottle>

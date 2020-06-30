@@ -44,15 +44,11 @@
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/syncable_id.h"
-#include "components/sync/syncable/test_user_share.h"
-#include "components/sync/syncable/user_share.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
-#include "components/sync/test/engine/test_syncable_utils.h"
+#include "components/sync/test/fake_sync_encryption_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -235,8 +231,7 @@ class SyncerTest : public testing::Test,
   }
 
   void SetUp() override {
-    test_user_share_.SetUp();
-    mock_server_ = std::make_unique<MockConnectionManager>(directory());
+    mock_server_ = std::make_unique<MockConnectionManager>();
     debug_info_getter_ = std::make_unique<MockDebugInfoGetter>();
     workers_.push_back(scoped_refptr<ModelSafeWorker>(
         new FakeModelWorker(GROUP_NON_BLOCKING)));
@@ -244,8 +239,8 @@ class SyncerTest : public testing::Test,
     listeners.push_back(this);
 
     model_type_registry_ = std::make_unique<ModelTypeRegistry>(
-        workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        &cancelation_signal_, test_user_share_.keystore_keys_handler());
+        workers_, &mock_nudge_handler_, &cancelation_signal_,
+        &encryption_handler_);
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
@@ -255,10 +250,10 @@ class SyncerTest : public testing::Test,
     EnableDatatype(PREFERENCES);
 
     context_ = std::make_unique<SyncCycleContext>(
-        mock_server_.get(), directory(), extensions_activity_.get(), listeners,
+        mock_server_.get(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
-        "fake_invalidator_client_id", mock_server_->store_birthday(),
-        "fake_bag_of_chips",
+        "fake_invalidator_client_id", local_cache_guid(),
+        mock_server_->store_birthday(), "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     syncer_ = new Syncer(&cancelation_signal_);
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
@@ -275,7 +270,6 @@ class SyncerTest : public testing::Test,
         &debug_info_cache_);
     mock_server_.reset();
     scheduler_.reset();
-    test_user_share_.TearDown();
   }
 
   void VerifyNoHierarchyConflictsReported(
@@ -298,11 +292,7 @@ class SyncerTest : public testing::Test,
     return debug_info_cache_.GetLatestStatusCounters(type);
   }
 
-  syncable::Directory* directory() {
-    return test_user_share_.user_share()->directory.get();
-  }
-
-  const std::string local_cache_guid() { return directory()->cache_guid(); }
+  const std::string local_cache_guid() { return "lD16ebCGCZh+zkiZ68gWDw=="; }
 
   const std::string foreign_cache_guid() { return "kqyg7097kro6GSUod+GSg=="; }
 
@@ -346,7 +336,7 @@ class SyncerTest : public testing::Test,
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  TestUserShare test_user_share_;
+  FakeSyncEncryptionHandler encryption_handler_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   std::unique_ptr<MockConnectionManager> mock_server_;
   CancelationSignal cancelation_signal_;

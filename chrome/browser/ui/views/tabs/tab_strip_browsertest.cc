@@ -735,3 +735,83 @@ IN_PROC_BROWSER_TEST_F(TabStripBrowsertest,
   // No change expected.
   EXPECT_EQ(contentses, GetWebContentses());
 }
+
+IN_PROC_BROWSER_TEST_F(TabStripBrowsertest,
+                       CollapseGroup_WithActiveTabInGroup_SelectsNext) {
+  AppendTab();
+
+  tab_groups::TabGroupId group = AddTabToNewGroup(0);
+  ui::MouseEvent dummy_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
+  tab_strip()->SelectTab(tab_strip()->tab_at(0), dummy_event);
+  ASSERT_EQ(0, tab_strip()->controller()->GetActiveIndex());
+  ASSERT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+  tab_strip()->controller()->ToggleTabGroupCollapsedState(group);
+
+  EXPECT_TRUE(tab_strip()->controller()->IsGroupCollapsed(group));
+  EXPECT_EQ(1, tab_strip()->controller()->GetActiveIndex());
+}
+
+IN_PROC_BROWSER_TEST_F(TabStripBrowsertest,
+                       CollapseGroup_WithActiveTabInGroup_SelectsPrevious) {
+  AppendTab();
+
+  tab_groups::TabGroupId group = AddTabToNewGroup(1);
+  ui::MouseEvent dummy_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
+  tab_strip()->SelectTab(tab_strip()->tab_at(1), dummy_event);
+  ASSERT_EQ(1, tab_strip()->controller()->GetActiveIndex());
+  ASSERT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+  tab_strip()->controller()->ToggleTabGroupCollapsedState(group);
+
+  EXPECT_TRUE(tab_strip()->controller()->IsGroupCollapsed(group));
+  EXPECT_EQ(0, tab_strip()->controller()->GetActiveIndex());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    TabStripBrowsertest,
+    CollapseGroup_WithActiveTabOutsideGroup_DoesNotChangeActiveTab) {
+  AppendTab();
+
+  tab_groups::TabGroupId group = AddTabToNewGroup(0);
+  ui::MouseEvent dummy_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
+  tab_strip()->SelectTab(tab_strip()->tab_at(1), dummy_event);
+  ASSERT_EQ(1, tab_strip()->controller()->GetActiveIndex());
+  ASSERT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+  tab_strip()->controller()->ToggleTabGroupCollapsedState(group);
+
+  EXPECT_TRUE(tab_strip()->controller()->IsGroupCollapsed(group));
+  EXPECT_EQ(1, tab_strip()->controller()->GetActiveIndex());
+}
+
+IN_PROC_BROWSER_TEST_F(TabStripBrowsertest, CollapseGroup_Fails) {
+  AppendTab();
+
+  tab_groups::TabGroupId group = AddTabToNewGroup(0);
+  tab_strip_model()->AddToExistingGroup({1}, group);
+  ASSERT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+  tab_strip()->controller()->ToggleTabGroupCollapsedState(group);
+
+  EXPECT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+}
+
+IN_PROC_BROWSER_TEST_F(TabStripBrowsertest,
+                       ActivateTabInCollapsedGroup_ExpandsCollapsedGroup) {
+  AppendTab();
+
+  tab_groups::TabGroupId group = AddTabToNewGroup(0);
+  ASSERT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+  tab_strip()->controller()->ToggleTabGroupCollapsedState(group);
+  ASSERT_TRUE(tab_strip()->controller()->IsGroupCollapsed(group));
+  ASSERT_EQ(1, tab_strip()->controller()->GetActiveIndex());
+
+  ui::MouseEvent dummy_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
+  tab_strip()->SelectTab(tab_strip()->tab_at(0), dummy_event);
+  EXPECT_FALSE(tab_strip()->controller()->IsGroupCollapsed(group));
+}

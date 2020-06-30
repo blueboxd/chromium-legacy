@@ -6158,7 +6158,7 @@ void Element::StyleAttributeChanged(
               ContainingShadowRoot()->IsUserAgent()) ||
              (GetExecutionContext() &&
               GetExecutionContext()
-                  ->GetContentSecurityPolicyForWorld()
+                  ->GetContentSecurityPolicyForCurrentWorld()
                   ->AllowInline(
                       ContentSecurityPolicy::InlineType::kStyleAttribute, this,
                       new_style_string, String() /* nonce */,

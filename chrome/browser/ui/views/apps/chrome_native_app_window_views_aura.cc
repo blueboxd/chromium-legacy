@@ -76,11 +76,11 @@ void ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(
                                                  widget);
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsAura::CreateNonStandardAppFrame() {
-  apps::AppWindowFrameView* frame =
-      new apps::AppWindowFrameView(widget(), this, HasFrameColor(),
-                                   ActiveFrameColor(), InactiveFrameColor());
+  auto frame = std::make_unique<apps::AppWindowFrameView>(
+      widget(), this, HasFrameColor(), ActiveFrameColor(),
+      InactiveFrameColor());
   frame->Init();
 
   // Install an easy resize window targeter, which ensures that the root window

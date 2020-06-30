@@ -21,7 +21,7 @@ IconLoader::Releaser::~Releaser() {
 IconLoader::Key::Key(apps::mojom::AppType app_type,
                      const std::string& app_id,
                      const apps::mojom::IconKeyPtr& icon_key,
-                     apps::mojom::IconCompression icon_compression,
+                     apps::mojom::IconType icon_type,
                      int32_t size_hint_in_dip,
                      bool allow_placeholder_icon)
     : app_type_(app_type),
@@ -29,7 +29,7 @@ IconLoader::Key::Key(apps::mojom::AppType app_type,
       timeline_(icon_key ? icon_key->timeline : 0),
       resource_id_(icon_key ? icon_key->resource_id : 0),
       icon_effects_(icon_key ? icon_key->icon_effects : 0),
-      icon_compression_(icon_compression),
+      icon_type_(icon_type),
       size_hint_in_dip_(size_hint_in_dip),
       allow_placeholder_icon_(allow_placeholder_icon) {}
 
@@ -48,8 +48,8 @@ bool IconLoader::Key::operator<(const Key& that) const {
   if (this->icon_effects_ != that.icon_effects_) {
     return this->icon_effects_ < that.icon_effects_;
   }
-  if (this->icon_compression_ != that.icon_compression_) {
-    return this->icon_compression_ < that.icon_compression_;
+  if (this->icon_type_ != that.icon_type_) {
+    return this->icon_type_ < that.icon_type_;
   }
   if (this->size_hint_in_dip_ != that.size_hint_in_dip_) {
     return this->size_hint_in_dip_ < that.size_hint_in_dip_;
@@ -67,13 +67,13 @@ IconLoader::~IconLoader() = default;
 std::unique_ptr<IconLoader::Releaser> IconLoader::LoadIcon(
     apps::mojom::AppType app_type,
     const std::string& app_id,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
-  return LoadIconFromIconKey(app_type, app_id, GetIconKey(app_id),
-                             icon_compression, size_hint_in_dip,
-                             allow_placeholder_icon, std::move(callback));
+  return LoadIconFromIconKey(app_type, app_id, GetIconKey(app_id), icon_type,
+                             size_hint_in_dip, allow_placeholder_icon,
+                             std::move(callback));
 }
 
 }  // namespace apps

@@ -363,10 +363,11 @@ bool CaptionBubble::ShouldShowCloseButton() const {
   return false;
 }
 
-views::NonClientFrameView* CaptionBubble::CreateNonClientFrameView(
-    views::Widget* widget) {
-  frame_ = new CaptionBubbleFrameView(close_button_);
-  return frame_;
+std::unique_ptr<views::NonClientFrameView>
+CaptionBubble::CreateNonClientFrameView(views::Widget* widget) {
+  auto frame = std::make_unique<CaptionBubbleFrameView>(close_button_);
+  frame_ = frame.get();
+  return frame;
 }
 
 void CaptionBubble::OnKeyEvent(ui::KeyEvent* event) {

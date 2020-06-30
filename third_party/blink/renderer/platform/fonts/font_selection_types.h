@@ -48,13 +48,16 @@ class PLATFORM_EXPORT FontSelectionValue {
   FontSelectionValue() = default;
 
   // Explicit because it is lossy.
-  explicit FontSelectionValue(int x) : backing_(x * fractionalEntropy) {}
+  explicit FontSelectionValue(int x)
+      : backing_(clampTo<int16_t>(x * fractionalEntropy)) {}
 
   // Explicit because it is lossy.
-  explicit FontSelectionValue(float x) : backing_(x * fractionalEntropy) {}
+  explicit FontSelectionValue(float x)
+      : backing_(clampTo<int16_t>(x * fractionalEntropy)) {}
 
   // Explicit because it is lossy.
-  explicit FontSelectionValue(double x) : backing_(x * fractionalEntropy) {}
+  explicit FontSelectionValue(double x)
+      : backing_(clampTo<int16_t>(x * fractionalEntropy)) {}
 
   operator float() const {
     // floats have 23 fractional bits, but only 14 fractional bits are

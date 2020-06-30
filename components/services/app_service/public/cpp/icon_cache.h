@@ -20,7 +20,7 @@
 
 namespace apps {
 
-// An IconLoader that caches the apps::mojom::IconCompression::kUncompressed
+// An IconLoader that caches the apps::mojom::IconType::kUncompressed
 // results of another (wrapped) IconLoader.
 class IconCache : public IconLoader {
  public:
@@ -75,7 +75,7 @@ class IconCache : public IconLoader {
       apps::mojom::AppType app_type,
       const std::string& app_id,
       apps::mojom::IconKeyPtr icon_key,
-      apps::mojom::IconCompression icon_compression,
+      apps::mojom::IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) override;
@@ -93,7 +93,7 @@ class IconCache : public IconLoader {
 
     Value();
 
-    apps::mojom::IconValuePtr AsIconValue();
+    apps::mojom::IconValuePtr AsIconValue(apps::mojom::IconType icon_type);
   };
 
   void Update(const IconLoader::Key&, const apps::mojom::IconValue&);

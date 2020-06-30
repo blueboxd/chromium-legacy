@@ -549,44 +549,46 @@ bool CrostiniSection::IsPortForwardingAllowed() {
 }
 
 void CrostiniSection::UpdateSearchTags() {
-  registry()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
-  registry()->RemoveSearchTags(GetCrostiniMicSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
+  updater.RemoveSearchTags(GetCrostiniMicSearchConcepts());
 
   if (!IsCrostiniAllowed())
     return;
 
   if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
-    registry()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());
+    updater.AddSearchTags(GetCrostiniOptedOutSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetCrostiniOptedInSearchConcepts());
+  updater.AddSearchTags(GetCrostiniOptedInSearchConcepts());
 
   if (IsExportImportAllowed())
-    registry()->AddSearchTags(GetCrostiniExportImportSearchConcepts());
+    updater.AddSearchTags(GetCrostiniExportImportSearchConcepts());
 
   if (IsAdbSideloadingAllowed() &&
       pref_service_->GetBoolean(arc::prefs::kArcEnabled)) {
-    registry()->AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+    updater.AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
   }
 
   if (IsPortForwardingAllowed())
-    registry()->AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
+    updater.AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
 
   if (IsContainerUpgradeAllowed())
-    registry()->AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+    updater.AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
 
   if (IsDiskResizingAllowed())
-    registry()->AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
+    updater.AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
 
   if (IsMicSettingAllowed())
-    registry()->AddSearchTags(GetCrostiniMicSearchConcepts());
+    updater.AddSearchTags(GetCrostiniMicSearchConcepts());
 }
 
 }  // namespace settings

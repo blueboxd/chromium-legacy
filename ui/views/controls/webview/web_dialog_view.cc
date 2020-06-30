@@ -216,10 +216,10 @@ views::ClientView* WebDialogView::CreateClientView(views::Widget* widget) {
   return this;
 }
 
-NonClientFrameView* WebDialogView::CreateNonClientFrameView(Widget* widget) {
-  if (use_dialog_frame_)
-    return DialogDelegate::CreateDialogFrameView(widget);
-  return WidgetDelegate::CreateNonClientFrameView(widget);
+std::unique_ptr<NonClientFrameView> WebDialogView::CreateNonClientFrameView(
+    Widget* widget) {
+  return use_dialog_frame_ ? DialogDelegate::CreateDialogFrameView(widget)
+                           : WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
 views::View* WebDialogView::GetInitiallyFocusedView() {

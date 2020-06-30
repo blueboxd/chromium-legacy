@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <cmath>
 #include <limits>
 #include <type_traits>
 
@@ -352,6 +353,33 @@ using internal::IsValueNegative;
 
 // Explicitly make a shorter size_t alias for convenience.
 using SizeT = StrictNumeric<size_t>;
+
+// floating -> integral conversions that saturate and thus can actually return
+// an integral type.  In most cases, these should be preferred over the std::
+// versions.
+template <typename Dst = int,
+          typename Src,
+          typename = std::enable_if_t<std::is_integral<Dst>::value &&
+                                      std::is_floating_point<Src>::value>>
+Dst Floor(Src value) {
+  return saturated_cast<Dst>(std::floor(value));
+}
+template <typename Dst = int,
+          typename Src,
+          typename = std::enable_if_t<std::is_integral<Dst>::value &&
+                                      std::is_floating_point<Src>::value>>
+Dst Ceil(Src value) {
+  return saturated_cast<Dst>(std::ceil(value));
+}
+template <typename Dst = int,
+          typename Src,
+          typename = std::enable_if_t<std::is_integral<Dst>::value &&
+                                      std::is_floating_point<Src>::value>>
+Dst Round(Src value) {
+  const Src rounded =
+      (value >= 0.0f) ? std::floor(value + 0.5f) : std::ceil(value - 0.5f);
+  return saturated_cast<Dst>(rounded);
+}
 
 }  // namespace base
 

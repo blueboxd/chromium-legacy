@@ -104,7 +104,7 @@ void AppIconSource::StartDataRequest(
       app_service_proxy->AppRegistryCache().GetAppType(app_id);
   constexpr bool allow_placeholder_icon = false;
   app_service_proxy->LoadIcon(
-      app_type, app_id, apps::mojom::IconCompression::kCompressed, size_in_dip,
+      app_type, app_id, apps::mojom::IconType::kCompressed, size_in_dip,
       allow_placeholder_icon,
       base::BindOnce(&RunCallback, std::move(callback)));
 }

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OUTPUT_PRESENTER_GL_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OUTPUT_PRESENTER_GL_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/viz/service/display_embedder/output_presenter.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -49,8 +52,7 @@ class VIZ_SERVICE_EXPORT OutputPresenterGL : public OutputPresenter {
                      SwapCompletionCallback completion_callback,
                      BufferPresentedCallback presentation_callback) final;
   void CommitOverlayPlanes(SwapCompletionCallback completion_callback,
-                           BufferPresentedCallback presentation_callback,
-                           std::vector<ui::LatencyInfo> latency_info) final;
+                           BufferPresentedCallback presentation_callback) final;
   void SchedulePrimaryPlane(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
       Image* image,

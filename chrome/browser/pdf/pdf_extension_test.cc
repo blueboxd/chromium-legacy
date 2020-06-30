@@ -815,10 +815,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, WhitespaceTitle) {
   RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, TwoUpViewFeature) {
-  RunTestsInJsModule("two_up_view_feature_test.js", "test.pdf");
-}
-
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }

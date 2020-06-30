@@ -182,15 +182,14 @@ bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
 String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
     const LocalDOMWindow* accessing_window,
     CrossDocumentAccessPolicy cross_document_access) const {
-  if (!accessing_window || !accessing_window->document() || !GetFrame())
+  if (!accessing_window || !GetFrame())
     return String();
 
-  const KURL& accessing_window_url = accessing_window->document()->Url();
+  const KURL& accessing_window_url = accessing_window->Url();
   if (accessing_window_url.IsNull())
     return String();
 
-  const SecurityOrigin* active_origin =
-      accessing_window->document()->GetSecurityOrigin();
+  const SecurityOrigin* active_origin = accessing_window->GetSecurityOrigin();
   String message;
   if (cross_document_access == CrossDocumentAccessPolicy::kDisallowed) {
     message = "Blocked a restricted frame with origin \"" +
@@ -209,17 +208,16 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
 String DOMWindow::CrossDomainAccessErrorMessage(
     const LocalDOMWindow* accessing_window,
     CrossDocumentAccessPolicy cross_document_access) const {
-  if (!accessing_window || !accessing_window->document() || !GetFrame())
+  if (!accessing_window || !GetFrame())
     return String();
 
-  const KURL& accessing_window_url = accessing_window->document()->Url();
+  const KURL& accessing_window_url = accessing_window->Url();
   if (accessing_window_url.IsNull())
     return String();
 
   // FIXME: This message, and other console messages, have extra newlines.
   // Should remove them.
-  const SecurityOrigin* active_origin =
-      accessing_window->document()->GetSecurityOrigin();
+  const SecurityOrigin* active_origin = accessing_window->GetSecurityOrigin();
   const SecurityOrigin* target_origin =
       GetFrame()->GetSecurityContext()->GetSecurityOrigin();
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
@@ -238,24 +236,24 @@ String DOMWindow::CrossDomainAccessErrorMessage(
 
   // Sandbox errors: Use the origin of the frames' location, rather than their
   // actual origin (since we know that at least one will be "null").
-  KURL active_url = accessing_window->document()->Url();
+  KURL active_url = accessing_window->Url();
   // TODO(alexmos): RemoteFrames do not have a document, and their URLs
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
   KURL target_url = local_dom_window
-                        ? local_dom_window->document()->Url()
+                        ? local_dom_window->Url()
                         : KURL(NullURL(), target_origin->ToString());
   using SandboxFlags = network::mojom::blink::WebSandboxFlags;
   if (GetFrame()->GetSecurityContext()->IsSandboxed(SandboxFlags::kOrigin) ||
-      accessing_window->document()->IsSandboxed(SandboxFlags::kOrigin)) {
+      accessing_window->IsSandboxed(SandboxFlags::kOrigin)) {
     message = "Blocked a frame at \"" +
               SecurityOrigin::Create(active_url)->ToString() +
               "\" from accessing a frame at \"" +
               SecurityOrigin::Create(target_url)->ToString() + "\". ";
 
     if (GetFrame()->GetSecurityContext()->IsSandboxed(SandboxFlags::kOrigin) &&
-        accessing_window->document()->IsSandboxed(SandboxFlags::kOrigin)) {
+        accessing_window->IsSandboxed(SandboxFlags::kOrigin)) {
       return "Sandbox access violation: " + message +
              " Both frames are sandboxed and lack the \"allow-same-origin\" "
              "flag.";

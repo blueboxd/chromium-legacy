@@ -34,7 +34,7 @@ class AppIconFactoryTest : public testing::Test {
     *fallback_called = false;
 
     apps::LoadIconFromFileWithFallback(
-        apps::mojom::IconCompression::kUncompressed, 200, GetPath(),
+        apps::mojom::IconType::kUncompressed, 200, GetPath(),
         apps::IconEffects::kNone,
         base::BindOnce(
             [](bool* called, apps::mojom::IconValuePtr* result,
@@ -114,7 +114,7 @@ TEST_F(AppIconFactoryTest, LoadFromFileFallbackDoesNotReturn) {
   bool callback_called = false, fallback_called = false;
 
   apps::LoadIconFromFileWithFallback(
-      apps::mojom::IconCompression::kUncompressed, 200, GetPath(),
+      apps::mojom::IconType::kUncompressed, 200, GetPath(),
       apps::IconEffects::kNone,
       base::BindOnce(
           [](bool* called, apps::mojom::IconValuePtr* result,

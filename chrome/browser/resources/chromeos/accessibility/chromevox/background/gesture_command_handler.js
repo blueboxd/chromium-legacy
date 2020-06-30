@@ -72,7 +72,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
   }
 
   if (!ChromeVoxState.instance.currentRange && commandData.shouldRecoverRange) {
-    const recoverTo = DesktopAutomationHandler.instance.lastHoverTarget;
+    const recoverTo = BackgroundMouseHandler.instance.lastHoverTarget;
     if (recoverTo) {
       ChromeVoxState.instance.setCurrentRange(
           cursors.Range.fromNode(recoverTo));

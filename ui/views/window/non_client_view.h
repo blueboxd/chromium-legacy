@@ -165,7 +165,7 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   NonClientFrameView* frame_view() const { return frame_view_.get(); }
 
   // Replaces the current NonClientFrameView (if any) with the specified one.
-  void SetFrameView(NonClientFrameView* frame_view);
+  void SetFrameView(std::unique_ptr<NonClientFrameView> frame_view);
 
   // Replaces the current |overlay_view_| (if any) with the specified one.
   void SetOverlayView(View* view);

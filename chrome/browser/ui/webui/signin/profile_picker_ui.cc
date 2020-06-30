@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/profile_picker_resources.h"
@@ -16,6 +17,8 @@ ProfilePickerUI::ProfilePickerUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIProfilePickerHost);
+
+  web_ui->AddMessageHandler(std::make_unique<ProfilePickerHandler>());
 
   std::string generated_path =
       "@out_folder@/gen/chrome/browser/resources/signin/profile_picker/";

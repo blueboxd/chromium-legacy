@@ -743,8 +743,8 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
       PrintHostMsg_MetafileReadyForPrinting::Read(preview_msg, &preview_param);
       const auto& param = std::get<0>(preview_param);
       EXPECT_NE(0, param.document_cookie);
-      EXPECT_NE(0, param.expected_pages_count);
-      EXPECT_NE(0U, param.content.metafile_data_region.GetSize());
+      EXPECT_NE(0U, param.expected_pages_count);
+      EXPECT_NE(0U, param.content->metafile_data_region.GetSize());
     }
   }
 

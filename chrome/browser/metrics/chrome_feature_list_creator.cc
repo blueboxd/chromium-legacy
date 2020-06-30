@@ -209,7 +209,7 @@ void ChromeFeatureListCreator::SetupMasterPrefs() {
   if (!first_run::IsChromeFirstRun())
     return;
 
-  installer_master_prefs_ = first_run::LoadMasterPrefs();
+  installer_master_prefs_ = first_run::LoadInitialPrefs();
   if (!installer_master_prefs_)
     return;
 

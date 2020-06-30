@@ -7,28 +7,12 @@ GEN_INCLUDE([
   '../common/testing/assert_additions.js'
 ]);
 
-/**
- * Base class for browser tests for Switch Access.
- * @constructor
- */
-function SwitchAccessE2ETest() {
-  this.callbackHelper_ = new CallbackHelper(this);
-}
-
-SwitchAccessE2ETest.prototype = {
-  __proto__: testing.Test.prototype,
-
-  /**
-   * @override
-   * No UI in the background context.
-   */
-  runAccessibilityChecks: false,
-
-  /** @override */
-  isAsync: true,
-
-  /** @override */
-  browsePreload: null,
+/** Base class for browser tests for Switch Access. */
+SwitchAccessE2ETest = class extends testing.Test {
+  constructor() {
+    super();
+    this.callbackHelper_ = new CallbackHelper(this);
+  }
 
   /** @override */
   testGenCppIncludes() {
@@ -43,7 +27,7 @@ SwitchAccessE2ETest.prototype = {
 #include "ui/accessibility/accessibility_switches.h"
 #include "ash/keyboard/ui/keyboard_util.h"
     `);
-  },
+  }
 
   /** @override */
   testGenPreamble() {
@@ -57,7 +41,7 @@ SwitchAccessE2ETest.prototype = {
   chromeos::AccessibilityManager::Get()->SetSwitchAccessEnabled(true);
   WaitForExtension(extension_misc::kSwitchAccessExtensionId, load_cb);
     `);
-  },
+  }
 
   /**
    * Creates a callback that optionally calls {@code opt_callback} when
@@ -69,7 +53,7 @@ SwitchAccessE2ETest.prototype = {
    */
   newCallback(opt_callback) {
     return this.callbackHelper_.wrap(opt_callback);
-  },
+  }
 
   /**
    * @param {function(AutomationNode): boolean} predicate A predicate that
@@ -88,7 +72,7 @@ SwitchAccessE2ETest.prototype = {
     assertNullOrUndefined(
         treeWalker.next().node, 'Found more than one ' + nodeString + '.');
     return node;
-  },
+  }
 
   /**
    * @param {string} id The HTML id of an element.
@@ -98,7 +82,7 @@ SwitchAccessE2ETest.prototype = {
     const predicate = (node) => node.htmlAttributes.id === id;
     const nodeString = 'node with id "' + id + '"';
     return this.findNodeMatchingPredicate(predicate, nodeString);
-  },
+  }
 
   /**
    * @param {string} name The name of the node within the automation tree.
@@ -109,7 +93,7 @@ SwitchAccessE2ETest.prototype = {
     const predicate = (node) => node.name === name && node.role === role;
     const nodeString = 'node with name "' + name + '" and role ' + role;
     return this.findNodeMatchingPredicate(predicate, nodeString);
-  },
+  }
 
   /**
    * @param {function(): boolean} predicate The condition under which the
@@ -130,7 +114,7 @@ SwitchAccessE2ETest.prototype = {
     };
     NavigationManager.desktopNode.addEventListener(
         'childrenChanged', listener, false /* capture */);
-  },
+  }
 
   /**
    * From chromevox_next_e2e_test_base.js
@@ -156,7 +140,7 @@ SwitchAccessE2ETest.prototype = {
       var createParams = {active: true, url};
       chrome.tabs.create(createParams, function(unused_tab) {
         chrome.automation.getTree(function(returnedRootNode) {
-          rootNode = returnedRootNode;
+          const rootNode = returnedRootNode;
           if (rootNode.docLoaded) {
             callback && callback(desktopRootNode);
             callback = null;
@@ -175,5 +159,12 @@ SwitchAccessE2ETest.prototype = {
         });
       });
     }.bind(this));
-  },
+  }
 };
+
+/** @override */
+SwitchAccessE2ETest.prototype.isAsync = true;
+/** @override */
+SwitchAccessE2ETest.prototype.runAccessibilityChecks = false;
+/** @override */
+SwitchAccessE2ETest.prototype.browserPreload = null;

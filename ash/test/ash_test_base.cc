@@ -104,7 +104,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
     return Shell::Get()->CreateDefaultNonClientFrameView(widget);
   }

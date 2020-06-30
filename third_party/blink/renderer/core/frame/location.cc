@@ -285,10 +285,11 @@ void Location::SetLocation(const String& url,
   if (completed_url.ProtocolIsJavaScript()) {
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
-    if (!incumbent_window->GetContentSecurityPolicyForWorld()->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
-            nullptr /* element */, script_source, String() /* nonce */,
-            incumbent_window->Url(), OrdinalNumber())) {
+    if (!incumbent_window->GetContentSecurityPolicyForCurrentWorld()
+             ->AllowInline(ContentSecurityPolicy::InlineType::kNavigation,
+                           nullptr /* element */, script_source,
+                           String() /* nonce */, incumbent_window->Url(),
+                           OrdinalNumber())) {
       return;
     }
   }

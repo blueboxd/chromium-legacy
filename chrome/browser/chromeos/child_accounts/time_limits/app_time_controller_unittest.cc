@@ -89,13 +89,17 @@ class AppTimeControllerTest : public testing::Test {
         apps::mojom::AppType app_type,
         const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override {
-      EXPECT_EQ(icon_compression, apps::mojom::IconCompression::kUncompressed);
+      auto expected_icon_type =
+          (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+              ? apps::mojom::IconType::kStandard
+              : apps::mojom::IconType::kUncompressed;
+      EXPECT_EQ(icon_type, expected_icon_type);
       auto iv = apps::mojom::IconValue::New();
-      iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      iv->icon_type = icon_type;
       iv->uncompressed =
           gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
       iv->is_placeholder_icon = false;

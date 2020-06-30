@@ -14,7 +14,6 @@
 #include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/types/event_type.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;

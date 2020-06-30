@@ -23,7 +23,8 @@ LacrosChromeServiceImpl* LacrosChromeServiceImpl::Get() {
 LacrosChromeServiceImpl::LacrosChromeServiceImpl()
     : pending_ash_chrome_service_receiver_(
           ash_chrome_service_.BindNewPipeAndPassReceiver()) {
-  // Bind remote interfaces in ash-chrome.
+  // Bind remote interfaces in ash-chrome. These remote interfaces can be used
+  // immediately. Outgoing calls will be queued.
   ash_chrome_service_->BindSelectFile(
       select_file_remote_.BindNewPipeAndPassReceiver());
 
@@ -34,6 +35,11 @@ LacrosChromeServiceImpl::LacrosChromeServiceImpl()
 LacrosChromeServiceImpl::~LacrosChromeServiceImpl() {
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
+}
+
+void LacrosChromeServiceImpl::BindReceiver(
+    mojo::PendingReceiver<lacros::mojom::LacrosChromeService> receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void LacrosChromeServiceImpl::RequestAshChromeServiceReceiver(

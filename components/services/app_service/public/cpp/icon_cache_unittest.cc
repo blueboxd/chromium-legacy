@@ -37,15 +37,15 @@ class AppsIconCacheTest : public testing::Test {
         apps::mojom::AppType app_type,
         const std::string& app_id,
         apps::mojom::IconKeyPtr icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_Type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon,
         apps::mojom::Publisher::LoadIconCallback callback) override {
       num_load_calls_++;
 
       auto iv = apps::mojom::IconValue::New();
-      if (icon_compression == apps::mojom::IconCompression::kUncompressed) {
-        iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      if (icon_Type == apps::mojom::IconType::kUncompressed) {
+        iv->icon_type = apps::mojom::IconType::kUncompressed;
         iv->uncompressed =
             gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
         iv->is_placeholder_icon = return_placeholder_icons_;
@@ -65,14 +65,13 @@ class AppsIconCacheTest : public testing::Test {
                           HitOrMiss expect_hom,
                           bool allow_placeholder_icon = false) {
     static constexpr auto app_type = apps::mojom::AppType::kWeb;
-    static constexpr auto icon_compression =
-        apps::mojom::IconCompression::kUncompressed;
+    static constexpr auto icon_type = apps::mojom::IconType::kUncompressed;
     static constexpr int32_t size_hint_in_dip = 1;
 
     int before = fake->NumLoadIconFromIconKeyCalls();
 
     UniqueReleaser releaser =
-        loader->LoadIcon(app_type, app_id, icon_compression, size_hint_in_dip,
+        loader->LoadIcon(app_type, app_id, icon_type, size_hint_in_dip,
                          allow_placeholder_icon, base::DoNothing());
 
     int after = fake->NumLoadIconFromIconKeyCalls();

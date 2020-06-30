@@ -127,7 +127,7 @@ void CrostiniApps::Connect(
 
 void CrostiniApps::LoadIcon(const std::string& app_id,
                             apps::mojom::IconKeyPtr icon_key,
-                            apps::mojom::IconCompression icon_compression,
+                            apps::mojom::IconType icon_type,
                             int32_t size_hint_in_dip,
                             bool allow_placeholder_icon,
                             LoadIconCallback callback) {
@@ -135,8 +135,8 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
     if (icon_key->resource_id != apps::mojom::IconKey::kInvalidResourceId) {
       // The icon is a resource built into the Chrome OS binary.
       constexpr bool is_placeholder_icon = false;
-      LoadIconFromResource(icon_compression, size_hint_in_dip,
-                           icon_key->resource_id, is_placeholder_icon,
+      LoadIconFromResource(icon_type, size_hint_in_dip, icon_key->resource_id,
+                           is_placeholder_icon,
                            static_cast<IconEffects>(icon_key->icon_effects),
                            std::move(callback));
       return;
@@ -146,12 +146,12 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
       // Try loading the icon from an on-disk cache. If that fails, fall back
       // to LoadIconFromVM.
       LoadIconFromFileWithFallback(
-          icon_compression, size_hint_in_dip,
+          icon_type, size_hint_in_dip,
           registry_->GetIconPath(app_id, scale_factor),
           static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
           base::BindOnce(&CrostiniApps::LoadIconFromVM,
-                         weak_ptr_factory_.GetWeakPtr(), app_id,
-                         icon_compression, size_hint_in_dip, scale_factor,
+                         weak_ptr_factory_.GetWeakPtr(), app_id, icon_type,
+                         size_hint_in_dip, scale_factor,
                          static_cast<IconEffects>(icon_key->icon_effects)));
       return;
     }
@@ -263,7 +263,7 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
 }
 
 void CrostiniApps::LoadIconFromVM(const std::string app_id,
-                                  apps::mojom::IconCompression icon_compression,
+                                  apps::mojom::IconType icon_type,
                                   int32_t size_hint_in_dip,
                                   ui::ScaleFactor scale_factor,
                                   IconEffects icon_effects,
@@ -271,17 +271,16 @@ void CrostiniApps::LoadIconFromVM(const std::string app_id,
   registry_->RequestIcon(
       app_id, scale_factor,
       base::BindOnce(&CrostiniApps::OnLoadIconFromVM,
-                     weak_ptr_factory_.GetWeakPtr(), app_id, icon_compression,
+                     weak_ptr_factory_.GetWeakPtr(), app_id, icon_type,
                      size_hint_in_dip, icon_effects, std::move(callback)));
 }
 
-void CrostiniApps::OnLoadIconFromVM(
-    const std::string app_id,
-    apps::mojom::IconCompression icon_compression,
-    int32_t size_hint_in_dip,
-    IconEffects icon_effects,
-    LoadIconCallback callback,
-    std::string compressed_icon_data) {
+void CrostiniApps::OnLoadIconFromVM(const std::string app_id,
+                                    apps::mojom::IconType icon_type,
+                                    int32_t size_hint_in_dip,
+                                    IconEffects icon_effects,
+                                    LoadIconCallback callback,
+                                    std::string compressed_icon_data) {
   if (compressed_icon_data.empty()) {
     auto registration = registry_->GetRegistration(app_id);
     if (registration && registration->VmType() ==
@@ -290,14 +289,14 @@ void CrostiniApps::OnLoadIconFromVM(
       // Load default penguin for crostini. We must set is_placeholder_icon to
       // false to stop endless recursive calls.
       LoadIconFromResource(
-          icon_compression, size_hint_in_dip, IDR_LOGO_CROSTINI_DEFAULT_192,
+          icon_type, size_hint_in_dip, IDR_LOGO_CROSTINI_DEFAULT_192,
           /*is_placeholder_icon=*/false, icon_effects, std::move(callback));
     } else {
       // Leave it for app service to get a default for Plugin VM.
       std::move(callback).Run(apps::mojom::IconValue::New());
     }
   } else {
-    LoadIconFromCompressedData(icon_compression, size_hint_in_dip, icon_effects,
+    LoadIconFromCompressedData(icon_type, size_hint_in_dip, icon_effects,
                                compressed_icon_data, std::move(callback));
   }
 }

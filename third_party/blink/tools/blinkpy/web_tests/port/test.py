@@ -135,7 +135,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 171
+TOTAL_TESTS = 174
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 26 + TOTAL_WONTFIX
 TOTAL_CRASHES = 78
@@ -737,6 +737,9 @@ class TestPort(Port):
             VirtualTestSuite(prefix='virtual_empty_bases',
                              bases=[],
                              args=['--virtual-arg-empty-bases']),
+            VirtualTestSuite(prefix='mixed_wpt',
+                             bases=['http', 'external/wpt/dom'],
+                             args=['--virtual-arg']),
         ]
 
 

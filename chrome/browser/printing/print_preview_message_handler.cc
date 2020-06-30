@@ -217,7 +217,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
 void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPreviewDocument_Params& params,
+    const mojom::DidPreviewDocumentParams& params,
     const PrintHostMsg_PreviewIds& ids) {
   // Always try to stop the worker.
   StopWorker(params.document_cookie);
@@ -229,7 +229,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   const bool composite_document_using_individual_pages =
       ShouldUseCompositor(print_preview_ui);
   const base::ReadOnlySharedMemoryRegion& metafile =
-      params.content.metafile_data_region;
+      params.content->metafile_data_region;
 
   // When the Print Compositor is active, the print document is composed from
   // the individual pages, so |metafile| should be invalid.
@@ -238,7 +238,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   if (composite_document_using_individual_pages == metafile.IsValid())
     return;
 
-  if (params.expected_pages_count <= 0) {
+  if (params.expected_pages_count == 0) {
     NOTREACHED();
     return;
   }

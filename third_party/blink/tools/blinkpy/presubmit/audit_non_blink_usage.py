@@ -1030,7 +1030,7 @@ _CONFIG = [
     {
         'paths': [
             # TODO(crbug.com/787254): Separate the two paths below and their own
-            # whitelist.
+            # allowlist.
             'third_party/blink/renderer/modules/peerconnection/',
             'third_party/blink/renderer/bindings/modules/v8/serialization/',
         ],

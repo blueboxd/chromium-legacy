@@ -11,8 +11,9 @@ import shutil
 import tempfile
 import unittest
 import mock
-import gpu_project_config
+import sys
 import run_gpu_integration_test
+import gpu_project_config
 
 from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_helper
@@ -98,26 +99,22 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.close()
     test_argv = [
-        test_name, '--write-full-results-to=%s' % temp_file.name
+        run_gpu_integration_test.__file__, test_name,
+        '--write-full-results-to=%s' % temp_file.name
     ] + extra_args
     unittest_config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
             os.path.join(path_util.GetGpuTestDir(), 'unittest_data')
         ])
-    old_manager = binary_manager._binary_manager
-    with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
-      processed_args = run_gpu_integration_test.ProcessArgs(test_argv)
-      telemetry_args = browser_test_runner.ProcessConfig(
-          unittest_config, processed_args)
-      try:
-        binary_manager._binary_manager = None
-        run_browser_tests.RunTests(telemetry_args)
-        with open(temp_file.name) as f:
-          self._test_result = json.load(f)
-      finally:
-        binary_manager._binary_manager = old_manager
-        temp_file.close()
+    with mock.patch.object(sys, 'argv', test_argv):
+      with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
+        try:
+          run_gpu_integration_test.main()
+          with open(temp_file.name) as f:
+            self._test_result = json.load(f)
+        finally:
+          temp_file.close()
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('run_tests_with_expectations_files',

@@ -553,8 +553,10 @@ void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
   platform_window()->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-NonClientFrameView* DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
-  return ShouldUseNativeFrame() ? new NativeFrameView(GetWidget()) : nullptr;
+std::unique_ptr<NonClientFrameView>
+DesktopWindowTreeHostPlatform::CreateNonClientFrameView() {
+  return ShouldUseNativeFrame() ? std::make_unique<NativeFrameView>(GetWidget())
+                                : nullptr;
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {

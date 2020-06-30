@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(__x86_64__) || defined(__aarch64__)
+
 // base::mac::CallWithEHFrame(void () block_pointer)
 #define CALL_WITH_EH_FRAME __ZN4base3mac15CallWithEHFrameEU13block_pointerFvvE
 
@@ -127,3 +129,5 @@ Lcall_site_table_end:
 
 Ltypes_table_base:
   .p2align 2
+
+#endif  // defined(__x86_64__) || defined(__aarch64__)

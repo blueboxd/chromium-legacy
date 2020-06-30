@@ -546,11 +546,10 @@ bool X11Window::HandleAsAtkEvent(x11::Event* x11_event) {
 #endif
 }
 
-// CheckCanDispatchNextPlatformEvent is called by X11EventSourceLibevent to
-// determine whether X11Window instance (XEventDispatcher implementation) is
-// able to process next translated event sent by it. So, it's done through
-// |handle_next_event_| internal flag, used in subsequent CanDispatchEvent
-// call.
+// CheckCanDispatchNextPlatformEvent is called by X11EventSource so that
+// X11Window (XEventDispatcher implementation) can inspect |xev| and determine
+// whether it should be dispatched by this window once it gets translated into a
+// PlatformEvent.
 void X11Window::CheckCanDispatchNextPlatformEvent(x11::Event* xev) {
   if (is_shutting_down_)
     return;

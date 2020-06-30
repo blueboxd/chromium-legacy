@@ -194,8 +194,12 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
     // If |icon_loader_releaser_| is non-null, assigning to it will signal to
     // |icon_loader_| that the previous icon is no longer being used, as a hint
     // that it could be flushed from any caches.
+    auto icon_type =
+        (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+            ? apps::mojom::IconType::kStandard
+            : apps::mojom::IconType::kUncompressed;
     icon_loader_releaser_ = icon_loader_->LoadIcon(
-        app_type_, app_id(), apps::mojom::IconCompression::kUncompressed,
+        app_type_, app_id(), icon_type,
         chip ? ash::AppListConfig::instance().suggestion_chip_icon_dimension()
              : ash::AppListConfig::instance().GetPreferredIconDimension(
                    display_type()),
@@ -207,8 +211,11 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
 
 void AppServiceAppResult::OnLoadIcon(bool chip,
                                      apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     return;
   }
 

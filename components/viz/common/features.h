@@ -24,6 +24,9 @@ VIZ_COMMON_EXPORT extern const base::Feature kVizForWebView;
 VIZ_COMMON_EXPORT extern const base::Feature kVizFrameSubmissionForWebView;
 VIZ_COMMON_EXPORT extern const base::Feature kUsePreferredIntervalForVideo;
 VIZ_COMMON_EXPORT extern const base::Feature kUseRealBuffersForPageFlipTest;
+#if defined(OS_FUCHSIA)
+VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaOutputDeviceBufferQueue;
+#endif
 VIZ_COMMON_EXPORT extern const base::Feature kSplitPartiallyOccludedQuads;
 VIZ_COMMON_EXPORT extern const base::Feature kWebRtcLogCapturePipeline;
 

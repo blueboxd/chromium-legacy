@@ -40,21 +40,20 @@ TEST(NetLogUtil, GetNetInfo) {
 
   // Get NetInfo when there's no cache backend (It's only created on first use).
   EXPECT_FALSE(http_cache->GetCurrentBackend());
-  std::unique_ptr<base::DictionaryValue> net_info_without_cache(
+  base::Value net_info_without_cache(
       GetNetInfo(&context, NET_INFO_ALL_SOURCES));
   EXPECT_FALSE(http_cache->GetCurrentBackend());
-  EXPECT_GT(net_info_without_cache->size(), 0u);
+  EXPECT_GT(net_info_without_cache.DictSize(), 0u);
 
   // Fore creation of a cache backend, and get NetInfo again.
   disk_cache::Backend* backend = nullptr;
   EXPECT_EQ(OK, context.http_transaction_factory()->GetCache()->GetBackend(
                     &backend, TestCompletionCallback().callback()));
   EXPECT_TRUE(http_cache->GetCurrentBackend());
-  std::unique_ptr<base::DictionaryValue> net_info_with_cache(
-      GetNetInfo(&context, NET_INFO_ALL_SOURCES));
-  EXPECT_GT(net_info_with_cache->size(), 0u);
+  base::Value net_info_with_cache = GetNetInfo(&context, NET_INFO_ALL_SOURCES);
+  EXPECT_GT(net_info_with_cache.DictSize(), 0u);
 
-  EXPECT_EQ(net_info_without_cache->size(), net_info_with_cache->size());
+  EXPECT_EQ(net_info_without_cache.DictSize(), net_info_with_cache.DictSize());
 }
 
 // Make sure CreateNetLogEntriesForActiveObjects works for requests from a

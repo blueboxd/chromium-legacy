@@ -82,12 +82,13 @@ bool IsFineGrainedTimeZoneEnabled() {
 DateTimeSection::DateTimeSection(Profile* profile,
                                  SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetDateTimeSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetDateTimeSearchConcepts());
 
   if (IsFineGrainedTimeZoneEnabled())
-    registry()->AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
+    updater.AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
   else
-    registry()->AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
+    updater.AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
 }
 
 DateTimeSection::~DateTimeSection() = default;

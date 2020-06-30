@@ -15,7 +15,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/mojom/print.mojom-forward.h"
 
-struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 
@@ -77,10 +76,9 @@ class PrintPreviewMessageHandler
   void OnDidPreviewPage(content::RenderFrameHost* render_frame_host,
                         const mojom::DidPreviewPageParams& params,
                         const PrintHostMsg_PreviewIds& ids);
-  void OnMetafileReadyForPrinting(
-      content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPreviewDocument_Params& params,
-      const PrintHostMsg_PreviewIds& ids);
+  void OnMetafileReadyForPrinting(content::RenderFrameHost* render_frame_host,
+                                  const mojom::DidPreviewDocumentParams& params,
+                                  const PrintHostMsg_PreviewIds& ids);
 
   void NotifyUIPreviewPageReady(
       PrintPreviewUI* print_preview_ui,

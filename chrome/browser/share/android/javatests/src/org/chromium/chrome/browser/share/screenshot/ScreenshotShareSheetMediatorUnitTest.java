@@ -52,6 +52,9 @@ public class ScreenshotShareSheetMediatorUnitTest {
     Runnable mSaveRunnable;
 
     @Mock
+    Runnable mInstallRunnable;
+
+    @Mock
     Activity mContext;
 
     @Mock
@@ -85,8 +88,8 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         mModel = new PropertyModel(ScreenshotShareSheetViewProperties.ALL_KEYS);
 
-        mMediator = new ScreenshotShareSheetMediator(
-                mContext, mModel, mDeleteRunnable, mSaveRunnable, mTab, mShareCallback);
+        mMediator = new ScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable,
+                mSaveRunnable, mTab, mShareCallback, mInstallRunnable);
     }
 
     @Test
@@ -115,6 +118,15 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         verify(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
         verify(mDeleteRunnable).run();
+    }
+
+    @Test
+    public void onClickInstall() {
+        Callback<Integer> callback =
+                mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
+        callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.INSTALL);
+
+        verify(mInstallRunnable).run();
     }
 
     @After

@@ -144,16 +144,26 @@ AXSelection AXSelection::FromCurrentSelection(
   const AXObject* ax_text_control =
       ax_object_cache_impl->GetOrCreate(&text_control);
   DCHECK(ax_text_control);
+
+  // We can't directly use "text_control.Selection()" because the selection it
+  // returns is inside the shadow DOM and it's not anchored to the text field
+  // itself.
   const TextAffinity extent_affinity = text_control.Selection().Affinity();
   const TextAffinity base_affinity =
       text_control.selectionStart() == text_control.selectionEnd()
           ? extent_affinity
           : TextAffinity::kDownstream;
+
+  const bool is_backward = (text_control.selectionDirection() == "backward");
   const auto ax_base = AXPosition::CreatePositionInTextObject(
-      *ax_text_control, static_cast<int>(text_control.selectionStart()),
+      *ax_text_control,
+      (is_backward ? int{text_control.selectionEnd()}
+                   : int{text_control.selectionStart()}),
       base_affinity);
   const auto ax_extent = AXPosition::CreatePositionInTextObject(
-      *ax_text_control, static_cast<int>(text_control.selectionEnd()),
+      *ax_text_control,
+      (is_backward ? int{text_control.selectionStart()}
+                   : int{text_control.selectionEnd()}),
       extent_affinity);
 
   if (!ax_base.IsValid() || !ax_extent.IsValid())

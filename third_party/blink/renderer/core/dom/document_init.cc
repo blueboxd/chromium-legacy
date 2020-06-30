@@ -526,7 +526,7 @@ bool DocumentInit::ShouldReuseDOMWindow() const {
   // document.
   if (!GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     return false;
-  return GetFrame()->GetDocument()->GetSecurityOrigin()->CanAccess(
+  return GetFrame()->DomWindow()->GetSecurityOrigin()->CanAccess(
       GetDocumentOrigin().get());
 }
 

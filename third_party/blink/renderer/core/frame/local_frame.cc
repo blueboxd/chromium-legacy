@@ -585,7 +585,7 @@ void LocalFrame::CheckCompleted() {
 }
 
 const SecurityContext* LocalFrame::GetSecurityContext() const {
-  return GetDocument() ? &GetDocument()->GetSecurityContext() : nullptr;
+  return DomWindow() ? &DomWindow()->GetSecurityContext() : nullptr;
 }
 
 void LocalFrame::PrintNavigationErrorMessage(const Frame& target_frame,

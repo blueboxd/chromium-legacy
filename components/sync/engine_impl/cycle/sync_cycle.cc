@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
@@ -39,14 +38,10 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
     download_progress_markers[type] = progress_marker.SerializeAsString();
   }
 
-  // TODO(mastiz): Remove dependency to directory, since it most likely hides
-  // an issue with USS types.
-  syncable::Directory* dir = context_->directory();
-
+  // TODO(crbug.com/923287): Most of the counters below are outdated. Remove.
+  int num_entries = 0;
   std::vector<int> num_entries_by_type(ModelType::NUM_ENTRIES, 0);
   std::vector<int> num_to_delete_entries_by_type(ModelType::NUM_ENTRIES, 0);
-  dir->CollectMetaHandleCounts(&num_entries_by_type,
-                               &num_to_delete_entries_by_type);
 
   SyncCycleSnapshot snapshot(
       context_->birthday(), context_->bag_of_chips(),
@@ -55,7 +50,7 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
       status_controller_->num_encryption_conflicts(),
       status_controller_->num_hierarchy_conflicts(),
       status_controller_->num_server_conflicts(),
-      context_->notifications_enabled(), dir->GetEntriesCount(),
+      context_->notifications_enabled(), num_entries,
       status_controller_->sync_start_time(),
       status_controller_->poll_finish_time(), num_entries_by_type,
       num_to_delete_entries_by_type, get_updates_origin,

@@ -320,7 +320,8 @@ AccessibilitySection::AccessibilitySection(
     PrefService* pref_service)
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {
-  registry()->AddSearchTags(GetA11ySearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetA11ySearchConcepts());
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -648,44 +649,46 @@ void AccessibilitySection::RegisterHierarchy(
 }
 
 void AccessibilitySection::UpdateSearchTags() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (accessibility_state_utils::IsScreenReaderEnabled() &&
       AreExperimentalA11yLabelsAllowed()) {
-    registry()->AddSearchTags(GetA11yLabelsSearchConcepts());
+    updater.AddSearchTags(GetA11yLabelsSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetA11yLabelsSearchConcepts());
+    updater.RemoveSearchTags(GetA11yLabelsSearchConcepts());
   }
 
-  registry()->RemoveSearchTags(GetA11ySwitchAccessSearchConcepts());
-  registry()->RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
-  registry()->RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
+  updater.RemoveSearchTags(GetA11ySwitchAccessSearchConcepts());
+  updater.RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
+  updater.RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
 
   if (AreLiveCaptionsAllowed()) {
-    registry()->AddSearchTags(GetA11yLiveCaptionSearchConcepts());
+    updater.AddSearchTags(GetA11yLiveCaptionSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
+    updater.RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
   }
 
   if (IsCursorColorAllowed()) {
-    registry()->AddSearchTags(GetA11yCursorColorSearchConcepts());
+    updater.AddSearchTags(GetA11yCursorColorSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetA11yCursorColorSearchConcepts());
+    updater.RemoveSearchTags(GetA11yCursorColorSearchConcepts());
   }
 
   if (!IsSwitchAccessAllowed())
     return;
 
-  registry()->AddSearchTags(GetA11ySwitchAccessSearchConcepts());
+  updater.AddSearchTags(GetA11ySwitchAccessSearchConcepts());
 
   if (!pref_service_->GetBoolean(
           ash::prefs::kAccessibilitySwitchAccessEnabled)) {
     return;
   }
 
-  registry()->AddSearchTags(GetA11ySwitchAccessOnSearchConcepts());
+  updater.AddSearchTags(GetA11ySwitchAccessOnSearchConcepts());
 
   if (pref_service_->GetBoolean(
           ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled)) {
-    registry()->AddSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
+    updater.AddSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
   }
 }
 

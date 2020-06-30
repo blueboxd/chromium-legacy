@@ -382,10 +382,10 @@ void Shell::UntrackTrackInputMethodBounds(
       ->RemoveInputMethodBoundsTrackerObserver(tracker);
 }
 
-views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+Shell::CreateDefaultNonClientFrameView(views::Widget* widget) {
   // Use translucent-style window frames for dialogs.
-  return new NonClientFrameViewAsh(widget);
+  return std::make_unique<NonClientFrameViewAsh>(widget);
 }
 
 void Shell::SetDisplayWorkAreaInsets(Window* contains,

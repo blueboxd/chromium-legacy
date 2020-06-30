@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
+#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -132,14 +133,18 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
     return;
   }
 
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+
   // When Crostini generates shelf id as the app_id, which couldn't match to an
   // app, the default penguin icon should be loaded.
   if (crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
     apps::mojom::IconKeyPtr icon_key = apps::mojom::IconKey::New();
     proxy->LoadIconFromIconKey(
         apps::mojom::AppType::kCrostini, std::string(), std::move(icon_key),
-        apps::mojom::IconCompression::kUncompressed, icon_size_in_dip(),
-        allow_placeholder_icon,
+        icon_type, icon_size_in_dip(), allow_placeholder_icon,
         base::BindOnce(&AppServiceAppIconLoader::OnLoadIcon,
                        weak_ptr_factory_.GetWeakPtr(), app_id));
     return;
@@ -150,16 +155,19 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
     return;
   }
 
-  proxy->LoadIcon(app_type, app_id, apps::mojom::IconCompression::kUncompressed,
-                  icon_size_in_dip(), allow_placeholder_icon,
+  proxy->LoadIcon(app_type, app_id, icon_type, icon_size_in_dip(),
+                  allow_placeholder_icon,
                   base::BindOnce(&AppServiceAppIconLoader::OnLoadIcon,
                                  weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
 void AppServiceAppIconLoader::OnLoadIcon(const std::string& app_id,
                                          apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     return;
   }
 

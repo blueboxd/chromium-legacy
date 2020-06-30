@@ -209,7 +209,7 @@ ChromeRenderThreadObserver::GetDynamicParams() {
 
 void ChromeRenderThreadObserver::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
-  associated_interfaces->AddInterface(base::Bind(
+  associated_interfaces->AddInterface(base::BindRepeating(
       &ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest,
       base::Unretained(this)));
 }

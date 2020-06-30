@@ -42,8 +42,7 @@ SCRIPT_TEMPLATES = {
 }
 
 
-PY_TEMPLATE = textwrap.dedent(
-    """\
+PY_TEMPLATE = textwrap.dedent("""\
     import os
     import re
     import subprocess
@@ -59,7 +58,27 @@ PY_TEMPLATE = textwrap.dedent(
       if m:
         relpath = os.path.join(
             os.path.relpath(_SCRIPT_DIR), _PATH_TO_OUTPUT_DIR, m.group(1))
-        return os.path.normpath(relpath)
+        npath = os.path.normpath(relpath)
+        if os.path.sep not in npath:
+          # If the original path points to something in the current directory,
+          # returning the normalized version of it can be a problem.
+          # normpath() strips off the './' part of the path
+          # ('./foo' becomes 'foo'), which can be a problem if the result
+          # is passed to something like os.execvp(); in that case
+          # osexecvp() will search $PATH for the executable, rather than
+          # just execing the arg directly, and if '.' isn't in $PATH, this
+          # results in an error.
+          #
+          # So, we need to explicitly return './foo' (or '.\\foo' on windows)
+          # instead of 'foo'.
+          #
+          # Hopefully there are no cases where this causes a problem; if
+          # there are, we will either need to change the interface to
+          # WrappedPath() somehow to distinguish between the two, or
+          # somehow ensure that the wrapped executable doesn't hit cases
+          # like this.
+          return '.' + os.path.sep + npath
+        return npath
       return arg
 
 

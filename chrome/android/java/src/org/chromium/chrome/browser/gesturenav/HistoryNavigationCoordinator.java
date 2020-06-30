@@ -9,6 +9,8 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Consumer;
 import org.chromium.base.Function;
 import org.chromium.base.supplier.Supplier;
@@ -18,7 +20,6 @@ import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -28,8 +29,8 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Coordinator object for gesture navigation.
  */
-public class HistoryNavigationCoordinator implements InsetObserverView.WindowInsetObserver,
-                                                     Destroyable, PauseResumeWithNativeObserver {
+public class HistoryNavigationCoordinator
+        implements InsetObserverView.WindowInsetObserver, PauseResumeWithNativeObserver {
     private final Runnable mUpdateNavigationStateRunnable = this::onNavigationStateChanged;
 
     private CompositorViewHolder mCompositorViewHolder;
@@ -60,16 +61,18 @@ public class HistoryNavigationCoordinator implements InsetObserverView.WindowIns
      * @param bottomSheetControllerSupplier Supplier for {@link BottomSheetController}.
      * @return HistoryNavigationCoordinator object or null if not enabled via feature flag.
      */
-    public static void create(ActivityLifecycleDispatcher lifecycleDispatcher,
+    public static HistoryNavigationCoordinator create(
+            ActivityLifecycleDispatcher lifecycleDispatcher,
             CompositorViewHolder compositorViewHolder, ActivityTabProvider tabProvider,
             InsetObserverView insetObserverView, Function<Tab, Boolean> backShouldCloseTab,
             Runnable onBackPressed, Consumer<Tab> showHistoryManager, String historyMenu,
             Supplier<BottomSheetController> bottomSheetControllerSupplier) {
-        if (!isFeatureFlagEnabled()) return;
+        if (!isFeatureFlagEnabled()) return null;
         HistoryNavigationCoordinator coordinator = new HistoryNavigationCoordinator();
         coordinator.init(lifecycleDispatcher, compositorViewHolder, tabProvider, insetObserverView,
                 backShouldCloseTab, onBackPressed, showHistoryManager, historyMenu,
                 bottomSheetControllerSupplier);
+        return coordinator;
     }
 
     /**
@@ -232,7 +235,9 @@ public class HistoryNavigationCoordinator implements InsetObserverView.WindowIns
     @Override
     public void onPauseWithNative() {}
 
-    @Override
+    /**
+     * Destroy HistoryNavigationCoordinator object.
+     */
     public void destroy() {
         if (mActivityTabObserver != null) {
             mActivityTabObserver.destroy();
@@ -255,5 +260,11 @@ public class HistoryNavigationCoordinator implements InsetObserverView.WindowIns
             mActivityLifecycleDispatcher.unregister(this);
             mActivityLifecycleDispatcher = null;
         }
+    }
+
+    @VisibleForTesting
+    NavigationHandler getNavigationHandlerForTesting() {
+        assert mNavigationLayout != null;
+        return mNavigationLayout.getNavigationHandler();
     }
 }

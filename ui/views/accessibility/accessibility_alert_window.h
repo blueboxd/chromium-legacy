@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
@@ -35,6 +36,9 @@ class VIEWS_EXPORT AccessibilityAlertWindow : public aura::EnvObserver {
   void HandleAlert(const std::string& alert_string);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityAlertWindowTest, HandleAlert);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityAlertWindowTest, OnWillDestroyEnv);
+
   // aura::EnvObserver:
   void OnWillDestroyEnv() override;
 

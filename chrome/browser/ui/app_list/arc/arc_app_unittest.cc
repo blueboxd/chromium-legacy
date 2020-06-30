@@ -2241,7 +2241,7 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
 
   apps::ArcIconOnceLoader once_loader(profile());
   once_loader.LoadIcon(
-      app_id, icon_size, apps::mojom::IconCompression::kCompressed,
+      app_id, icon_size, apps::mojom::IconType::kCompressed,
       base::BindLambdaForTesting([&](ArcAppIcon* icon) {
         const std::map<ui::ScaleFactor, std::string>& compressed_images =
             icon->compressed_images();

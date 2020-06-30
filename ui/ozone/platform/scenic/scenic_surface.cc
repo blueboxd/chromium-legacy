@@ -35,7 +35,7 @@ ScenicSurface::~ScenicSurface() {
   scenic_surface_factory_->RemoveSurface(window_);
 }
 
-void ScenicSurface::SetTextureToNewImagePipe(
+bool ScenicSurface::SetTextureToNewImagePipe(
     fidl::InterfaceRequest<fuchsia::images::ImagePipe2> image_pipe_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   uint32_t image_pipe_id = scenic_session_.AllocResourceId();
@@ -49,6 +49,7 @@ void ScenicSurface::SetTextureToNewImagePipe(
       /*requested_presentation_time=*/0,
       /*requested_prediction_span=*/0,
       [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
+  return true;
 }
 
 void ScenicSurface::SetTextureToImage(const scenic::Image& image) {

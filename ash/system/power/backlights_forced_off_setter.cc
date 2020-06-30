@@ -39,6 +39,10 @@ void BacklightsForcedOffSetter::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+ScreenState BacklightsForcedOffSetter::GetScreenState() const {
+  return screen_state_;
+}
+
 std::unique_ptr<ScopedBacklightsForcedOff>
 BacklightsForcedOffSetter::ForceBacklightsOff() {
   auto scoped_backlights_forced_off =

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/caption.mojom.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/speech_recognition_client.h"
@@ -29,6 +30,9 @@ class ChromeSpeechRecognitionClient
     : public media::SpeechRecognitionClient,
       public media::mojom::SpeechRecognitionRecognizerClient {
  public:
+  using SendAudioToSpeechRecognitionServiceCallback =
+      base::RepeatingCallback<void(media::mojom::AudioDataS16Ptr audio_data)>;
+
   explicit ChromeSpeechRecognitionClient(
       content::RenderFrame* render_frame,
       media::SpeechRecognitionClient::OnReadyCallback callback);
@@ -55,6 +59,9 @@ class ChromeSpeechRecognitionClient
       media::mojom::SpeechRecognitionResultPtr result) override;
 
  private:
+  void SendAudioToSpeechRecognitionService(
+      media::mojom::AudioDataS16Ptr audio_data);
+
   media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
       scoped_refptr<media::AudioBuffer> buffer);
 
@@ -77,6 +84,9 @@ class ChromeSpeechRecognitionClient
   bool IsUrlBlocked(const std::string& url) const;
 
   media::SpeechRecognitionClient::OnReadyCallback on_ready_callback_;
+
+  // Sends audio to the speech recognition thread on the renderer thread.
+  SendAudioToSpeechRecognitionServiceCallback send_audio_callback_;
 
   mojo::Remote<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_;
@@ -111,6 +121,8 @@ class ChromeSpeechRecognitionClient
   // A flag indicating whether the speech recognition service supports
   // multichannel audio.
   bool is_multichannel_supported_ = false;
+
+  base::WeakPtrFactory<ChromeSpeechRecognitionClient> weak_factory_{this};
 };
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_

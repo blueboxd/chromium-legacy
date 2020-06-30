@@ -148,7 +148,7 @@ class WidgetBaseClient {
   virtual void MouseCaptureLost() {}
 
   // The FrameWidget interface if this is a FrameWidget.
-  virtual FrameWidget* FrameWidget() { return nullptr; }
+  virtual blink::FrameWidget* FrameWidget() { return nullptr; }
 
   // Called to inform the Widget that it has gained or lost keyboard focus.
   virtual void FocusChanged(bool) = 0;

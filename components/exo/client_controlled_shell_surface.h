@@ -223,7 +223,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;

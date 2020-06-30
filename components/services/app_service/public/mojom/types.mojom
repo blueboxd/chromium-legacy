@@ -7,6 +7,7 @@ module apps.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/image/mojom/image.mojom";
+import "url/mojom/url.mojom";
 
 // Information about an app. See components/services/app_service/README.md.
 struct App {
@@ -159,7 +160,7 @@ struct IconKey {
   // components/services/app_service/public/cpp/icon_loader.*
 };
 
-enum IconCompression {
+enum IconType {
   // Sentinel value used in error cases.
   kUnknown,
   // Icon as an uncompressed gfx::ImageSkia with no standard Chrome OS mask.
@@ -172,7 +173,7 @@ enum IconCompression {
 };
 
 struct IconValue {
-  IconCompression icon_compression;
+  IconType icon_type;
   gfx.mojom.ImageSkia? uncompressed;
   array<uint8>? compressed;
   bool is_placeholder_icon;
@@ -301,10 +302,7 @@ struct IntentFilter {
 // the moment, and will be extended to handle files in the future.
 struct Intent {
   string? action; // Intent action. e.g. view, send.
-  string? scheme; // URL scheme. e.g. https.
-  string? host;   // URL host. e.g. www.google.com.
-  string? port;   // URL host. e.g. 8080.
-  string? path;   // URL path. e.g. /abc.
+  url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
   string? mime_type; // MIME type. e.g. text/plain, image/*.
 };
 

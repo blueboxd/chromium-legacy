@@ -125,7 +125,7 @@ class ExtensionAppsBase : public apps::PublisherBase,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override;

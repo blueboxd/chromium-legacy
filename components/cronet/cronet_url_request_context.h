@@ -242,7 +242,7 @@ class CronetURLRequestContext {
 
    private:
     friend class TestUtil;
-    std::unique_ptr<base::DictionaryValue> GetNetLogInfo() const;
+    base::Value GetNetLogInfo() const;
 
     std::unique_ptr<net::FileNetLogObserver> net_log_file_observer_;
 

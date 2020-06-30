@@ -68,6 +68,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private UrlFocusChangeListener mUrlFocusChangeListener;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
     private boolean mIntentWithEffect;
+    private HistoryNavigationCoordinator mHistoryNavigationCoordinator;
 
     /**
      * Construct a new TabbedRootUiCoordinator.
@@ -130,6 +131,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             mToolbarButtonInProductHelpController.destroy();
         }
 
+        if (mHistoryNavigationCoordinator != null) {
+            mHistoryNavigationCoordinator.destroy();
+            mHistoryNavigationCoordinator = null;
+        }
         super.destroy();
     }
 
@@ -188,11 +193,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         initStatusIndicatorCoordinator(layoutManager);
 
         // clang-format off
-        HistoryNavigationCoordinator.create(mActivity.getLifecycleDispatcher(),
-                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
-                mActivity.getInsetObserverView(),
-                mActivity::backShouldCloseTab,
-                mActivity::onBackPressed,
+        mHistoryNavigationCoordinator = HistoryNavigationCoordinator.create(
+                mActivity.getLifecycleDispatcher(), mActivity.getCompositorViewHolder(),
+                mActivity.getActivityTabProvider(), mActivity.getInsetObserverView(),
+                mActivity::backShouldCloseTab, mActivity::onBackPressed,
                 tab -> HistoryManagerUtils.showHistoryManager(mActivity, tab),
                 mActivity.getResources().getString(R.string.show_full_history),
                 () -> mActivity.isActivityFinishingOrDestroyed() ? null
@@ -300,6 +304,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     @VisibleForTesting
     public EphemeralTabCoordinator getEphemeralTabCoordinatorForTesting() {
         return mEphemeralTabCoordinatorSupplier.get();
+    }
+
+    @VisibleForTesting
+    public HistoryNavigationCoordinator getHistoryNavigationCoordinatorForTesting() {
+        return mHistoryNavigationCoordinator;
     }
 
     /**

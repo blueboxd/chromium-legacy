@@ -596,7 +596,8 @@ void DesktopNativeWidgetAura::OnWidgetInitDone() {
   desktop_window_tree_host_->OnWidgetInitDone();
 }
 
-NonClientFrameView* DesktopNativeWidgetAura::CreateNonClientFrameView() {
+std::unique_ptr<NonClientFrameView>
+DesktopNativeWidgetAura::CreateNonClientFrameView() {
   return desktop_window_tree_host_->CreateNonClientFrameView();
 }
 

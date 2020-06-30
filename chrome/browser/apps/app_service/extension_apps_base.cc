@@ -463,12 +463,12 @@ void ExtensionAppsBase::Connect(
 
 void ExtensionAppsBase::LoadIcon(const std::string& app_id,
                                  apps::mojom::IconKeyPtr icon_key,
-                                 apps::mojom::IconCompression icon_compression,
+                                 apps::mojom::IconType icon_type,
                                  int32_t size_hint_in_dip,
                                  bool allow_placeholder_icon,
                                  LoadIconCallback callback) {
   if (icon_key) {
-    LoadIconFromExtension(icon_compression, size_hint_in_dip, profile_, app_id,
+    LoadIconFromExtension(icon_type, size_hint_in_dip, profile_, app_id,
                           static_cast<IconEffects>(icon_key->icon_effects),
                           std::move(callback));
     return;

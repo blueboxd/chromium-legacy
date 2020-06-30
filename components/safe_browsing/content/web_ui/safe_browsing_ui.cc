@@ -1277,6 +1277,7 @@ std::string SerializeRTLookupPing(const RTLookupRequestAndToken& ping) {
   request_dict.SetKey("population",
                       SerializeChromeUserPopulation(request.population()));
   request_dict.SetKey("scoped_oauth_token", base::Value(ping.token));
+  request_dict.SetKey("dm_token", base::Value(request.dm_token()));
 
   std::string lookupType;
   switch (request.lookup_type()) {

@@ -1660,6 +1660,118 @@ TEST(SafeNumerics, VariadicNumericOperations) {
   }
 }
 
+TEST(SafeNumerics, CeilInt) {
+  constexpr float kMax = std::numeric_limits<int>::max();
+  constexpr float kMin = std::numeric_limits<int>::min();
+  constexpr float kInfinity = std::numeric_limits<float>::infinity();
+  constexpr float kNaN = std::numeric_limits<float>::quiet_NaN();
+
+  constexpr int kIntMax = std::numeric_limits<int>::max();
+  constexpr int kIntMin = std::numeric_limits<int>::min();
+
+  EXPECT_EQ(kIntMax, Ceil(kInfinity));
+  EXPECT_EQ(kIntMax, Ceil(kMax));
+  EXPECT_EQ(kIntMax, Ceil(kMax + 100.0f));
+  EXPECT_EQ(0, Ceil(kNaN));
+
+  EXPECT_EQ(-100, Ceil(-100.5f));
+  EXPECT_EQ(0, Ceil(0.0f));
+  EXPECT_EQ(101, Ceil(100.5f));
+
+  EXPECT_EQ(kIntMin, Ceil(-kInfinity));
+  EXPECT_EQ(kIntMin, Ceil(kMin));
+  EXPECT_EQ(kIntMin, Ceil(kMin - 100.0f));
+  EXPECT_EQ(0, Ceil(-kNaN));
+}
+
+TEST(SafeNumerics, FloorInt) {
+  constexpr float kMax = std::numeric_limits<int>::max();
+  constexpr float kMin = std::numeric_limits<int>::min();
+  constexpr float kInfinity = std::numeric_limits<float>::infinity();
+  constexpr float kNaN = std::numeric_limits<float>::quiet_NaN();
+
+  constexpr int kIntMax = std::numeric_limits<int>::max();
+  constexpr int kIntMin = std::numeric_limits<int>::min();
+
+  EXPECT_EQ(kIntMax, Floor(kInfinity));
+  EXPECT_EQ(kIntMax, Floor(kMax));
+  EXPECT_EQ(kIntMax, Floor(kMax + 100.0f));
+  EXPECT_EQ(0, Floor(kNaN));
+
+  EXPECT_EQ(-101, Floor(-100.5f));
+  EXPECT_EQ(0, Floor(0.0f));
+  EXPECT_EQ(100, Floor(100.5f));
+
+  EXPECT_EQ(kIntMin, Floor(-kInfinity));
+  EXPECT_EQ(kIntMin, Floor(kMin));
+  EXPECT_EQ(kIntMin, Floor(kMin - 100.0f));
+  EXPECT_EQ(0, Floor(-kNaN));
+}
+
+TEST(SafeNumerics, RoundInt) {
+  constexpr float kMax = std::numeric_limits<int>::max();
+  constexpr float kMin = std::numeric_limits<int>::min();
+  constexpr float kInfinity = std::numeric_limits<float>::infinity();
+  constexpr float kNaN = std::numeric_limits<float>::quiet_NaN();
+
+  constexpr int kIntMax = std::numeric_limits<int>::max();
+  constexpr int kIntMin = std::numeric_limits<int>::min();
+
+  EXPECT_EQ(kIntMax, Round(kInfinity));
+  EXPECT_EQ(kIntMax, Round(kMax));
+  EXPECT_EQ(kIntMax, Round(kMax + 100.0f));
+  EXPECT_EQ(0, Round(kNaN));
+
+  EXPECT_EQ(-100, Round(-100.1f));
+  EXPECT_EQ(-101, Round(-100.5f));
+  EXPECT_EQ(-101, Round(-100.9f));
+  EXPECT_EQ(0, Round(0.0f));
+  EXPECT_EQ(100, Round(100.1f));
+  EXPECT_EQ(101, Round(100.5f));
+  EXPECT_EQ(101, Round(100.9f));
+
+  EXPECT_EQ(kIntMin, Round(-kInfinity));
+  EXPECT_EQ(kIntMin, Round(kMin));
+  EXPECT_EQ(kIntMin, Round(kMin - 100.0f));
+  EXPECT_EQ(0, Round(-kNaN));
+}
+
+TEST(SafeNumerics, Int64) {
+  constexpr double kMax = std::numeric_limits<int64_t>::max();
+  constexpr double kMin = std::numeric_limits<int64_t>::min();
+  constexpr double kInfinity = std::numeric_limits<double>::infinity();
+  constexpr double kNaN = std::numeric_limits<double>::quiet_NaN();
+
+  constexpr int64_t kInt64Max = std::numeric_limits<int64_t>::max();
+  constexpr int64_t kInt64Min = std::numeric_limits<int64_t>::min();
+
+  EXPECT_EQ(kInt64Max, Floor<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, Round<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, Floor<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, Round<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, Floor<int64_t>(kMax + 100.0));
+  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kMax + 100.0));
+  EXPECT_EQ(kInt64Max, Round<int64_t>(kMax + 100.0));
+  EXPECT_EQ(0, Floor<int64_t>(kNaN));
+  EXPECT_EQ(0, Ceil<int64_t>(kNaN));
+  EXPECT_EQ(0, Round<int64_t>(kNaN));
+
+  EXPECT_EQ(kInt64Min, Floor<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, Ceil<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, Round<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, Floor<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, Ceil<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, Round<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, Floor<int64_t>(kMin - 100.0));
+  EXPECT_EQ(kInt64Min, Ceil<int64_t>(kMin - 100.0));
+  EXPECT_EQ(kInt64Min, Round<int64_t>(kMin - 100.0));
+  EXPECT_EQ(0, Floor<int64_t>(-kNaN));
+  EXPECT_EQ(0, Ceil<int64_t>(-kNaN));
+  EXPECT_EQ(0, Round<int64_t>(-kNaN));
+}
+
 #if defined(__clang__)
 #pragma clang diagnostic pop  // -Winteger-overflow
 #endif

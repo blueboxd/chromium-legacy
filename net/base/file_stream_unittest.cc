@@ -68,7 +68,7 @@ class FileStreamTest : public PlatformTest, public WithTaskEnvironment {
     // FileStreamContexts must be asynchronously closed on the file task runner
     // before they can be deleted. Pump the RunLoop to avoid leaks.
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(base::DeleteFile(temp_file_path_, false));
+    EXPECT_TRUE(base::DeleteFile(temp_file_path_));
 
     PlatformTest::TearDown();
   }
@@ -141,7 +141,7 @@ TEST_F(FileStreamTest, UseFileHandle) {
   read_stream.reset();
 
   // 2. Test writing with a file handle.
-  base::DeleteFile(temp_file_path(), false);
+  base::DeleteFile(temp_file_path());
   flags = base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
           base::File::FLAG_ASYNC;
   file.Initialize(temp_file_path(), flags);

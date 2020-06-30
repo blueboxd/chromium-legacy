@@ -190,11 +190,13 @@ bool FontCustomPlatformData::MayBeIconFont() const {
 
     // We first obtain the list of glyphs mapped from PUA codepoint range:
     // https://unicode.org/charts/PDF/UE000.pdf
-    const SkUnichar pua_start = 0xE000;
-    const SkUnichar pua_end = 0xF900;
-    Vector<SkUnichar> pua_codepoints(pua_end - pua_start);
-    for (wtf_size_t i = 0; i < pua_codepoints.size(); ++i)
-      pua_codepoints[i] = pua_start + i;
+    // Note: The two supplementary PUA here are too long but not used much by
+    // icon fonts, so we don't include them in this heuristic.
+    wtf_size_t pua_length =
+        kPrivateUseLastCharacter - kPrivateUseFirstCharacter + 1;
+    Vector<SkUnichar> pua_codepoints(pua_length);
+    for (wtf_size_t i = 0; i < pua_length; ++i)
+      pua_codepoints[i] = kPrivateUseFirstCharacter + i;
 
     Vector<SkGlyphID> glyphs(pua_codepoints.size());
     base_typeface_->unicharsToGlyphs(pua_codepoints.data(),
@@ -206,8 +208,8 @@ bool FontCustomPlatformData::MayBeIconFont() const {
     if (!glyphs[0])
       glyphs.EraseAt(0);
 
-    // We use the heuristic that if most of the define glyphs are in PUA, then
-    // the font may be an icon font.
+    // We use the heuristic that if more than half of the define glyphs are in
+    // PUA, then the font may be an icon font.
     wtf_size_t pua_glyph_count = glyphs.size();
     wtf_size_t total_glyphs = base_typeface_->countGlyphs();
     may_be_icon_font_ = pua_glyph_count * 2 > total_glyphs;

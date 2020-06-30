@@ -11,18 +11,12 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 namespace {
-
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::StrictMock;
 
 class SyncBackendRegistrarTest : public testing::Test {
  public:
@@ -33,7 +27,6 @@ class SyncBackendRegistrarTest : public testing::Test {
   void SetUp() override {
     db_thread_.StartAndWaitForTesting();
     sync_thread_.StartAndWaitForTesting();
-    test_user_share_.SetUp();
     registrar_ = std::make_unique<SyncBackendRegistrar>(
         "test", base::BindRepeating(
                     &SyncBackendRegistrarTest::CreateModelWorkerForGroup,
@@ -42,28 +35,14 @@ class SyncBackendRegistrarTest : public testing::Test {
 
   void TearDown() override {
     registrar_->RequestWorkerStopOnUIThread();
-    test_user_share_.TearDown();
     sync_thread_.task_runner()->DeleteSoon(FROM_HERE, registrar_.release());
     sync_thread_.FlushForTesting();
-  }
-
-  void TriggerChanges(ModelType type) {
-    registrar_->OnChangesApplied(type, 0, nullptr, ImmutableChangeRecordList());
-    registrar_->OnChangesComplete(type);
   }
 
   void ExpectRoutingInfo(const ModelSafeRoutingInfo& expected_routing_info) {
     ModelSafeRoutingInfo actual_routing_info;
     registrar_->GetModelSafeRoutingInfo(&actual_routing_info);
     EXPECT_EQ(expected_routing_info, actual_routing_info);
-  }
-
-  void ExpectHasProcessorsForTypes(ModelTypeSet types) {
-    for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
-      ModelType model_type = ModelTypeFromInt(i);
-      EXPECT_EQ(types.Has(model_type),
-                registrar_->IsTypeActivatedForTest(model_type));
-    }
   }
 
   size_t GetWorkersSize() {
@@ -73,7 +52,6 @@ class SyncBackendRegistrarTest : public testing::Test {
   }
 
   SyncBackendRegistrar* registrar() { return registrar_.get(); }
-  UserShare* user_share() { return test_user_share_.user_share(); }
   scoped_refptr<base::SequencedTaskRunner> db_task_runner() {
     return db_thread_.task_runner();
   }
@@ -93,7 +71,6 @@ class SyncBackendRegistrarTest : public testing::Test {
   base::Thread db_thread_;
   base::Thread sync_thread_;
 
-  TestUserShare test_user_share_;
   std::unique_ptr<SyncBackendRegistrar> registrar_;
 };
 
@@ -102,7 +79,6 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   EXPECT_FALSE(registrar()->IsNigoriEnabled());
   EXPECT_EQ(1u, GetWorkersSize());
   ExpectRoutingInfo(ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(ModelTypeSet());
 }
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
@@ -114,7 +90,6 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
   ExpectRoutingInfo({{NIGORI, GROUP_PASSIVE}});
-  ExpectHasProcessorsForTypes(ModelTypeSet());
 }
 
 TEST_F(SyncBackendRegistrarTest, ConstructorNonEmptyReversedInitialization) {
@@ -127,7 +102,6 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmptyReversedInitialization) {
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
   ExpectRoutingInfo({{NIGORI, GROUP_PASSIVE}});
-  ExpectHasProcessorsForTypes(ModelTypeSet());
 }
 
 TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
@@ -140,7 +114,6 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   ExpectRoutingInfo({{BOOKMARKS, GROUP_NON_BLOCKING},
                      {NIGORI, GROUP_PASSIVE},
                      {AUTOFILL, GROUP_PASSIVE}});
-  ExpectHasProcessorsForTypes(ModelTypeSet());
   EXPECT_EQ(types1, registrar()->GetLastConfiguredTypes());
 
   // Add and remove.
@@ -148,13 +121,11 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
   EXPECT_EQ(types2, registrar()->ConfigureDataTypes(types2, types1));
 
   ExpectRoutingInfo({{PREFERENCES, GROUP_PASSIVE}, {THEMES, GROUP_PASSIVE}});
-  ExpectHasProcessorsForTypes(ModelTypeSet());
   EXPECT_EQ(types2, registrar()->GetLastConfiguredTypes());
 
   // Remove.
   EXPECT_TRUE(registrar()->ConfigureDataTypes(ModelTypeSet(), types2).Empty());
   ExpectRoutingInfo(ModelSafeRoutingInfo());
-  ExpectHasProcessorsForTypes(ModelTypeSet());
   EXPECT_EQ(ModelTypeSet(), registrar()->GetLastConfiguredTypes());
 }
 

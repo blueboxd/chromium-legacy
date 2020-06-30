@@ -346,65 +346,6 @@ bool ExternalVkImageBacking::BeginAccess(
     DCHECK(!gl_reads_in_progress_);
     gl_reads_in_progress_ = 1;
   }
-
-  if (use_separate_gl_texture())
-    return true;
-
-  DCHECK(need_synchronization());
-  DCHECK(is_gl);
-
-  auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
-  {
-    ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
-    GrVkImageInfo image_info;
-    bool success = backend_texture_.getVkImageInfo(&image_info);
-    DCHECK(success);
-    auto image_layout = image_info.fImageLayout;
-    if (image_layout == VK_IMAGE_LAYOUT_UNDEFINED) {
-      // dst_image_layout cannot be VK_IMAGE_LAYOUT_UNDEFINED, so we set it to
-      // VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL.
-      image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-      command_buffer->TransitionImageLayout(
-          image_info.fImage, image_info.fImageLayout, image_layout);
-      // Update backend_texture_ image layout.
-      backend_texture_.setVkImageLayout(image_layout);
-    }
-    uint32_t vulkan_queue_index = context_state_->vk_context_provider()
-                                      ->GetDeviceQueue()
-                                      ->GetVulkanQueueIndex();
-    // Transfer image queue family ownership to external, so the image can be
-    // used by GL.
-    command_buffer->TransitionImageLayout(image_info.fImage, image_layout,
-                                          image_layout, vulkan_queue_index,
-                                          VK_QUEUE_FAMILY_EXTERNAL);
-  }
-
-  std::vector<VkSemaphore> wait_semaphores;
-  wait_semaphores.reserve(semaphore_handles->size());
-  for (auto& handle : *semaphore_handles) {
-    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
-        device(), std::move(handle));
-    wait_semaphores.emplace_back(semaphore);
-  }
-  semaphore_handles->clear();
-
-  VkSemaphore signal_semaphore =
-      vulkan_implementation()->CreateExternalSemaphore(device());
-  // TODO(penghuang): ask skia to do it for us to avoid this queue submission.
-  command_buffer->Submit(wait_semaphores.size(), wait_semaphores.data(), 1,
-                         &signal_semaphore);
-  auto end_access_semaphore_handle =
-      vulkan_implementation()->GetSemaphoreHandle(device(), signal_semaphore);
-  semaphore_handles->push_back(std::move(end_access_semaphore_handle));
-
-  auto* fence_helper =
-      context_state_->vk_context_provider()->GetDeviceQueue()->GetFenceHelper();
-  fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-      std::move(command_buffer));
-  wait_semaphores.emplace_back(signal_semaphore);
-  fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
-      std::move(wait_semaphores));
-
   return true;
 }
 
@@ -417,43 +358,6 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
       DCHECK(!semaphore_handle.is_valid());
       return;
     }
-  }
-
-  // Only transite image layout and queue back when it is the last gl access.
-  if (is_gl && !use_separate_gl_texture()) {
-    DCHECK(semaphore_handle.is_valid());
-    auto command_buffer = command_pool_->CreatePrimaryCommandBuffer();
-    {
-      ScopedSingleUseCommandBufferRecorder recorder(*command_buffer);
-      GrVkImageInfo image_info;
-      bool success = backend_texture_.getVkImageInfo(&image_info);
-      DCHECK(success);
-      uint32_t vulkan_queue_index = context_state_->vk_context_provider()
-                                        ->GetDeviceQueue()
-                                        ->GetVulkanQueueIndex();
-
-      // After GL accessing, transfer image queue family ownership back, so it
-      // can be used by vulkan.
-      command_buffer->TransitionImageLayout(
-          image_info.fImage, image_info.fImageLayout, image_info.fImageLayout,
-          VK_QUEUE_FAMILY_EXTERNAL, vulkan_queue_index);
-    }
-
-    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
-        device(), std::move(semaphore_handle));
-    VkSemaphore end_access_semaphore =
-        vulkan_implementation()->CreateExternalSemaphore(device());
-    // TODO(penghuang): ask skia to do it for us to avoid this queue submission.
-    command_buffer->Submit(1, &semaphore, 1, &end_access_semaphore);
-    semaphore_handle = vulkan_implementation()->GetSemaphoreHandle(
-        device(), end_access_semaphore);
-    auto* fence_helper = context_state_->vk_context_provider()
-                             ->GetDeviceQueue()
-                             ->GetFenceHelper();
-    fence_helper->EnqueueVulkanObjectCleanupForSubmittedWork(
-        std::move(command_buffer));
-    fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
-        {semaphore, end_access_semaphore});
   }
 
   EndAccessInternal(readonly, std::move(semaphore_handle));
@@ -879,6 +783,10 @@ bool ExternalVkImageBacking::WritePixels() {
   };
 
   gr_context->flush(flush_info);
+  gr_context->setBackendTextureState(
+      backend_texture_,
+      GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                   VK_QUEUE_FAMILY_EXTERNAL));
   // Submit so the |end_access_semaphore| is ready for waiting.
   gr_context->submit();
 

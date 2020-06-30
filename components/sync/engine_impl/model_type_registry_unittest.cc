@@ -14,12 +14,9 @@
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/fake_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/model_neutral_mutable_entry.h"
-#include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
-#include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
+#include "components/sync/test/fake_sync_encryption_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -29,7 +26,6 @@ namespace {
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
   void SetUp() override {
-    test_user_share_.SetUp();
     scoped_refptr<ModelSafeWorker> passive_worker(
         new FakeModelWorker(GROUP_PASSIVE));
     scoped_refptr<ModelSafeWorker> ui_worker(
@@ -38,14 +34,13 @@ class ModelTypeRegistryTest : public ::testing::Test {
     workers_.push_back(ui_worker);
 
     registry_ = std::make_unique<ModelTypeRegistry>(
-        workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        &cancelation_signal_, test_user_share_.keystore_keys_handler());
+        workers_, &mock_nudge_handler_, &cancelation_signal_,
+        &encryption_handler_);
   }
 
   void TearDown() override {
     registry_.reset();
     workers_.clear();
-    test_user_share_.TearDown();
   }
 
   ModelTypeRegistry* registry() { return registry_.get(); }
@@ -66,24 +61,10 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return context;
   }
 
-  void SetDummyProgressMarkerForType(ModelType type) {
-    sync_pb::DataTypeProgressMarker progress_marker;
-    progress_marker.set_token("dummy");
-    directory()->SetDownloadProgress(type, progress_marker);
-  }
-
-  syncable::MetahandleSet metahandles_to_purge() {
-    return directory()->kernel()->metahandles_to_purge;
-  }
-
  private:
-  syncable::Directory* directory() {
-    return test_user_share_.user_share()->directory.get();
-  }
-
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  TestUserShare test_user_share_;
+  FakeSyncEncryptionHandler encryption_handler_;
   CancelationSignal cancelation_signal_;
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   std::unique_ptr<ModelTypeRegistry> registry_;

@@ -3,6 +3,7 @@
 if (window.internals)
     internals.settings.setLangAttributeAwareFormControlUIEnabled(true);
 </script>
+<script src="../../../resources/gesture-util.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../fast/forms/resources/common.js"></script>
@@ -13,16 +14,16 @@ if (window.internals)
 <script>
 let t = async_test('Test scrolling in time picker.');
 
-function test1() {
+async function test1() {
   let hourColumn = popupWindow.global.picker.timeColumns.firstChild;
   const scrollHourTopBeforeWheelEvent = hourColumn.scrollTop;
   // scroll up by 2 ticks ~ 2 cells
-  dispatchWheelEvent(hourColumn, 0, 2);
+  await dispatchWheelEvent(hourColumn, 0, -2);
 
   let minuteColumn = hourColumn.nextSibling;
   const scrollMinuteTopBeforeWheelEvent = minuteColumn.scrollTop;
   // scroll up by 3 ticks ~ 3 cells
-  dispatchWheelEvent(minuteColumn, 0, 3);
+  await dispatchWheelEvent(minuteColumn, 0, -3);
 
   t.step_timeout(function() {
     // verify that both columns have been scrolled up.

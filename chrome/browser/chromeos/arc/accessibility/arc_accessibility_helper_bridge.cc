@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -318,6 +319,7 @@ void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
   }
 
   UpdateWindowProperties(window);
+  base::UmaHistogramBoolean("Arc.AccessibilityWithTalkBack", !enabled);
 }
 
 bool ArcAccessibilityHelperBridge::RefreshTreeIfInActiveWindow(
@@ -860,6 +862,12 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     if (!tree_source) {
       tree_source = CreateFromKey(key, active_window);
       SetChildAxTreeIDForWindow(active_window, tree_source->ax_tree_id());
+      if (chromeos::AccessibilityManager::Get() &&
+          chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+        // Record metrics only when SpokenFeedback is enabled in order to
+        // compare this with TalkBack usage.
+        base::UmaHistogramBoolean("Arc.AccessibilityWithTalkBack", false);
+      }
     } else {
       tree_source->set_device_scale_factor(
           DeviceScaleFactorFromWindow(active_window));

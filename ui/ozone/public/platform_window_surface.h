@@ -6,6 +6,11 @@
 #define UI_OZONE_PUBLIC_PLATFORM_WINDOW_SURFACE_H_
 
 #include "base/component_export.h"
+#include "build/build_config.h"
+
+#if defined(OS_FUCHSIA)
+#include <fuchsia/images/cpp/fidl.h>
+#endif  // defined(OS_FUCHSIA)
 
 namespace ui {
 
@@ -28,9 +33,14 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformWindowSurface {
  public:
   virtual ~PlatformWindowSurface() {}
 
-  // Note: GL & Vulkan surface are created through the GLOzone &
-  // VulkanImplementation interfaces, respectively.
-  //
+#if defined(OS_FUCHSIA)
+  // Sets the texture of the surface to a new image pipe.
+  virtual bool SetTextureToNewImagePipe(
+      fidl::InterfaceRequest<fuchsia::images::ImagePipe2>
+          image_pipe_request) = 0;
+#endif  // defined(OS_FUCHSIA)
+
+  // Note: GL surface may be created through the GLOzone interface.
   // However, you must still create a PlatformWindowSurface and keep it alive in
   // order to present.
 };

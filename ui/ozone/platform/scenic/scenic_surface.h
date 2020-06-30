@@ -35,8 +35,9 @@ class ScenicSurface : public ui::PlatformWindowSurface {
   ~ScenicSurface() override;
 
   // Sets the texture of the surface to a new image pipe.
-  void SetTextureToNewImagePipe(
-      fidl::InterfaceRequest<fuchsia::images::ImagePipe2> image_pipe_request);
+  bool SetTextureToNewImagePipe(
+      fidl::InterfaceRequest<fuchsia::images::ImagePipe2> image_pipe_request)
+      override;
 
   // Sets the texture of the surface to an image resource.
   void SetTextureToImage(const scenic::Image& image);

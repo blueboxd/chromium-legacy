@@ -3544,6 +3544,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMemlogStackModeDescription, kOsAll,
      MULTI_VALUE_TYPE(kMemlogStackModeChoices)},
 
+    {"omnibox-ui-elide-to-registrable-domain",
+     flag_descriptions::kOmniboxUIElideToRegistrableDomainName,
+     flag_descriptions::kOmniboxUIElideToRegistrableDomainDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kElideToRegistrableDomain)},
+
     {"omnibox-ui-hide-steady-state-url-scheme",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,

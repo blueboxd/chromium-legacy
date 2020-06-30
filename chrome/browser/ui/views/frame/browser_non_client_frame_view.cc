@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
@@ -380,7 +381,9 @@ void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
 int BrowserNonClientFrameView::GetSystemMenuY() const {
   if (!browser_view()->IsTabStripVisible())
     return GetTopInset(false);
-  return GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom() -
+  return GetBoundsForTabStripRegion(
+             browser_view()->tab_strip_region_view()->GetMinimumSize())
+             .bottom() -
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 #endif

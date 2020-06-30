@@ -5,7 +5,6 @@ include_rules = [
   "+components/sync/model",
   "+components/sync/nigori",
   "+components/sync/protocol",
-  "+components/sync/syncable",
   "+components/sync/test",
   "+net",
   "+services/network/public",

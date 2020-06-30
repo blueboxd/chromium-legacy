@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_switches.h"
@@ -71,8 +73,9 @@ class ShapedWidgetDelegate : public WidgetDelegateView {
   ~ShapedWidgetDelegate() override = default;
 
   // WidgetDelegateView:
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
-    return new ShapedNonClientFrameView;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override {
+    return std::make_unique<ShapedNonClientFrameView>();
   }
 
  private:

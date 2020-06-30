@@ -51,7 +51,7 @@ std::unique_ptr<IconLoader::Releaser> IconCoalescer::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
@@ -61,15 +61,16 @@ std::unique_ptr<IconLoader::Releaser> IconCoalescer::LoadIconFromIconKey(
     return nullptr;
   }
 
-  if (icon_compression != apps::mojom::IconCompression::kUncompressed) {
+  if (icon_type != apps::mojom::IconType::kUncompressed &&
+      icon_type != apps::mojom::IconType::kStandard) {
     return wrapped_loader_->LoadIconFromIconKey(
-        app_type, app_id, std::move(icon_key), icon_compression,
-        size_hint_in_dip, allow_placeholder_icon, std::move(callback));
+        app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+        allow_placeholder_icon, std::move(callback));
   }
 
   scoped_refptr<RefCountedReleaser> shared_releaser;
-  IconLoader::Key key(app_type, app_id, icon_key, icon_compression,
-                      size_hint_in_dip, allow_placeholder_icon);
+  IconLoader::Key key(app_type, app_id, icon_key, icon_type, size_hint_in_dip,
+                      allow_placeholder_icon);
 
   auto iter = non_immediate_requests_.find(key);
   if (iter != non_immediate_requests_.end()) {
@@ -114,8 +115,8 @@ std::unique_ptr<IconLoader::Releaser> IconCoalescer::LoadIconFromIconKey(
 
     std::unique_ptr<IconLoader::Releaser> unique_releaser =
         wrapped_loader_->LoadIconFromIconKey(
-            app_type, app_id, std::move(icon_key), icon_compression,
-            size_hint_in_dip, allow_placeholder_icon,
+            app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+            allow_placeholder_icon,
             base::BindOnce(&IconCoalescer::OnLoadIcon,
                            weak_ptr_factory_.GetWeakPtr(), key, seq_num));
 
@@ -201,7 +202,7 @@ void IconCoalescer::OnLoadIcon(IconLoader::Key key,
       iv = std::move(icon_value);
     } else {
       iv = apps::mojom::IconValue::New();
-      iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
+      iv->icon_type = icon_value->icon_type;
       iv->uncompressed = icon_value->uncompressed;
       iv->is_placeholder_icon = icon_value->is_placeholder_icon;
     }

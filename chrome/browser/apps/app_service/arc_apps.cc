@@ -49,7 +49,7 @@
 namespace {
 
 void OnArcAppIconCompletelyLoaded(
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     apps::IconEffects icon_effects,
     apps::mojom::Publisher::LoadIconCallback callback,
@@ -60,11 +60,11 @@ void OnArcAppIconCompletelyLoaded(
   }
 
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = icon_compression;
+  iv->icon_type = icon_type;
   iv->is_placeholder_icon = false;
 
-  switch (icon_compression) {
-    case apps::mojom::IconCompression::kCompressed: {
+  switch (icon_type) {
+    case apps::mojom::IconType::kCompressed: {
       auto& compressed_images = icon->compressed_images();
       auto iter =
           compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
@@ -80,8 +80,8 @@ void OnArcAppIconCompletelyLoaded(
       }
       break;
     }
-    case apps::mojom::IconCompression::kUncompressed:
-    case apps::mojom::IconCompression::kStandard: {
+    case apps::mojom::IconType::kUncompressed:
+    case apps::mojom::IconType::kStandard: {
       if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
         iv->uncompressed = gfx::ImageSkiaOperations::CreateSuperimposedImage(
             icon->background_image_skia(), icon->foreground_image_skia());
@@ -94,7 +94,7 @@ void OnArcAppIconCompletelyLoaded(
       }
       break;
     }
-    case apps::mojom::IconCompression::kUnknown:
+    case apps::mojom::IconType::kUnknown:
       NOTREACHED();
       break;
   }
@@ -171,16 +171,11 @@ base::Optional<arc::UserInteractionType> GetUserInterationType(
 
 arc::mojom::IntentInfoPtr CreateArcIntent(apps::mojom::IntentPtr intent) {
   arc::mojom::IntentInfoPtr arc_intent;
-  if (!intent->scheme.has_value() || !intent->host.has_value() ||
-      !intent->path.has_value()) {
+  if (!intent->url.has_value()) {
     return arc_intent;
   }
 
   arc_intent = arc::mojom::IntentInfo::New();
-  auto uri_components = arc::mojom::UriComponents::New();
-  uri_components->scheme = intent->scheme.value();
-  uri_components->authority = intent->host.value();
-  uri_components->path = intent->path.value();
   if (intent->action.has_value()) {
     if (intent->action.value() == apps_util::kIntentActionView) {
       arc_intent->action = arc::kIntentActionView;
@@ -194,7 +189,7 @@ arc::mojom::IntentInfoPtr CreateArcIntent(apps::mojom::IntentPtr intent) {
   } else {
     arc_intent->action = arc::kIntentActionView;
   }
-  arc_intent->uri_components = std::move(uri_components);
+  arc_intent->data = intent->url->spec();
   return arc_intent;
 }
 
@@ -568,11 +563,11 @@ void ArcApps::Connect(
 
 void ArcApps::LoadIcon(const std::string& app_id,
                        apps::mojom::IconKeyPtr icon_key,
-                       apps::mojom::IconCompression icon_compression,
+                       apps::mojom::IconType icon_type,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        LoadIconCallback callback) {
-  if (!icon_key || icon_compression == apps::mojom::IconCompression::kUnknown) {
+  if (!icon_key || icon_type == apps::mojom::IconType::kUnknown) {
     std::move(callback).Run(apps::mojom::IconValue::New());
     return;
   }
@@ -585,7 +580,7 @@ void ArcApps::LoadIcon(const std::string& app_id,
   // should be showable even before the user has installed their first
   // Android app and before bringing up an Android VM for the first time.
   if (app_id == arc::kPlayStoreAppId) {
-    LoadPlayStoreIcon(icon_compression, size_hint_in_dip, icon_effects,
+    LoadPlayStoreIcon(icon_type, size_hint_in_dip, icon_effects,
                       std::move(callback));
   } else {
     const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
@@ -601,8 +596,8 @@ void ArcApps::LoadIcon(const std::string& app_id,
     }
 
     arc_icon_once_loader_.LoadIcon(
-        app_id, size_hint_in_dip, icon_compression,
-        base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_compression,
+        app_id, size_hint_in_dip, icon_type,
+        base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_type,
                        size_hint_in_dip, icon_effects, std::move(callback)));
   }
 }
@@ -1129,7 +1124,7 @@ void ArcApps::OnInstanceRegistryWillBeDestroyed(
   instance_registry_observer_.Remove(instance_registry);
 }
 
-void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
+void ArcApps::LoadPlayStoreIcon(apps::mojom::IconType icon_type,
                                 int32_t size_hint_in_dip,
                                 IconEffects icon_effects,
                                 LoadIconCallback callback) {
@@ -1140,7 +1135,7 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
   int resource_id = (size_hint_in_px <= 32) ? IDR_ARC_SUPPORT_ICON_32
                                             : IDR_ARC_SUPPORT_ICON_192;
   constexpr bool is_placeholder_icon = false;
-  LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
+  LoadIconFromResource(icon_type, size_hint_in_dip, resource_id,
                        is_placeholder_icon, icon_effects, std::move(callback));
 }
 

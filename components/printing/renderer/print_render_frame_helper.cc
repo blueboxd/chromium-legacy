@@ -1641,7 +1641,8 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
 
-  PrintHostMsg_DidPreviewDocument_Params preview_params;
+  mojom::DidPreviewDocumentParams preview_params;
+  preview_params.content = mojom::DidPrintContentParams::New();
 
   // Modifiable content of MSKP type is collected into a document during
   // individual page preview generation, so only need to share a separate
@@ -1650,7 +1651,7 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   MetafileSkia* metafile = print_preview_context_.metafile();
   if (metafile) {
     if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
-                                             &preview_params.content)) {
+                                             preview_params.content.get())) {
       LOG(ERROR) << "CopyMetafileDataToReadOnlySharedMem failed";
       print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
       return false;
@@ -2727,7 +2728,8 @@ PrintRenderFrameHelper::PrintPreviewContext::pages_to_render() const {
   return pages_to_render_;
 }
 
-int PrintRenderFrameHelper::PrintPreviewContext::pages_rendered_count() const {
+size_t PrintRenderFrameHelper::PrintPreviewContext::pages_rendered_count()
+    const {
   DCHECK_EQ(DONE, state_);
   return pages_to_render_.size();
 }

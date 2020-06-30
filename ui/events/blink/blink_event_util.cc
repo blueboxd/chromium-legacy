@@ -26,7 +26,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/angle_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
 

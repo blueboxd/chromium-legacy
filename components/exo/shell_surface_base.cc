@@ -730,8 +730,8 @@ views::View* ShellSurfaceBase::GetContentsView() {
   return this;
 }
 
-views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ShellSurfaceBase::CreateNonClientFrameView(views::Widget* widget) {
   return CreateNonClientFrameViewInternal(widget, /*client_controlled=*/false);
 }
 
@@ -1095,9 +1095,9 @@ void ShellSurfaceBase::InstallCustomWindowTargeter() {
   window->SetEventTargeter(std::make_unique<CustomWindowTargeter>(widget_));
 }
 
-views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
-    views::Widget* widget,
-    bool client_controlled) {
+std::unique_ptr<views::NonClientFrameView>
+ShellSurfaceBase::CreateNonClientFrameViewInternal(views::Widget* widget,
+                                                   bool client_controlled) {
   aura::Window* window = widget_->GetNativeWindow();
   // ShellSurfaces always use immersive mode.
   window->SetProperty(ash::kImmersiveIsActive, true);
@@ -1105,8 +1105,8 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
   if (!frame_enabled() && !window_state->HasDelegate()) {
     window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
   }
-  CustomFrameView* frame_view =
-      new CustomFrameView(widget, this, frame_enabled(), client_controlled);
+  auto frame_view = std::make_unique<CustomFrameView>(
+      widget, this, frame_enabled(), client_controlled);
   if (has_frame_colors_)
     frame_view->SetFrameColors(active_frame_color_, inactive_frame_color_);
   return frame_view;

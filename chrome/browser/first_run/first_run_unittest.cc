@@ -33,7 +33,7 @@ class FirstRunTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FirstRunTest);
 };
 
-TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_NoVariationsSeed) {
+TEST_F(FirstRunTest, SetupInitialPrefsFromInstallPrefs_NoVariationsSeed) {
   installer::MasterPreferences install_prefs("{ }");
   EXPECT_TRUE(install_prefs.master_dictionary().empty());
 
@@ -41,7 +41,8 @@ TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_NoVariationsSeed) {
   EXPECT_TRUE(install_prefs.GetVariationsSeedSignature().empty());
 }
 
-TEST_F(FirstRunTest, SetupMasterPrefsFromInstallPrefs_VariationsSeedSignature) {
+TEST_F(FirstRunTest,
+       SetupInitialPrefsFromInstallPrefs_VariationsSeedSignature) {
   installer::MasterPreferences install_prefs(
       "{\"variations_compressed_seed\":\"xyz\","
       " \"variations_seed_signature\":\"abc\"}");

@@ -224,8 +224,7 @@ bool TtsPlatformImplWin::IsSpeaking() {
 void TtsPlatformImplWin::GetVoices(std::vector<VoiceData>* out_voices) {
   Microsoft::WRL::ComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
-  if (S_OK !=
-      SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
+  if (S_OK != SpEnumTokens(SPCAT_VOICES, NULL, NULL, &voice_tokens))
     return;
   if (S_OK != voice_tokens->GetCount(&voice_count))
     return;
@@ -234,7 +233,7 @@ void TtsPlatformImplWin::GetVoices(std::vector<VoiceData>* out_voices) {
     VoiceData voice;
 
     Microsoft::WRL::ComPtr<ISpObjectToken> voice_token;
-    if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
+    if (S_OK != voice_tokens->Next(1, &voice_token, NULL))
       return;
 
     base::win::ScopedCoMem<WCHAR> description;
@@ -243,7 +242,7 @@ void TtsPlatformImplWin::GetVoices(std::vector<VoiceData>* out_voices) {
     voice.name = base::WideToUTF8(description.get());
 
     Microsoft::WRL::ComPtr<ISpDataKey> attributes;
-    if (S_OK != voice_token->OpenKey(kAttributesKey, attributes.GetAddressOf()))
+    if (S_OK != voice_token->OpenKey(kAttributesKey, &attributes))
       continue;
 
     base::win::ScopedCoMem<WCHAR> language;
@@ -314,15 +313,14 @@ void TtsPlatformImplWin::SetVoiceFromName(const std::string& name) {
 
   Microsoft::WRL::ComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
-  if (S_OK !=
-      SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
+  if (S_OK != SpEnumTokens(SPCAT_VOICES, NULL, NULL, &voice_tokens))
     return;
   if (S_OK != voice_tokens->GetCount(&voice_count))
     return;
 
   for (unsigned i = 0; i < voice_count; i++) {
     Microsoft::WRL::ComPtr<ISpObjectToken> voice_token;
-    if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
+    if (S_OK != voice_tokens->Next(1, &voice_token, NULL))
       return;
 
     base::win::ScopedCoMem<WCHAR> description;

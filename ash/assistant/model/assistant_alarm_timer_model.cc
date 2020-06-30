@@ -76,20 +76,6 @@ const AssistantTimer* AssistantAlarmTimerModel::GetTimerById(
   return it != timers_.end() ? it->second.get() : nullptr;
 }
 
-void AssistantAlarmTimerModel::Tick() {
-  if (timers_.empty())
-    return;
-
-  for (auto& pair : timers_) {
-    AssistantTimer* timer = pair.second.get();
-    if (timer->state == AssistantTimerState::kPaused)
-      continue;
-
-    timer->remaining_time = timer->fire_time - base::Time::Now();
-    NotifyTimerUpdated(*timer);
-  }
-}
-
 void AssistantAlarmTimerModel::NotifyTimerAdded(const AssistantTimer& timer) {
   for (auto& observer : observers_)
     observer.OnTimerAdded(timer);

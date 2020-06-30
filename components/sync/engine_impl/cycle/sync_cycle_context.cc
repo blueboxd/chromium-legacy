@@ -5,25 +5,24 @@
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 
 #include "components/sync/base/extensions_activity.h"
-#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
 SyncCycleContext::SyncCycleContext(
     ServerConnectionManager* connection_manager,
-    syncable::Directory* directory,
     ExtensionsActivity* extensions_activity,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id,
+    const std::string& cache_guid,
     const std::string& birthday,
     const std::string& bag_of_chips,
     base::TimeDelta poll_interval)
     : connection_manager_(connection_manager),
-      directory_(directory),
       extensions_activity_(extensions_activity),
       notifications_enabled_(false),
+      cache_guid_(cache_guid),
       birthday_(birthday),
       bag_of_chips_(bag_of_chips),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
@@ -48,16 +47,10 @@ ModelTypeSet SyncCycleContext::GetEnabledTypes() const {
 void SyncCycleContext::set_birthday(const std::string& birthday) {
   DCHECK(birthday_.empty());
   birthday_ = birthday;
-  // Persist the value in Directory as well, in case recent code changes are
-  // reverted and we start reading from Directory again.
-  directory_->set_legacy_store_birthday(birthday);
 }
 
 void SyncCycleContext::set_bag_of_chips(const std::string& bag_of_chips) {
   bag_of_chips_ = bag_of_chips;
-  // Persist the value in Directory as well, in case recent code changes are
-  // reverted and we start reading from Directory again.
-  directory_->set_legacy_bag_of_chips(bag_of_chips);
 }
 
 }  // namespace syncer

@@ -240,7 +240,7 @@ std::vector<uint8_t> EncodeImage(const gfx::ImageSkia image) {
 }
 
 // This pipeline is meant to:
-// * Simplify loading icons, as things like effects and compression are common
+// * Simplify loading icons, as things like effects and type are common
 //   to all loading.
 // * Allow the caller to halt the process by destructing the loader at any time,
 // * Allow easy additions to the pipeline if necessary (like new effects or
@@ -251,13 +251,13 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   static const int kFaviconFallbackImagePx =
       extension_misc::EXTENSION_ICON_BITTY;
 
-  IconLoadingPipeline(apps::mojom::IconCompression icon_compression,
+  IconLoadingPipeline(apps::mojom::IconType icon_type,
                       int size_hint_in_dip,
                       bool is_placeholder_icon,
                       apps::IconEffects icon_effects,
                       int fallback_icon_resource,
                       apps::mojom::Publisher::LoadIconCallback callback)
-      : IconLoadingPipeline(icon_compression,
+      : IconLoadingPipeline(icon_type,
                             size_hint_in_dip,
                             is_placeholder_icon,
                             icon_effects,
@@ -267,7 +267,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
                             std::move(callback)) {}
 
   IconLoadingPipeline(
-      apps::mojom::IconCompression icon_compression,
+      apps::mojom::IconType icon_type,
       int size_hint_in_dip,
       bool is_placeholder_icon,
       apps::IconEffects icon_effects,
@@ -275,7 +275,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
       base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
           fallback,
       apps::mojom::Publisher::LoadIconCallback callback)
-      : icon_compression_(icon_compression),
+      : icon_type_(icon_type),
         size_hint_in_dip_(size_hint_in_dip),
         is_placeholder_icon_(is_placeholder_icon),
         icon_effects_(icon_effects),
@@ -314,7 +314,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void MaybeLoadFallbackOrCompleteEmpty();
 
-  apps::mojom::IconCompression icon_compression_;
+  apps::mojom::IconType icon_type_;
   int size_hint_in_dip_;
   bool is_placeholder_icon_;
   apps::IconEffects icon_effects_;
@@ -352,8 +352,8 @@ void IconLoadingPipeline::LoadWebAppIcon(
   fallback_favicon_url_ = launch_url;
   profile_ = profile;
   if (icon_manager.HasSmallestIcon(web_app_id, icon_size_in_px)) {
-    switch (icon_compression_) {
-      case apps::mojom::IconCompression::kCompressed:
+    switch (icon_type_) {
+      case apps::mojom::IconType::kCompressed:
         if (icon_effects_ == apps::IconEffects::kNone) {
           icon_manager.ReadSmallestCompressedIcon(
               web_app_id, icon_size_in_px,
@@ -362,7 +362,7 @@ void IconLoadingPipeline::LoadWebAppIcon(
           return;
         }
         FALLTHROUGH;
-      case apps::mojom::IconCompression::kUncompressed: {
+      case apps::mojom::IconType::kUncompressed: {
         // For uncompressed icon, apply the resize and pad effect.
         icon_effects_ = static_cast<apps::IconEffects>(
             icon_effects_ | apps::IconEffects::kResizeAndPad);
@@ -375,7 +375,7 @@ void IconLoadingPipeline::LoadWebAppIcon(
             icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
         FALLTHROUGH;
       }
-      case apps::mojom::IconCompression::kStandard:
+      case apps::mojom::IconType::kStandard:
         // If |icon_effects| are requested, we must always load the
         // uncompressed image to apply the icon effects, and then re-encode the
         // image if the compressed icon is requested.
@@ -385,7 +385,7 @@ void IconLoadingPipeline::LoadWebAppIcon(
                 &IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                 base::WrapRefCounted(this))));
         return;
-      case apps::mojom::IconCompression::kUnknown:
+      case apps::mojom::IconType::kUnknown:
         break;
     }
   }
@@ -405,8 +405,8 @@ void IconLoadingPipeline::LoadExtensionIcon(
   fallback_favicon_url_ =
       extensions::AppLaunchInfo::GetFullLaunchURL(extension);
   profile_ = Profile::FromBrowserContext(context);
-  switch (icon_compression_) {
-    case apps::mojom::IconCompression::kCompressed:
+  switch (icon_type_) {
+    case apps::mojom::IconType::kCompressed:
       // For compressed icons with no |icon_effects|, serve the
       // already-compressed bytes.
       if (icon_effects_ == apps::IconEffects::kNone) {
@@ -426,9 +426,9 @@ void IconLoadingPipeline::LoadExtensionIcon(
         return;
       }
       FALLTHROUGH;
-    case apps::mojom::IconCompression::kUncompressed:
+    case apps::mojom::IconType::kUncompressed:
       FALLTHROUGH;
-    case apps::mojom::IconCompression::kStandard:
+    case apps::mojom::IconType::kStandard:
       // If |icon_effects| are requested, we must always load the
       // uncompressed image to apply the icon effects, and then re-encode
       // the image if the compressed icon is requested.
@@ -438,7 +438,7 @@ void IconLoadingPipeline::LoadExtensionIcon(
               base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                              base::WrapRefCounted(this))));
       return;
-    case apps::mojom::IconCompression::kUnknown:
+    case apps::mojom::IconType::kUnknown:
       break;
   }
 
@@ -474,8 +474,8 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
     return;
   }
 
-  switch (icon_compression_) {
-    case apps::mojom::IconCompression::kCompressed:
+  switch (icon_type_) {
+    case apps::mojom::IconType::kCompressed:
       // For compressed icons with no |icon_effects|, serve the
       // already-compressed bytes.
       if (icon_effects_ == apps::IconEffects::kNone) {
@@ -486,9 +486,9 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
         return;
       }
       FALLTHROUGH;
-    case apps::mojom::IconCompression::kUncompressed:
+    case apps::mojom::IconType::kUncompressed:
       FALLTHROUGH;
-    case apps::mojom::IconCompression::kStandard: {
+    case apps::mojom::IconType::kStandard: {
       // For compressed icons with |icon_effects|, or for uncompressed
       // icons, we load the uncompressed image, apply the icon effects, and
       // then re-encode the image if necessary.
@@ -518,7 +518,7 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
       MaybeApplyEffectsAndComplete(scaled);
       return;
     }
-    case apps::mojom::IconCompression::kUnknown:
+    case apps::mojom::IconType::kUnknown:
       break;
   }
   MaybeLoadFallbackOrCompleteEmpty();
@@ -544,8 +544,8 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     apps::ApplyIconEffects(icon_effects_, size_hint_in_dip_, &processed_image);
   }
 
-  if (icon_compression_ == apps::mojom::IconCompression::kUncompressed ||
-      icon_compression_ == apps::mojom::IconCompression::kStandard) {
+  if (icon_type_ == apps::mojom::IconType::kUncompressed ||
+      icon_type_ == apps::mojom::IconType::kStandard) {
     CompleteWithImageSkia(processed_image);
     return;
   }
@@ -559,27 +559,27 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
 }
 
 void IconLoadingPipeline::CompleteWithCompressed(std::vector<uint8_t> data) {
-  DCHECK_EQ(icon_compression_, apps::mojom::IconCompression::kCompressed);
+  DCHECK_EQ(icon_type_, apps::mojom::IconType::kCompressed);
   if (data.empty()) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = apps::mojom::IconCompression::kCompressed;
+  iv->icon_type = apps::mojom::IconType::kCompressed;
   iv->compressed = std::move(data);
   iv->is_placeholder_icon = is_placeholder_icon_;
   std::move(callback_).Run(std::move(iv));
 }
 
 void IconLoadingPipeline::CompleteWithImageSkia(gfx::ImageSkia image) {
-  DCHECK_NE(icon_compression_, apps::mojom::IconCompression::kCompressed);
-  DCHECK_NE(icon_compression_, apps::mojom::IconCompression::kUnknown);
+  DCHECK_NE(icon_type_, apps::mojom::IconType::kCompressed);
+  DCHECK_NE(icon_type_, apps::mojom::IconType::kUnknown);
   if (image.isNull()) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
   }
   apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = icon_compression_;
+  iv->icon_type = icon_type_;
   iv->uncompressed = std::move(image);
   iv->is_placeholder_icon = is_placeholder_icon_;
   std::move(callback_).Run(std::move(iv));
@@ -708,7 +708,7 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 }
 
-void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
+void LoadIconFromExtension(apps::mojom::IconType icon_type,
                            int size_hint_in_dip,
                            content::BrowserContext* context,
                            const std::string& extension_id,
@@ -719,7 +719,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
   constexpr bool is_placeholder_icon = false;
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
-          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           IDR_APP_DEFAULT_ICON, std::move(callback));
   icon_loader->LoadExtensionIcon(
       extensions::ExtensionRegistry::Get(context)->GetInstalledExtension(
@@ -728,7 +728,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
 }
 
 void LoadIconFromWebApp(content::BrowserContext* context,
-                        apps::mojom::IconCompression icon_compression,
+                        apps::mojom::IconType icon_type,
                         int size_hint_in_dip,
                         const std::string& web_app_id,
                         IconEffects icon_effects,
@@ -742,7 +742,7 @@ void LoadIconFromWebApp(content::BrowserContext* context,
   constexpr bool is_placeholder_icon = false;
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
-          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           IDR_APP_DEFAULT_ICON, std::move(callback));
   icon_loader->LoadWebAppIcon(
       web_app_id, web_app_provider->registrar().GetAppLaunchURL(web_app_id),
@@ -750,7 +750,7 @@ void LoadIconFromWebApp(content::BrowserContext* context,
 }
 
 void LoadIconFromFileWithFallback(
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int size_hint_in_dip,
     const base::FilePath& path,
     IconEffects icon_effects,
@@ -762,13 +762,13 @@ void LoadIconFromFileWithFallback(
 
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
-          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           kInvalidIconResource, std::move(fallback), std::move(callback));
   icon_loader->LoadCompressedIconFromFile(path);
 }
 
 void LoadIconFromCompressedData(
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int size_hint_in_dip,
     IconEffects icon_effects,
     const std::string& compressed_icon_data,
@@ -778,12 +778,12 @@ void LoadIconFromCompressedData(
 
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
-          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           kInvalidIconResource, std::move(callback));
   icon_loader->LoadIconFromCompressedData(compressed_icon_data);
 }
 
-void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
+void LoadIconFromResource(apps::mojom::IconType icon_type,
                           int size_hint_in_dip,
                           int resource_id,
                           bool is_placeholder_icon,
@@ -795,7 +795,7 @@ void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
 
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
-          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           fallback_icon_resource, std::move(callback));
   icon_loader->LoadIconFromResource(resource_id);
 }

@@ -28,7 +28,7 @@ std::unique_ptr<IconLoader::Releaser> StubIconLoader::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
@@ -36,7 +36,7 @@ std::unique_ptr<IconLoader::Releaser> StubIconLoader::LoadIconFromIconKey(
   auto iter = timelines_by_app_id_.find(app_id);
   if (iter != timelines_by_app_id_.end()) {
     auto icon_value = apps::mojom::IconValue::New();
-    icon_value->icon_compression = apps::mojom::IconCompression::kUncompressed;
+    icon_value->icon_type = icon_type;
     icon_value->uncompressed =
         gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(1, 1), 1.0f));
     std::move(callback).Run(std::move(icon_value));

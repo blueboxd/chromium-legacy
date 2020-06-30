@@ -165,7 +165,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;
   void GetWidgetHitTestMask(SkPath* mask) const override;
@@ -244,7 +244,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void InstallCustomWindowTargeter();
 
   // Creates a NonClientFrameView for shell surface.
-  views::NonClientFrameView* CreateNonClientFrameViewInternal(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameViewInternal(
       views::Widget* widget,
       bool client_controlled);
 

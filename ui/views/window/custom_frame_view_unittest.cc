@@ -81,8 +81,9 @@ void CustomFrameViewTest::SetUp() {
   params.remove_standard_frame = true;
   widget_->Init(std::move(params));
 
-  custom_frame_view_ = new CustomFrameView;
-  widget_->non_client_view()->SetFrameView(custom_frame_view_);
+  auto custom_frame_view = std::make_unique<CustomFrameView>();
+  custom_frame_view_ = custom_frame_view.get();
+  widget_->non_client_view()->SetFrameView(std::move(custom_frame_view));
 }
 
 void CustomFrameViewTest::TearDown() {

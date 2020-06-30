@@ -529,7 +529,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateDefaultRenderer(
       base::BindRepeating(&CreateAudioDecodersForTest, &media_log_,
                           task_environment_.GetMainThreadTaskRunner(),
                           prepend_audio_decoders_cb_),
-      &media_log_, AudioRendererImpl::TranscribeAudioCallback()));
+      &media_log_, nullptr));
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

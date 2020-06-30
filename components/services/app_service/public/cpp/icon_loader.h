@@ -57,7 +57,7 @@ class IconLoader {
       apps::mojom::AppType app_type,
       const std::string& app_id,
       apps::mojom::IconKeyPtr icon_key,
-      apps::mojom::IconCompression icon_compression,
+      apps::mojom::IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) = 0;
@@ -67,7 +67,7 @@ class IconLoader {
   std::unique_ptr<Releaser> LoadIcon(
       apps::mojom::AppType app_type,
       const std::string& app_id,
-      apps::mojom::IconCompression icon_compression,
+      apps::mojom::IconType icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback);
@@ -89,14 +89,14 @@ class IconLoader {
     int32_t resource_id_;
     uint32_t icon_effects_;
     // Other fields.
-    apps::mojom::IconCompression icon_compression_;
+    apps::mojom::IconType icon_type_;
     int32_t size_hint_in_dip_;
     bool allow_placeholder_icon_;
 
     Key(apps::mojom::AppType app_type,
         const std::string& app_id,
         const apps::mojom::IconKeyPtr& icon_key,
-        apps::mojom::IconCompression icon_compression,
+        apps::mojom::IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon);
 

@@ -26,10 +26,12 @@ enum class BrowsingDataType {
   CACHE = 1,
 };
 
+// Used for setting/getting profile related settings.
 enum class SettingType {
   BASIC_SAFE_BROWSING_ENABLED = 0,
   UKM_ENABLED = 1,
   EXTENDED_REPORTING_SAFE_BROWSING_ENABLED = 2,
+  REAL_TIME_SAFE_BROWSING_ENABLED = 3,
 };
 
 class Profile {

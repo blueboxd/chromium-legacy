@@ -16,7 +16,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     window.EventType = chrome.automation.EventType;
     window.RoleType = chrome.automation.RoleType;
     window.doCmd = this.doCmd;
-    window.doHover = this.doHover;
+    window.simulateHitTestResult = this.simulateHitTestResult;
     window.press = this.press;
     window.Mod = constants.ModifierFlag;
 
@@ -44,10 +44,9 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     };
   }
 
-  doHover(node) {
+  simulateHitTestResult(node) {
     return () => {
-      const event = new CustomAutomationEvent(EventType.HOVER, node, 'action');
-      DesktopAutomationHandler.instance.onHover(event);
+      BackgroundMouseHandler.instance.handleHitTestResult(node);
     };
   }
 
@@ -1937,7 +1936,7 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverTargetsLeafNode', function() {
         assertNotNullNorUndefined(buttonP);
         const buttonText = buttonP.firstChild;
         assertNotNullNorUndefined(buttonText);
-        mockFeedback.call(doHover(buttonText))
+        mockFeedback.call(simulateHitTestResult(buttonText))
             .expectSpeech('Jefferson')
             .expectSpeech('Button')
             .replay();
@@ -2619,7 +2618,7 @@ TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', function() {
 });
 
 TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
-  DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = -1;
+  BackgroundMouseHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = -1;
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `
@@ -2640,7 +2639,7 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
         assertNotNullNorUndefined(button);
         const group = button.parent;
         assertNotNullNorUndefined(group);
-        mockFeedback.call(doHover(button))
+        mockFeedback.call(simulateHitTestResult(button))
             .expectSpeech('Button')
             .call(() => {
               // Override the role to simulate panes which are only found in
@@ -2651,10 +2650,10 @@ TEST_F('ChromeVoxBackgroundTest', 'HoverSkipsContainers', function() {
                 }
               });
             })
-            .call(doHover(group))
+            .call(simulateHitTestResult(group))
             .expectSpeech('range cleared!')
             .expectEarcon(Earcon.TOUCH_EXIT)
-            .call(doHover(group))
+            .call(simulateHitTestResult(group))
             .expectSpeech('range cleared!')
             .expectEarcon(Earcon.TOUCH_EXIT)
             .replay();

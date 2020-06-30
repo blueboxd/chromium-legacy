@@ -57,7 +57,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const override;
+      const gfx::Size& tabstrip_minimum_size) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;

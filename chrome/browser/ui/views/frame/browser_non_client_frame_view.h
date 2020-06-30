@@ -59,7 +59,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Retrieves the bounds in non-client view coordinates within which the
   // TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const = 0;
+      const gfx::Size& tabstrip_minimum_size) const = 0;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
@@ -203,8 +203,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 namespace chrome {
 
 // Provided by a browser_non_client_frame_view_factory_*.cc implementation
-BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
-    BrowserFrame* frame, BrowserView* browser_view);
+std::unique_ptr<BrowserNonClientFrameView> CreateBrowserNonClientFrameView(
+    BrowserFrame* frame,
+    BrowserView* browser_view);
 
 }  // namespace chrome
 

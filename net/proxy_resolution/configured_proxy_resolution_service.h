@@ -171,8 +171,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   void ForceReloadProxyConfig();
 
   // ProxyResolutionService
-  std::unique_ptr<base::DictionaryValue> GetProxyNetLogValues(
-      int info_sources) override;
+  base::Value GetProxyNetLogValues(int info_sources) override;
 
   // ProxyResolutionService
   bool CastToConfiguredProxyResolutionService(

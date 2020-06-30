@@ -85,7 +85,7 @@ class ScreenCaptureNotificationUIViews : public ScreenCaptureNotificationUI,
   // views::WidgetDelegateView:
   void DeleteDelegate() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowWindowTitle() const override;
@@ -236,12 +236,12 @@ views::ClientView* ScreenCaptureNotificationUIViews::CreateClientView(
   return client_view_;
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
     views::Widget* widget) {
   constexpr auto kPadding = gfx::Insets(5, 10);
-  views::BubbleFrameView* frame =
-      new views::BubbleFrameView(gfx::Insets(), kPadding);
+  auto frame =
+      std::make_unique<views::BubbleFrameView>(gfx::Insets(), kPadding);
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(

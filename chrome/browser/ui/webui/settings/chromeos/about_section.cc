@@ -160,7 +160,9 @@ AboutSection::AboutSection(Profile* profile,
                            PrefService* pref_service)
     : AboutSection(profile, search_tag_registry) {
   pref_service_ = pref_service;
-  registry()->AddSearchTags(GetAboutTermsOfServiceSearchConcepts());
+
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetAboutTermsOfServiceSearchConcepts());
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -174,10 +176,11 @@ AboutSection::AboutSection(Profile* profile,
 AboutSection::AboutSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetAboutSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetAboutSearchConcepts());
 
   if (base::FeatureList::IsEnabled(features::kReleaseNotes))
-    registry()->AddSearchTags(GetAboutReleaseNotesSearchConcepts());
+    updater.AddSearchTags(GetAboutReleaseNotesSearchConcepts());
 }
 
 AboutSection::~AboutSection() = default;
@@ -389,10 +392,12 @@ void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void AboutSection::UpdateReportIssueSearchTags() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (pref_service_->GetBoolean(prefs::kUserFeedbackAllowed))
-    registry()->AddSearchTags(GetAboutReportIssueSearchConcepts());
+    updater.AddSearchTags(GetAboutReportIssueSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetAboutReportIssueSearchConcepts());
+    updater.RemoveSearchTags(GetAboutReportIssueSearchConcepts());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

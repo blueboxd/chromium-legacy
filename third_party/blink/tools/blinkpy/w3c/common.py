@@ -74,12 +74,12 @@ def is_basename_skipped(basename):
     skipped basenames are never imported or exported.
     """
     assert '/' not in basename
-    blacklist = [
+    skipped_basenames = [
         'MANIFEST.json',  # MANIFEST.json is automatically regenerated.
         'OWNERS',  # https://crbug.com/584660 https://crbug.com/702283
         'reftest.list',  # https://crbug.com/582838
     ]
-    return (basename in blacklist or is_testharness_baseline(basename)
+    return (basename in skipped_basenames or is_testharness_baseline(basename)
             or basename.startswith('.'))
 
 

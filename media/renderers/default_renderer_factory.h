@@ -61,8 +61,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
 
-  void TranscribeAudio(scoped_refptr<media::AudioBuffer> buffer);
-
  private:
   std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoders(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
@@ -71,8 +69,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space,
       GpuVideoAcceleratorFactories* gpu_factories);
-
-  void EnableSpeechRecognition();
 
   MediaLog* media_log_;
 
@@ -85,7 +81,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
 
 #if !defined(OS_ANDROID)
   std::unique_ptr<SpeechRecognitionClient> speech_recognition_client_;
-  bool is_speech_recognition_available_ = false;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DefaultRendererFactory);

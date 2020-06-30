@@ -256,6 +256,8 @@ export class Camera extends View {
       }
     });
 
+    state.addObserver(state.State.SCREEN_OFF_AUTO, () => this.start());
+
     this.configuring_ = null;
   }
 
@@ -264,10 +266,18 @@ export class Camera extends View {
    * @return {!Promise}
    */
   async initialize() {
+    const helper = await ChromeHelper.getInstance();
+
     const setTablet = (isTablet) => state.set(state.State.TABLET, isTablet);
-    const isTablet =
-        await ChromeHelper.getInstance().initTabletModeMonitor(setTablet);
+    const isTablet = await helper.initTabletModeMonitor(setTablet);
     setTablet(isTablet);
+
+    const setScreenOffAuto = (s) => {
+      const offAuto = s === chromeosCamera.mojom.ScreenState.OFF_AUTO;
+      state.set(state.State.SCREEN_OFF_AUTO, offAuto);
+    };
+    const screenState = await helper.initScreenStateMonitor(setScreenOffAuto);
+    setScreenOffAuto(screenState);
   }
 
   /**
@@ -293,7 +303,8 @@ export class Camera extends View {
    */
   isSuspended() {
     return this.locked_ || chrome.app.window.current().isMinimized() ||
-        state.get(state.State.SUSPEND) || this.isTabletBackground_();
+        state.get(state.State.SUSPEND) ||
+        state.get(state.State.SCREEN_OFF_AUTO) || this.isTabletBackground_();
   }
 
   /**

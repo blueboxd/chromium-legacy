@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
+#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,15 +27,6 @@ std::vector<float> GetScoresFromTfidfResult(
     scores.push_back(std::roundf(std::get<2>(item) * 100) / 100.0);
   }
   return scores;
-}
-
-void CheckResult(const Result& result,
-                 const std::string& expected_id,
-                 float expected_score,
-                 size_t expected_number_token_positions) {
-  EXPECT_EQ(result.id, expected_id);
-  EXPECT_NEAR(result.score, expected_score, 0.001);
-  EXPECT_EQ(result.positions.size(), expected_number_token_positions);
 }
 
 }  // namespace

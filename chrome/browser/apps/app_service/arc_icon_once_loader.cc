@@ -9,14 +9,14 @@
 namespace apps {
 
 // A part of an ArcIconOnceLoader, for a specific size_in_dip and
-// icon_compression. This two-level structure (an ArcIconOnceLoader contains
+// icon_type. This two-level structure (an ArcIconOnceLoader contains
 // multiple SizeSpecificLoader instances) is needed because each ArcAppIcon is
-// for a specific size_in_dip and compressed-ness.
+// for a specific size_in_dip and type.
 class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
  public:
   SizeSpecificLoader(Profile* profile,
                      int32_t size_in_dip,
-                     apps::mojom::IconCompression icon_compression);
+                     apps::mojom::IconType icon_type);
   ~SizeSpecificLoader() override;
 
   void LoadIcon(const std::string& app_id,
@@ -30,7 +30,7 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
  private:
   Profile* const profile_;
   const int32_t size_in_dip_;
-  const apps::mojom::IconCompression icon_compression_;
+  const apps::mojom::IconType icon_type_;
 
   // Maps App IDs to their icon loaders (for a specific size_in_dip and
   // icon_compression).
@@ -45,10 +45,8 @@ class ArcIconOnceLoader::SizeSpecificLoader : public ArcAppIcon::Observer {
 ArcIconOnceLoader::SizeSpecificLoader::SizeSpecificLoader(
     Profile* profile,
     int32_t size_in_dip,
-    apps::mojom::IconCompression icon_compression)
-    : profile_(profile),
-      size_in_dip_(size_in_dip),
-      icon_compression_(icon_compression) {}
+    apps::mojom::IconType icon_type)
+    : profile_(profile), size_in_dip_(size_in_dip), icon_type_(icon_type) {}
 
 ArcIconOnceLoader::SizeSpecificLoader::~SizeSpecificLoader() {
   for (auto& kv_pair : callbacks_) {
@@ -72,15 +70,15 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
     return;
   }
   ArcAppIcon::IconType icon_type;
-  switch (icon_compression_) {
-    case apps::mojom::IconCompression::kUnknown:
-    case apps::mojom::IconCompression::kUncompressed:
+  switch (icon_type_) {
+    case apps::mojom::IconType::kUnknown:
+    case apps::mojom::IconType::kUncompressed:
       icon_type = ArcAppIcon::IconType::kUncompressed;
       break;
-    case apps::mojom::IconCompression::kCompressed:
+    case apps::mojom::IconType::kCompressed:
       icon_type = ArcAppIcon::IconType::kCompressed;
       break;
-    case apps::mojom::IconCompression::kStandard:
+    case apps::mojom::IconType::kStandard:
       icon_type = ArcAppIcon::IconType::kAdaptive;
       break;
   }
@@ -169,16 +167,16 @@ void ArcIconOnceLoader::StopObserving(ArcAppListPrefs* prefs) {
 void ArcIconOnceLoader::LoadIcon(
     const std::string& app_id,
     int32_t size_in_dip,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     base::OnceCallback<void(ArcAppIcon*)> callback) {
-  auto key = std::make_pair(size_in_dip, icon_compression);
+  auto key = std::make_pair(size_in_dip, icon_type);
   auto iter = size_specific_loaders_.find(key);
   if (iter == size_specific_loaders_.end()) {
-    iter = size_specific_loaders_
-               .insert(std::make_pair(
-                   key, std::make_unique<SizeSpecificLoader>(
-                            profile_, size_in_dip, icon_compression)))
-               .first;
+    iter =
+        size_specific_loaders_
+            .insert(std::make_pair(key, std::make_unique<SizeSpecificLoader>(
+                                            profile_, size_in_dip, icon_type)))
+            .first;
   }
   iter->second->LoadIcon(app_id, std::move(callback));
 }
@@ -192,10 +190,10 @@ void ArcIconOnceLoader::OnAppRemoved(const std::string& app_id) {
 void ArcIconOnceLoader::OnAppIconUpdated(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
-  for (int i = static_cast<int>(apps::mojom::IconCompression::kUncompressed);
-       i <= static_cast<int>(apps::mojom::IconCompression::kStandard); ++i) {
+  for (int i = static_cast<int>(apps::mojom::IconType::kUncompressed);
+       i <= static_cast<int>(apps::mojom::IconType::kStandard); ++i) {
     auto iter = size_specific_loaders_.find(std::make_pair(
-        descriptor.dip_size, static_cast<apps::mojom::IconCompression>(i)));
+        descriptor.dip_size, static_cast<apps::mojom::IconType>(i)));
     if (iter != size_specific_loaders_.end()) {
       iter->second->Reload(app_id, descriptor.scale_factor);
     }

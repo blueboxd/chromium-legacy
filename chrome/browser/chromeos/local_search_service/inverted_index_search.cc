@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 #include "chrome/browser/chromeos/local_search_service/inverted_index.h"
+#include "chrome/common/string_matching/tokenized_string.h"
 
 namespace local_search_service {
 
@@ -68,11 +70,40 @@ uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids,
   return num_deleted;
 }
 
-// TODO(jiameng): add impl.
 ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
                                          uint32_t max_results,
                                          std::vector<Result>* results) {
-  return ResponseStatus::kEmptyIndex;
+  DCHECK(results);
+  results->clear();
+  if (query.empty()) {
+    return ResponseStatus::kEmptyQuery;
+  }
+  if (GetSize() == 0u)
+    return ResponseStatus::kEmptyIndex;
+
+  // TODO(jiameng): actual input query may not be the same as default locale.
+  // Need another way to determine actual language of the query.
+  const TokenizedString::Mode mode =
+      IsNonLatinLocale(base::i18n::GetConfiguredLocale())
+          ? TokenizedString::Mode::kCamelCase
+          : TokenizedString::Mode::kWords;
+
+  const TokenizedString tokenized_query(query, mode);
+  std::unordered_set<base::string16> tokens;
+  for (const auto& token : tokenized_query.tokens()) {
+    // TODO(jiameng): we are not removing stopword because they shouldn't exist
+    // in the index. However, for performance reason, it may be worth to be
+    // removed.
+    tokens.insert(token);
+  }
+
+  // TODO(jiameng): allow thresholds to be passed in as search params.
+  *results = inverted_index_->FindMatchingDocumentsApproximately(
+      tokens, 0.1 /* prefix_threhold */, 0.6 /* block_threshold */);
+
+  if (results->size() > max_results && max_results > 0u)
+    results->resize(max_results);
+  return ResponseStatus::kSuccess;
 }
 
 std::vector<std::pair<std::string, uint32_t>>

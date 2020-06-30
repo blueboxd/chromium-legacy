@@ -20,7 +20,6 @@
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/get_updates_processor.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
-#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
@@ -146,14 +145,13 @@ SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
   // errors from the ServerConnectionManager if an exist has been requested.
   // However, it doesn't hurt to check it anyway.
   while (!ExitRequested()) {
-    std::unique_ptr<Commit> commit(
-        Commit::Init(cycle->context()->GetEnabledTypes(),
-                     cycle->context()->max_commit_batch_size(),
-                     cycle->context()->account_name(),
-                     cycle->context()->directory()->cache_guid(),
-                     cycle->context()->cookie_jar_mismatch(),
-                     cycle->context()->cookie_jar_empty(), &commit_processor,
-                     cycle->context()->extensions_activity()));
+    std::unique_ptr<Commit> commit(Commit::Init(
+        cycle->context()->GetEnabledTypes(),
+        cycle->context()->max_commit_batch_size(),
+        cycle->context()->account_name(), cycle->context()->cache_guid(),
+        cycle->context()->cookie_jar_mismatch(),
+        cycle->context()->cookie_jar_empty(), &commit_processor,
+        cycle->context()->extensions_activity()));
     if (!commit) {
       break;
     }

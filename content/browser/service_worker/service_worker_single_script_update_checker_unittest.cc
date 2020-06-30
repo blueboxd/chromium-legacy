@@ -92,7 +92,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       const GURL& scope,
       std::unique_ptr<MockServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<MockServiceWorkerResponseReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      std::unique_ptr<MockServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     return CreateSingleScriptUpdateChecker(
@@ -114,6 +114,17 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     return remote;
   }
 
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> WrapWriter(
+      std::unique_ptr<MockServiceWorkerResponseWriter> writer) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> remote;
+    remote.Bind(writer->BindNewPipeAndPassRemote(base::BindOnce(
+        [](std::unique_ptr<MockServiceWorkerResponseWriter>) {
+          // Keep |writer| until mojo connection is destroyed.
+        },
+        std::move(writer))));
+    return remote;
+  }
+
   // Note that |loader_factory| should be alive as long as the single script
   // update checker is running.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker>
@@ -126,7 +137,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       base::TimeDelta time_since_last_check,
       std::unique_ptr<MockServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<MockServiceWorkerResponseReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      std::unique_ptr<MockServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     auto fetch_client_settings_object =
@@ -143,7 +154,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             loader_factory),
         WrapReader(std::move(compare_reader)),
-        WrapReader(std::move(copy_reader)), std::move(writer),
+        WrapReader(std::move(copy_reader)), WrapWriter(std::move(writer)),
         /*writer_resource_id=*/0,
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,

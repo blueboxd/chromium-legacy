@@ -125,8 +125,9 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
       translate_agent_(nullptr),
       web_cache_impl_(web_cache_impl) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
+          base::Unretained(this)));
 
   // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())

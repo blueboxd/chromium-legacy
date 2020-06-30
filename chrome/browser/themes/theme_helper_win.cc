@@ -12,7 +12,6 @@
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/views_features.h"
 

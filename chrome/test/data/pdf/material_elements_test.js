@@ -50,6 +50,7 @@ const tests = [
     // Simulate entering text into `input` and pressing enter.
     function changeInput(newValue) {
       input.value = newValue;
+      input.dispatchEvent(new CustomEvent('input'));
       input.dispatchEvent(new CustomEvent('change'));
     }
 

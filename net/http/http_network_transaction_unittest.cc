@@ -12643,7 +12643,7 @@ TEST_F(HttpNetworkTransactionTest, UploadFileSmallerThanLength) {
 
   EXPECT_FALSE(response->headers);
 
-  base::DeleteFile(temp_file_path, false);
+  base::DeleteFile(temp_file_path);
 }
 
 TEST_F(HttpNetworkTransactionTest, UploadUnreadableFile) {
@@ -12683,7 +12683,7 @@ TEST_F(HttpNetworkTransactionTest, UploadUnreadableFile) {
   rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_ACCESS_DENIED));
 
-  base::DeleteFile(temp_file, false);
+  base::DeleteFile(temp_file);
 }
 
 TEST_F(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {

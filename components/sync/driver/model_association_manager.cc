@@ -180,8 +180,7 @@ void ModelAssociationManager::StopDatatypeImpl(
   delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
 
   // Note: Depending on |shutdown_reason|, USS types might clear their metadata
-  // in response to Stop(). For directory types, the clearing happens in
-  // SyncManager::PurgeDisabledTypes() instead.
+  // in response to Stop().
   dtc->Stop(shutdown_reason, std::move(callback));
 }
 

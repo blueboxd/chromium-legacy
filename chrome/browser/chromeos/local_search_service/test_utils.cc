@@ -35,4 +35,23 @@ std::vector<Data> CreateTestData(
   return output;
 }
 
+void CheckResult(const Result& result,
+                 const std::string& expected_id,
+                 float expected_score,
+                 size_t expected_number_positions) {
+  EXPECT_EQ(result.id, expected_id);
+  EXPECT_NEAR(result.score, expected_score, 0.001);
+  EXPECT_EQ(result.positions.size(), expected_number_positions);
+}
+
+float TfIdfScore(size_t num_docs,
+                 size_t num_docs_with_term,
+                 size_t num_term_occurrence_in_doc,
+                 size_t doc_length) {
+  const float idf = 1.0 + log((1.0 + num_docs) / (1.0 + num_docs_with_term));
+
+  const float tf = static_cast<float>(num_term_occurrence_in_doc) / doc_length;
+  return tf * idf;
+}
+
 }  // namespace local_search_service

@@ -51,6 +51,11 @@
           file="profile_creation_flow/profile_type_choice.js"
           type="chrome_html"
           compress="false"/>
+      <structure
+          name="IDR_PROFILE_PICKER_MANAGE_PROFILES_BROWSER_PROXY_JS"
+          file="manage_profiles_browser_proxy.js"
+          type="chrome_html"
+          compress="false"/>
     </structures>
   </release>
 </grit>

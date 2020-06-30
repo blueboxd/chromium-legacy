@@ -123,14 +123,14 @@ void ChromeNativeAppWindowViewsMac::OnBeforeWidgetInit(
                                                  widget);
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsMac::CreateStandardDesktopAppFrame() {
-  return new NativeAppWindowFrameViewMac(widget(), this);
+  return std::make_unique<NativeAppWindowFrameViewMac>(widget(), this);
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsMac::CreateNonStandardAppFrame() {
-  return new NativeAppWindowFrameViewMac(widget(), this);
+  return std::make_unique<NativeAppWindowFrameViewMac>(widget(), this);
 }
 
 bool ChromeNativeAppWindowViewsMac::IsMaximized() const {

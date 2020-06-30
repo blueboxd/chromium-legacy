@@ -175,15 +175,12 @@ void BrowserNonClientFrameViewAsh::Init() {
 // BrowserNonClientFrameView:
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
-  if (!tabstrip)
-    return gfx::Rect();
-
+    const gfx::Size& tabstrip_minimum_size) const {
   const int left_inset = GetTabStripLeftInset();
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
   return gfx::Rect(left_inset, GetTopInset(restored),
                    std::max(0, width() - left_inset - GetTabStripRightInset()),
-                   tabstrip->GetPreferredSize().height());
+                   tabstrip_minimum_size.height());
 }
 
 int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {

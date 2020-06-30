@@ -29,8 +29,8 @@ enum FirstRunState {
   FIRST_RUN_FALSE,
 };
 
-// Sets up master preferences by preferences passed by installer.
-void SetupMasterPrefsFromInstallPrefs(
+// Sets up initial preferences by preferences passed by installer.
+void SetupInitialPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs);
 
@@ -56,8 +56,8 @@ bool IsOrganicFirstRun();
 // should exit.
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs);
 
-// Returns the path for the master preferences file.
-base::FilePath MasterPrefsPath();
+// Returns the path for the initial preferences file.
+base::FilePath InitialPrefsPath();
 
 // Helper for IsChromeFirstRun. Exposed for testing.
 FirstRunState DetermineFirstRunState(bool has_sentinel,

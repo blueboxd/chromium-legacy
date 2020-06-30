@@ -1077,7 +1077,9 @@ def main():
            '    Chrome\'s about: build number and omahaproxy branch_revision\n'
            '    are incorrect, they are from branches.\n'
            '\n'
-           'Tip: add "-- --no-first-run" to bypass the first run prompts.')
+           'Use "-- <args-to-pass-to-chromium>" to pass arbitrary extra \n'
+           'arguments to the test binaries.\n'
+           'E.g., add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
   choices = ['mac', 'mac64', 'win', 'win64', 'linux', 'linux64', 'linux-arm',
@@ -1113,14 +1115,17 @@ def main():
                     default=1,
                     help='Number of times to run each build before asking '
                          'if it\'s good or bad. Temporary profiles are reused.')
-  parser.add_option('-c', '--command',
+  parser.add_option('-c',
+                    '--command',
                     type='str',
                     default='%p %a',
                     help='Command to execute. %p and %a refer to Chrome '
-                         'executable and specified extra arguments '
-                         'respectively. Use %s to specify all extra arguments '
-                         'as one string. Defaults to "%p %a". Note that any '
-                         'extra paths specified should be absolute.')
+                    'executable and specified extra arguments respectively. '
+                    'Use %s to specify all extra arguments as one string. '
+                    'Defaults to "%p %a". Note that any extra paths specified '
+                    'should be absolute. If you just need to append an '
+                    'argument to the Chrome command line use "-- '
+                    '<args-to-pass-to-chromium>" instead.')
   parser.add_option('-l', '--blink',
                     action='store_true',
                     help='Use Blink bisect instead of Chromium. ')

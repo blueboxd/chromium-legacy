@@ -172,7 +172,7 @@ void QuickAnswersPreTargetHandler::ProcessKeyEvent(ui::KeyEvent* key_event) {
       if (!selected_item)
         return;
 
-      const auto* const parent = selected_item->GetParentMenuItem();
+      auto* const parent = selected_item->GetParentMenuItem();
       bool view_should_gain_focus = false;
       if (parent) {
         // Check if the item is within the outer-most menu, since we do not want
@@ -205,8 +205,10 @@ void QuickAnswersPreTargetHandler::ProcessKeyEvent(ui::KeyEvent* key_event) {
         view_->RequestFocus();
         key_event->StopPropagation();
 
-        // Deselect the selected boundary menu-item.
-        selected_item->SetSelected(false);
+        // Reopen the sub-menu owned by |parent| to clear the currently selected
+        // boundary menu-item.
+        if (parent)
+          active_menu->SelectItemAndOpenSubmenu(parent);
       }
 
       return;

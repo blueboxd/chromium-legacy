@@ -307,7 +307,7 @@ TEST_F(SimpleFileTrackerTest, OverLimit) {
                                      disk_cache::FD_LIMIT_FAIL_REOPEN_FILE, 0);
 
   // Delete file for [2], to cause error on its re-open.
-  EXPECT_TRUE(base::DeleteFile(names[2], false)) << names[2];
+  EXPECT_TRUE(base::DeleteFile(names[2])) << names[2];
 
   // Reacquire all the other files.
   for (int i = 0; i < kEntries - 1; ++i) {

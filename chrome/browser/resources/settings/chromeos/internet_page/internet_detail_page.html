@@ -47,19 +47,17 @@
         margin-inline-end: 10px;
       }
 
-      cr-toggle {
-        margin-inline-start: var(--settings-control-label-spacing);
-      }
-
       network-config-toggle {
         display: flex;
         padding: 0 var(--cr-section-padding);
       }
 
-      cr-policy-network-indicator-mojo,
-      cr-policy-indicator,
-      cr-policy-pref-indicator {
+      cr-policy-indicator {
         margin-inline-start: var(--settings-controlled-by-spacing);
+      }
+
+      cr-policy-network-indicator-mojo {
+        margin: 0 var(--settings-controlled-by-spacing);
       }
 
       #networkState[connected] {
@@ -242,7 +240,7 @@
       </template>
       <!-- Metered (WiFi and Cellular only). -->
       <template is="dom-if" if="[[showMetered_(managedProperties_)]]">
-        <network-config-toggle id="meteredToggle" class="hr"
+        <network-config-toggle id="meteredToggle" class="hr" policy-on-left
             label="$i18n{networkMetered}"
             checked="{{meteredOverride_}}"
             property="[[managedProperties_.metered]]"

@@ -1331,8 +1331,7 @@
         'args': [
           '--expected-vendor-id',
           '${gpu_vendor_id}',
-          '--expected-device-id',
-          '${gpu_device_id}',
+          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
         ],
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
       },
@@ -2134,8 +2133,7 @@
         'args': [
           '--expected-vendor-id',
           '${gpu_vendor_id}',
-          '--expected-device-id',
-          '${gpu_device_id}',
+          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--force_high_performance_gpu',
         ],
@@ -2474,8 +2472,7 @@
         'args': [
           '--expected-vendor-id',
           '${gpu_vendor_id}',
-          '--expected-device-id',
-          '${gpu_device_id}',
+          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--force_high_performance_gpu',
         ],

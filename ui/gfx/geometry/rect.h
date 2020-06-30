@@ -19,7 +19,6 @@
 #include "base/check.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 

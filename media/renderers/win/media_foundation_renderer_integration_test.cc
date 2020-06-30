@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include <mfapi.h>
+
 #include "media/test/pipeline_integration_test_base.h"
 #include "media/test/test_media_source.h"
 

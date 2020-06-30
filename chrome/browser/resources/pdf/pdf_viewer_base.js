@@ -134,16 +134,16 @@ export class PDFViewerBaseElement extends PolymerElement {
   getSizer() {}
 
   /**
-   * @return {!ViewerZoomToolbarElement}
-   * @protected
-   */
-  getZoomToolbar() {}
-
-  /**
    * @return {!ViewerErrorScreenElement}
    * @protected
    */
   getErrorScreen() {}
+
+  /**
+   * @param {!FittingType} view
+   * @protected
+   */
+  forceFit(view) {}
 
   /**
    * @param {string} query
@@ -479,10 +479,6 @@ export class PDFViewerBaseElement extends PolymerElement {
     this.viewport_.setZoomFactorRange(presetZoomFactors);
 
     this.strings = strings;
-
-    // Display the zoom toolbar after the UI text direction is set, to ensure it
-    // appears on the correct side of the PDF viewer.
-    this.getZoomToolbar().hidden = false;
   }
 
   /**
@@ -506,7 +502,7 @@ export class PDFViewerBaseElement extends PolymerElement {
 
     if (params.view) {
       this.isUserInitiatedEvent = false;
-      this.getZoomToolbar().forceFit(params.view);
+      this.forceFit(params.view);
       if (params.viewPosition) {
         const zoomedPositionShift =
             params.viewPosition * this.viewport_.getZoom();

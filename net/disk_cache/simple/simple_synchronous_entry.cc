@@ -1271,10 +1271,8 @@ void SimpleSynchronousEntry::CloseFile(int index) {
     // this before calling SimpleFileTracker::Close, since that would make the
     // name available to other threads.
     if (entry_file_key_.doom_generation != 0u) {
-      base::DeleteFile(
-          path_.AppendASCII(
-              GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, index)),
-          false);
+      base::DeleteFile(path_.AppendASCII(
+          GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, index)));
     }
     file_tracker_->Close(this, SubFileForFileIndex(index));
   }
@@ -1691,7 +1689,7 @@ bool SimpleSynchronousEntry::DeleteFileForEntryHash(const FilePath& path,
                                                     const int file_index) {
   FilePath to_delete = path.AppendASCII(GetFilenameFromEntryFileKeyAndFileIndex(
       SimpleFileTracker::EntryFileKey(entry_hash), file_index));
-  return base::DeleteFile(to_delete, false);
+  return base::DeleteFile(to_delete);
 }
 
 // static

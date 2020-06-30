@@ -171,19 +171,21 @@ class TrustTokenOriginTrialBrowsertest
     if (params->url_request.url == kPageWithOriginTrialToken) {
       // Origin Trials key generated with:
       //
-      // tools/origin_trials/generate_token.py 3 http://localhost:5555 \
-      // TrustTokens
+      // tools/origin_trials/generate_token.py --expire-days 5000 --version 3 \
+      // http://localhost:5555 TrustTokens
+      //
+      // Note that you can't have an origin trial token with expiry more than
+      // 2^31-1 seconds past the epoch, so (for instance) --expire-days 10000
+      // would not have generated a valid token.
       URLLoaderInterceptor::WriteResponse(
           base::ReplaceStringPlaceholders(
               "HTTP/1.1 200 OK\n"
               "Content-type: text/html\n"
               "Origin-Trial: $1\n\n",
-              {"AwXANHkr9VyztB9HgkK9DQmNmka5KTQzYTtjmK0M40eSs3BmMw3DE3Dfq+"
-               "btAHUrqb9KDxSKeJfdkHHjaf8kLgAAAABTeyJvcmlnaW4iOiAiaHR0cDovL2x"
-               "vY"
-               "2FsaG9zdDo1NTU1IiwgImZlYXR1cmUiOiAiVHJ1c3RUb2tlbnMiLCAiZXhwaX"
-               "J5"
-               "IjogMTU5MzQ1MzI1NX0="},
+              {"A220DaFwmOb78vs8TojpryN1mfL9+zHjNDdo+rJTwRcaPkCIzU4/"
+               "vP9pnSHyI2ye8WsoxToBprvd7YH+"
+               "SdR0FgAAAABTeyJvcmlnaW4iOiAiaHR0cDovL2xvY2FsaG9zdDo1NTU1IiwgImZ"
+               "lYXR1cmUiOiAiVHJ1c3RUb2tlbnMiLCAiZXhwaXJ5IjogMjAyNTQ1OTI0MX0="},
               /*offsets=*/nullptr),
           /*body=*/"", params->client.get());
       return true;
@@ -300,10 +302,8 @@ INSTANTIATE_TEST_SUITE_P(ExecutingAllOperations,
 // only when permitted by the origin trials framework (either because
 // configuration specifies that no origin trial token is required, or because an
 // origin trial token is present in the executing context).
-//
-// Failing on all bots, https://crbug.com/1100405
 IN_PROC_BROWSER_TEST_P(TrustTokenOriginTrialBrowsertest,
-                       DISABLED_ProvidesParamsOnlyWhenAllowed) {
+                       ProvidesParamsOnlyWhenAllowed) {
   TestDescription test_description = std::get<1>(GetParam());
 
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(

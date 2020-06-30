@@ -444,8 +444,8 @@ class PLATFORM_EXPORT ImageDecoder {
   // call.
   bool InitFrameBuffer(size_t);
 
-  // Performs any additional setup of the requested frame after it has been
-  // initially created, e.g. setting a duration or disposal method.
+  // Performs any decoder-specific setup of the requested frame after it has
+  // been newly created, e.g. setting the frame's duration or disposal method.
   virtual void InitializeNewFrame(size_t) {}
 
   // Decodes the requested frame.

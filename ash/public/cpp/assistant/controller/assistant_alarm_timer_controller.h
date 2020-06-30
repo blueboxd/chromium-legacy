@@ -36,8 +36,8 @@ enum class AssistantTimerState {
 // Models an Assistant timer.
 struct ASH_PUBLIC_EXPORT AssistantTimer {
   AssistantTimer();
-  AssistantTimer(const AssistantTimer&) = delete;
-  AssistantTimer& operator=(const AssistantTimer&) = delete;
+  AssistantTimer(const AssistantTimer&);
+  AssistantTimer& operator=(const AssistantTimer&);
   ~AssistantTimer();
 
   std::string id;

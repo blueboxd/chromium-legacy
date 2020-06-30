@@ -156,12 +156,12 @@ bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
   return true;
 }
 
-base::FilePath MasterPrefsPath() {
-  // The standard location of the master prefs is next to the chrome binary.
-  base::FilePath master_prefs;
-  if (!base::PathService::Get(base::DIR_EXE, &master_prefs))
+base::FilePath InitialPrefsPath() {
+  // The standard location of the initial prefs is next to the chrome binary.
+  base::FilePath initial_prefs;
+  if (!base::PathService::Get(base::DIR_EXE, &initial_prefs))
     return base::FilePath();
-  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
+  return initial_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
 }  // namespace internal

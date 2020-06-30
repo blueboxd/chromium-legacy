@@ -1257,14 +1257,14 @@ TEST_F(DesktopWidgetTest, TestViewWidthAfterMinimizingWidget) {
   std::unique_ptr<Widget> widget =
       CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
   NonClientView* non_client_view = widget->non_client_view();
-  NonClientFrameView* frame_view = new MinimumSizeFrameView(widget.get());
-  non_client_view->SetFrameView(frame_view);
+  non_client_view->SetFrameView(
+      std::make_unique<MinimumSizeFrameView>(widget.get()));
   // Setting the frame view doesn't do a layout, so force one.
   non_client_view->Layout();
   widget->Show();
-  EXPECT_NE(0, frame_view->width());
+  EXPECT_NE(0, non_client_view->frame_view()->width());
   widget->Minimize();
-  EXPECT_EQ(0, frame_view->width());
+  EXPECT_EQ(0, non_client_view->frame_view()->width());
 }
 #endif
 
@@ -1378,8 +1378,8 @@ TEST_F(DesktopWidgetTest, TestWindowVisibilityAfterHide) {
   std::unique_ptr<Widget> widget =
       CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
   NonClientView* non_client_view = widget->non_client_view();
-  NonClientFrameView* frame_view = new MinimumSizeFrameView(widget.get());
-  non_client_view->SetFrameView(frame_view);
+  non_client_view->SetFrameView(
+      std::make_unique<MinimumSizeFrameView>(widget.get()));
 
   widget->Show();
   EXPECT_TRUE(IsNativeWindowVisible(widget->GetNativeWindow()));
@@ -3098,8 +3098,9 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
 // changing its size or title.
 TEST_F(WidgetTest, FullscreenFrameLayout) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
-  FullscreenAwareFrame* frame = new FullscreenAwareFrame(widget.get());
-  widget->non_client_view()->SetFrameView(frame);  // Owns |frame|.
+  auto frame_view = std::make_unique<FullscreenAwareFrame>(widget.get());
+  FullscreenAwareFrame* frame = frame_view.get();
+  widget->non_client_view()->SetFrameView(std::move(frame_view));
 
   widget->Maximize();
   RunPendingMessages();

@@ -48,7 +48,8 @@ class SysmemBufferManager {
       gfx::SysmemBufferCollectionId id,
       zx::channel token,
       gfx::BufferFormat format,
-      gfx::BufferUsage usage);
+      gfx::BufferUsage usage,
+      bool force_protected);
 
   scoped_refptr<SysmemBufferCollection> GetCollectionById(
       gfx::SysmemBufferCollectionId id);

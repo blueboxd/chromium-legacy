@@ -123,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> compare_reader,
       mojo::Remote<storage::mojom::ServiceWorkerResourceReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer,
       int64_t write_resource_id,
       ResultCallback callback);
 

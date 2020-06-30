@@ -194,7 +194,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   }
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViews::CreateStandardDesktopAppFrame() {
   return views::WidgetDelegateView::CreateNonClientFrameView(widget());
 }
@@ -271,8 +271,8 @@ gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ChromeNativeAppWindowViews::CreateNonClientFrameView(views::Widget* widget) {
   return (IsFrameless() || has_frame_color_) ?
       CreateNonStandardAppFrame() : CreateStandardDesktopAppFrame();
 }

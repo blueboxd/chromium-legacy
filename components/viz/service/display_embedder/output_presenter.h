@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OUTPUT_PRESENTER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_OUTPUT_PRESENTER_H_
 
+#include <memory>
+#include <vector>
+
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -44,7 +47,7 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
 
     virtual void BeginPresent() = 0;
     virtual void EndPresent() = 0;
-    virtual int present_count() = 0;
+    virtual int present_count() const = 0;
 
     base::WeakPtr<Image> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
@@ -100,8 +103,7 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
                              BufferPresentedCallback presentation_callback) = 0;
   virtual void CommitOverlayPlanes(
       SwapCompletionCallback completion_callback,
-      BufferPresentedCallback presentation_callback,
-      std::vector<ui::LatencyInfo> latency_info) = 0;
+      BufferPresentedCallback presentation_callback) = 0;
   virtual void SchedulePrimaryPlane(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
       Image* image,

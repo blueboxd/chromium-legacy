@@ -218,13 +218,6 @@ chrome.developerPrivate.ExtensionView;
 /**
  * @enum {string}
  */
-chrome.developerPrivate.ControllerType = {
-  POLICY: 'POLICY',
-};
-
-/**
- * @enum {string}
- */
 chrome.developerPrivate.HostAccess = {
   ON_CLICK: 'ON_CLICK',
   ON_SPECIFIC_SITES: 'ON_SPECIFIC_SITES',
@@ -233,7 +226,6 @@ chrome.developerPrivate.HostAccess = {
 
 /**
  * @typedef {{
- *   type: !chrome.developerPrivate.ControllerType,
  *   text: string
  * }}
  */

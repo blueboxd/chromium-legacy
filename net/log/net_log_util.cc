@@ -353,13 +353,12 @@ base::Value GetNetConstants() {
   return constants_dict;
 }
 
-NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
-    URLRequestContext* context,
-    int info_sources) {
+NET_EXPORT base::Value GetNetInfo(URLRequestContext* context,
+                                  int info_sources) {
   // May only be called on the context's thread.
   context->AssertCalledOnValidThread();
 
-  std::unique_ptr<base::DictionaryValue> net_info_dict =
+  base::Value net_info_dict =
       context->proxy_resolution_service()->GetProxyNetLogValues(info_sources);
 
   if (info_sources & NET_INFO_HOST_RESOLVER) {
@@ -367,27 +366,29 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
     DCHECK(host_resolver);
     HostCache* cache = host_resolver->GetHostCache();
     if (cache) {
-      auto dict = std::make_unique<base::DictionaryValue>();
+      base::Value dict(base::Value::Type::DICTIONARY);
       std::unique_ptr<base::Value> dns_config =
           host_resolver->GetDnsConfigAsValue();
       if (dns_config)
-        dict->Set("dns_config", std::move(dns_config));
+        dict.SetKey("dns_config",
+                    base::Value::FromUniquePtrValue(std::move(dns_config)));
 
-      auto cache_info_dict = std::make_unique<base::DictionaryValue>();
-      auto cache_contents_list = std::make_unique<base::ListValue>();
+      base::Value cache_info_dict(base::Value::Type::DICTIONARY);
+      base::Value cache_contents_list(base::Value::Type::LIST);
 
-      cache_info_dict->SetInteger("capacity",
-                                  static_cast<int>(cache->max_entries()));
-      cache_info_dict->SetInteger("network_changes", cache->network_changes());
+      cache_info_dict.SetIntKey("capacity",
+                                static_cast<int>(cache->max_entries()));
+      cache_info_dict.SetIntKey("network_changes", cache->network_changes());
 
-      cache->GetAsListValue(cache_contents_list.get(),
-                            true /* include_staleness */,
-                            HostCache::SerializationType::kDebug);
-      cache_info_dict->Set("entries", std::move(cache_contents_list));
+      base::ListValue* list_value = nullptr;
+      if (cache_contents_list.GetAsList(&list_value))
+        cache->GetAsListValue(list_value, true /* include_staleness */,
+                              HostCache::SerializationType::kDebug);
+      cache_info_dict.SetKey("entries", std::move(cache_contents_list));
 
-      dict->Set("cache", std::move(cache_info_dict));
-      net_info_dict->Set(NetInfoSourceToString(NET_INFO_HOST_RESOLVER),
-                         std::move(dict));
+      dict.SetKey("cache", std::move(cache_info_dict));
+      net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_HOST_RESOLVER),
+                           std::move(dict));
     }
   }
 
@@ -395,20 +396,23 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
       context->http_transaction_factory()->GetSession();
 
   if (info_sources & NET_INFO_SOCKET_POOL) {
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SOCKET_POOL),
-                       http_network_session->SocketPoolInfoToValue());
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_SOCKET_POOL),
+                         base::Value::FromUniquePtrValue(
+                             http_network_session->SocketPoolInfoToValue()));
   }
 
   if (info_sources & NET_INFO_SPDY_SESSIONS) {
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_SESSIONS),
-                       http_network_session->SpdySessionPoolInfoToValue());
+    net_info_dict.SetKey(
+        NetInfoSourceToString(NET_INFO_SPDY_SESSIONS),
+        base::Value::FromUniquePtrValue(
+            http_network_session->SpdySessionPoolInfoToValue()));
   }
 
   if (info_sources & NET_INFO_SPDY_STATUS) {
-    auto status_dict = std::make_unique<base::DictionaryValue>();
+    base::Value status_dict(base::Value::Type::DICTIONARY);
 
-    status_dict->SetBoolean("enable_http2",
-                            http_network_session->params().enable_http2);
+    status_dict.SetBoolKey("enable_http2",
+                           http_network_session->params().enable_http2);
 
     NextProtoVector alpn_protos;
     http_network_session->GetAlpnProtos(&alpn_protos);
@@ -419,29 +423,31 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
           next_protos_string.append(",");
         next_protos_string.append(NextProtoToString(proto));
       }
-      status_dict->SetString("alpn_protos", next_protos_string);
+      status_dict.SetStringKey("alpn_protos", next_protos_string);
     }
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_SPDY_STATUS),
-                       std::move(status_dict));
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_SPDY_STATUS),
+                         std::move(status_dict));
   }
 
   if (info_sources & NET_INFO_ALT_SVC_MAPPINGS) {
     const HttpServerProperties& http_server_properties =
         *context->http_server_properties();
-    net_info_dict->Set(
+    net_info_dict.SetKey(
         NetInfoSourceToString(NET_INFO_ALT_SVC_MAPPINGS),
-        http_server_properties.GetAlternativeServiceInfoAsValue());
+        base::Value::FromUniquePtrValue(
+            http_server_properties.GetAlternativeServiceInfoAsValue()));
   }
 
   if (info_sources & NET_INFO_QUIC) {
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_QUIC),
-                       http_network_session->QuicInfoToValue());
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_QUIC),
+                         base::Value::FromUniquePtrValue(
+                             http_network_session->QuicInfoToValue()));
   }
 
   if (info_sources & NET_INFO_HTTP_CACHE) {
-    auto info_dict = std::make_unique<base::DictionaryValue>();
-    auto stats_dict = std::make_unique<base::DictionaryValue>();
+    base::Value info_dict(base::Value::Type::DICTIONARY);
+    base::Value stats_dict(base::Value::Type::DICTIONARY);
 
     disk_cache::Backend* disk_cache = GetDiskCacheBackend(context);
 
@@ -449,14 +455,14 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
       // Extract the statistics key/value pairs from the backend.
       base::StringPairs stats;
       disk_cache->GetStats(&stats);
-      for (size_t i = 0; i < stats.size(); ++i) {
-        stats_dict->SetKey(stats[i].first, base::Value(stats[i].second));
+      for (auto& stat : stats) {
+        stats_dict.SetKey(stat.first, base::Value(std::move(stat.second)));
       }
     }
-    info_dict->Set("stats", std::move(stats_dict));
+    info_dict.SetKey("stats", std::move(stats_dict));
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_HTTP_CACHE),
-                       std::move(info_dict));
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_HTTP_CACHE),
+                         std::move(info_dict));
   }
 
   if (info_sources & NET_INFO_REPORTING) {
@@ -470,20 +476,20 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
         reporting_dict.SetKey("networkErrorLogging",
                               network_error_logging_service->StatusAsValue());
       }
-      net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
-                            std::move(reporting_dict));
+      net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                           std::move(reporting_dict));
     } else {
       base::Value reporting_dict(base::Value::Type::DICTIONARY);
       reporting_dict.SetKey("reportingEnabled", base::Value(false));
-      net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
-                            std::move(reporting_dict));
+      net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                           std::move(reporting_dict));
     }
 
 #else   // BUILDFLAG(ENABLE_REPORTING)
     base::Value reporting_dict(base::Value::Type::DICTIONARY);
     reporting_dict.SetKey("reportingEnabled", base::Value(false));
-    net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
-                          std::move(reporting_dict));
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                         std::move(reporting_dict));
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   }
 

@@ -14,7 +14,6 @@
 #include "components/sync/engine_impl/net/url_translator.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 

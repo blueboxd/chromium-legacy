@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -35,7 +34,6 @@ class ModelTypeController;
 class SyncEngineImpl;
 
 class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
-                          public base::trace_event::MemoryDumpProvider,
                           public SyncManager::Observer,
                           public TypeDebugInfoObserver,
                           public SyncStatusObserver {
@@ -47,10 +45,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   SyncEngineBackend(const std::string& name,
                     const base::FilePath& sync_data_folder,
                     const base::WeakPtr<SyncEngineImpl>& host);
-
-  // MemoryDumpProvider implementation.
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   // SyncManager::Observer implementation.  The Core just acts like an air
   // traffic controller here, forwarding incoming messages to appropriate

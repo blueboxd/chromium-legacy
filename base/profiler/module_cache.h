@@ -98,6 +98,14 @@ class BASE_EXPORT ModuleCache {
   // will be found and added automatically when invoking GetModuleForAddress().
   void AddCustomNativeModule(std::unique_ptr<const Module> module);
 
+  // Gets the module containing |address| if one already exists, or nullptr
+  // otherwise. The returned module remains owned by and has the same lifetime
+  // as the ModuleCache object.
+  // NOTE: Only users that create their own modules and need control over native
+  // module creation should use this function. Everyone else should use
+  // GetModuleForAddress().
+  const Module* GetExistingModuleForAddress(uintptr_t address) const;
+
  private:
   // Heterogenously compares modules by base address, and modules and
   // addresses. The module/address comparison considers the address equivalent

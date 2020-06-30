@@ -681,7 +681,8 @@ PeopleSection::PeopleSection(
   if (features::IsGuestModeActive())
     return;
 
-  registry()->AddSearchTags(GetPeopleSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetPeopleSearchConcepts());
 
   if (kerberos_credentials_manager_) {
     // Kerberos search tags are added/removed dynamically.
@@ -691,25 +692,25 @@ PeopleSection::PeopleSection(
 
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
     if (sync_service_) {
-      registry()->AddSearchTags(GetSplitSyncSearchConcepts());
+      updater.AddSearchTags(GetSplitSyncSearchConcepts());
 
       // Sync search tags are added/removed dynamically.
       sync_service_->AddObserver(this);
       OnStateChanged(sync_service_);
     }
   } else {
-    registry()->AddSearchTags(GetNonSplitSyncSearchConcepts());
+    updater.AddSearchTags(GetNonSplitSyncSearchConcepts());
   }
 
   // Parental control search tags are added if necessary and do not update
   // dynamically during a user session.
   if (features::ShouldShowParentalControlSettings(profile))
-    registry()->AddSearchTags(GetParentalSearchConcepts());
+    updater.AddSearchTags(GetParentalSearchConcepts());
 
   // Fingerprint search tags are added if necessary and do not update
   // dynamically during a user session.
   if (AreFingerprintSettingsAllowed())
-    registry()->AddSearchTags(GetFingerprintSearchConcepts());
+    updater.AddSearchTags(GetFingerprintSearchConcepts());
 }
 
 PeopleSection::~PeopleSection() {
@@ -969,21 +970,26 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   DCHECK_EQ(sync_service, sync_service_);
+
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (sync_service_->IsEngineInitialized() &&
       sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    registry()->AddSearchTags(GetSplitSyncOnSearchConcepts());
-    registry()->RemoveSearchTags(GetSplitSyncOffSearchConcepts());
+    updater.AddSearchTags(GetSplitSyncOnSearchConcepts());
+    updater.RemoveSearchTags(GetSplitSyncOffSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetSplitSyncOnSearchConcepts());
-    registry()->AddSearchTags(GetSplitSyncOffSearchConcepts());
+    updater.RemoveSearchTags(GetSplitSyncOnSearchConcepts());
+    updater.AddSearchTags(GetSplitSyncOffSearchConcepts());
   }
 }
 
 void PeopleSection::OnKerberosEnabledStateChanged() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (kerberos_credentials_manager_->IsKerberosEnabled())
-    registry()->AddSearchTags(GetKerberosSearchConcepts());
+    updater.AddSearchTags(GetKerberosSearchConcepts());
   else
-    registry()->RemoveSearchTags(GetKerberosSearchConcepts());
+    updater.RemoveSearchTags(GetKerberosSearchConcepts());
 }
 
 void PeopleSection::AddKerberosAccountsPageStrings(

@@ -354,22 +354,26 @@ void MultiDeviceSection::RegisterHierarchy(
 void MultiDeviceSection::OnHostStatusChanged(
     const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
         host_status_with_device) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (IsOptedIn(host_status_with_device.first)) {
-    registry()->RemoveSearchTags(GetMultiDeviceOptedOutSearchConcepts());
-    registry()->AddSearchTags(GetMultiDeviceOptedInSearchConcepts());
+    updater.RemoveSearchTags(GetMultiDeviceOptedOutSearchConcepts());
+    updater.AddSearchTags(GetMultiDeviceOptedInSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetMultiDeviceOptedInSearchConcepts());
-    registry()->AddSearchTags(GetMultiDeviceOptedOutSearchConcepts());
+    updater.RemoveSearchTags(GetMultiDeviceOptedInSearchConcepts());
+    updater.AddSearchTags(GetMultiDeviceOptedOutSearchConcepts());
   }
 }
 
 void MultiDeviceSection::OnNearbySharingEnabledChanged() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (pref_service_->GetBoolean(::prefs::kNearbySharingEnabledPrefName)) {
-    registry()->RemoveSearchTags(GetNearbyShareOffSearchConcepts());
-    registry()->AddSearchTags(GetNearbyShareOnSearchConcepts());
+    updater.RemoveSearchTags(GetNearbyShareOffSearchConcepts());
+    updater.AddSearchTags(GetNearbyShareOnSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetNearbyShareOnSearchConcepts());
-    registry()->AddSearchTags(GetNearbyShareOffSearchConcepts());
+    updater.RemoveSearchTags(GetNearbyShareOnSearchConcepts());
+    updater.AddSearchTags(GetNearbyShareOffSearchConcepts());
   }
 }
 

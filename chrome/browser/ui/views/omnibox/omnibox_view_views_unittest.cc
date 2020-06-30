@@ -82,11 +82,7 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   // OmniboxViewViews:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
-  void SetPathColor(SkColor color) override;
   using OmniboxView::OnInlineAutocompleteTextMaybeChanged;
-
-  // Returns the latest path color set via SetPathColor().
-  SkColor path_color() { return path_color_; }
 
  private:
   // OmniboxViewViews:
@@ -109,10 +105,6 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   // SetEmphasis() logs whether the base color of the text is emphasized.
   bool base_text_emphasis_;
-
-  // The latest path color set via SetPathColor(). Initialize to magenta to
-  // distinguish an unset path color from when the path is set to transparent.
-  SkColor path_color_ = SK_ColorMAGENTA;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
@@ -142,10 +134,6 @@ void TestingOmniboxView::CheckUpdatePopupCallInfo(
 
 void TestingOmniboxView::CheckUpdatePopupNotCalled() {
   EXPECT_EQ(update_popup_call_count_, 0U);
-}
-
-void TestingOmniboxView::SetPathColor(SkColor color) {
-  path_color_ = color;
 }
 
 void TestingOmniboxView::UpdatePopup() {
@@ -1310,209 +1298,302 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
   ExpectFullUrlDisplayed();
 }
 
-class OmniboxViewViewsNoPathHidingTest : public OmniboxViewViewsTest {
+// Checks that |render_text|'s current display rect and offset does not display
+// |path|, and also does not display |subdomain| if
+// |should_elide_to_registrable_domain| is true.
+//
+// |subdomain| is assumed to be a prefix of |hostname|. |subdomain| should
+// include a trailing "." and |path| should include a leading "/".
+void ExpectElidedToSimplifiedDomain(gfx::RenderText* render_text,
+                                    const base::string16& subdomain,
+                                    const base::string16& hostname,
+                                    const base::string16& path,
+                                    bool should_elide_to_registrable_domain) {
+  gfx::Rect subdomain_rect;
+  for (const auto& rect :
+       render_text->GetSubstringBounds(gfx::Range(0, subdomain.size()))) {
+    subdomain_rect.Union(rect);
+  }
+  gfx::Rect path_rect;
+  for (const auto& rect : render_text->GetSubstringBounds(
+           gfx::Range(hostname.size(), hostname.size() + path.size()))) {
+    path_rect.Union(rect);
+  }
+  EXPECT_FALSE(render_text->display_rect().Contains(path_rect));
+  if (should_elide_to_registrable_domain) {
+    EXPECT_FALSE(render_text->display_rect().Contains(subdomain_rect));
+    EXPECT_EQ(subdomain_rect.width(),
+              -1 * render_text->GetUpdatedDisplayOffset().x());
+  } else {
+    EXPECT_TRUE(render_text->display_rect().Contains(subdomain_rect));
+    EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
+  }
+}
+
+// Checks that |render_text|'s current display rect and offset displays all of
+// |display_url|.
+void ExpectUnelidedFromSimplifiedDomain(gfx::RenderText* render_text,
+                                        const base::string16& display_url) {
+  gfx::Rect unelided_rect;
+  for (const auto& rect :
+       render_text->GetSubstringBounds(gfx::Range(0, display_url.size()))) {
+    unelided_rect.Union(rect);
+  }
+  EXPECT_TRUE(render_text->display_rect().Contains(unelided_rect));
+  EXPECT_EQ(0, render_text->GetUpdatedDisplayOffset().x());
+}
+
+class OmniboxViewViewsNoSimplifiedDomainTest : public OmniboxViewViewsTest {
  public:
-  OmniboxViewViewsNoPathHidingTest()
+  OmniboxViewViewsNoSimplifiedDomainTest()
       : OmniboxViewViewsTest(
             {},
             {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
              omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}) {}
 
-  OmniboxViewViewsNoPathHidingTest(const OmniboxViewViewsNoPathHidingTest&) =
-      delete;
-  OmniboxViewViewsNoPathHidingTest& operator=(
-      const OmniboxViewViewsNoPathHidingTest&) = delete;
+  OmniboxViewViewsNoSimplifiedDomainTest(
+      const OmniboxViewViewsNoSimplifiedDomainTest&) = delete;
+  OmniboxViewViewsNoSimplifiedDomainTest& operator=(
+      const OmniboxViewViewsNoSimplifiedDomainTest&) = delete;
 };
 
-// Tests that when no path-hiding field trials are enabled, the path is not
-// hidden. Regression test for https://crbug.com/1093748.
-TEST_F(OmniboxViewViewsNoPathHidingTest, PathNotHiddenByDefault) {
+// Tests that when no simplified domain field trials are enabled, URL components
+// are not hidden. Regression test for https://crbug.com/1093748.
+TEST_F(OmniboxViewViewsNoSimplifiedDomainTest, UrlNotSimplifiedByDefault) {
+  base::string16 kDisplayUrl = base::ASCIIToUTF16("example.test/foo");
   location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
   omnibox_view()->EmphasizeURLComponents();
-  EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(), kDisplayUrl));
 }
 
-class OmniboxViewViewsRevealOnHoverTest : public OmniboxViewViewsTest {
+class OmniboxViewViewsRevealOnHoverTest
+    : public OmniboxViewViewsTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   OmniboxViewViewsRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+            GetParam()
+                ? std::vector<base::Feature>(
+                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                       omnibox::kElideToRegistrableDomain})
+                : std::vector<base::Feature>(
+                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
             {}) {}
 
   OmniboxViewViewsRevealOnHoverTest(const OmniboxViewViewsRevealOnHoverTest&) =
       delete;
   OmniboxViewViewsRevealOnHoverTest& operator=(
       const OmniboxViewViewsRevealOnHoverTest&) = delete;
+
+ protected:
+  bool ShouldElideToRegistrableDomain() { return GetParam(); }
 };
 
-// Tests the field trial variation that hides the path by default and reveals on
-// hover.
-TEST_F(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsRevealOnHoverTest,
+                         OmniboxViewViewsRevealOnHoverTest,
+                         ::testing::Values(true, false));
+
+// Tests the field trial variation that shows a simplified domain by default and
+// reveals the unsimplified URL on hover.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
-  EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
 
-  // As soon as the mouse hovers over the omnibox, the fade-in animation should
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
+
+  // As soon as the mouse hovers over the omnibox, the unelide animation should
   // start running.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_in =
-      omnibox_view()->GetPathFadeInAnimationForTesting();
-  ASSERT_TRUE(fade_in);
-  EXPECT_TRUE(fade_in->IsAnimating());
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_in->GetCurrentColor());
+  OmniboxViewViews::ElideAnimation* hover_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(hover_animation);
+  EXPECT_TRUE(hover_animation->IsAnimating());
 
-  // Advance the clock through the animation and check the color.
-  gfx::AnimationContainerElement* fade_in_as_element =
+  // Advance the clock through the animation.
+  gfx::AnimationContainerElement* hover_animation_as_element =
       static_cast<gfx::AnimationContainerElement*>(
-          fade_in->GetAnimationForTesting());
-  fade_in_as_element->SetStartTime(base::TimeTicks());
-  fade_in_as_element->Step(
+          hover_animation->GetAnimationForTesting());
+  hover_animation_as_element->SetStartTime(base::TimeTicks());
+  hover_animation_as_element->Step(
       base::TimeTicks() +
       base::TimeDelta::FromMilliseconds(
-          OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs()));
-  // After the extended hover threshold has elapsed, the animation should still
-  // be transparent.
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_in->GetCurrentColor());
-  // Now advance through the fade-in and check the color. We assume that the
-  // fade-in takes less than 1 second.
-  fade_in_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
-  SkColor dimmed_text_color =
-      GetOmniboxColor(omnibox_view()->GetThemeProvider(),
-                      OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
-  EXPECT_EQ(dimmed_text_color, fade_in->GetCurrentColor());
+          OmniboxFieldTrial::UnelideURLOnHoverThresholdMs()));
+  EXPECT_TRUE(hover_animation->HasStarted());
+  // After the extended hover threshold has elapsed, the display text shouldn't
+  // have changed yet.
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 
-  // Now exit the mouse. At this point the fade-in animation should be stopped
-  // and the fade-out animation should run.
+  // Now advance through the unelision and check the display text. We assume
+  // that the animation takes less than 1 second.
+  hover_animation_as_element->Step(base::TimeTicks() +
+                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
+  EXPECT_FALSE(hover_animation->IsAnimating());
+
+  // Now exit the mouse. At this point the elision animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* path_fade_out_after_hover_animation =
-      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
-  EXPECT_FALSE(
-      omnibox_view()->GetPathFadeInAnimationForTesting()->IsAnimating());
-  EXPECT_TRUE(path_fade_out_after_hover_animation->IsAnimating());
-  EXPECT_EQ(dimmed_text_color,
-            path_fade_out_after_hover_animation->GetCurrentColor());
+  EXPECT_TRUE(hover_animation->IsAnimating());
 
-  gfx::AnimationContainerElement* fade_out_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          path_fade_out_after_hover_animation->GetAnimationForTesting());
-  fade_out_as_element->SetStartTime(base::TimeTicks());
-  // We assume that the fade-out takes less than 1 second.
-  fade_out_as_element->Step(base::TimeTicks() +
-                            base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT,
-            path_fade_out_after_hover_animation->GetCurrentColor());
+  hover_animation_as_element = static_cast<gfx::AnimationContainerElement*>(
+      hover_animation->GetAnimationForTesting());
+  hover_animation_as_element->SetStartTime(base::TimeTicks());
+  // We assume that the animation takes less than 1 second.
+  hover_animation_as_element->Step(base::TimeTicks() +
+                                   base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 }
 
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
-    : public OmniboxViewViewsTest {
+    : public OmniboxViewViewsTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+            GetParam()
+                ? std::vector<base::Feature>(
+                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                       omnibox::kElideToRegistrableDomain})
+                : std::vector<base::Feature>(
+                      {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                       omnibox::
+                           kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
             {}) {}
 
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest(
       const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest& operator=(
       const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
+
+ protected:
+  bool ShouldElideToRegistrableDomain() { return GetParam(); }
 };
 
-// Tests the field trial variation that hides the path when the user interacts
-// with the page and brings it back when the user hovers over the omnibox.
-TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+                         OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+                         ::testing::Values(true, false));
+
+// Tests the field trial variation that shows the simplified domain when the
+// user interacts with the page and brings back the URL when the user hovers
+// over the omnibox.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        UserInteractionAndHover) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(false);
   omnibox_view()->DidFinishNavigation(&navigation);
-  EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(), kDisplayUrl));
 
   // Simulate a user interaction and check that the fade-out animation runs.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  EXPECT_TRUE(fade_out->IsAnimating());
-  EXPECT_EQ(GetOmniboxColor(omnibox_view()->GetThemeProvider(),
-                            OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-            fade_out->GetCurrentColor());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_TRUE(elide_animation->IsAnimating());
 
   // Advance the clock through the fade-out animation; we assume that it takes
   // less than 1s.
-  gfx::AnimationContainerElement* fade_out_as_element =
+  gfx::AnimationContainerElement* elide_as_element =
       static_cast<gfx::AnimationContainerElement*>(
-          omnibox_view()
-              ->GetPathFadeOutAfterInteractionAnimationForTesting()
-              ->GetAnimationForTesting());
-  fade_out_as_element->SetStartTime(base::TimeTicks());
-  fade_out_as_element->Step(base::TimeTicks() +
-                            base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+          elide_animation->GetAnimationForTesting());
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 
   // A second user interaction should not run the animation again.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
   EXPECT_FALSE(omnibox_view()
-                   ->GetPathFadeOutAfterInteractionAnimationForTesting()
+                   ->GetElideAfterInteractionAnimationForTesting()
                    ->IsAnimating());
 
-  // The path should come back on hover.
+  // The URL should come back on hover.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_in =
-      omnibox_view()->GetPathFadeInAnimationForTesting();
-  ASSERT_TRUE(fade_in);
-  EXPECT_TRUE(fade_in->IsAnimating());
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_in->GetCurrentColor());
-  gfx::AnimationContainerElement* fade_in_as_element =
+  OmniboxViewViews::ElideAnimation* unelide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(unelide_animation);
+  EXPECT_TRUE(unelide_animation->IsAnimating());
+  gfx::AnimationContainerElement* unelide_as_element =
       static_cast<gfx::AnimationContainerElement*>(
-          fade_in->GetAnimationForTesting());
-  fade_in_as_element->SetStartTime(base::TimeTicks());
+          unelide_animation->GetAnimationForTesting());
+  unelide_as_element->SetStartTime(base::TimeTicks());
   // Assume that the extended hover time + fade-in time is less than 2 seconds.
-  fade_in_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
-  EXPECT_EQ(GetOmniboxColor(omnibox_view()->GetThemeProvider(),
-                            OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-            fade_in->GetCurrentColor());
+  unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(), kDisplayUrl));
 }
 
-class OmniboxViewViewsHideOnInteractionTest : public OmniboxViewViewsTest {
+class OmniboxViewViewsHideOnInteractionTest
+    : public OmniboxViewViewsTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   OmniboxViewViewsHideOnInteractionTest()
       : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
+            GetParam()
+                ? std::vector<base::Feature>(
+                      {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                       omnibox::kElideToRegistrableDomain})
+                : std::vector<base::Feature>(
+                      {omnibox::
+                           kHideSteadyStateUrlPathQueryAndRefOnInteraction}),
             {}) {}
-
   OmniboxViewViewsHideOnInteractionTest(
       const OmniboxViewViewsHideOnInteractionTest&) = delete;
   OmniboxViewViewsHideOnInteractionTest& operator=(
       const OmniboxViewViewsHideOnInteractionTest&) = delete;
+
+ protected:
+  bool ShouldElideToRegistrableDomain() { return GetParam(); }
 };
 
+INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsHideOnInteractionTest,
+                         OmniboxViewViewsHideOnInteractionTest,
+                         ::testing::Values(true, false));
+
 // Tests the the "Always Show Full URLs" option works with the field trial
-// variation that hides the path when the user interacts with the page.
-TEST_F(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
+// variation that shows a simplified domain when the user interacts with the
+// page.
+TEST_P(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
+  const base::string16 kFullUrl =
+      base::ASCIIToUTF16("https://www.example.test/foo");
   location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("https://www.example.test/foo"));
+  location_bar_model()->set_url_for_display(kFullUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
   omnibox_view()->OnThemeChanged();
@@ -1523,27 +1604,25 @@ TEST_F(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
   std::unique_ptr<content::WebContents> web_contents =
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
   omnibox_view()->OnTabChanged(web_contents.get());
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.test/foo"),
-            omnibox_view()->GetText());
-
-  // The path shouldn't be hidden when the Always Show Full URLs option is
-  // set.
-  EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  EXPECT_EQ(kFullUrl, omnibox_view()->GetText());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(), kFullUrl));
 
   // When the Always Show Full URLs pref is enabled, the omnibox view won't
-  // observe user interactions and fade out the path.
+  // observe user interactions and elide the URL.
   EXPECT_FALSE(omnibox_view()->web_contents());
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  EXPECT_FALSE(fade_out);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
 }
 
 // Tests the the "Always Show Full URLs" option works with the field trial
-// variation that reveals the path when the user interacts with the page.
-TEST_F(OmniboxViewViewsRevealOnHoverTest, AlwaysShowFullURLs) {
+// variation that shows a simplified domain until the user hovers over the
+// omnibox.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, AlwaysShowFullURLs) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("https://www.example.test/foo"));
+      base::ASCIIToUTF16("example.test/foo"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
   omnibox_view()->OnThemeChanged();
@@ -1554,17 +1633,16 @@ TEST_F(OmniboxViewViewsRevealOnHoverTest, AlwaysShowFullURLs) {
 
   // After a hover, there should be no animations running.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_in =
-      omnibox_view()->GetPathFadeInAnimationForTesting();
-  EXPECT_FALSE(fade_in);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
-  EXPECT_FALSE(fade_out);
+  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
 }
 
-// This test fixture enables the reveal-on-hover path-hiding field trial, and
-// the hide-on-interaction variation when the parameter is true.
+// This test fixture enables the reveal-on-hover simplified domain field trial,
+// and the hide-on-interaction variation when the parameter is true.
 class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<bool> {
@@ -1575,11 +1653,12 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
                 ? std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
-                       omnibox::
-                           kHideSteadyStateUrlPathQueryAndRefOnInteraction})
+                       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+                       omnibox::kElideToRegistrableDomain})
                 : std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
+                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                       omnibox::kElideToRegistrableDomain}),
             {}) {}
 
   OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest(
@@ -1599,7 +1678,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(true, false));
 
 // Tests that unsetting the "Always show full URLs" option begins showing/hiding
-// the path appropriately when path-hiding field trials are enabled.
+// the full URL appropriately when simplified domain field trials are enabled.
+// For simplicity, this test always enables kElideToRegistrableDomain; the logic
+// being test isn't really affected by whether or not subdomains are hidden.
 TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
        UnsetAlwaysShowFullURLs) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
@@ -1608,6 +1689,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
   omnibox_view()->OnThemeChanged();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   // Enable the "Always show full URLs" setting.
   location_bar_model()->set_should_prevent_elision(true);
@@ -1629,39 +1711,41 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
   // display URL from LocationBarModel.
   EXPECT_EQ(base::ASCIIToUTF16("example.test/foo"), omnibox_view()->GetText());
   if (IsHideOnInteractionEnabled()) {
-    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ExpectUnelidedFromSimplifiedDomain(render_text, omnibox_view()->GetText());
     // Simulate a user interaction and check the fade-out animation.
     omnibox_view()->DidGetUserInteraction(
         blink::WebInputEvent::Type::kGestureScrollBegin);
-    OmniboxViewViews::PathFadeAnimation* fade_out =
-        omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-    ASSERT_TRUE(fade_out);
-    EXPECT_TRUE(fade_out->IsAnimating());
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    ASSERT_TRUE(elide_animation);
+    EXPECT_TRUE(elide_animation->IsAnimating());
   } else {
-    EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ExpectElidedToSimplifiedDomain(
+        render_text, base::ASCIIToUTF16(""), base::ASCIIToUTF16("example.test"),
+        base::ASCIIToUTF16("/foo"),
+        true /* should elide to registrable domain */);
   }
-  // Simulate a hover event and check the fade-in/fade-out animations. This
+  // Simulate a hover event and check the elide/unelide animations. This
   // should happen the same regardless of whether hide-on-interaction is
   // enabled.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_in =
-      omnibox_view()->GetPathFadeInAnimationForTesting();
-  ASSERT_TRUE(fade_in);
-  EXPECT_TRUE(fade_in->IsAnimating());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
-  ASSERT_TRUE(fade_out);
-  EXPECT_TRUE(fade_out->IsAnimating());
+  elide_animation = omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
 // Tests that in the hide-on-interaction field trial, when the path changes
-// while being faded out, the animation is stopped.
-TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+// while being elided, the animation is stopped.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        PathChangeDuringAnimation) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
@@ -1671,32 +1755,34 @@ TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(false);
   omnibox_view()->DidFinishNavigation(&navigation);
-  EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(), kDisplayUrl));
 
   // Simulate a user interaction and check that the fade-out animation runs.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  EXPECT_TRUE(fade_out->IsAnimating());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_TRUE(elide_animation->IsAnimating());
 
   // Change the path and check that the animation is cancelled.
-  location_bar_model()->set_url(GURL("https://example.test/foo#bar"));
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar#bar"));
   location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo#bar"));
+      base::ASCIIToUTF16("foo.example.test/bar#bar"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
-  EXPECT_FALSE(fade_out->IsAnimating());
+  EXPECT_FALSE(elide_animation->IsAnimating());
 }
 
-// Tests that in the hide-on-interaction field trial, the path is shown on
+// Tests that in the hide-on-interaction field trial, the URL is simplified on
 // cross-document main-frame navigations, but not on same-document navigations.
-TEST_F(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
@@ -1705,73 +1791,81 @@ TEST_F(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(false);
     omnibox_view()->DidFinishNavigation(&navigation);
-    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ASSERT_NO_FATAL_FAILURE(
+        ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
   }
 
-  // On a same-document navigation before the path has faded out, the path
-  // should remain visible.
+  // On a same-document navigation before the URL has been simplified, the URL
+  // should remain unsimplified.
   {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(true);
     omnibox_view()->DidFinishNavigation(&navigation);
-    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ASSERT_NO_FATAL_FAILURE(
+        ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
   }
 
-  // Simulate a user interaction to fade out the path.
+  // Simulate a user interaction to elide to the simplified domain.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(fade_out);
-  EXPECT_TRUE(fade_out->IsAnimating());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
 
-  // On a cross-document main-frame navigation, the path should remain visible.
+  // On a cross-document main-frame navigation, the unsimplified URL should
+  // remain visible.
   {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(false);
     omnibox_view()->DidFinishNavigation(&navigation);
-    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
-    OmniboxViewViews::PathFadeAnimation* fade_out =
-        omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-    ASSERT_TRUE(fade_out);
-    EXPECT_FALSE(fade_out->IsAnimating());
+    ASSERT_NO_FATAL_FAILURE(
+        ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
+    OmniboxViewViews::ElideAnimation* elide_animation =
+        omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+    ASSERT_TRUE(elide_animation);
+    EXPECT_FALSE(elide_animation->IsAnimating());
   }
 
-  // Simulate another user interaction to fade out the path, and advance the
-  // clock all the way through the animation.
+  // Simulate another user interaction to elide to the simplified domain, and
+  // advance the clock all the way through the animation.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(fade_out);
-  EXPECT_TRUE(fade_out->IsAnimating());
-  gfx::AnimationContainerElement* fade_out_as_element =
-      fade_out->GetAnimationForTesting();
-  fade_out_as_element->SetStartTime(base::TimeTicks());
-  fade_out_as_element->Step(base::TimeTicks() +
-                            base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+  elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 
-  // On a subsequent same-document main-frame navigation, the path should remain
-  // invisible.
+  // On a subsequent same-document main-frame navigation, the URL should remain
+  // elided to the simplified domain.
   {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(true);
     omnibox_view()->DidFinishNavigation(&navigation);
-    // The path is explicitly set to transparent after same-frame navigations
-    // that happen after the path has been faded out.
-    EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+        render_text, base::ASCIIToUTF16("foo."),
+        base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+        ShouldElideToRegistrableDomain()));
   }
 }
 
 // Tests that in the hide-on-interaction field trial, the path is not re-shown
 // on subframe navigations.
-TEST_F(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
@@ -1780,25 +1874,29 @@ TEST_F(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(false);
     omnibox_view()->DidFinishNavigation(&navigation);
-    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ASSERT_NO_FATAL_FAILURE(
+        ExpectUnelidedFromSimplifiedDomain(render_text, kDisplayUrl));
   }
 
-  // Simulate a user interaction to fade out the path, and advance the clock all
-  // the way through the animation.
+  // Simulate a user interaction to elide to the simplified domain, and advance
+  // the clock all the way through the animation.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  ASSERT_TRUE(fade_out);
-  EXPECT_TRUE(fade_out->IsAnimating());
-  gfx::AnimationContainerElement* fade_out_as_element =
-      fade_out->GetAnimationForTesting();
-  fade_out_as_element->SetStartTime(base::TimeTicks());
-  fade_out_as_element->Step(base::TimeTicks() +
-                            base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 
-  // On a subframe navigation, the path should remain invisible.
+  // On a subframe navigation, the URL should remain elided to a simplified
+  // domain.
   {
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(false);
@@ -1811,20 +1909,23 @@ TEST_F(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
             ->AppendChild("subframe");
     navigation.set_render_frame_host(subframe);
     omnibox_view()->DidFinishNavigation(&navigation);
-    // The path is explicitly set to transparent in DidFinishNavigation.
-    EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+        render_text, base::ASCIIToUTF16("foo."),
+        base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+        ShouldElideToRegistrableDomain()));
   }
 }
 
 // Tests that in the hide-on-interaction field trial variation, the path is
 // faded out after omnibox focus and blur.
-TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        HideOnInteractionAfterFocusAndBlur) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
-  location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+  const base::string16 kDisplayUrl = base::ASCIIToUTF16("foo.example.test/bar");
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
+  location_bar_model()->set_url_for_display(kDisplayUrl);
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
@@ -1836,17 +1937,16 @@ TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // Simulate a user interaction to fade out the path.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  gfx::AnimationContainerElement* fade_out_as_element =
-      static_cast<gfx::AnimationContainerElement*>(
-          omnibox_view()
-              ->GetPathFadeOutAfterInteractionAnimationForTesting()
-              ->GetAnimationForTesting());
-  fade_out_as_element->SetStartTime(base::TimeTicks());
-  fade_out_as_element->Step(base::TimeTicks() +
-                            base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  gfx::AnimationContainerElement* elide_as_element =
+      elide_animation->GetAnimationForTesting();
+  elide_as_element->SetStartTime(base::TimeTicks());
+  elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      render_text, base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
 
   // Now focus and blur the omnibox. After blur, the path should fade out again
   // after another user interaction.
@@ -1854,33 +1954,36 @@ TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   omnibox_view()->OnBlur();
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
-  fade_out =
-      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
-  EXPECT_TRUE(fade_out->IsAnimating());
+  elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
 // Tests that in the reveal-on-hover field trial variation (without
 // hide-on-interaction), the path is faded back in after focus, then blur, then
 // hover.
-TEST_F(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
-  location_bar_model()->set_url(GURL("https://example.test/foo"));
+TEST_P(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
+  location_bar_model()->set_url(GURL("https://foo.example.test/bar"));
   location_bar_model()->set_url_for_display(
-      base::ASCIIToUTF16("example.test/foo"));
+      base::ASCIIToUTF16("foo.example.test/bar"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 
-  // Focus and blur the omnibox, then hover over it. The path should fade in.
+  // Focus and blur the omnibox, then hover over it. The URL should unelide.
   omnibox_view()->OnFocus();
   omnibox_view()->OnBlur();
-  EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view()->GetRenderText(), base::ASCIIToUTF16("foo."),
+      base::ASCIIToUTF16("foo.example.test"), base::ASCIIToUTF16("/bar"),
+      ShouldElideToRegistrableDomain()));
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
-  OmniboxViewViews::PathFadeAnimation* fade_in =
-      omnibox_view()->GetPathFadeInAnimationForTesting();
-  ASSERT_TRUE(fade_in);
-  EXPECT_TRUE(fade_in->IsAnimating());
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetHoverElideOrUnelideAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
 // TODO (manukh) move up to where the other OmniboxViewViewsTest tests are.

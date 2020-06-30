@@ -112,12 +112,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void Trace(Visitor*) const override;
 
   // ExecutionContext overrides:
-
-  // TODO(karandeepb): Rename
-  // ExecutionContext::GetContentSecurityPolicyForWorld() to
-  // GetContentSecurityPolicyForCurrentWorld() to avoid confusion.
-  using ExecutionContext::GetContentSecurityPolicyForWorld;
-
   bool IsWindow() const final { return true; }
   bool IsContextThread() const final;
   bool ShouldInstallV8Extensions() const final;

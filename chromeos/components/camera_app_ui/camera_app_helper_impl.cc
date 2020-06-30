@@ -12,6 +12,22 @@
 #include "ui/aura/window.h"
 
 namespace chromeos_camera {
+namespace {
+
+mojom::ScreenState ToMojoScreenState(ash::ScreenState s) {
+  switch (s) {
+    case ash::ScreenState::ON:
+      return mojom::ScreenState::ON;
+    case ash::ScreenState::OFF:
+      return mojom::ScreenState::OFF;
+    case ash::ScreenState::OFF_AUTO:
+      return mojom::ScreenState::OFF_AUTO;
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
 
 CameraAppHelperImpl::CameraAppHelperImpl(
     CameraResultCallback camera_result_callback,
@@ -20,10 +36,12 @@ CameraAppHelperImpl::CameraAppHelperImpl(
   DCHECK(window);
   window->SetProperty(ash::kCanConsumeSystemKeysKey, true);
   ash::TabletMode::Get()->AddObserver(this);
+  ash::ScreenBacklight::Get()->AddObserver(this);
 }
 
 CameraAppHelperImpl::~CameraAppHelperImpl() {
   ash::TabletMode::Get()->RemoveObserver(this);
+  ash::ScreenBacklight::Get()->RemoveObserver(this);
 }
 
 void CameraAppHelperImpl::HandleCameraResult(
@@ -49,18 +67,32 @@ void CameraAppHelperImpl::StopPerfEventTrace(const std::string& event) {
 void CameraAppHelperImpl::SetTabletMonitor(
     mojo::PendingRemote<TabletModeMonitor> monitor,
     SetTabletMonitorCallback callback) {
-  monitor_ = mojo::Remote<TabletModeMonitor>(std::move(monitor));
+  tablet_monitor_ = mojo::Remote<TabletModeMonitor>(std::move(monitor));
   std::move(callback).Run(ash::TabletMode::Get()->InTabletMode());
 }
 
+void CameraAppHelperImpl::SetScreenStateMonitor(
+    mojo::PendingRemote<ScreenStateMonitor> monitor,
+    SetScreenStateMonitorCallback callback) {
+  screen_state_monitor_ = mojo::Remote<ScreenStateMonitor>(std::move(monitor));
+  auto&& mojo_state =
+      ToMojoScreenState(ash::ScreenBacklight::Get()->GetScreenState());
+  std::move(callback).Run(mojo_state);
+}
+
 void CameraAppHelperImpl::OnTabletModeStarted() {
-  if (monitor_.is_bound())
-    monitor_->Update(true);
+  if (tablet_monitor_.is_bound())
+    tablet_monitor_->Update(true);
 }
 
 void CameraAppHelperImpl::OnTabletModeEnded() {
-  if (monitor_.is_bound())
-    monitor_->Update(false);
+  if (tablet_monitor_.is_bound())
+    tablet_monitor_->Update(false);
+}
+
+void CameraAppHelperImpl::OnScreenStateChanged(ash::ScreenState screen_state) {
+  if (screen_state_monitor_.is_bound())
+    screen_state_monitor_->Update(ToMojoScreenState(screen_state));
 }
 
 }  // namespace chromeos_camera

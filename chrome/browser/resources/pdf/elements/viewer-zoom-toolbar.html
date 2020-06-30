@@ -44,11 +44,7 @@
         display: block;
       }
 
-      /*
-       * A larger gap between the fit button and the two-up view button
-       * and above the bottom two zoom buttons.
-       */
-      #two-up-view-button,
+      /* A larger gap between the fit button and the bottom two zoom buttons. */
       #zoom-in-button {
         margin-top: 24px;
       }
@@ -60,21 +56,17 @@
     </style>
     <div id="zoom-buttons">
       <viewer-zoom-button id="fit-button" on-fabclick="fitToggle"
-          delay="[[fitButtonDelay_]]"
+          delay="100"
+          tooltips="$i18n{tooltipFitToPage},$i18n{tooltipFitToWidth}"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           icons="pdf:fullscreen-exit cr:fullscreen">
       </viewer-zoom-button>
-      <!-- TODO(crbug.com/51472): Change icons for two-up-view-button -->
-      <!-- once they are finalized. -->
-      <viewer-zoom-button id="two-up-view-button" delay="100"
-          disabled="[[annotationMode]]" hidden$="[[!twoUpViewEnabled_]]"
-          on-fabclick="twoUpViewToggle_"
-          keyboard-navigation-active="[[keyboardNavigationActive_]]"
-          icons="pdf:create pdf:eraser"></viewer-zoom-button>
       <viewer-zoom-button id="zoom-in-button" icons="pdf:add"
+          tooltips="$i18n{tooltipZoomIn}"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
       <viewer-zoom-button id="zoom-out-button" icons="pdf:remove"
+          tooltips="$i18n{tooltipZoomOut}"
           keyboard-navigation-active="[[keyboardNavigationActive_]]"
           on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
     </div>

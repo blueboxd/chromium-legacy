@@ -93,8 +93,11 @@ bool SharedImageRepresentationSkia::SupportsMultipleConcurrentReadAccess() {
 SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,
-    sk_sp<SkSurface> surface)
-    : ScopedAccessBase(representation), surface_(std::move(surface)) {}
+    sk_sp<SkSurface> surface,
+    std::unique_ptr<GrBackendSurfaceMutableState> end_state)
+    : ScopedAccessBase(representation),
+      surface_(std::move(surface)),
+      end_state_(std::move(end_state)) {}
 
 SharedImageRepresentationSkia::ScopedWriteAccess::~ScopedWriteAccess() {
   representation()->EndWriteAccess(std::move(surface_));
@@ -112,15 +115,18 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
     return nullptr;
   }
 
-  sk_sp<SkSurface> surface = BeginWriteAccess(final_msaa_count, surface_props,
-                                              begin_semaphores, end_semaphores);
+  std::unique_ptr<GrBackendSurfaceMutableState> end_state;
+  sk_sp<SkSurface> surface =
+      BeginWriteAccess(final_msaa_count, surface_props, begin_semaphores,
+                       end_semaphores, &end_state);
   if (!surface)
     return nullptr;
 
   backing()->OnWriteSucceeded();
 
   return std::make_unique<ScopedWriteAccess>(
-      util::PassKey<SharedImageRepresentationSkia>(), this, std::move(surface));
+      util::PassKey<SharedImageRepresentationSkia>(), this, std::move(surface),
+      std::move(end_state));
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
@@ -137,9 +143,11 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
 SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,
-    sk_sp<SkPromiseImageTexture> promise_image_texture)
+    sk_sp<SkPromiseImageTexture> promise_image_texture,
+    std::unique_ptr<GrBackendSurfaceMutableState> end_state)
     : ScopedAccessBase(representation),
-      promise_image_texture_(std::move(promise_image_texture)) {}
+      promise_image_texture_(std::move(promise_image_texture)),
+      end_state_(std::move(end_state)) {}
 
 SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
   representation()->EndReadAccess();
@@ -154,8 +162,9 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
     return nullptr;
   }
 
+  std::unique_ptr<GrBackendSurfaceMutableState> end_state;
   sk_sp<SkPromiseImageTexture> promise_image_texture =
-      BeginReadAccess(begin_semaphores, end_semaphores);
+      BeginReadAccess(begin_semaphores, end_semaphores, &end_state);
   if (!promise_image_texture)
     return nullptr;
 
@@ -163,7 +172,38 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
 
   return std::make_unique<ScopedReadAccess>(
       util::PassKey<SharedImageRepresentationSkia>(), this,
-      std::move(promise_image_texture));
+      std::move(promise_image_texture), std::move(end_state));
+}
+
+sk_sp<SkSurface> SharedImageRepresentationSkia::BeginWriteAccess(
+    int final_msaa_count,
+    const SkSurfaceProps& surface_props,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+  return BeginWriteAccess(final_msaa_count, surface_props, begin_semaphores,
+                          end_semaphores);
+}
+
+sk_sp<SkSurface> SharedImageRepresentationSkia::BeginWriteAccess(
+    int final_msaa_count,
+    const SkSurfaceProps& surface_props,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  return nullptr;
+}
+
+sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkia::BeginReadAccess(
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores,
+    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+  return BeginReadAccess(begin_semaphores, end_semaphores);
+}
+
+sk_sp<SkPromiseImageTexture> SharedImageRepresentationSkia::BeginReadAccess(
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  return nullptr;
 }
 
 SharedImageRepresentationOverlay::ScopedReadAccess::ScopedReadAccess(

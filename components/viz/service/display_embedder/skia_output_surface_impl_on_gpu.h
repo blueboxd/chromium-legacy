@@ -159,6 +159,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
                          std::vector<GrBackendSemaphore>* begin_semaphores,
                          std::vector<GrBackendSemaphore>* end_semaphores);
+  void ResetStateOfImages();
   void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
@@ -328,6 +329,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
     DISALLOW_COPY_AND_ASSIGN(PromiseImageAccessHelper);
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};
+  base::flat_set<ImageContextImpl*> image_contexts_with_end_access_state_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;

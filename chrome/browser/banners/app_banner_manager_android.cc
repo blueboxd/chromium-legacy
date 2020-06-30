@@ -222,8 +222,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 
   bool was_shown = AddToHomescreenCoordinator::ShowForAppBanner(
       weak_factory_.GetWeakPtr(), std::move(a2hs_params),
-      base::Bind(&AppBannerManagerAndroid::RecordEventForAppBanner,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&AppBannerManagerAndroid::RecordEventForAppBanner,
+                          weak_factory_.GetWeakPtr()));
 
   // If we are installing from the ambient badge, it will remove itself.
   if (install_source != WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB &&

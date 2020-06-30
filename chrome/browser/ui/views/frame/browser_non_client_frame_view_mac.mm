@@ -118,16 +118,14 @@ bool BrowserNonClientFrameViewMac::CaptionButtonsOnLeadingEdge() const {
 }
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
+    const gfx::Size& tabstrip_minimum_size) const {
   // TODO(weili): In the future, we should hide the title bar, and show the
   // tab strip directly under the menu bar. For now, just lay our content
   // under the native title bar. Use the default title bar height to avoid
   // calling through private APIs.
-  DCHECK(tabstrip);
-
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
   gfx::Rect bounds(0, GetTopInset(restored), width(),
-                   tabstrip->GetPreferredSize().height());
+                   tabstrip_minimum_size.height());
 
   // Do not draw caption buttons on fullscreen.
   if (!frame()->IsFullscreen()) {

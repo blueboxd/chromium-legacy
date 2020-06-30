@@ -2667,6 +2667,8 @@ static_library("ui") {
       "webui/settings/system_handler.h",
       "webui/signin/inline_login_handler_impl.cc",
       "webui/signin/inline_login_handler_impl.h",
+      "webui/signin/profile_picker_handler.cc",
+      "webui/signin/profile_picker_handler.h",
       "webui/signin/profile_picker_ui.cc",
       "webui/signin/profile_picker_ui.h",
       "webui/signin/signin_create_profile_handler.cc",

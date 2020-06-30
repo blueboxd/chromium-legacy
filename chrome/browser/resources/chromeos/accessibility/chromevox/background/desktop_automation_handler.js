@@ -54,18 +54,11 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {number?} */
     this.delayedAttributeOutputId_;
 
-    /** @private {!Date} */
-    this.lastHoverExit_ = new Date();
-
-    /** @private {!AutomationNode|undefined} */
-    this.lastHoverTarget_;
-
     this.addListener_(EventType.ALERT, this.onAlert);
     this.addListener_(EventType.BLUR, this.onBlur);
     this.addListener_(
         EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
     this.addListener_(EventType.FOCUS, this.onFocus);
-    this.addListener_(EventType.HOVER, this.onHover);
 
     // Note that live region changes from views are really announcement
     // events. Their target nodes contain no live region semantics and have no
@@ -97,14 +90,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   /** @type {editing.TextEditHandler} */
   get textEditHandler() {
     return this.textEditHandler_;
-  }
-
-  /**
-   * @return {!AutomationNode|undefined} The target of the last observed hover
-   *     event.
-   */
-  get lastHoverTarget() {
-    return this.lastHoverTarget_;
   }
 
   /** @override */
@@ -151,75 +136,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       output.withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
           .go();
     });
-  }
-
-  /**
-   * @param {!ChromeVoxEvent} evt
-   */
-  onHover(evt) {
-    if (!GestureCommandHandler.getEnabled()) {
-      return;
-    }
-
-    EventSourceState.set(EventSourceType.TOUCH_GESTURE);
-
-    // Save the last hover target for use by the gesture handler.
-    this.lastHoverTarget_ = evt.target;
-
-    let target = evt.target;
-
-    // If the target is in an ExoSurface, which hosts remote content, trigger a
-    // mouse move. This only occurs when we programmatically hit test content
-    // within ARC++ for now. Mouse moves automatically trigger Android to send
-    // hover events back.
-    if (target.role == RoleType.WINDOW &&
-        target.className.indexOf('ExoSurface') == 0) {
-      BackgroundMouseHandler.instance.synthesizeMouseMove();
-      return;
-    }
-
-    let targetLeaf = null;
-    let targetObject = null;
-    while (target && target != target.root) {
-      if (!targetObject && AutomationPredicate.touchObject(target)) {
-        targetObject = target;
-      }
-      if (AutomationPredicate.touchLeaf(target)) {
-        targetLeaf = target;
-      }
-      target = target.parent;
-    }
-
-    target = targetLeaf || targetObject;
-    if (!target) {
-      // This clears the anchor point in the TouchExplorationController (so
-      // things like double tap won't be directed to the previous target). It
-      // also ensures if a user touch explores back to the previous range, it
-      // will be announced again.
-      ChromeVoxState.instance.setCurrentRange(null);
-
-      // Play a earcon to let the user know they're in the middle of nowhere.
-      if ((new Date() - this.lastHoverExit_) >
-          DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS) {
-        ChromeVox.earcons.playEarcon(Earcon.TOUCH_EXIT);
-        this.lastHoverExit_ = new Date();
-      }
-      chrome.tts.stop();
-      return;
-    }
-
-    if (ChromeVoxState.instance.currentRange &&
-        target == ChromeVoxState.instance.currentRange.start.node) {
-      return;
-    }
-
-    if (!this.createTextEditHandlerIfNeeded_(target)) {
-      this.textEditHandler_ = null;
-    }
-
-    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-    this.onEventDefault(new CustomAutomationEvent(
-        evt.type, target, evt.eventFrom, evt.intents));
   }
 
   /**
@@ -708,9 +624,6 @@ DesktopAutomationHandler.ATTRIBUTE_DELAY_MS = 1500;
  * @type {boolean}
  */
 DesktopAutomationHandler.announceActions = false;
-
-/** @const {number} */
-DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = 500;
 
 /**
  * Global instance.

@@ -129,7 +129,11 @@ class VIEWS_EXPORT MenuController
   // selection has not been committed yet.
   views::MenuItemView* GetSelectedMenuItem() { return pending_state_.item; }
 
-  // Get the anchor position which is used to show this menu.
+  // Selects a menu-item and opens its sub-menu (if one exists) if not already
+  // so. Clears any selections within the submenu if it is already open.
+  void SelectItemAndOpenSubmenu(MenuItemView* item);
+
+  // Gets the anchor position which is used to show this menu.
   MenuAnchorPosition GetAnchorPosition() { return state_.anchor; }
 
   // Cancels the current Run. See ExitType for a description of what happens

@@ -455,6 +455,34 @@ def main():
   # enough GCC to build Clang.
   MaybeDownloadHostGcc(args)
 
+  # mac/arm64 needs MacOSX11.0.sdk. System Xcode (+ SDK) on the chrome bots
+  # is something much older.
+  # Options:
+  # - temporarily set system Xcode to Xcode 12 beta while running this script,
+  #   (cf build/swarming_xcode_install.py, but it looks unused)
+  # - use Xcode 12 beta for everything on tot bots, only need to fuzz with
+  #   scripts/slave/recipes/chromium_upload_clang.py then (but now the
+  #   chrome/ios build will use the 11.0 SDK too and we'd be on the hook for
+  #   keeping it green -- if it's currently green, who knows)
+  # - pass flags to cmake to try to coax it into using Xcode 12 beta for the
+  #   LLVM build without it being system Xcode.
+  #
+  # The last option seems best, so let's go with that. We need to pass
+  # -isysroot to the 11.0 SDK and -B to the /usr/bin so that the new ld64 is
+  # used.
+  if sys.platform == 'darwin':
+    isysroot = subprocess.check_output(['xcrun', '--show-sdk-path']).rstrip()
+  if sys.platform == 'darwin' and args.bootstrap:
+    sys.path.insert(1, os.path.join(CHROMIUM_DIR, 'build'))
+    import mac_toolchain
+    LLVM_XCODE = os.path.join(THIRD_PARTY_DIR, 'llvm-xcode')
+    mac_toolchain.InstallXcodeBinaries('xcode_12_beta', LLVM_XCODE)
+    isysroot = os.path.join(LLVM_XCODE, 'Contents', 'Developer', 'Platforms',
+                            'MacOSX.platform', 'Developer', 'SDKs',
+                            'MacOSX11.0.sdk')
+    xcode_bin = os.path.join(LLVM_XCODE, 'Contents', 'Developer', 'Toolchains',
+                             'XcodeDefault.xctoolchain', 'usr', 'bin')
+
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetLatestLLVMCommit()
@@ -720,9 +748,8 @@ def main():
                 '-target', 'x86_64-unknown-unknown', '-O2', '-g', '-std=c++14',
                  '-fno-exceptions', '-fno-rtti', '-w', '-c', training_source]
     if sys.platform == 'darwin':
-      train_cmd.extend(['-stdlib=libc++', '-isysroot',
-                        subprocess.check_output(['xcrun',
-                                                 '--show-sdk-path']).rstrip()])
+      # TODO(thakis): Try switching tihs back to `xcrun --show-sdk-path`.
+      train_cmd.extend(['-stdlib=libc++', '-isysroot', isysroot])
     RunCommand(train_cmd, msvc_arch='x64')
 
     # Merge profiles.
@@ -749,9 +776,20 @@ def main():
         # iPhones). armv7k is Apple Watch, which we don't need.
         '-DDARWIN_ios_ARCHS=armv7;armv7s;arm64',
         '-DDARWIN_iossim_ARCHS=i386;x86_64',
-        # We don't need 32-bit intel support for macOS, we only ship 64-bit.
-        '-DDARWIN_osx_ARCHS=x86_64',
         ])
+    if args.bootstrap:
+      # Include an arm64 slice for libclang_rt.osx.a. This requires using
+      # MacOSX11.0.sdk (via -isysroot, via DARWIN_macosx_CACHED_SYSROOT) and
+      # the new ld, via -B
+      compiler_rt_args.extend([
+          # We don't need 32-bit intel support for macOS, we only ship 64-bit.
+          # XXX probably only add arm64 for bootstrap builds
+          '-DDARWIN_osx_ARCHS=arm64;x86_64',
+          '-DDARWIN_macosx_CACHED_SYSROOT=' + isysroot,
+      ])
+      ldflags += ['-B', xcode_bin]
+    else:
+      compiler_rt_args.extend(['-DDARWIN_osx_ARCHS=x86_64'])
   else:
     compiler_rt_args.append('-DCOMPILER_RT_BUILD_BUILTINS=OFF')
 
@@ -764,8 +802,8 @@ def main():
   if sys.platform == 'darwin' and args.bootstrap:
     # When building on 10.9, /usr/include usually doesn't exist, and while
     # Xcode's clang automatically sets a sysroot, self-built clangs don't.
-    cflags = ['-isysroot', subprocess.check_output(
-        ['xcrun', '--show-sdk-path']).rstrip()]
+    # TODO(thakis): Try changing this back to `xcrun --show-sdk-path`.
+    cflags = ['-isysroot', isysroot]
     cxxflags = ['-stdlib=libc++'] + cflags
     ldflags += ['-stdlib=libc++']
     deployment_target = '10.7'

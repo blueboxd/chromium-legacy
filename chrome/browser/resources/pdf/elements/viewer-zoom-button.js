@@ -45,8 +45,7 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    /** @type {?Array<string>} */
-    tooltips: Array,
+    tooltips: String,
 
     /** @private */
     closed_: {
@@ -67,6 +66,12 @@ Polymer({
       computed: 'computeIconsArray_(icons)',
     },
 
+    /** @private {!Array<string>} */
+    tooltips_: {
+      type: Array,
+      computed: 'computeTooltipsArray_(tooltips)',
+    },
+
     /**
      * Icon currently being displayed on the FAB.
      * @private
@@ -79,37 +84,40 @@ Polymer({
     /** @private */
     visibleTooltip_: {
       type: String,
-      computed: 'computeVisibleTooltip_(tooltips, activeIndex)',
-    }
+      computed: 'computeVisibleTooltip_(tooltips_, activeIndex)',
+    },
   },
 
   /**
-   * @param {string} icons Icon names in a string, delimited by spaces
    * @return {!Array<string>} Array of icon name strings
    * @private
    */
-  computeIconsArray_(icons) {
-    return icons.split(' ');
+  computeIconsArray_() {
+    return this.icons.split(' ');
   },
 
   /**
-   * @param {!Array<string>} icons Array of icon name strings.
-   * @param {number} activeIndex Index of the currently active icon.
+   * @return {!Array<string>} Array of tooltip strings
+   * @private
+   */
+  computeTooltipsArray_() {
+    return this.tooltips.split(',');
+  },
+
+  /**
    * @return {string} Icon name for the currently visible icon.
    * @private
    */
-  computeVisibleIcon_(icons, activeIndex) {
-    return icons[activeIndex];
+  computeVisibleIcon_() {
+    return this.icons_[this.activeIndex];
   },
 
   /**
-   * @param {?Array<string>} tooltips Array of tooltip strings.
-   * @param {number} activeIndex Index of the currently active icon.
    * @return {string} Tooltip for the currently visible icon.
    * @private
    */
-  computeVisibleTooltip_(tooltips, activeIndex) {
-    return tooltips === undefined ? '' : tooltips[activeIndex];
+  computeVisibleTooltip_() {
+    return this.tooltips_ === undefined ? '' : this.tooltips_[this.activeIndex];
   },
 
   /** @private */

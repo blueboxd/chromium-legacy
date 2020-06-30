@@ -1234,8 +1234,8 @@ class Port(object):
             # the subsequent repetitions of the test do not overwrite older
             # trace files.
             current_time = time.strftime("%Y-%m-%d-%H-%M-%S")
-            file_name = 'trace_layout_test_' + test_name.replace(
-                '/', '_').replace('.', '_') + '_' + current_time + '.json'
+            file_name = 'trace_layout_test_{}_{}.json'.format(
+                self._filesystem.sanitize_filename(test_name), current_time)
             args.append('--trace-startup-file=' + file_name)
         return args
 
@@ -1894,25 +1894,67 @@ class Port(object):
                                                    suite_prefixes))
         return tests
 
-    def _all_virtual_tests_for_suite(self, suite):
+    def _get_bases_for_suite_with_paths(self, suite, paths):
+        """Returns a set of bases of the virutual suite that are referenced by
+        paths. E.g. given a virtual test suite `foo` with the following bases:
+          bar/baz
+          bar/quu
+          qux
+        and given paths of [virtual/foo/bar], this method would return
+          [bar/baz, bar/quu]
+
+        Given paths of [virtual/foo/bar/baz/test.html], the return would be
+        [bar/baz]
+        """
+
+        real_paths = [p.replace(suite.full_prefix, '', 1) for p in paths \
+            if p.startswith(suite.full_prefix)]
+        # Test for paths that are under the suite's bases, so that we don't run
+        # a non-existent test.
+        bases = set()
+        for real_path in real_paths:
+            for base in suite.bases:
+                if real_path.startswith(base) or base.startswith(real_path):
+                    bases.add(base)
+
+        return list(bases)
+
+    def _virtual_tests_for_suite_with_paths(self, suite, paths):
         if not suite.bases:
             return []
+
+        bases = self._get_bases_for_suite_with_paths(suite, paths)
+
+        if not bases:
+            return []
+
         tests = []
         tests.extend(
-            map(lambda x: suite.full_prefix + x, self.real_tests(suite.bases)))
-        tests.extend(
-            self._wpt_test_urls_matching_paths(
-                suite.bases, [suite.full_prefix] * len(suite.bases)))
+            map(lambda x: suite.full_prefix + x, self.real_tests(bases)))
+
+        wpt_bases = []
+        for base in bases:
+            if any(base.startswith(wpt_dir) for wpt_dir in self.WPT_DIRS):
+                wpt_bases.append(base)
+
+        if wpt_bases:
+            tests.extend(
+                self._wpt_test_urls_matching_paths(
+                    wpt_bases, [suite.full_prefix] * len(wpt_bases)))
+
         return tests
 
     def _virtual_tests_matching_paths(self, paths):
         tests = []
         normalized_paths = [self.normalize_test_name(p) for p in paths]
         for suite in self.virtual_test_suites():
-            if not any(
-                    p.startswith(suite.full_prefix) for p in normalized_paths):
+            virtual_paths = [
+                p for p in normalized_paths if p.startswith(suite.full_prefix)
+            ]
+            if not virtual_paths:
                 continue
-            for test in self._all_virtual_tests_for_suite(suite):
+            for test in self._virtual_tests_for_suite_with_paths(
+                    suite, virtual_paths):
                 if any(test.startswith(p) for p in normalized_paths):
                     tests.append(test)
 

@@ -52,7 +52,7 @@ class BrowserNonClientFrameViewAsh
 
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
-      const views::View* tabstrip) const override;
+      const gfx::Size& tabstrip_minimum_size) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateFrameColor() override;

@@ -31,18 +31,21 @@ public class ScreenshotShareSheetCoordinator {
      * @param screenshot The screenshot to be shared.
      * @param deleteRunanble The runnable to be called on cancel or delete.
      * @param screenshotShareSheetView the view for the screenshot share sheet.
+     * @param tab The tab that launched this screenshot.
+     * @param shareSheetCallback The callback to be called on share.
+     * @param deleteRunanble The runnable to be called on retry.
      */
     public ScreenshotShareSheetCoordinator(Context context, Bitmap screenshot,
             Runnable deleteRunnable, ScreenshotShareSheetView screenshotShareSheetView, Tab tab,
-            ChromeOptionShareCallback shareSheetCallback) {
+            ChromeOptionShareCallback shareSheetCallback, Runnable installCallback) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(ScreenshotShareSheetViewProperties.ALL_KEYS));
         mModel = new PropertyModel(allProperties);
 
         mModel.set(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP, screenshot);
         mSaveDelegate = new ScreenshotShareSheetSaveDelegate(context, mModel);
-        mMediator = new ScreenshotShareSheetMediator(
-                context, mModel, deleteRunnable, mSaveDelegate::save, tab, shareSheetCallback);
+        mMediator = new ScreenshotShareSheetMediator(context, mModel, deleteRunnable,
+                mSaveDelegate::save, tab, shareSheetCallback, installCallback);
 
         PropertyModelChangeProcessor.create(
                 mModel, screenshotShareSheetView, ScreenshotShareSheetViewBinder::bind);

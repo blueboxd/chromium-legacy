@@ -78,13 +78,15 @@ void InfoBubble::Hide() {
     widget->Close();
 }
 
-NonClientFrameView* InfoBubble::CreateNonClientFrameView(Widget* widget) {
+std::unique_ptr<NonClientFrameView> InfoBubble::CreateNonClientFrameView(
+    Widget* widget) {
   DCHECK(!frame_);
-  frame_ = new InfoBubbleFrame(margins());
-  frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
-  frame_->SetBubbleBorder(
+  auto frame = std::make_unique<InfoBubbleFrame>(margins());
+  frame->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
+  frame->SetBubbleBorder(
       std::make_unique<BubbleBorder>(arrow(), GetShadow(), color()));
-  return frame_;
+  frame_ = frame.get();
+  return frame;
 }
 
 gfx::Size InfoBubble::CalculatePreferredSize() const {

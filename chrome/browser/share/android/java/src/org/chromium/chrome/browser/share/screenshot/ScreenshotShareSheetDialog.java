@@ -26,6 +26,7 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
     private Runnable mDeleteRunnable;
     private Tab mTab;
     private ChromeOptionShareCallback mShareCallback;
+    private Runnable mInstallCallback;
 
     /**
      * The ScreenshotShareSheetDialog constructor.
@@ -40,9 +41,10 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
      * @param shareSheetCoordnator the base share sheet coordinator
      */
     public void init(Bitmap screenshot, Runnable deleteRunnable, Tab tab,
-            ChromeOptionShareCallback shareSheetCallback) {
+            ChromeOptionShareCallback shareSheetCallback, Runnable installCallback) {
         mScreenshot = screenshot;
         mDeleteRunnable = deleteRunnable;
+        mInstallCallback = installCallback;
         mTab = tab;
         mShareCallback = shareSheetCallback;
     }
@@ -64,7 +66,7 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
 
         ScreenshotShareSheetCoordinator shareCoordinator =
                 new ScreenshotShareSheetCoordinator(mContext, mScreenshot, mDeleteRunnable,
-                        screenshotShareSheetView, mTab, mShareCallback);
+                        screenshotShareSheetView, mTab, mShareCallback, mInstallCallback);
         return builder.create();
     }
 }

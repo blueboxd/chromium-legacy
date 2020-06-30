@@ -20,9 +20,6 @@
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/read_transaction.h"
-#include "components/sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
 
@@ -57,12 +54,10 @@ void CommitQueueProxy::NudgeForCommit() {
 
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-    UserShare* user_share,
     NudgeHandler* nudge_handler,
     CancelationSignal* cancelation_signal,
     KeystoreKeysHandler* keystore_keys_handler)
-    : user_share_(user_share),
-      nudge_handler_(nudge_handler),
+    : nudge_handler_(nudge_handler),
       cancelation_signal_(cancelation_signal),
       keystore_keys_handler_(keystore_keys_handler) {
   for (size_t i = 0u; i < workers.size(); ++i) {
@@ -116,16 +111,6 @@ void ModelTypeRegistry::ConnectNonBlockingType(
   // Initialize Processor -> Worker communication channel.
   type_processor->ConnectSync(std::make_unique<CommitQueueProxy>(
       worker_ptr->AsWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
-
-  // If there is still data for this type left in the directory, purge it now.
-  // TODO(crbug.com/1084499): The purge should be safe to do even if the initial
-  // USS sync has already happened, and also for NIGORI.
-  if (!initial_sync_done && directory()->InitialSyncEndedForType(type) &&
-      type != NIGORI) {
-    directory()->PurgeEntriesWithTypeIn(/*disabled_types=*/ModelTypeSet(type),
-                                        /*types_to_journal=*/ModelTypeSet(),
-                                        /*types_to_unapply=*/ModelTypeSet());
-  }
 }
 
 void ModelTypeRegistry::DisconnectNonBlockingType(ModelType type) {
@@ -225,9 +210,7 @@ bool ModelTypeRegistry::HasUnsyncedItems() const {
     }
   }
 
-  // Verify directory state.
-  ReadTransaction trans(FROM_HERE, user_share_);
-  return trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0;
+  return false;
 }
 
 base::WeakPtr<ModelTypeConnector> ModelTypeRegistry::AsWeakPtr() {

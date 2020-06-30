@@ -64,8 +64,9 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   int GetMinimizeButtonOffset() const;
 
   // Retrieves the bounds in non-client view coordinates for the
-  // TabStripRegionView that contains the specified TabStrip view.
-  gfx::Rect GetBoundsForTabStripRegion(const views::View* tabstrip) const;
+  // TabStripRegionView that contains the TabStrip view.
+  gfx::Rect GetBoundsForTabStripRegion(
+      const gfx::Size& tabstrip_minimum_size) const;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
@@ -115,7 +116,8 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
 
   // views::Widget:
   views::internal::RootView* CreateRootView() override;
-  views::NonClientFrameView* CreateNonClientFrameView() override;
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView()
+      override;
   bool GetAccelerator(int command_id,
                       ui::Accelerator* accelerator) const override;
   const ui::ThemeProvider* GetThemeProvider() const override;

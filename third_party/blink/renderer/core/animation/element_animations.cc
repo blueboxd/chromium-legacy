@@ -114,9 +114,7 @@ void ElementAnimations::Trace(Visitor* visitor) const {
 }
 
 const ComputedStyle* ElementAnimations::BaseComputedStyle() const {
-  if (IsAnimationStyleChange())
-    return base_computed_style_.get();
-  return nullptr;
+  return base_computed_style_.get();
 }
 
 const CSSBitset* ElementAnimations::BaseImportantSet() const {

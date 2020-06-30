@@ -65,6 +65,16 @@ struct DidPreviewPageParams {
   int32 document_cookie;
 };
 
+// Parameters to describe the final rendered preview document.
+struct DidPreviewDocumentParams {
+  // Document's content including metafile data and subframe info.
+  DidPrintContentParams content;
+  // Cookie for the document to ensure correctness.
+  int32 document_cookie;
+  // Store the expected pages count.
+  uint32 expected_pages_count;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {

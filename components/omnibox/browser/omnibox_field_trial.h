@@ -435,10 +435,13 @@ int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
 // Function only works in non-incognito when server suggestions are available.
 std::string OnDeviceHeadSuggestDemoteMode();
 
-// Experiment to hide the path, query, and ref in the steady state.
+// Experiment to hide components of the URL in the steady state.
 bool ShouldRevealPathQueryRefOnHover();
 bool ShouldHidePathQueryRefOnInteraction();
-int RevealPathQueryRefOnHoverThresholdMs();
+// If true, the above two features elide subdomains beyond the registrable
+// domain, as well as the path, query, and ref.
+bool ShouldElideToRegistrableDomain();
+int UnelideURLOnHoverThresholdMs();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -527,9 +530,9 @@ extern const char kRichAutocompletionAutocompleteNonPrefix[];
 // of the Omnibox clipboard image search suggestion.
 extern const char kImageSearchSuggestionThumbnail[];
 
-// Parameter names used by omnibox experiments that hide the path in the steady
-// state.
-extern const char kOmniboxUIRevealPathQueryAndRefOnHoverThresholdMsParam[];
+// Parameter names used by omnibox experiments that hide the path (and
+// optionally subdomains) in the steady state.
+extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters

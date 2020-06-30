@@ -258,26 +258,28 @@ void BluetoothSection::OnFetchBluetoothAdapter(
 }
 
 void BluetoothSection::UpdateSearchTags() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   // Start with no search tags, then add them below if appropriate.
-  registry()->RemoveSearchTags(GetBluetoothSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothOnSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothOffSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothConnectableSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothConnectedSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothPairableSearchConcepts());
-  registry()->RemoveSearchTags(GetBluetoothPairedSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothOnSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothOffSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothConnectableSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothConnectedSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothPairableSearchConcepts());
+  updater.RemoveSearchTags(GetBluetoothPairedSearchConcepts());
 
   if (!bluetooth_adapter_->IsPresent())
     return;
 
-  registry()->AddSearchTags(GetBluetoothSearchConcepts());
+  updater.AddSearchTags(GetBluetoothSearchConcepts());
 
   if (!bluetooth_adapter_->IsPowered()) {
-    registry()->AddSearchTags(GetBluetoothOffSearchConcepts());
+    updater.AddSearchTags(GetBluetoothOffSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetBluetoothOnSearchConcepts());
+  updater.AddSearchTags(GetBluetoothOnSearchConcepts());
 
   // Filter devices so that only those shown in the UI are returned. Note that
   // passing |max_devices| of 0 indicates that there is no maximum.
@@ -303,13 +305,13 @@ void BluetoothSection::UpdateSearchTags() {
   }
 
   if (connectable_device_exists)
-    registry()->AddSearchTags(GetBluetoothConnectableSearchConcepts());
+    updater.AddSearchTags(GetBluetoothConnectableSearchConcepts());
   if (connected_device_exists)
-    registry()->AddSearchTags(GetBluetoothConnectedSearchConcepts());
+    updater.AddSearchTags(GetBluetoothConnectedSearchConcepts());
   if (pairable_device_exists)
-    registry()->AddSearchTags(GetBluetoothPairableSearchConcepts());
+    updater.AddSearchTags(GetBluetoothPairableSearchConcepts());
   if (paired_device_exists)
-    registry()->AddSearchTags(GetBluetoothPairedSearchConcepts());
+    updater.AddSearchTags(GetBluetoothPairedSearchConcepts());
 }
 
 }  // namespace settings

@@ -49,7 +49,7 @@ const tests = [
     // Test that the traversal through the shadow DOM works correctly.
     const viewer = document.body.querySelector('pdf-viewer');
     const toolbar = viewer.shadowRoot.querySelector('#toolbar');
-    toolbar.$.pageselector.pageSelector.inputElement.focus();
+    toolbar.$.pageselector.pageSelector.focus();
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
     // Test case where the active element has a shadow root of its own.

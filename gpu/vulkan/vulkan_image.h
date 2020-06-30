@@ -74,7 +74,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       VkImageTiling image_tiling,
       VkDeviceSize device_size,
       uint32_t memory_type_index,
-      base::Optional<VulkanYCbCrInfo>& ycbcr_info);
+      base::Optional<VulkanYCbCrInfo>& ycbcr_info,
+      VkImageCreateFlags flags = 0);
 
   void Destroy();
 

@@ -113,7 +113,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
       Widget::MoveLoopEscapeBehavior escape_behavior) override;
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
-  NonClientFrameView* CreateNonClientFrameView() override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;

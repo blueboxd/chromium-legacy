@@ -551,8 +551,16 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
   // make network requests on behalf of the real origin).
   //
   // TODO(lukasza): Cover MHTML main frames here.
-  if (navigation_request->IsForMhtmlSubframe())
-    return url::Origin();
+  if (navigation_request->IsForMhtmlSubframe()) {
+    // TODO(lukasza): https://crbug.com/1056949: Stop using
+    // mhtml.subframe.invalid as the precursor (once https://crbug.com/1056949
+    // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
+    // precursors).
+    url::Origin mhtml_subframe_origin =
+        url::Origin::Create(GURL("https://mhtml.subframe.invalid"))
+            .DeriveNewOpaqueOrigin();
+    return mhtml_subframe_origin;
+  }
 
   // Srcdoc subframes need to inherit their origin from their parent frame.
   if (navigation_request->GetURL().IsAboutSrcdoc()) {
@@ -564,11 +572,19 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
     return parent->GetLastCommittedOrigin();
   }
 
+  // TODO(lukasza): https://crbug.com/1056949: Stop using
+  // browser.initiated.invalid as the precursor (once https://crbug.com/1056949
+  // is debugged OR once network::VerifyRequestInitiatorLock starts to compare
+  // precursors).
+  url::Origin browser_initiated_fallback_origin =
+      url::Origin::Create(GURL("https://browser.initiated.invalid"))
+          .DeriveNewOpaqueOrigin();
+
   // In cases not covered above, URLLoaderFactory should be associated with the
   // origin of |common_params.url| and/or |common_params.initiator_origin|.
-  return url::Origin::Resolve(
-      common_params.url,
-      common_params.initiator_origin.value_or(url::Origin()));
+  return url::Origin::Resolve(common_params.url,
+                              common_params.initiator_origin.value_or(
+                                  browser_initiated_fallback_origin));
 }
 
 url::Origin GetOriginForURLLoaderFactory(
@@ -588,7 +604,12 @@ url::Origin GetOriginForURLLoaderFactory(
 
   // Check that |result| origin is allowed to be accessed from the process that
   // is the target of this navigation.
-  if (ShouldBypassChecksForErrorPage(target_frame, navigation_request))
+  //
+  // TODO(lukasza): https://crbug.com/1056949: Stop excluding opaque origins
+  // from the security checks once the *.invalid diagnostics are no longer
+  // needed.
+  if (ShouldBypassChecksForErrorPage(target_frame, navigation_request) ||
+      result.opaque())
     return result;
   int process_id = target_frame->GetProcess()->GetID();
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -9068,7 +9089,17 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
   if (active_sandbox_flags_ == *active_sandbox_flags_control_)
     return;
 
+  base::debug::ScopedCrashKeyString scoped_url(
+      base::debug::AllocateCrashKeyString("url",
+                                          base::debug::CrashKeySize::Size256),
+      GetLastCommittedURL().possibly_invalid_spec());
+  base::debug::ScopedCrashKeyString scoped_sandbox(
+      base::debug::AllocateCrashKeyString("sandbox",
+                                          base::debug::CrashKeySize::Size256),
+      base::StringPrintf("%u, %u", uint32_t(active_sandbox_flags_),
+                         uint32_t(*active_sandbox_flags_control_)));
   DCHECK(false);
+  base::debug::DumpWithoutCrashing();
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(

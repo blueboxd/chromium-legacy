@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationStore, InvitationStore, makeRecentDestination, NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
+import {Destination, DestinationStore, InvitationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PluginProxy, RecentDestination} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
-import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
-import {createDestinationStore, getDestinations, getGoogleDriveDestination, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
+
+import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
+import {NativeLayerStub} from './native_layer_stub.js';
+import {PDFPluginStub} from './plugin_stub.js';
+import {createDestinationStore, getDestinations, getGoogleDriveDestination, setupTestListenerElement} from './print_preview_test_utils.js';
 
 window.destination_dialog_test = {};
+const destination_dialog_test = window.destination_dialog_test;
 destination_dialog_test.suiteName = 'DestinationDialogTest';
 /** @enum {string} */
 destination_dialog_test.TestNames = {
@@ -22,17 +26,17 @@ destination_dialog_test.TestNames = {
 };
 
 suite(destination_dialog_test.suiteName, function() {
-  /** @type {?PrintPreviewDestinationDialogElement} */
-  let dialog = null;
+  /** @type {!PrintPreviewDestinationDialogElement} */
+  let dialog;
 
-  /** @type {?DestinationStore} */
-  let destinationStore = null;
+  /** @type {!DestinationStore} */
+  let destinationStore;
 
-  /** @type {?NativeLayer} */
-  let nativeLayer = null;
+  /** @type {!NativeLayerStub} */
+  let nativeLayer;
 
-  /** @type {?CloudPrintInterface} */
-  let cloudPrintInterface = null;
+  /** @type {!CloudPrintInterfaceStub} */
+  let cloudPrintInterface;
 
   /** @type {!Array<!Destination>} */
   let destinations = [];
@@ -65,7 +69,8 @@ suite(destination_dialog_test.suiteName, function() {
         recentDestinations /* recentDestinations */);
 
     // Set up dialog
-    dialog = document.createElement('print-preview-destination-dialog');
+    dialog = /** @type {!PrintPreviewDestinationDialogElement} */ (
+        document.createElement('print-preview-destination-dialog'));
     dialog.activeUser = '';
     dialog.users = [];
     dialog.destinationStore = destinationStore;
@@ -132,7 +137,7 @@ suite(destination_dialog_test.suiteName, function() {
         flush();
         provisionalDialog =
             dialog.$$('print-preview-provisional-destination-resolver');
-        assertFalse(provisionalDialog.$.dialog.open);
+        assertFalse(provisionalDialog.$$('#dialog').open);
         const list = dialog.$$('print-preview-destination-list');
         const printerItems = list.shadowRoot.querySelectorAll(
             'print-preview-destination-list-item');
@@ -147,7 +152,7 @@ suite(destination_dialog_test.suiteName, function() {
         // Click the provisional destination to select it.
         provisionalItem.click();
         flush();
-        assertTrue(provisionalDialog.$.dialog.open);
+        assertTrue(provisionalDialog.$$('#dialog').open);
 
         // Send escape key on provisionalDialog. Destinations dialog should
         // not close.
@@ -156,8 +161,8 @@ suite(destination_dialog_test.suiteName, function() {
         flush();
         await whenClosed;
 
-        assertFalse(provisionalDialog.$.dialog.open);
-        assertTrue(dialog.$.dialog.open);
+        assertFalse(provisionalDialog.$$('#dialog').open);
+        assertTrue(dialog.$$('#dialog').open);
       });
 
   /**
@@ -166,7 +171,7 @@ suite(destination_dialog_test.suiteName, function() {
    */
   function assertSignedInState(account, numUsers) {
     const signedIn = account !== '';
-    assertEquals(signedIn, dialog.$.cloudprintPromo.hidden);
+    assertEquals(signedIn, dialog.$$('#cloudprintPromo').hidden);
     assertEquals(!signedIn, dialog.$$('.user-info').hidden);
 
     if (numUsers > 0) {
@@ -210,7 +215,7 @@ suite(destination_dialog_test.suiteName, function() {
     // Check that both cloud print promo and dropdown are hidden when
     // cloud print is disabled.
     dialog.cloudPrintDisabled = true;
-    assertTrue(dialog.$.cloudprintPromo.hidden);
+    assertTrue(dialog.$$('#cloudprintPromo').hidden);
     assertTrue(dialog.$$('.user-info').hidden);
     userSelect = dialog.$$('.md-select');
 
@@ -227,7 +232,7 @@ suite(destination_dialog_test.suiteName, function() {
 
     // Simulate signing in to an account.
     destinationStore.setActiveUser(user1);
-    dialog.$.cloudprintPromo.querySelector('[is=\'action-link\']').click();
+    dialog.$$('#cloudprintPromo').querySelector('[is=\'action-link\']').click();
     let addAccount = await nativeLayer.whenCalled('signIn');
 
     assertFalse(addAccount);

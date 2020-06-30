@@ -181,14 +181,15 @@ void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
 LanguagesSection::LanguagesSection(Profile* profile,
                                    SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetLanguagesSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetLanguagesSearchConcepts());
 
   if (IsAssistivePersonalInfoAllowed() || IsEmojiSuggestionAllowed()) {
-    registry()->AddSearchTags(GetSmartInputsSearchConcepts());
+    updater.AddSearchTags(GetSmartInputsSearchConcepts());
     if (IsAssistivePersonalInfoAllowed())
-      registry()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
+      updater.AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
     if (IsEmojiSuggestionAllowed())
-      registry()->AddSearchTags(GetEmojiSuggestionSearchConcepts());
+      updater.AddSearchTags(GetEmojiSuggestionSearchConcepts());
   }
 }
 

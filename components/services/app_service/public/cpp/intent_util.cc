@@ -19,11 +19,17 @@ base::Optional<std::string> GetIntentConditionValueByType(
     case apps::mojom::ConditionType::kAction:
       return intent->action;
     case apps::mojom::ConditionType::kScheme:
-      return intent->scheme;
+      return intent->url.has_value()
+                 ? base::Optional<std::string>(intent->url->scheme())
+                 : base::nullopt;
     case apps::mojom::ConditionType::kHost:
-      return intent->host;
+      return intent->url.has_value()
+                 ? base::Optional<std::string>(intent->url->host())
+                 : base::nullopt;
     case apps::mojom::ConditionType::kPattern:
-      return intent->path;
+      return intent->url.has_value()
+                 ? base::Optional<std::string>(intent->url->path())
+                 : base::nullopt;
     case apps::mojom::ConditionType::kMimeType:
       return intent->mime_type;
   }
@@ -75,10 +81,7 @@ const char kIntentActionSendMultiple[] = "send_multiple";
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
   auto intent = apps::mojom::Intent::New();
   intent->action = kIntentActionView;
-  intent->scheme = url.scheme();
-  intent->host = url.host();
-  intent->port = url.port();
-  intent->path = url.path();
+  intent->url = url;
   return intent;
 }
 

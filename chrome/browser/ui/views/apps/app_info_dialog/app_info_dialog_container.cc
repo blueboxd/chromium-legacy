@@ -131,9 +131,9 @@ class AppListDialogContainer : public BaseDialogContainer,
   }
 
   // views::WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new views::NativeFrameView(widget);
+    return std::make_unique<views::NativeFrameView>(widget);
   }
 
   // views::ButtonListener:
@@ -201,9 +201,9 @@ class NativeDialogContainer : public BaseDialogContainer {
 
  private:
   // Overridden from views::WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    FullSizeBubbleFrameView* frame = new FullSizeBubbleFrameView();
+    auto frame = std::make_unique<FullSizeBubbleFrameView>();
     auto border = std::make_unique<views::BubbleBorder>(
         views::BubbleBorder::FLOAT, kShadowType, gfx::kPlaceholderColor);
     border->set_use_theme_background_color(true);

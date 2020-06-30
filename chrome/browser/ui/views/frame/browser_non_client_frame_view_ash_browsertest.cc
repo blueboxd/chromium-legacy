@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
@@ -514,7 +515,9 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
 
   // Frame paints by default.
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+  EXPECT_LT(0, frame_view
+                   ->GetBoundsForTabStripRegion(
+                       browser_view->tab_strip_region_view()->GetMinimumSize())
                    .bottom());
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
@@ -535,7 +538,9 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
   revealed_lock.reset();
   EXPECT_FALSE(immersive_mode_controller->IsRevealed());
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+  EXPECT_EQ(0, frame_view
+                   ->GetBoundsForTabStripRegion(
+                       browser_view->tab_strip_region_view()->GetMinimumSize())
                    .bottom());
 
   // Repeat test but without tab fullscreen.
@@ -546,14 +551,18 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
       ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(immersive_mode_controller->IsRevealed());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+  EXPECT_LT(0, frame_view
+                   ->GetBoundsForTabStripRegion(
+                       browser_view->tab_strip_region_view()->GetMinimumSize())
                    .bottom());
 
   // Ending the reveal. Immersive browser should have the same behavior as full
   // screen, i.e., having an origin of (0,0).
   revealed_lock.reset();
   EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+  EXPECT_EQ(0, frame_view
+                   ->GetBoundsForTabStripRegion(
+                       browser_view->tab_strip_region_view()->GetMinimumSize())
                    .bottom());
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
@@ -565,7 +574,9 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
   }
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(0, frame_view->GetBoundsForTabStripRegion(browser_view->tabstrip())
+  EXPECT_LT(0, frame_view
+                   ->GetBoundsForTabStripRegion(
+                       browser_view->tab_strip_region_view()->GetMinimumSize())
                    .bottom());
 }
 

@@ -85,8 +85,7 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 
 class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
  public:
-  explicit PowerMonitor(EasyUnlockService* service)
-      : service_(service), waking_up_(false) {
+  explicit PowerMonitor(EasyUnlockService* service) : service_(service) {
     PowerManagerClient::Get()->AddObserver(this);
   }
 
@@ -103,8 +102,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
     wake_up_time_ = base::Time();
   }
 
-  bool waking_up() const { return waking_up_; }
-
  private:
   // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
@@ -112,7 +109,6 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   }
 
   void SuspendDone(const base::TimeDelta& sleep_duration) override {
-    waking_up_ = true;
     wake_up_time_ = base::Time::Now();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -125,12 +121,10 @@ class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
   }
 
   void ResetWakingUp() {
-    waking_up_ = false;
     service_->UpdateAppState();
   }
 
   EasyUnlockService* service_;
-  bool waking_up_;
   base::Time wake_up_time_;
   base::WeakPtrFactory<PowerMonitor> weak_ptr_factory_{this};
 

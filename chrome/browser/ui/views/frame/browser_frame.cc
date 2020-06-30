@@ -111,11 +111,11 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
+    const gfx::Size& tabstrip_minimum_size) const {
   // This can be invoked before |browser_frame_view_| has been set.
-  return browser_frame_view_
-             ? browser_frame_view_->GetBoundsForTabStripRegion(tabstrip)
-             : gfx::Rect();
+  return browser_frame_view_ ? browser_frame_view_->GetBoundsForTabStripRegion(
+                                   tabstrip_minimum_size)
+                             : gfx::Rect();
 }
 
 int BrowserFrame::GetTopInset() const {
@@ -189,10 +189,12 @@ views::internal::RootView* BrowserFrame::CreateRootView() {
   return root_view_;
 }
 
-views::NonClientFrameView* BrowserFrame::CreateNonClientFrameView() {
-  browser_frame_view_ =
+std::unique_ptr<views::NonClientFrameView>
+BrowserFrame::CreateNonClientFrameView() {
+  auto browser_frame_view =
       chrome::CreateBrowserNonClientFrameView(this, browser_view_);
-  return browser_frame_view_;
+  browser_frame_view_ = browser_frame_view.get();
+  return browser_frame_view;
 }
 
 bool BrowserFrame::GetAccelerator(int command_id,

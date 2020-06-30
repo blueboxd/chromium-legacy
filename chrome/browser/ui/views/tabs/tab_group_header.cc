@@ -106,7 +106,9 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   last_modified_expansion_ = base::TimeTicks::Now();
 }
 
-TabGroupHeader::~TabGroupHeader() = default;
+TabGroupHeader::~TabGroupHeader() {
+  LogCollapseTime();
+}
 
 bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
   if ((event.key_code() == ui::VKEY_SPACE ||

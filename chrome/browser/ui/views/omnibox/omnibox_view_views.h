@@ -163,10 +163,6 @@ class OmniboxViewViews : public OmniboxView,
     return popup_view_.get();
   }
 
-  // Applies |color| to the URL's path. Callers should ensure that the URL is
-  // valid before calling. Virtual for testing.
-  virtual void SetPathColor(SkColor color);
-
  protected:
   // views::Textfield:
   void OnThemeChanged() override;
@@ -201,48 +197,79 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
 
-  // Animates the path from |starting_color| to |ending_color|. The fading
-  // starts after |delay_ms| ms. Declared here for testing.
-  class PathFadeAnimation : public views::AnimationDelegateViews {
+  // Animates the URL to |elide_to_bounds|, which could be a substring or
+  // superstring of what's currently displayed. The elision starts after
+  // |delay_ms| ms. An elision animation hides the path (and optionally
+  // subdomains) by narrowing the bounds of each side of the URL while also
+  // shifting the text to remain aligned with the leading edge of the display
+  // area. An unelision animation is the reverse.
+  //
+  // Animation is used for elision when the elision is in response to a user
+  // interaction and we want to draw attention to where the URL is going and how
+  // it can be retrieved. Depending on field trial configurations, this could be
+  // after the user interacts with the page (where we want to hide the full URL
+  // but hint that it can be brought back by interacting with the omnibox),
+  // and/or when the user hovers over the omnibox. In contrast,
+  // ElideToSimplifiedDomain() and UnelideFromSimplifiedDomain() instantly
+  // elide/unelide and are used when we want to elide/unelide without drawing
+  // the user's attention (for example, on a same-document navigation where we
+  // want the URL to remain simplified if it was simplified before the
+  // navigation).
+  //
+  // This class is declared here for testing.
+  class ElideAnimation : public views::AnimationDelegateViews {
    public:
-    PathFadeAnimation(OmniboxViewViews* view,
-                      SkColor starting_color,
-                      SkColor ending_color,
-                      uint32_t delay_ms);
+    ElideAnimation(OmniboxViewViews* view, gfx::RenderText* render_text);
+    ~ElideAnimation() override;
 
-    // Starts the animation over |path_bounds|. The caller is responsible for
-    // calling Stop() if the text changes and |path_bounds| is no longer valid.
-    void Start(const gfx::Range& path_bounds);
+    void Start(const gfx::Range& elide_to_bounds, uint32_t delay_ms);
 
     void Stop();
 
+    // Returns true if the animation is currently running.
     bool IsAnimating();
 
-    // Stops the animation if currently running and sets the starting color to
-    // |starting_color|.
-    void ResetStartingColor(SkColor starting_color);
-
-    SkColor GetCurrentColor();
-
-    // views::AnimationDelegateViews:
-    void AnimationProgressed(const gfx::Animation* animation) override;
-
+    // Returns true if the animation is currently running or has run since its
+    // creation. In contrast to IsAnimating(), this is useful for animations
+    // that should only run once in their lifetime (e.g., we animate to simplify
+    // the URL after user interaction, but only for the first user interaction
+    // on each navigation).
+    //
+    // TODO(https://crbug.com/1099875): this is an artifact of an old animation
+    // implementation and is no longer needed.
     bool HasStarted();
+
+    // Returns the bounds to which the animation is eliding, as passed in to
+    // Start().
+    const gfx::Range& GetElideToBounds() const;
 
     gfx::MultiAnimation* GetAnimationForTesting();
 
+    // views::AnimationDelegateViews:
+    void AnimationProgressed(const gfx::Animation* animation) override;
+    void AnimationEnded(const gfx::Animation* animation) override;
+
    private:
-    // Non-owning pointer. |view_| must always outlive this class.
+    // Non-owning pointers. |view_| and |render_text_| must always outlive this
+    // class.
     OmniboxViewViews* view_;
-    SkColor starting_color_;
-    SkColor ending_color_;
+    gfx::RenderText* render_text_;
 
-    // The path text range we are fading.
-    gfx::Range path_bounds_;
+    // The target bounds passed in to Start().
+    gfx::Range elide_to_bounds_;
+    // The desired end state: the display rect that we are eliding or uneliding
+    // to.
+    gfx::Rect elide_to_rect_;
+    // The starting display rect from which we are eliding or uneliding.
+    gfx::Rect elide_from_rect_;
+    // The starting and ending display offsets for |render_text_|.
+    int starting_display_offset_ = 0;
+    int ending_display_offset_ = 0;
 
-    gfx::MultiAnimation animation_;
-
-    bool has_started_ = false;
+    // The underlying animation. We use a MultiAnimation to implement the
+    // |delay_ms| delay passed into Start(). When this delay is nonzero, the
+    // first part of the animation is a zero tween of |delay_ms| length.
+    std::unique_ptr<gfx::MultiAnimation> animation_;
   };
 
   enum class UnelisionGesture {
@@ -376,41 +403,54 @@ class OmniboxViewViews : public OmniboxView,
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
 
-  // Returns the bounds from the end of the currently displayed URL's host to
-  // the end of the URL.
-  gfx::Range GetPathBounds();
+  // Returns the gfx::Range of the simplified domain of the current URL, if
+  // there is one. The simplified domain could be either the registrable domain
+  // (if OmniboxFieldTrial::ElideToRegistrableDomain() is enabled) or the full
+  // hostname.
+  gfx::Range GetSimplifiedDomainBounds();
 
-  // Returns true if the currently displayed URL's path is eligible for fading.
-  // This takes into account the omnibox's current state (e.g. the path
-  // shouldn't fade if the user is currently editing it) as well as properties
-  // of the current text (e.g. extension URLs or non-URLs shouldn't have their
-  // paths faded).
+  // Returns true if the currently displayed URL is eligible for elision to a
+  // simplified domain. This takes into account the omnibox's current state
+  // (e.g. the URL shouldn't be elided if the user is currently editing it) as
+  // well as properties of the current text (e.g. extension URLs or non-URLs
+  // shouldn't be elided because they may not have simplified domains).
   //
   // This method does NOT take field trials into account or the "Always show
   // full URLs" option. Calling code should check field trial state and
   // model()->ShouldPreventElision() if applicable.
-  bool IsURLEligibleForFading();
+  bool IsURLEligibleForSimplifiedDomainEliding();
 
-  // When certain field trials are enabled, the URL's path is shown on page load
-  // and faded out when the user interacts with the page. This method resets
-  // back to the on-page-load state. That is, it unhides the path (if currently
-  // hidden) and resets state so that the path will show until user interaction.
+  // When certain field trials are enabled, the URL is shown on page load
+  // and elided to a simplified domain when the user interacts with the page.
+  // This method resets back to the on-page-load state. That is, it unhides the
+  // URL (if currently hidden) and resets state so that the URL will show until
+  // user interaction. This is used on navigation and blur, when the URL should
+  // be shown but hidden on next user interaction.
   void ResetToHideOnInteraction();
 
-  // This method recreates the path fade-in animation. Each incarnation of the
-  // fade-in animation should only be run once, so this method should be called
-  // when the path is eligible to be faded in again (e.g., on mouse exit after a
-  // hover that faded the path in).
-  void ResetPathFadeInAnimation();
-
   // Called when the "Always show full URLs" preference is toggled. Updates the
-  // state to hide the path on user interaction and/or reveal the path on hover,
-  // depending on field trial configuration.
+  // state to elide to a simplified domain on user interaction and/or reveal the
+  // URL on hover, depending on field trial configuration.
+  //
+  // When the preference changes, we immediately elide/unelide instead of
+  // animating. Animating might look a little nicer, but this should be a
+  // relatively rare event so it's simpler to just immediately update the
+  // display.
   void OnShouldPreventElisionChanged();
 
-  PathFadeAnimation* GetPathFadeInAnimationForTesting();
-  PathFadeAnimation* GetPathFadeOutAfterHoverAnimationForTesting();
-  PathFadeAnimation* GetPathFadeOutAfterInteractionAnimationForTesting();
+  // Elides or unelides to a simplified version of the URL. Callers should
+  // ensure that the URL is valid before calling.
+  //
+  // These methods do not animate, but rather immediately elide/unelide. These
+  // methods are used when we don't want to draw the user's attention to the URL
+  // simplification -- for example, if the URL is already simplified and the
+  // user performs a same-document navigation, we want to keep the URL
+  // simplified without it appearing to be a change from the user's perspective.
+  virtual void ElideToSimplifiedDomain();
+  virtual void UnelideFromSimplifiedDomain();
+
+  ElideAnimation* GetHoverElideOrUnelideAnimationForTesting();
+  ElideAnimation* GetElideAfterInteractionAnimationForTesting();
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
@@ -418,41 +458,36 @@ class OmniboxViewViews : public OmniboxView,
 
   std::unique_ptr<OmniboxPopupContentsView> popup_view_;
 
-  // Animations are used to fade in/out the path under some elision settings.
-  // These animations are created at different times depending on the field
-  // trial configuration, so don't assume they are non-null.
+  // Animations are used to elide/unelide the path (and subdomains, if
+  // OmniboxFieldTrial::ShouldElideToRegistrableDomain() is true) under some
+  // field trial settings. These animations are created at different times
+  // depending on the field trial configuration, so don't assume they are
+  // non-null.
   //
   // These animations are used by different field trials as described below.
 
   // When ShouldRevealPathQueryRefOnHover() is enabled but not
-  // ShouldHidePathQueryRefOnInteraction(), then the path is hidden in
-  // EmphasizeUrlComponents() and |path_fade_in_animation_| and
-  // |path_fade_out_hover_animation_| are created in OnThemeChanged(). These
-  // animations are used to show or hide the path when the mouse hovers or exits
-  // the omnibox. |path_fade_in_animation_| is created afresh every time the
-  // mouse exits. The invariant is that each incarnation of the fade-in
-  // animation is run exactly once; this allows us to avoid flickering by fading
-  // the path in multiple times as the user hovers over the omnibox for a long
-  // period of time.
-  std::unique_ptr<PathFadeAnimation> path_fade_in_animation_;
-  std::unique_ptr<PathFadeAnimation> path_fade_out_after_hover_animation_;
-  // Finally, when ShouldHidePathQueryRefOnInteraction() is enabled, we don't
-  // create any animations until a navigation finishes. At that point, we show
-  // the path if it was a full cross-document navigation, and create
-  // |path_fade_out_after_interaction_animation_| to fade the path out once the
+  // ShouldHidePathQueryRefOnInteraction(), then the URL is elided in
+  // EmphasizeUrlComponents() and |hover_elide_or_unelide_animation_| is created
+  // in OnThemeChanged(). This animation is used to unelide or elide the URL
+  // when the mouse hovers or exits the omnibox.
+  std::unique_ptr<ElideAnimation> hover_elide_or_unelide_animation_;
+  // When ShouldHidePathQueryRefOnInteraction() is enabled, we don't
+  // create any animations until a navigation finishes. At that point, we
+  // unelide the URL if it was a full cross-document navigation, and create
+  // |elide_after_interaction_animation_| to elide the URL once the
   // user interacts with the page. If ShouldRevealPathQueryRefOnHover() is also
-  // enabled, we defer the creation of |path_fade_in_animation_| and
-  // |path_fade_out_animation_| until the user interacts with the page; their
-  // creation is deferred to avoid flickering the path in and out as the user
-  // hovers over the omnibox before they've interacted with the page. After the
-  // first user interaction, |path_fade_out_after_interaction_| animation
-  // doesn't run again until it's re-created for the next navigation, and
-  // |path_fade_in_animation_| and |path_fade_out_after_hover_animation_| behave
-  // as described above for the rest of the navigation. There are 2 separate
-  // fade-out animations (one for after-interaction and one for after-hover) so
-  // that the state of the after-interaction animation can be queried to avoid
-  // flickering the path after multiple user interactions.
-  std::unique_ptr<PathFadeAnimation> path_fade_out_after_interaction_animation_;
+  // enabled, we defer the creation of |hover_elide_or_unelide_animation_| until
+  // the user interacts with the page; its creation is deferred to avoid
+  // flickering the URL in and out as the user hovers over the omnibox before
+  // they've interacted with the page. After the first user interaction,
+  // |elide_after_interaction_animation_| doesn't run again until it's
+  // re-created for the next navigation, and |hover_elide_or_unelide_animation_|
+  // behaves as described above for the rest of the navigation. There are 2
+  // separate animations (one for after-interaction and one hovering) so that
+  // the state of the after-interaction animation can be queried to avoid
+  // flickering the URL after multiple user interactions.
+  std::unique_ptr<ElideAnimation> elide_after_interaction_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   std::vector<gfx::Range> saved_temporary_selection_;

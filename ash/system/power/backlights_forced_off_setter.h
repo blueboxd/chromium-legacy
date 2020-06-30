@@ -35,11 +35,10 @@ class ASH_EXPORT BacklightsForcedOffSetter
     return backlights_forced_off_.value_or(false);
   }
 
-  ScreenState screen_state() const { return screen_state_; }
-
   // ScreenBacklight:
   void AddObserver(ScreenBacklightObserver* observer) override;
   void RemoveObserver(ScreenBacklightObserver* observer) override;
+  ScreenState GetScreenState() const override;
 
   // Forces the backlights off. The backlights will be kept in the forced-off
   // state until all requests have been destroyed.

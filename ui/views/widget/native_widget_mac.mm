@@ -258,8 +258,9 @@ void NativeWidgetMac::OnWidgetInitDone() {
   ns_window_host_->OnWidgetInitDone();
 }
 
-NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {
-  return new NativeFrameView(GetWidget());
+std::unique_ptr<NonClientFrameView>
+NativeWidgetMac::CreateNonClientFrameView() {
+  return std::make_unique<NativeFrameView>(GetWidget());
 }
 
 bool NativeWidgetMac::ShouldUseNativeFrame() const {

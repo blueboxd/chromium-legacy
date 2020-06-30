@@ -25,11 +25,11 @@ public class ScreenshotShareSheetDialogCoordinator {
      * @param screenshot The screenshot to be shared.
      */
     public ScreenshotShareSheetDialogCoordinator(Activity activity, Bitmap screenshot, Tab tab,
-            ChromeOptionShareCallback shareCallback) {
+            ChromeOptionShareCallback shareCallback, Runnable installCallback) {
         mFragmentManager = activity.getFragmentManager();
         mScreenshot = screenshot;
         mDialog = new ScreenshotShareSheetDialog();
-        mDialog.init(mScreenshot, this::dismiss, tab, shareCallback);
+        mDialog.init(mScreenshot, this::dismiss, tab, shareCallback, installCallback);
     }
 
     /**

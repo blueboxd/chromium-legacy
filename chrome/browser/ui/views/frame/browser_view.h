@@ -178,6 +178,10 @@ class BrowserView : public BrowserWindow,
     return GetBrowserViewLayout()->contents_border_widget();
   }
 
+  TabStripRegionView* tab_strip_region_view() const {
+    return tab_strip_region_view_;
+  }
+
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
   const TabStrip* tabstrip() const { return tabstrip_; }

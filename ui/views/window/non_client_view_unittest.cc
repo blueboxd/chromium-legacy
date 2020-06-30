@@ -49,8 +49,9 @@ class ClientTestView : public ClientView {
 class TestWidgetDelegate : public WidgetDelegateView {
  public:
   // WidgetDelegateView:
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override {
-    return new NonClientFrameTestView(widget);
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override {
+    return std::make_unique<NonClientFrameTestView>(widget);
   }
 
   views::ClientView* CreateClientView(Widget* widget) override {

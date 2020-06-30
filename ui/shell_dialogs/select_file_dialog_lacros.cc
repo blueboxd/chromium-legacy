@@ -72,17 +72,6 @@ void SelectFileDialogLacros::SelectFileImpl(
     void* params) {
   params_ = params;
 
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
-  // TODO(https://crbug.com/1090587): Move LacrosChromeServiceImpl construction
-  // earlier and remove these checks. This function is racy with lacros-chrome
-  // startup. In practice, however, the remote is bound long before the user
-  // can trigger a select dialog.
-  if (!lacros_chrome_service ||
-      !lacros_chrome_service->select_file_remote().is_bound()) {
-    LOG(ERROR) << "Not connected to ash-chrome.";
-    return;
-  }
-
   lacros::mojom::SelectFileOptionsPtr options =
       lacros::mojom::SelectFileOptions::New();
   options->type = GetMojoType(type);
@@ -90,7 +79,7 @@ void SelectFileDialogLacros::SelectFileImpl(
   options->default_path = default_path;
 
   // Send request to ash-chrome.
-  lacros_chrome_service->select_file_remote()->Select(
+  chromeos::LacrosChromeServiceImpl::Get()->select_file_remote()->Select(
       std::move(options),
       base::BindOnce(&SelectFileDialogLacros::OnSelected, this));
 }

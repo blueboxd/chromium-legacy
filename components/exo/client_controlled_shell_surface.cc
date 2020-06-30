@@ -728,7 +728,7 @@ bool ClientControlledShellSurface::CanMaximize() const {
   return can_maximize_;
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   ash::WindowState* window_state = GetWindowState();
   std::unique_ptr<ash::ClientControlledState::Delegate> delegate =
@@ -743,13 +743,13 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   client_controlled_state_ = state.get();
   window_state->SetStateObject(std::move(state));
   window_state->SetDelegate(std::move(window_delegate));
-  ash::NonClientFrameViewAsh* frame_view =
-      static_cast<ash::NonClientFrameViewAsh*>(
-          CreateNonClientFrameViewInternal(widget, /*client_controlled=*/true));
+  auto frame_view =
+      CreateNonClientFrameViewInternal(widget, /*client_controlled=*/true);
   immersive_fullscreen_controller_ =
       std::make_unique<ash::ImmersiveFullscreenController>();
-  frame_view->InitImmersiveFullscreenControllerForView(
-      immersive_fullscreen_controller_.get());
+  static_cast<ash::NonClientFrameViewAsh*>(frame_view.get())
+      ->InitImmersiveFullscreenControllerForView(
+          immersive_fullscreen_controller_.get());
   return frame_view;
 }
 

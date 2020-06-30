@@ -1348,39 +1348,38 @@ void ConfiguredProxyResolutionService::ForceReloadProxyConfig() {
   ApplyProxyConfigIfAvailable();
 }
 
-std::unique_ptr<base::DictionaryValue>
-ConfiguredProxyResolutionService::GetProxyNetLogValues(int info_sources) {
-  std::unique_ptr<base::DictionaryValue> net_info_dict(
-      new base::DictionaryValue());
+base::Value ConfiguredProxyResolutionService::GetProxyNetLogValues(
+    int info_sources) {
+  base::Value net_info_dict(base::Value::Type::DICTIONARY);
 
   if (info_sources & NET_INFO_PROXY_SETTINGS) {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
     if (fetched_config_)
-      dict->SetKey("original", fetched_config_->value().ToValue());
+      dict.SetKey("original", fetched_config_->value().ToValue());
     if (config_)
-      dict->SetKey("effective", config_->value().ToValue());
+      dict.SetKey("effective", config_->value().ToValue());
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
-                       std::move(dict));
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_PROXY_SETTINGS),
+                         std::move(dict));
   }
 
   if (info_sources & NET_INFO_BAD_PROXIES) {
-    auto list = std::make_unique<base::ListValue>();
+    base::Value list(base::Value::Type::LIST);
 
-    for (auto& it : proxy_retry_info_) {
+    for (const auto& it : proxy_retry_info_) {
       const std::string& proxy_uri = it.first;
       const ProxyRetryInfo& retry_info = it.second;
 
-      auto dict = std::make_unique<base::DictionaryValue>();
-      dict->SetString("proxy_uri", proxy_uri);
-      dict->SetString("bad_until",
-                      NetLog::TickCountToString(retry_info.bad_until));
+      base::Value dict(base::Value::Type::DICTIONARY);
+      dict.SetStringKey("proxy_uri", proxy_uri);
+      dict.SetStringKey("bad_until",
+                        NetLog::TickCountToString(retry_info.bad_until));
 
-      list->Append(std::move(dict));
+      list.Append(std::move(dict));
     }
 
-    net_info_dict->Set(NetInfoSourceToString(NET_INFO_BAD_PROXIES),
-                       std::move(list));
+    net_info_dict.SetKey(NetInfoSourceToString(NET_INFO_BAD_PROXIES),
+                         std::move(list));
   }
 
   return net_info_dict;

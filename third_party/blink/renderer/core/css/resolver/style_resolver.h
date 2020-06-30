@@ -141,8 +141,18 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   static bool CanReuseBaseComputedStyle(const StyleResolverState& state);
 
   scoped_refptr<ComputedStyle> StyleForInterpolations(
-      Element& target,
+      Element& element,
       ActiveInterpolationsMap& animations);
+
+  // When updating transitions, the "before change style" is the style from
+  // the previous style change with the addition of all declarative animations
+  // ticked to the current time. Ticking the animations is required to ensure
+  // smooth retargeting of transitions.
+  // https://drafts.csswg.org/css-transitions-1/#before-change-style
+  scoped_refptr<ComputedStyle> BeforeChangeStyleForTransitionUpdate(
+      Element& element,
+      const ComputedStyle& base_style,
+      ActiveInterpolationsMap& transition_interpolations);
 
   void Trace(Visitor*) const;
 
@@ -155,6 +165,9 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                               MatchResult& match_result,
                               RuleMatchingBehavior matching_behavior,
                               bool can_cache_animation_base_computed_style);
+  void ApplyInterpolations(StyleResolverState& state,
+                           StyleCascade& cascade,
+                           ActiveInterpolationsMap& interpolations);
 
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);

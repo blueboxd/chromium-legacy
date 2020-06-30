@@ -1328,9 +1328,8 @@ message ClientSafeBrowsingReportRequest {
   optional DownloadItemInfo download_item_info = 24;
 
   // The SafetyNet ID of the Android device.
-  // TODO(crbug.com/1070836): Deprecate this field and the same field on the
-  // server-side.
-  optional string safety_net_id = 25;
+  // Deprecated, not launched.
+  optional string safety_net_id = 25 [deprecated = true];
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).

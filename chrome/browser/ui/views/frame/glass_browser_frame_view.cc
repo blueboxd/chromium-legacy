@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_caption_button_container.h"
+#include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -148,7 +149,7 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
 }
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStripRegion(
-    const views::View* tabstrip) const {
+    const gfx::Size& tabstrip_minimum_size) const {
   const int x = CaptionButtonsOnLeadingEdge()
                     ? (width() - frame()->GetMinimizeButtonOffset())
                     : 0;
@@ -156,7 +157,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStripRegion(
   if (!CaptionButtonsOnLeadingEdge())
     end_x = std::min(MinimizeButtonX(), end_x);
   return gfx::Rect(x, TopAreaHeight(false), std::max(0, end_x - x),
-                   tabstrip->GetPreferredSize().height());
+                   tabstrip_minimum_size.height());
 }
 
 int GlassBrowserFrameView::GetTopInset(bool restored) const {
@@ -604,7 +605,9 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
 
   const int titlebar_height =
       browser_view()->IsTabStripVisible()
-          ? GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom()
+          ? GetBoundsForTabStripRegion(
+                browser_view()->tab_strip_region_view()->GetMinimumSize())
+                .bottom()
           : TitlebarHeight(false);
   const gfx::Rect titlebar_rect = gfx::ToEnclosingRect(
       gfx::RectF(0, y, width() * scale, titlebar_height * scale - y));

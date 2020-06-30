@@ -152,12 +152,12 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user);
 uint16_t auto_import_state();
 
 // Set a master preferences file path that overrides platform defaults.
-void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
+void SetInitialPrefsPathForTesting(const base::FilePath& master_prefs);
 
 // Loads master preferences from the master preference file into the installer
 // master preferences. Returns the pointer to installer::MasterPreferences
 // object if successful; otherwise, returns nullptr.
-std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs();
+std::unique_ptr<installer::MasterPreferences> LoadInitialPrefs();
 
 // The master_preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function locates this file from a standard

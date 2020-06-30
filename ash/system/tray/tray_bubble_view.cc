@@ -388,10 +388,11 @@ ui::LayerType TrayBubbleView::GetLayerType() const {
   return ui::LAYER_TEXTURED;
 }
 
-NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
-  BubbleFrameView* frame = static_cast<BubbleFrameView*>(
-      BubbleDialogDelegateView::CreateNonClientFrameView(widget));
-  frame->SetBubbleBorder(std::move(owned_bubble_border_));
+std::unique_ptr<NonClientFrameView> TrayBubbleView::CreateNonClientFrameView(
+    Widget* widget) {
+  auto frame = BubbleDialogDelegateView::CreateNonClientFrameView(widget);
+  static_cast<BubbleFrameView*>(frame.get())
+      ->SetBubbleBorder(std::move(owned_bubble_border_));
   return frame;
 }
 

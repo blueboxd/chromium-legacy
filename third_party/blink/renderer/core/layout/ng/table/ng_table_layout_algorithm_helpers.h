@@ -11,10 +11,10 @@
 namespace blink {
 
 // Table size distribution algorithms.
-class NGTableAlgorithmHelpers {
+class CORE_EXPORT NGTableAlgorithmHelpers {
  public:
-  // Compute maximum number of table columns that can deduced from
-  // single cell and its colspan.
+  // Compute maximum number of table columns that can deduced from single cell
+  // and its colspan.
   static wtf_size_t ComputeMaxColumn(wtf_size_t current_column,
                                      wtf_size_t colspan,
                                      bool is_fixed_table_layout) {
@@ -23,6 +23,19 @@ class NGTableAlgorithmHelpers {
       return current_column + colspan;
     return current_column + 1;
   }
+
+  // Flex/grid containing blocks need Table minmax size to be computed without
+  // using percentages.
+  // |containing_block_expects_minmax_without_percentages| is used to do
+  // this.
+  // |undistributable_space| is size of space not occupied by cells
+  // (borders, border spacing).
+  static void ComputeGridInlineMinmax(
+      NGTableTypes::Columns& column_constraints,
+      bool is_fixed_layout,
+      bool containing_block_expects_minmax_without_percentages,
+      LayoutUnit undistributable_space,
+      MinMaxSizes* minmax_sum);
 
   static void DistributeColspanCellToColumns(
       const NGTableTypes::ColspanCell& colspan_cell,
@@ -35,6 +48,25 @@ class NGTableAlgorithmHelpers {
       LayoutUnit inline_border_spacing,
       bool is_fixed_layout,
       NGTableTypes::Columns* column_constraints);
+
+  static void DistributeRowspanCellToRows(
+      const NGTableTypes::RowspanCell& rowspan_cell,
+      LayoutUnit border_block_spacing,
+      NGTableTypes::Rows* rows);
+
+  static void DistributeSectionFixedBlockSizeToRows(
+      const wtf_size_t start_row,
+      const wtf_size_t end_row,
+      LayoutUnit section_fixed_block_size,
+      LayoutUnit border_block_spacing,
+      LayoutUnit percentage_resolution_block_size,
+      NGTableTypes::Rows* rows);
+
+  static void DistributeTableBlockSizeToSections(
+      LayoutUnit border_block_spacing,
+      LayoutUnit table_block_size,
+      NGTableTypes::Sections* sections,
+      NGTableTypes::Rows* rows);
 };
 
 }  // namespace blink

@@ -317,7 +317,7 @@ suite(extension_item_tests.suiteName, function() {
     expectEquals('extensions-icons:input', icon.icon);
 
     item.set('data.location', 'FROM_STORE');
-    item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+    item.set('data.controlledInfo', {text: 'policy'});
     flush();
     expectTrue(isChildVisible(item, '#source-indicator'));
     expectEquals('extensions-icons:business', icon.icon);

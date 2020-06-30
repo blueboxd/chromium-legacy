@@ -145,7 +145,8 @@ AppsSection::AppsSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service),
       arc_app_list_prefs_(arc_app_list_prefs) {
-  registry()->AddSearchTags(GetAppsSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetAppsSearchConcepts());
 
   if (arc::IsArcAllowedForProfile(profile)) {
     pref_change_registrar_.Init(pref_service_);
@@ -329,26 +330,28 @@ void AppsSection::AddPluginVmLoadTimeData(
 }
 
 void AppsSection::UpdateAndroidSearchTags() {
-  registry()->RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
-  registry()->RemoveSearchTags(GetAndroidSettingsSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
+  updater.RemoveSearchTags(GetAndroidSettingsSearchConcepts());
 
   if (!arc::IsPlayStoreAvailable()) {
-    registry()->AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+    updater.AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
     return;
   }
 
   if (!arc::IsArcPlayStoreEnabledForProfile(profile())) {
-    registry()->AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+    updater.AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetAndroidPlayStoreSearchConcepts());
+  updater.AddSearchTags(GetAndroidPlayStoreSearchConcepts());
 
   if (arc_app_list_prefs_ &&
       arc_app_list_prefs_->IsRegistered(arc::kSettingsAppId)) {
-    registry()->AddSearchTags(GetAndroidSettingsSearchConcepts());
+    updater.AddSearchTags(GetAndroidSettingsSearchConcepts());
   }
 }
 

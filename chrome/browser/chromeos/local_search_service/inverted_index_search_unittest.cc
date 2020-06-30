@@ -150,4 +150,110 @@ TEST_F(InvertedIndexSearchTest, Delete) {
   }
 }
 
+TEST_F(InvertedIndexSearchTest, Find) {
+  const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
+      {"id1",
+       {{"cid_1", "This is a help wi-fi article"},
+        {"cid_2", "Another help help wi-fi"}}},
+      {"id2", {{"cid_3", "help article on wi-fi"}}}};
+  const std::vector<Data> data = CreateTestData(data_to_register);
+
+  // Nothing has been added to the index.
+  std::vector<Result> results;
+  EXPECT_EQ(
+      search_.Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
+      ResponseStatus::kEmptyIndex);
+  EXPECT_TRUE(results.empty());
+
+  // Data is added and then deleted from index, making the index empty.
+  search_.AddOrUpdate(data);
+  EXPECT_EQ(search_.GetSize(), 2u);
+  EXPECT_EQ(search_.Delete({"id1", "id2"}), 2u);
+  EXPECT_EQ(search_.GetSize(), 0u);
+
+  EXPECT_EQ(
+      search_.Find(base::UTF8ToUTF16("network"), /*max_results=*/10, &results),
+      ResponseStatus::kEmptyIndex);
+  EXPECT_TRUE(results.empty());
+
+  // Index is populated again, but query is empty.
+  search_.AddOrUpdate(data);
+  EXPECT_EQ(search_.GetSize(), 2u);
+
+  EXPECT_EQ(search_.Find(base::UTF8ToUTF16(""), /*max_results=*/10, &results),
+            ResponseStatus::kEmptyQuery);
+  EXPECT_TRUE(results.empty());
+
+  // No document is found for a given query.
+  EXPECT_EQ(search_.Find(base::UTF8ToUTF16("networkstuff"), /*max_results=*/10,
+                         &results),
+            ResponseStatus::kSuccess);
+  EXPECT_TRUE(results.empty());
+
+  {
+    // A document is found.
+    // Query's case is normalized.
+    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("ANOTHER networkstuff"),
+                           /*max_results=*/10, &results),
+              ResponseStatus::kSuccess);
+    EXPECT_EQ(results.size(), 1u);
+
+    // "another" only exists in "id1".
+    const float expected_score = TfIdfScore(/*num_docs=*/2,
+                                            /*num_docs_with_term=*/1,
+                                            /*num_term_occurrence_in_doc=*/1,
+                                            /*doc_length=*/7);
+    CheckResult(results[0], "id1", expected_score,
+                /*expected_number_positions=*/1);
+  }
+
+  {
+    // Two documents are found.
+    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"),
+                           /*max_results=*/10, &results),
+              ResponseStatus::kSuccess);
+    EXPECT_EQ(results.size(), 2u);
+
+    // "id1" score comes from both "another" and "help".
+    const float expected_score_id1 =
+        TfIdfScore(/*num_docs=*/2,
+                   /*num_docs_with_term=*/1,
+                   /*num_term_occurrence_in_doc=*/1,
+                   /*doc_length=*/7) +
+        TfIdfScore(/*num_docs=*/2,
+                   /*num_docs_with_term=*/2,
+                   /*num_term_occurrence_in_doc=*/3,
+                   /*doc_length=*/7);
+    // "id2" score comes "help".
+    const float expected_score_id2 =
+        TfIdfScore(/*num_docs=*/2,
+                   /*num_docs_with_term=*/2,
+                   /*num_term_occurrence_in_doc=*/1,
+                   /*doc_length=*/3);
+
+    EXPECT_GE(expected_score_id1, expected_score_id2);
+    CheckResult(results[0], "id1", expected_score_id1,
+                /*expected_number_positions=*/4);
+    CheckResult(results[1], "id2", expected_score_id2,
+                /*expected_number_positions=*/1);
+  }
+
+  {
+    // Same as above,  but max number of results is set to 1.
+    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"), /*max_results=*/1,
+                           &results),
+              ResponseStatus::kSuccess);
+    EXPECT_EQ(results.size(), 1u);
+    EXPECT_EQ(results[0].id, "id1");
+  }
+
+  {
+    // Same as above, but set max_results to 0, meaning no max.
+    EXPECT_EQ(search_.Find(base::UTF8ToUTF16("another help"), /*max_results=*/0,
+                           &results),
+              ResponseStatus::kSuccess);
+    EXPECT_EQ(results.size(), 2u);
+  }
+}
+
 }  // namespace local_search_service

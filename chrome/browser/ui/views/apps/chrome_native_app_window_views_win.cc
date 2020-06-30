@@ -77,13 +77,15 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
     EnsureCaptionStyleSet();
 }
 
-views::NonClientFrameView*
+std::unique_ptr<views::NonClientFrameView>
 ChromeNativeAppWindowViewsWin::CreateStandardDesktopAppFrame() {
-  glass_frame_view_ = NULL;
   if (ui::win::IsAeroGlassEnabled()) {
-    glass_frame_view_ = new GlassAppWindowFrameViewWin(widget());
-    return glass_frame_view_;
+    auto glass_frame_view =
+        std::make_unique<GlassAppWindowFrameViewWin>(widget());
+    glass_frame_view_ = glass_frame_view.get();
+    return glass_frame_view;
   }
+  glass_frame_view_ = nullptr;
   return ChromeNativeAppWindowViewsAura::CreateStandardDesktopAppFrame();
 }
 

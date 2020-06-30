@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/base/invalidation_adapter.h"
@@ -72,16 +71,6 @@ SyncEngineBackend::~SyncEngineBackend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool SyncEngineBackend::OnMemoryDump(
-    const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!sync_manager_)
-    return false;
-  sync_manager_->OnMemoryDump(pmd);
-  return true;
-}
-
 void SyncEngineBackend::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -135,10 +124,6 @@ void SyncEngineBackend::OnInitializationComplete(
   SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
             << " added; calling ConfigureSyncer";
 
-  ModelTypeSet types_to_purge =
-      Difference(ModelTypeSet::All(), GetRoutingInfoTypes(routing_info));
-
-  sync_manager_->PurgeDisabledTypes(types_to_purge);
   sync_manager_->ConfigureSyncer(
       reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
       base::BindOnce(&SyncEngineBackend::DoInitialProcessControlTypes,
@@ -313,7 +298,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   registrar_->GetWorkers(&args.workers);
   args.encryption_observer_proxy = std::move(params.encryption_observer_proxy);
   args.extensions_activity = params.extensions_activity.get();
-  args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
   args.authenticated_account_id = params.authenticated_account_id;
   args.invalidator_client_id = params.invalidator_client_id;
   args.engine_components_factory = std::move(params.engine_components_factory);
@@ -325,9 +309,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.bag_of_chips = params.bag_of_chips;
   args.sync_status_observers.push_back(this);
   sync_manager_->Init(&args);
-  base::trace_event::MemoryDumpManager::GetInstance()
-      ->RegisterDumpProviderWithSequencedTaskRunner(
-          this, "SyncDirectory", base::SequencedTaskRunnerHandle::Get(), {});
 }
 
 void SyncEngineBackend::DoUpdateCredentials(
@@ -448,8 +429,7 @@ void SyncEngineBackend::DoShutdown(ShutdownReason reason) {
 
 void SyncEngineBackend::DoDestroySyncManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
+
   if (sync_manager_) {
     DisableDirectoryTypeDebugInfoForwarding();
     sync_manager_->RemoveObserver(this);
@@ -460,7 +440,6 @@ void SyncEngineBackend::DoDestroySyncManager() {
 
 void SyncEngineBackend::DoPurgeDisabledTypes(const ModelTypeSet& to_purge) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_manager_->PurgeDisabledTypes(to_purge);
   if (to_purge.Has(NIGORI)) {
     // We are using USS implementation of Nigori and someone asked us to purge
     // it's data. For regular datatypes it's controlled DataTypeManager, but

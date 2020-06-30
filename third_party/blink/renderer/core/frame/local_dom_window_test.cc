@@ -141,7 +141,7 @@ class IsolatedWorldCSPTest : public PageTestBase,
   DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
 };
 
-// Tests ExecutionContext::GetContentSecurityPolicyForWorld().
+// Tests ExecutionContext::GetContentSecurityPolicyForCurrentWorld().
 TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
   using ::testing::ElementsAre;
 
@@ -175,7 +175,8 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
 
   // Returns the csp headers being used for the current world.
   auto get_csp_headers = [this]() {
-    auto* csp = GetFrame().DomWindow()->GetContentSecurityPolicyForWorld();
+    auto* csp =
+        GetFrame().DomWindow()->GetContentSecurityPolicyForCurrentWorld();
     return csp->Headers();
   };
 

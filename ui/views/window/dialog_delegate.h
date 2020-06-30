@@ -139,9 +139,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
   ClientView* CreateClientView(Widget* widget) override;
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override;
 
-  static NonClientFrameView* CreateDialogFrameView(Widget* widget);
+  static std::unique_ptr<NonClientFrameView> CreateDialogFrameView(
+      Widget* widget);
 
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }

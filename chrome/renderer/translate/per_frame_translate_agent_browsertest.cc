@@ -46,8 +46,8 @@ class PerFrameTranslateAgent : public translate::PerFrameTranslateAgent {
 
     // Will get new result values via OnWebLanguageDetectionDetails.
     GetWebLanguageDetectionDetails(
-        base::Bind(&PerFrameTranslateAgent::OnWebLanguageDetectionDetails,
-                   base::Unretained(this)));
+        base::BindOnce(&PerFrameTranslateAgent::OnWebLanguageDetectionDetails,
+                       base::Unretained(this)));
   }
 
   bool GetDetectedDetails(std::string* content_meta_lang,

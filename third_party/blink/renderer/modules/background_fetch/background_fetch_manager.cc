@@ -67,7 +67,7 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
 // called synchronously from the background fetch call.
 bool ShouldBlockDueToCSP(ExecutionContext* execution_context,
                          const KURL& request_url) {
-  return !execution_context->GetContentSecurityPolicyForWorld()
+  return !execution_context->GetContentSecurityPolicyForCurrentWorld()
               ->AllowConnectToSource(request_url, request_url,
                                      RedirectStatus::kNoRedirect);
 }

@@ -63,20 +63,20 @@ void ViewsTestSuite::Initialize() {
   base::FilePath ui_test_pak_path;
   ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
   InitializeEnv();
 #endif
 }
 
 void ViewsTestSuite::Shutdown() {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
   DestroyEnv();
 #endif
   ui::ResourceBundle::CleanupSharedInstance();
   base::TestSuite::Shutdown();
 }
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
 void ViewsTestSuite::InitializeEnv() {
   env_ = aura::Env::CreateInstance();
 }

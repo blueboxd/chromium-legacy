@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/mac/master_prefs.h"
+#include "chrome/browser/mac/initial_prefs.h"
 
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
@@ -17,22 +17,26 @@ namespace {
 // This should be NSApplicationSupportDirectory, but it has already been
 // released using NSLibraryDirectory.
 const NSSearchPathDirectory kSearchPath = NSLibraryDirectory;
-const char kMasterPreferencesDirectory[] = "Google";
-const char kMasterPreferencesFileName[] = "Google Chrome Master Preferences";
+// Note: the actual filename here still contains the word "master" despite the
+// migration of the rest of this code to more inclusive language. Unfortunately
+// the file with this filename is the documented way to set initial preferences,
+// so changing this filename will require some care.
+// See https://crbug.com/1097204 for details.
+const char kInitialPreferencesDirectory[] = "Google";
+const char kInitialPreferencesFileName[] = "Google Chrome Master Preferences";
 #else
 const NSSearchPathDirectory kSearchPath = NSApplicationSupportDirectory;
-const char kMasterPreferencesDirectory[] = "Chromium";
-const char kMasterPreferencesFileName[] = "Chromium Master Preferences";
+const char kInitialPreferencesDirectory[] = "Chromium";
+const char kInitialPreferencesFileName[] = "Chromium Master Preferences";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace
 
+namespace initial_prefs {
 
-namespace master_prefs {
-
-base::FilePath MasterPrefsPath() {
+base::FilePath InitialPrefsPath() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Don't load master preferences for the canary.
+  // Don't load initial preferences for the canary.
   version_info::Channel channel = chrome::GetChannel();
   if (channel == version_info::Channel::CANARY)
     return base::FilePath();
@@ -46,7 +50,7 @@ base::FilePath MasterPrefsPath() {
   base::FilePath user_application_support_path;
   if (chrome::GetDefaultUserDataDirectory(&user_application_support_path)) {
     user_application_support_path =
-        user_application_support_path.Append(kMasterPreferencesFileName);
+        user_application_support_path.Append(kInitialPreferencesFileName);
     if (base::PathExists(user_application_support_path))
       return user_application_support_path;
   }
@@ -58,8 +62,8 @@ base::FilePath MasterPrefsPath() {
   if (!base::mac::GetLocalDirectory(kSearchPath, &search_path))
     return base::FilePath();
 
-  return search_path.Append(kMasterPreferencesDirectory)
-                    .Append(kMasterPreferencesFileName);
+  return search_path.Append(kInitialPreferencesDirectory)
+      .Append(kInitialPreferencesFileName);
 }
 
-}  // namespace master_prefs
+}  // namespace initial_prefs

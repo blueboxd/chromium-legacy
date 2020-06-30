@@ -48,10 +48,9 @@ const ProxyRetryInfoMap& WindowsSystemProxyResolutionService::proxy_retry_info()
   return proxy_retry_info_;
 }
 
-std::unique_ptr<base::DictionaryValue>
-WindowsSystemProxyResolutionService::GetProxyNetLogValues(int info_sources) {
-  std::unique_ptr<base::DictionaryValue> net_info_dict(
-      new base::DictionaryValue());
+base::Value WindowsSystemProxyResolutionService::GetProxyNetLogValues(
+    int info_sources) {
+  base::Value net_info_dict(base::Value::Type::DICTIONARY);
   return net_info_dict;
 }
 

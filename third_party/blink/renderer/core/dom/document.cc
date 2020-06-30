@@ -7184,7 +7184,7 @@ bool Document::AllowInlineEventHandler(Node* node,
   // Step 5.1. If the Should element's inline behavior be blocked by Content
   // Security Policy? algorithm returns "Blocked" when executed upon element,
   // "script attribute", and value, then return. [CSP] [spec text]
-  if (!window->GetContentSecurityPolicyForWorld()->AllowInline(
+  if (!window->GetContentSecurityPolicyForCurrentWorld()->AllowInline(
           ContentSecurityPolicy::InlineType::kScriptAttribute, element,
           listener->ScriptBody(), String() /* nonce */, context_url,
           context_line))

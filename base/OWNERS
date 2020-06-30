@@ -33,6 +33,8 @@ per-file feature_list*=isherman@chromium.org
 per-file rand_util*=set noparent
 per-file rand_util*=file://ipc/SECURITY_OWNERS
 
+per-file safe_numerics_unittest.cc=file://base/numerics/OWNERS
+
 # For TCMalloc tests:
 per-file security_unittest.cc=jln@chromium.org
 

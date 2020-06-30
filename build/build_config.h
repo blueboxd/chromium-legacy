@@ -64,7 +64,7 @@
 #elif defined(_AIX)
 #define OS_AIX 1
 #elif defined(__asmjs__) || defined(__wasm__)
-#define OS_ASMJS
+#define OS_ASMJS 1
 #else
 #error Please add support for your platform in build/build_config.h
 #endif

@@ -55,7 +55,7 @@ class CrostiniApps : public KeyedService,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
-                apps::mojom::IconCompression icon_compression,
+                apps::mojom::IconType icon_type,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 LoadIconCallback callback) override;
@@ -84,14 +84,14 @@ class CrostiniApps : public KeyedService,
   void OnCrostiniEnabledChanged();
 
   void LoadIconFromVM(const std::string app_id,
-                      apps::mojom::IconCompression icon_compression,
+                      apps::mojom::IconType icon_type,
                       int32_t size_hint_in_dip,
                       ui::ScaleFactor scale_factor,
                       IconEffects icon_effects,
                       LoadIconCallback callback);
 
   void OnLoadIconFromVM(const std::string app_id,
-                        apps::mojom::IconCompression icon_compression,
+                        apps::mojom::IconType icon_type,
                         int32_t size_hint_in_dip,
                         IconEffects icon_effects,
                         LoadIconCallback callback,

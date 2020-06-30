@@ -5,6 +5,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -150,12 +151,13 @@ NonClientView::~NonClientView() {
   RemoveChildView(frame_view_.get());
 }
 
-void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
+void NonClientView::SetFrameView(
+    std::unique_ptr<NonClientFrameView> frame_view) {
   // See comment in header about ownership.
   frame_view->set_owned_by_client();
   if (frame_view_.get())
     RemoveChildView(frame_view_.get());
-  frame_view_.reset(frame_view);
+  frame_view_ = std::move(frame_view);
   if (parent())
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
 }

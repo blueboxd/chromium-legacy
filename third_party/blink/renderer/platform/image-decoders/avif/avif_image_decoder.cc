@@ -450,23 +450,13 @@ void AVIFImageDecoder::InitializeNewFrame(size_t index) {
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
+  // For AVIFs, the frame always fills the entire image.
   buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
 
   avifImageTiming timing;
   auto ret = avifDecoderNthImageTiming(decoder_.get(), index, &timing);
   DCHECK_EQ(ret, AVIF_RESULT_OK);
   buffer.SetDuration(base::TimeDelta::FromSecondsD(timing.duration));
-
-  // The AVIF file format does not contain information equivalent to the
-  // disposal method or alpha blend source. Since the AVIF decoder handles frame
-  // dependence internally, set options that best correspond to "each frame is
-  // independent".
-  buffer.SetDisposalMethod(ImageFrame::kDisposeNotSpecified);
-  buffer.SetAlphaBlendSource(ImageFrame::kBlendAtopBgcolor);
-
-  // Leave all frames as being independent (the default) because we require all
-  // frames be the same size.
-  DCHECK_EQ(buffer.RequiredPreviousFrameIndex(), kNotFound);
 }
 
 void AVIFImageDecoder::Decode(size_t index) {

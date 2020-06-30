@@ -476,27 +476,6 @@ TEST_F(FrameTokenMessageQueueTest, DifferentFrameTokensEnqueuedNonIPC) {
   EXPECT_TRUE(second_enqueuer.frame_token_callback_called());
 }
 
-// TODO(jonross): Re-enable this once the DCHECKs have been removed.
-// (crbug.com/1087744)
-// An empty frame token is considered invalid, so this tests that attempting to
-// enqueue for that is rejected.
-TEST_F(FrameTokenMessageQueueTest, DISABLED_EmptyTokenForIPCMessageIsRejected) {
-  FrameTokenMessageQueue* queue = frame_token_message_queue();
-  TestFrameTokenMessageQueueClient* client = test_client();
-  ASSERT_EQ(0u, queue->size());
-
-  const uint32_t invalid_frame_token = 0;
-  IPC::Message msg(0, 1, IPC::Message::PRIORITY_NORMAL);
-  std::vector<IPC::Message> messages;
-  messages.push_back(msg);
-
-  // Adding to the queue with a new frame token should not cause processing.
-  queue->OnFrameSwapMessagesReceived(invalid_frame_token, std::move(messages));
-  EXPECT_EQ(0u, queue->size());
-  EXPECT_TRUE(client->invalid_frame_token_called());
-  EXPECT_EQ(invalid_frame_token, client->invalid_frame_token());
-  EXPECT_EQ(0, client->on_process_swap_message_count());
-}
 
 // Tests that when adding an IPC::Message for an earlier frame token, that it is
 // enqueued.
@@ -528,12 +507,9 @@ TEST_F(FrameTokenMessageQueueTest, EarlierTokenForIPCMessageIsNotRejected) {
   EXPECT_EQ(0, client->on_process_swap_message_count());
 }
 
-// TODO(jonross): Re-enable this once the DCHECKs have been removed.
-// (crbug.com/1087744)
 // Tests that if DidProcessFrame is called with an invalid token, that it is
 // rejected, and that no callbacks are processed.
-TEST_F(FrameTokenMessageQueueTest,
-       DISABLED_InvalidDidProcessFrameTokenNotProcessed) {
+TEST_F(FrameTokenMessageQueueTest, InvalidDidProcessFrameTokenNotProcessed) {
   FrameTokenMessageQueue* queue = frame_token_message_queue();
   TestFrameTokenMessageQueueClient* client = test_client();
   TestNonIPCMessageEnqueuer* enqueuer = test_non_ipc_enqueuer();
@@ -566,12 +542,9 @@ TEST_F(FrameTokenMessageQueueTest,
   EXPECT_FALSE(enqueuer->frame_token_callback_called());
 }
 
-// TODO(jonross): Re-enable this once the DCHECKs have been removed.
-// (crbug.com/1087744)
 // Test that if DidProcessFrame is called with an earlier frame token, that it
 // is rejected, and that no callbacks are processed.
-TEST_F(FrameTokenMessageQueueTest,
-       DISABLED_EarlierTokenForDidProcessFrameRejected) {
+TEST_F(FrameTokenMessageQueueTest, EarlierTokenForDidProcessFrameRejected) {
   FrameTokenMessageQueue* queue = frame_token_message_queue();
   TestFrameTokenMessageQueueClient* client = test_client();
   TestNonIPCMessageEnqueuer* enqueuer = test_non_ipc_enqueuer();

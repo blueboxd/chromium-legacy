@@ -47,7 +47,7 @@ class PresenterImageGL : public OutputPresenter::Image {
 
   void BeginPresent() final;
   void EndPresent() final;
-  int present_count() final;
+  int present_count() const final;
 
   gl::GLImage* GetGLImage(std::unique_ptr<gfx::GpuFence>* fence);
 
@@ -128,7 +128,7 @@ void PresenterImageGL::EndPresent() {
   scoped_gl_read_access_.reset();
 }
 
-int PresenterImageGL::present_count() {
+int PresenterImageGL::present_count() const {
   return present_count_;
 }
 
@@ -333,8 +333,7 @@ void OutputPresenterGL::SchedulePrimaryPlane(
 
 void OutputPresenterGL::CommitOverlayPlanes(
     SwapCompletionCallback completion_callback,
-    BufferPresentedCallback presentation_callback,
-    std::vector<ui::LatencyInfo> latency_info) {
+    BufferPresentedCallback presentation_callback) {
   if (supports_async_swap_) {
     gl_surface_->CommitOverlayPlanesAsync(std::move(completion_callback),
                                           std::move(presentation_callback));

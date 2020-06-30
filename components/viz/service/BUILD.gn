@@ -369,7 +369,10 @@ viz_source_set("gpu_service_dependencies") {
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
 
-  deps = [ "//gpu/config" ]
+  deps = [
+    "//base",
+    "//gpu/config",
+  ]
 
   if (is_win) {
     sources += [
@@ -425,6 +428,19 @@ viz_source_set("gpu_service_dependencies") {
       "//third_party/dawn/src/dawn:dawn_proc",
       "//third_party/dawn/src/dawn:dawncpp",
       "//third_party/dawn/src/dawn_native",
+    ]
+  }
+
+  if (is_fuchsia) {
+    sources += [
+      "display_embedder/output_presenter_fuchsia.cc",
+      "display_embedder/output_presenter_fuchsia.h",
+    ]
+
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.images",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
     ]
   }
 }

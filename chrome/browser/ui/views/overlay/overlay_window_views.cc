@@ -182,9 +182,9 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new OverlayWindowFrameView(widget);
+    return std::make_unique<OverlayWindowFrameView>(widget);
   }
 
  private:

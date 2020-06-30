@@ -108,7 +108,7 @@ void IntentPickerTabHelper::LoadAppIcon(
   }
 
   constexpr bool allow_placeholder_icon = false;
-  proxy->LoadIcon(app_type, app_id, apps::mojom::IconCompression::kUncompressed,
+  proxy->LoadIcon(app_type, app_id, apps::mojom::IconType::kUncompressed,
                   gfx::kFaviconSize, allow_placeholder_icon,
                   base::BindOnce(&IntentPickerTabHelper::OnAppIconLoaded,
                                  weak_factory_.GetWeakPtr(), std::move(apps),

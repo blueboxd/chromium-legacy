@@ -68,14 +68,14 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   if (overriding_icon_loader_for_testing_) {
     return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
-        app_type, app_id, std::move(icon_key), icon_compression,
-        size_hint_in_dip, allow_placeholder_icon, std::move(callback));
+        app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+        allow_placeholder_icon, std::move(callback));
   }
 
   if (host_->app_service_.is_connected() && icon_key) {
@@ -86,7 +86,7 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
     // yet and you resolve old one instead. Now new icon arrives asynchronously
     // but you no longer notify the app or do?"
     host_->app_service_->LoadIcon(app_type, app_id, std::move(icon_key),
-                                  icon_compression, size_hint_in_dip,
+                                  icon_type, size_hint_in_dip,
                                   allow_placeholder_icon, std::move(callback));
   } else {
     std::move(callback).Run(apps::mojom::IconValue::New());
@@ -241,12 +241,12 @@ AppServiceProxy::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
     bool allow_placeholder_icon,
     apps::mojom::Publisher::LoadIconCallback callback) {
   return outer_icon_loader_.LoadIconFromIconKey(
-      app_type, app_id, std::move(icon_key), icon_compression, size_hint_in_dip,
+      app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
       allow_placeholder_icon, std::move(callback));
 }
 
@@ -682,6 +682,10 @@ void AppServiceProxy::LoadIconForDialog(
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
   constexpr bool kAllowPlaceholderIcon = false;
   constexpr int32_t kIconSize = 48;
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
 
   // For browser tests, load the app icon, because there is no family link
   // logo for browser tests.
@@ -690,23 +694,26 @@ void AppServiceProxy::LoadIconForDialog(
   // admin.
   if (!dialog_created_callback_.is_null() || !profile_->IsChild()) {
     LoadIconFromIconKey(update.AppType(), update.AppId(), std::move(icon_key),
-                        apps::mojom::IconCompression::kUncompressed, kIconSize,
-                        kAllowPlaceholderIcon, std::move(callback));
+                        icon_type, kIconSize, kAllowPlaceholderIcon,
+                        std::move(callback));
     return;
   }
 
   // Load the family link kite logo icon for the app pause dialog or the app
   // block dialog for the child profile.
-  LoadIconFromResource(apps::mojom::IconCompression::kUncompressed, kIconSize,
-                       IDR_SUPERVISED_USER_ICON, kAllowPlaceholderIcon,
-                       IconEffects::kNone, std::move(callback));
+  LoadIconFromResource(icon_type, kIconSize, IDR_SUPERVISED_USER_ICON,
+                       kAllowPlaceholderIcon, IconEffects::kNone,
+                       std::move(callback));
 }
 
 void AppServiceProxy::OnLoadIconForBlockDialog(
     const std::string& app_name,
     apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     return;
   }
 
@@ -725,8 +732,11 @@ void AppServiceProxy::OnLoadIconForPauseDialog(
     const std::string& app_name,
     const PauseData& pause_data,
     apps::mojom::IconValuePtr icon_value) {
-  if (icon_value->icon_compression !=
-      apps::mojom::IconCompression::kUncompressed) {
+  auto icon_type =
+      (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+          ? apps::mojom::IconType::kStandard
+          : apps::mojom::IconType::kUncompressed;
+  if (icon_value->icon_type != icon_type) {
     OnPauseDialogClosed(app_type, app_id);
     return;
   }

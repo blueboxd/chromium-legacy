@@ -15,8 +15,6 @@ namespace omnibox {
 extern const base::Feature kHideFileUrlScheme;
 extern const base::Feature kHideSteadyStateUrlScheme;
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
-extern const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover;
-extern const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
@@ -92,6 +90,12 @@ extern const base::Feature kWebUIOmniboxPopup;
 // popup).
 extern const base::Feature kOmniboxAssistantVoiceSearch;
 extern const base::Feature kOmniboxContextMenuShowFullUrls;
+
+// Path-hiding experiments - these hide the path and other URL components in
+// some circumstances in the steady-state omnibox.
+extern const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover;
+extern const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction;
+extern const base::Feature kElideToRegistrableDomain;
 
 }  // namespace omnibox
 

@@ -35,7 +35,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #if defined(OS_CHROMEOS)
   ProcessMenuAcceleratorResult ProcessAcceleratorWhileMenuShowing(
       const ui::Accelerator& accelerator) override;
-  views::NonClientFrameView* CreateDefaultNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateDefaultNonClientFrameView(
       views::Widget* widget) override;
 #endif
 

@@ -1024,6 +1024,40 @@ class PortTest(LoggingTestCase):
             sorted(port.tests(['virtual/virtual_wpt_dom/'])),
             dom_wpt + ['virtual/virtual_wpt_dom/wpt_internal/dom/bar.html'])
 
+    def test_virtual_test_paths(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port)
+        ssl_tests = [
+            'virtual/mixed_wpt/http/tests/ssl/text.html',
+        ]
+        http_passes_tests = [
+            'virtual/mixed_wpt/http/tests/passes/image.html',
+            'virtual/mixed_wpt/http/tests/passes/text.html',
+        ]
+        dom_tests = [
+            'virtual/mixed_wpt/external/wpt/dom/ranges/Range-attributes-slow.html',
+            'virtual/mixed_wpt/external/wpt/dom/ranges/Range-attributes.html',
+        ]
+
+        #  The full set of tests must be returned when running the entire suite.
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/'])),
+                         dom_tests + http_passes_tests + ssl_tests)
+
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/external'])),
+                         dom_tests)
+
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/http'])),
+                         http_passes_tests + ssl_tests)
+        self.assertEqual(
+            sorted(
+                port.tests([
+                    'virtual/mixed_wpt/http/tests/ssl',
+                    'virtual/mixed_wpt/external/wpt/dom'
+                ])), dom_tests + ssl_tests)
+
+        # Make sure we don't run a non-existent test.
+        self.assertEqual(sorted(port.tests(['virtual/mixed_wpt/passes'])), [])
+
     def test_is_non_wpt_test_file(self):
         port = self.make_port(with_tests=True)
         self.assertTrue(port.is_non_wpt_test_file('', 'foo.html'))

@@ -161,10 +161,6 @@ namespace developerPrivate {
     ViewType type;
   };
 
-  enum ControllerType {
-    POLICY
-  };
-
   enum HostAccess {
     ON_CLICK,
     ON_SPECIFIC_SITES,
@@ -172,7 +168,6 @@ namespace developerPrivate {
   };
 
   dictionary ControlledInfo {
-    ControllerType type;
     DOMString text;
   };
 

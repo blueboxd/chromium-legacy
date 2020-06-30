@@ -39638,6 +39638,8 @@ from previous Chrome versions.
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1754262889" label="RemoteCopyPersistentNotification:enabled"/>
   <int value="-1753458842" label="OfflinePagesLivePageSharing:disabled"/>
+  <int value="-1752853388"
+      label="OmniboxUIExperimentElideToRegistrableDomain:enabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
   <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
@@ -40277,6 +40279,8 @@ from previous Chrome versions.
   <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
+  <int value="-1082053427"
+      label="OmniboxUIExperimentElideToRegistrableDomain:disabled"/>
   <int value="-1081295536"
       label="ContextMenuSearchAndShopWithGoogleLens:enabled"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
@@ -50496,6 +50500,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePagesLoadStatus">
+  <obsolete>
+    OfflinePages.LoadStatus was removed in M65.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="Store init failed"/>
   <int value="2" label="Store load failed"/>

@@ -6,6 +6,7 @@
 
 #include "content/public/common/untrustworthy_context_menu_params.h"
 #include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace content {
 

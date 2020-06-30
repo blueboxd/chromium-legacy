@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_BUBBLE_INFO_BUBBLE_H_
 #define UI_VIEWS_BUBBLE_INFO_BUBBLE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -29,7 +31,8 @@ class InfoBubble : public BubbleDialogDelegateView {
   void Hide();
 
   // BubbleDialogDelegateView:
-  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
+  std::unique_ptr<NonClientFrameView> CreateNonClientFrameView(
+      Widget* widget) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetDestroyed(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,

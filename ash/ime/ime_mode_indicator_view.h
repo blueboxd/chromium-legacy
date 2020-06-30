@@ -40,7 +40,7 @@ class ASH_EXPORT ImeModeIndicatorView : public views::BubbleDialogDelegateView {
 
  protected:
   // views::WidgetDelegateView overrides:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
 
  private:

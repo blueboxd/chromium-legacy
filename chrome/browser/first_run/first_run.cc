@@ -190,7 +190,7 @@ void ConvertStringVectorToGURLVector(
   std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
 }
 
-base::FilePath& GetMasterPrefsPathForTesting() {
+base::FilePath& GetInitialPrefsPathForTesting() {
   static base::NoDestructor<base::FilePath> s;
   return *s;
 }
@@ -233,7 +233,7 @@ base::Time ReadFirstRunSentinelCreationTime() {
 namespace first_run {
 namespace internal {
 
-void SetupMasterPrefsFromInstallPrefs(
+void SetupInitialPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs) {
   ConvertStringVectorToGURLVector(
@@ -373,57 +373,58 @@ bool ShouldDoPersonalDataManagerFirstRun() {
   return retval;
 }
 
-void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {
-  GetMasterPrefsPathForTesting() = master_prefs;
+void SetInitialPrefsPathForTesting(const base::FilePath& initial_prefs) {
+  GetInitialPrefsPathForTesting() = initial_prefs;
 }
 
-std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs() {
-  base::FilePath master_prefs_path;
-  if (!GetMasterPrefsPathForTesting().empty())
-    master_prefs_path = GetMasterPrefsPathForTesting();
+std::unique_ptr<installer::MasterPreferences> LoadInitialPrefs() {
+  base::FilePath initial_prefs_path;
+  if (!GetInitialPrefsPathForTesting().empty())
+    initial_prefs_path = GetInitialPrefsPathForTesting();
   else
-    master_prefs_path = base::FilePath(first_run::internal::MasterPrefsPath());
+    initial_prefs_path =
+        base::FilePath(first_run::internal::InitialPrefsPath());
 
-  if (master_prefs_path.empty())
+  if (initial_prefs_path.empty())
     return nullptr;
-  auto install_prefs =
-      std::make_unique<installer::MasterPreferences>(master_prefs_path);
-  if (!install_prefs->read_from_file())
+  auto initial_prefs =
+      std::make_unique<installer::MasterPreferences>(initial_prefs_path);
+  if (!initial_prefs->read_from_file())
     return nullptr;
-  return install_prefs;
+  return initial_prefs;
 }
 
 ProcessMasterPreferencesResult ProcessMasterPreferences(
     const base::FilePath& user_data_dir,
-    std::unique_ptr<installer::MasterPreferences> install_prefs,
+    std::unique_ptr<installer::MasterPreferences> initial_prefs,
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  if (install_prefs.get()) {
-    if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
+  if (initial_prefs.get()) {
+    if (!internal::ShowPostInstallEULAIfNeeded(initial_prefs.get()))
       return EULA_EXIT_NOW;
 
-    std::unique_ptr<base::DictionaryValue> master_dictionary =
-        install_prefs->master_dictionary().CreateDeepCopy();
+    std::unique_ptr<base::DictionaryValue> initial_dictionary =
+        initial_prefs->master_dictionary().CreateDeepCopy();
     // The distribution dictionary (and any prefs below it) are never registered
-    // for use in Chrome's PrefService. Strip them from the master dictionary
+    // for use in Chrome's PrefService. Strip them from the initial dictionary
     // before mapping it to prefs.
-    master_dictionary->RemoveWithoutPathExpansion(
+    initial_dictionary->RemoveWithoutPathExpansion(
         installer::master_preferences::kDistroDict, nullptr);
 
     if (!chrome_prefs::InitializePrefsFromMasterPrefs(
             profiles::GetDefaultProfileDir(user_data_dir),
-            std::move(master_dictionary))) {
-      DLOG(ERROR) << "Failed to initialize from master_preferences.";
+            std::move(initial_dictionary))) {
+      DLOG(ERROR) << "Failed to initialize from initial preferences.";
     }
 
     base::DictionaryValue* extensions = 0;
-    if (install_prefs->GetExtensionsBlock(&extensions)) {
-      DVLOG(1) << "Extensions block found in master preferences";
+    if (initial_prefs->GetExtensionsBlock(&extensions)) {
+      DVLOG(1) << "Extensions block found in initial preferences";
       extensions::ExtensionUpdater::UpdateImmediatelyForFirstRun();
     }
 
-    internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
+    internal::SetupInitialPrefsFromInstallPrefs(*initial_prefs, out_prefs);
   }
 
   return FIRST_RUN_PROCEED;

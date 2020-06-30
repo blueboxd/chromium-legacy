@@ -122,10 +122,11 @@ PersonalizationSection::PersonalizationSection(
   if (features::IsGuestModeActive())
     return;
 
-  registry()->AddSearchTags(GetPersonalizationSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetPersonalizationSearchConcepts());
 
   if (IsAmbientModeAllowed()) {
-    registry()->AddSearchTags(GetAmbientModeSearchConcepts());
+    updater.AddSearchTags(GetAmbientModeSearchConcepts());
 
     pref_change_registrar_.Init(pref_service_);
     pref_change_registrar_.Add(
@@ -239,12 +240,14 @@ void PersonalizationSection::RegisterHierarchy(
 }
 
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   if (pref_service_->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled)) {
-    registry()->AddSearchTags(GetAmbientModeOnSearchConcepts());
-    registry()->RemoveSearchTags(GetAmbientModeOffSearchConcepts());
+    updater.AddSearchTags(GetAmbientModeOnSearchConcepts());
+    updater.RemoveSearchTags(GetAmbientModeOffSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetAmbientModeOnSearchConcepts());
-    registry()->AddSearchTags(GetAmbientModeOffSearchConcepts());
+    updater.RemoveSearchTags(GetAmbientModeOnSearchConcepts());
+    updater.AddSearchTags(GetAmbientModeOffSearchConcepts());
   }
 }
 

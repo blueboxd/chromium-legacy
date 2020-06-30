@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunBrowserTest, SetShouldShowWelcomePage) {
 namespace {
 
 // A generic test class to be subclassed by test classes testing specific
-// master_preferences. All subclasses must call SetMasterPreferencesForTest()
+// master_preferences. All subclasses must call SetInitialPreferencesForTest()
 // from their SetUp() method before deferring the remainder of Setup() to this
 // class.
 class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
@@ -69,13 +69,13 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
 
  protected:
   void SetUp() override {
-    // All users of this test class need to call SetMasterPreferencesForTest()
+    // All users of this test class need to call SetInitialPreferencesForTest()
     // before this class' SetUp() is invoked.
     ASSERT_TRUE(text_.get());
 
     ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
     EXPECT_TRUE(base::WriteFile(prefs_file_, *text_));
-    SetMasterPrefsPathForTesting(prefs_file_);
+    SetInitialPrefsPathForTesting(prefs_file_);
 
     // This invokes BrowserMain, and does the import, so must be done last.
     InProcessBrowserTest::SetUp();
@@ -101,7 +101,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
   }
 #endif
 
-  void SetMasterPreferencesForTest(const char text[]) {
+  void SetInitialPreferencesForTest(const char text[]) {
     text_.reset(new std::string(text));
   }
 
@@ -120,7 +120,7 @@ class FirstRunMasterPrefsBrowserTestT
 
  protected:
   void SetUp() override {
-    SetMasterPreferencesForTest(Text);
+    SetInitialPreferencesForTest(Text);
     FirstRunMasterPrefsBrowserTestBase::SetUp();
   }
 

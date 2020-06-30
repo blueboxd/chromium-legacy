@@ -58,7 +58,8 @@ class ChromeNativeAppWindowViewsAuraAsh
       const extensions::AppWindow::CreateParams& create_params,
       views::Widget::InitParams* init_params,
       views::Widget* widget) override;
-  views::NonClientFrameView* CreateNonStandardAppFrame() override;
+  std::unique_ptr<views::NonClientFrameView> CreateNonStandardAppFrame()
+      override;
   bool ShouldRemoveStandardFrame() override;
   void AdjustBoundsToBeVisibleOnDisplayForNewWindows(
       gfx::Rect* out_bounds) override;
@@ -74,7 +75,7 @@ class ChromeNativeAppWindowViewsAuraAsh
                                   ui::MenuSourceType source_type) override;
 
   // WidgetDelegate:
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   ui::ModalType GetModalType() const override;
 

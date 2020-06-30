@@ -1748,9 +1748,9 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912",
+          "3e92",
           "--expected-device-id",
-          "3e92"
+          "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7458,10 +7458,10 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--expected-vendor-id",
           "1af4",
-          "--expected-device-id",
-          "1050",
           "--remote=127.0.0.1",
-          "--remote-ssh-port=9222"
+          "--remote-ssh-port=9222",
+          "--expected-device-id",
+          "1050"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -22394,9 +22394,9 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912",
+          "3e92",
           "--expected-device-id",
-          "3e92"
+          "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -24494,9 +24494,9 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912",
+          "3e92",
           "--expected-device-id",
-          "3e92"
+          "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -26196,9 +26196,9 @@
           "--expected-vendor-id",
           "8086",
           "--expected-device-id",
-          "5912",
+          "3e92",
           "--expected-device-id",
-          "3e92"
+          "5912"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {

@@ -104,6 +104,8 @@
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/safe_browsing/core/realtime/policy_engine.h"  // nogncheck
+#include "components/safe_browsing/core/realtime/url_lookup_service.h"  // nogncheck
 #include "components/spellcheck/browser/spell_check_host_impl.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,7 +113,9 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/android_descriptors.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
+#include "weblayer/browser/safe_browsing/real_time_url_lookup_service_factory.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
 #include "weblayer/browser/tts_environment_android_impl.h"
 #endif
@@ -371,8 +375,23 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {
 #if defined(OS_ANDROID)
+    BrowserContextImpl* browser_context_impl =
+        static_cast<BrowserContextImpl*>(browser_context);
+    bool is_real_time_lookup_enabled =
+        safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+            browser_context_impl->pref_service(),
+            browser_context_impl->IsOffTheRecord(),
+            FeatureListCreator::GetInstance()->variations_service());
+
+    // |url_lookup_service| is used when real time url check is enabled.
+    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
+        is_real_time_lookup_enabled
+            ? RealTimeUrlLookupServiceFactory::GetForBrowserContext(
+                  browser_context)
+            : nullptr;
+
     result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
-        wc_getter, frame_tree_node_id));
+        wc_getter, frame_tree_node_id, url_lookup_service));
 #endif
   }
 

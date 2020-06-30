@@ -585,19 +585,22 @@ bool IndexCursorOptions(
         database_id, object_store_id, index_id, range.upper());
     cursor_options->high_open = range.upper_open();
 
-    std::string found_high_key;
-    // Seek to the *last* key in the set of non-unique keys
-    if (!FindGreatestKeyLessThanOrEqual(transaction, cursor_options->high_key,
-                                        &found_high_key, status))
-      return false;
+    if (!cursor_options->forward) {
+      // For reverse cursors, we need a key that exists.
+      std::string found_high_key;
+      // Seek to the *last* key in the set of non-unique keys
+      if (!FindGreatestKeyLessThanOrEqual(transaction, cursor_options->high_key,
+                                          &found_high_key, status))
+        return false;
 
-    // If the target key should not be included, but we end up with a smaller
-    // key, we should include that.
-    if (cursor_options->high_open &&
-        CompareIndexKeys(found_high_key, cursor_options->high_key) < 0)
-      cursor_options->high_open = false;
+      // If the target key should not be included, but we end up with a smaller
+      // key, we should include that.
+      if (cursor_options->high_open &&
+          CompareIndexKeys(found_high_key, cursor_options->high_key) < 0)
+        cursor_options->high_open = false;
 
-    cursor_options->high_key = found_high_key;
+      cursor_options->high_key = found_high_key;
+    }
   }
 
   return true;

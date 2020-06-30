@@ -12,39 +12,34 @@ goog.require('BaseAutomationHandler');
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const EventType = chrome.automation.EventType;
-
-const INTERVAL_MS_BETWEEN_HIT_TESTS = 50;
+const RoleType = chrome.automation.RoleType;
 
 BackgroundMouseHandler = class extends BaseAutomationHandler {
   constructor() {
     super(null);
-    /** @private {chrome.automation.AutomationNode} */
-    this.node_;
-    /**
-     *
-     * The desktop node.
-     *
-     * @private {!chrome.automation.AutomationNode}
-     */
-    this.desktop_;
-    /** @private {boolean|undefined} */
-    this.isWaitingBeforeHitTest_;
+
     /** @private {boolean|undefined} */
     this.hasPendingEvents_;
     /** @private {number|undefined} */
     this.mouseX_;
     /** @private {number|undefined} */
     this.mouseY_;
+    /** @private {!Date} */
+    this.lastHoverExit_ = new Date();
+    /** @private {!AutomationNode|undefined} */
+    this.lastHoverTarget_;
 
     chrome.automation.getDesktop((desktop) => {
       this.node_ = desktop;
-      this.desktop_ = desktop;
       this.addListener_(EventType.MOUSE_MOVED, this.onMouseMove);
 
-      // When |this.isWaitingBeforeHitTest| is true, we should never run a
-      // hittest, and there should be a timer running so that it can be set to
-      // false.
-      this.isWaitingBeforeHitTest_ = false;
+      // This is needed for ARC++ which sends back hovers when we send mouse
+      // moves.
+      this.addListener_(EventType.HOVER, (evt) => {
+        this.handleHitTestResult(evt.target);
+        this.runHitTest();
+      });
+
       this.hasPendingEvents_ = false;
       this.mouseX_ = 0;
       this.mouseY_ = 0;
@@ -56,39 +51,28 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * Starts a timer which, when it finishes, calls runHitTest if an event was
-   * waiting to resolve to a node.
-   */
-  startTimer() {
-    this.isWaitingBeforeHitTest_ = true;
-    setTimeout(() => {
-      this.isWaitingBeforeHitTest_ = false;
-      if (this.hasPendingEvents_) {
-        this.runHitTest();
-      }
-    }, INTERVAL_MS_BETWEEN_HIT_TESTS);
-  }
-
-  /**
-   * Performs a hittest using the most recent mouse coordinates received in
-   * onMouseMove, and then starts a timer so that further hittests don't occur
-   * immediately after.
+   * Performs a hit test using the most recent mouse coordinates received in
+   * onMouseMove or onMove (a e.g. for touch explore).
    *
-   * Note that runHitTest is only ever called when |isWaitingBeforeHitTest| is
-   * false and |hasPendingEvents| is true.
+   * Note that runHitTest only ever does a hit test when |hasPendingEvents| is
+   * true.
    */
   runHitTest() {
     if (this.mouseX_ === undefined || this.mouseY_ === undefined) {
       return;
     }
-    this.desktop_.hitTest(this.mouseX_, this.mouseY_, EventType.HOVER);
+    if (!this.hasPendingEvents_) {
+      return;
+    }
+    this.node_.hitTestWithReply(this.mouseX_, this.mouseY_, (target) => {
+      this.handleHitTestResult(target);
+      this.runHitTest();
+    });
     this.hasPendingEvents_ = false;
-    this.startTimer();
   }
 
   /**
-   * Handles mouse move events. If the timer is running, it will perform a
-   * hittest on the most recent event; otherwise request a hittest immediately.
+   * Handles mouse move events.
    * @param {AutomationEvent} evt The mouse move event to process.
    */
   onMouseMove(evt) {
@@ -104,9 +88,7 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
     this.mouseX_ = x;
     this.mouseY_ = y;
     this.hasPendingEvents_ = true;
-    if (!this.isWaitingBeforeHitTest_) {
-      this.runHitTest();
-    }
+    this.runHitTest();
   }
 
   /**
@@ -123,7 +105,82 @@ BackgroundMouseHandler = class extends BaseAutomationHandler {
       y: this.mouseY_
     });
   }
+
+  /**
+   * Handles the result of a test test e.g. speaking the node.
+   * @param {chrome.automation.AutomationNode} result
+   */
+  handleHitTestResult(result) {
+    if (!result) {
+      return;
+    }
+
+    let target = result;
+
+    // Save the last hover target for use by the gesture handler.
+    this.lastHoverTarget_ = target;
+
+    // If the target is in an ExoSurface, which hosts remote content, trigger a
+    // mouse move. This only occurs when we programmatically hit test content
+    // within ARC++ for now. Mouse moves automatically trigger Android to send
+    // hover events back.
+    if (target.role == RoleType.WINDOW &&
+        target.className.indexOf('ExoSurface') == 0) {
+      this.synthesizeMouseMove();
+      return;
+    }
+
+    let targetLeaf = null;
+    let targetObject = null;
+    while (target && target != target.root) {
+      if (!targetObject && AutomationPredicate.touchObject(target)) {
+        targetObject = target;
+      }
+      if (AutomationPredicate.touchLeaf(target)) {
+        targetLeaf = target;
+      }
+      target = target.parent;
+    }
+
+    target = targetLeaf || targetObject;
+    if (!target) {
+      // This clears the anchor point in the TouchExplorationController (so
+      // things like double tap won't be directed to the previous target). It
+      // also ensures if a user touch explores back to the previous range, it
+      // will be announced again.
+      ChromeVoxState.instance.setCurrentRange(null);
+
+      // Play a earcon to let the user know they're in the middle of nowhere.
+      if ((new Date() - this.lastHoverExit_) >
+          BackgroundMouseHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS) {
+        ChromeVox.earcons.playEarcon(Earcon.TOUCH_EXIT);
+        this.lastHoverExit_ = new Date();
+      }
+      chrome.tts.stop();
+      return;
+    }
+
+    if (ChromeVoxState.instance.currentRange &&
+        target == ChromeVoxState.instance.currentRange.start.node) {
+      return;
+    }
+
+    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
+    DesktopAutomationHandler.instance.onEventDefault(
+        new CustomAutomationEvent(EventType.HOVER, target, '', []));
+  }
+
+  /**
+   * @return {!AutomationNode|undefined} The target of the last observed hover
+   *     event.
+   */
+  get lastHoverTarget() {
+    return this.lastHoverTarget_;
+  }
 };
+
+/** @const {number} */
+BackgroundMouseHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS = 500;
 
 /** @type {!BackgroundMouseHandler} */
 BackgroundMouseHandler.instance = new BackgroundMouseHandler();

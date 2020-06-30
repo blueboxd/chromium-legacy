@@ -23,6 +23,17 @@ std::vector<Data> CreateTestData(
     const std::map<std::string,
                    std::vector<std::pair<std::string, std::string>>>& input);
 
+// Checks |result|'s id, score and number of matching positions are expected.
+void CheckResult(const Result& result,
+                 const std::string& expected_id,
+                 float expected_score,
+                 size_t expected_number_positions);
+
+float TfIdfScore(size_t num_docs,
+                 size_t num_docs_with_term,
+                 size_t num_term_occurrence_in_doc,
+                 size_t doc_length);
+
 }  // namespace local_search_service
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_TEST_UTILS_H_

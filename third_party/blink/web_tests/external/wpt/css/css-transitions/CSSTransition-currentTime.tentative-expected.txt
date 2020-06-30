@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS currentTime can be used to seek a CSS transition
-PASS Skipping forwards through transition
-PASS Skipping backwards through transition
-PASS Setting currentTime to null on a CSS transition throws
-FAIL Transition reversing behavior respects currentTime and uses the transition's current position. assert_not_equals: A reversed transition is produced got disallowed value undefined
-Harness: the test ran to completion.
-

@@ -122,6 +122,10 @@ jumbo_component("ozone_base") {
     public_deps += [ "//gpu/vulkan" ]
   }
 
+  if (is_fuchsia) {
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.images" ]
+  }
+
   visibility += [
     # Everyone should depend on //ui/ozone instead except a handful of
     # things that would otherwise create a cycle.

@@ -133,13 +133,17 @@ class ServiceWorkerCacheWriterTest : public ::testing::Test {
     return remote;
   }
 
-  std::unique_ptr<ServiceWorkerResponseWriter> CreateWriter() {
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> CreateWriter() {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> remote;
     if (writers_.empty())
-      return base::WrapUnique<ServiceWorkerResponseWriter>(nullptr);
-    std::unique_ptr<ServiceWorkerResponseWriter> writer(
-        std::move(writers_.front()));
+      return remote;
+    auto* writer_rawptr = writers_.front().get();
+    remote.Bind(writer_rawptr->BindNewPipeAndPassRemote(
+        // Keep the instance alive until the connection is destroyed.
+        base::BindOnce([](std::unique_ptr<MockServiceWorkerResponseWriter>) {},
+                       std::move(writers_.front()))));
     writers_.pop_front();
-    return writer;
+    return remote;
   }
 
   ServiceWorkerCacheWriter::OnWriteCompleteCallback CreateWriteCallback() {

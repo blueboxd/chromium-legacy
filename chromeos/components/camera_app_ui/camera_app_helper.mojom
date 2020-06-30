@@ -14,6 +14,22 @@ interface TabletModeMonitor {
   Update(bool is_tablet_mode);
 };
 
+// Screen backlight state.
+// Reference from ash/public/cpp/screen_backlight_type.h
+enum ScreenState {
+    ON,
+    OFF,
+    OFF_AUTO,
+};
+
+// Interface for monitoring screen state of device. The state is detected from
+// Chrome browser process and is notified to Chrome Camera App in renderer
+// process.
+interface ScreenStateMonitor {
+  // Updates with the latest changed screen state.
+  Update(ScreenState state);
+};
+
 // Interface for communication between Chrome Camera App (Remote) and Chrome
 // (Receiver).
 interface CameraAppHelper {
@@ -35,9 +51,14 @@ interface CameraAppHelper {
   // Triggers the end of event tracing for given |event|.
   StopPerfEventTrace(string event);
 
-  // Registers an TabletModeMonitor instance and returns the tablet mode
+  // Registers a TabletModeMonitor instance and returns the tablet mode
   // initial state. Calling the Update() whenever the tablet mode state
   // changes.
   SetTabletMonitor(pending_remote<TabletModeMonitor> monitor)
       => (bool is_tablet_mode);
+
+  // Registers a ScreenStateMonitor instance and returns the initial screen
+  // state. Calling the Update() whenever the screen state changes.
+  SetScreenStateMonitor(pending_remote<ScreenStateMonitor> monitor)
+      => (ScreenState initial_state);
 };

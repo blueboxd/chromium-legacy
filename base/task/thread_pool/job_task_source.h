@@ -73,6 +73,9 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // concurrently.
   size_t GetMaxConcurrency() const;
 
+  uint8_t AcquireTaskId();
+  void ReleaseTaskId(uint8_t task_id);
+
   // Returns true if a worker should return from the worker task on the current
   // thread ASAP.
   bool ShouldYield();
@@ -194,6 +197,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 
   // Current atomic state.
   State state_;
+  std::atomic<uint32_t> assigned_task_ids_{0};
   // Normally, |join_flag_| is protected by |lock_|, except in ShouldYield()
   // hence the use of atomics.
   JoinFlag join_flag_ GUARDED_BY(lock_);

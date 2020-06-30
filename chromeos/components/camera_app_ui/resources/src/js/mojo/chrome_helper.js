@@ -43,6 +43,24 @@ export class ChromeHelper {
   }
 
   /**
+   * Starts monitor monitoring system screen state of device.
+   * @param {function(chromeosCamera.mojom.ScreenState)} onChange Callback
+   *     called each time when device screen state changes with parameter of
+   *     newly changed value.
+   * @return {!Promise<chromeosCamera.mojom.ScreenState>} Resolved to initial
+   *     system screen state.
+   */
+  async initScreenStateMonitor(onChange) {
+    const monitorCallbackRouter =
+        new chromeosCamera.mojom.ScreenStateMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener(onChange);
+
+    return (await this.remote_.setScreenStateMonitor(
+                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
+        .initialState;
+  }
+
+  /**
    * Checks if the device is under tablet mode currently.
    * @return {!Promise<boolean>}
    */

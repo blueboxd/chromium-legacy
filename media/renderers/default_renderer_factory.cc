@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "media/base/audio_buffer.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_factory.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
@@ -41,12 +40,6 @@ DefaultRendererFactory::DefaultRendererFactory(
       get_gpu_factories_cb_(get_gpu_factories_cb),
       speech_recognition_client_(std::move(speech_recognition_client)) {
   DCHECK(decoder_factory_);
-  if (speech_recognition_client_) {
-    // Unretained is safe because |this| owns the speech recognition client.
-    speech_recognition_client_->SetOnReadyCallback(media::BindToCurrentLoop(
-        base::BindOnce(&DefaultRendererFactory::EnableSpeechRecognition,
-                       base::Unretained(this))));
-  }
 }
 #endif
 
@@ -98,9 +91,11 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
       // finishes.
       base::BindRepeating(&DefaultRendererFactory::CreateAudioDecoders,
                           base::Unretained(this), media_task_runner),
-      media_log_,
-      BindToCurrentLoop(base::BindRepeating(
-          &DefaultRendererFactory::TranscribeAudio, base::Unretained(this)))));
+#if defined(OS_ANDROID)
+      media_log_));
+#else
+      media_log_, speech_recognition_client_.get()));
+#endif
 
   GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (get_gpu_factories_cb_)
@@ -130,23 +125,6 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
 
   return std::make_unique<RendererImpl>(
       media_task_runner, std::move(audio_renderer), std::move(video_renderer));
-}
-
-void DefaultRendererFactory::TranscribeAudio(
-    scoped_refptr<media::AudioBuffer> buffer) {
-#if !defined(OS_ANDROID)
-  if (is_speech_recognition_available_ && speech_recognition_client_)
-    speech_recognition_client_->AddAudio(std::move(buffer));
-#endif
-}
-
-void DefaultRendererFactory::EnableSpeechRecognition() {
-#if !defined(OS_ANDROID)
-  if (speech_recognition_client_) {
-    is_speech_recognition_available_ =
-        speech_recognition_client_->IsSpeechRecognitionAvailable();
-  }
-#endif
 }
 
 }  // namespace media

@@ -490,8 +490,10 @@ std::string GetDetailsSubpageUrl(const std::string& url_to_modify,
 InternetSection::InternetSection(Profile* profile,
                                  SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   // General network search tags are always added.
-  registry()->AddSearchTags(GetNetworkSearchConcepts());
+  updater.AddSearchTags(GetNetworkSearchConcepts());
 
   // Receive updates when devices (e.g., Ethernet, Wi-Fi) go on/offline.
   ash::GetNetworkConfigService(
@@ -822,40 +824,42 @@ void InternetSection::OnDeviceList(
   using network_config::mojom::DeviceStateType;
   using network_config::mojom::NetworkType;
 
-  registry()->RemoveSearchTags(GetWifiSearchConcepts());
-  registry()->RemoveSearchTags(GetWifiOnSearchConcepts());
-  registry()->RemoveSearchTags(GetWifiOffSearchConcepts());
-  registry()->RemoveSearchTags(GetCellularSearchConcepts());
-  registry()->RemoveSearchTags(GetCellularOnSearchConcepts());
-  registry()->RemoveSearchTags(GetCellularOffSearchConcepts());
-  registry()->RemoveSearchTags(GetInstantTetheringSearchConcepts());
-  registry()->RemoveSearchTags(GetInstantTetheringOnSearchConcepts());
-  registry()->RemoveSearchTags(GetInstantTetheringOffSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetWifiSearchConcepts());
+  updater.RemoveSearchTags(GetWifiOnSearchConcepts());
+  updater.RemoveSearchTags(GetWifiOffSearchConcepts());
+  updater.RemoveSearchTags(GetCellularSearchConcepts());
+  updater.RemoveSearchTags(GetCellularOnSearchConcepts());
+  updater.RemoveSearchTags(GetCellularOffSearchConcepts());
+  updater.RemoveSearchTags(GetInstantTetheringSearchConcepts());
+  updater.RemoveSearchTags(GetInstantTetheringOnSearchConcepts());
+  updater.RemoveSearchTags(GetInstantTetheringOffSearchConcepts());
 
   for (const auto& device : devices) {
     switch (device->type) {
       case NetworkType::kWiFi:
-        registry()->AddSearchTags(GetWifiSearchConcepts());
+        updater.AddSearchTags(GetWifiSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          registry()->AddSearchTags(GetWifiOnSearchConcepts());
+          updater.AddSearchTags(GetWifiOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          registry()->AddSearchTags(GetWifiOffSearchConcepts());
+          updater.AddSearchTags(GetWifiOffSearchConcepts());
         break;
 
       case NetworkType::kCellular:
-        registry()->AddSearchTags(GetCellularSearchConcepts());
+        updater.AddSearchTags(GetCellularSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          registry()->AddSearchTags(GetCellularOnSearchConcepts());
+          updater.AddSearchTags(GetCellularOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          registry()->AddSearchTags(GetCellularOffSearchConcepts());
+          updater.AddSearchTags(GetCellularOffSearchConcepts());
         break;
 
       case NetworkType::kTether:
-        registry()->AddSearchTags(GetInstantTetheringSearchConcepts());
+        updater.AddSearchTags(GetInstantTetheringSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          registry()->AddSearchTags(GetInstantTetheringOnSearchConcepts());
+          updater.AddSearchTags(GetInstantTetheringOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          registry()->AddSearchTags(GetInstantTetheringOffSearchConcepts());
+          updater.AddSearchTags(GetInstantTetheringOffSearchConcepts());
         break;
 
       default:
@@ -879,13 +883,15 @@ void InternetSection::OnActiveNetworks(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
   using network_config::mojom::NetworkType;
 
-  registry()->RemoveSearchTags(GetEthernetConnectedSearchConcepts());
-  registry()->RemoveSearchTags(GetWifiConnectedSearchConcepts());
-  registry()->RemoveSearchTags(GetWifiMeteredSearchConcepts());
-  registry()->RemoveSearchTags(GetCellularConnectedSearchConcepts());
-  registry()->RemoveSearchTags(GetCellularMeteredSearchConcepts());
-  registry()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
-  registry()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
+  updater.RemoveSearchTags(GetEthernetConnectedSearchConcepts());
+  updater.RemoveSearchTags(GetWifiConnectedSearchConcepts());
+  updater.RemoveSearchTags(GetWifiMeteredSearchConcepts());
+  updater.RemoveSearchTags(GetCellularConnectedSearchConcepts());
+  updater.RemoveSearchTags(GetCellularMeteredSearchConcepts());
+  updater.RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
+  updater.RemoveSearchTags(GetVpnConnectedSearchConcepts());
 
   connected_ethernet_guid_.reset();
   connected_wifi_guid_.reset();
@@ -900,31 +906,31 @@ void InternetSection::OnActiveNetworks(
     switch (network->type) {
       case NetworkType::kEthernet:
         connected_ethernet_guid_ = network->guid;
-        registry()->AddSearchTags(GetEthernetConnectedSearchConcepts());
+        updater.AddSearchTags(GetEthernetConnectedSearchConcepts());
         break;
 
       case NetworkType::kWiFi:
         connected_wifi_guid_ = network->guid;
-        registry()->AddSearchTags(GetWifiConnectedSearchConcepts());
+        updater.AddSearchTags(GetWifiConnectedSearchConcepts());
         if (base::FeatureList::IsEnabled(features::kMeteredShowToggle))
-          registry()->AddSearchTags(GetWifiMeteredSearchConcepts());
+          updater.AddSearchTags(GetWifiMeteredSearchConcepts());
         break;
 
       case NetworkType::kCellular:
         connected_cellular_guid_ = network->guid;
-        registry()->AddSearchTags(GetCellularConnectedSearchConcepts());
+        updater.AddSearchTags(GetCellularConnectedSearchConcepts());
         if (base::FeatureList::IsEnabled(features::kMeteredShowToggle))
-          registry()->AddSearchTags(GetCellularMeteredSearchConcepts());
+          updater.AddSearchTags(GetCellularMeteredSearchConcepts());
         break;
 
       case NetworkType::kTether:
         connected_tether_guid_ = network->guid;
-        registry()->AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
+        updater.AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
         break;
 
       case NetworkType::kVPN:
         connected_vpn_guid_ = network->guid;
-        registry()->AddSearchTags(GetVpnConnectedSearchConcepts());
+        updater.AddSearchTags(GetVpnConnectedSearchConcepts());
         break;
 
       default:

@@ -36,12 +36,6 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
 
 FakeSyncManager::~FakeSyncManager() {}
 
-ModelTypeSet FakeSyncManager::GetAndResetPurgedTypes() {
-  ModelTypeSet purged_types = purged_types_;
-  purged_types_.Clear();
-  return purged_types;
-}
-
 ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
   ModelTypeSet downloaded_types = downloaded_types_;
   downloaded_types_.Clear();
@@ -70,7 +64,6 @@ void FakeSyncManager::WaitForSyncThread() {
 
 void FakeSyncManager::Init(InitArgs* args) {
   sync_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  PurgePartiallySyncedTypes();
 
   for (auto& observer : observers_) {
     observer.OnInitializationComplete(WeakHandle<JsBackend>(),
@@ -81,30 +74,6 @@ void FakeSyncManager::Init(InitArgs* args) {
 
 ModelTypeSet FakeSyncManager::InitialSyncEndedTypes() {
   return initial_sync_ended_types_;
-}
-
-ModelTypeSet FakeSyncManager::GetTypesWithEmptyProgressMarkerToken(
-    ModelTypeSet types) {
-  ModelTypeSet empty_types = types;
-  empty_types.RemoveAll(progress_marker_types_);
-  return empty_types;
-}
-
-void FakeSyncManager::PurgePartiallySyncedTypes() {
-  ModelTypeSet partial_types;
-  for (ModelType type : progress_marker_types_) {
-    if (!initial_sync_ended_types_.Has(type))
-      partial_types.Put(type);
-  }
-  progress_marker_types_.RemoveAll(partial_types);
-  purged_types_.PutAll(partial_types);
-}
-
-void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge) {
-  // Simulate cleaning up disabled types.
-  purged_types_.PutAll(to_purge);
-  initial_sync_ended_types_.RemoveAll(to_purge);
-  progress_marker_types_.RemoveAll(to_purge);
 }
 
 void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {
@@ -224,10 +193,6 @@ void FakeSyncManager::SetInvalidatorEnabled(bool invalidator_enabled) {
 
 void FakeSyncManager::OnCookieJarChanged(bool account_mismatch,
                                          bool empty_jar) {}
-
-void FakeSyncManager::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
-  NOTIMPLEMENTED();
-}
 
 void FakeSyncManager::UpdateInvalidationClientId(const std::string&) {
   NOTIMPLEMENTED();

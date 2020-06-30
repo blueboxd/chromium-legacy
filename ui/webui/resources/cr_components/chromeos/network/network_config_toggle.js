@@ -22,6 +22,15 @@ Polymer({
       reflectToAttribute: true,
       notify: true,
     },
+
+    /**
+     * Uses Settings styling when true (policy icon is left of the toggle)
+     */
+    policyOnLeft: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 
   listeners: {

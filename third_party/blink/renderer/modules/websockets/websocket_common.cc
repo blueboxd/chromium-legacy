@@ -87,7 +87,7 @@ WebSocketCommon::ConnectResult WebSocketCommon::Connect(
     return ConnectResult::kException;
   }
 
-  if (!execution_context->GetContentSecurityPolicyForWorld()
+  if (!execution_context->GetContentSecurityPolicyForCurrentWorld()
            ->AllowConnectToSource(url_, url_, RedirectStatus::kNoRedirect)) {
     state_ = kClosed;
 

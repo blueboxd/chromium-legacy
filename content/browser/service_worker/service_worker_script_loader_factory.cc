@@ -199,11 +199,12 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
   context_->registry()->GetRemoteStorageControl()->CreateResourceReader(
       resource_id, reader.BindNewPipeAndPassReceiver());
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  context_->registry()->GetRemoteStorageControl()->CreateResourceWriter(
+      new_resource_id, writer.BindNewPipeAndPassReceiver());
 
   cache_writer_ = ServiceWorkerCacheWriter::CreateForCopy(
-      std::move(reader),
-      context_->storage()->CreateResponseWriter(new_resource_id),
-      new_resource_id);
+      std::move(reader), std::move(writer), new_resource_id);
 
   scoped_refptr<ServiceWorkerVersion> version = worker_host_->version();
   version->script_cache_map()->NotifyStartedCaching(url, new_resource_id);

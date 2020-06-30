@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -227,13 +228,16 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
    public:
     ScopedWriteAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
                       SharedImageRepresentationSkia* representation,
-                      sk_sp<SkSurface> surface);
+                      sk_sp<SkSurface> surface,
+                      std::unique_ptr<GrBackendSurfaceMutableState> end_state);
     ~ScopedWriteAccess();
 
     SkSurface* surface() const { return surface_.get(); }
+    GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
 
    private:
     sk_sp<SkSurface> surface_;
+    std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
   };
 
   class GPU_GLES2_EXPORT ScopedReadAccess
@@ -241,15 +245,18 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
    public:
     ScopedReadAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
                      SharedImageRepresentationSkia* representation,
-                     sk_sp<SkPromiseImageTexture> promise_image_texture);
+                     sk_sp<SkPromiseImageTexture> promise_image_texture,
+                     std::unique_ptr<GrBackendSurfaceMutableState> end_state);
     ~ScopedReadAccess();
 
     SkPromiseImageTexture* promise_image_texture() const {
       return promise_image_texture_.get();
     }
+    GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
 
    private:
     sk_sp<SkPromiseImageTexture> promise_image_texture_;
+    std::unique_ptr<GrBackendSurfaceMutableState> end_state_;
   };
 
   SharedImageRepresentationSkia(SharedImageManager* manager,
@@ -287,11 +294,19 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
   // client must submit them with drawing operations which use the backing.
   // The ownership of end_semaphores are not passed to client. And client must
   // submit the end_semaphores before calling EndWriteAccess().
+  // The backing can assign end_state, and the caller must reset backing's state
+  // to the end_state before calling EndWriteAccess().
   virtual sk_sp<SkSurface> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
+  virtual sk_sp<SkSurface> BeginWriteAccess(
+      int final_msaa_count,
+      const SkSurfaceProps& surface_props,
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
 
   // Begin the read access. The implementations should insert semaphores into
@@ -301,9 +316,15 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
   // client must submit them with drawing operations which use the backing.
   // The ownership of end_semaphores are not passed to client. And client must
   // submit the end_semaphores before calling EndReadAccess().
+  // The backing can assign end_state, and the caller must reset backing's state
+  // to the end_state before calling EndReadAccess().
   virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
+      std::vector<GrBackendSemaphore>* end_semaphores,
+      std::unique_ptr<GrBackendSurfaceMutableState>* end_state);
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores);
   virtual void EndReadAccess() = 0;
 };
 

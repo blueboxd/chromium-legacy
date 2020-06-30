@@ -21,12 +21,9 @@
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
-
-namespace syncable {
-class Directory;
-}
 
 // Mock ServerConnectionManager class for use in client unit tests.
 class MockConnectionManager : public ServerConnectionManager {
@@ -39,7 +36,7 @@ class MockConnectionManager : public ServerConnectionManager {
     virtual ~MidCommitObserver() {}
   };
 
-  explicit MockConnectionManager(syncable::Directory*);
+  MockConnectionManager();
   ~MockConnectionManager() override;
 
   // Overridden ServerConnectionManager functions.
@@ -359,11 +356,6 @@ class MockConnectionManager : public ServerConnectionManager {
   // On each PostBufferToPath() call, we decrement this counter.  The call fails
   // iff we hit zero at that call.
   int countdown_to_postbuffer_fail_;
-
-  // Our directory.  Used only to ensure that we are not holding the transaction
-  // lock when performing network I/O.  Can be null if the test author is
-  // confident this can't happen.
-  syncable::Directory* directory_;
 
   // The updates we'll return to the next request.
   std::list<sync_pb::GetUpdatesResponse> update_queue_;

@@ -11,7 +11,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FittingType, TwoUpViewAction} from '../constants.js';
+import {FittingType} from '../constants.js';
 
 /**
  * @typedef {{
@@ -33,26 +33,9 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
-    /** Whether the viewer is currently in annotation mode. */
-    annotationMode: Boolean,
-
     isPrintPreview: {
       type: Boolean,
       value: false,
-    },
-
-    strings: {
-      type: Object,
-      observer: 'onStringsSet_',
-    },
-
-    /** @private */
-    twoUpViewEnabled_: Boolean,
-
-    /** @private */
-    fitButtonDelay_: {
-      type: Number,
-      computed: 'computeFitButtonDelay_(twoUpViewEnabled_)',
     },
 
     /** @private */
@@ -60,14 +43,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-  },
-
-  /**
-   * @return {number} Delay for the fit button.
-   * @private
-   */
-  computeFitButtonDelay_() {
-    return this.twoUpViewEnabled_ ? 150 : 100;
   },
 
   listeners: {
@@ -109,31 +84,6 @@ Polymer({
       this.fire('keyboard-navigation-active', false);
     }
     this.keyboardNavigationActive_ = false;
-  },
-
-  /**
-   * Change button tooltips to match any changes to localized strings.
-   * @private
-   */
-  onStringsSet_() {
-    const strings =
-        /**
-         * @type {{tooltipFitToPage: string,
-         *               tooltipFitToWidth: string,
-         *               tooltipTwoUpViewEnable: string,
-         *               tooltipTwoUpViewDisable: string,
-         *               tooltipZoomIn: string,
-         *               tooltipZoomOut: string}}
-         */
-        (this.strings);
-    this.$['fit-button'].tooltips =
-        [strings.tooltipFitToPage, strings.tooltipFitToWidth];
-    this.$['two-up-view-button'].tooltips =
-        [strings.tooltipTwoUpViewEnable, strings.tooltipTwoUpViewDisable];
-    this.$['zoom-in-button'].tooltips = [strings.tooltipZoomIn];
-    this.$['zoom-out-button'].tooltips = [strings.tooltipZoomOut];
-    this.twoUpViewEnabled_ =
-        loadTimeData.getBoolean('pdfTwoUpViewEnabled') && !this.isPrintPreview;
   },
 
   /** Handle clicks of the fit-button. */
@@ -184,20 +134,6 @@ Polymer({
         {fittingType: fittingType, userInitiated: userInitiated});
   },
 
-  /**
-   * Handle clicks of the two-up-view button.
-   * @private
-   */
-  twoUpViewToggle_: function() {
-    assert(this.twoUpViewEnabled_);
-    const twoUpViewAction = this.$['two-up-view-button'].activeIndex ===
-            TWO_UP_VIEW_DISABLED_STATE ?
-        TwoUpViewAction.TWO_UP_VIEW_ENABLE :
-        TwoUpViewAction.TWO_UP_VIEW_DISABLE;
-
-    this.fire('two-up-view-changed', twoUpViewAction);
-  },
-
   /** Handle clicks of the zoom-in-button. */
   zoomIn() {
     this.fire('zoom-in');
@@ -212,7 +148,6 @@ Polymer({
     if (!this.visible_) {
       this.visible_ = true;
       this.$['fit-button'].show();
-      this.$['two-up-view-button'].show();
       this.$['zoom-in-button'].show();
       this.$['zoom-out-button'].show();
     }
@@ -222,7 +157,6 @@ Polymer({
     if (this.visible_) {
       this.visible_ = false;
       this.$['fit-button'].hide();
-      this.$['two-up-view-button'].hide();
       this.$['zoom-in-button'].hide();
       this.$['zoom-out-button'].hide();
     }

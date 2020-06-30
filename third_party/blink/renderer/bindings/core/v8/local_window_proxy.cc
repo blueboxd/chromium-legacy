@@ -175,7 +175,7 @@ void LocalWindowProxy::Initialize() {
        IsolatedWorldCSP::Get().HasContentSecurityPolicy(world_->GetWorldId()));
   if (evaluate_csp_for_eval) {
     ContentSecurityPolicy* csp =
-        GetFrame()->DomWindow()->GetContentSecurityPolicyForWorld();
+        GetFrame()->DomWindow()->GetContentSecurityPolicyForCurrentWorld();
     context->AllowCodeGenerationFromStrings(!csp->ShouldCheckEval());
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));

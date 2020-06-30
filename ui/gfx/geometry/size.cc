@@ -16,7 +16,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace gfx {

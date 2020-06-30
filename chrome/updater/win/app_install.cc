@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/updater/win/install_app.h"
+#include "chrome/updater/win/app_install.h"
 
 #include <memory>
 #include <string>
@@ -60,7 +60,7 @@ namespace {
 // https://crbug.com/1014298
 constexpr base::char16 kAppNameChrome[] = L"Google Chrome";
 
-class InstallAppController;
+class AppInstallController;
 
 scoped_refptr<UpdateService> CreateUpdateService(
     scoped_refptr<update_client::Configurator> config) {
@@ -395,23 +395,23 @@ void InstallProgressObserverIPC::Invoke(WPARAM wparam, LPARAM lparam) {
 // posts a reply to the main thread, which makes the main thread exit its run
 // loop, and then the main thread returns to the destructor of this class,
 // and destructs its class members.
-class InstallAppController
-    : public base::RefCountedThreadSafe<InstallAppController>,
+class AppInstallController
+    : public base::RefCountedThreadSafe<AppInstallController>,
       public ui::ProgressWndEvents,
       public WTL::CMessageFilter {
  public:
-  explicit InstallAppController(scoped_refptr<Configurator> configurator);
+  explicit AppInstallController(scoped_refptr<Configurator> configurator);
 
-  InstallAppController(const InstallAppController&) = delete;
-  InstallAppController& operator=(const InstallAppController&) = delete;
+  AppInstallController(const AppInstallController&) = delete;
+  AppInstallController& operator=(const AppInstallController&) = delete;
 
   void InstallApp(const std::string& app_id,
                   base::OnceCallback<void(int)> callback);
 
  private:
-  friend class base::RefCountedThreadSafe<InstallAppController>;
+  friend class base::RefCountedThreadSafe<AppInstallController>;
 
-  ~InstallAppController() override;
+  ~AppInstallController() override;
 
   // Overrides for OmahaWndEvents. These functions are called on the UI thread.
   void DoClose() override {}
@@ -483,7 +483,7 @@ class InstallAppController
 
 // TODO(sorin): fix the hardcoding of the application name.
 // https:crbug.com/1014298
-InstallAppController::InstallAppController(
+AppInstallController::AppInstallController(
     scoped_refptr<Configurator> configurator)
     : main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       ui_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
@@ -494,9 +494,9 @@ InstallAppController::InstallAppController(
       config_(configurator),
       persisted_data_(
           base::MakeRefCounted<PersistedData>(config_->GetPrefService())) {}
-InstallAppController::~InstallAppController() = default;
+AppInstallController::~AppInstallController() = default;
 
-void InstallAppController::InstallApp(const std::string& app_id,
+void AppInstallController::InstallApp(const std::string& app_id,
                                       base::OnceCallback<void(int)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
@@ -505,11 +505,11 @@ void InstallAppController::InstallApp(const std::string& app_id,
   callback_ = std::move(callback);
 
   ui_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&InstallAppController::InitializeUI, this),
-      base::BindOnce(&InstallAppController::DoInstallApp, this));
+      FROM_HERE, base::BindOnce(&AppInstallController::InitializeUI, this),
+      base::BindOnce(&AppInstallController::DoInstallApp, this));
 }
 
-void InstallAppController::DoInstallApp() {
+void AppInstallController::DoInstallApp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // At this point, the UI has been initialized, which means the UI can be
@@ -517,7 +517,7 @@ void InstallAppController::DoInstallApp() {
   // below runs the UI message loop for the UI until it exits, because
   // a WM_QUIT message has been posted to it.
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(&InstallAppController::RunUI, this));
+                            base::BindOnce(&AppInstallController::RunUI, this));
 
   update_service_ = CreateUpdateService(config_);
 
@@ -526,17 +526,17 @@ void InstallAppController::DoInstallApp() {
 
   update_service_->Update(
       app_id_, UpdateService::Priority::kForeground,
-      base::BindRepeating(&InstallAppController::StateChange, this),
-      base::BindOnce(&InstallAppController::InstallComplete, this));
+      base::BindRepeating(&AppInstallController::StateChange, this),
+      base::BindOnce(&AppInstallController::InstallComplete, this));
 }
 
-void InstallAppController::InstallComplete(UpdateService::Result result) {
+void AppInstallController::InstallComplete(UpdateService::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PrefsCommit();
   update_service_ = nullptr;
 }
 
-void InstallAppController::StateChange(
+void AppInstallController::StateChange(
     UpdateService::UpdateState update_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(install_progress_observer_ipc_);
@@ -587,7 +587,7 @@ void InstallAppController::StateChange(
   }
 }
 
-void InstallAppController::HandleInstallResult(
+void AppInstallController::HandleInstallResult(
     const UpdateService::UpdateState& update_state) {
   CompletionCodes completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
   base::string16 completion_text;
@@ -625,7 +625,7 @@ void InstallAppController::HandleInstallResult(
 
 // Creates and shows the progress window. The window has thread affinity. It
 // must be created, process its messages, and be destroyed on the same thread.
-void InstallAppController::InitializeUI() {
+void AppInstallController::InitializeUI() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
   base::ScopedDisallowBlocking no_blocking_allowed_on_ui_thread;
@@ -639,7 +639,7 @@ void InstallAppController::InitializeUI() {
   progress_wnd_->Show();
 }
 
-void InstallAppController::RunUI() {
+void AppInstallController::RunUI() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
 
@@ -653,12 +653,12 @@ void InstallAppController::RunUI() {
                               base::BindOnce(std::move(callback_), 0));
 }
 
-void InstallAppController::DoExit() {
+void AppInstallController::DoExit() {
   DCHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
   PostThreadMessage(GetCurrentThreadId(), WM_QUIT, 0, 0);
 }
 
-BOOL InstallAppController::PreTranslateMessage(MSG* msg) {
+BOOL AppInstallController::PreTranslateMessage(MSG* msg) {
   DCHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
   if (msg->message == InstallProgressObserverIPC::WM_PROGRESS_WINDOW_IPC) {
     install_progress_observer_ipc_->Invoke(msg->wParam, msg->lParam);
@@ -667,12 +667,12 @@ BOOL InstallAppController::PreTranslateMessage(MSG* msg) {
   return false;
 }
 
-void InstallAppController::PrefsCommit() {
+void AppInstallController::PrefsCommit() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   config_->GetPrefService()->CommitPendingWrite();
 }
 
-DWORD InstallAppController::GetUIThreadID() const {
+DWORD AppInstallController::GetUIThreadID() const {
   DCHECK(progress_wnd_);
   return ::GetWindowThreadProcessId(progress_wnd_->m_hWnd, nullptr);
 }
@@ -694,7 +694,7 @@ class AppInstall : public App {
   void SetupDone(int result);
 
   scoped_refptr<Configurator> config_;
-  scoped_refptr<InstallAppController> app_install_controller_;
+  scoped_refptr<AppInstallController> app_install_controller_;
 
   // The splash screen has a fading effect. That means that the splash screen
   // needs to be alive for a while, until the fading effect is over.
@@ -747,7 +747,7 @@ void AppInstall::SetupDone(int result) {
     return;
   }
 
-  app_install_controller_ = base::MakeRefCounted<InstallAppController>(config_);
+  app_install_controller_ = base::MakeRefCounted<AppInstallController>(config_);
   app_install_controller_->InstallApp(
       app_id, base::BindOnce(&AppInstall::Shutdown, this));
 }

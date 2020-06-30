@@ -16,7 +16,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
   ~ShellViewsDelegate() override;
 
   // views::TestViewsDelegate:
-  views::NonClientFrameView* CreateDefaultNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateDefaultNonClientFrameView(
       views::Widget* widget) override;
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,

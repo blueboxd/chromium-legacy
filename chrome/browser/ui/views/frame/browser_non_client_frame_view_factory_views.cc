@@ -24,7 +24,7 @@ namespace chrome {
 
 namespace {
 
-OpaqueBrowserFrameView* CreateOpaqueBrowserFrameView(
+std::unique_ptr<OpaqueBrowserFrameView> CreateOpaqueBrowserFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -34,28 +34,27 @@ OpaqueBrowserFrameView* CreateOpaqueBrowserFrameView(
   if (linux_ui && theme_service_factory->UsingSystemTheme()) {
     auto nav_button_provider = linux_ui->CreateNavButtonProvider();
     if (nav_button_provider) {
-      return new DesktopLinuxBrowserFrameView(
+      return std::make_unique<DesktopLinuxBrowserFrameView>(
           frame, browser_view,
           new DesktopLinuxBrowserFrameViewLayout(nav_button_provider.get()),
           std::move(nav_button_provider));
     }
   }
 #endif
-  return new OpaqueBrowserFrameView(frame, browser_view,
-                                    new OpaqueBrowserFrameViewLayout());
+  return std::make_unique<OpaqueBrowserFrameView>(
+      frame, browser_view, new OpaqueBrowserFrameViewLayout());
 }
 
 }  // namespace
 
-BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
+std::unique_ptr<BrowserNonClientFrameView> CreateBrowserNonClientFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
 #if defined(OS_WIN)
   if (frame->ShouldUseNativeFrame())
-    return new GlassBrowserFrameView(frame, browser_view);
+    return std::make_unique<GlassBrowserFrameView>(frame, browser_view);
 #endif
-  OpaqueBrowserFrameView* view =
-      CreateOpaqueBrowserFrameView(frame, browser_view);
+  auto view = CreateOpaqueBrowserFrameView(frame, browser_view);
   view->InitViews();
   return view;
 }

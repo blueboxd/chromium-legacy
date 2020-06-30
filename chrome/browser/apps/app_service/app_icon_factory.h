@@ -51,7 +51,7 @@ void ApplyIconEffects(IconEffects icon_effects,
                       gfx::ImageSkia* image_skia);
 
 // Loads an icon from an extension.
-void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
+void LoadIconFromExtension(apps::mojom::IconType icon_type,
                            int size_hint_in_dip,
                            content::BrowserContext* context,
                            const std::string& extension_id,
@@ -60,7 +60,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
 
 // Loads an icon from a web app.
 void LoadIconFromWebApp(content::BrowserContext* context,
-                        apps::mojom::IconCompression icon_compression,
+                        apps::mojom::IconType icon_type,
                         int size_hint_in_dip,
                         const std::string& web_app_id,
                         IconEffects icon_effects,
@@ -76,7 +76,7 @@ void LoadIconFromWebApp(content::BrowserContext* context,
 // failure. A failure should be indicated by passing nullptr, in which case the
 // pipeline will use a generic fallback icon.
 void LoadIconFromFileWithFallback(
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int size_hint_in_dip,
     const base::FilePath& path,
     IconEffects icon_effects,
@@ -86,7 +86,7 @@ void LoadIconFromFileWithFallback(
 
 // Creates an icon with the specified effects from |compressed_icon_data|.
 void LoadIconFromCompressedData(
-    apps::mojom::IconCompression icon_compression,
+    apps::mojom::IconType icon_type,
     int size_hint_in_dip,
     IconEffects icon_effects,
     const std::string& compressed_icon_data,
@@ -94,7 +94,7 @@ void LoadIconFromCompressedData(
 
 // Loads an icon from a compiled-into-the-binary resource, with a resource_id
 // named IDR_XXX, for some value of XXX.
-void LoadIconFromResource(apps::mojom::IconCompression icon_compression,
+void LoadIconFromResource(apps::mojom::IconType icon_type,
                           int size_hint_in_dip,
                           int resource_id,
                           bool is_placeholder_icon,

@@ -4,22 +4,13 @@
 
 GEN_INCLUDE(['switch_access_e2e_test_base.js']);
 
-/**
- * @constructor
- * @extends {SwitchAccessE2ETest}
- */
-function SwitchAccessNavigationManagerTest() {
-  SwitchAccessE2ETest.call(this);
-  this.navigator = NavigationManager.instance;
-  BackButtonNode
-      .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
-}
-
-SwitchAccessNavigationManagerTest.prototype = {
-  __proto__: SwitchAccessE2ETest.prototype,
-
+/** Test fixture for the navigation manager. */
+SwitchAccessNavigationManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   setUp() {
+    this.navigator = NavigationManager.instance;
+    BackButtonNode
+        .locationForTesting = {top: 10, left: 10, width: 20, height: 20};
     MenuManager.initialize();
   }
 };

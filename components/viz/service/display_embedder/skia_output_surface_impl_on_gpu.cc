@@ -93,6 +93,10 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "components/viz/service/display_embedder/output_presenter_fuchsia.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -1021,6 +1025,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   }
   DCHECK(output_device_);
 
+  ResetStateOfImages();
   gr_context()->submit();
   promise_image_access_helper_.EndAccess();
   scoped_output_device_paint_.reset();
@@ -1066,6 +1071,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   if (deferred_framebuffer_draw_closure)
     std::move(deferred_framebuffer_draw_closure).Run();
+  ResetStateOfImages();
   gr_context()->submit();
   promise_image_access_helper_.EndAccess();
   // Perform cleanup that would have otherwise happened in SwapBuffers().
@@ -1409,14 +1415,29 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       context->BeginAccessIfNecessary(
           context_state_.get(), shared_image_representation_factory_.get(),
           dependency_->GetMailboxManager(), begin_semaphores, end_semaphores);
+      if (context->end_access_state())
+        image_contexts_with_end_access_state_.emplace(context);
     }
   }
+}
+
+void SkiaOutputSurfaceImplOnGpu::ResetStateOfImages() {
+  for (auto* context : image_contexts_with_end_access_state_) {
+    DCHECK(context->end_access_state());
+    if (!gr_context()->setBackendTextureState(
+            context->promise_image_texture()->backendTexture(),
+            *context->end_access_state())) {
+      DLOG(ERROR) << "setBackendTextureState() failed.";
+    }
+  }
+  image_contexts_with_end_access_state_.clear();
 }
 
 void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
     const base::flat_set<ImageContextImpl*>& image_contexts) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(image_contexts_with_end_access_state_.empty());
   for (auto* context : image_contexts)
     context->EndAccessIfNecessary();
 }
@@ -1609,11 +1630,18 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     }
 #endif
     if (!output_device_) {
+#if defined(OS_FUCHSIA)
+      auto output_presenter = OutputPresenterFuchsia::Create(
+          window_surface_.get(), dependency_, memory_tracker_.get());
+#else
       auto output_presenter =
           OutputPresenterGL::Create(dependency_, memory_tracker_.get());
       if (output_presenter) {
         // TODO(https://crbug.com/1012401): don't depend on GL.
         gl_surface_ = output_presenter->gl_surface();
+      }
+#endif
+      if (output_presenter) {
         output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
             std::move(output_presenter), dependency_, memory_tracker_.get(),
             GetDidSwapBuffersCompleteCallback());

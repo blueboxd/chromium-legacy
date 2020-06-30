@@ -69,9 +69,10 @@ const std::vector<SearchConcept>& GetPrivacyGoogleChromeSearchConcepts() {
 PrivacySection::PrivacySection(Profile* profile,
                                SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetPrivacySearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetPrivacySearchConcepts());
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  registry()->AddSearchTags(GetPrivacyGoogleChromeSearchConcepts());
+  updater.AddSearchTags(GetPrivacyGoogleChromeSearchConcepts());
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 

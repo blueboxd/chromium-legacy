@@ -116,7 +116,8 @@ bool SysmemBufferCollection::IsNativePixmapConfigSupported(
                           format == gfx::BufferFormat::BGRX_8888;
   bool usage_supported = usage == gfx::BufferUsage::SCANOUT ||
                          usage == gfx::BufferUsage::SCANOUT_CPU_READ_WRITE ||
-                         usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
+                         usage == gfx::BufferUsage::GPU_READ_CPU_READ_WRITE ||
+                         usage == gfx::BufferUsage::GPU_READ;
   return format_supported && usage_supported;
 }
 
@@ -142,7 +143,7 @@ bool SysmemBufferCollection::Initialize(
   if (vk_device == VK_NULL_HANDLE)
     return false;
 
-  size_ = size;
+  min_size_ = size;
   format_ = format;
   usage_ = usage;
   vk_device_ = vk_device;
@@ -165,13 +166,22 @@ bool SysmemBufferCollection::Initialize(
     VkDevice vk_device,
     zx::channel token_handle,
     gfx::BufferFormat format,
-    gfx::BufferUsage usage) {
+    gfx::BufferUsage usage,
+    bool force_protected) {
   DCHECK(!collection_);
   DCHECK(!vk_buffer_collection_);
 
+  // Set nominal size of 1x1, which will be used only for
+  // vkSetBufferCollectionConstraintsFUCHSIA(). The actual size of the allocated
+  // buffers is determined by constraints set by other sysmem clients for the
+  // same collection. Size of the Vulkan image is determined by the valus passed
+  // to CreateVkImage().
+  min_size_ = gfx::Size(1, 1);
+
+  vk_device_ = vk_device;
   format_ = format;
   usage_ = usage;
-  vk_device_ = vk_device;
+  is_protected_ = force_protected;
 
   fuchsia::sysmem::BufferCollectionTokenSyncPtr token;
   token.Bind(std::move(token_handle));
@@ -206,18 +216,12 @@ scoped_refptr<gfx::NativePixmap> SysmemBufferCollection::CreateNativePixmap(
       buffers_info_.settings.image_format_constraints;
 
   // The logic should match LogicalBufferCollection::Allocate().
-  size_t width =
-      RoundUp(std::max(format.min_coded_width, format.required_max_coded_width),
-              format.coded_width_divisor);
-  size_t stride =
-      RoundUp(std::max(static_cast<size_t>(format.min_bytes_per_row),
-                       gfx::RowSizeForBufferFormat(width, format_, 0)),
-              format.bytes_per_row_divisor);
-  size_t height = RoundUp(
-      std::max(format.min_coded_height, format.required_max_coded_height),
-      format.coded_height_divisor);
+  size_t stride = RoundUp(
+      std::max(static_cast<size_t>(format.min_bytes_per_row),
+               gfx::RowSizeForBufferFormat(image_size_.width(), format_, 0)),
+      format.bytes_per_row_divisor);
   size_t plane_offset = buffers_info_.buffers[buffer_index].vmo_usable_start;
-  size_t plane_size = stride * height;
+  size_t plane_size = stride * image_size_.height();
   handle.planes.emplace_back(stride, plane_offset, plane_size,
                              std::move(main_plane_vmo));
 
@@ -421,7 +425,7 @@ bool SysmemBufferCollection::InitializeInternal(
   ignore_result(token_channel.release());
 
   VkImageCreateInfo image_create_info;
-  InitializeImageCreateInfo(&image_create_info, size_);
+  InitializeImageCreateInfo(&image_create_info, min_size_);
 
   if (vkSetBufferCollectionConstraintsFUCHSIA(vk_device_, vk_buffer_collection_,
                                               &image_create_info) !=
@@ -446,6 +450,16 @@ bool SysmemBufferCollection::InitializeInternal(
   DCHECK_GE(buffers_info_.buffer_count, buffers_for_camping);
   DCHECK(buffers_info_.settings.has_image_format_constraints);
 
+  // The logic should match LogicalBufferCollection::Allocate().
+  const fuchsia::sysmem::ImageFormatConstraints& format =
+      buffers_info_.settings.image_format_constraints;
+  size_t width =
+      RoundUp(std::max(format.min_coded_width, format.required_max_coded_width),
+              format.coded_width_divisor);
+  size_t height = RoundUp(
+      std::max(format.min_coded_height, format.required_max_coded_height),
+      format.coded_height_divisor);
+  image_size_ = gfx::Size(width, height);
   buffer_size_ = buffers_info_.settings.buffer_settings.size_bytes;
   is_protected_ = buffers_info_.settings.buffer_settings.is_secure;
 
@@ -469,7 +483,13 @@ void SysmemBufferCollection::InitializeImageCreateInfo(
   vk_image_info->samples = VK_SAMPLE_COUNT_1_BIT;
   vk_image_info->tiling =
       is_mappable() ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
+
   vk_image_info->usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+  if (usage_ == gfx::BufferUsage::SCANOUT ||
+      usage_ == gfx::BufferUsage::SCANOUT_CPU_READ_WRITE) {
+    vk_image_info->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  }
+
   vk_image_info->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   vk_image_info->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 }

@@ -16,7 +16,6 @@
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
-#include "components/sync/syncable/syncable_read_transaction.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace syncer {

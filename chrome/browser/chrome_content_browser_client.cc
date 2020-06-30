@@ -626,9 +626,8 @@
 #endif
 
 #if BUILDFLAG(IS_LACROS)
+#include "chrome/browser/chrome_browser_main_extra_parts_lacros.h"
 #include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
-#include "chromeos/lacros/mojom/lacros.mojom.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #endif
 
 using base::FileDescriptor;
@@ -1366,6 +1365,10 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Combine with ChromeBrowserMainPartsChromeos.
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+#endif
+
+#if BUILDFLAG(IS_LACROS)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsLacros());
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
@@ -5793,8 +5796,7 @@ void ChromeContentBrowserClient::BindBrowserControlInterface(
     mojo::GenericPendingReceiver receiver) {
 #if BUILDFLAG(IS_LACROS)
   if (auto r = receiver.As<lacros::mojom::LacrosChromeService>()) {
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<chromeos::LacrosChromeServiceImpl>(), std::move(r));
+    chromeos::LacrosChromeServiceImpl::Get()->BindReceiver(std::move(r));
   }
 #endif
 }

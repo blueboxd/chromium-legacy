@@ -2620,7 +2620,7 @@
   {
     "name": "font-access",
     "owners": [ "cmp", "oyiptong" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 89
   },
   {
     "name": "force-color-profile",
@@ -3485,6 +3485,11 @@
     "name": "omnibox-ui-cues-for-search-history-matches",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "omnibox-ui-elide-to-registrable-domain",
+    "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",

@@ -6,16 +6,11 @@
 
 namespace syncer {
 
-SyncManager::ChangeDelegate::~ChangeDelegate() {}
-
-SyncManager::ChangeObserver::~ChangeObserver() {}
-
 SyncManager::Observer::~Observer() {}
 
 SyncManager::InitArgs::InitArgs()
     : enable_local_sync_backend(false),
       extensions_activity(nullptr),
-      change_delegate(nullptr),
       encryption_handler(nullptr),
       cancelation_signal(nullptr) {}
 

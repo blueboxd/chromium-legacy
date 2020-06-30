@@ -433,8 +433,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   }
 
   gfx::Rect GetBoundsForTabStripRegionInBrowserView() const override {
+    const gfx::Size tabstrip_minimum_size =
+        browser_view_->tab_strip_region_view()->GetMinimumSize();
     gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStripRegion(
-        browser_view_->tabstrip()));
+        tabstrip_minimum_size));
     views::View::ConvertRectToTarget(browser_view_->parent(), browser_view_,
         &bounds_f);
     return gfx::ToEnclosingRect(bounds_f);

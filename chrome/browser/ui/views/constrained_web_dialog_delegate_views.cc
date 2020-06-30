@@ -85,7 +85,7 @@ class ConstrainedDialogWebView : public views::WebView,
   base::string16 GetWindowTitle() const override;
   base::string16 GetAccessibleWindowTitle() const override;
   views::View* GetContentsView() override;
-  views::NonClientFrameView* CreateNonClientFrameView(
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
       views::Widget* widget) override;
   bool ShouldShowCloseButton() const override;
   ui::ModalType GetModalType() const override;
@@ -456,8 +456,8 @@ views::View* ConstrainedDialogWebView::GetContentsView() {
   return this;
 }
 
-views::NonClientFrameView* ConstrainedDialogWebView::CreateNonClientFrameView(
-    views::Widget* widget) {
+std::unique_ptr<views::NonClientFrameView>
+ConstrainedDialogWebView::CreateNonClientFrameView(views::Widget* widget) {
   return views::DialogDelegate::CreateDialogFrameView(widget);
 }
 

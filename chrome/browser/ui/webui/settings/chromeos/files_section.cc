@@ -52,7 +52,8 @@ const std::vector<SearchConcept>& GetFilesSearchConcepts() {
 FilesSection::FilesSection(Profile* profile,
                            SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetFilesSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetFilesSearchConcepts());
 }
 
 FilesSection::~FilesSection() = default;

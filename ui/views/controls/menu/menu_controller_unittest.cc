@@ -1123,6 +1123,27 @@ TEST_F(MenuControllerTest, PreviousSelectedItem) {
   ResetSelection();
 }
 
+// Tests that the APIs related to the current selected item work correctly.
+TEST_F(MenuControllerTest, CurrentSelectedItem) {
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Select the first menu-item.
+  DispatchKey(ui::VKEY_HOME);
+  EXPECT_EQ(pending_state_item(), menu_controller()->GetSelectedMenuItem());
+
+  // The API should let the submenu stay open if already so, but clear any
+  // selections within it.
+  EXPECT_TRUE(IsShowing());
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+  menu_controller()->SelectItemAndOpenSubmenu(menu_item());
+  EXPECT_TRUE(IsShowing());
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
+}
+
 // Tests that opening menu and calling SelectByChar works correctly.
 TEST_F(MenuControllerTest, SelectByChar) {
   SetComboboxType(MenuController::ComboboxType::kReadonly);

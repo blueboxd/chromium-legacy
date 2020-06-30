@@ -44,10 +44,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   // Returns the timer uniquely identified by |id|.
   const AssistantTimer* GetTimerById(const std::string& id) const;
 
-  // Invoke to tick any timers. Note that this will update the |remaining_time|
-  // for all timers in the model and trigger an OnTimerUpdated() event.
-  void Tick();
-
   // Returns |true| if the model contains no timers, |false| otherwise.
   bool empty() const { return timers_.empty(); }
 

@@ -145,7 +145,7 @@ void ProcessEntryFile(net::CacheType cache_type,
 
   // Cleanup any left over doomed entries.
   if (base::StartsWith(file_name, "todelete_", base::CompareCase::SENSITIVE)) {
-    base::DeleteFile(file_path, false);
+    base::DeleteFile(file_path);
     return;
   }
 

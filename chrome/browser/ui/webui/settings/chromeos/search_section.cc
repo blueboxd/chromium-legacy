@@ -197,11 +197,12 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
 SearchSection::SearchSection(Profile* profile,
                              SearchTagRegistry* search_tag_registry)
     : OsSettingsSection(profile, search_tag_registry) {
-  registry()->AddSearchTags(GetSearchPageSearchConcepts());
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+  updater.AddSearchTags(GetSearchPageSearchConcepts());
 
   ash::AssistantState* assistant_state = ash::AssistantState::Get();
   if (IsAssistantAllowed() && assistant_state) {
-    registry()->AddSearchTags(GetAssistantSearchConcepts());
+    updater.AddSearchTags(GetAssistantSearchConcepts());
 
     assistant_state->AddObserver(this);
     UpdateAssistantSearchTags();
@@ -332,12 +333,14 @@ bool SearchSection::IsQuickAnswersAllowed() const {
 }
 
 void SearchSection::UpdateAssistantSearchTags() {
+  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
+
   // Start without any Assistant search concepts, then add if needed below.
-  registry()->RemoveSearchTags(GetAssistantOnSearchConcepts());
-  registry()->RemoveSearchTags(GetAssistantOffSearchConcepts());
-  registry()->RemoveSearchTags(GetAssistantQuickAnswersSearchConcepts());
-  registry()->RemoveSearchTags(GetAssistantHotwordDspSearchConcepts());
-  registry()->RemoveSearchTags(GetAssistantVoiceMatchSearchConcepts());
+  updater.RemoveSearchTags(GetAssistantOnSearchConcepts());
+  updater.RemoveSearchTags(GetAssistantOffSearchConcepts());
+  updater.RemoveSearchTags(GetAssistantQuickAnswersSearchConcepts());
+  updater.RemoveSearchTags(GetAssistantHotwordDspSearchConcepts());
+  updater.RemoveSearchTags(GetAssistantVoiceMatchSearchConcepts());
 
   ash::AssistantState* assistant_state = ash::AssistantState::Get();
 
@@ -345,26 +348,26 @@ void SearchSection::UpdateAssistantSearchTags() {
   // off, none of the sub-features are enabled.
   if (!assistant_state->settings_enabled() ||
       !assistant_state->settings_enabled().value()) {
-    registry()->AddSearchTags(GetAssistantOffSearchConcepts());
+    updater.AddSearchTags(GetAssistantOffSearchConcepts());
     return;
   }
 
-  registry()->AddSearchTags(GetAssistantOnSearchConcepts());
+  updater.AddSearchTags(GetAssistantOnSearchConcepts());
 
   if (IsQuickAnswersAllowed() && assistant_state->context_enabled() &&
       assistant_state->context_enabled().value()) {
-    registry()->AddSearchTags(GetAssistantQuickAnswersSearchConcepts());
+    updater.AddSearchTags(GetAssistantQuickAnswersSearchConcepts());
   }
 
   if (IsHotwordDspAvailable())
-    registry()->AddSearchTags(GetAssistantHotwordDspSearchConcepts());
+    updater.AddSearchTags(GetAssistantHotwordDspSearchConcepts());
 
   if (IsVoiceMatchAllowed() && assistant_state->hotword_enabled() &&
       assistant_state->hotword_enabled().value() &&
       assistant_state->consent_status() &&
       assistant_state->consent_status().value() ==
           assistant::prefs::ConsentStatus::kActivityControlAccepted) {
-    registry()->AddSearchTags(GetAssistantVoiceMatchSearchConcepts());
+    updater.AddSearchTags(GetAssistantVoiceMatchSearchConcepts());
   }
 }
 

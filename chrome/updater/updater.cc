@@ -23,13 +23,13 @@
 #if defined(OS_WIN)
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
-#include "chrome/updater/win/install_app.h"
+#include "chrome/updater/win/app_install.h"
 #endif
 
 #if defined(OS_MACOSX)
 #include "chrome/updater/app/server/mac/server.h"
+#include "chrome/updater/mac/setup/app_install.h"
 #include "chrome/updater/mac/setup/app_swap.h"
-#include "chrome/updater/mac/setup/install_app.h"
 #endif
 
 // Instructions For Windows.

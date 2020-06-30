@@ -25,6 +25,7 @@ TabStripRegionView::TabStripRegionView() {
 TabStripRegionView::~TabStripRegionView() = default;
 
 TabStrip* TabStripRegionView::AddTabStrip(std::unique_ptr<TabStrip> tab_strip) {
+  tab_strip_ = tab_strip.get();
   tab_strip->SetAvailableWidthCallback(
       base::BindRepeating(&TabStripRegionView::CalculateTabStripAvailableWidth,
                           base::Unretained(this)));
@@ -49,6 +50,16 @@ const char* TabStripRegionView::GetClassName() const {
 
 void TabStripRegionView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
+}
+
+gfx::Size TabStripRegionView::GetMinimumSize() const {
+  gfx::Size tab_strip_min_size = tab_strip_->GetMinimumSize();
+  // Cap the tabstrip minimum width to a reasonable value so browser windows
+  // aren't forced to grow arbitrarily wide.
+  const int max_min_width = 520;
+  tab_strip_min_size.set_width(
+      std::min(max_min_width, tab_strip_min_size.width()));
+  return tab_strip_min_size;
 }
 
 int TabStripRegionView::CalculateTabStripAvailableWidth() {

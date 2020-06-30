@@ -15,12 +15,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
-#include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
 #include "content/test/mock_background_sync_controller.h"
+#include "content/test/mock_client_hints_controller_delegate.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 
 #if defined(OS_WIN)
@@ -95,7 +96,8 @@ ClientHintsControllerDelegate*
 WebTestBrowserContext::GetClientHintsControllerDelegate() {
   if (!client_hints_controller_delegate_) {
     client_hints_controller_delegate_ =
-        std::make_unique<content::MockClientHintsControllerDelegate>();
+        std::make_unique<content::MockClientHintsControllerDelegate>(
+            content::GetShellUserAgentMetadata());
   }
   return client_hints_controller_delegate_.get();
 }

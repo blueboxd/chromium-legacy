@@ -30,6 +30,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/signin/chrome_signin_helper.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #endif
@@ -207,7 +208,9 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
       chrome_connected_header_helper.BuildRequestHeader(
           /*is_header_request=*/true, api_url_,
           // Gaia ID is only needed for (drive|docs).google.com.
-          /*gaia_id=*/std::string(), profile_mode);
+          /*gaia_id=*/std::string(), profile_mode,
+          signin::kChromeMirrorHeaderSource,
+          /*force_account_consistency=*/false);
   if (!chrome_connected_header_value.empty()) {
     request->headers.SetHeader(signin::kChromeConnectedHeader,
                                chrome_connected_header_value);

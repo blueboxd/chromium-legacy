@@ -13,25 +13,8 @@
 
 namespace blink {
 
-NavigatorDeviceMemory::NavigatorDeviceMemory(Document* document)
-    : document_(document) {}
-
 float NavigatorDeviceMemory::deviceMemory() const {
-  float result = ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
-  if (document_) {
-    IdentifiabilityMetricBuilder(
-        base::UkmSourceId::FromInt64(document_->UkmSourceID()))
-        .Set(IdentifiableSurface::FromTypeAndInput(
-                IdentifiableSurface::Type::kWebFeature,
-                static_cast<uint64_t>(WebFeature::kNavigatorDeviceMemory)),
-            IdentifiabilityDigestHelper(result))
-        .Record(document_->UkmRecorder());
-  }
-  return result;
-}
-
-void NavigatorDeviceMemory::Trace(Visitor* visitor) const {
-  visitor->Trace(document_);
+  return ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
 }
 
 }  // namespace blink

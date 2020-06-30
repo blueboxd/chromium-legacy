@@ -77,7 +77,7 @@ class AudioDecoderStreamTest : public testing::Test {
   }
 
   void ProduceDecoderOutput(scoped_refptr<DecoderBuffer> buffer,
-                            const AudioDecoder::DecodeCB& decode_cb) {
+                            AudioDecoder::DecodeCB decode_cb) {
     // Make sure successive AudioBuffers have increasing timestamps.
     last_timestamp_ += base::TimeDelta::FromMilliseconds(27);
     const auto& config = demuxer_stream_.audio_decoder_config();
@@ -89,7 +89,7 @@ class AudioDecoderStreamTest : public testing::Test {
                 config.channel_layout(), config.channels(),
                 config.samples_per_second(), 1221, last_timestamp_)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::OK));
+        FROM_HERE, base::BindOnce(std::move(decode_cb), DecodeStatus::OK));
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }

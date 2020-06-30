@@ -69,8 +69,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/web_test/mock_client_hints_controller_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/mock_client_hints_controller_delegate.h"
 #include "content/test/resource_load_observer.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/features.h"
@@ -2341,7 +2341,8 @@ class WebContentsImplBrowserTestClientHintsEnabled
 // DidStartNavigation().
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestClientHintsEnabled,
                        SetUserAgentOverrideFromDidStartNavigation) {
-  MockClientHintsControllerDelegate client_hints_controller_delegate;
+  MockClientHintsControllerDelegate client_hints_controller_delegate(
+      content::GetShellUserAgentMetadata());
   ShellContentBrowserClient::Get()
       ->browser_context()
       ->set_client_hints_controller_delegate(&client_hints_controller_delegate);

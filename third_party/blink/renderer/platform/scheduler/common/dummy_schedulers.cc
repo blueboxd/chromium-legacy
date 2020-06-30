@@ -101,6 +101,7 @@ class DummyPageScheduler : public PageScheduler {
     return std::make_unique<DummyFrameScheduler>(this);
   }
 
+  void OnTitleOrFaviconUpdated() override {}
   void SetPageVisible(bool) override {}
   void SetPageFrozen(bool) override {}
   void SetKeepActive(bool) override {}

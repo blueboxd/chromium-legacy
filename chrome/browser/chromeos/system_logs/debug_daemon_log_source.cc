@@ -13,6 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -32,7 +34,6 @@ namespace {
 
 constexpr char kNotAvailable[] = "<not available>";
 constexpr char kRoutesKeyName[] = "routes";
-constexpr char kNetworkStatusKeyName[] = "network-status";
 constexpr char kLogTruncated[] = "<earlier logs truncated>\n";
 
 // List of user log files that Chrome reads directly as these logs are generated
@@ -49,6 +50,15 @@ constexpr struct UserLogs {
     {"libassistant_user_log", "log/libassistant.log"},
     {"login-times", "login-times"},
     {"logout-times", "logout-times"},
+};
+
+// List of debugd entries to exclude from the results.
+constexpr std::array<const char*, 2> kExcludeList = {
+    // Shill device and service properties are retrieved by ShillLogSource.
+    // TODO(https://crbug.com/967800): Modify debugd to omit these for
+    // feedback report gathering and remove these entries.
+    "network-devices",
+    "network-services",
 };
 
 // Buffer size for user logs in bytes. Given that maximum feedback report size
@@ -165,11 +175,6 @@ void DebugDaemonLogSource::Fetch(SysLogsSourceCallback callback) {
                                    weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
 
-  client->GetNetworkStatus(base::BindOnce(&DebugDaemonLogSource::OnGetOneLog,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          kNetworkStatusKeyName));
-  ++num_pending_requests_;
-
   if (scrub_) {
     const user_manager::User* user =
         user_manager::UserManager::Get()->GetActiveUser();
@@ -210,7 +215,11 @@ void DebugDaemonLogSource::OnGetLogs(bool /* succeeded */,
   // We ignore 'succeeded' for this callback - we want to display as much of the
   // debug info as we can even if we failed partway through parsing, and if we
   // couldn't fetch any of it, none of the fields will even appear.
-  response_->insert(logs.begin(), logs.end());
+  for (const auto& log : logs) {
+    if (base::Contains(kExcludeList, log.first))
+      continue;
+    response_->insert(log);
+  }
   RequestCompleted();
 }
 

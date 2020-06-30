@@ -1,0 +1,76 @@
+<style>
+  #background {
+    fill: rgb(232, 240, 254);
+  }
+
+  #device-name {
+    color: rgba(0, 0, 0, 0.87);
+    letter-spacing: 0.25px;
+    line-height: 154%;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  #icon {
+    color: rgb(26, 115, 232);
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  #progress-container {
+    height: 80px;
+    margin: 0 auto;
+    position: relative;
+    width: 80px;
+  }
+
+  #spinner {
+    animation: 1.4s ease-in-out infinite both spinner-animation;
+    fill: none;
+    stroke: rgb(26, 115, 232);
+    stroke-dasharray: 283;
+    stroke-linecap: round;
+    stroke-width: 2px;
+    transform-origin: 50% 50%;
+  }
+
+  #svg {
+    animation: 2s linear infinite svg-animation;
+    left: 0;
+    position: absolute;
+    top: 0;
+  }
+
+  @keyframes spinner-animation {
+    0%,
+    25% {
+      stroke-dashoffset: 280;
+      transform: rotate(0);
+    }
+    50%,
+    75% {
+      stroke-dashoffset: 75;
+      transform: rotate(45deg);
+    }
+    100% {
+      stroke-dashoffset: 280;
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes svg-animation {
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+  }
+</style>
+
+<div id="progress-container">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+    <circle id="background" cx="40" cy="40" r="35"></circle>
+    <circle id="spinner" cx="40" cy="40" r="39"></circle>
+  </svg>
+  <iron-icon id="icon" icon="nearby-share:smartphone"></iron-icon>
+</div>
+<div id="device-name">[[deviceName]]</div>

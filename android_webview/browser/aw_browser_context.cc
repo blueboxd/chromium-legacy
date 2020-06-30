@@ -19,7 +19,7 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "android_webview/browser/network_service/net_helpers.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser_jni_headers/AwBrowserContext_jni.h"
 #include "android_webview/common/aw_features.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"

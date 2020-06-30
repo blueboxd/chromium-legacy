@@ -143,9 +143,6 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
 #endif
   map->GetSettingsForOneType(ContentSettingsType::JAVASCRIPT,
                              ResourceIdentifier(), &(rules->script_rules));
-  map->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS,
-                             ResourceIdentifier(),
-                             &(rules->client_hints_rules));
   map->GetSettingsForOneType(ContentSettingsType::POPUPS, ResourceIdentifier(),
                              &(rules->popup_redirect_rules));
 }

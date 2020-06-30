@@ -160,9 +160,10 @@ static const int kTimeCheckInterval = 10;
 
 class PerfTileTask : public TileTask {
  public:
-  PerfTileTask() : TileTask(true) {}
-  explicit PerfTileTask(TileTask::Vector* dependencies)
-      : TileTask(true, dependencies) {}
+  explicit PerfTileTask(TileTask::Vector* dependencies = nullptr)
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes,
+                 dependencies) {}
 
   void Reset() {
     did_complete_ = false;

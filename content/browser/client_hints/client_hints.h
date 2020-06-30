@@ -47,12 +47,28 @@ CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     bool is_ua_override_on,
     FrameTreeNode*);
 
-CONTENT_EXPORT void PersistAcceptCHAfterNagivationRequestRedirect(
+// Parses incoming client hints and persists them as appropriate. Returns hints
+// that were accepted as enabled even if they are not going to be persisted. The
+// distinction is relevant in legacy case where feature policy is off and there
+// is no valid Accept-CH-Lifetime, where the header still applies locally within
+// frame.
+CONTENT_EXPORT base::Optional<std::vector<network::mojom::WebClientHintsType>>
+ParseAndPersistAcceptCHForNagivation(
     const GURL& url,
     const ::network::mojom::ParsedHeadersPtr& headers,
     BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     FrameTreeNode*);
+
+// Looks up which client hints the renderer should be told to enable
+// (after subjecting them to feature policy).
+//
+// Note that this is based on the top-level frame, and not necessarily the
+// frame being committed.
+CONTENT_EXPORT std::vector<::network::mojom::WebClientHintsType>
+LookupAcceptCHForCommit(const GURL& url,
+                        ClientHintsControllerDelegate* delegate,
+                        FrameTreeNode* frame_tree_node);
 
 }  // namespace content
 

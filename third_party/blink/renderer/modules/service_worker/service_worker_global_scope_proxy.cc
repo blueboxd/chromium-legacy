@@ -114,14 +114,6 @@ void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {
   Client().CountFeature(feature);
 }
 
-void ServiceWorkerGlobalScopeProxy::CountDeprecation(WebFeature feature) {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  // Go through the same code path with countFeature() because a deprecation
-  // message is already shown on the worker console and a remaining work is
-  // just to record an API use.
-  CountFeature(feature);
-}
-
 void ServiceWorkerGlobalScopeProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation> location,

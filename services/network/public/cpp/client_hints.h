@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 
 namespace network {
@@ -26,6 +27,10 @@ COMPONENT_EXPORT(NETWORK_CPP) extern const size_t kClientHintsMappingsCount;
 // empty) list of hints to accept.
 base::Optional<std::vector<network::mojom::WebClientHintsType>>
     COMPONENT_EXPORT(NETWORK_CPP) ParseAcceptCH(const std::string& header);
+
+// Tries to parse Accept-CH-Lifetime. Returns base::TimeDelta() if unsuccessful.
+base::TimeDelta COMPONENT_EXPORT(NETWORK_CPP)
+    ParseAcceptCHLifetime(const std::string& header);
 
 }  // namespace network
 

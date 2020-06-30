@@ -199,7 +199,6 @@ void VulkanDemo::RenderFrame() {
   GrBackendSemaphore semaphore;
   semaphore.initVulkan(scoped_write_->GetEndSemaphore());
   GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = 1,
       .fSignalSemaphores = &semaphore,
   };

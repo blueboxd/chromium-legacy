@@ -630,7 +630,7 @@ class GomaLinkBase(object):
       self.jobs = int(args.jobs)
 
     basename = os.path.basename(args.output)
-    # Only generate tailored native object files for whitelisted targets.
+    # Only generate tailored native object files for targets on the allow list.
     # TODO: Find a better way to structure this. There are three different
     # ways we can perform linking: Local ThinLTO, distributed ThinLTO,
     # and distributed ThinLTO with common object files.
@@ -639,7 +639,7 @@ class GomaLinkBase(object):
     # Currently, we don't detect this situation. We could, but it might
     # be better to instead move this logic out of this script and into
     # the build system.
-    use_common_objects = basename not in self.WHITELISTED_TARGETS
+    use_common_objects = basename not in self.ALLOWLIST
     common_dir = 'common_objs'
     gen_dir = 'lto.' + basename
     params = self.analyze_args(args, gen_dir, common_dir, use_common_objects)
@@ -683,13 +683,13 @@ class GomaLinkWindows(GomaLinkBase):
   PREFIX_REPLACE = TLTO + '-prefix-replace' + SEP
   XIR = ''
 
-  WHITELISTED_TARGETS = {
+  ALLOWLIST = {
       'chrome.exe',
       'chrome.dll',
       'chrome_child.dll',
-      # TODO: The following targets have been whitelisted because the
+      # TODO: The following targets are on the allow list because the
       # common objects flow does not link them successfully. This should
-      # be fixed, after which they can be removed from the whitelist.
+      # be fixed, after which they can be removed from the list.
       'tls_edit.exe',
   }
 

@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.chrome.browser.autofill_assistant.drawable.AssistantDrawableIcon;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantDrawable;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
@@ -24,6 +25,7 @@ import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Handles construction and state changes on a progress bar with steps.
@@ -42,19 +44,29 @@ public class AssistantStepProgressBar {
         private static final int COLOR_LIST = R.color.blue_when_enabled;
         private static final int ERROR_COLOR_LIST = R.color.default_red;
 
+        private final RelativeLayout mView;
         private final Context mContext;
         private final View mPulsor;
         private final ChromeImageView mIcon;
         private final ValueAnimator mPulseAnimation;
 
         private boolean mShouldRunAnimation;
+        private boolean mDisableAnimations;
 
         IconViewHolder(ViewGroup view, Context context) {
             mContext = context;
-            RelativeLayout container = addContainer(view, mContext);
-            mPulsor = addPulsor(container, mContext);
-            mIcon = addIcon(container, mContext);
+            mView = addContainer(view, mContext);
+            mPulsor = addPulsor(mView, mContext);
+            mIcon = addIcon(mView, mContext);
             mPulseAnimation = createPulseAnimation();
+        }
+
+        void setTag(String tag) {
+            mView.setTag(tag);
+        }
+
+        void disableAnimations(boolean disable) {
+            mDisableAnimations = disable;
         }
 
         private RelativeLayout addContainer(ViewGroup view, Context context) {
@@ -151,6 +163,11 @@ public class AssistantStepProgressBar {
         }
 
         void startEnabledAnimation() {
+            if (mDisableAnimations) {
+                setEnabled(true);
+                return;
+            }
+
             ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
             animator.setStartDelay(ANIMATION_DELAY_MS);
             animator.setDuration(ICON_ENABLED_ANIMATION_DURATION_MS);
@@ -186,6 +203,10 @@ public class AssistantStepProgressBar {
         }
 
         void startPulsingAnimation(boolean delayed) {
+            if (mDisableAnimations) {
+                return;
+            }
+
             mShouldRunAnimation = true;
             mPulseAnimation.setStartDelay(delayed
                             ? ANIMATION_DELAY_MS + ICON_ENABLED_ANIMATION_DURATION_MS
@@ -206,13 +227,24 @@ public class AssistantStepProgressBar {
     }
 
     private static class LineViewHolder {
+        private final LinearLayout mView;
         private final View mLineForeground;
 
+        private boolean mDisableAnimations;
+
         LineViewHolder(ViewGroup view, Context context) {
-            LinearLayout mainContainer = addMainContainer(view, context);
-            RelativeLayout relativeContainer = addRelativeContainer(mainContainer, context);
+            mView = addMainContainer(view, context);
+            RelativeLayout relativeContainer = addRelativeContainer(mView, context);
             addBackgroundLine(relativeContainer, context);
             mLineForeground = addForegroundLine(relativeContainer, context);
+        }
+
+        void setTag(String tag) {
+            mView.setTag(tag);
+        }
+
+        void disableAnimations(boolean disable) {
+            mDisableAnimations = disable;
         }
 
         private LinearLayout addMainContainer(ViewGroup view, Context context) {
@@ -265,6 +297,11 @@ public class AssistantStepProgressBar {
         }
 
         void startAnimation() {
+            if (mDisableAnimations) {
+                setEnabled(true);
+                return;
+            }
+
             ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
             animator.setStartDelay(ANIMATION_DELAY_MS + ICON_ENABLED_ANIMATION_DURATION_MS);
             animator.setDuration(LINE_ANIMATION_DURATION_MS);
@@ -321,8 +358,12 @@ public class AssistantStepProgressBar {
         for (int i = 0; i < mNumberOfSteps; ++i) {
             mIcons[i] = new IconViewHolder(mView, mView.getContext());
             mIcons[i].setIcon(icons.get(i));
+            mIcons[i].setTag(String.format(
+                    Locale.getDefault(), AssistantTagsForTesting.PROGRESSBAR_ICON_TAG, i));
             if (i < mNumberOfSteps - 1) {
                 mLines[i] = new LineViewHolder(mView, mView.getContext());
+                mLines[i].setTag(String.format(
+                        Locale.getDefault(), AssistantTagsForTesting.PROGRESSBAR_LINE_TAG, i));
             }
         }
     }
@@ -331,8 +372,17 @@ public class AssistantStepProgressBar {
         mView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
+    public void disableAnimations(boolean disable) {
+        for (IconViewHolder icon : mIcons) {
+            icon.disableAnimations(disable);
+        }
+        for (LineViewHolder line : mLines) {
+            line.disableAnimations(disable);
+        }
+    }
+
     public void setActiveStep(int step) {
-        assert step >= 0 && step < mNumberOfSteps;
+        assert step >= 0 && step <= mNumberOfSteps;
         assert step >= mCurrentStep;
         if (step == mCurrentStep) {
             return;

@@ -20,6 +20,7 @@ class ScriptState;
 class ImageBitmapOptions;
 class ImageDecoder;
 class ImageDecoderInit;
+class ImageTrackExternal;
 class ReadableStreamBytesConsumer;
 class ScriptPromiseResolver;
 class SegmentReader;
@@ -39,13 +40,17 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
 
   static bool canDecodeType(String type);
 
+  using ImageTrackList = HeapVector<Member<ImageTrackExternal>>;
+
   // image_decoder.idl implementation.
   ScriptPromise decode(uint32_t frame_index, bool complete_frames_only);
   ScriptPromise decodeMetadata();
+  void selectTrack(uint32_t track_id, ExceptionState&);
   uint32_t frameCount() const;
   String type() const;
   uint32_t repetitionCount() const;
   bool complete() const;
+  const ImageTrackList tracks() const;
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;
@@ -74,12 +79,18 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   Member<const ImageDecoderInit> init_data_;
   Member<const ImageBitmapOptions> options_;
 
+  // Copy of |preferAnimation| from |init_data_|. Will be modified based on
+  // calls to selectTrack().
+  base::Optional<bool> prefer_animation_;
+
   bool data_complete_ = false;
 
   std::unique_ptr<ImageDecoder> decoder_;
   String mime_type_;
   uint32_t frame_count_ = 0u;
   uint32_t repetition_count_ = 0u;
+  base::Optional<uint32_t> selected_track_id_;
+  ImageTrackList tracks_;
 
   // Pending decode() requests.
   struct DecodeRequest : public GarbageCollected<DecodeRequest> {

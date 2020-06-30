@@ -231,11 +231,6 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           base::Unretained(this)),
       ui_task_runner);
   registry->AddInterface(base::BindRepeating(&MojoWebTestHelper::Create));
-  registry->AddInterface(
-      base::BindRepeating(
-          &WebTestContentBrowserClient::BindClientHintsControllerDelegate,
-          base::Unretained(this)),
-      ui_task_runner);
 
   registry->AddInterface(
       base::BindRepeating(
@@ -258,14 +253,6 @@ WebTestContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetWebTestContentBrowserOverlayManifest();
 
   return base::nullopt;
-}
-
-void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
-    mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver) {
-  ClientHintsControllerDelegate* delegate =
-      browser_context()->GetClientHintsControllerDelegate();
-  DCHECK(delegate);
-  delegate->Bind(std::move(receiver));
 }
 
 void WebTestContentBrowserClient::BindPermissionAutomation(

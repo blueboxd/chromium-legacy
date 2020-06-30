@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/client/client_font_manager.h"
 
+#include "base/bits.h"
 #include "base/logging.h"
 
 namespace gpu {
@@ -36,11 +37,10 @@ class Serializer {
  private:
   void AlignMemory(uint32_t size, size_t alignment) {
     // Due to the math below, alignment must be a power of two.
-    DCHECK_GT(alignment, 0u);
-    DCHECK_EQ(alignment & (alignment - 1), 0u);
+    DCHECK(base::bits::IsPowerOfTwo(alignment));
 
-    uintptr_t memory = reinterpret_cast<uintptr_t>(memory_);
-    size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
+    size_t memory = reinterpret_cast<size_t>(memory_);
+    size_t padding = base::bits::Align(memory, alignment) - memory;
     DCHECK_LE(bytes_written_ + size + padding, memory_size_);
 
     memory_ += padding;

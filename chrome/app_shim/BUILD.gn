@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/mac/rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//build/util/branding.gni")
 
 # This is the part of the shim process compiled into Chrome. It runs only

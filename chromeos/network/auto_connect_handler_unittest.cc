@@ -579,7 +579,7 @@ TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
   EXPECT_EQ(0, test_observer_->num_auto_connect_events());
 }
 
-TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
+TEST_F(AutoConnectHandlerTest, DisconnectFromBlockedNetwork) {
   std::string wifi0_service_path =
       ConfigureService(kConfigWifi0UnmanagedSharedConnected);
   ASSERT_FALSE(wifi0_service_path.empty());
@@ -595,18 +595,18 @@ TEST_F(AutoConnectHandlerTest, DisconnectFromBlacklistedNetwork) {
 
   // Apply a device policy, which blocks wifi0. No disconnects should occur
   // since we wait for both device & user policy before possibly disconnecting.
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::Value::ListStorage blocked;
+  blocked.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
   base::DictionaryValue global_config;
-  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
-                       base::Value(blacklist));
+  global_config.SetKey(::onc::global_network_config::kBlockedHexSSIDs,
+                       base::Value(blocked));
   SetupPolicy(std::string(), global_config, false /* load as device policy */);
   EXPECT_EQ(shill::kStateOnline, GetServiceState(wifi0_service_path));
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
-  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
-  // should be disconnected due to being blacklisted.
+  // Apply an empty user policy (no allow list for wifi0). Connection to wifi0
+  // should be disconnected due to being blocked.
   SetupPolicy(std::string(), base::DictionaryValue(),
               true /* load as user policy */);
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi0_service_path));
@@ -641,7 +641,7 @@ TEST_F(AutoConnectHandlerTest, AllowOnlyPolicyNetworksToConnectIfAvailable) {
   EXPECT_EQ(shill::kStateIdle, GetServiceState(wifi1_service_path));
   EXPECT_TRUE(helper().profile_test()->HasService(wifi0_service_path));
 
-  // Apply an empty user policy (no whitelist for wifi0). Connection to wifi0
+  // Apply an empty user policy (no allow list for wifi0). Connection to wifi0
   // should be disconnected due to being unmanaged and managed network wifi1
   // being available. wifi0 configuration should not be removed.
   SetupPolicy(std::string(), base::DictionaryValue(),

@@ -1098,7 +1098,7 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   base::Value blocked(base::Value::Type::LIST);
   blocked.Append(base::Value("blocked_ssid1"));
   blocked.Append(base::Value("blocked_ssid2"));
-  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
+  global_config.SetKey(::onc::global_network_config::kBlockedHexSSIDs,
                        std::move(blocked));
   managed_network_configuration_handler()->SetPolicy(
       ::onc::ONC_SOURCE_DEVICE_POLICY, /*userhash=*/std::string(),

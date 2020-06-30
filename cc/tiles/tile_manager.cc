@@ -86,7 +86,13 @@ class RasterTaskImpl : public TileTask {
                  bool is_gpu_rasterization,
                  DispatchingImageProvider image_provider,
                  GURL url)
-      : TileTask(!is_gpu_rasterization, dependencies),
+      : TileTask(
+            is_gpu_rasterization ? TileTask::SupportsConcurrentExecution::kNo
+                                 : TileTask::SupportsConcurrentExecution::kYes,
+            raster_buffer && raster_buffer->SupportsBackgroundThreadPriority()
+                ? TileTask::SupportsBackgroundThreadPriority::kYes
+                : TileTask::SupportsBackgroundThreadPriority::kNo,
+            dependencies),
         tile_manager_(tile_manager),
         tile_id_(tile->id()),
         resource_(std::move(resource)),
@@ -182,6 +188,9 @@ TaskCategory TaskCategoryForTileTask(TileTask* task,
   if (use_foreground_category)
     return TASK_CATEGORY_FOREGROUND;
 
+  if (!task->supports_background_thread_priority())
+    return TASK_CATEGORY_BACKGROUND_WITH_NORMAL_THREAD_PRIORITY;
+
   return TASK_CATEGORY_BACKGROUND;
 }
 
@@ -192,10 +201,11 @@ bool IsForegroundCategory(uint16_t category) {
     case TASK_CATEGORY_FOREGROUND:
       return true;
     case TASK_CATEGORY_BACKGROUND:
+    case TASK_CATEGORY_BACKGROUND_WITH_NORMAL_THREAD_PRIORITY:
       return false;
   }
 
-  DCHECK(false);
+  NOTREACHED();
   return false;
 }
 
@@ -295,7 +305,8 @@ class TaskSetFinishedTaskImpl : public TileTask {
   explicit TaskSetFinishedTaskImpl(
       base::SequencedTaskRunner* task_runner,
       base::RepeatingClosure on_task_set_finished_callback)
-      : TileTask(true),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         task_runner_(task_runner),
         on_task_set_finished_callback_(
             std::move(on_task_set_finished_callback)) {}
@@ -329,7 +340,8 @@ class DidFinishRunningAllTilesTask : public TileTask {
   DidFinishRunningAllTilesTask(base::SequencedTaskRunner* task_runner,
                                RasterBufferProvider* raster_buffer_provider,
                                CompletionCb completion_cb)
-      : TileTask(false /* supports_concurrent_execution */),
+      : TileTask(TileTask::SupportsConcurrentExecution::kNo,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         task_runner_(task_runner),
         raster_buffer_provider_(raster_buffer_provider),
         completion_cb_(std::move(completion_cb)) {}

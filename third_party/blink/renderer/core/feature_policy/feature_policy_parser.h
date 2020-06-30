@@ -59,10 +59,10 @@ class CORE_EXPORT FeaturePolicyParser {
   //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
   static ParsedFeaturePolicy ParseHeader(
       const String& feature_policy_header,
+      const String& permission_policy_header,
       scoped_refptr<const SecurityOrigin>,
       PolicyParserMessageBuffer& logger,
-      FeaturePolicyParserDelegate* delegate = nullptr,
-      const String& permission_policy_header = g_empty_string);
+      FeaturePolicyParserDelegate* delegate = nullptr);
 
   // Converts a container policy string into a vector of allowlists, given self
   // and src origins provided, one for each feature specified. Unrecognized

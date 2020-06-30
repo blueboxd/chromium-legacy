@@ -196,11 +196,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
       color_space, usage, context_state, std::move(image), command_pool);
 
   if (!pixel_data.empty()) {
-    backing->WritePixelsWithCallback(
-        pixel_data.size(), 0,
-        base::BindOnce([](const void* data, size_t size,
-                          void* buffer) { memcpy(buffer, data, size); },
-                       pixel_data.data(), pixel_data.size()));
+    size_t stride = BitsPerPixel(format) / 8 * size.width();
+    backing->WritePixelsWithData(pixel_data, stride);
   }
 
   return backing;
@@ -734,7 +731,9 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   return true;
 }
 
-bool ExternalVkImageBacking::WritePixels() {
+bool ExternalVkImageBacking::WritePixelsWithData(
+    base::span<const uint8_t> pixel_data,
+    size_t stride) {
   std::vector<gpu::SemaphoreHandle> handles;
   if (!BeginAccessInternal(false /* readonly */, &handles)) {
     DLOG(ERROR) << "BeginAccess() failed.";
@@ -758,9 +757,7 @@ bool ExternalVkImageBacking::WritePixels() {
                                 ResourceFormatToClosestSkColorType(
                                     /*gpu_compositing=*/true, format()),
                                 kOpaque_SkAlphaType);
-  SkPixmap pixmap(info, shared_memory_wrapper_.GetMemory(),
-                  shared_memory_wrapper_.GetStride());
-
+  SkPixmap pixmap(info, pixel_data.data(), stride);
   if (!gr_context->updateBackendTexture(backend_texture_, &pixmap,
                                         /*levels=*/1, nullptr, nullptr)) {
     DLOG(ERROR) << "updateBackendTexture() failed.";
@@ -796,7 +793,12 @@ bool ExternalVkImageBacking::WritePixels() {
   EndAccessInternal(false /* readonly */,
                     std::move(end_access_semaphore_handle));
   return true;
-}  // namespace gpu
+}
+
+bool ExternalVkImageBacking::WritePixels() {
+  return WritePixelsWithData(shared_memory_wrapper_.GetMemoryAsSpan(),
+                             shared_memory_wrapper_.GetStride());
+}
 
 void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   DCHECK(use_separate_gl_texture());

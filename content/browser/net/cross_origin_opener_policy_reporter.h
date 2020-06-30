@@ -17,6 +17,7 @@
 
 namespace content {
 
+class FrameTreeNode;
 class StoragePartition;
 class RenderFrameHostImpl;
 
@@ -62,6 +63,11 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
       const std::vector<GURL>& redirect_chain,
       const GlobalFrameRoutingId& initiator_routing_id);
 
+  // For every other window in the same browsing context group, but in a
+  // different virtual browsing context group, install the necessary
+  // CoopAccessMonitor. The first window is identified by |node|.
+  static void InstallAccessMonitorsIfNeeded(FrameTreeNode* node);
+
   void Clone(
       mojo::PendingReceiver<network::mojom::CrossOriginOpenerPolicyReporter>
           receiver) override;
@@ -77,6 +83,9 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
       const GURL& context_url,
       const network::CrossOriginOpenerPolicy& coop,
       const network::CrossOriginEmbedderPolicy& coep);
+
+  // Install the CoopAccessMonitors in between the two windows |A| and |B|.
+  void MonitorAccessesInBetweenWindows(FrameTreeNode* A, FrameTreeNode* B);
 
   // See the class comment.
   StoragePartition* const storage_partition_;

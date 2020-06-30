@@ -4,9 +4,9 @@
 """Generates C++ source files from a mojom.Module."""
 import os
 import sys
-from mojom_cpp_generator import _NameFormatter as CppNameFormatter
-from mojom_cpp_generator import Generator as CppGenerator
-from mojom_cpp_generator import IsNativeOnlyKind, NamespaceToArray
+from generators.mojom_cpp_generator import _NameFormatter as CppNameFormatter
+from generators.mojom_cpp_generator import Generator as CppGenerator
+from generators.mojom_cpp_generator import IsNativeOnlyKind, NamespaceToArray
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack

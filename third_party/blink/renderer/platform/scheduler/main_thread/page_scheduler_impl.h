@@ -53,6 +53,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   ~PageSchedulerImpl() override;
 
   // PageScheduler implementation:
+  void OnTitleOrFaviconUpdated() override;
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
   void SetKeepActive(bool) override;
@@ -231,12 +232,12 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   // Depending on page visibility, either turns throttling off, or schedules a
   // call to enable it after a grace period.
-  void UpdateBackgroundSchedulingLifecycleState(
-      NotificationPolicy notification_policy);
+  void UpdatePolicyOnVisibilityChange(NotificationPolicy notification_policy);
 
   // Adjusts settings of budget pools depending on current state of the page.
   void UpdateCPUTimeBudgetPool(base::sequence_manager::LazyNow* lazy_now);
   void UpdateWakeUpBudgetPools(base::sequence_manager::LazyNow* lazy_now);
+  base::TimeDelta GetIntensiveWakeUpThrottlingDuration(bool is_same_origin);
 
   // Callback for marking page is silent after a delay since last audible
   // signal.
@@ -247,6 +248,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // of the page.
   void DoThrottleCPUTime();
   void DoIntensivelyThrottleWakeUps();
+  void ResetHadRecentTitleOrFaviconUpdate();
 
   // Notify frames that the page scheduler state has been updated.
   void NotifyFrames();
@@ -280,6 +282,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool is_cpu_time_throttled_;
   bool are_wake_ups_intensively_throttled_;
   bool keep_active_;
+  bool had_recent_title_or_favicon_update_;
   CPUTimeBudgetPool* cpu_time_budget_pool_;
   // Throttles wake ups in throttleable TaskQueues of frames that have the same
   // origin as the main frame.
@@ -298,6 +301,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   PageScheduler::Delegate* delegate_;
   CancelableClosureHolder do_throttle_cpu_time_callback_;
   CancelableClosureHolder do_intensively_throttle_wake_ups_callback_;
+  CancelableClosureHolder reset_had_recent_title_or_favicon_update_;
   CancelableClosureHolder on_audio_silent_closure_;
   CancelableClosureHolder do_freeze_page_callback_;
   const base::TimeDelta delay_for_background_tab_freezing_;

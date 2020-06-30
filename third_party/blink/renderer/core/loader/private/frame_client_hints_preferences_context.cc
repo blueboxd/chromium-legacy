@@ -50,9 +50,4 @@ void FrameClientHintsPreferencesContext::CountClientHints(
                     kWebFeatureMapping[static_cast<int32_t>(type)]);
 }
 
-void FrameClientHintsPreferencesContext::CountPersistentClientHintHeaders() {
-  UseCounter::Count(*frame_->GetDocument(),
-                    WebFeature::kPersistentClientHintHeader);
-}
-
 }  // namespace blink

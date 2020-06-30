@@ -388,11 +388,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
 
   // Sets |allow_only_policy_networks_to_connect_|,
   // |allow_only_policy_networks_to_connect_if_available_| and
-  // |blacklisted_hex_ssids_| and calls |UpdateBlockedWifiNetworksInternal()|.
+  // |blocked_hex_ssids_| and calls |UpdateBlockedWifiNetworksInternal()|.
   virtual void UpdateBlockedWifiNetworks(
       bool only_managed,
       bool available_only,
-      const std::vector<std::string>& blacklisted_hex_ssids);
+      const std::vector<std::string>& blocked_hex_ssids);
 
   // Returns the NetworkState associated to the wifi device's
   // available_managed_network_path or |nullptr| if no managed network is
@@ -478,7 +478,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   typedef std::map<std::string, std::string> SpecifierGuidMap;
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
-  FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyBlacklisted);
+  FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyBlocked);
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged);
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest,
                            BlockedByPolicyOnlyManagedIfAvailable);
@@ -619,7 +619,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   void EnsureTetherDeviceState();
 
   // Updates the network's |blocked_by_policy_| depending on
-  // |allow_only_policy_networks_to_connect_| and |blacklisted_hex_ssids_|.
+  // |allow_only_policy_networks_to_connect_| and |blocked_hex_ssids_|.
   // Returns true if the value changed.
   bool UpdateBlockedByPolicy(NetworkState* network) const;
 
@@ -697,7 +697,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // |ManagedNetworkConfigurationHandler| by calling |UpdateBlockedNetworks()|).
   bool allow_only_policy_networks_to_connect_ = false;
   bool allow_only_policy_networks_to_connect_if_available_ = false;
-  std::vector<std::string> blacklisted_hex_ssids_;
+  std::vector<std::string> blocked_hex_ssids_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

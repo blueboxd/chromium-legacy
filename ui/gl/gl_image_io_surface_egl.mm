@@ -52,8 +52,9 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
       return {GL_BGRA_EXT, GL_UNSIGNED_BYTE};
     case gfx::BufferFormat::RGBA_F16:
       return {GL_RGBA, GL_HALF_FLOAT};
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::BGRA_1010102:
+      // TODO(https://crbug.com/1100599): Change this to be
+      // {GL_BGRA_EXT, GL_UNSIGNED_INT_2_10_10_10_REV}.
       NOTIMPLEMENTED();
       return {GL_NONE, GL_NONE};
     case gfx::BufferFormat::BGR_565:
@@ -61,6 +62,7 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
     case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::RGBA_1010102:
     case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::P010:
       NOTREACHED();
       return {GL_NONE, GL_NONE};

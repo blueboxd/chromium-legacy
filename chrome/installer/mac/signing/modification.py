@@ -67,7 +67,7 @@ def _modify_plists(paths, dist, config):
         if dist.creator_code:
             app_plist['CFBundleSignature'] = dist.creator_code
 
-        # See build/mac/tweak_info_plist.py and
+        # See build/apple/tweak_info_plist.py and
         # chrome/browser/mac/keystone_glue.mm.
         for key in app_plist.keys():
             if not key.startswith(_KS_CHANNEL_ID + '-'):

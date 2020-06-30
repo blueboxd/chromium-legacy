@@ -813,6 +813,7 @@ static_library("extensions") {
     "//components/download/public/common:public",
     "//components/drive",
     "//components/embedder_support",
+    "//components/enterprise",
     "//components/favicon/content",
     "//components/feedback",
     "//components/gcm_driver",
@@ -1079,7 +1080,10 @@ static_library("extensions") {
       "default_apps.cc",
       "default_apps.h",
     ]
-    deps += [ "//components/keep_alive_registry" ]
+    deps += [
+      "//components/enterprise",
+      "//components/keep_alive_registry",
+    ]
     if (is_posix) {
       sources += [ "api/messaging/native_process_launcher_posix.cc" ]
     }

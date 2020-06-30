@@ -144,6 +144,10 @@ class CastActivityManager : public CastActivityManagerBase,
   friend class CastActivityManagerTest;
   FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest,
                            LaunchSessionTerminatesExistingSessionOnSink);
+  FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest,
+                           LaunchSessionTerminatesExistingSessionFromTab);
+  FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
+
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
   using CastActivityMap = base::flat_map<MediaRoute::Id, CastActivityRecord*>;
@@ -286,6 +290,13 @@ class CastActivityManager : public CastActivityManagerBase,
   // there is a CastActivityRecord.
   CastActivityMap cast_activities_;
 
+  // Mapping from tab IDs to the active route for that tab.  This map is used to
+  // ensure that there is at most one active route for each tab.  Removing this
+  // map and the code that uses it will allow a tab to be cast to multiple
+  // receivers, but there may be unintended consequences, such as confusing
+  // users or causing performance problems on low-end devices.
+  base::flat_map<int, MediaRoute::Id> routes_by_tab_;
+
   // Information for a session that will be launched once |this| is notified
   // that the existing session on the receiver has been removed. We only store
   // one pending launch at a time so that we don't accumulate orphaned pending
@@ -303,7 +314,6 @@ class CastActivityManager : public CastActivityManagerBase,
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastActivityManager> weak_ptr_factory_{this};
-  FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest, SendMediaRequestToReceiver);
 };
 
 }  // namespace media_router

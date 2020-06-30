@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
@@ -80,17 +81,13 @@ public class WebContentsStateBridge {
                 contentsState.buffer(), contentsState.version());
     }
 
-    public static void createHistoricalTab(WebContentsState contentsState) {
-        WebContentsStateBridgeJni.get().createHistoricalTab(
-                contentsState.buffer(), contentsState.version());
-    }
-
     public static void createHistoricalTabFromContents(WebContents webContents) {
         WebContentsStateBridgeJni.get().createHistoricalTabFromContents(webContents);
     }
 
     @NativeMethods
-    interface Natives {
+    @VisibleForTesting
+    public interface Natives {
         WebContents restoreContentsFromByteBuffer(
                 ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
         ByteBuffer getContentsStateAsByteBuffer(Tab tab);
@@ -99,7 +96,6 @@ public class WebContentsStateBridge {
                 int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
-        void createHistoricalTab(ByteBuffer state, int savedStateVersion);
         void createHistoricalTabFromContents(WebContents webContents);
     }
 }

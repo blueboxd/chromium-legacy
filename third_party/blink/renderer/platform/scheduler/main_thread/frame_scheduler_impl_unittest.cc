@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -2699,8 +2700,42 @@ TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling,
     task_runner->PostDelayedTask(
         FROM_HERE, base::BindOnce(&RecordRunTime, &run_times), kLongDelay);
 
-    task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardBy(kLongDelay);
     EXPECT_THAT(run_times, testing::ElementsAre(scope_start + kLongDelay));
+  }
+
+  // Post tasks with short delays after the page communicated with the user in
+  // background. They should run aligned on 1-second interval for 5 seconds.
+  // After that, intensive throttling is applied again.
+  {
+    const base::TimeTicks scope_start = base::TimeTicks::Now();
+    EXPECT_EQ(scope_start,
+              test_start + base::TimeDelta::FromMinutes(12) + kShortDelay);
+    std::vector<base::TimeTicks> run_times;
+
+    page_scheduler_->OnTitleOrFaviconUpdated();
+    task_runner->PostDelayedTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          RecordRunTime(&run_times);
+          for (int i = 0; i < kNumTasks; ++i) {
+            task_runner->PostDelayedTask(
+                FROM_HERE, base::BindOnce(&RecordRunTime, &run_times),
+                kShortDelay * (i + 1));
+          }
+          page_scheduler_->OnTitleOrFaviconUpdated();
+        }),
+        kShortDelay);
+
+    task_environment_.FastForwardUntilNoTasksRemain();
+    EXPECT_THAT(
+        run_times,
+        testing::ElementsAre(
+            scope_start + base::TimeDelta::FromSeconds(1),
+            scope_start + base::TimeDelta::FromSeconds(2),
+            scope_start + base::TimeDelta::FromSeconds(3),
+            scope_start - kShortDelay + base::TimeDelta::FromMinutes(1),
+            scope_start - kShortDelay + base::TimeDelta::FromMinutes(1),
+            scope_start - kShortDelay + base::TimeDelta::FromMinutes(1)));
   }
 }
 
@@ -2816,6 +2851,37 @@ TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling,
     task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_THAT(run_times, testing::ElementsAre(scope_start +
                                                 kDurationBetweenWakeUps * 6));
+  }
+
+  // Post tasks with short delays after the page communicated with the user in
+  // background. They should run at an aligned time, since cross-origin
+  // frames are not affected by title or favicon update.
+  {
+    const base::TimeTicks scope_start = base::TimeTicks::Now();
+    EXPECT_EQ(scope_start, test_start + base::TimeDelta::FromMinutes(14));
+    std::vector<base::TimeTicks> run_times;
+
+    page_scheduler_->OnTitleOrFaviconUpdated();
+    task_runner->PostDelayedTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          RecordRunTime(&run_times);
+          for (int i = 0; i < kNumTasks; ++i) {
+            task_runner->PostDelayedTask(
+                FROM_HERE, base::BindOnce(&RecordRunTime, &run_times),
+                kShortDelay * (i + 1));
+          }
+          page_scheduler_->OnTitleOrFaviconUpdated();
+        }),
+        kShortDelay);
+
+    task_environment_.FastForwardUntilNoTasksRemain();
+    EXPECT_THAT(run_times, testing::ElementsAre(
+                               scope_start + base::TimeDelta::FromMinutes(1),
+                               scope_start + base::TimeDelta::FromMinutes(2),
+                               scope_start + base::TimeDelta::FromMinutes(2),
+                               scope_start + base::TimeDelta::FromMinutes(2),
+                               scope_start + base::TimeDelta::FromMinutes(2),
+                               scope_start + base::TimeDelta::FromMinutes(2)));
   }
 }
 

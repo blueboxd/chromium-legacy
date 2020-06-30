@@ -279,11 +279,10 @@ namespace blink {
 AVIFImageDecoder::AVIFImageDecoder(AlphaOption alpha_option,
                                    HighBitDepthDecodingOption hbd_option,
                                    const ColorBehavior& color_behavior,
-                                   size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option,
-                   hbd_option,
-                   color_behavior,
-                   max_decoded_bytes) {}
+                                   size_t max_decoded_bytes,
+                                   AnimationOption animation_option)
+    : ImageDecoder(alpha_option, hbd_option, color_behavior, max_decoded_bytes),
+      animation_option_(animation_option) {}
 
 AVIFImageDecoder::~AVIFImageDecoder() = default;
 
@@ -419,6 +418,20 @@ base::TimeDelta AVIFImageDecoder::FrameDurationAtIndex(size_t index) const {
              : base::TimeDelta();
 }
 
+bool AVIFImageDecoder::ImageHasBothStillAndAnimatedSubImages() const {
+  // Per MIAF, all animated AVIF files must have a still image, even if it's
+  // just a pointer to the first frame of the animation.
+  if (decoded_frame_count_ > 1)
+    return true;
+
+  // TODO(wtc): We should rely on libavif to tell us if the file has both an
+  // image and an animation track instead of just checking the major brand.
+  constexpr base::StringPiece kAnimationType = "avis";
+  char buf[kAnimationType.size() + 1] = {0};
+  image_data_->copyRange(8, kAnimationType.size(), &buf);
+  return kAnimationType == buf;
+}
+
 // static
 bool AVIFImageDecoder::MatchesAVIFSignature(
     const FastSharedBufferReader& fast_reader) {
@@ -532,6 +545,18 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   image_data_ = data_->GetAsSkData();
   if (!image_data_)
     return false;
+
+  // TODO(wtc): Currently libavif always prioritizes the animation, but that's
+  // not correct. It should instead select animation or still image based on the
+  // preferred and major brands listed in the file.
+  if (animation_option_ != AnimationOption::kUnspecified &&
+      avifDecoderSetSource(
+          decoder_.get(), animation_option_ == AnimationOption::kPreferAnimation
+                              ? AVIF_DECODER_SOURCE_TRACKS
+                              : AVIF_DECODER_SOURCE_PRIMARY_ITEM) !=
+          AVIF_RESULT_OK) {
+    return false;
+  }
 
   avifROData raw_data = {image_data_->bytes(), image_data_->size()};
   auto ret = avifDecoderParse(decoder_.get(), &raw_data);

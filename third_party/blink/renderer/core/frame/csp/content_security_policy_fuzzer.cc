@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 #include "testing/libfuzzer/libfuzzer_exports.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -59,7 +60,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Construct and initialize a policy from the string.
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader(header, header_type, header_source);
-  g_page_holder->GetDocument().InitContentSecurityPolicy(csp);
+  auto& context = g_page_holder->GetFrame().DomWindow()->GetSecurityContext();
+  context.SetContentSecurityPolicy(csp);
 
   // Force a garbage collection.
   // Specify namespace explicitly. Otherwise it conflicts on Mac OS X with:

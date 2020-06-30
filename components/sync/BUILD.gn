@@ -20,15 +20,14 @@ group("test_support") {
     ":sync",
     ":test_support_engine",
     ":test_support_model",
-    ":test_support_syncable",
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
     "//components/sync/js:test_support",
   ]
 }
 
-# TODO(crbug.com/947443): This target should be split up into "engine", "model",
-# "syncable" etc, but currently they all depend on each other.
+# TODO(crbug.com/947443): This target should be split up into "engine", "model"
+# etc, but currently they all depend on each other.
 jumbo_static_library("rest_of_sync") {
   sources = [
     "engine/commit_queue.cc",
@@ -305,83 +304,6 @@ jumbo_static_library("rest_of_sync") {
     "nigori/nigori_sync_bridge_impl.h",
     "nigori/pending_local_nigori_commit.cc",
     "nigori/pending_local_nigori_commit.h",
-    "syncable/base_node.cc",
-    "syncable/base_node.h",
-    "syncable/base_transaction.cc",
-    "syncable/base_transaction.h",
-    "syncable/change_processor.h",
-    "syncable/change_record.cc",
-    "syncable/change_record.h",
-    "syncable/change_reorder_buffer.cc",
-    "syncable/change_reorder_buffer.h",
-    "syncable/dir_open_result.h",
-    "syncable/directory.cc",
-    "syncable/directory.h",
-    "syncable/directory_backing_store.cc",
-    "syncable/directory_backing_store.h",
-    "syncable/directory_change_delegate.h",
-    "syncable/entry.cc",
-    "syncable/entry.h",
-    "syncable/entry_kernel.cc",
-    "syncable/entry_kernel.h",
-    "syncable/in_memory_directory_backing_store.cc",
-    "syncable/in_memory_directory_backing_store.h",
-    "syncable/invalid_directory_backing_store.cc",
-    "syncable/invalid_directory_backing_store.h",
-    "syncable/metahandle_set.h",
-    "syncable/model_neutral_mutable_entry.cc",
-    "syncable/model_neutral_mutable_entry.h",
-    "syncable/mutable_entry.cc",
-    "syncable/mutable_entry.h",
-    "syncable/nigori_handler.cc",
-    "syncable/nigori_handler.h",
-    "syncable/nigori_handler_proxy.cc",
-    "syncable/nigori_handler_proxy.h",
-    "syncable/nigori_util.cc",
-    "syncable/nigori_util.h",
-    "syncable/on_disk_directory_backing_store.cc",
-    "syncable/on_disk_directory_backing_store.h",
-    "syncable/parent_child_index.cc",
-    "syncable/parent_child_index.h",
-    "syncable/proto_value_ptr.h",
-    "syncable/read_node.cc",
-    "syncable/read_node.h",
-    "syncable/read_transaction.cc",
-    "syncable/read_transaction.h",
-    "syncable/scoped_kernel_lock.cc",
-    "syncable/scoped_kernel_lock.h",
-    "syncable/scoped_parent_child_index_updater.cc",
-    "syncable/scoped_parent_child_index_updater.h",
-    "syncable/syncable_base_transaction.cc",
-    "syncable/syncable_base_transaction.h",
-    "syncable/syncable_base_write_transaction.cc",
-    "syncable/syncable_base_write_transaction.h",
-    "syncable/syncable_changes_version.h",
-    "syncable/syncable_columns.h",
-    "syncable/syncable_enum_conversions.cc",
-    "syncable/syncable_enum_conversions.h",
-    "syncable/syncable_id.cc",
-    "syncable/syncable_id.h",
-    "syncable/syncable_model_neutral_write_transaction.cc",
-    "syncable/syncable_model_neutral_write_transaction.h",
-    "syncable/syncable_proto_util.cc",
-    "syncable/syncable_proto_util.h",
-    "syncable/syncable_read_transaction.cc",
-    "syncable/syncable_read_transaction.h",
-    "syncable/syncable_util.cc",
-    "syncable/syncable_util.h",
-    "syncable/syncable_write_transaction.cc",
-    "syncable/syncable_write_transaction.h",
-    "syncable/transaction_observer.h",
-    "syncable/unrecoverable_error_handler.h",
-    "syncable/user_share.cc",
-    "syncable/user_share.h",
-    "syncable/write_node.cc",
-    "syncable/write_node.h",
-    "syncable/write_transaction.cc",
-    "syncable/write_transaction.h",
-    "syncable/write_transaction_info.cc",
-    "syncable/write_transaction_info.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -448,25 +370,14 @@ static_library("test_support_engine") {
     "test/engine/mock_update_handler.h",
     "test/engine/single_type_mock_server.cc",
     "test/engine/single_type_mock_server.h",
-    "test/engine/test_syncable_utils.cc",
-    "test/engine/test_syncable_utils.h",
     "test/fake_sync_encryption_handler.cc",
     "test/fake_sync_encryption_handler.h",
-    "test/null_directory_change_delegate.cc",
-    "test/null_directory_change_delegate.h",
-    "test/null_transaction_observer.cc",
-    "test/null_transaction_observer.h",
-    "test/test_directory_backing_store.cc",
-    "test/test_directory_backing_store.h",
-    "test/test_transaction_observer.cc",
-    "test/test_transaction_observer.h",
   ]
 
   public_deps = [ "//components/sync/base:test_support" ]
 
   deps = [
     ":sync",
-    ":test_support_syncable",
     "//services/network:test_support",
   ]
 
@@ -512,19 +423,6 @@ static_library("test_support_nigori") {
   sources = [
     "nigori/nigori_test_utils.cc",
     "nigori/nigori_test_utils.h",
-  ]
-
-  deps = [
-    ":sync",
-    "//testing/gtest",
-  ]
-}
-
-static_library("test_support_syncable") {
-  testonly = true
-  sources = [
-    "syncable/test_unrecoverable_error_handler.cc",
-    "syncable/test_unrecoverable_error_handler.h",
   ]
 
   deps = [
@@ -622,17 +520,6 @@ source_set("unit_tests") {
     "nigori/nigori_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",
     "protocol/proto_value_conversions_unittest.cc",
-    "syncable/change_record_unittest.cc",
-    "syncable/directory_backing_store_unittest.cc",
-    "syncable/directory_unittest.cc",
-    "syncable/directory_unittest.h",
-    "syncable/entry_kernel_unittest.cc",
-    "syncable/nigori_util_unittest.cc",
-    "syncable/parent_child_index_unittest.cc",
-    "syncable/proto_value_ptr_unittest.cc",
-    "syncable/syncable_enum_conversions_unittest.cc",
-    "syncable/syncable_id_unittest.cc",
-    "syncable/syncable_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -647,7 +534,6 @@ source_set("unit_tests") {
     ":test_support_engine",
     ":test_support_model",
     ":test_support_nigori",
-    ":test_support_syncable",
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",

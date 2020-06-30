@@ -180,15 +180,15 @@ void NetworkStateHandler::InitShillPropertyHandler() {
 void NetworkStateHandler::UpdateBlockedWifiNetworks(
     bool only_managed,
     bool available_only,
-    const std::vector<std::string>& blacklisted_hex_ssids) {
+    const std::vector<std::string>& blocked_hex_ssids) {
   if (allow_only_policy_networks_to_connect_ == only_managed &&
       allow_only_policy_networks_to_connect_if_available_ == available_only &&
-      blacklisted_hex_ssids_ == blacklisted_hex_ssids) {
+      blocked_hex_ssids_ == blocked_hex_ssids) {
     return;
   }
   allow_only_policy_networks_to_connect_ = only_managed;
   allow_only_policy_networks_to_connect_if_available_ = available_only;
-  blacklisted_hex_ssids_ = blacklisted_hex_ssids;
+  blocked_hex_ssids_ = blocked_hex_ssids;
 
   UpdateBlockedWifiNetworksInternal();
 }
@@ -996,7 +996,7 @@ bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
   bool blocked_by_policy =
       !network->IsManagedByPolicy() &&
       (OnlyManagedWifiNetworksAllowed() ||
-       base::Contains(blacklisted_hex_ssids_, network->GetHexSsid()));
+       base::Contains(blocked_hex_ssids_, network->GetHexSsid()));
   network->set_blocked_by_policy(blocked_by_policy);
   return prev_blocked_by_policy != blocked_by_policy;
 }

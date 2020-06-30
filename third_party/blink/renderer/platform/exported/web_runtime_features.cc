@@ -597,6 +597,10 @@ void WebRuntimeFeatures::EnableDocumentPolicy(bool enable) {
   RuntimeEnabledFeatures::SetDocumentPolicyEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePermissionsPolicyHeader(bool enable) {
+  RuntimeEnabledFeatures::SetPermissionsPolicyHeaderEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAutoplayIgnoresWebAudio(bool enable) {
   RuntimeEnabledFeatures::SetAutoplayIgnoresWebAudioEnabled(enable);
 }

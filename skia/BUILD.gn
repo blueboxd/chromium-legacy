@@ -29,7 +29,6 @@ skia_support_skottie = true
 
 declare_args() {
   enable_skia_wuffs_gif = false
-  skia_whitelist_serialized_typefaces = false
 }
 
 # Generate a buildflag header for compile-time checking of Dawn support.
@@ -124,10 +123,6 @@ config("skia_config") {
 
   if (is_win) {
     defines += [ "GR_GL_FUNCTION_TYPE=__stdcall" ]
-  }
-
-  if (skia_whitelist_serialized_typefaces) {
-    defines += [ "SK_WHITELIST_SERIALIZED_TYPEFACES" ]
   }
 }
 

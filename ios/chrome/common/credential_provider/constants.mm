@@ -14,6 +14,8 @@
 #error "This file requires ARC support."
 #endif
 
+using app_group::ApplicationGroup;
+
 namespace {
 
 // Filename for the archivable storage.
@@ -22,30 +24,44 @@ NSString* const kArchivableStorageFilename = @"credential_store";
 // Credential Provider dedicated shared folder name.
 NSString* const kCredentialProviderContainer = @"credential_provider";
 
+// Used to generate the key for the app group user defaults containing the
+// managed user ID to be validated in the extension.
+NSString* const kUserDefaultsCredentialProviderManagedUserID =
+    @"kUserDefaultsCredentialProviderManagedUserID";
+
+// Used to generate a unique AppGroupPrefix to differentiate between different
+// versions of Chrome running in the same device.
+NSString* AppGroupPrefix() {
+  NSDictionary* infoDictionary = [NSBundle mainBundle].infoDictionary;
+  NSString* prefix = infoDictionary[@"MainAppBundleID"];
+  if (prefix) {
+    return prefix;
+  }
+  return [NSBundle mainBundle].bundleIdentifier;
+}
+
 }  // namespace
 
 NSURL* CredentialProviderSharedArchivableStoreURL() {
   NSURL* groupURL = [[NSFileManager defaultManager]
-      containerURLForSecurityApplicationGroupIdentifier:app_group::
-                                                            ApplicationGroup()];
+      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
   NSURL* credentialProviderURL =
       [groupURL URLByAppendingPathComponent:kCredentialProviderContainer];
-  return [credentialProviderURL
-      URLByAppendingPathComponent:kArchivableStorageFilename];
+  NSString* filename =
+      [AppGroupPrefix() stringByAppendingString:kArchivableStorageFilename];
+  return [credentialProviderURL URLByAppendingPathComponent:filename];
 }
 
-// If an update requires a forced sync, update the version from VN to V(N+1) and
-// keep in sync with kUserDefaultsCredentialProviderFirstTimeSyncCompleted.
+NSString* AppGroupUserDefaultsCredentialProviderManagedUserID() {
+  return [AppGroupPrefix()
+      stringByAppendingString:kUserDefaultsCredentialProviderManagedUserID];
+}
+
 NSString* const kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted =
     @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted.V0";
 
-// If an update requires a forced sync, update the version from VN to V(N+1) and
-// keep in sync with kUserDefaultsCredentialProviderFirstTimeSyncCompleted.
 NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted =
     @"UserDefaultsCredentialProviderFirstTimeSyncCompleted.V0";
 
 NSString* const kUserDefaultsCredentialProviderConsentVerified =
     @"UserDefaultsCredentialProviderConsentVerified";
-
-NSString* const kUserDefaultsCredentialProviderManagedUserID =
-    @"kUserDefaultsCredentialProviderManagedUserID";

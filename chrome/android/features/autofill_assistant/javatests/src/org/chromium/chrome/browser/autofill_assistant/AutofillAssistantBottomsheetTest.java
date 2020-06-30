@@ -47,6 +47,7 @@ import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Swipe;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -552,20 +553,22 @@ public class AutofillAssistantBottomsheetTest {
     }
 
     private void checkElementIsCoveredByBottomsheet(String elementId, boolean shouldBeCovered) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria("Timeout while waiting for element '"
-                + elementId + "' to become " + (shouldBeCovered ? "covered" : "not covered")
-                + " by the bottomsheet") {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
-                            mTestRule.getActivity().findViewById(
-                                    R.id.autofill_assistant_bottom_sheet_toolbar))[1];
-                    Rect el = getAbsoluteBoundingRect(mTestRule, elementId);
-                    return el.bottom > y == shouldBeCovered;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            float y = GeneralLocation.TOP_CENTER.calculateCoordinates(
+                    mTestRule.getActivity().findViewById(
+                            R.id.autofill_assistant_bottom_sheet_toolbar))[1];
+            Rect el = null;
+            try {
+                el = getAbsoluteBoundingRect(mTestRule, elementId);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+            String errorMsg = "Timeout while waiting for element '" + elementId + "' to become "
+                    + (shouldBeCovered ? "covered" : "not covered") + " by the bottomsheet";
+            if (shouldBeCovered) {
+                Criteria.checkThat(errorMsg, (float) el.bottom, Matchers.greaterThan(y));
+            } else {
+                Criteria.checkThat(errorMsg, (float) el.bottom, Matchers.lessThanOrEqualTo(y));
             }
         });
     }

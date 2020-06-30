@@ -462,8 +462,6 @@ extern const base::Feature kUserActivityEventLogging;
 #endif
 
 #if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kQuickUnlockPin;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -9,6 +9,7 @@ import android.os.Looper;
 
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -93,11 +94,8 @@ public class ClipboardImageFileProviderTest {
         Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
         Clipboard.getInstance().setImage(mTestImageData, TEST_PNG_IMAGE_FILE_EXTENSION);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return Clipboard.getInstance().getImageUri() != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(Clipboard.getInstance().getImageUri(), Matchers.notNullValue());
         });
 
         // Make sure Clipboard::getImage is call on non UI thread.

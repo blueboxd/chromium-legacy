@@ -199,57 +199,6 @@ TEST(ObserverListThreadSafeTest, RemoveObserver) {
   EXPECT_EQ(0, b.total);
 }
 
-TEST(ObserverListThreadSafeTest, WithoutSequence) {
-  scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
-      new ObserverListThreadSafe<Foo>);
-
-  Adder a(1), b(1), c(1);
-
-  // No sequence, so these should not be added.
-  observer_list->AddObserver(&a);
-  observer_list->AddObserver(&b);
-
-  {
-    // Add c when there's a sequence.
-    test::TaskEnvironment task_environment;
-    observer_list->AddObserver(&c);
-
-    observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
-    RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(0, a.total);
-    EXPECT_EQ(0, b.total);
-    EXPECT_EQ(10, c.total);
-
-    // Now add a when there's a sequence.
-    observer_list->AddObserver(&a);
-
-    // Remove c when there's a sequence.
-    observer_list->RemoveObserver(&c);
-
-    // Notify again.
-    observer_list->Notify(FROM_HERE, &Foo::Observe, 20);
-    RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(20, a.total);
-    EXPECT_EQ(0, b.total);
-    EXPECT_EQ(10, c.total);
-  }
-
-  // Removing should always succeed with or without a sequence.
-  observer_list->RemoveObserver(&a);
-
-  // Notifying should not fail but should also be a no-op.
-  test::TaskEnvironment task_environment;
-  observer_list->AddObserver(&b);
-  observer_list->Notify(FROM_HERE, &Foo::Observe, 30);
-  RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(20, a.total);
-  EXPECT_EQ(30, b.total);
-  EXPECT_EQ(10, c.total);
-}
-
 class FooRemover : public Foo {
  public:
   explicit FooRemover(ObserverListThreadSafe<Foo>* list) : list_(list) {}

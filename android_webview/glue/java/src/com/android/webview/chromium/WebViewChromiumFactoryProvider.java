@@ -508,7 +508,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     @Override
                     public void setSafeBrowsingWhitelist(
                             List<String> urls, ValueCallback<Boolean> callback) {
-                        sharedStatics.setSafeBrowsingWhitelist(
+                        sharedStatics.setSafeBrowsingAllowlist(
                                 urls, CallbackConverter.fromValueCallback(callback));
                     }
 

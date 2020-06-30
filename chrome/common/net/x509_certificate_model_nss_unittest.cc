@@ -13,9 +13,14 @@
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
+// Required to register an observer from the constructor of
+// net::NSSCertDatabase.
+using X509CertificateModelTest = net::TestWithTaskEnvironment;
+
+TEST_F(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
   net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
@@ -48,7 +53,7 @@ TEST(X509CertificateModelTest, GetCertNameOrNicknameAndGetTitle) {
             x509_certificate_model::GetTitle(no_cn_cert2.get()));
 }
 
-TEST(X509CertificateModelTest, GetExtensions) {
+TEST_F(X509CertificateModelTest, GetExtensions) {
   {
     net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
@@ -198,7 +203,7 @@ TEST(X509CertificateModelTest, GetExtensions) {
   }
 }
 
-TEST(X509CertificateModelTest, GetTypeCA) {
+TEST_F(X509CertificateModelTest, GetTypeCA) {
   net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
@@ -219,7 +224,7 @@ TEST(X509CertificateModelTest, GetTypeCA) {
   EXPECT_EQ(net::CA_CERT, x509_certificate_model::GetType(cert.get()));
 }
 
-TEST(X509CertificateModelTest, GetTypeServer) {
+TEST_F(X509CertificateModelTest, GetTypeServer) {
   net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "google.single.der"));
   ASSERT_TRUE(cert.get());
@@ -251,7 +256,7 @@ TEST(X509CertificateModelTest, GetTypeServer) {
 
 // An X.509 v1 certificate with the version field omitted should get
 // the default value v1.
-TEST(X509CertificateModelTest, GetVersionOmitted) {
+TEST_F(X509CertificateModelTest, GetVersionOmitted) {
   net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "ndn.ca.crt"));
   ASSERT_TRUE(cert.get());
@@ -259,7 +264,7 @@ TEST(X509CertificateModelTest, GetVersionOmitted) {
   EXPECT_EQ("1", x509_certificate_model::GetVersion(cert.get()));
 }
 
-TEST(X509CertificateModelTest, GetCMSString) {
+TEST_F(X509CertificateModelTest, GetCMSString) {
   net::ScopedCERTCertificateList certs = CreateCERTCertificateListFromFile(
       net::GetTestCertsDirectory(), "multi-root-chain1.pem",
       net::X509Certificate::FORMAT_AUTO);
@@ -302,7 +307,7 @@ TEST(X509CertificateModelTest, GetCMSString) {
   }
 }
 
-TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
+TEST_F(X509CertificateModelTest, ProcessSecAlgorithms) {
   {
     net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
@@ -333,7 +338,7 @@ TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
   }
 }
 
-TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
+TEST_F(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
   {
     net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
@@ -377,7 +382,7 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
   }
 }
 
-TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
+TEST_F(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
   net::ScopedCERTCertificate cert(net::ImportCERTCertificateFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());

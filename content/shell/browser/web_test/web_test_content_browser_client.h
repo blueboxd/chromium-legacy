@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "content/public/common/client_hints.mojom.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/web_test/fake_bluetooth_chooser.mojom-forward.h"
 #include "content/shell/common/web_test/web_test.mojom-forward.h"
@@ -125,9 +124,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   void BindBadgeService(
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
-
-  void BindClientHintsControllerDelegate(
-      mojo::PendingReceiver<client_hints::mojom::ClientHints> receiver);
 
   void BindPermissionAutomation(
       mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);

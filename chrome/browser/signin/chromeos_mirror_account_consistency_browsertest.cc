@@ -128,9 +128,10 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
                     IncognitoModePrefs::DISABLED);
 
   ASSERT_EQ(1, signin::PROFILE_MODE_INCOGNITO_DISABLED);
-  TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=1,enable_account_consistency=true,"
-                              "consistency_enabled_by_default=false");
+  TestMirrorRequestForProfile(
+      test_server_.get(), profile,
+      "source=Chrome,mode=1,enable_account_consistency=true,"
+      "consistency_enabled_by_default=false");
 }
 
 // Mirror is enabled for non-child accounts.
@@ -147,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   // With Chrome OS Account Manager enabled, this should be true.
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
-  TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=0,enable_account_consistency=true,"
-                              "consistency_enabled_by_default=false");
+  TestMirrorRequestForProfile(
+      test_server_.get(), profile,
+      "source=Chrome,mode=0,enable_account_consistency=true,"
+      "consistency_enabled_by_default=false");
 }

@@ -64,10 +64,11 @@ class VariationsHttpHeaderProviderTest : public ::testing::Test {
   ~VariationsHttpHeaderProviderTest() override {}
 
   void TearDown() override { testing::ClearAllVariationIDs(); }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_Valid) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
 
   // Valid experiment ids.
@@ -86,7 +87,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_Valid) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_ValidCommandLine) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
 
   // Valid experiment ids.
@@ -105,7 +105,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_ValidCommandLine) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_Invalid) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
 
   // Invalid experiment ids.
@@ -129,7 +128,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_Invalid) {
 
 TEST_F(VariationsHttpHeaderProviderTest,
        ForceDisableVariationIds_ValidCommandLine) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
 
   // Valid experiment ids.
@@ -153,7 +151,6 @@ TEST_F(VariationsHttpHeaderProviderTest,
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, ForceDisableVariationIds_Invalid) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
 
   // Invalid command-line ids.
@@ -164,7 +161,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ForceDisableVariationIds_Invalid) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   VariationsHttpHeaderProvider provider;
   provider.InitVariationIDsCacheIfNeeded();
 
@@ -212,7 +208,6 @@ TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, GetGoogleAppVariationsString) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   // All GOOGLE_WEB_PROPERTIES(_X) ids shouldn't be included.
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
@@ -227,8 +222,6 @@ TEST_F(VariationsHttpHeaderProviderTest, GetGoogleAppVariationsString) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
-  base::test::SingleThreadTaskEnvironment task_environment;
-
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
   // SIGNED_IN ids shouldn't be included.
@@ -242,7 +235,6 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVector) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);
@@ -276,7 +268,6 @@ TEST_F(VariationsHttpHeaderProviderTest,
 }
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVectorImpl) {
-  base::test::SingleThreadTaskEnvironment task_environment;
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);

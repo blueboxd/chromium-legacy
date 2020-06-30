@@ -40,10 +40,9 @@ bool ClientHintsPreferences::UserAgentClientHintEnabled() {
              switches::kUserAgentClientHintDisable);
 }
 
-void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
+void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
     const String& header_value,
     const KURL& url,
-    UpdateMode mode,
     Context* context) {
   // Client hints should be allowed only on secure URLs.
   if (!IsClientHintsAllowed(url))
@@ -64,9 +63,7 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (!parsed_ch.has_value())
     return;
 
-  if (mode == UpdateMode::kReplace)
-    enabled_hints_ = WebEnabledClientHints();
-
+  // The renderer only handles http-equiv, so this merges.
   for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
     enabled_hints_.SetIsEnabled(newly_enabled, true);
 
@@ -83,27 +80,6 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   }
 }
 
-void ClientHintsPreferences::UpdateFromAcceptClientHintsLifetimeHeader(
-    const String& header_value,
-    const KURL& url,
-    Context* context) {
-  if (header_value.IsEmpty())
-    return;
-
-  // Client hints should be allowed only on secure URLs.
-  if (!IsClientHintsAllowed(url))
-    return;
-
-  bool conversion_ok = false;
-  int64_t persist_duration_seconds = header_value.ToInt64Strict(&conversion_ok);
-  if (!conversion_ok || persist_duration_seconds <= 0)
-    return;
-
-  persist_duration_ = base::TimeDelta::FromSeconds(persist_duration_seconds);
-  if (context)
-    context->CountPersistentClientHintHeaders();
-}
-
 // static
 bool ClientHintsPreferences::IsClientHintsAllowed(const KURL& url) {
   return (url.ProtocolIs("http") || url.ProtocolIs("https")) &&
@@ -113,10 +89,6 @@ bool ClientHintsPreferences::IsClientHintsAllowed(const KURL& url) {
 
 WebEnabledClientHints ClientHintsPreferences::GetWebEnabledClientHints() const {
   return enabled_hints_;
-}
-
-base::TimeDelta ClientHintsPreferences::GetPersistDuration() const {
-  return persist_duration_;
 }
 
 }  // namespace blink

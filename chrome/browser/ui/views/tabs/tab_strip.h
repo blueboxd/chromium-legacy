@@ -287,8 +287,7 @@ class TabStrip : public views::AccessiblePaneView,
   bool IsActiveTab(const Tab* tab) const override;
   bool IsTabSelected(const Tab* tab) const override;
   bool IsTabPinned(const Tab* tab) const override;
-  bool IsFirstVisibleTab(const Tab* tab) const override;
-  bool IsLastVisibleTab(const Tab* tab) const override;
+  bool IsTabFirst(const Tab* tab) const override;
   bool IsFocusInTabs() const override;
   void MaybeStartDrag(
       TabSlotView* source,

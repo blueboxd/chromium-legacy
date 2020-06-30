@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cmath>
 #include <list>
 #include <map>
 #include <memory>
@@ -1488,10 +1489,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
       blink::WebInputEvent::GetStaticTimeStampForTests());
 
   scroll_event.SetPositionInWidget(
-      gfx::ToFlooredInt((bounds.x() - rwhv_root->GetViewBounds().x() - 5) *
-                        scale_factor),
-      gfx::ToFlooredInt((bounds.y() - rwhv_root->GetViewBounds().y() - 5) *
-                        scale_factor));
+      std::floor((bounds.x() - rwhv_root->GetViewBounds().x() - 5) *
+                 scale_factor),
+      std::floor((bounds.y() - rwhv_root->GetViewBounds().y() - 5) *
+                 scale_factor));
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -30.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
@@ -2079,10 +2080,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   float scale_factor =
       frame_observer.LastRenderFrameMetadata().page_scale_factor;
   scroll_event.SetPositionInWidget(
-      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 10) *
-                       scale_factor),
-      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 10) *
-                       scale_factor));
+      std::ceil((bounds.x() - root_view->GetViewBounds().x() + 10) *
+                scale_factor),
+      std::ceil((bounds.y() - root_view->GetViewBounds().y() + 10) *
+                scale_factor));
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = 5.0f;
@@ -2139,10 +2140,10 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   float scale_factor =
       frame_observer.LastRenderFrameMetadata().page_scale_factor;
   scroll_event.SetPositionInWidget(
-      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 10) *
-                       scale_factor),
-      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 10) *
-                       scale_factor));
+      std::ceil((bounds.x() - root_view->GetViewBounds().x() + 10) *
+                scale_factor),
+      std::ceil((bounds.y() - root_view->GetViewBounds().y() + 10) *
+                scale_factor));
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -5.0f;

@@ -39,7 +39,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
-#import "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -264,8 +263,6 @@ void RecordInterfaceOrientationMetric() {
         SessionRestorationBrowserAgent::FromBrowser(browser);
     _tabUsageRecorder = TabUsageRecorderBrowserAgent::FromBrowser(browser);
     _webEnabler = WebUsageEnablerBrowserAgent::FromBrowser(browser);
-    _syncedWindowDelegate =
-        SyncedWindowDelegateBrowserAgent::FromBrowser(browser);
 
     NSMutableArray<id<WebStateListObserving>>* retainedWebStateListObservers =
         [[NSMutableArray alloc] init];

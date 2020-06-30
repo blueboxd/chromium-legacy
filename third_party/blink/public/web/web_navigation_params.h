@@ -14,6 +14,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
@@ -393,6 +394,10 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // Whether origin isolation is restricting certain cross-origin web APIs.
   bool origin_isolation_restricted = false;
+
+  // List of client hints enabled for top-level frame. These still need to be
+  // checked against feature policy before use.
+  WebVector<network::mojom::WebClientHintsType> enabled_client_hints;
 };
 
 }  // namespace blink

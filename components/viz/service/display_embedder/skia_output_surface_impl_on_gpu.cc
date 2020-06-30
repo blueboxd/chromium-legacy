@@ -972,7 +972,6 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
                           end_paint_semaphores.end());
 
     GrFlushInfo flush_info = {
-        .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = end_semaphores.size(),
         .fSignalSemaphores = end_semaphores.data(),
     };
@@ -1131,14 +1130,12 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     destroy_after_swap_.emplace_back(std::move(ddl));
 
     GrFlushInfo flush_info = {
-        .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = end_semaphores.size(),
         .fSignalSemaphores = end_semaphores.data(),
     };
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
-    auto result = offscreen.surface()->flush(
-        SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    auto result = offscreen.surface()->flush(flush_info);
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
@@ -1248,11 +1245,11 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->getCanvas()->drawPaint(paint);
     gl::ScopedProgressReporter scoped_progress_reporter(
         context_state_->progress_reporter());
-    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, {});
+    surface->flush();
   }
 
   if (use_gl_renderer_copier_) {
-    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, {});
+    surface->flush();
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;

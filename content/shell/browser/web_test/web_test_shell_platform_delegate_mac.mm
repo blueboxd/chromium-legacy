@@ -49,7 +49,7 @@ gfx::NativeWindow WebTestShellPlatformDelegate::GetNativeWindow(Shell* shell) {
 
 void WebTestShellPlatformDelegate::CleanUp(Shell* shell) {
   if (!shell->headless()) {
-    ShellPlatformDelegate::GetNativeWindow(shell);
+    ShellPlatformDelegate::CleanUp(shell);
     return;
   }
 

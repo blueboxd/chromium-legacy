@@ -38,6 +38,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.task.PostTask;
@@ -266,29 +267,26 @@ public class ManualFillingTestHelper {
         final View view = webContents.getViewAndroidDelegate().getContainerView();
 
         // Wait for InputConnection to be ready and fill the filterInput. Then wait for the anchor.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(1, () -> mInputMethodManagerWrapper.getShowSoftInputCounter()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mInputMethodManagerWrapper.getShowSoftInputCounter(), Matchers.is(1));
+        });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ImeAdapter.fromWebContents(webContents).setComposingTextForTest(filterInput, 4);
         });
-        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup anchor view was never added.") {
-            @Override
-            public boolean isSatisfied() {
-                return view.findViewById(R.id.dropdown_popup_window) != null;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Autofill Popup anchor view was never added.",
+                    view.findViewById(R.id.dropdown_popup_window), Matchers.notNullValue());
         });
         View anchorView = view.findViewById(R.id.dropdown_popup_window);
 
         Assert.assertTrue(anchorView.getTag() instanceof DropdownPopupWindowInterface);
         final DropdownPopupWindowInterface popup =
                 (DropdownPopupWindowInterface) anchorView.getTag();
-        CriteriaHelper.pollUiThread(new Criteria("Autofill Popup view never showed!") {
-            @Override
-            public boolean isSatisfied() {
-                // Wait until the popup is showing and onLayout() has happened.
-                return popup.isShowing() && popup.getListView() != null
-                        && popup.getListView().getHeight() != 0;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(popup.isShowing(), Matchers.is(true));
+            Criteria.checkThat(popup.getListView(), Matchers.notNullValue());
+            Criteria.checkThat(popup.getListView().getHeight(), Matchers.not(0));
         });
         return popup;
     }

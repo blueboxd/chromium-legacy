@@ -88,13 +88,14 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 }
 
 void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
-                              const DecodeCB& decode_cb) {
+                              DecodeCB decode_cb) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!remote_decoder_.is_connected()) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -102,12 +103,13 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(media_buffer));
   if (!buffer) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE,
+        base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
     return;
   }
 
   DCHECK(!decode_cb_);
-  decode_cb_ = decode_cb;
+  decode_cb_ = std::move(decode_cb);
 
   remote_decoder_->Decode(std::move(buffer),
                           base::BindOnce(&MojoAudioDecoder::OnDecodeStatus,

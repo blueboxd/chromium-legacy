@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -94,7 +95,7 @@ public class PasswordAccessorySheetViewTest {
                     @Override
                     public void onTabShown() {}
                 });
-        CriteriaHelper.pollUiThread(Criteria.equals(true, () -> mView.get() != null));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get(), notNullValue()));
     }
 
     @After
@@ -112,7 +113,7 @@ public class PasswordAccessorySheetViewTest {
                     new AccessorySheetDataPiece("Passwords", AccessorySheetDataPiece.Type.TITLE));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
         View title = mView.get().findViewById(R.id.tab_title);
         assertThat(title, is(not(nullValue())));
         assertThat(title, instanceOf(TextView.class));
@@ -135,7 +136,7 @@ public class PasswordAccessorySheetViewTest {
                     testInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
         });
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
+        CriteriaHelper.pollUiThread(() -> Criteria.checkThat(mView.get().getChildCount(), is(1)));
 
         assertThat(getNameSuggestion().getText(), is("Name Suggestion"));
         assertThat(getPasswordSuggestion().getText(), is("Password Suggestion"));

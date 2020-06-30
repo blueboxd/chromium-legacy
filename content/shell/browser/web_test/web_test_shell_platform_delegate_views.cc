@@ -1,0 +1,62 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/shell/browser/web_test/web_test_shell_platform_delegate.h"
+
+namespace content {
+
+struct WebTestShellPlatformDelegate::WebTestShellData {};
+
+WebTestShellPlatformDelegate::WebTestShellPlatformDelegate() = default;
+WebTestShellPlatformDelegate::~WebTestShellPlatformDelegate() = default;
+
+void WebTestShellPlatformDelegate::CreatePlatformWindow(
+    Shell* shell,
+    const gfx::Size& initial_size) {
+  ShellPlatformDelegate::CreatePlatformWindow(shell, initial_size);
+}
+
+gfx::NativeWindow WebTestShellPlatformDelegate::GetNativeWindow(Shell* shell) {
+  return ShellPlatformDelegate::GetNativeWindow(shell);
+}
+
+void WebTestShellPlatformDelegate::CleanUp(Shell* shell) {
+  ShellPlatformDelegate::CleanUp(shell);
+}
+
+void WebTestShellPlatformDelegate::SetContents(Shell* shell) {
+  ShellPlatformDelegate::SetContents(shell);
+}
+
+void WebTestShellPlatformDelegate::EnableUIControl(Shell* shell,
+                                                   UIControl control,
+                                                   bool is_enabled) {
+  ShellPlatformDelegate::EnableUIControl(shell, control, is_enabled);
+}
+
+void WebTestShellPlatformDelegate::SetAddressBarURL(Shell* shell,
+                                                    const GURL& url) {
+  ShellPlatformDelegate::SetAddressBarURL(shell, url);
+}
+
+void WebTestShellPlatformDelegate::SetTitle(Shell* shell,
+                                            const base::string16& title) {
+  ShellPlatformDelegate::SetTitle(shell, title);
+}
+
+void WebTestShellPlatformDelegate::RenderViewReady(Shell* shell) {
+  ShellPlatformDelegate::RenderViewReady(shell);
+}
+
+bool WebTestShellPlatformDelegate::DestroyShell(Shell* shell) {
+  return ShellPlatformDelegate::DestroyShell(shell);
+}
+
+void WebTestShellPlatformDelegate::ResizeWebContent(
+    Shell* shell,
+    const gfx::Size& content_size) {
+  ShellPlatformDelegate::ResizeWebContent(shell, content_size);
+}
+
+}  // namespace content

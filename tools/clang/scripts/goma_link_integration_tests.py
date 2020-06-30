@@ -48,24 +48,24 @@ def _create_inputs(path):
     f.write('int bar() {\n  return 9;\n}\n')
 
 
-class GomaLinkUnixWhitelistMain(goma_ld.GomaLinkUnix):
+class GomaLinkUnixAllowMain(goma_ld.GomaLinkUnix):
   """
-  Same as goma_ld.GomaLinkUnix, but whitelists "main".
-  """
-
-  def __init__(self, *args, **kwargs):
-    super(GomaLinkUnixWhitelistMain, self).__init__(*args, **kwargs)
-    self.WHITELISTED_TARGETS = {'main'}
-
-
-class GomaLinkWindowsWhitelistMain(goma_link.GomaLinkWindows):
-  """
-  Same as goma_ld.GomaLinkWindows, but whitelists "main".
+  Same as goma_ld.GomaLinkUnix, but has "main" on the allow list.
   """
 
   def __init__(self, *args, **kwargs):
-    super(GomaLinkWindowsWhitelistMain, self).__init__(*args, **kwargs)
-    self.WHITELISTED_TARGETS = {'main.exe'}
+    super(GomaLinkUnixAllowMain, self).__init__(*args, **kwargs)
+    self.ALLOWLIST = {'main'}
+
+
+class GomaLinkWindowsAllowMain(goma_link.GomaLinkWindows):
+  """
+  Same as goma_ld.GomaLinkWindows, but has "main" on the allow list.
+  """
+
+  def __init__(self, *args, **kwargs):
+    super(GomaLinkWindowsAllowMain, self).__init__(*args, **kwargs)
+    self.ALLOWLIST = {'main.exe'}
 
 
 class GomaLinkIntegrationTest(unittest.TestCase):
@@ -128,7 +128,7 @@ class GomaLinkIntegrationTest(unittest.TestCase):
       # functions, one of which calls the other.
       self.assertTrue(b'call' in disasm or b'jmp' in disasm)
 
-  def test_distributed_lto_whitelisted(self):
+  def test_distributed_lto_allowlist(self):
     with named_directory() as d, working_directory(d):
       _create_inputs(d)
       os.makedirs('obj')
@@ -148,7 +148,7 @@ class GomaLinkIntegrationTest(unittest.TestCase):
           ['llvm-ar', 'crsT', 'obj/foobar.lib', 'obj/bar.obj', 'obj/foo.obj'])
       with open('main.rsp', 'w') as f:
         f.write('obj/main.obj\n' 'obj/foobar.lib\n')
-      rc = GomaLinkWindowsWhitelistMain().main([
+      rc = GomaLinkWindowsAllowMain().main([
           'goma_link.py', '--gomacc', 'gomacc', '--',
           self.lld_link(), '-nodefaultlib', '-entry:main', '-machine:X86',
           '-opt:lldlto=2', '-mllvm:-import-instr-limit=10', '-out:main.exe',
@@ -195,7 +195,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
           [self.clangxx(), '-c', '-Os', 'main.cpp', '-o', 'main.o'])
       subprocess.check_call(
           [self.clangxx(), '-c', '-Os', 'foo.cpp', '-o', 'foo.o'])
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py', '--gomacc', 'gomacc', '--',
           self.clangxx(), '-fuse-ld=lld', 'main.o', 'foo.o', '-o', 'main'
       ])
@@ -242,7 +242,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       ])
       subprocess.check_call(
           [self.clangxx(), '-c', '-Os', '-flto=thin', 'foo.cpp', '-o', 'foo.o'])
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py', '-j', '16', '--',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'main.o', 'foo.o', '-o',
           'main'
@@ -274,7 +274,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
           [self.clangxx(), '-c', '-Os', '-flto=thin', 'bar.cpp', '-o', 'bar.o'])
       subprocess.check_call(
           ['llvm-ar', 'crsT', 'libfoobar.a', 'bar.o', 'foo.o'])
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'main.o', 'libfoobar.a',
           '-o', 'main'
@@ -312,7 +312,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       ])
       subprocess.check_call(
           ['llvm-ar', 'crsT', 'obj/libfoobar.a', 'obj/bar.o', 'obj/foo.o'])
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'obj/main.o',
           'obj/libfoobar.a', '-o', 'main'
@@ -346,7 +346,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       ])
       with open('main.rsp', 'w') as f:
         f.write('obj/main.o\n' 'obj/foo.o\n')
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', '-g', '-gsplit-dwarf',
           '-Wl,--lto-O2', '-o', 'main', '@main.rsp'
@@ -384,7 +384,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
                 '-fwhole-program-vtables\n'
                 'obj/main.o\n'
                 'obj/libfoobar.a\n')
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', '-m32', '-Wl,-mllvm',
           '-Wl,-generate-type-units', '-Wl,--lto-O2', '-o', 'main',
@@ -425,7 +425,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       ])
       subprocess.check_call(
           [self.clangxx(), '-c', '-Os', '-flto=thin', 'foo.cpp', '-o', 'foo.o'])
-      rc = GomaLinkUnixWhitelistMain().main([
+      rc = GomaLinkUnixAllowMain().main([
           'goma_ld.py', '--no-gomacc', '-j', '16', '--',
           self.clangxx(), '-fuse-ld=lld', '-flto=thin', 'main.o', 'foo.o', '-o',
           'main'
@@ -450,7 +450,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       with open('main.o', 'wb') as f:
         f.write(b'\7fELF')
       with mock.patch('sys.stderr', new_callable=StringIO) as stderr:
-        rc = GomaLinkUnixWhitelistMain().main([
+        rc = GomaLinkUnixAllowMain().main([
             'goma_ld.py', '--generate', '--',
             self.clangxx(), 'main.o', '-o', 'main'
         ])
@@ -462,7 +462,7 @@ class GomaLdIntegrationTest(unittest.TestCase):
       with open('main.o', 'wb') as f:
         f.write(b'BC\xc0\xde')
       with mock.patch('sys.stderr', new_callable=StringIO) as stderr:
-        rc = GomaLinkUnixWhitelistMain().main([
+        rc = GomaLinkUnixAllowMain().main([
             'goma_ld.py', '--generate', '--',
             self.clangxx(), 'main.o', '-o', 'main'
         ])

@@ -57,9 +57,9 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
 
   void FlushForTesting();
 
-  // Spawn |num_threads| number of threads and start running work on the
-  // worker threads.
-  void Start(int num_threads);
+  // Spawn |num_threads| normal threads and 1 background thread and start
+  // running work on the worker threads.
+  void Start(int num_normal_threads);
 
   // Finish running all the posted tasks (and nested task posted by those tasks)
   // of all the associated task runners.
@@ -148,9 +148,9 @@ class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
   // Cached vector to avoid allocation when getting the list of complete
   // tasks.
   cc::Task::Vector completed_tasks_ GUARDED_BY(lock_);
-  // Condition variables for foreground and background tasks.
-  base::ConditionVariable has_ready_to_run_foreground_tasks_cv_;
-  base::ConditionVariable has_ready_to_run_background_tasks_cv_;
+  // Condition variables for foreground and background threads.
+  base::ConditionVariable has_task_for_normal_priority_thread_cv_;
+  base::ConditionVariable has_task_for_background_priority_thread_cv_;
   // Condition variable that is waited on by origin threads until a namespace
   // has finished running all associated tasks.
   base::ConditionVariable has_namespaces_with_finished_running_tasks_cv_;

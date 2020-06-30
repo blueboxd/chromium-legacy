@@ -14,8 +14,8 @@
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser_jni_headers/AwSafeBrowsingConfigHelper_jni.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
@@ -59,7 +59,7 @@ void CallOnReceivedError(AwContentsClientBridge* client,
 AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<AwSafeBrowsingUIManager> ui_manager,
-    AwSafeBrowsingWhitelistManager* whitelist_manager)
+    AwSafeBrowsingAllowlistManager* allowlist_manager)
     : database_manager_(std::move(database_manager)),
       ui_manager_(std::move(ui_manager)),
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
@@ -67,7 +67,7 @@ AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
            safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
            safe_browsing::SB_THREAT_TYPE_URL_UNWANTED,
            safe_browsing::SB_THREAT_TYPE_BILLING})),
-      whitelist_manager_(whitelist_manager) {}
+      allowlist_manager_(allowlist_manager) {}
 
 AwUrlCheckerDelegateImpl::~AwUrlCheckerDelegateImpl() = default;
 
@@ -97,7 +97,7 @@ void AwUrlCheckerDelegateImpl::
 }
 
 bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
-  return whitelist_manager_->IsURLWhitelisted(url);
+  return allowlist_manager_->IsUrlAllowed(url);
 }
 
 bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(

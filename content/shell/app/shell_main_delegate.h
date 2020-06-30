@@ -18,7 +18,10 @@ class ShellContentBrowserClient;
 class ShellContentGpuClient;
 class ShellContentRendererClient;
 class ShellContentUtilityClient;
+
+#if !defined(OS_ANDROID)
 class WebTestBrowserMainRunner;
+#endif
 
 class ShellMainDelegate : public ContentMainDelegate {
  public:
@@ -49,11 +52,13 @@ class ShellMainDelegate : public ContentMainDelegate {
   // content_browsertests should not set the kRunWebTests command line flag, so
   // |is_content_browsertests_| and |web_test_runner_| are mututally exclusive.
   bool is_content_browsertests_;
+#if !defined(OS_ANDROID)
   // Only present when running web tests, which run inside Content Shell.
   //
   // Web tests are not browser tests, so |is_content_browsertests_| and
   // |web_test_runner_| are mututally exclusive.
   std::unique_ptr<WebTestBrowserMainRunner> web_test_runner_;
+#endif
 
   std::unique_ptr<ShellContentBrowserClient> browser_client_;
   std::unique_ptr<ShellContentGpuClient> gpu_client_;

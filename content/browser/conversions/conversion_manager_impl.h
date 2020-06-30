@@ -169,8 +169,7 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
   // ConversionStorage instance which is scoped to lifetime of
   // |storage_task_runner_|. |storage_| should be accessed by calling
   // base::PostTask with |storage_task_runner_|, and should not be accessed
-  // directly. |storage_| can be null if the storage initialization did not
-  // succeed.
+  // directly. |storage_| should never be nullptr.
   //
   // TODO(https://crbug.com/1066920): This should use base::SequenceBound to
   // avoid having to call PostTask manually, as well as use base::Unretained on

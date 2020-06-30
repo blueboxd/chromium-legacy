@@ -66,6 +66,7 @@ import androidx.test.espresso.contrib.AccessibilityChecks;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -207,11 +208,10 @@ public class StartSurfaceLayoutTest {
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
 
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
 
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
     }
@@ -572,8 +572,8 @@ public class StartSurfaceLayoutTest {
                         !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
                 if (!doneHiding) {
                     // Before overview hiding animation is done, the tab index should not change.
-                    assertEquals(
-                            index, mActivityTestRule.getActivity().getCurrentTabModel().index());
+                    Criteria.checkThat(mActivityTestRule.getActivity().getCurrentTabModel().index(),
+                            Matchers.is(index));
                 }
                 return doneHiding;
             }, "Overview not hidden yet");
@@ -827,7 +827,8 @@ public class StartSurfaceLayoutTest {
         // TabSuggestionMessageService.isSuggestionAvailableForTesting(). Instead, we can add a
         // dummy MessageObserver to track the availability of the suggestions.
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
 
@@ -853,7 +854,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
 
@@ -907,7 +909,8 @@ public class StartSurfaceLayoutTest {
         // clang-format on
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -917,7 +920,8 @@ public class StartSurfaceLayoutTest {
 
         CriteriaHelper.pollUiThread(
                 () -> !TabSuggestionMessageService.isSuggestionAvailableForTesting());
-        CriteriaHelper.pollUiThread(Criteria.equals(2, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(2)));
 
         onView(withId(R.id.tab_list_view))
                 .check(TabUiTestHelper.ChildrenCountAssertion.havingTabSuggestionMessageCardCount(
@@ -993,7 +997,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
@@ -1478,8 +1483,10 @@ public class StartSurfaceLayoutTest {
     }
 
     private void waitForLastSearchTerm(Tab tab, String expected) {
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expected, () -> TabAttributeCache.getLastSearchTerm(tab.getId())));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    TabAttributeCache.getLastSearchTerm(tab.getId()), Matchers.is(expected));
+        });
     }
 
     @Test
@@ -1676,7 +1683,8 @@ public class StartSurfaceLayoutTest {
 
         // Review closing tab suggestion.
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         // Entering GTS with thumbnail checking here is trying to reduce flakiness that is caused by
         // the TabContextObserver. TabContextObserver listens to
@@ -1694,8 +1702,10 @@ public class StartSurfaceLayoutTest {
 
         robot.actionRobot.clickToolbarActionButton();
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(0, mActivityTestRule.getActivity().getCurrentTabModel()::getCount));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getCurrentTabModel().getCount(),
+                    Matchers.is(0));
+        });
 
         // Show Manual Selection Mode.
         createTabs(cta, false, 3);
@@ -1891,10 +1901,9 @@ public class StartSurfaceLayoutTest {
         cta = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class);
         assertTrue(cta.getNightModeStateProvider().isInNightMode());
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                cta.getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(cta.getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 2);
     }
@@ -2003,8 +2012,9 @@ public class StartSurfaceLayoutTest {
 
     private void checkCaptureCount(int expectedDelta, int initCount) {
         // TODO(wychen): With animation, the 2nd capture might be skipped if the 1st takes too long.
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(expectedDelta, () -> getCaptureCount() - initCount));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getCaptureCount() - initCount, Matchers.is(expectedDelta));
+        });
     }
 
     private int getCaptureCount() {
@@ -2068,7 +2078,8 @@ public class StartSurfaceLayoutTest {
                 String.format(Locale.getDefault(), suggestionMessageTemplate, "3");
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(getTabCountInCurrentTabModel(), Matchers.is(3)));
 
         enterGTSWithThumbnailChecking();
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);

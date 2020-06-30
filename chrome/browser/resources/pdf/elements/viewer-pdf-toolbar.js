@@ -70,7 +70,6 @@ Polymer({
       value: false,
     },
 
-    /** The number of pages in the PDF document. */
     docLength: Number,
 
     /** The title of the PDF document. */
@@ -97,7 +96,6 @@ Polymer({
       value: true,
     },
 
-    /** The number of the page being viewed (1-based). */
     pageNo: Number,
 
     /**

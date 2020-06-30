@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_frame.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_image_track.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -66,9 +67,12 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   mime_type_ = init->type();
   if (!canDecodeType(mime_type_)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Unsupported image format.");
+                                      "Unsupported image format");
     return;
   }
+
+  if (init->hasPreferAnimation())
+    prefer_animation_ = init->preferAnimation();
 
   if (init->data().IsReadableStream()) {
     consumer_ = MakeGarbageCollected<ReadableStreamBytesConsumer>(
@@ -99,9 +103,9 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     return;
   }
 
-  // TODO: Data is owned by the caller who may be free to manipulate it. We will
-  // probably need to make a copy to our own internal data or neuter the buffers
-  // as seen by JS.
+  // TODO(crbug.com/1073995): Data is owned by the caller who may be free to
+  // manipulate it. We will probably need to make a copy to our own internal
+  // data or neuter the buffers as seen by JS.
   segment_reader_ = SegmentReader::CreateFromSkData(
       SkData::MakeWithoutCopy(buffer.Data(), buffer.ByteLengthAsSizeT()));
   if (!segment_reader_) {
@@ -147,6 +151,39 @@ ScriptPromise ImageDecoderExternal::decodeMetadata() {
   return promise;
 }
 
+void ImageDecoderExternal::selectTrack(uint32_t track_id,
+                                       ExceptionState& exception_state) {
+  if (track_id >= tracks_.size()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
+                                      "Track index out of range");
+    return;
+  }
+
+  // Returning early allows us to avoid churn from unnecessarily destructing the
+  // underlying ImageDecoder interface.
+  if (tracks_.size() == 1 || selected_track_id_ == track_id)
+    return;
+
+  for (auto& request : pending_decodes_) {
+    request->resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "Aborted by track change"));
+  }
+
+  pending_decodes_.clear();
+  incomplete_frames_.clear();
+
+  // TODO(crbug.com/1073995): We eventually need a formal track selection
+  // mechanism. For now we can only select between the still and animated images
+  // and must destruct the decoder for changes.
+  decoder_.reset();
+  selected_track_id_ = track_id;
+  prefer_animation_ = tracks_[track_id]->animated();
+
+  CreateImageDecoder();
+  MaybeUpdateMetadata();
+  MaybeSatisfyPendingDecodes();
+}
+
 uint32_t ImageDecoderExternal::frameCount() const {
   return frame_count_;
 }
@@ -161,6 +198,11 @@ uint32_t ImageDecoderExternal::repetitionCount() const {
 
 bool ImageDecoderExternal::complete() const {
   return data_complete_;
+}
+
+const ImageDecoderExternal::ImageTrackList ImageDecoderExternal::tracks()
+    const {
+  return tracks_;
 }
 
 void ImageDecoderExternal::OnStateChange() {
@@ -197,6 +239,7 @@ String ImageDecoderExternal::DebugName() const {
 void ImageDecoderExternal::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(consumer_);
+  visitor->Trace(tracks_);
   visitor->Trace(pending_decodes_);
   visitor->Trace(pending_metadata_decodes_);
   visitor->Trace(init_data_);
@@ -207,8 +250,9 @@ void ImageDecoderExternal::Trace(Visitor* visitor) const {
 void ImageDecoderExternal::CreateImageDecoder() {
   DCHECK(!decoder_);
 
-  // TODO: We should probably call ImageDecoder::SetMemoryAllocator() so that
-  // we can recycle frame buffers for decoded images.
+  // TODO(crbug.com/1073995): We should probably call
+  // ImageDecoder::SetMemoryAllocator() so that we can recycle frame buffers for
+  // decoded images.
 
   constexpr char kNoneOption[] = "none";
 
@@ -220,7 +264,7 @@ void ImageDecoderExternal::CreateImageDecoder() {
   if (options_->premultiplyAlpha() == kNoneOption)
     premultiply_alpha = ImageDecoder::kAlphaNotPremultiplied;
 
-  // TODO: Is it okay to use resize size like this?
+  // TODO(crbug.com/1073995): Is it okay to use resize size like this?
   auto desired_size = SkISize::MakeEmpty();
   if (options_->hasResizeWidth() && options_->hasResizeHeight()) {
     desired_size =
@@ -254,7 +298,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
         continue;
     } else if (request->frame_index >= frame_count_) {
       request->complete = true;
-      // TODO: Include frameIndex in rejection?
+      // TODO(crbug.com/1073995): Include frameIndex in rejection?
       request->resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kConstraintError, "Frame index out of range"));
       continue;
@@ -263,7 +307,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
     auto* image = decoder_->DecodeFrameBufferAtIndex(request->frame_index);
     if (decoder_->Failed() || !image) {
       request->complete = true;
-      // TODO: Include frameIndex in rejection?
+      // TODO(crbug.com/1073995): Include frameIndex in rejection?
       request->resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kConstraintError, "Failed to decode frame"));
       continue;
@@ -283,7 +327,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
                                 : SkImage::MakeFromBitmap(image->Bitmap());
     if (!sk_image) {
       request->complete = true;
-      // TODO: Include frameIndex in rejection?
+      // TODO(crbug.com/1073995): Include frameIndex in rejection?
       request->resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kOperationError, "Failed decode frame"));
       continue;
@@ -354,6 +398,32 @@ void ImageDecoderExternal::MaybeUpdateMetadata() {
   const int decoded_repetition_count = decoder_->RepetitionCount();
   if (decoded_repetition_count > 0)
     repetition_count_ = decoded_repetition_count;
+
+  // TODO(crbug.com/1073995): None of the underlying ImageDecoders actually
+  // expose tracks yet. So for now just assume a still and animated track for
+  // images which declare to be multi-image and have animations.
+  if (tracks_.IsEmpty()) {
+    auto* track = ImageTrackExternal::Create();
+    track->setId(0);
+    tracks_.push_back(track);
+
+    if (decoder_->ImageHasBothStillAndAnimatedSubImages()) {
+      track->setAnimated(false);
+
+      // All multi-track images have a still image track. Even if it's just the
+      // first frame of the animation.
+      track = ImageTrackExternal::Create();
+      track->setId(1);
+      track->setAnimated(true);
+      tracks_.push_back(track);
+
+      if (prefer_animation_.has_value())
+        selected_track_id_ = prefer_animation_.value() ? 1 : 0;
+    } else {
+      track->setAnimated(frame_count_ > 1);
+      selected_track_id_ = 0;
+    }
+  }
 
   MaybeSatisfyPendingMetadataDecodes();
 }

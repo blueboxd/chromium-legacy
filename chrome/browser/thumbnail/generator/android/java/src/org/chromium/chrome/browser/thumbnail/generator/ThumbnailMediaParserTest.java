@@ -22,7 +22,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -76,12 +75,8 @@ public class ThumbnailMediaParserTest {
             parser.start();
         });
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return result.done;
-            }
-        }, MAX_MEDIA_PARSER_POLL_TIME_MS, MEDIA_PARSER_POLL_INTERVAL_MS);
+        CriteriaHelper.pollUiThread(
+                () -> result.done, MAX_MEDIA_PARSER_POLL_TIME_MS, MEDIA_PARSER_POLL_INTERVAL_MS);
         return result;
     }
 

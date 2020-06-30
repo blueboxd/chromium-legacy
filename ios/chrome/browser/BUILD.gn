@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
+import("//build/apple/tweak_info_plist.gni")
 import("//build/config/features.gni")
 import("//build/config/ios/rules.gni")
-import("//build/mac/tweak_info_plist.gni")
 import("//ios/chrome/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")

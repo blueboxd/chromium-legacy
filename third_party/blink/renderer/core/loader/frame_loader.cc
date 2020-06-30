@@ -1183,35 +1183,6 @@ void FrameLoader::CommitDocumentLoader(
   Client()->TransitionToCommittedForNewPage();
 
   document_loader_->CommitNavigation();
-
-  {
-    FrameNavigationDisabler navigation_disabler(*frame_);
-    if (commit_reason == CommitReason::kInitialization) {
-      Client()->DidCreateInitialEmptyDocument();
-    } else if (commit_reason == CommitReason::kJavascriptUrl ||
-               commit_reason == CommitReason::kXSLT) {
-      Client()->DidCommitDocumentReplacementNavigation(document_loader_);
-    } else {
-      Client()->DispatchDidCommitLoad(
-          document_loader_->GetHistoryItem(),
-          DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
-          document_loader_->GetGlobalObjectReusePolicy());
-    }
-    // TODO(dgozman): make DidCreateScriptContext notification call currently
-    // triggered by installing new document happen here, after commit.
-  }
-  if (commit_reason != CommitReason::kInitialization) {
-    // Note: this must be called after DispatchDidCommitLoad() for
-    // metrics to be correctly sent to the browser process.
-    document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
-  }
-  if (document_loader_->LoadType() == WebFrameLoadType::kBackForward) {
-    if (Page* page = frame_->GetPage())
-      page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
-  }
-
-  // Load the document if needed.
-  document_loader_->StartLoadingResponse();
 }
 
 void FrameLoader::RestoreScrollPositionAndViewState() {

@@ -2099,6 +2099,9 @@ void LocalFrame::UpdateFaviconURL() {
   DCHECK_EQ(icon_urls.size(), urls.size());
 
   GetLocalFrameHostRemote().UpdateFaviconURL(std::move(urls));
+
+  if (GetPage())
+    GetPage()->GetPageScheduler()->OnTitleOrFaviconUpdated();
 }
 
 void LocalFrame::SetIsCapturingMediaCallback(

@@ -109,6 +109,7 @@ include_rules = [
   "+components/drive",
   "+components/embedder_support",
   "+components/encrypted_messages",
+  "+components/enterprise",
   "+components/exo",
   "+components/external_intents",
   "+components/favicon_base",

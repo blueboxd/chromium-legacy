@@ -421,16 +421,20 @@ String LocalDOMWindow::OutgoingReferrer() const {
 
   // Step 3.1.3: "While document is an iframe srcdoc document, let document be
   // document's browsing context's browsing context container's node document."
-  LocalFrame* referrer_frame = GetFrame();
-  while (referrer_frame->GetDocument()->IsSrcdocDocument()) {
-    // Srcdoc documents must be local within the containing frame.
-    referrer_frame = To<LocalFrame>(referrer_frame->Tree().Parent());
-    // Srcdoc documents cannot be top-level documents, by definition,
-    // because they need to be contained in iframes with the srcdoc.
-    DCHECK(referrer_frame);
+  Document* referrer_document = document();
+  if (LocalFrame* frame = GetFrame()) {
+    while (frame->GetDocument()->IsSrcdocDocument()) {
+      // Srcdoc documents must be local within the containing frame.
+      frame = To<LocalFrame>(frame->Tree().Parent());
+      // Srcdoc documents cannot be top-level documents, by definition,
+      // because they need to be contained in iframes with the srcdoc.
+      DCHECK(frame);
+    }
+    referrer_document = frame->GetDocument();
   }
+
   // Step: 3.1.4: "Let referrerSource be document's URL."
-  return referrer_frame->GetDocument()->Url().StrippedForUseAsReferrer();
+  return referrer_document->Url().StrippedForUseAsReferrer();
 }
 
 network::mojom::ReferrerPolicy LocalDOMWindow::GetReferrerPolicy() const {
@@ -631,39 +635,6 @@ void LocalDOMWindow::CountUse(mojom::WebFeature feature) {
     return;
   if (auto* loader = GetFrame()->Loader().GetDocumentLoader())
     loader->CountUse(feature);
-}
-
-void LocalDOMWindow::CountDeprecation(mojom::WebFeature feature) {
-  // TODO(yoichio): We should remove these counters when v0 APIs are removed.
-  // crbug.com/946875.
-  if (feature == WebFeature::kHTMLImports &&
-      GetOriginTrialContext()->IsFeatureEnabled(
-          OriginTrialFeature::kHTMLImports)) {
-    CountUse(WebFeature::kHTMLImportsOnReverseOriginTrials);
-  } else if (feature == WebFeature::kElementCreateShadowRoot &&
-             GetOriginTrialContext()->IsFeatureEnabled(
-                 OriginTrialFeature::kShadowDOMV0)) {
-    CountUse(WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
-  } else if (feature == WebFeature::kDocumentRegisterElement &&
-             GetOriginTrialContext()->IsFeatureEnabled(
-                 OriginTrialFeature::kCustomElementsV0)) {
-    CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
-  }
-
-  if (!GetFrame())
-    return;
-
-  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
-  // the deprecation messages.
-  auto* loader = GetFrame()->Loader().GetDocumentLoader();
-  if (Url().ProtocolIs("chrome") &&
-      (feature == WebFeature::kHTMLImports ||
-       feature == WebFeature::kElementCreateShadowRoot ||
-       feature == WebFeature::kDocumentRegisterElement)) {
-    Deprecation::DeprecationWarningOnly(loader, feature);
-  } else {
-    Deprecation::CountDeprecation(loader, feature);
-  }
 }
 
 void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(

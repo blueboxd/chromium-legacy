@@ -22,7 +22,7 @@ class SecondaryGoogleAccountSigninPolicyHandlerTest : public testing::Test {
  protected:
   SecondaryGoogleAccountSigninPolicyHandlerTest() = default;
 
-  void SetPolicy(std::unique_ptr<base::Value> value) {
+  void SetPolicy(base::Value value) {
     policies_.Set(key::kSecondaryGoogleAccountSigninAllowed,
                   POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_CLOUD, std::move(value),
@@ -30,7 +30,7 @@ class SecondaryGoogleAccountSigninPolicyHandlerTest : public testing::Test {
   }
 
   void ApplyPolicySettings(bool value) {
-    SetPolicy(std::make_unique<base::Value>(value));
+    SetPolicy(base::Value(value));
     handler_.ApplyPolicySettings(policies_, &prefs_);
   }
 

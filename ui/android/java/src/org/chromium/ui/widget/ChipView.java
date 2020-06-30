@@ -6,6 +6,7 @@ package org.chromium.ui.widget;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
@@ -202,6 +203,10 @@ public class ChipView extends LinearLayout {
      */
     public void setRemoveIconClickListener(OnClickListener listener) {
         mEndIconWrapper.setOnClickListener(listener);
+        String chipText = mPrimaryText.getText().toString();
+        assert !TextUtils.isEmpty(chipText);
+        mEndIconWrapper.setContentDescription(mPrimaryText.getContext().getString(
+                R.string.chip_remove_icon_content_description, chipText));
     }
 
     /**

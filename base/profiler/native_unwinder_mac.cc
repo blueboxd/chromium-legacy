@@ -135,7 +135,7 @@ bool NativeUnwinderMac::CanUnwindFrom(const Frame& current_frame) const {
   return current_frame.module && current_frame.module->IsNative();
 }
 
-UnwindResult NativeUnwinderMac::TryUnwind(x86_thread_state64_t* thread_context,
+UnwindResult NativeUnwinderMac::TryUnwind(RegisterContext* thread_context,
                                           uintptr_t stack_top,
                                           ModuleCache* module_cache,
                                           std::vector<Frame>* stack) const {

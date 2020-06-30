@@ -290,7 +290,7 @@ void GbmSurfaceless::OnSubmission(gfx::SwapResult result,
 void GbmSurfaceless::OnPresentation(const gfx::PresentationFeedback& feedback) {
   gfx::PresentationFeedback feedback_copy = feedback;
 
-  if (submitted_frame_gpu_fence_) {
+  if (submitted_frame_gpu_fence_ && !feedback.failed()) {
     feedback_copy.ready_timestamp =
         submitted_frame_gpu_fence_->GetMaxTimestamp();
   }

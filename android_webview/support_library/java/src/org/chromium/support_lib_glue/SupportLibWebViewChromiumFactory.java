@@ -241,7 +241,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         @Override
         public void setSafeBrowsingWhitelist(List<String> hosts, ValueCallback<Boolean> callback) {
             recordApiCall(ApiCall.SET_SAFE_BROWSING_WHITELIST);
-            mSharedStatics.setSafeBrowsingWhitelist(
+            mSharedStatics.setSafeBrowsingAllowlist(
                     hosts, CallbackConverter.fromValueCallback(callback));
         }
 

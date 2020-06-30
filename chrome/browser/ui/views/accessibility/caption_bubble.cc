@@ -46,16 +46,18 @@ namespace {
 // Formatting constants
 static constexpr int kLineHeightDip = 24;
 static constexpr int kNumLines = 2;
-static constexpr int kCornerRadiusDip = 8;
-static constexpr int kHorizontalMarginsDip = 6;
-static constexpr int kVerticalMarginsDip = 8;
-static constexpr int kCloseButtonMargin = 4;
+static constexpr int kCornerRadiusDip = 4;
+static constexpr int kBottomPaddingDip = 28;
+static constexpr int kSidePaddingDip = 24;
+static constexpr int kCloseButtonDip = 16;
+static constexpr int kCloseButtonCircleHighlightPaddingDip = 2;
+static constexpr int kCloseButtonMarginDip = 6;
+// The preferred width of the bubble within its anchor.
 static constexpr double kPreferredAnchorWidthPercentage = 0.8;
 static constexpr int kMaxWidthDip = 548;
-static constexpr int kButtonPaddingDip = 48;
-static constexpr int kSideMarginDip = 20;
-// 90% opacity.
-static constexpr int kCaptionBubbleAlpha = 230;
+// Margin of the bubble with respect to the anchor window.
+static constexpr int kMinAnchorMarginDip = 20;
+static constexpr int kCaptionBubbleAlpha = 230;  // 90% opacity
 static constexpr char kPrimaryFont[] = "Roboto";
 static constexpr char kSecondaryFont[] = "Arial";
 static constexpr char kTertiaryFont[] = "sans-serif";
@@ -63,6 +65,7 @@ static constexpr int kFontSizePx = 16;
 static constexpr double kDefaultRatioInParentX = 0.5;
 static constexpr double kDefaultRatioInParentY = 1;
 static constexpr int kErrorImageSizeDip = 20;
+static constexpr int kErrorMessageBetweenChildSpacingDip = 16;
 static constexpr int kFocusRingInnerInsetDip = 3;
 static constexpr int kWidgetDisplacementWithArrowKeyDip = 16;
 
@@ -194,7 +197,7 @@ gfx::Rect CaptionBubble::GetBubbleBounds() {
   gfx::Rect anchor_rect = GetAnchorView()->GetBoundsInScreen();
   // Calculate the desired width based on the original bubble's width (which is
   // the max allowed per the spec).
-  int min_width = anchor_rect.width() - kSideMarginDip * 2;
+  int min_width = anchor_rect.width() - kMinAnchorMarginDip * 2;
   int desired_width = anchor_rect.width() * kPreferredAnchorWidthPercentage;
   int width = std::max(min_width, desired_width);
   if (width > original_bounds.width())
@@ -209,7 +212,7 @@ gfx::Rect CaptionBubble::GetBubbleBounds() {
                  height / 2.0;
   latest_bounds_ = gfx::Rect(target_x, target_y, width, height);
   latest_anchor_bounds_ = GetAnchorView()->GetBoundsInScreen();
-  anchor_rect.Inset(kSideMarginDip, 0, kSideMarginDip, kButtonPaddingDip);
+  anchor_rect.Inset(gfx::Insets(kMinAnchorMarginDip));
   if (!anchor_rect.Contains(latest_bounds_)) {
     latest_bounds_.AdjustToFit(anchor_rect);
   }
@@ -240,7 +243,8 @@ void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
     SizeToContents();
     return;
   }
-  // Check the widget which changed size is our widget. It's possible for
+
+  // Check that the widget which changed size is our widget. It's possible for
   // this to be called when another widget resizes.
   // Also check that our widget is visible. If it is not visible then
   // the user has not explicitly moved it (because the user can't see it),
@@ -251,7 +255,7 @@ void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
   // The widget has moved within the window. Recalculate the desired ratio
   // within the parent.
   gfx::Rect bounds_rect = GetAnchorView()->GetBoundsInScreen();
-  bounds_rect.Inset(kSideMarginDip, 0, kSideMarginDip, kButtonPaddingDip);
+  bounds_rect.Inset(gfx::Insets(kMinAnchorMarginDip));
 
   bool out_of_bounds = false;
   if (!bounds_rect.Contains(widget_bounds)) {
@@ -269,16 +273,16 @@ void CaptionBubble::OnWidgetBoundsChanged(views::Widget* widget,
 }
 
 void CaptionBubble::Init() {
-  int content_top_bottom_margin = kHorizontalMarginsDip - kCloseButtonMargin;
-  int content_sides_margin = kVerticalMarginsDip - kCloseButtonMargin;
+  int content_bottom_margin = kBottomPaddingDip - kCloseButtonMarginDip;
+  int content_side_margin = kSidePaddingDip - kCloseButtonMarginDip;
 
   views::View* content_container = new views::View();
   views::FlexLayout* layout = content_container->SetLayoutManager(
       std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
   layout->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
-  layout->SetInteriorMargin(
-      gfx::Insets(content_top_bottom_margin, content_sides_margin));
+  layout->SetInteriorMargin(gfx::Insets(
+      0, content_side_margin, content_bottom_margin, content_side_margin));
   layout->SetDefault(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
@@ -287,9 +291,11 @@ void CaptionBubble::Init() {
 
   views::BoxLayout* main_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(0), 0));
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets(kCloseButtonMarginDip), 0));
   main_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kEnd);
+  set_margins(gfx::Insets());
 
   // TODO(crbug.com/1055150): Use system caption color scheme rather than
   // hard-coding the colors.
@@ -300,7 +306,7 @@ void CaptionBubble::Init() {
 
   auto label = std::make_unique<views::Label>();
   label->SetMultiLine(true);
-  label->SetMaximumWidth(kMaxWidthDip - kVerticalMarginsDip);
+  label->SetMaximumWidth(kMaxWidthDip - content_side_margin * 2);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SK_ColorTRANSPARENT);
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -314,41 +320,49 @@ void CaptionBubble::Init() {
   // set the truncate_length to 0 to ensure that it never truncates.
   label->SetTruncateLength(0);
 
-  auto title = std::make_unique<views::Label>();
-  title->SetEnabledColor(gfx::kGoogleGrey500);
-  title->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-  title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
+  auto wait_text = std::make_unique<views::Label>();
+  wait_text->SetEnabledColor(gfx::kGoogleGrey500);
+  wait_text->SetBackgroundColor(SK_ColorTRANSPARENT);
+  wait_text->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  wait_text->SetText(
+      l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_WAIT_TEXT));
 
-  auto error_message = std::make_unique<views::Label>();
-  error_message->SetEnabledColor(SK_ColorWHITE);
-  error_message->SetBackgroundColor(SK_ColorTRANSPARENT);
-  error_message->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-  error_message->SetText(
-      l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_ERROR));
-  error_message->SetVisible(false);
+  auto error_text = std::make_unique<views::Label>();
+  error_text->SetEnabledColor(SK_ColorWHITE);
+  error_text->SetBackgroundColor(SK_ColorTRANSPARENT);
+  error_text->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  error_text->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_ERROR));
 
   auto error_icon = std::make_unique<views::ImageView>();
-  error_icon->SetImage(gfx::CreateVectorIcon(
-      vector_icons::kErrorOutlineIcon, kErrorImageSizeDip, SK_ColorWHITE));
-  error_icon->SetVisible(false);
+  error_icon->SetImage(
+      gfx::CreateVectorIcon(vector_icons::kErrorOutlineIcon, SK_ColorWHITE));
+
+  auto error_message = std::make_unique<views::View>();
+  views::BoxLayout* error_layout =
+      error_message->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kErrorMessageBetweenChildSpacingDip));
+  error_layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  error_message->SetVisible(false);
 
   auto close_button = views::CreateVectorImageButton(this);
   views::SetImageFromVectorIcon(close_button.get(),
-                                vector_icons::kCloseRoundedIcon, SK_ColorWHITE);
-  // TODO(crbug.com/1055150): Use a custom string explaining we dismiss from the
-  // current tab on close, but leave the feature enabled.
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+                                vector_icons::kCloseRoundedIcon,
+                                kCloseButtonDip, SK_ColorWHITE);
+  close_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_CLOSE));
+  close_button->set_ink_drop_base_color(SkColor(gfx::kGoogleGrey600));
   close_button->SizeToPreferredSize();
   close_button->SetFocusForPlatform();
-  views::InstallCircleHighlightPathGenerator(close_button.get());
+  views::InstallCircleHighlightPathGenerator(
+      close_button.get(), gfx::Insets(kCloseButtonCircleHighlightPaddingDip));
 
-  set_margins(gfx::Insets(kCloseButtonMargin));
-
-  title_ = content_container->AddChildView(std::move(title));
+  wait_text_ = content_container->AddChildView(std::move(wait_text));
   label_ = content_container->AddChildView(std::move(label));
 
-  error_icon_ = content_container->AddChildView(std::move(error_icon));
+  error_icon_ = error_message->AddChildView(std::move(error_icon));
+  error_text_ = error_message->AddChildView(std::move(error_text));
   error_message_ = content_container->AddChildView(std::move(error_message));
 
   close_button_ = AddChildView(std::move(close_button));
@@ -432,16 +446,16 @@ void CaptionBubble::OnBlur() {
 // focused and does not announce when text changes.
 void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (model_ && model_->HasError()) {
-    node_data->SetName(error_message_->GetText());
+    node_data->SetName(error_text_->GetText());
     node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
   } else if (label_->GetText().size()) {
     node_data->SetName(label_->GetText());
     node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
   } else {
-    node_data->SetName(title_->GetText());
-    node_data->SetNameFrom(ax::mojom::NameFrom::kTitle);
+    node_data->SetName(wait_text_->GetText());
+    node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
   }
-  node_data->SetDescription(title_->GetText());
+  node_data->SetDescription(wait_text_->GetText());
   node_data->role = ax::mojom::Role::kCaption;
 }
 
@@ -481,29 +495,27 @@ void CaptionBubble::SetModel(CaptionBubbleModel* model) {
 void CaptionBubble::OnTextChange() {
   DCHECK(model_);
   label_->SetText(base::ASCIIToUTF16(model_->GetFullText()));
-  UpdateBubbleAndTitleVisibility();
+  UpdateBubbleAndWaitTextVisibility();
 }
 
 void CaptionBubble::OnErrorChange() {
   DCHECK(model_);
   bool has_error = model_->HasError();
   label_->SetVisible(!has_error);
+  error_message_->SetVisible(has_error);
 
   // The error icon height may be different from the line height, so update the
   // bubble content height accordingly.
   UpdateContentSize();
-  UpdateBubbleAndTitleVisibility();
-
-  error_icon_->SetVisible(has_error);
-  error_message_->SetVisible(has_error);
+  UpdateBubbleAndWaitTextVisibility();
 }
 
-void CaptionBubble::UpdateBubbleAndTitleVisibility() {
+void CaptionBubble::UpdateBubbleAndWaitTextVisibility() {
   DCHECK(model_);
-  // Show the title if there is room for it and no error.
-  title_->SetVisible(!model_->HasError() &&
-                     label_->GetPreferredSize().height() <
-                         kLineHeightDip * kNumLines * GetTextScaleFactor());
+  // Show the wait text if there is room for it and no error.
+  wait_text_->SetVisible(!model_->HasError() &&
+                         label_->GetPreferredSize().height() <
+                             kLineHeightDip * kNumLines * GetTextScaleFactor());
   UpdateBubbleVisibility();
 }
 
@@ -568,29 +580,31 @@ void CaptionBubble::UpdateTextSize() {
                     gfx::Font::FontStyle::NORMAL, kFontSizePx * textScaleFactor,
                     gfx::Font::Weight::NORMAL);
   label_->SetFontList(font_list);
-  title_->SetFontList(font_list);
-  error_message_->SetFontList(font_list);
+  wait_text_->SetFontList(font_list);
+  error_text_->SetFontList(font_list);
 
   label_->SetLineHeight(kLineHeightDip * textScaleFactor);
-  title_->SetLineHeight(kLineHeightDip * textScaleFactor);
-  error_message_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  wait_text_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  error_text_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  error_icon_->SetImageSize(gfx::Size(kErrorImageSizeDip * textScaleFactor,
+                                      kErrorImageSizeDip * textScaleFactor));
   UpdateContentSize();
 }
 
 void CaptionBubble::UpdateContentSize() {
   double textScaleFactor = GetTextScaleFactor();
 
-  int content_height =
-      (model_ && model_->HasError())
-          ? kLineHeightDip * textScaleFactor + kErrorImageSizeDip
-          : kLineHeightDip * kNumLines * textScaleFactor;
+  int content_height = (model_ && model_->HasError())
+                           ? kLineHeightDip * textScaleFactor
+                           : kLineHeightDip * kNumLines * textScaleFactor;
+  content_height += kBottomPaddingDip;
   content_container_->SetPreferredSize(
-      gfx::Size(kMaxWidthDip, content_height + kVerticalMarginsDip));
-  // TODO(crbug.com/1055150): On hover, show/hide the close button. At that
-  // time remove the height of close button size from SetPreferredSize.
+      gfx::Size(kMaxWidthDip - kCloseButtonMarginDip * 2,
+                content_height - kCloseButtonMarginDip * 2));
   SetPreferredSize(
-      gfx::Size(kMaxWidthDip, content_height + kCloseButtonMargin +
-                                  close_button_->GetPreferredSize().height()));
+      gfx::Size(kMaxWidthDip, content_height +
+                                  close_button_->GetPreferredSize().height() +
+                                  kCloseButtonMarginDip));
 }
 
 std::string CaptionBubble::GetLabelTextForTesting() {

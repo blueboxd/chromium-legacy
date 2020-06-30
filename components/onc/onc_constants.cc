@@ -489,7 +489,8 @@ const char kAllowOnlyPolicyNetworksToConnect[] =
     "AllowOnlyPolicyNetworksToConnect";
 const char kAllowOnlyPolicyNetworksToConnectIfAvailable[] =
     "AllowOnlyPolicyNetworksToConnectIfAvailable";
-const char kBlacklistedHexSSIDs[] = "BlacklistedHexSSIDs";
+const char kBlacklistedHexSSIDs[] = "BlacklistedHexSSIDs";  // Deprecated
+const char kBlockedHexSSIDs[] = "BlockedHexSSIDs";
 const char kDisableNetworkTypes[] = "DisableNetworkTypes";
 }  // global_network_config
 

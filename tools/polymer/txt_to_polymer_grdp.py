@@ -47,14 +47,12 @@ FILE_TEMPLATE = \
 DEFINITION_TEMPLATE_WEB_ANIMATIONS = \
 """  <structure name="IDR_POLYMER_1_0_WEB_ANIMATIONS_JS_WEB_ANIMATIONS_NEXT_LITE_MIN_JS"
              file="../../../third_party/web-animations-js/sources/web-animations-next-lite.min.js"
-             type="chrome_html"
-             compress="gzip" />"""
+             type="chrome_html" />"""
 
 DEFINITION_TEMPLATE = \
 """  <structure name="%(name)s"
              file="../../../third_party/polymer/v%(version)s_0/components-chromium/%(path)s"
-             type="chrome_html"
-             compress="gzip" />"""
+             type="chrome_html" />"""
 
 
 def PathToGritId(polymer_version, path):

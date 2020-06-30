@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -223,7 +224,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         Assert.assertEquals(View.VISIBLE, mTabGridDialogView.getVisibility());
         CriteriaHelper.pollUiThread(
                 ()
-                        -> Assert.assertThat(
+                        -> Criteria.checkThat(
                                 mTabGridDialogView.getCurrentDialogAnimatorForTesting(),
                                 Matchers.nullValue()));
 
@@ -235,7 +236,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         }
         CriteriaHelper.pollUiThread(
                 ()
-                        -> Assert.assertThat(
+                        -> Criteria.checkThat(
                                 mTabGridDialogView.getCurrentDialogAnimatorForTesting(),
                                 Matchers.nullValue()));
         Assert.assertEquals(View.GONE, mTabGridDialogView.getVisibility());

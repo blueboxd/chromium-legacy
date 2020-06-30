@@ -1165,6 +1165,13 @@ TEST_F(
     });
 
 TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'DestinationChangeAfterUpDown',
+    function() {
+      this.runMochaTest(destination_dropdown_cros_test.TestNames
+                            .DestinationChangeAfterUpDown);
+    });
+
+TEST_F(
     'PrintPreviewDestinationDropdownCrosTest', 'EnterOpensCloses', function() {
       this.runMochaTest(
           destination_dropdown_cros_test.TestNames.EnterOpensCloses);
@@ -1180,13 +1187,6 @@ TEST_F(
 TEST_F('PrintPreviewDestinationDropdownCrosTest', 'Disabled', function() {
   this.runMochaTest(destination_dropdown_cros_test.TestNames.Disabled);
 });
-
-TEST_F(
-    'PrintPreviewDestinationDropdownCrosTest', 'HiddenDestinationBadge',
-    function() {
-      this.runMochaTest(
-          destination_dropdown_cros_test.TestNames.HiddenDestinationBadge);
-    });
 
 TEST_F(
     'PrintPreviewDestinationDropdownCrosTest',

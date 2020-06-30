@@ -5,6 +5,6 @@
 // https://github.com/w3c/device-memory#the-web-exposed-api
 
 interface mixin NavigatorDeviceMemory {
-    [HighEntropy,MeasureAs=NavigatorDeviceMemory,SecureContext]
+    [HighEntropy=Direct,MeasureAs=NavigatorDeviceMemory,SecureContext]
     readonly attribute float deviceMemory;
 };

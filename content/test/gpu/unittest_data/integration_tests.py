@@ -191,7 +191,9 @@ class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
 
 
 class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
-  _flaky_test_run = 0
+  def __init__(self, methodName):
+    super(RunTestsWithExpectationsFiles, self).__init__(methodName)
+    self._flaky_test_run = 0
 
   @classmethod
   def GetPlatformTags(cls, browser):
@@ -212,8 +214,8 @@ class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
       yield test
 
   def RunActualGpuTest(self, file_path, *args):
-    if file_path == 'failure.html' or self.__class__._flaky_test_run < 3:
-      self.__class__._flaky_test_run += file_path == 'flaky.html'
+    if file_path == 'failure.html' or self._flaky_test_run < 3:
+      self._flaky_test_run += file_path == 'flaky.html'
       self.fail()
 
   @classmethod

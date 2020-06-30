@@ -136,17 +136,14 @@ class ProxyPolicyTest : public testing::Test {
 TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
-  std::unique_ptr<base::Value> mode_name(
-      new base::Value(ProxyPrefs::kFixedServersProxyModeName));
+  base::Value mode_name(ProxyPrefs::kFixedServersProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, std::move(mode_name), nullptr);
   policy.Set(key::kProxyBypassList, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("abc"),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value("abc"), nullptr);
   policy.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("ghi"),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value("ghi"), nullptr);
   provider_.UpdateChromePolicy(policy);
 
   // First verify that command-line options are set correctly when
@@ -174,8 +171,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
 TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
-  std::unique_ptr<base::Value> mode_name(
-      new base::Value(ProxyPrefs::kAutoDetectProxyModeName));
+  base::Value mode_name(ProxyPrefs::kAutoDetectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, std::move(mode_name), nullptr);
@@ -203,8 +199,7 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
   command_line_.AppendSwitch(switches::kNoProxyServer);
-  std::unique_ptr<base::Value> mode_name(
-      new base::Value(ProxyPrefs::kAutoDetectProxyModeName));
+  base::Value mode_name(ProxyPrefs::kAutoDetectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, std::move(mode_name), nullptr);
@@ -228,8 +223,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
   command_line_.AppendSwitch(switches::kProxyAutoDetect);
-  std::unique_ptr<base::Value> mode_name(
-      new base::Value(ProxyPrefs::kDirectProxyModeName));
+  base::Value mode_name(ProxyPrefs::kDirectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD, std::move(mode_name), nullptr);

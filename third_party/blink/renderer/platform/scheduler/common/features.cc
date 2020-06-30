@@ -103,5 +103,23 @@ base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
   return base::TimeDelta::FromSeconds(seconds);
 }
 
+base::TimeDelta GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate() {
+  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+
+  constexpr int kDefaultSeconds = 3;
+
+  static const base::FeatureParam<int> kFeatureParam{
+      &features::kIntensiveWakeUpThrottling,
+      "inhibit_seconds_on_title_or_favicon_update_seconds", kDefaultSeconds};
+
+  int seconds = kDefaultSeconds;
+  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
+      PolicyOverride::NO_OVERRIDE) {
+    seconds = kFeatureParam.Get();
+  }
+
+  return base::TimeDelta::FromSeconds(seconds);
+}
+
 }  // namespace scheduler
 }  // namespace blink

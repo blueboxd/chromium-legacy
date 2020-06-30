@@ -215,6 +215,15 @@ gfx::Size InkDropHostView::CalculateLargeInkDropSize(
   return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
 }
 
+void InkDropHostView::OnLayerTransformed(const gfx::Transform& old_transform,
+                                         ui::PropertyChangeReason reason) {
+  View::OnLayerTransformed(old_transform, reason);
+
+  // Notify the ink drop that we have transformed so it can adapt accordingly.
+  if (HasInkDrop())
+    GetInkDrop()->HostTransformChanged(GetTransform());
+}
+
 const InkDropEventHandler* InkDropHostView::GetEventHandler() const {
   if (ink_drop_event_handler_override_)
     return ink_drop_event_handler_override_;

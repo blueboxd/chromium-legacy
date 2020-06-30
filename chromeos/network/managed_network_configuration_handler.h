@@ -180,8 +180,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandler {
   // Return true if the AllowOnlyPolicyNetworksToAutoconnect policy is enabled.
   virtual bool AllowOnlyPolicyNetworksToAutoconnect() const = 0;
 
-  // Return the list of blacklisted WiFi networks (identified by HexSSIDs).
-  virtual std::vector<std::string> GetBlacklistedHexSSIDs() const = 0;
+  // Return the list of blocked WiFi networks (identified by HexSSIDs).
+  virtual std::vector<std::string> GetBlockedHexSSIDs() const = 0;
 
   static std::unique_ptr<ManagedNetworkConfigurationHandler>
   InitializeForTesting(

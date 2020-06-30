@@ -38,8 +38,10 @@ class LenientMockV8PerFrameMemoryReporter
  public:
   LenientMockV8PerFrameMemoryReporter() : receiver_(this) {}
 
-  MOCK_METHOD1(GetPerFrameV8MemoryUsageData,
-               void(GetPerFrameV8MemoryUsageDataCallback callback));
+  MOCK_METHOD(void,
+              GetPerFrameV8MemoryUsageData,
+              (GetPerFrameV8MemoryUsageDataCallback callback),
+              (override));
 
   void Bind(
       mojo::PendingReceiver<mojom::V8PerFrameMemoryReporter> pending_receiver) {
@@ -52,6 +54,31 @@ class LenientMockV8PerFrameMemoryReporter
 
 using MockV8PerFrameMemoryReporter =
     testing::StrictMock<LenientMockV8PerFrameMemoryReporter>;
+
+class LenientMockMeasurementAvailableObserver
+    : public V8PerFrameMemoryDecorator::Observer {
+ public:
+  MOCK_METHOD(void,
+              OnV8MemoryMeasurementAvailable,
+              (const ProcessNode* const process_node),
+              (override));
+
+  void ExpectObservationOnProcess(
+      const ProcessNode* const process_node,
+      uint64_t expected_unassociated_v8_bytes_used) {
+    EXPECT_CALL(*this, OnV8MemoryMeasurementAvailable(process_node))
+        .WillOnce([process_node, expected_unassociated_v8_bytes_used]() {
+          // When the observer is notified unassociated_v8_bytes_used() should
+          // immediately be available on the process node.
+          EXPECT_EQ(expected_unassociated_v8_bytes_used,
+                    ProcessData::ForProcessNode(process_node)
+                        ->unassociated_v8_bytes_used());
+        });
+  }
+};
+
+using MockMeasurementAvailableObserver =
+    testing::StrictMock<LenientMockMeasurementAvailableObserver>;
 
 void AddPerFrameIsolateMemoryUsage(FrameToken frame_token,
                                    int64_t world_id,
@@ -158,11 +185,13 @@ class V8PerFrameMemoryDecoratorTest : public GraphTestHarness {
         });
   }
 
-  MOCK_METHOD2(BindReceiverWithProxyHost,
-               void(mojo::PendingReceiver<
-                        performance_manager::mojom::V8PerFrameMemoryReporter>
-                        pending_receiver,
-                    RenderProcessHostProxy proxy));
+  MOCK_METHOD(void,
+              BindReceiverWithProxyHost,
+              (mojo::PendingReceiver<
+                   performance_manager::mojom::V8PerFrameMemoryReporter>
+                   pending_receiver,
+               RenderProcessHostProxy proxy),
+              (const));
 
   internal::BindV8PerFrameMemoryReporterCallback bind_callback_ =
       base::BindRepeating(
@@ -892,6 +921,137 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestOutlivesDecorator) {
 
   // No request should be sent, and the decorator destructor should not DCHECK.
   testing::Mock::VerifyAndClearExpectations(this);
+  task_env().FastForwardBy(kMinTimeBetweenRequests);
+}
+
+TEST_F(V8PerFrameMemoryDecoratorTest, NotifyObservers) {
+  V8PerFrameMemoryDecorator::MeasurementRequest memory_request(
+      kMinTimeBetweenRequests, graph());
+
+  auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph());
+  ASSERT_TRUE(decorator);
+
+  MockMeasurementAvailableObserver observer1;
+  MockMeasurementAvailableObserver observer2;
+  decorator->AddObserver(&observer1);
+  decorator->AddObserver(&observer2);
+
+  // Create a process node and validate that all observers are notified when a
+  // measurement is available for it.
+  MockV8PerFrameMemoryReporter reporter1;
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 1U;
+    ExpectBindAndRespondToQuery(&reporter1, std::move(data));
+  }
+
+  auto process1 = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+
+  observer1.ExpectObservationOnProcess(process1.get(), 1U);
+  observer2.ExpectObservationOnProcess(process1.get(), 1U);
+
+  task_env().FastForwardBy(kMinTimeBetweenRequests / 2);
+  testing::Mock::VerifyAndClearExpectations(&reporter1);
+  testing::Mock::VerifyAndClearExpectations(&observer1);
+  testing::Mock::VerifyAndClearExpectations(&observer2);
+
+  // Create a process node and validate that all observers are notified when
+  // any measurement is available. After fast-forwarding the first measurement
+  // for process2 and the second measurement for process1 will arrive.
+  MockV8PerFrameMemoryReporter reporter2;
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 2U;
+    ExpectBindAndRespondToQuery(&reporter2, std::move(data));
+  }
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 3U;
+    ExpectQueryAndReply(&reporter1, std::move(data));
+  }
+
+  auto process2 = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+
+  observer1.ExpectObservationOnProcess(process2.get(), 2U);
+  observer2.ExpectObservationOnProcess(process2.get(), 2U);
+  observer1.ExpectObservationOnProcess(process1.get(), 3U);
+  observer2.ExpectObservationOnProcess(process1.get(), 3U);
+
+  task_env().FastForwardBy(kMinTimeBetweenRequests / 2);
+  testing::Mock::VerifyAndClearExpectations(&reporter1);
+  testing::Mock::VerifyAndClearExpectations(&reporter2);
+  testing::Mock::VerifyAndClearExpectations(&observer1);
+  testing::Mock::VerifyAndClearExpectations(&observer2);
+
+  // Remove an observer and make sure the other is still notified after the
+  // next measurement.
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 4U;
+    ExpectQueryAndReply(&reporter1, std::move(data));
+  }
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 5U;
+    ExpectQueryAndReply(&reporter2, std::move(data));
+  }
+
+  decorator->RemoveObserver(&observer1);
+
+  observer2.ExpectObservationOnProcess(process1.get(), 4U);
+  observer2.ExpectObservationOnProcess(process2.get(), 5U);
+
+  task_env().FastForwardBy(kMinTimeBetweenRequests);
+  testing::Mock::VerifyAndClearExpectations(&reporter1);
+  testing::Mock::VerifyAndClearExpectations(&reporter2);
+  testing::Mock::VerifyAndClearExpectations(&observer1);
+  testing::Mock::VerifyAndClearExpectations(&observer2);
+}
+
+TEST_F(V8PerFrameMemoryDecoratorTest, ObserverOutlivesDecorator) {
+  V8PerFrameMemoryDecorator::MeasurementRequest memory_request(
+      kMinTimeBetweenRequests, graph());
+
+  auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph());
+  ASSERT_TRUE(decorator);
+
+  MockMeasurementAvailableObserver observer;
+  decorator->AddObserver(&observer);
+
+  // Create a process node and move past the initial request to it.
+  MockV8PerFrameMemoryReporter reporter;
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 1U;
+    ExpectBindAndRespondToQuery(&reporter, std::move(data));
+  }
+
+  auto process = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+  observer.ExpectObservationOnProcess(process.get(), 1U);
+
+  task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  testing::Mock::VerifyAndClearExpectations(&reporter);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // Start the next measurement.
+  {
+    auto data = mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 2U;
+    ExpectQueryAndDelayReply(&reporter, kMinTimeBetweenRequests,
+                             std::move(data));
+  }
+  task_env().FastForwardBy(kMinTimeBetweenRequests);
+
+  // Destroy the decorator before the measurement completes. The observer
+  // should not be notified.
+  graph()->TakeFromGraph(decorator);
   task_env().FastForwardBy(kMinTimeBetweenRequests);
 }
 

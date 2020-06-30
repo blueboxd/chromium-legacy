@@ -878,7 +878,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip_arg,
     const EffectPaintPropertyNode* next_effect) {
   const auto* target_clip = &target_clip_arg.Unalias();
-  int clip_id = EnsureCompositorClipNode(*target_clip);
+  int backdrop_effect_clip_id = cc::ClipTree::kInvalidNodeId;
   bool should_realize_backdrop_effect = false;
   if (next_effect && next_effect->HasBackdropEffect()) {
     // Exit all synthetic effect node if the next child has backdrop effect
@@ -892,6 +892,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     SetCurrentEffectRenderSurfaceReason(
         cc::RenderSurfaceReason::kBackdropScope);
     should_realize_backdrop_effect = true;
+    backdrop_effect_clip_id = EnsureCompositorClipNode(*target_clip);
   } else {
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
@@ -942,6 +943,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   int cc_effect_id_for_backdrop_effect = cc::EffectTree::kInvalidNodeId;
   for (auto i = pending_clips.size(); i--;) {
     const auto& pending_clip = pending_clips[i];
+    int clip_id = backdrop_effect_clip_id;
 
     // For a non-trivial clip, the synthetic effect is an isolation to enclose
     // only the layers that should be masked by the synthesized clip.
@@ -951,6 +953,8 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
 
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
+      if (clip_id == cc::ClipTree::kInvalidNodeId)
+        clip_id = EnsureCompositorClipNode(*pending_clip.clip);
       // For non-trivial clip, isolation_effect.stable_id will be assigned later
       // when the effect is closed. For now the default value INVALID_STABLE_ID
       // is used. See PropertyTreeManager::EmitClipMaskLayer().

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
@@ -146,8 +145,6 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
 
   NSDictionary* GetHeaderFieldsWithCookies(NSArray<NSHTTPCookie*>* cookies);
 
-  bool FetchURL(const GURL& url);
-
   friend TestGaiaAuthFetcherIOSNSURLSessionBridge;
 
   // kWKHTTPSystemCookieStore and kUseNSURLSessionForGaiaSigninRequests should
@@ -168,7 +165,6 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
   NSHTTPCookieStorage* http_cookie_storage_mock_;
   NSURLSession* url_session_mock_;
   NSURLSessionDataTask* url_session_data_task_mock_;
-  bool url_session_data_task_resumed_ = false;
   NSURLSessionConfiguration* url_session_configuration_mock_;
   DataTaskWithRequestCompletionHandler completion_handler_;
 };
@@ -209,9 +205,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
       .andReturn(url_session_configuration_mock_);
   url_session_data_task_mock_ =
       OCMStrictClassMock([NSURLSessionDataTask class]);
-  OCMExpect([url_session_data_task_mock_ resume]).andDo(^(NSInvocation*) {
-    url_session_data_task_resumed_ = true;
-  });
+  OCMExpect([url_session_data_task_mock_ resume]);
   completion_handler_ = nil;
 }
 
@@ -328,29 +322,19 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetHeaderFieldsWithCookies(
   return @{@"Set-Cookie" : cookie_string};
 }
 
-bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
-  DCHECK(!url_session_data_task_resumed_);
-  ns_url_session_bridge_->Fetch(url, "", "", false);
-  WaitForBackgroundTasks();
-  bool success = base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^bool {
-        return url_session_data_task_resumed_;
-      });
-  url_session_data_task_resumed_ = false;
-  return success;
-}
-
 #pragma mark - Tests
 
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
+// TODO(crbug.com/1065349): this test is flaky.
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
+       DISABLED_FetchWithEmptyCookieStore) {
+  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  ASSERT_TRUE(FetchURL(GetFetchGURL()));
-  ASSERT_TRUE(completion_handler_);
-
+  WaitForBackgroundTasks();
+  EXPECT_NE(nullptr, completion_handler_);
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(200, @[ GetCookie1(), GetCookie2() ]);
   completion_handler_([@"Test" dataUsingEncoding:NSUTF8StringEncoding],
@@ -365,16 +349,17 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
 
 // Tests to send a request with one cookie set in the cookie store and receive
 // another cookies from the request.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCookieStore) {
+// TODO(crbug.com/1065349): this test is flaky.
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
+       DISABLED_FetchWithCookieStore) {
   NSArray* cookies_to_send = @[ GetCookie1() ];
   AddCookiesToCookieManager(cookies_to_send);
-
+  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:cookies_to_send
            forTask:url_session_data_task_mock_]);
-  ASSERT_TRUE(FetchURL(GetFetchGURL()));
-  ASSERT_TRUE(completion_handler_);
-
+  WaitForBackgroundTasks();
+  EXPECT_NE(nullptr, completion_handler_);
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(200, @[ GetCookie2() ]);
   completion_handler_(nil, http_url_reponse, nil);
@@ -388,13 +373,14 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCookieStore) {
 
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithRedirect) {
+// TODO(crbug.com/1065349): this test is flaky.
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, DISABLED_FetchWithRedirect) {
+  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  ASSERT_TRUE(FetchURL(GetFetchGURL()));
-  ASSERT_TRUE(completion_handler_);
-
+  WaitForBackgroundTasks();
+  EXPECT_NE(nullptr, completion_handler_);
   NSURLRequest* redirected_url_request =
       OCMStrictClassMock([NSURLRequest class]);
   __block bool completion_handler_called = false;
@@ -424,12 +410,12 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithRedirect) {
 
 // Tests to cancel the request.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCancel) {
+  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  ASSERT_TRUE(FetchURL(GetFetchGURL()));
-  ASSERT_TRUE(completion_handler_);
-
+  WaitForBackgroundTasks();
+  EXPECT_NE(nullptr, completion_handler_);
   OCMExpect([url_session_data_task_mock_ cancel]);
   ns_url_session_bridge_->Cancel();
   WaitForBackgroundTasks();
@@ -442,12 +428,12 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCancel) {
 
 // Tests a request with error.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithError) {
+  ns_url_session_bridge_->Fetch(GetFetchGURL(), "", "", false);
   OCMExpect([http_cookie_storage_mock_
       storeCookies:@[]
            forTask:url_session_data_task_mock_]);
-  ASSERT_TRUE(FetchURL(GetFetchGURL()));
-  ASSERT_TRUE(completion_handler_);
-
+  WaitForBackgroundTasks();
+  EXPECT_NE(nullptr, completion_handler_);
   NSHTTPURLResponse* http_url_reponse =
       CreateHTTPURLResponse(501, @[ GetCookie1(), GetCookie2() ]);
   completion_handler_(nil, http_url_reponse,

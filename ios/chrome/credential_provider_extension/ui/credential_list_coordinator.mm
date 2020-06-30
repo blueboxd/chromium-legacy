@@ -97,9 +97,9 @@
                                       completion:nil];
   [self.mediator fetchCredentials];
 
-  NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
-  BOOL isConsentGiven = [shared_defaults
-      boolForKey:kUserDefaultsCredentialProviderConsentVerified];
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  BOOL isConsentGiven =
+      [user_defaults boolForKey:kUserDefaultsCredentialProviderConsentVerified];
   if (!isConsentGiven) {
     self.consentCoordinator = [[ConsentCoordinator alloc]
            initWithBaseViewController:self.viewController

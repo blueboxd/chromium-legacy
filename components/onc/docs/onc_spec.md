@@ -183,8 +183,15 @@ warns admins of the implications of mis-using this policy for Chrome OS.
       will automatically switch to the managed network.
 
 * **BlacklistedHexSSIDs**
+    * DEPRECATED, use **BlockedHexSSIDs** instead.<br/>
     * (optional) - **array of string**
-    * List of strings containing blacklisted hex SSIDs. Networks included in
+    * List of strings containing blocked hex SSIDs. Networks included in
+      this list will not be connectable. Existing connections to networks
+      contained in this list will be disconnected on policy fetch.
+
+* **BlockedHexSSIDs**
+    * (optional) - **array of string**
+    * List of strings containing blocked hex SSIDs. Networks included in
       this list will not be connectable. Existing connections to networks
       contained in this list will be disconnected on policy fetch.
 
@@ -1916,7 +1923,7 @@ particular PKCS#11 token, and tying to one OS's connection manager.
 ### GlobalNetworkConfiguration Example
 
 In this example, we only allow managed networks to auto connect and
-disallow any other networks if a managed network is available. We also blacklist
+disallow any other networks if a managed network is available. We also block
 the "Guest" network (hex("Guest")=4775657374) and disable Cellular services.
 ```
 {
@@ -1925,7 +1932,7 @@ the "Guest" network (hex("Guest")=4775657374) and disable Cellular services.
     "AllowOnlyPolicyNetworksToAutoconnect": true,
     “AllowOnlyPolicyNetworksToConnect”: false,
     “AllowOnlyPolicyNetworksToConnectIfAvailable”: true,
-    “BlacklistedHexSSIDs”: [“4775657374”],
+    “BlockedHexSSIDs”: [“4775657374”],
     "DisableNetworkTypes": ["Cellular"]
   }
 }

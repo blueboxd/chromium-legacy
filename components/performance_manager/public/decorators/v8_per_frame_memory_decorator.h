@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_V8_PER_FRAME_MEMORY_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_V8_PER_FRAME_MEMORY_DECORATOR_H_
 
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/performance_manager/public/graph/graph.h"
@@ -14,23 +15,6 @@
 #include "content/public/common/performance_manager/v8_per_frame_memory.mojom.h"
 
 namespace performance_manager {
-
-namespace internal {
-
-// A callback that will bind a V8PerFrameMemoryReporter interface to
-// communicate with the given process. Exposed so that it can be overridden to
-// implement the interface with a test fake.
-using BindV8PerFrameMemoryReporterCallback = base::RepeatingCallback<void(
-    mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>,
-    RenderProcessHostProxy)>;
-
-// Sets a callback that will be used to bind the V8PerFrameMemoryReporter
-// interface. The callback is owned by the caller and must live until this
-// function is called again with nullptr.
-void SetBindV8PerFrameMemoryReporterCallbackForTesting(
-    BindV8PerFrameMemoryReporterCallback* callback);
-
-}  // namespace internal
 
 // A decorator that queries each renderer process for the amount of memory used
 // by V8 in each frame.
@@ -59,6 +43,10 @@ class V8PerFrameMemoryDecorator
   class MeasurementRequest;
   class FrameData;
   class ProcessData;
+  class Observer;
+
+  // Internal helper class that can call NotifyObserversOnMeasurementAvailable.
+  class ObserverNotifier;
 
   V8PerFrameMemoryDecorator();
   ~V8PerFrameMemoryDecorator() override;
@@ -82,17 +70,28 @@ class V8PerFrameMemoryDecorator
   // Returns a zero TimeDelta if no requests should be made.
   base::TimeDelta GetMinTimeBetweenRequestsPerProcess() const;
 
+  // Adds/removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   friend class MeasurementRequest;
+  friend class ObserverNotifier;
 
   void AddMeasurementRequest(MeasurementRequest* request);
   void RemoveMeasurementRequest(MeasurementRequest* request);
   void UpdateProcessMeasurementSchedules() const;
 
+  // Invoked by ObserverNotifier when a measurement is received.
+  void NotifyObserversOnMeasurementAvailable(
+      const ProcessNode* const process_node) const;
+
   Graph* graph_ = nullptr;
 
   // List of requests sorted by sample_frequency (lowest first).
   std::vector<MeasurementRequest*> measurement_requests_;
+
+  base::ObserverList<Observer> observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -179,6 +178,14 @@ class V8PerFrameMemoryDecorator::ProcessData {
   uint64_t unassociated_v8_bytes_used_ = 0;
 };
 
+class V8PerFrameMemoryDecorator::Observer : public base::CheckedObserver {
+ public:
+  // Called on the PM sequence when a measurement is available for
+  // |process_node|.
+  virtual void OnV8MemoryMeasurementAvailable(
+      const ProcessNode* const process_node) = 0;
+};
+
 // Wrapper that can instantiate a V8PerFrameMemoryDecorator::MeasurementRequest
 // from any sequence.
 class V8PerFrameMemoryRequest {
@@ -192,6 +199,23 @@ class V8PerFrameMemoryRequest {
  private:
   std::unique_ptr<V8PerFrameMemoryDecorator::MeasurementRequest> request_;
 };
+
+namespace internal {
+
+// A callback that will bind a V8PerFrameMemoryReporter interface to
+// communicate with the given process. Exposed so that it can be overridden to
+// implement the interface with a test fake.
+using BindV8PerFrameMemoryReporterCallback = base::RepeatingCallback<void(
+    mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>,
+    RenderProcessHostProxy)>;
+
+// Sets a callback that will be used to bind the V8PerFrameMemoryReporter
+// interface. The callback is owned by the caller and must live until this
+// function is called again with nullptr.
+void SetBindV8PerFrameMemoryReporterCallbackForTesting(
+    BindV8PerFrameMemoryReporterCallback* callback);
+
+}  // namespace internal
 
 }  // namespace performance_manager
 

@@ -11,6 +11,7 @@ per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 achuith@chromium.org
 alemate@chromium.org
 jamescook@chromium.org
+khorimoto@chromium.org
 oshima@chromium.org
 stevenjb@chromium.org
 tbarzic@chromium.org

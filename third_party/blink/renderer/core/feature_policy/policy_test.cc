@@ -34,7 +34,8 @@ class PolicyTest : public testing::Test {
     auto header = FeaturePolicyParser::ParseHeader(
         "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
         "https://example.com https://example.net",
-        origin.get(), dummy_logger_);
+        /* permissions_policy_header */ g_empty_string, origin.get(),
+        dummy_logger_);
     feature_policy->SetHeaderPolicy(header);
 
     auto& security_context = page_holder_->GetDocument().GetSecurityContext();

@@ -15,7 +15,6 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
   WebTestShellPlatformDelegate();
   ~WebTestShellPlatformDelegate() override;
 
-#if defined(OS_MACOSX)
   // ShellPlatformDelegate overrides.
   void CreatePlatformWindow(Shell* shell,
                             const gfx::Size& initial_size) override;
@@ -30,6 +29,7 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
   void RenderViewReady(Shell* shell) override;
   bool DestroyShell(Shell* shell) override;
   void ResizeWebContent(Shell* shell, const gfx::Size& content_size) override;
+#if defined(OS_MACOSX)
   void ActivateContents(Shell* shell, WebContents* top_contents) override;
   bool HandleKeyboardEvent(Shell* shell,
                            WebContents* source,
@@ -37,7 +37,6 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
 #endif
 
  private:
-#if defined(OS_MACOSX)
   // Data held for each Shell instance, since there is one ShellPlatformDelegate
   // for the whole browser process (shared across Shells). This is defined for
   // each platform implementation.
@@ -45,7 +44,6 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
 
   // Holds an instance of WebTestShellData for each Shell.
   base::flat_map<Shell*, WebTestShellData> web_test_shell_data_map_;
-#endif
 };
 
 }  // namespace content

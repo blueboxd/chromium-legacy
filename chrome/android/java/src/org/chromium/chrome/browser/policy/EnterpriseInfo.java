@@ -10,6 +10,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -24,20 +26,21 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.RejectedExecutionException;
 
-// TODO: This class needs tests. https://crbug.com/1099271
-
 /**
  * Provide the enterprise information for the current device and profile.
  */
 public final class EnterpriseInfo {
     private static final String TAG = "EnterpriseInfo";
 
-    // Only ever read/written on the UI thread.
-    private static OwnedState sOwnedState = null;
-    private static Queue<Callback<OwnedState>> sCallbackList =
-            new LinkedList<Callback<OwnedState>>();
+    private static EnterpriseInfo sInstance;
 
-    private static class OwnedState {
+    // Only ever read/written on the UI thread.
+    private OwnedState mOwnedState = null;
+    private Queue<Callback<OwnedState>> mCallbackList;
+
+    private boolean mSkipAsyncCheckForTesting = false;
+
+    static class OwnedState {
         boolean mDeviceOwned;
         boolean mProfileOwned;
 
@@ -45,53 +48,49 @@ public final class EnterpriseInfo {
             mDeviceOwned = isDeviceOwned;
             mProfileOwned = isProfileOwned;
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            if (other == null) return false;
+            if (!(other instanceof OwnedState)) return false;
+
+            OwnedState otherOwnedState = (OwnedState) other;
+
+            return this.mDeviceOwned == otherOwnedState.mDeviceOwned
+                    && this.mProfileOwned == otherOwnedState.mProfileOwned;
+        }
+    }
+
+    public static EnterpriseInfo getInstance() {
+        ThreadUtils.assertOnUiThread();
+
+        if (sInstance == null) sInstance = new EnterpriseInfo();
+
+        return sInstance;
     }
 
     /**
-     * Returns, via callback, whether the device has a device owner or a profile owner for native.
+     * Returns, via callback, whether the device has a device owner or a profile owner.
      */
-    @CalledByNative
-    public static void getManagedStateForNative() {
-        Callback<OwnedState> callback = (result) -> {
-            if (result == null) {
-                // Unable to determine the owned state, assume it's not owned.
-                EnterpriseInfoJni.get().updateNativeOwnedState(false, false);
-            }
-
-            EnterpriseInfoJni.get().updateNativeOwnedState(
-                    result.mDeviceOwned, result.mProfileOwned);
-        };
-
-        getDeviceEnterpriseInfo(callback);
-    }
-
-    /**
-     * Records metrics regarding whether the device has a device owner or a profile owner.
-     */
-    public static void logDeviceEnterpriseInfo() {
-        Callback<OwnedState> callback = (result) -> {
-            recordManagementHistograms(result);
-        };
-
-        getDeviceEnterpriseInfo(callback);
-    }
-
-    private static void getDeviceEnterpriseInfo(Callback<OwnedState> callback) {
+    public void getDeviceEnterpriseInfo(Callback<OwnedState> callback) {
         // AsyncTask requires being called from UI thread.
         ThreadUtils.assertOnUiThread();
         assert callback != null;
 
-        if (sOwnedState != null) {
-            callback.onResult(sOwnedState);
+        if (mOwnedState != null) {
+            callback.onResult(mOwnedState);
             return;
         }
 
-        sCallbackList.add(callback);
+        mCallbackList.add(callback);
 
-        if (sCallbackList.size() > 1) {
+        if (mCallbackList.size() > 1) {
             // A pending callback is already being worked on, no need to start up a new thread.
             return;
         }
+
+        if (mSkipAsyncCheckForTesting) return;
 
         // This is the first request, spin up a thread.
         try {
@@ -133,14 +132,7 @@ public final class EnterpriseInfo {
 
                 @Override
                 protected void onPostExecute(OwnedState result) {
-                    // This is run on the UI thread.
-                    assert result != null;
-
-                    sOwnedState = result;
-                    // Notify every waiting callback.
-                    while (sCallbackList.size() > 0) {
-                        sCallbackList.remove().onResult(sOwnedState);
-                    }
+                    onEnterpriseInfoResult(result);
                 }
             }.executeWithTaskTraits(TaskTraits.USER_VISIBLE);
         } catch (RejectedExecutionException e) {
@@ -150,16 +142,77 @@ public final class EnterpriseInfo {
 
             // There will only ever be a single item in the queue as we only try()/catch() on the
             // first item.
-            sCallbackList.remove().onResult(null);
+            mCallbackList.remove().onResult(null);
         }
     }
 
-    private static void recordManagementHistograms(OwnedState state) {
+    /**
+     * Records metrics regarding whether the device has a device owner or a profile owner.
+     */
+    public void logDeviceEnterpriseInfo() {
+        Callback<OwnedState> callback = (result) -> {
+            recordManagementHistograms(result);
+        };
+
+        getDeviceEnterpriseInfo(callback);
+    }
+
+    private EnterpriseInfo() {
+        mOwnedState = null;
+        mCallbackList = new LinkedList<Callback<OwnedState>>();
+    }
+
+    @VisibleForTesting
+    void onEnterpriseInfoResult(OwnedState result) {
+        ThreadUtils.assertOnUiThread();
+        assert result != null;
+
+        // Set the cached value.
+        mOwnedState = result;
+
+        // Service every waiting callback.
+        while (mCallbackList.size() > 0) {
+            // This implementation assumes that ever future call to getDeviceEnterpriseInfo(), from
+            // this point, will result in the cached value being returned immediately. This means we
+            // can ignore the issue of re-entrant callbacks.
+            mCallbackList.remove().onResult(mOwnedState);
+        }
+    }
+
+    private void recordManagementHistograms(OwnedState state) {
         if (state == null) return;
 
         RecordHistogram.recordBooleanHistogram("EnterpriseCheck.IsManaged2", state.mProfileOwned);
         RecordHistogram.recordBooleanHistogram(
                 "EnterpriseCheck.IsFullyManaged2", state.mDeviceOwned);
+    }
+
+    @VisibleForTesting
+    void setSkipAsyncCheckForTesting(boolean skip) {
+        mSkipAsyncCheckForTesting = skip;
+    }
+
+    @VisibleForTesting
+    static void reset() {
+        sInstance = null;
+    }
+
+    /**
+     * Returns, via callback, the ownded state for native's AndroidEnterpriseInfo.
+     */
+    @CalledByNative
+    public static void getManagedStateForNative() {
+        Callback<OwnedState> callback = (result) -> {
+            if (result == null) {
+                // Unable to determine the owned state, assume it's not owned.
+                EnterpriseInfoJni.get().updateNativeOwnedState(false, false);
+            }
+
+            EnterpriseInfoJni.get().updateNativeOwnedState(
+                    result.mDeviceOwned, result.mProfileOwned);
+        };
+
+        EnterpriseInfo.getInstance().getDeviceEnterpriseInfo(callback);
     }
 
     @NativeMethods

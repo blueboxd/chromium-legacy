@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -522,6 +523,68 @@ TEST_F(BinaryFCMServiceTest, UnregisterTwoTokensTwoCalls) {
   binary_fcm_service_->UnregisterInstanceID(second_id, base::DoNothing());
 
   content::RunAllTasksUntilIdle();
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterTwoTokenConflict) {
+  MockInstanceIDDriver driver;
+  MockInstanceID instance_id;
+  ON_CALL(driver, GetInstanceID(_)).WillByDefault(Return(&instance_id));
+  binary_fcm_service_.reset();
+  binary_fcm_service_ = std::make_unique<BinaryFCMService>(
+      gcm::GCMProfileServiceFactory::GetForProfile(&profile_)->driver(),
+      &driver);
+  binary_fcm_service_->SetQueuedOperationDelayForTesting(base::TimeDelta());
+  std::string first_id = BinaryFCMService::kInvalidId;
+  std::string second_id = BinaryFCMService::kInvalidId;
+
+  // Both calls to GetToken return the same value since we mock a case where the
+  // second GetToken call happens before the first DeleteToken call resolves.
+  EXPECT_CALL(instance_id, GetToken(_, _, _, _, _, _))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke([](const std::string&, const std::string&, base::TimeDelta,
+                    const std::map<std::string, std::string>&,
+                    std::set<instance_id::InstanceID::Flags>,
+                    instance_id::InstanceID::GetTokenCallback callback) {
+            std::move(callback).Run("token",
+                                    instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .WillOnce(
+          Invoke([this, &second_id](
+                     const std::string&, const std::string&,
+                     instance_id::InstanceID::DeleteTokenCallback callback) {
+            // Call the second GetInstanceID here to have a conflict.
+            binary_fcm_service_->GetInstanceID(base::BindLambdaForTesting(
+                [&second_id](const std::string& instance_id) {
+                  second_id = instance_id;
+                }));
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+
+  // Get the first token.
+  binary_fcm_service_->GetInstanceID(base::BindLambdaForTesting(
+      [&first_id](const std::string& instance_id) { first_id = instance_id; }));
+
+  // Get the second token and unregister the first token. This is a conflict as
+  // they are the same token.
+  binary_fcm_service_->UnregisterInstanceID(
+      first_id,
+      base::BindOnce([](bool unregister) { EXPECT_TRUE(unregister); }));
+  task_environment_.RunUntilIdle();
+
+  // Unregister the second token.
+  EXPECT_CALL(instance_id, DeleteToken(_, _, _))
+      .WillOnce(
+          Invoke([](const std::string&, const std::string&,
+                    instance_id::InstanceID::DeleteTokenCallback callback) {
+            std::move(callback).Run(instance_id::InstanceID::Result::SUCCESS);
+          }));
+  binary_fcm_service_->UnregisterInstanceID(
+      second_id,
+      base::BindOnce([](bool unregister) { EXPECT_TRUE(unregister); }));
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(BinaryFCMServiceTest, QueuesGetInstanceIDOnRetriableError) {

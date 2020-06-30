@@ -160,7 +160,8 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const ColorBehavior& color_behavior,
     const OverrideAllowDecodeToYuv allow_decode_to_yuv,
-    const SkISize& desired_size) {
+    const SkISize& desired_size,
+    AnimationOption animation_option) {
   auto type = SniffMimeTypeInternal(data);
   if (type.IsEmpty())
     return nullptr;
@@ -173,7 +174,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
 
   return CreateByMimeType(type, std::move(data), data_complete, alpha_option,
                           high_bit_depth_decoding_option, color_behavior,
-                          allow_decode_to_yuv, desired_size);
+                          allow_decode_to_yuv, desired_size, animation_option);
 }
 
 std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
@@ -184,7 +185,8 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
     HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const ColorBehavior& color_behavior,
     const OverrideAllowDecodeToYuv allow_decode_to_yuv,
-    const SkISize& desired_size) {
+    const SkISize& desired_size,
+    AnimationOption animation_option) {
   const size_t max_decoded_bytes =
       CalculateMaxDecodedBytes(high_bit_depth_decoding_option, desired_size);
 
@@ -218,7 +220,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
              mime_type == "image/avif") {
     decoder = std::make_unique<AVIFImageDecoder>(
         alpha_option, high_bit_depth_decoding_option, color_behavior,
-        max_decoded_bytes);
+        max_decoded_bytes, animation_option);
 #endif
   }
 

@@ -22,19 +22,20 @@ namespace blink {
 
 namespace {
 
-std::unique_ptr<ImageDecoder> CreateAVIFDecoder(
+std::unique_ptr<ImageDecoder> CreateAVIFDecoderWithOptions(
     ImageDecoder::AlphaOption alpha_option,
     ImageDecoder::HighBitDepthDecodingOption high_bit_depth_option,
-    ColorBehavior color_behavior) {
+    ColorBehavior color_behavior,
+    ImageDecoder::AnimationOption animation_option) {
   return std::make_unique<AVIFImageDecoder>(
       alpha_option, high_bit_depth_option, color_behavior,
-      ImageDecoder::kNoDecodedImageByteLimit);
+      ImageDecoder::kNoDecodedImageByteLimit, animation_option);
 }
 
 std::unique_ptr<ImageDecoder> CreateAVIFDecoder() {
-  return CreateAVIFDecoder(ImageDecoder::kAlphaNotPremultiplied,
-                           ImageDecoder::kDefaultBitDepth,
-                           ColorBehavior::Tag());
+  return CreateAVIFDecoderWithOptions(
+      ImageDecoder::kAlphaNotPremultiplied, ImageDecoder::kDefaultBitDepth,
+      ColorBehavior::Tag(), ImageDecoder::AnimationOption::kUnspecified);
 }
 
 struct ExpectedColor {
@@ -473,9 +474,7 @@ void ReadYUV(const char* image_file_path,
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  auto decoder = std::make_unique<AVIFImageDecoder>(
-      ImageDecoder::kAlphaNotPremultiplied, ImageDecoder::kDefaultBitDepth,
-      ColorBehavior::Tag(), ImageDecoder::kNoDecodedImageByteLimit);
+  auto decoder = CreateAVIFDecoder();
   decoder->SetData(data.get(), true);
 
   ASSERT_TRUE(decoder->IsSizeAvailable());
@@ -537,6 +536,20 @@ TEST(AnimatedAVIFTests, ValidImages) {
   // TODO(ryoh): Add avifs with EditListBox.
 }
 
+TEST(AnimatedAVIFTests, HasMultipleSubImages) {
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/star-8bpc.avifs"), true);
+  EXPECT_TRUE(decoder->ImageHasBothStillAndAnimatedSubImages());
+}
+
+TEST(StaticAVIFTests, DoesNotHaveMultipleSubImages) {
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/"
+                            "red-at-12-oclock-with-color-profile-8bpc.avif"),
+                   true);
+  EXPECT_FALSE(decoder->ImageHasBothStillAndAnimatedSubImages());
+}
+
 // TODO(ryoh): Add corrupted video tests.
 
 TEST(StaticAVIFTests, invalidImages) {
@@ -586,8 +599,9 @@ INSTANTIATE_TEST_CASE_P(Parameterized,
 TEST_P(StaticAVIFColorTests, InspectImage) {
   const StaticColorCheckParam& param = GetParam();
   // TODO(ryoh): Add tests with ImageDecoder::kHighBitDepthToHalfFloat
-  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder(
-      param.alpha_option, ImageDecoder::kDefaultBitDepth, param.color_behavior);
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoderWithOptions(
+      param.alpha_option, ImageDecoder::kDefaultBitDepth, param.color_behavior,
+      ImageDecoder::AnimationOption::kUnspecified);
   scoped_refptr<SharedBuffer> data = ReadFile(param.path);
   ASSERT_TRUE(data.get());
 #if FIXME_DISTINGUISH_LOSSY_OR_LOSSLESS

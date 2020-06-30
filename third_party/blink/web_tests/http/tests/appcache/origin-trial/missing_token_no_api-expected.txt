@@ -2,5 +2,5 @@ Test that the API is missing without origin trial token
 
 Should say SUCCESS:
 
-FAILURE
+SUCCESS
 

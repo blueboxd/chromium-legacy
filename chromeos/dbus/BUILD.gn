@@ -36,6 +36,7 @@ component("dbus") {
     ":smbprovider_proto",
     ":update_engine_proto",
     ":vm_applications_apps_proto",
+    ":vm_permission_service_proto",
     ":vm_plugin_dispatcher_proto",
     "//base",
     "//components/account_id",
@@ -343,6 +344,12 @@ proto_library("vm_applications_apps_proto") {
   sources = [ "//third_party/cros_system_api/dbus/vm_applications/apps.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
+}
+
+proto_library("vm_permission_service_proto") {
+  sources = [ "//third_party/cros_system_api/dbus/vm_permission_service/vm_permission_service.proto" ]
+
+  proto_out_dir = "chromeos/dbus/vm_permission_service"
 }
 
 proto_library("vm_plugin_dispatcher_proto") {

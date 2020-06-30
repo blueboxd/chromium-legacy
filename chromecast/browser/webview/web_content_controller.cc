@@ -278,8 +278,11 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
 void WebContentController::RegisterRenderWidgetInputObserverFromRenderFrameHost(
     WebContentController* web_content_controller,
     content::RenderFrameHost* render_frame_host) {
-  web_content_controller->RegisterRenderWidgetInputObserver(
-      render_frame_host->GetView()->GetRenderWidgetHost());
+  content::RenderWidgetHostView* view = render_frame_host->GetView();
+  if (view) {
+    web_content_controller->RegisterRenderWidgetInputObserver(
+        view->GetRenderWidgetHost());
+  }
 }
 
 void WebContentController::RegisterRenderWidgetInputObserver(
@@ -482,8 +485,10 @@ void WebContentController::RenderFrameCreated(
   // it later on.
   if (instance)
     SendInitialChannelSet(instance);
-  RegisterRenderWidgetInputObserver(
-      render_frame_host->GetView()->GetRenderWidgetHost());
+  content::RenderWidgetHostView* view = render_frame_host->GetView();
+  if (view) {
+    RegisterRenderWidgetInputObserver(view->GetRenderWidgetHost());
+  }
 }
 
 void WebContentController::RenderFrameDeleted(

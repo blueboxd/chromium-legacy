@@ -7,8 +7,13 @@
 #include "base/values.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -62,6 +67,32 @@ RenderFrameHostImpl* GetSourceRfhForCoopReporting(
 
   // Otherwise this is simply the current RFH.
   return current_rfh;
+}
+
+// Find all the related windows that might try to access the new document in
+// |frame|, but are in a different virtual browsing context group.
+std::vector<FrameTreeNode*> CollectOtherWindowForCoopAccess(
+    FrameTreeNode* frame) {
+  DCHECK(frame->IsMainFrame());
+  SiteInstance* site_instance = frame->current_frame_host()->GetSiteInstance();
+
+  std::vector<FrameTreeNode*> out;
+  for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
+    RenderFrameHostImpl* rfh = wc->GetMainFrame();
+
+    // Filters out windows from a different browsing context group.
+    if (!rfh->GetSiteInstance()->IsRelatedSiteInstance(site_instance))
+      continue;
+
+    // TODO(arthursonzogni): Filter out window from the same virtual browsing
+    // context group.
+    FrameTreeNode* ftn = rfh->frame_tree_node();
+    if (ftn == frame)
+      continue;
+
+    out.push_back(ftn);
+  }
+  return out;
 }
 
 }  // namespace
@@ -185,6 +216,67 @@ GURL CrossOriginOpenerPolicyReporter::GetNextDocumentUrlForReporting(
 
   // Otherwise, it's the empty URL.
   return GURL();
+}
+
+// static
+void CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
+    FrameTreeNode* frame) {
+  if (!frame->IsMainFrame())
+    return;
+
+  // The function centralize all the CoopAccessMonitor being added. Checking the
+  // flag here ensures the feature to be properly disabled everywhere.
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicyAccessReporting)) {
+    return;
+  }
+
+  // TODO(arthursonzogni): It is too late to update the SiteInstance of the new
+  // document. Ideally, this should be split into two parts:
+  // - CommitNavigation: Update the new document's SiteInstance.
+  // - DidCommitNavigation: Update the other SiteInstances.
+
+  // Find all the related windows that might try to access the new document,
+  // but are from a different virtual browsing context group.
+  std::vector<FrameTreeNode*> other_main_frames =
+      CollectOtherWindowForCoopAccess(frame);
+
+  CrossOriginOpenerPolicyReporter* reporter_frame =
+      frame->current_frame_host()->coop_reporter();
+
+  for (FrameTreeNode* other : other_main_frames) {
+    CrossOriginOpenerPolicyReporter* reporter_other =
+        other->current_frame_host()->coop_reporter();
+
+    // If the current frame has a reporter, install the access monitors to
+    // monitor the accesses between this frame and the other frame.
+    if (reporter_frame)
+      reporter_frame->MonitorAccessesInBetweenWindows(frame, other);
+
+    // If the other frame has a reporter, install the access monitors to monitor
+    // the accesses between this frame and the other frame.
+    if (reporter_other)
+      reporter_other->MonitorAccessesInBetweenWindows(frame, other);
+  }
+}
+
+void CrossOriginOpenerPolicyReporter::MonitorAccessesInBetweenWindows(
+    FrameTreeNode* A,
+    FrameTreeNode* B) {
+  DCHECK_NE(A, B);
+  DCHECK(A->current_frame_host()->coop_reporter() == this ||
+         B->current_frame_host()->coop_reporter() == this);
+  // TODO(arthursonzogni): DCHECK same browsing context group.
+  // TODO(arthursonzogni): DCHECK different virtual browsing context group.
+
+  // Accesses are made either from the main frame or its same-origin iframes.
+  // Accesses from the cross-origin ones aren't reported.
+  //
+  // It means all the accessed from the first window are made from documents
+  // inside the same SiteInstance. Only one SiteInstance has to be updated.
+
+  // TODO(arthursonzogni): Continue the implementation. Send an IPC toward the
+  // accessed window.
 }
 
 }  // namespace content

@@ -14,6 +14,7 @@
 # skew test will pick up the new package in successive runs.
 
 import argparse
+import contextlib
 import os
 import shutil
 import subprocess
@@ -21,9 +22,10 @@ import sys
 import tempfile
 import zipfile
 
+SRC_DIR = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..')
 
 # Run mb.py out of the current branch for simplicity.
-MB_PATH = './tools/mb/mb.py'
+MB_PATH = os.path.join('tools', 'mb', 'mb.py')
 
 # Get the config specifying the gn args from the location of this script.
 MB_CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -32,6 +34,28 @@ MB_CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # CIPD package path.
 # https://chrome-infra-packages.appspot.com/p/chromium/testing/weblayer-x86/+/
 CIPD_PKG_PATH='chromium/testing/weblayer-x86'
+
+
+@contextlib.contextmanager
+def temporarily_chdir_to_src(local_paths=None):
+  """Change directories to chromium/src when entering with block and
+  then change back to current directory after exiting with block.
+
+  Args:
+    local_paths: List of paths to change into relative paths.
+
+  Returns:
+    List of paths relative to chromium/src.
+  """
+  curr_dir = os.getcwd()
+  paths_rel_to_src = [
+      os.path.relpath(p, SRC_DIR) for p in local_paths or []]
+  try:
+    os.chdir(SRC_DIR)
+    yield paths_rel_to_src
+  finally:
+    os.chdir(curr_dir)
+
 
 def zip_test_target(zip_filename):
   """Create zip of all deps for weblayer_instrumentation_test_apk.
@@ -44,7 +68,7 @@ def zip_test_target(zip_filename):
          '--master=dummy.master',
          '--builder=dummy.builder',
          '--config-file=%s' % MB_CONFIG_PATH,
-         'out/Release',
+         os.path.join('out', 'Release'),
          'weblayer_instrumentation_test_apk',
          zip_filename]
   print(' '.join(cmd))
@@ -77,7 +101,8 @@ def main():
       help="Output filename for resulting .cipd file.")
   args = parser.parse_args()
 
-  with tempfile.TemporaryDirectory() as tmp_dir:
+  with tempfile.TemporaryDirectory() as tmp_dir, \
+       temporarily_chdir_to_src([args.cipd_out]) as cipd_out_src_rel_paths:
     # Create zip archive of test target.
     zip_filename = os.path.join(tmp_dir, 'file.zip')
     zip_test_target(zip_filename)
@@ -91,7 +116,7 @@ def main():
     # Create CIPD archive.
     tmp_cipd_filename = os.path.join(tmp_dir, 'file.cipd')
     build_cipd_pkg(extracted, tmp_cipd_filename)
-    shutil.move(tmp_cipd_filename, args.cipd_out)
+    shutil.move(tmp_cipd_filename, cipd_out_src_rel_paths[0])
 
     print(('Use "cipd pkg-register %s -verbose -tag \'version:<branch>\'" ' +
            'to upload package to the cipd server.') % args.cipd_out)

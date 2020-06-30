@@ -507,11 +507,16 @@ class NET_EXPORT NetworkChangeNotifier {
   };
 
   // If |system_dns_config_notifier| is null (the default), a shared singleton
-  // will be used that will be leaked on shutdown.
-  NetworkChangeNotifier(
+  // will be used that will be leaked on shutdown. If
+  // |omit_observers_in_constructor_for_testing| is true, internal observers
+  // aren't added during construction - this is used to skip registering
+  // observers from MockNetworkChangeNotifier, and allow its construction when
+  // SequencedTaskRunnerHandle isn't set.
+  explicit NetworkChangeNotifier(
       const NetworkChangeCalculatorParams& params =
           NetworkChangeCalculatorParams(),
-      SystemDnsConfigChangeNotifier* system_dns_config_notifier = nullptr);
+      SystemDnsConfigChangeNotifier* system_dns_config_notifier = nullptr,
+      bool omit_observers_in_constructor_for_testing = false);
 
 #if defined(OS_LINUX)
   // Returns the AddressTrackerLinux if present.
@@ -602,6 +607,10 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // Indicates if this instance cleared g_network_change_notifier_ yet.
   bool cleared_global_pointer_ = false;
+
+  // Whether observers can be added. This may only be false during construction
+  // in tests. See comment above the constructor.
+  bool can_add_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifier);
 };

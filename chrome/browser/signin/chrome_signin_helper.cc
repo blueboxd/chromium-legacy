@@ -71,6 +71,8 @@ namespace signin {
 const void* const kManageAccountsHeaderReceivedUserDataKey =
     &kManageAccountsHeaderReceivedUserDataKey;
 
+const char kChromeMirrorHeaderSource[] = "Chrome";
+
 namespace {
 
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
@@ -539,9 +541,10 @@ void FixAccountConsistencyRequestHeader(
 #endif
 
   // Mirror header:
-  AppendOrRemoveMirrorRequestHeader(request, redirect_url, gaia_id,
-                                    account_consistency, cookie_settings,
-                                    profile_mode_mask);
+  AppendOrRemoveMirrorRequestHeader(
+      request, redirect_url, gaia_id, account_consistency, cookie_settings,
+      profile_mode_mask, kChromeMirrorHeaderSource,
+      /*force_account_consistency=*/false);
 }
 
 void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,

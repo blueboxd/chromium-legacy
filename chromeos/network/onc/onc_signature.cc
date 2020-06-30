@@ -362,7 +362,9 @@ const OncFieldSignature global_network_configuration_fields[] = {
      &kBoolSignature},
     {::onc::global_network_config::kAllowOnlyPolicyNetworksToConnectIfAvailable,
      &kBoolSignature},
-    {::onc::global_network_config::kBlacklistedHexSSIDs, &kStringListSignature},
+    {/* Deprecated */ ::onc::global_network_config::kBlacklistedHexSSIDs,
+     &kStringListSignature},
+    {::onc::global_network_config::kBlockedHexSSIDs, &kStringListSignature},
     {::onc::global_network_config::kDisableNetworkTypes, &kStringListSignature},
     {NULL}};
 

@@ -76,7 +76,6 @@ struct RendererContentSettingRules {
   ~RendererContentSettingRules();
   ContentSettingsForOneType image_rules;
   ContentSettingsForOneType script_rules;
-  ContentSettingsForOneType client_hints_rules;
   ContentSettingsForOneType popup_redirect_rules;
   ContentSettingsForOneType mixed_content_rules;
 };

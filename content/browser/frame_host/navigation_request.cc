@@ -912,7 +912,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolation_restricted */);
+          false /* origin_isolation_restricted */,
+          std::vector<
+              network::mojom::WebClientHintsType>() /* enabled_client_hints */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1000,7 +1002,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
-          false /* origin_isolation_restricted */
+          false /* origin_isolation_restricted */,
+          std::vector<
+              network::mojom::WebClientHintsType>() /* enabled_client_hints
+                                                     */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -2875,7 +2880,7 @@ void NavigationRequest::OnRedirectChecksComplete(
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
-    PersistAcceptCHAfterNagivationRequestRedirect(
+    ParseAndPersistAcceptCHForNagivation(
         commit_params_->redirects.back(),
         commit_params_->redirect_response.back()->parsed_headers,
         browser_context, client_hints_delegate, frame_tree_node_);
@@ -3123,6 +3128,29 @@ void NavigationRequest::CommitNavigation() {
   sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
   CreateCoopReporter(render_frame_host_->GetProcess()->GetStoragePartition());
+
+  BrowserContext* browser_context =
+      frame_tree_node_->navigator().GetController()->GetBrowserContext();
+  ClientHintsControllerDelegate* client_hints_delegate =
+      browser_context->GetClientHintsControllerDelegate();
+  if (client_hints_delegate) {
+    base::Optional<std::vector<network::mojom::WebClientHintsType>>
+        opt_in_hints_from_response;
+    if (response()) {
+      opt_in_hints_from_response = ParseAndPersistAcceptCHForNagivation(
+          common_params_->url, response()->parsed_headers, browser_context,
+          client_hints_delegate, frame_tree_node_);
+    }
+    commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
+        common_params_->url, client_hints_delegate, frame_tree_node_);
+
+    // We may need to add hints that were parsed this time in case they were
+    // not permitted to persist in legacy accept-ch-lifetime mode.
+    if (opt_in_hints_from_response) {
+      for (auto hint : opt_in_hints_from_response.value())
+        commit_params_->enabled_client_hints.push_back(hint);
+    }
+  }
 
   blink::mojom::ServiceWorkerContainerInfoForClientPtr
       service_worker_container_info;

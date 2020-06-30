@@ -26,7 +26,8 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   AVIFImageDecoder(AlphaOption,
                    HighBitDepthDecodingOption,
                    const ColorBehavior&,
-                   size_t max_decoded_bytes);
+                   size_t max_decoded_bytes,
+                   AnimationOption);
   AVIFImageDecoder(const AVIFImageDecoder&) = delete;
   AVIFImageDecoder& operator=(const AVIFImageDecoder&) = delete;
   ~AVIFImageDecoder() override;
@@ -41,6 +42,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   void DecodeToYUV() override;
   int RepetitionCount() const override;
   base::TimeDelta FrameDurationAtIndex(size_t) const override;
+  bool ImageHasBothStillAndAnimatedSubImages() const override;
 
   // Returns true if the data in fast_reader begins with a valid FileTypeBox
   // (ftyp) that supports the brand 'avif' or 'avis'.
@@ -82,6 +84,8 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
                                                                 nullptr};
 
   std::unique_ptr<gfx::ColorTransform> color_transform_;
+
+  const AnimationOption animation_option_;
 
   sk_sp<SkData> image_data_;
 };

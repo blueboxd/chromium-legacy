@@ -204,6 +204,7 @@ source_set("unit_tests") {
     "graph/properties_unittest.cc",
     "graph/system_node_impl_unittest.cc",
     "graph/worker_node_impl_unittest.cc",
+    "mechanisms/tab_loading_frame_navigation_scheduler_unittest.cc",
     "owned_objects_unittest.cc",
     "performance_manager_impl_unittest.cc",
     "performance_manager_registry_impl_unittest.cc",

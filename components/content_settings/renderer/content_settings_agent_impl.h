@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-struct WebEnabledClientHints;
 class WebFrame;
 class WebURL;
 }  // namespace blink
@@ -101,13 +100,6 @@ class ContentSettingsAgentImpl
                                    const blink::WebURL& url) override;
   bool AllowPopupsAndRedirects(bool default_value) override;
   void PassiveInsecureContentFound(const blink::WebURL& resource_url) override;
-  void PersistClientHints(
-      const blink::WebEnabledClientHints& enabled_client_hints,
-      base::TimeDelta duration,
-      const blink::WebURL& url) override;
-  void GetAllowedClientHintsFromSource(
-      const blink::WebURL& url,
-      blink::WebEnabledClientHints* client_hints) const override;
   bool ShouldAutoupgradeMixedContent() override;
 
   bool allow_running_insecure_content() const {

@@ -1076,7 +1076,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
-    WebContentsState getFrozenContentsState() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public WebContentsState getFrozenContentsState() {
         return mFrozenContentsState;
     }
 

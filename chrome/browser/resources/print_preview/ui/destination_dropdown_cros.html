@@ -107,10 +107,10 @@
   <div id="pre-input-overlay" slot="inline-prefix">
     <div id="pre-input-box">
       <iron-icon icon="[[destinationIcon]]"
-          hidden="[[shouldShowDestinationPrinterStatusIcon_]]">
+          hidden="[[isCurrentDestinationCrosLocal]]">
       </iron-icon>
       <printer-status-icon-cros id="destination-badge"
-          hidden="[[!shouldShowDestinationPrinterStatusIcon_]]"
+          hidden="[[!isCurrentDestinationCrosLocal]]"
           background="grey" state$="[[computePrinterState_(
                       value.printerStatusReason)]]">
       </printer-status-icon-cros>

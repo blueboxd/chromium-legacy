@@ -126,7 +126,7 @@ void ContextMenuMatcher::AppendExtensionItems(
       MenuItem* item = items[0];
       extension_item_map_[menu_id] = item->id();
       title = item->TitleWithReplacement(selection_text,
-                                       kMaxExtensionItemTitleLength);
+                                         kMaxExtensionItemTitleLength);
       submenu_items = GetRelevantExtensionItems(item->children(),
                                                 can_cross_incognito);
     }
@@ -145,6 +145,23 @@ void ContextMenuMatcher::AppendExtensionItems(
     if (!is_action_menu)
       SetExtensionIcon(extension_key.extension_id);
   }
+}
+
+bool ContextMenuMatcher::HasVisibleItems(ui::MenuModel* menu_model) const {
+  for (int index = 0; index < menu_model->GetItemCount(); index++) {
+    if (!menu_model->IsVisibleAt(index))
+      continue;
+
+    ui::MenuModel* submenu_model = menu_model->GetSubmenuModelAt(index);
+    if (submenu_model) {
+      // If the item is a menu, we recursively check if it has any visible
+      // children.
+      return HasVisibleItems(submenu_model);
+    }
+    // Otherwise, this is itself a visible child.
+    return true;
+  }
+  return false;
 }
 
 void ContextMenuMatcher::Clear() {
@@ -190,7 +207,17 @@ bool ContextMenuMatcher::IsCommandIdVisible(int command_id) const {
   // visibility is a special case handled below. This top-level menu item should
   // always be displayed.
   if (!item && ContextMenuMatcher::IsExtensionsCustomCommandId(command_id)) {
-    return true;
+    ui::MenuModel* model = menu_model_;
+    int index = 0;
+    if (ui::MenuModel::GetModelAndIndexForCommandId(command_id, &model,
+                                                    &index)) {
+      ui::MenuModel* submenu_model = model->GetSubmenuModelAt(index);
+      // The only way for this to be an extensions command ID without an
+      // associated menu item is for it to be the generated menu.
+      DCHECK(submenu_model);
+      return HasVisibleItems(submenu_model);
+    }
+    return false;
   } else if (item) {
     return item->visible();
   } else {

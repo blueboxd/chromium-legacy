@@ -962,9 +962,8 @@ void TokenPreloadScanner::ScanCommon(
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
-              client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-                  content_attribute->Value(), document_url_,
-                  ClientHintsPreferences::UpdateMode::kMerge, nullptr);
+              client_hints_preferences_.UpdateFromHttpEquivAcceptCH(
+                  content_attribute->Value(), document_url_, nullptr);
             }
           }
           return;

@@ -221,6 +221,11 @@ GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
 // Grace period after backgrounding a page during which there is no intensive
 // wake up throttling for the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
+// The duration for which intensive throttling should be inhibited for
+// same-origin frames when the page title or favicon is updated. 0 seconds means
+// that updating the title or favicon has no effect on intensive throttling.
+PLATFORM_EXPORT base::TimeDelta
+GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate();
 
 // Per-agent scheduling experiments.
 constexpr base::Feature kPerAgentSchedulingExperiments{

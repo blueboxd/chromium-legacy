@@ -61,7 +61,8 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
     return std::make_unique<browsing_data::HistoryCounter>(
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS),
-        base::Bind(&GetUpdatedWebHistoryService, base::Unretained(profile)),
+        base::BindRepeating(&GetUpdatedWebHistoryService,
+                            base::Unretained(profile)),
         ProfileSyncServiceFactory::GetForProfile(profile));
   }
   if (pref_name == browsing_data::prefs::kDeleteBrowsingHistoryBasic) {

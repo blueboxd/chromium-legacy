@@ -38,6 +38,9 @@ class PLATFORM_EXPORT PageScheduler {
 
   virtual ~PageScheduler() = default;
 
+  // Signals that communications with the user took place via either a title
+  // updates or a change to the favicon.
+  virtual void OnTitleOrFaviconUpdated() = 0;
   // The scheduler may throttle tasks associated with background pages.
   virtual void SetPageVisible(bool) = 0;
   // The scheduler transitions app to and from FROZEN state in background.

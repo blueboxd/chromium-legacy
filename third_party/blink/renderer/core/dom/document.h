@@ -629,8 +629,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void Initialize();
   virtual void Shutdown();
 
-  void InitContentSecurityPolicy(ContentSecurityPolicy*);
-
   // If you have a Document, use GetLayoutView() instead which is faster.
   void GetLayoutObject() const = delete;
 
@@ -649,9 +647,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   DocumentLoader* Loader() const;
 
-  // This is the DOM API document.open(). enteredDocument is the responsible
-  // document of the entry settings object.
-  void open(Document* entered_document, ExceptionState&);
+  // This is the DOM API document.open().
+  void open(LocalDOMWindow* entered_window, ExceptionState&);
   // This is used internally and does not handle exceptions.
   void open();
   DocumentParser* OpenForNavigation(ParserSynchronizationPolicy,
@@ -728,10 +725,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void CancelParsing();
 
   void write(const String& text,
-             Document* entered_document = nullptr,
+             LocalDOMWindow* entered_window = nullptr,
              ExceptionState& = ASSERT_NO_EXCEPTION);
   void writeln(const String& text,
-               Document* entered_document = nullptr,
+               LocalDOMWindow* entered_window = nullptr,
                ExceptionState& = ASSERT_NO_EXCEPTION);
   void write(v8::Isolate*, const Vector<String>& text, ExceptionState&);
   void writeln(v8::Isolate*, const Vector<String>& text, ExceptionState&);
@@ -1039,7 +1036,6 @@ class CORE_EXPORT Document : public ContainerNode,
   //    inherits its cookieURL but not its URL.
   //
   const KURL& CookieURL() const { return cookie_url_; }
-  void SetCookieURL(const KURL& url) { cookie_url_ = url; }
 
   // Returns null if the document is not attached to a frame.
   scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
@@ -1569,7 +1565,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Use counter related functions.
   void CountUse(mojom::WebFeature feature) final;
-  void CountDeprecation(mojom::WebFeature feature) final;
   void CountUse(mojom::WebFeature feature) const;
   void CountProperty(CSSPropertyID property_id) const;
   void CountAnimatedProperty(CSSPropertyID property_id) const;

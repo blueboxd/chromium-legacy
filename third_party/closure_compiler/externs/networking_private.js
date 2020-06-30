@@ -968,7 +968,7 @@ chrome.networkingPrivate.NetworkFilter;
  *   AllowOnlyPolicyNetworksToAutoconnect: (boolean|undefined),
  *   AllowOnlyPolicyNetworksToConnect: (boolean|undefined),
  *   AllowOnlyPolicyNetworksToConnectIfAvailable: (boolean|undefined),
- *   BlacklistedHexSSIDs: (!Array<string>|undefined)
+ *   BlockedHexSSIDs: (!Array<string>|undefined)
  * }}
  */
 chrome.networkingPrivate.GlobalPolicy;

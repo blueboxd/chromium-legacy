@@ -22,6 +22,7 @@ modules_dictionary_idl_files = [
   "encoded_video_config.idl",
   "image_decoder_init.idl",
   "image_frame.idl",
+  "image_track.idl",
   "video_decoder_init.idl",
   "video_encoder_config.idl",
   "video_encoder_init.idl",

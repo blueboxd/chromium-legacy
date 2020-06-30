@@ -423,6 +423,7 @@ static_library("ui") {
     "//components/download/content/public",
     "//components/embedder_support",
     "//components/encrypted_messages:encrypted_message_proto",
+    "//components/enterprise",
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/feature_engagement",

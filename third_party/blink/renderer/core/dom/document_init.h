@@ -179,6 +179,16 @@ class CORE_EXPORT DocumentInit final {
     return report_only_feature_policy_header_;
   }
 
+  DocumentInit& WithPermissionsPolicyHeader(const String& header);
+  const String& PermissionsPolicyHeader() const {
+    return permissions_policy_header_;
+  }
+
+  DocumentInit& WithReportOnlyPermissionsPolicyHeader(const String& header);
+  const String& ReportOnlyPermissionsPolicyHeader() const {
+    return report_only_permissions_policy_header_;
+  }
+
   DocumentInit& WithOriginTrialsHeader(const String& header);
   const String& OriginTrialsHeader() const { return origin_trials_header_; }
 
@@ -266,9 +276,13 @@ class CORE_EXPORT DocumentInit final {
   V0CustomElementRegistrationContext* registration_context_ = nullptr;
   bool create_new_registration_context_ = false;
 
-  // The feature policy set via response header.
+  // The feature policy set via Feature-Policy response header.
   String feature_policy_header_;
   String report_only_feature_policy_header_;
+
+  // The feature policy set via Permissions-Policy response header.
+  String permissions_policy_header_;
+  String report_only_permissions_policy_header_;
 
   // The origin trial set via response header.
   String origin_trials_header_;

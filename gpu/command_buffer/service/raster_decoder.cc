@@ -848,7 +848,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     // Make sure we flush any pending skia work on this context.
     if (sk_surface_) {
       GrFlushInfo flush_info = {
-          .fFlags = kNone_GrFlushFlags,
           .fNumSemaphores = end_semaphores_.size(),
           .fSignalSemaphores = end_semaphores_.data(),
       };
@@ -2215,14 +2214,12 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   // so the begin_semaphores can be released, and end_semaphores can be
   // signalled.
   GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = end_semaphores.size(),
       .fSignalSemaphores = end_semaphores.data(),
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  auto result = dest_scoped_access->surface()->flush(
-      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+  auto result = dest_scoped_access->surface()->flush(flush_info);
   // If the |end_semaphores| is empty, we can deferred the queue submission.
   if (!end_semaphores.empty()) {
     DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
@@ -2349,14 +2346,12 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   }
 
   GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = end_semaphores.size(),
       .fSignalSemaphores = end_semaphores.data(),
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  auto result = dest_scoped_access->surface()->flush(
-      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+  auto result = dest_scoped_access->surface()->flush(flush_info);
   if (!end_semaphores.empty()) {
     DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
     gr_context()->submit();
@@ -2543,14 +2538,12 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   // so the begin_semaphores can be released, and end_semaphores can be
   // signalled.
   GrFlushInfo flush_info = {
-      .fFlags = kNone_GrFlushFlags,
       .fNumSemaphores = end_semaphores.size(),
       .fSignalSemaphores = end_semaphores.data(),
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  auto result = dest_scoped_access->surface()->flush(
-      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+  auto result = dest_scoped_access->surface()->flush(flush_info);
   if (!end_semaphores.empty()) {
     DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
     gr_context()->submit();
@@ -2883,7 +2876,6 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     gl::ScopedProgressReporter report_progress(
         shared_context_state_->progress_reporter());
     GrFlushInfo flush_info = {
-        .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };

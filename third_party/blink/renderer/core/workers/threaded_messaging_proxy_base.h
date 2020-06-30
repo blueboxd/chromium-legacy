@@ -54,7 +54,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   void ParentObjectDestroyed();
 
   void CountFeature(WebFeature);
-  void CountDeprecation(WebFeature);
 
   void ReportConsoleMessage(mojom::ConsoleMessageSource,
                             mojom::ConsoleMessageLevel,

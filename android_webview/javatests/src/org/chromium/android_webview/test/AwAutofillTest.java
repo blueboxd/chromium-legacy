@@ -1910,7 +1910,7 @@ public class AwAutofillTest {
         loadUrlSync(url);
         executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
-        pollDatalistPopupShown();
+        pollDatalistPopupShown(2);
         TouchCommon.singleClickView(
                 mAutofillProvider.getDatalistPopupForTesting().getListView().getChildAt(1));
         // Verify the selection accepted by renderer.
@@ -1930,7 +1930,7 @@ public class AwAutofillTest {
         loadUrlSync(url);
         executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
-        pollDatalistPopupShown();
+        pollDatalistPopupShown(2);
         TestThreadUtils.runOnUiThreadBlocking(() -> { mAwContents.hideAutofillPopup(); });
         assertNull(mAutofillProvider.getDatalistPopupForTesting());
     }
@@ -1945,12 +1945,16 @@ public class AwAutofillTest {
         });
     }
 
-    private void pollDatalistPopupShown() {
+    private void pollDatalistPopupShown(int expectedTotalChildren) {
         AwActivityTestRule.pollInstrumentationThread(() -> {
             AutofillPopup popup = mAutofillProvider.getDatalistPopupForTesting();
-            return popup != null && popup.getListView().getChildCount() > 0
-                    && popup.getListView().getChildAt(0).getWidth() > 0
-                    && popup.getListView().getChildAt(0).isAttachedToWindow();
+            boolean isShown = popup != null && popup.getListView() != null
+                    && popup.getListView().getChildCount() == expectedTotalChildren;
+            for (int i = 0; i < expectedTotalChildren && isShown; i++) {
+                isShown = popup.getListView().getChildAt(i).getWidth() > 0
+                        && popup.getListView().getChildAt(i).isAttachedToWindow();
+            }
+            return isShown;
         });
     }
 

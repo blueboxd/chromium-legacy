@@ -82,8 +82,8 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
   const CrxComponent* registered_component() { return component_.get(); }
 
-  void set_registration_callback(const base::Closure& registration_callback) {
-    registration_callback_ = registration_callback;
+  void set_registration_callback(base::OnceClosure registration_callback) {
+    registration_callback_ = std::move(registration_callback);
   }
 
   // ComponentUpdateService implementation:
@@ -99,7 +99,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
     EXPECT_EQ(nullptr, component_.get());
     component_ = std::make_unique<CrxComponent>(component);
     if (!registration_callback_.is_null())
-      registration_callback_.Run();
+      std::move(registration_callback_).Run();
 
     return true;
   }
@@ -159,7 +159,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
  private:
   std::unique_ptr<CrxComponent> component_;
-  base::Closure registration_callback_;
+  base::OnceClosure registration_callback_;
   bool on_demand_update_called_ = false;
 };
 

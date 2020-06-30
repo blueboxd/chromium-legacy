@@ -103,14 +103,14 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
 }
 
 void DecryptingAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
+                                    DecodeCB decode_cb) {
   DVLOG(3) << "Decode()";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kIdle || state_ == kDecodeFinished) << state_;
   DCHECK(decode_cb);
   CHECK(!decode_cb_) << "Overlapping decodes are not supported.";
 
-  decode_cb_ = BindToCurrentLoop(decode_cb);
+  decode_cb_ = BindToCurrentLoop(std::move(decode_cb));
 
   // Return empty (end-of-stream) frames if decoding has finished.
   if (state_ == kDecodeFinished) {

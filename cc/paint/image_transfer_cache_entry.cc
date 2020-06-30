@@ -24,6 +24,14 @@
 
 namespace cc {
 namespace {
+struct Context {
+  const std::vector<sk_sp<SkImage>> sk_planes_;
+};
+
+void ReleaseContext(SkImage::ReleaseContext context) {
+  auto* texture_context = static_cast<Context*>(context);
+  delete texture_context;
+}
 
 // Creates a SkImage backed by the YUV textures corresponding to |plane_images|.
 // The layout is specified by |plane_images_format|). The backend textures are
@@ -81,10 +89,11 @@ sk_sp<SkImage> MakeYUVImageFromUploadedPlanes(
     return nullptr;
   }
   plane_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
+  Context* ctx = new Context{plane_images};
   sk_sp<SkImage> image = SkImage::MakeFromYUVATextures(
       context, yuv_color_space, plane_backend_textures.data(), plane_indices,
       plane_images[0]->dimensions(), kTopLeft_GrSurfaceOrigin,
-      std::move(image_color_space));
+      std::move(image_color_space), ReleaseContext, ctx);
   if (!image) {
     DLOG(ERROR) << "Could not create YUV image";
     return nullptr;

@@ -79,6 +79,11 @@ BinaryFCMService::~BinaryFCMService() {
 }
 
 void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
+  if (pending_unregistrations_count_ > 0) {
+    QueueGetInstanceIDCallback(std::move(callback));
+    return;
+  }
+
   instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
       ->GetToken(
           kBinaryFCMServiceSenderId, instance_id::kGCMScope,
@@ -87,6 +92,18 @@ void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
           /*flags=*/{},
           base::BindOnce(&BinaryFCMService::OnGetInstanceID,
                          weakptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BinaryFCMService::QueueGetInstanceIDCallback(
+    GetInstanceIDCallback callback) {
+  pending_token_calls_.push_back(
+      base::BindOnce(&BinaryFCMService::GetInstanceID,
+                     weakptr_factory_.GetWeakPtr(), std::move(callback)));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BinaryFCMService::MaybeRunNextQueuedOperation,
+                     weakptr_factory_.GetWeakPtr()),
+      delay_between_pending_attempts_);
 }
 
 void BinaryFCMService::SetCallbackForToken(const std::string& token,
@@ -108,10 +125,13 @@ void BinaryFCMService::ClearCallbackForToken(const std::string& token) {
 void BinaryFCMService::UnregisterInstanceID(
     const std::string& instance_id,
     UnregisterInstanceIDCallback callback) {
-  instance_id_caller_counts_[instance_id]--;
-  if (instance_id_caller_counts_[instance_id] == 0) {
-    UnregisterInstanceIDImpl(instance_id, std::move(callback));
-    instance_id_caller_counts_.erase(instance_id);
+  if (instance_id_caller_counts_.contains(instance_id)) {
+    DCHECK_NE(0u, instance_id_caller_counts_[instance_id]);
+    instance_id_caller_counts_[instance_id]--;
+    if (instance_id_caller_counts_[instance_id] == 0) {
+      UnregisterInstanceIDImpl(instance_id, std::move(callback));
+      instance_id_caller_counts_.erase(instance_id);
+    }
   }
 }
 
@@ -133,14 +153,7 @@ void BinaryFCMService::OnGetInstanceID(GetInstanceIDCallback callback,
       MaybeRunNextQueuedOperation();
     }
   } else if (result == instance_id::InstanceID::ASYNC_OPERATION_PENDING) {
-    pending_token_calls_.push_back(
-        base::BindOnce(&BinaryFCMService::GetInstanceID,
-                       weakptr_factory_.GetWeakPtr(), std::move(callback)));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&BinaryFCMService::MaybeRunNextQueuedOperation,
-                       weakptr_factory_.GetWeakPtr()),
-        delay_between_pending_attempts_);
+    QueueGetInstanceIDCallback(std::move(callback));
   } else {
     std::move(callback).Run(kInvalidId);
   }
@@ -244,6 +257,7 @@ bool BinaryFCMService::CanHandle(const std::string& app_id) const {
 void BinaryFCMService::UnregisterInstanceIDImpl(
     const std::string& instance_id,
     UnregisterInstanceIDCallback callback) {
+  ++pending_unregistrations_count_;
   instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
       ->DeleteToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,
                     base::BindOnce(&BinaryFCMService::OnInstanceIDUnregistered,
@@ -255,6 +269,7 @@ void BinaryFCMService::OnInstanceIDUnregistered(
     const std::string& token,
     UnregisterInstanceIDCallback callback,
     instance_id::InstanceID::Result result) {
+  --pending_unregistrations_count_;
   switch (result) {
     case instance_id::InstanceID::Result::SUCCESS:
       std::move(callback).Run(true);

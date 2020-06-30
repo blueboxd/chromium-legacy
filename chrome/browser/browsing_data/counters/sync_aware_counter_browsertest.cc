@@ -110,8 +110,8 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing autofill, and this should restart the counter.
@@ -175,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing passwords, and this should restart the counter.
@@ -241,14 +241,14 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
 
   browsing_data::HistoryCounter counter(
       HistoryServiceFactory::GetForProfileWithoutCreating(browser()->profile()),
-      base::Bind(&SyncAwareCounterTest::GetFakeWebHistoryService,
-                 base::Unretained(this), base::Unretained(profile)),
+      base::BindRepeating(&SyncAwareCounterTest::GetFakeWebHistoryService,
+                          base::Unretained(this), base::Unretained(profile)),
       sync_service);
 
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&SyncAwareCounterTest::OnCounterResult,
-                          base::Unretained(this)));
+               base::BindRepeating(&SyncAwareCounterTest::OnCounterResult,
+                                   base::Unretained(this)));
 
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing history deletion, and this should restart the counter.

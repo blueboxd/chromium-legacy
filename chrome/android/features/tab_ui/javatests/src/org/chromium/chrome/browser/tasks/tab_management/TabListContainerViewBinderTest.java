@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -136,7 +137,8 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
 
-        CriteriaHelper.pollUiThread(Criteria.equals(1.0f, mRecyclerView::getAlpha));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mRecyclerView.getAlpha(), Matchers.is(1.0f)));
     }
 
     @Test
@@ -184,7 +186,9 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         }
         assertThat(mIsAnimating, equalTo(true));
         // Invisibility signals the end of the animation, not alpha being zero.
-        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, mRecyclerView::getVisibility));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRecyclerView.getVisibility(), Matchers.is(View.INVISIBLE));
+        });
         assertThat(mRecyclerView.getAlpha(), equalTo(0.0f));
     }
 

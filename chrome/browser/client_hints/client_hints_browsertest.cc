@@ -258,7 +258,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
 
   virtual std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("UserAgentClientHint", "");
+    feature_list->InitializeFromCommandLine(
+        "UserAgentClientHint,LangClientHintHeader", "");
     return feature_list;
   }
 
@@ -280,8 +281,6 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(network::switches::kForceEffectiveConnectionType,
                            net::kEffectiveConnectionType2G);
-    cmd->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                           "LangClientHintHeader");
   }
 
   void SetClientHintExpectationsOnMainFrame(bool expect_client_hints) {
@@ -814,7 +813,8 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
   std::unique_ptr<base::FeatureList> EnabledFeatures() override {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "AllowClientHintsToThirdParty,UserAgentClientHint", "");
+        "AllowClientHintsToThirdParty,UserAgentClientHint,LangClientHintHeader",
+        "");
     return feature_list;
   }
 };
@@ -2104,7 +2104,8 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
             ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine("UserAgentClientHint", "");
+    feature_list->InitializeFromCommandLine(
+        "UserAgentClientHint,LangClientHintHeader", "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());

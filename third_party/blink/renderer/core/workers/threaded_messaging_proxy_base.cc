@@ -88,11 +88,6 @@ void ThreadedMessagingProxyBase::CountFeature(WebFeature feature) {
   UseCounter::Count(execution_context_, feature);
 }
 
-void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
-  DCHECK(IsParentContextThread());
-  Deprecation::CountDeprecation(execution_context_, feature);
-}
-
 void ThreadedMessagingProxyBase::ReportConsoleMessage(
     mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,

@@ -103,7 +103,7 @@ libgav1::StatusCode GetFrameBufferImpl(void* callback_private_data,
                                        Libgav1FrameBuffer* frame_buffer) {
   DCHECK(callback_private_data);
   DCHECK(frame_buffer);
-  DCHECK((stride_alignment & (stride_alignment - 1)) == 0);
+  DCHECK(base::bits::IsPowerOfTwo(stride_alignment));
   // VideoFramePool creates frames with a fixed alignment of
   // VideoFrame::kFrameAddressAlignment. If libgav1 requests a larger
   // alignment, it cannot be supported.

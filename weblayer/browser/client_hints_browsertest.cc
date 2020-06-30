@@ -142,7 +142,12 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       other_server.base_url(), GURL(), ContentSettingsType::CLIENT_HINTS,
       std::string(), std::make_unique<base::Value>(setting->Clone()));
 
-  // New server should now get client hints.
+  // Settings take affect after navigation only, so the header shouldn't be
+  // there yet.
+  EXPECT_EQ(GetSubresourceHeader("device-memory"), "None");
+
+  // After re-navigating, should have hints.
+  NavigateAndWaitForCompletion(other_server.GetURL("/echo"), shell());
   CheckSubresourceHeaders();
 }
 

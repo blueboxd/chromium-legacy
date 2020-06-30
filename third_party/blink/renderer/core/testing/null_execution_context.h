@@ -53,7 +53,6 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   void CountUse(mojom::WebFeature) override {}
-  void CountDeprecation(mojom::WebFeature) override {}
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 

@@ -32,6 +32,16 @@
   // metadata at the time of construction.
   Promise<void> decodeMetadata();
 
+  // Selects another track of the image. Destructively recreates the underlying
+  // decoder. Identical track selections will be ignored. Invalid track
+  // selections will raise an exception. Clears the |preferAnimation| flag if
+  // one was provided during construction.
+  //
+  // Changing tracks will resolve all outstanding decode requests as rejected
+  // and reset any partially decoded frame state. Outstanding ImageFrames and
+  // metadata decode promises will remain valid.
+  [RaisesException] void selectTrack(unsigned long trackId);
+
   // The number of frames in the image.
   //
   // When decoding a ReadableStream the value will be 0 until enough data to
@@ -51,4 +61,10 @@
 
   // True if all available frames have been received by the decoder.
   readonly attribute boolean complete;
+
+  // List of tracks available in this image.
+  //
+  // When decoding a ReadableStream the array will be empty until enough data to
+  // decode metadata has been received.
+  readonly attribute FrozenArray<ImageTrack> tracks;
 };

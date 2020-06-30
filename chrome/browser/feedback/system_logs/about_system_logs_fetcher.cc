@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
 #include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 #include "chrome/browser/chromeos/system_logs/network_health_source.h"
+#include "chrome/browser/chromeos/system_logs/shill_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #include "chrome/browser/chromeos/system_logs/ui_hierarchy_log_source.h"
 #endif
@@ -32,6 +33,7 @@ SystemLogsFetcher* BuildAboutSystemLogsFetcher() {
   fetcher->AddSource(std::make_unique<MemoryDetailsLogSource>());
 
 #if defined(OS_CHROMEOS)
+  // These sources rely on scrubbing in SystemLogsFetcher.
   fetcher->AddSource(std::make_unique<CommandLineLogSource>());
   fetcher->AddSource(std::make_unique<DBusLogSource>());
   fetcher->AddSource(std::make_unique<DeviceEventLogSource>());
@@ -40,6 +42,7 @@ SystemLogsFetcher* BuildAboutSystemLogsFetcher() {
   // Data sources that directly scrub itentifiable information.
   fetcher->AddSource(std::make_unique<DebugDaemonLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<NetworkHealthSource>(scrub_data));
+  fetcher->AddSource(std::make_unique<ShillLogSource>(scrub_data));
   fetcher->AddSource(std::make_unique<UiHierarchyLogSource>(scrub_data));
 #endif
 

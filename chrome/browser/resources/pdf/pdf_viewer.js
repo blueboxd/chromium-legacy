@@ -136,6 +136,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
               'pdf-viewer-update-enabled');
         },
       },
+
+      docLength_: Number,
+      pageNo_: Number,
     };
   }
 
@@ -197,6 +200,18 @@ class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {string} */
     this.title_ = '';
+
+    /**
+     * The number of pages in the PDF document.
+     * @private {number}
+     */
+    this.docLength_;
+
+    /**
+     * The number of the page being viewed (1-based).
+     * @private {number}
+     */
+    this.pageNo_;
 
     /** @private {boolean} */
     this.pdfViewerUpdateEnabled_;
@@ -590,9 +605,9 @@ class PDFViewerElement extends PDFViewerBaseElement {
     }
 
     // Update the page indicator.
-    const visiblePage = this.viewport.getMostVisiblePage();
     if (this.toolbarEnabled_) {
-      this.getToolbar_().pageNo = visiblePage + 1;
+      const visiblePage = this.viewport.getMostVisiblePage();
+      this.pageNo_ = visiblePage + 1;
     }
 
     this.currentController.viewportChanged();
@@ -696,8 +711,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
     }
 
     if (this.toolbarEnabled_) {
-      this.getToolbar_().docLength =
-          this.documentDimensions.pageDimensions.length;
+      this.docLength_ = this.documentDimensions.pageDimensions.length;
     }
   }
 

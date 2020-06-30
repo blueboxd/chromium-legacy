@@ -23,41 +23,29 @@ class PLATFORM_EXPORT ClientHintsPreferences {
   class Context {
    public:
     virtual void CountClientHints(network::mojom::WebClientHintsType) = 0;
-    virtual void CountPersistentClientHintHeaders() = 0;
 
    protected:
     virtual ~Context() = default;
   };
 
-  enum class UpdateMode { kReplace, kMerge };
-
   ClientHintsPreferences();
 
   void UpdateFrom(const ClientHintsPreferences&);
 
-  // Parses the client hints headers, and populates |this| with the client hint
-  // preferences. |url| is the URL of the resource whose response included the
-  // |header_value|. |context| may be null. If client hints are not allowed for
-  // |url|, then |this| would not be updated.
-  void UpdateFromAcceptClientHintsHeader(const String& header_value,
-                                         const KURL&,
-                                         UpdateMode mode,
-                                         Context*);
+  // Parses <meta http-equiv="accept-ch"> value |header_value|, and updates
+  // |this| to enable the requested client hints. |url| is the URL of the page.
+  // |context| may be null. If client hints are not allowed for |url|, then
+  // |this| would not be updated.
+  void UpdateFromHttpEquivAcceptCH(const String& header_value,
+                                   const KURL& url,
+                                   Context* context);
 
   bool ShouldSend(network::mojom::WebClientHintsType type) const {
     return enabled_hints_.IsEnabled(type);
   }
-  void SetShouldSendForTesting(network::mojom::WebClientHintsType type) {
+  void SetShouldSend(network::mojom::WebClientHintsType type) {
     enabled_hints_.SetIsEnabled(type, true);
   }
-
-  // Parses the accept-ch-lifetime header, and populates |this| with the client
-  // hints persistence duration. |url| is the URL of the resource whose response
-  // included the |header_value|. |context| may be null. If client hints are not
-  // allowed for |url|, then |this| would not be updated.
-  void UpdateFromAcceptClientHintsLifetimeHeader(const String& header_value,
-                                                 const KURL& url,
-                                                 Context* context);
 
   // Returns true if client hints are allowed for the provided KURL. Client
   // hints are allowed only on HTTP URLs that belong to secure contexts.
@@ -67,11 +55,8 @@ class PLATFORM_EXPORT ClientHintsPreferences {
 
   WebEnabledClientHints GetWebEnabledClientHints() const;
 
-  base::TimeDelta GetPersistDuration() const;
-
  private:
   WebEnabledClientHints enabled_hints_;
-  base::TimeDelta persist_duration_;
 };
 
 }  // namespace blink

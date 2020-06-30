@@ -148,7 +148,7 @@ master branch. Chromium's master branch is covered by a large number of
 automated build and test systems that ensure it is sufficiently stable for
 development purposes at almost all times.
 
-### Building WebView for a new or in-development version of Android
+### Building WebView for a new or in-development version of Android {#pre-release}
 
 If you want to build WebView for a version of Android which was recently
 released or currently in development, you may find that the current stable

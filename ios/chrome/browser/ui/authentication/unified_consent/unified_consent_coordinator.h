@@ -61,9 +61,6 @@
 // Returns YES if the user tapped on the setting link.
 @property(nonatomic, readonly) BOOL settingsLinkWasTapped;
 // If YES, the UI elements are disabled.
-// TODO(crbug.com/1003737): This should be implemented with
-// ActivityOverlayCoordinator when all the cleanup will be done in
-// ChromeSigninViewController.
 @property(nonatomic, assign, getter=isUIDisabled) BOOL uiDisabled;
 
 // List of string ids used for the user consent. The string ids order matches

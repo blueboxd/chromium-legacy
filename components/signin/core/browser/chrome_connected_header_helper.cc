@@ -32,6 +32,7 @@ const char kIsSameTabAttrName[] = "is_same_tab";
 const char kIsSamlAttrName[] = "is_saml";
 const char kProfileModeAttrName[] = "mode";
 const char kServiceTypeAttrName[] = "action";
+const char kSourceAttrName[] = "source";
 #if defined(OS_ANDROID)
 const char kEligibleForConsistency[] = "eligible_for_consistency";
 const char kShowConsistencyPromo[] = "show_consistency_promo";
@@ -70,7 +71,8 @@ std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
   if (!chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings))
     return "";
   return chrome_connected_helper.BuildRequestHeader(
-      false /* is_header_request */, url, gaia_id, profile_mode_mask);
+      false /* is_header_request */, url, gaia_id, profile_mode_mask,
+      "" /* source */, false /* force_account_consistency */);
 }
 
 // static
@@ -176,7 +178,14 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     bool is_header_request,
     const GURL& url,
     const std::string& gaia_id,
-    int profile_mode_mask) {
+    int profile_mode_mask,
+    const std::string& source,
+    bool force_account_consistency) {
+  std::vector<std::string> parts;
+  if (!source.empty()) {
+    parts.push_back(
+        base::StringPrintf("%s=%s", kSourceAttrName, source.c_str()));
+  }
 // If we are on mobile or desktop, an empty |account_id| corresponds to the user
 // not signed into Sync. Do not enforce account consistency, unless Mice is
 // enabled on Android.
@@ -185,17 +194,18 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (gaia_id.empty()) {
+  if (!force_account_consistency && gaia_id.empty()) {
 #if defined(OS_ANDROID)
     if (base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
-      return base::StringPrintf("%s=%s", kEligibleForConsistency, "true");
+      parts.push_back(
+          base::StringPrintf("%s=%s", kEligibleForConsistency, "true"));
+      return base::JoinString(parts, is_header_request ? "," : ":");
     }
 #endif  // defined(OS_ANDROID)
     return std::string();
   }
 #endif  // !defined(OS_CHROMEOS)
 
-  std::vector<std::string> parts;
   if (!gaia_id.empty() &&
       IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
     // Only set the Gaia ID on domains that actually require it.

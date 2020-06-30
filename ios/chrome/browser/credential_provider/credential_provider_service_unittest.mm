@@ -45,8 +45,8 @@ class CredentialProviderServiceTest : public PlatformTest {
     password_store_ = CreatePasswordStore();
     password_store_->Init(nullptr);
 
-    NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
-    EXPECT_FALSE([shared_defaults
+    NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+    EXPECT_FALSE([user_defaults
         boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted]);
 
     credential_store_ = [[ArchivableCredentialStore alloc] initWithFileURL:nil];
@@ -69,9 +69,9 @@ class CredentialProviderServiceTest : public PlatformTest {
   void TearDown() override {
     credential_provider_service_->Shutdown();
     password_store_->ShutdownOnUIThread();
-    NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
-    [shared_defaults removeObjectForKey:
-                         kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
+    NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+    [user_defaults removeObjectForKey:
+                       kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
     PlatformTest::TearDown();
   }
 
@@ -104,7 +104,8 @@ TEST_F(CredentialProviderServiceTest, Create) {
 TEST_F(CredentialProviderServiceTest, FirstSync) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return [app_group::GetGroupUserDefaults()
+    NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+    return [user_defaults
         boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted];
   }));
 }

@@ -75,7 +75,6 @@ struct ContentSettingPatternSource {
 struct RendererContentSettingRules {
   array<ContentSettingPatternSource> image_rules;
   array<ContentSettingPatternSource> script_rules;
-  array<ContentSettingPatternSource> client_hints_rules;
   array<ContentSettingPatternSource> popup_redirect_rules;
   array<ContentSettingPatternSource> mixed_content_rules;
 };

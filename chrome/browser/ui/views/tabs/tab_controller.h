@@ -87,9 +87,8 @@ class TabController {
   // Returns whether |tab| is pinned.
   virtual bool IsTabPinned(const Tab* tab) const = 0;
 
-  // Returns whether |tab| is the first or last one visible.
-  virtual bool IsFirstVisibleTab(const Tab* tab) const = 0;
-  virtual bool IsLastVisibleTab(const Tab* tab) const = 0;
+  // Returns whether |tab| is the first in the model.
+  virtual bool IsTabFirst(const Tab* tab) const = 0;
 
   // Returns true if any tab or one of its children has focus.
   virtual bool IsFocusInTabs() const = 0;

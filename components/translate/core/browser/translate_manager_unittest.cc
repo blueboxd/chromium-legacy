@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
@@ -178,6 +179,10 @@ class TranslateManagerTest : public ::testing::Test {
     translate_manager_->InitTranslateEvent(src_lang, dst_lang,
                                            translate_prefs_);
   }
+
+  // Required to instantiate a net::test::MockNetworkChangeNotifier, because it
+  // uses ObserverListThreadSafe.
+  base::test::TaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   ProfilePrefRegistration registration_;

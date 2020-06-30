@@ -447,6 +447,10 @@ void PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone(
     const PrintHostMsg_PreviewIds& ids,
     mojom::PrintCompositor::Status status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (PrintPreviewUI::ShouldCancelRequest(ids))
+    return;
+
   if (status != mojom::PrintCompositor::Status::kSuccess) {
     PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
     if (print_preview_ui)

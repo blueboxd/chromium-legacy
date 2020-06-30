@@ -16,7 +16,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
@@ -158,11 +157,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
     }
 
     void pollSnackbarCondition(String message, Supplier<Boolean> condition) {
-        CriteriaHelper.pollUiThread(new Criteria(message) {
-            @Override
-            public boolean isSatisfied() {
-                return condition.get();
-            }
-        });
+        CriteriaHelper.pollUiThread(condition::get, message);
     }
 }

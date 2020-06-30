@@ -316,13 +316,13 @@ void AutoConnectHandler::CheckBestConnection() {
 void AutoConnectHandler::DisconnectIfPolicyRequires() {
   // Wait for both (user & device) policies to be applied. The device policy
   // holds all the policies, which might require disconnects, while the user
-  // policy might whitelist some networks again. This also ensures that we only
+  // policy might allow some networks again. This also ensures that we only
   // disconnect from blocked networks in user sessions.
   if (!device_policy_applied_ || !user_policy_applied_)
     return;
 
-  std::vector<std::string> blacklisted_hex_ssids =
-      managed_configuration_handler_->GetBlacklistedHexSSIDs();
+  std::vector<std::string> blocked_hex_ssids =
+      managed_configuration_handler_->GetBlockedHexSSIDs();
   bool only_managed =
       managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect();
   bool only_managed_autoconnect =
@@ -339,8 +339,8 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
     applied_autoconnect_policy_ = only_managed_autoconnect;
 
   // Early exit if no policy is set that requires any disconnects.
-  if (!only_managed && !only_managed_autoconnect &&
-      blacklisted_hex_ssids.empty() && !available_only) {
+  if (!only_managed && !only_managed_autoconnect && blocked_hex_ssids.empty() &&
+      !available_only) {
     return;
   }
 

@@ -394,16 +394,16 @@ TEST_F(NetworkConnectionHandlerImplTest,
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,
-       NetworkConnectionHandlerConnectBlockedByBlacklist) {
+       NetworkConnectionHandlerConnectBlockedBySSID) {
   std::string wifi0_service_path = ConfigureService(kConfigWifi0Connectable);
   ASSERT_FALSE(wifi0_service_path.empty());
 
   // Set a device policy which blocks wifi0.
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
+  base::Value::ListStorage blocked;
+  blocked.push_back(base::Value("7769666930"));  // hex(wifi0) = 7769666930
   base::DictionaryValue global_config;
-  global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
-                       base::Value(blacklist));
+  global_config.SetKey(::onc::global_network_config::kBlockedHexSSIDs,
+                       base::Value(blocked));
   SetupPolicy("[]", global_config, false /* load as device policy */);
   SetupPolicy("[]", base::DictionaryValue(), true /* load as user policy */);
 
@@ -413,7 +413,7 @@ TEST_F(NetworkConnectionHandlerImplTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
             GetResultAndReset());
 
-  // Set a user policy, which configures wifi0 (==whitelisted).
+  // Set a user policy, which configures wifi0 (==allowed).
   SetupPolicy(kPolicyWifi0, base::DictionaryValue(),
               true /* load as user policy */);
   Connect(wifi0_service_path);

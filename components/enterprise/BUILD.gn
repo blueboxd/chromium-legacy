@@ -4,9 +4,13 @@
 
 static_library("enterprise") {
   sources = [
+    "browser/controller/browser_dm_token_storage.cc",
+    "browser/controller/browser_dm_token_storage.h",
     "browser/reporting/policy_info.cc",
     "browser/reporting/policy_info.h",
     "browser/reporting/report_request_definition.h",
+    "browser/reporting/report_uploader.cc",
+    "browser/reporting/report_uploader.h",
   ]
 
   deps = [
@@ -15,5 +19,21 @@ static_library("enterprise") {
     "//components/policy/core/common",
     "//components/policy/proto",
     "//components/strings",
+    "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "browser/reporting/report_uploader_unittest.cc" ]
+
+  deps = [
+    ":enterprise",
+    "//base",
+    "//base/test:test_support",
+    "//components/policy/core/common:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

@@ -422,15 +422,17 @@ class _BuildArchive(object):
       logging.info('Found existing .size file')
       shutil.copy(existing_size_file, self.archived_size_path)
     else:
-      supersize_cmd = [
-          supersize_path, 'archive', self.archived_size_path, '--elf-file',
-          self.build.abs_main_lib_path, '--output-directory',
-          self.build.output_directory
-      ]
+      supersize_cmd = [supersize_path, 'archive', self.archived_size_path]
+      if self.build.IsAndroid():
+        supersize_cmd += [
+            '-f', self.build.abs_apk_path, '--aux-elf-file',
+            self.build.abs_main_lib_path
+        ]
+      else:
+        supersize_cmd += ['--elf-file', self.build.abs_main_lib_path]
+      supersize_cmd += ['--output-directory', self.build.output_directory]
       if tool_prefix:
         supersize_cmd += ['--tool-prefix', tool_prefix]
-      if self.build.IsAndroid():
-        supersize_cmd += ['-f', self.build.abs_apk_path]
       logging.info('Creating .size file')
       _RunCmd(supersize_cmd)
 

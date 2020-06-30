@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
@@ -145,6 +146,8 @@ class CopyOutputScalingPixelTest
       // results of the main copy request (below) if the GL state is not
       // properly restored.
       request->SetUniformScaleRatio(1, 10);
+      // Ensure the result callback is run on test main thread.
+      request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
       list.front()->copy_requests.push_back(std::move(request));
 
       // Add a copy request to the root RenderPass, to capture the results of
@@ -164,6 +167,8 @@ class CopyOutputScalingPixelTest
       request->set_result_selection(
           copy_output::ComputeResultRect(copy_rect, scale_from_, scale_to_));
       request->SetScaleRatio(scale_from_, scale_to_);
+      // Ensure the result callback is run on test main thread.
+      request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
       list.back()->copy_requests.push_back(std::move(request));
 
       renderer()->DecideRenderPassAllocationsForFrame(list);

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -52,6 +53,10 @@ class DataUseMeasurementTest {
   DataUseMeasurement* data_use_measurement() { return &data_use_measurement_; }
 
  protected:
+  // Required to register a NetworkConnectionObserver from the constructor of
+  // DataUseMeasurement.
+  base::test::TaskEnvironment task_environment_;
+
   DataUseMeasurement data_use_measurement_;
   const std::string kConnectionType = "NotCellular";
 

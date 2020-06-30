@@ -97,6 +97,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
                        const std::string& instance_id,
                        instance_id::InstanceID::Result result);
 
+  void QueueGetInstanceIDCallback(GetInstanceIDCallback callback);
+
   // Run the next queued operation, and post a task for another operation if
   // necessary.
   void MaybeRunNextQueuedOperation();
@@ -116,6 +118,9 @@ class BinaryFCMService : public gcm::GCMAppHandler {
 
   // Queue of pending GetToken calls.
   std::deque<base::OnceClosure> pending_token_calls_;
+
+  // Count of unregistrations currently happening asynchronously.
+  size_t pending_unregistrations_count_ = 0;
 
   // Delay between attempts to dequeue pending operations. Not constant so we
   // can override it in tests.

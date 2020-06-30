@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -298,11 +299,8 @@ public class ThumbnailDiskStorageTest {
      * @param expectedBytes the expected number of bytes stored on disk.
      */
     private void assertDiskSizeBytes(long expectedBytes) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return expectedBytes == mTestThumbnailDiskStorage.mSizeBytes;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mTestThumbnailDiskStorage.mSizeBytes, Matchers.is(expectedBytes));
         }, TIMEOUT_MS, INTERVAL_MS);
     }
 
@@ -313,21 +311,14 @@ public class ThumbnailDiskStorageTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestThumbnailDiskStorage.retrieveThumbnail(request); });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTestThumbnailStorageDelegate.retrievedCount.get() == 1;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(mTestThumbnailStorageDelegate.retrievedCount.get(), Matchers.is(1));
         }, TIMEOUT_MS, INTERVAL_MS);
     }
 
     private void assertInitialized() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTestThumbnailDiskStorage.initialized.get();
-            }
-        }, TIMEOUT_MS, INTERVAL_MS);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> mTestThumbnailDiskStorage.initialized.get(), TIMEOUT_MS, INTERVAL_MS);
     }
 
     /**
@@ -339,11 +330,9 @@ public class ThumbnailDiskStorageTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestThumbnailDiskStorage.removeFromDisk(contentId); });
 
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mTestThumbnailDiskStorage.removeCount.get() == expectedRemoveCount;
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    mTestThumbnailDiskStorage.removeCount.get(), Matchers.is(expectedRemoveCount));
         }, TIMEOUT_MS, INTERVAL_MS);
     }
 

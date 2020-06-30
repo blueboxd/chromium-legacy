@@ -38,22 +38,6 @@ ClientHints::ClientHints(
   DCHECK(settings_map_);
 }
 
-// static
-void ClientHints::CreateForWebContents(
-    content::WebContents* web_contents,
-    network::NetworkQualityTracker* network_quality_tracker,
-    HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata,
-    PrefService* pref_service) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(), base::WrapUnique(new ClientHints(
-                           web_contents, network_quality_tracker, settings_map,
-                           user_agent_metadata, pref_service)));
-  }
-}
-
 ClientHints::~ClientHints() = default;
 
 network::NetworkQualityTracker* ClientHints::GetNetworkQualityTracker() {
@@ -91,22 +75,6 @@ bool ClientHints::UserAgentClientHintEnabled() {
 
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
   return user_agent_metadata_;
-}
-
-ClientHints::ClientHints(
-    content::WebContents* web_contents,
-    network::NetworkQualityTracker* network_quality_tracker,
-    HostContentSettingsMap* settings_map,
-    const blink::UserAgentMetadata& user_agent_metadata,
-    PrefService* pref_service)
-    : ClientHints(web_contents->GetBrowserContext(),
-                  network_quality_tracker,
-                  settings_map,
-                  user_agent_metadata,
-                  pref_service) {
-  receiver_ = std::make_unique<
-      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>(
-      web_contents, this);
 }
 
 void ClientHints::PersistClientHints(
@@ -166,8 +134,19 @@ void ClientHints::PersistClientHints(
       {base::Time(), content_settings::SessionModel::UserSession});
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);
-}
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "ClientHints.PersistDuration", expiration_duration,
+      base::TimeDelta::FromSeconds(1),
+      // TODO(crbug.com/949034): Rename and fix this histogram to have some
+      // intended max value. We throw away the 32 most-significant bits of the
+      // 64-bit time delta in milliseconds. Before it happened silently in
+      // histogram.cc, now it is explicit here. The previous value of 365 days
+      // effectively turns into roughly 17 days when getting cast to int.
+      base::TimeDelta::FromMilliseconds(
+          static_cast<int>(base::TimeDelta::FromDays(365).InMilliseconds())),
+      100);
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientHints)
+  UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", client_hints.size());
+}
 
 }  // namespace client_hints

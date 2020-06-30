@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_FEDERATED_LEARNING_SIM_HASH_H_
 #define COMPONENTS_FEDERATED_LEARNING_SIM_HASH_H_
 
+#include <stdint.h>
 #include <set>
+#include <string>
 #include <unordered_set>
 
 namespace federated_learning {

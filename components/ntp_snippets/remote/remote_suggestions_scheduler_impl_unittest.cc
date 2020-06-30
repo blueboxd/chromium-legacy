@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -283,6 +284,10 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
   RemoteSuggestionsSchedulerImpl* scheduler() { return scheduler_.get(); }
 
  private:
+  // Required to instantiate a net::test::MockNetworkChangeNotifier, because it
+  // uses ObserverListThreadSafe.
+  base::test::TaskEnvironment task_environment_;
+
   test::RemoteSuggestionsTestUtils utils_;
   UserClassifier user_classifier_;
   TestingPrefServiceSimple local_state_;

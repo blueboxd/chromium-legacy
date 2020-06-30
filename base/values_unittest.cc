@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -36,12 +37,6 @@ namespace base {
 // fail in debug builds that sometimes contain larger versions of the standard
 // containers used inside base::Value.
 #if defined(NDEBUG)
-
-static size_t AlignSizeTo(size_t size, size_t alignment) {
-  EXPECT_TRUE((alignment & (alignment - 1)) == 0)
-      << "Alignment " << alignment << " is not a power of 2!";
-  return (size + (alignment - 1u)) & ~(alignment - 1u);
-}
 
 TEST(ValuesTest, SizeOfValue) {
 #define INNER_TYPES_LIST(X)              \
@@ -91,7 +86,7 @@ TEST(ValuesTest, SizeOfValue) {
 
   // The expected value size.
   size_t expected_value_size =
-      AlignSizeTo(max_inner_struct_end_offset, alignof(Value));
+      bits::Align(max_inner_struct_end_offset, alignof(Value));
 
   EXPECT_EQ(expected_value_size, sizeof(Value));
   if (min_inner_value_offset != expected_min_offset ||
@@ -2116,27 +2111,27 @@ TEST(ValuesTest, MergeDictionary) {
   EXPECT_EQ(4U, base->size());
   std::string base_key_value;
   EXPECT_TRUE(base->GetString("base_key", &base_key_value));
-  EXPECT_EQ("base_key_value_base", base_key_value); // Base value preserved.
+  EXPECT_EQ("base_key_value_base", base_key_value);  // Base value preserved.
   std::string collide_key_value;
   EXPECT_TRUE(base->GetString("collide_key", &collide_key_value));
-  EXPECT_EQ("collide_key_value_merge", collide_key_value); // Replaced.
+  EXPECT_EQ("collide_key_value_merge", collide_key_value);  // Replaced.
   std::string merge_key_value;
   EXPECT_TRUE(base->GetString("merge_key", &merge_key_value));
-  EXPECT_EQ("merge_key_value_merge", merge_key_value); // Merged in.
+  EXPECT_EQ("merge_key_value_merge", merge_key_value);  // Merged in.
 
   DictionaryValue* res_sub_dict;
   EXPECT_TRUE(base->GetDictionary("sub_dict_key", &res_sub_dict));
   EXPECT_EQ(3U, res_sub_dict->size());
   std::string sub_base_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_base_key", &sub_base_key_value));
-  EXPECT_EQ("sub_base_key_value_base", sub_base_key_value); // Preserved.
+  EXPECT_EQ("sub_base_key_value_base", sub_base_key_value);  // Preserved.
   std::string sub_collide_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_collide_key",
                                       &sub_collide_key_value));
-  EXPECT_EQ("sub_collide_key_value_merge", sub_collide_key_value); // Replaced.
+  EXPECT_EQ("sub_collide_key_value_merge", sub_collide_key_value);  // Replaced.
   std::string sub_merge_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_merge_key", &sub_merge_key_value));
-  EXPECT_EQ("sub_merge_key_value_merge", sub_merge_key_value); // Merged in.
+  EXPECT_EQ("sub_merge_key_value_merge", sub_merge_key_value);  // Merged in.
 }
 
 TEST(ValuesTest, MergeDictionaryDeepCopy) {

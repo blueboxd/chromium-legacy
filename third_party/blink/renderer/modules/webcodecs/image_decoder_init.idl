@@ -16,4 +16,9 @@ dictionary ImageDecoderInit {
   // resize width and height are additionally used to facilitate reduced
   // resolution decoding.
   ImageBitmapOptions options;
+
+  // For multi-track images, indicates that the animation is preferred over any
+  // still images that are present. When unspecified the decoder will use hints
+  // from the data stream to make a decision.
+  boolean preferAnimation;
 };

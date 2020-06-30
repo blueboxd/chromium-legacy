@@ -35,6 +35,9 @@ namespace signin {
 // Key for ManageAccountsHeaderReceivedUserData. Exposed for testing.
 extern const void* const kManageAccountsHeaderReceivedUserDataKey;
 
+// The source to use when constructing the Mirror header.
+extern const char kChromeMirrorHeaderSource[];
+
 class ChromeRequestAdapter : public RequestAdapter {
  public:
   ChromeRequestAdapter();

@@ -17,6 +17,7 @@ namespace ui {
 class AtkUtilAuraLinuxTest : public AXPlatformNodeTest {
  public:
   AtkUtilAuraLinuxTest() {
+    AXPlatformNode::NotifyAddAXModeFlags(kAXModeComplete);
     // We need to create a platform node in order to install it as the root
     // ATK node. The ATK bridge will complain if we try to use it without a
     // root node installed.

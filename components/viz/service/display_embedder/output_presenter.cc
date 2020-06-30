@@ -85,12 +85,10 @@ void OutputPresenter::Image::EndWriteSkia() {
   DCHECK(scoped_skia_write_access_);
   if (!end_semaphores_.empty()) {
     GrFlushInfo flush_info = {
-        .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };
-    scoped_skia_write_access_->surface()->flush(
-        SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    scoped_skia_write_access_->surface()->flush(flush_info);
     DCHECK(scoped_skia_write_access_->surface()->getContext());
     scoped_skia_write_access_->surface()->getContext()->submit();
   }

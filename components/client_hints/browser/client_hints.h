@@ -13,8 +13,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
-#include "content/public/browser/web_contents_receiver_set.h"
-#include "content/public/browser/web_contents_user_data.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 class GURL;
 class HostContentSettingsMap;
@@ -22,8 +21,7 @@ class HostContentSettingsMap;
 namespace client_hints {
 
 class ClientHints : public KeyedService,
-                    public content::ClientHintsControllerDelegate,
-                    public content::WebContentsUserData<ClientHints> {
+                    public content::ClientHintsControllerDelegate {
  public:
   ClientHints(content::BrowserContext* context,
               network::NetworkQualityTracker* network_quality_tracker,
@@ -31,13 +29,6 @@ class ClientHints : public KeyedService,
               const blink::UserAgentMetadata& user_agent_metadata,
               PrefService* pref_service);
   ~ClientHints() override;
-
-  static void CreateForWebContents(
-      content::WebContents* web_contents,
-      network::NetworkQualityTracker* network_quality_tracker,
-      HostContentSettingsMap* settings_map,
-      const blink::UserAgentMetadata& user_agent_metadata,
-      PrefService* pref_service);
 
   // content::ClientHintsControllerDelegate:
   network::NetworkQualityTracker* GetNetworkQualityTracker() override;
@@ -58,24 +49,11 @@ class ClientHints : public KeyedService,
       base::TimeDelta expiration_duration) override;
 
  private:
-  friend class content::WebContentsUserData<ClientHints>;
-
-  ClientHints(content::WebContents* web_contents,
-              network::NetworkQualityTracker* network_quality_tracker,
-              HostContentSettingsMap* settings_map,
-              const blink::UserAgentMetadata& user_agent_metadata,
-              PrefService* pref_service);
-
   content::BrowserContext* context_ = nullptr;
   network::NetworkQualityTracker* network_quality_tracker_ = nullptr;
   HostContentSettingsMap* settings_map_ = nullptr;
   blink::UserAgentMetadata user_agent_metadata_;
-  std::unique_ptr<
-      content::WebContentsFrameReceiverSet<client_hints::mojom::ClientHints>>
-      receiver_;
   PrefService* pref_service_;
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ClientHints);
 };

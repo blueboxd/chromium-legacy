@@ -791,8 +791,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied(
     if (device_policy_applied_ && user_policy_applied_) {
       network_state_handler_->UpdateBlockedWifiNetworks(
           AllowOnlyPolicyNetworksToConnect(),
-          AllowOnlyPolicyNetworksToConnectIfAvailable(),
-          GetBlacklistedHexSSIDs());
+          AllowOnlyPolicyNetworksToConnectIfAvailable(), GetBlockedHexSSIDs());
     }
 
     for (auto& observer : observers_)
@@ -927,23 +926,22 @@ bool ManagedNetworkConfigurationHandlerImpl::
 }
 
 std::vector<std::string>
-ManagedNetworkConfigurationHandlerImpl::GetBlacklistedHexSSIDs() const {
+ManagedNetworkConfigurationHandlerImpl::GetBlockedHexSSIDs() const {
   const base::DictionaryValue* global_network_config =
       GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
   if (!global_network_config)
     return std::vector<std::string>();
 
-  const base::Value* blacklist_value = global_network_config->FindKeyOfType(
-      ::onc::global_network_config::kBlacklistedHexSSIDs,
-      base::Value::Type::LIST);
-  if (!blacklist_value)
+  const base::Value* blocked_value = global_network_config->FindKeyOfType(
+      ::onc::global_network_config::kBlockedHexSSIDs, base::Value::Type::LIST);
+  if (!blocked_value)
     return std::vector<std::string>();
 
-  std::vector<std::string> blacklisted_hex_ssids;
-  for (const base::Value& entry : blacklist_value->GetList())
-    blacklisted_hex_ssids.push_back(entry.GetString());
-  return blacklisted_hex_ssids;
+  std::vector<std::string> blocked_hex_ssids;
+  for (const base::Value& entry : blocked_value->GetList())
+    blocked_hex_ssids.push_back(entry.GetString());
+  return blocked_hex_ssids;
 }
 
 const ManagedNetworkConfigurationHandlerImpl::Policies*

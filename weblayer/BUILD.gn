@@ -20,8 +20,8 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 } else if (is_mac) {
+  import("//build/apple/tweak_info_plist.gni")
   import("//build/config/mac/rules.gni")
-  import("//build/mac/tweak_info_plist.gni")
   import("//content/public/app/mac_helpers.gni")
   import("//third_party/icu/config.gni")
   import("//ui/gl/features.gni")
@@ -385,7 +385,6 @@ source_set("weblayer_lib_base") {
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",
-    "//content/public/common:client_hints_mojom",
     "//content/public/common:service_names",
     "//content/public/renderer",
     "//content/public/utility",

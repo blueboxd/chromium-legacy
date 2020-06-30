@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_FAKE_BROWSER_DM_TOKEN_STORAGE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 namespace policy {
 

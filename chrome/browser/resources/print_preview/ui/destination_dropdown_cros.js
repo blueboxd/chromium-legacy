@@ -48,11 +48,7 @@ Polymer({
 
     destinationIcon: String,
 
-    /** @private */
-    shouldShowDestinationPrinterStatusIcon_: {
-      type: Boolean,
-      computed: 'computeShouldShowDestinationPrinterStatusIcon_(value)',
-    },
+    isCurrentDestinationCrosLocal: Boolean,
   },
 
   listeners: {
@@ -183,14 +179,9 @@ Polymer({
         this.closeDropdown_();
         break;
       case 'ArrowUp':
-      case 'ArrowDown': {
-        const items = dropdown.getElementsByClassName('list-item');
-        if (items.length === 0) {
-          break;
-        }
-        this.updateHighlighted_(event.code === 'ArrowDown');
+      case 'ArrowDown':
+        this.onArrowKeyPress_(event.code);
         break;
-      }
       case 'Enter': {
         if (dropdown.opened) {
           this.dropdownValueSelected_(this.findHighlightedItem_());
@@ -210,6 +201,55 @@ Polymer({
   },
 
   /**
+   * @param {string} eventCode
+   * @private
+   */
+  onArrowKeyPress_(eventCode) {
+    const dropdown = this.$$('iron-dropdown');
+    const items = this.getButtonListFromDropdown_();
+    if (items.length === 0) {
+      return;
+    }
+
+    // If the dropdown is open, use the arrow key press to change which item is
+    // highlighted in the dropdown. If the dropdown is closed, use the arrow key
+    // press to change the selected destination.
+    if (dropdown.opened) {
+      const currentIndex =
+          items.findIndex(item => item.hasAttribute('highlighted_'));
+      const nextIndex =
+          this.getNextItemIndexInList_(eventCode, currentIndex, items.length);
+      if (nextIndex === -1) {
+        return;
+      }
+      items[currentIndex].toggleAttribute('highlighted_', false);
+      items[nextIndex].toggleAttribute('highlighted_', true);
+    } else {
+      const currentIndex =
+          items.findIndex(item => item.value === this.value.key);
+      const nextIndex =
+          this.getNextItemIndexInList_(eventCode, currentIndex, items.length);
+      if (nextIndex === -1) {
+        return;
+      }
+      this.fire('dropdown-value-selected', items[nextIndex]);
+    }
+  },
+
+  /**
+   * @param {string} eventCode
+   * @param {number} currentIndex
+   * @param {number} numItems
+   * @return {number} Returns -1 when the next item would be outside the list.
+   * @private
+   */
+  getNextItemIndexInList_(eventCode, currentIndex, numItems) {
+    const nextIndex =
+        eventCode === 'ArrowDown' ? currentIndex + 1 : currentIndex - 1;
+    return nextIndex >= 0 && nextIndex < numItems ? nextIndex : -1;
+  },
+
+  /**
    * @param {Element|undefined} dropdownItem
    * @private
    */
@@ -221,34 +261,6 @@ Polymer({
   },
 
   /**
-   * Updates the currently highlighted element based on keyboard up/down
-   *    movement.
-   * @param {boolean} moveDown
-   * @private
-   */
-  updateHighlighted_(moveDown) {
-    const items = this.getButtonListFromDropdown_();
-    const numItems = items.length;
-    if (numItems === 0) {
-      return;
-    }
-
-    let nextIndex = 0;
-    const currentIndex = this.findHighlightedItemIndex_();
-    if (currentIndex === -1) {
-      nextIndex = moveDown ? 0 : numItems - 1;
-    } else {
-      const delta = moveDown ? 1 : -1;
-      nextIndex = (numItems + currentIndex + delta) % numItems;
-      items[currentIndex].toggleAttribute('highlighted_', false);
-    }
-    items[nextIndex].toggleAttribute('highlighted_', true);
-    // The newly highlighted item might not be visible because the dropdown
-    // needs to be scrolled. So scroll the dropdown if necessary.
-    items[nextIndex].scrollIntoViewIfNeeded();
-  },
-
-  /**
    * Finds the currently highlighted dropdown item.
    * @return {Element|undefined} Currently highlighted dropdown item, or
    *   undefined if no item is highlighted.
@@ -257,17 +269,6 @@ Polymer({
   findHighlightedItem_() {
     const items = this.getButtonListFromDropdown_();
     return items.find(item => item.hasAttribute('highlighted_'));
-  },
-
-  /**
-   * Finds the index of currently highlighted dropdown item.
-   * @return {number} Index of the currently highlighted dropdown item, or -1 if
-   *   no item is highlighted.
-   * @private
-   */
-  findHighlightedItemIndex_() {
-    const items = this.getButtonListFromDropdown_();
-    return items.findIndex(item => item.hasAttribute('highlighted_'));
   },
 
   /**
@@ -295,15 +296,5 @@ Polymer({
       return PrinterState.GOOD;
     }
     return PrinterState.ERROR;
-  },
-
-  /**
-   * Only show the printer status badge if the currently selected destination is
-   * a CrOS local printer.
-   * @return {boolean}
-   * @private
-   */
-  computeShouldShowDestinationPrinterStatusIcon_: function() {
-    return this.value && this.value.origin === DestinationOrigin.CROS;
   },
 });

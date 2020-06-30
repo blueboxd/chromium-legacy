@@ -20,6 +20,8 @@ import android.widget.TextView;
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.ui.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -28,6 +30,7 @@ import java.util.Locale;
  */
 public class HomeFragment extends DevUiBaseFragment {
     private Context mContext;
+    private ListView mInfoListView;
 
     @Override
     public void onAttach(Context context) {
@@ -46,22 +49,9 @@ public class HomeFragment extends DevUiBaseFragment {
         Activity activity = (Activity) mContext;
         activity.setTitle("WebView DevTools");
 
-        PackageInfo webViewPackage = WebViewPackageHelper.getContextPackageInfo(mContext);
-        InfoItem[] infoItems = new InfoItem[] {
-                new InfoItem("WebView package", webViewPackage.packageName),
-                new InfoItem("WebView version",
-                        String.format(Locale.US, "%s (%s)", webViewPackage.versionName,
-                                webViewPackage.versionCode)),
-                new InfoItem("Device info",
-                        String.format(Locale.US, "%s - %s", Build.MODEL, Build.FINGERPRINT)),
-        };
-
-        ListView infoListView = view.findViewById(R.id.main_info_list);
-        ArrayAdapter<InfoItem> itemsArrayAdapter = new InfoListAdapter(infoItems);
-        infoListView.setAdapter(itemsArrayAdapter);
-
+        mInfoListView = view.findViewById(R.id.main_info_list);
         // Copy item's text to clipboard on long tapping a list item.
-        infoListView.setOnItemLongClickListener((parent, clickedView, pos, id) -> {
+        mInfoListView.setOnItemLongClickListener((parent, clickedView, pos, id) -> {
             InfoItem item = (InfoItem) parent.getItemAtPosition(pos);
             ClipboardManager clipboard =
                     (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -72,6 +62,33 @@ public class HomeFragment extends DevUiBaseFragment {
 
             return true;
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        List<InfoItem> infoItems = new ArrayList<>();
+        PackageInfo currentWebViewPackage = WebViewPackageHelper.getCurrentWebViewPackage(mContext);
+        PackageInfo devToolsPackage = WebViewPackageHelper.getContextPackageInfo(mContext);
+        boolean isDifferentPackage = currentWebViewPackage == null
+                || !devToolsPackage.packageName.equals(currentWebViewPackage.packageName);
+
+        if (currentWebViewPackage != null) {
+            infoItems.add(new InfoItem("WebView package",
+                    String.format(Locale.US, "%s (%s/%s)", currentWebViewPackage.packageName,
+                            currentWebViewPackage.versionName, currentWebViewPackage.versionCode)));
+        }
+        if (isDifferentPackage) {
+            infoItems.add(new InfoItem("DevTools package",
+                    String.format(Locale.US, "%s (%s/%s)", devToolsPackage.packageName,
+                            devToolsPackage.versionName, devToolsPackage.versionCode)));
+        }
+        infoItems.add(new InfoItem("Device info",
+                String.format(Locale.US, "%s - %s", Build.MODEL, Build.FINGERPRINT)));
+
+        ArrayAdapter<InfoItem> itemsArrayAdapter = new InfoListAdapter(infoItems);
+        mInfoListView.setAdapter(itemsArrayAdapter);
     }
 
     /**
@@ -96,9 +113,9 @@ public class HomeFragment extends DevUiBaseFragment {
      * TextView}; {@code text1} acts as the item title and {@code text2} as the item subtitle.
      */
     private class InfoListAdapter extends ArrayAdapter<InfoItem> {
-        private final InfoItem[] mItems;
+        private final List<InfoItem> mItems;
 
-        public InfoListAdapter(InfoItem[] items) {
+        public InfoListAdapter(List<InfoItem> items) {
             super(mContext, R.layout.two_line_list_item, items);
             mItems = items;
         }
@@ -111,7 +128,7 @@ public class HomeFragment extends DevUiBaseFragment {
                 view = getLayoutInflater().inflate(R.layout.two_line_list_item, null, true);
             }
 
-            InfoItem item = mItems[position];
+            InfoItem item = mItems.get(position);
             TextView title = view.findViewById(android.R.id.text1);
             TextView subtitle = view.findViewById(android.R.id.text2);
 

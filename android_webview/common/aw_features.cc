@@ -23,6 +23,10 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 const base::Feature kWebViewExtraHeadersSameOriginOnly{
     "WebViewExtraHeadersSameOriginOnly", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Activate compatible origin checks for AndroidStreamReaderURLLoader.
+const base::Feature kWebViewOriginCheckForStreamReader{
+    "WebViewOriginCheckForStreamReader", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Sniff the content stream to guess the MIME type when the application doesn't
 // tell us the MIME type explicitly.
 //

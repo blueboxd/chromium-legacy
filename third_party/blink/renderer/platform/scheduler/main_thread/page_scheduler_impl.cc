@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -166,6 +167,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       is_cpu_time_throttled_(false),
       are_wake_ups_intensively_throttled_(false),
       keep_active_(main_thread_scheduler->SchedulerKeepActive()),
+      had_recent_title_or_favicon_update_(false),
       cpu_time_budget_pool_(nullptr),
       same_origin_wake_up_budget_pool_(nullptr),
       cross_origin_wake_up_budget_pool_(nullptr),
@@ -184,6 +186,9 @@ PageSchedulerImpl::PageSchedulerImpl(
   do_intensively_throttle_wake_ups_callback_.Reset(
       base::BindRepeating(&PageSchedulerImpl::DoIntensivelyThrottleWakeUps,
                           base::Unretained(this)));
+  reset_had_recent_title_or_favicon_update_.Reset(base::BindRepeating(
+      &PageSchedulerImpl::ResetHadRecentTitleOrFaviconUpdate,
+      base::Unretained(this)));
   on_audio_silent_closure_.Reset(base::BindRepeating(
       &PageSchedulerImpl::OnAudioSilent, base::Unretained(this)));
   do_freeze_page_callback_.Reset(base::BindRepeating(
@@ -247,8 +252,7 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageVisibilityForTracing(page_visibility_);
 
-  UpdateBackgroundSchedulingLifecycleState(
-      NotificationPolicy::kDoNotNotifyFrames);
+  UpdatePolicyOnVisibilityChange(NotificationPolicy::kDoNotNotifyFrames);
 
   NotifyFrames();
 }
@@ -672,7 +676,7 @@ void PageSchedulerImpl::OnThrottlingReported(
   delegate_->ReportIntervention(message);
 }
 
-void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
+void PageSchedulerImpl::UpdatePolicyOnVisibilityChange(
     NotificationPolicy notification_policy) {
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
@@ -735,6 +739,60 @@ void PageSchedulerImpl::UpdateCPUTimeBudgetPool(
   }
 }
 
+void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
+  if (!same_origin_wake_up_budget_pool_)
+    return;
+
+  if (are_wake_ups_intensively_throttled_ &&
+      !opted_out_from_aggressive_throttling_) {
+    // When the title of favicon is updated, intensive throttling is inhibited
+    // for same-origin frames. This enables alternating effects meant to grab
+    // the user's attention. Cross-origin frames are not affected, since they
+    // shouldn't be able to observe that the page title or favicon was updated.
+    base::TimeDelta time_to_inhibit_intensive_throttling =
+        GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate();
+
+    if (time_to_inhibit_intensive_throttling.is_zero()) {
+      // No inhibiting to be done.
+      return;
+    }
+
+    had_recent_title_or_favicon_update_ = true;
+    base::sequence_manager::LazyNow lazy_now(
+        main_thread_scheduler_->tick_clock());
+    UpdateWakeUpBudgetPools(&lazy_now);
+
+    // Re-enable intensive throttling from a delayed task.
+    reset_had_recent_title_or_favicon_update_.Cancel();
+    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
+        FROM_HERE, reset_had_recent_title_or_favicon_update_.GetCallback(),
+        time_to_inhibit_intensive_throttling);
+  }
+}
+
+void PageSchedulerImpl::ResetHadRecentTitleOrFaviconUpdate() {
+  had_recent_title_or_favicon_update_ = false;
+
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
+  UpdateWakeUpBudgetPools(&lazy_now);
+
+  NotifyFrames();
+}
+
+base::TimeDelta PageSchedulerImpl::GetIntensiveWakeUpThrottlingDuration(
+    bool is_same_origin) {
+  // Title and favicon changes only affect the same_origin wake up budget pool.
+  if (is_same_origin && had_recent_title_or_favicon_update_)
+    return kDefaultThrottledWakeUpInterval;
+
+  if (are_wake_ups_intensively_throttled_ &&
+      !opted_out_from_aggressive_throttling_)
+    return GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
+  else
+    return kDefaultThrottledWakeUpInterval;
+}
+
 void PageSchedulerImpl::UpdateWakeUpBudgetPools(
     base::sequence_manager::LazyNow* lazy_now) {
   DCHECK_EQ(!!same_origin_wake_up_budget_pool_,
@@ -743,18 +801,10 @@ void PageSchedulerImpl::UpdateWakeUpBudgetPools(
   if (!same_origin_wake_up_budget_pool_)
     return;
 
-  if (are_wake_ups_intensively_throttled_ &&
-      !opted_out_from_aggressive_throttling_) {
-    same_origin_wake_up_budget_pool_->SetWakeUpInterval(
-        lazy_now->Now(), GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
-    cross_origin_wake_up_budget_pool_->SetWakeUpInterval(
-        lazy_now->Now(), GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
-  } else {
-    same_origin_wake_up_budget_pool_->SetWakeUpInterval(
-        lazy_now->Now(), kDefaultThrottledWakeUpInterval);
-    cross_origin_wake_up_budget_pool_->SetWakeUpInterval(
-        lazy_now->Now(), kDefaultThrottledWakeUpInterval);
-  }
+  same_origin_wake_up_budget_pool_->SetWakeUpInterval(
+      lazy_now->Now(), GetIntensiveWakeUpThrottlingDuration(true));
+  cross_origin_wake_up_budget_pool_->SetWakeUpInterval(
+      lazy_now->Now(), GetIntensiveWakeUpThrottlingDuration(false));
 }
 
 void PageSchedulerImpl::NotifyFrames() {

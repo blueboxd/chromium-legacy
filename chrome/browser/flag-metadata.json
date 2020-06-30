@@ -1185,11 +1185,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "enable-arc-cups-api",
-    "owners": [ "luum", "skau" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
@@ -2075,8 +2070,8 @@
   },
   {
     "name": "enable-reader-mode",
-    "owners": [ "gilmanmh@google.com" ],
-    "expiry_milestone": 85
+    "owners": [ "katie", "dmazzoni" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-reader-mode-in-cct",
@@ -3409,12 +3404,12 @@
   {
     "name": "omnibox-on-device-head-suggestions-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-on-device-head-suggestions-non-incognito",
     "owners": [ "cechen", "suggest-2g@google.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-on-focus-suggestions",

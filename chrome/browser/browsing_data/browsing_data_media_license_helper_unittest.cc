@@ -68,8 +68,9 @@ class AwaitCompletionHelper {
     }
   }
 
-  base::Closure NotifyClosure() {
-    return base::Bind(&AwaitCompletionHelper::Notify, base::Unretained(this));
+  base::OnceClosure NotifyClosure() {
+    return base::BindOnce(&AwaitCompletionHelper::Notify,
+                          base::Unretained(this));
   }
 
  private:
@@ -127,13 +128,13 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
   // Callback that should be executed in response to StartFetching(), and stores
   // found file systems locally so that they are available via GetFileSystems().
   void OnFetchMediaLicenses(
-      const base::Closure& done_cb,
+      base::OnceClosure done_cb,
       const std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>&
           media_license_info_list) {
     media_license_info_list_.reset(
         new std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>(
             media_license_info_list));
-    done_cb.Run();
+    std::move(done_cb).Run();
   }
 
   // Add some files to the PluginPrivateFileSystem. They are created as follows:
@@ -204,10 +205,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     return fsid;
   }
 
-  void OnFileSystemOpened(const base::Closure& done_cb,
-                          base::File::Error result) {
+  void OnFileSystemOpened(base::OnceClosure done_cb, base::File::Error result) {
     EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
-    done_cb.Run();
+    std::move(done_cb).Run();
   }
 
   // Creates a file named |file_name| in the PluginPrivateFileSystem identified
@@ -238,12 +238,12 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     return file_url;
   }
 
-  void OnFileCreated(const base::Closure& done_cb,
+  void OnFileCreated(base::OnceClosure done_cb,
                      base::File::Error result,
                      bool created) {
     EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
     EXPECT_TRUE(created);
-    done_cb.Run();
+    std::move(done_cb).Run();
   }
 
   // Sets the last_access_time and last_modified_time to |time_stamp| on the
@@ -264,9 +264,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     await_completion.BlockUntilNotified();
   }
 
-  void OnFileTouched(const base::Closure& done_cb, base::File::Error result) {
+  void OnFileTouched(base::OnceClosure done_cb, base::File::Error result) {
     EXPECT_EQ(base::File::FILE_OK, result) << base::File::ErrorToString(result);
-    done_cb.Run();
+    std::move(done_cb).Run();
   }
 
   content::BrowserTaskEnvironment task_environment_;

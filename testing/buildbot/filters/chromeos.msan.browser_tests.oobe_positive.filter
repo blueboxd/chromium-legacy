@@ -67,6 +67,7 @@ OAuth2Test.*
 OobeBaseTest.*
 OobeCompletedUnownedTest.*
 OobeConfigurationEnrollmentTest.*
+OobeConfigurationRollbackTest.*
 OobeConfigurationTest.*
 OobeConfigurationTestNoHID.*
 OobeDisplayChooserTest.*

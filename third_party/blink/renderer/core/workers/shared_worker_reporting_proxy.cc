@@ -34,14 +34,6 @@ void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
                           CrossThreadUnretained(worker_), feature));
 }
 
-void SharedWorkerReportingProxy::CountDeprecation(WebFeature feature) {
-  DCHECK(!IsMainThread());
-  // Go through the same code path with countFeature() because a deprecation
-  // message is already shown on the worker console and a remaining work is just
-  // to record an API use.
-  CountFeature(feature);
-}
-
 void SharedWorkerReportingProxy::ReportException(
     const String& error_message,
     std::unique_ptr<SourceLocation>,

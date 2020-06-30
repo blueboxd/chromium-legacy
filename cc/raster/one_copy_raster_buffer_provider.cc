@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -38,6 +39,14 @@ namespace {
 // 4MiB is the size of 4 512x512 tiles, which has proven to be a good
 // default batch size for copy operations.
 const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
+
+// When enabled, OneCopyRasterBufferProvider::RasterBufferImpl::Playback() runs
+// at normal thread priority.
+// TODO(https://crbug.com/1072756): Enable by default and remove the feature
+// once experiments confirm that this prevents priority inversions.
+const base::Feature kOneCopyRasterBufferPlaybackNormalThreadPriority{
+    "OneCopyRasterBufferPlaybackNormalThreadPriority",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace
 
@@ -120,6 +129,16 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
       before_raster_sync_token_, raster_source, raster_full_rect,
       raster_dirty_rect, transform, resource_size_, resource_format_,
       color_space_, playback_settings, previous_content_id_, new_content_id);
+}
+
+bool OneCopyRasterBufferProvider::RasterBufferImpl::
+    SupportsBackgroundThreadPriority() const {
+  // Playback() should not run at background thread priority because it acquires
+  // the GpuChannelHost lock, which is acquired at normal thread priority by
+  // other code. Acquiring it at background thread priority can cause a priority
+  // inversion. https://crbug.com/1072756
+  return !base::FeatureList::IsEnabled(
+      kOneCopyRasterBufferPlaybackNormalThreadPriority);
 }
 
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(

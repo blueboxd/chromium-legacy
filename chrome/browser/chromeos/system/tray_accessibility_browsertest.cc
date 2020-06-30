@@ -175,8 +175,7 @@ class TrayAccessibilityTest
       policy::PolicyMap policy_map;
       policy_map.Set(policy::key::kShowAccessibilityOptionsInSystemTrayMenu,
                      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                     policy::POLICY_SOURCE_CLOUD,
-                     std::make_unique<base::Value>(value), nullptr);
+                     policy::POLICY_SOURCE_CLOUD, base::Value(value), nullptr);
       provider_.UpdateChromePolicy(policy_map);
       base::RunLoop().RunUntilIdle();
     } else {

@@ -70,8 +70,7 @@ class FakeTabController : public TabController {
   bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
   bool IsTabSelected(const Tab* tab) const override { return false; }
   bool IsTabPinned(const Tab* tab) const override { return false; }
-  bool IsFirstVisibleTab(const Tab* tab) const override { return false; }
-  bool IsLastVisibleTab(const Tab* tab) const override { return false; }
+  bool IsTabFirst(const Tab* tab) const override { return false; }
   bool IsFocusInTabs() const override { return false; }
   void MaybeStartDrag(
       TabSlotView* source,

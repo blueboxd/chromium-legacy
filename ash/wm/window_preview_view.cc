@@ -14,7 +14,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -75,33 +76,34 @@ gfx::Size WindowPreviewView::CalculatePreferredSize() const {
   gfx::RectF window_bounds(GetClientAreaBoundsInScreen(root));
   gfx::SizeF window_size(1.f, 1.f);
   auto it = mirror_views_.find(root);
-  if (it != mirror_views_.end())
+  if (it != mirror_views_.end()) {
     window_size = gfx::SizeF(it->second->CalculatePreferredSize());
+    if (window_size.IsEmpty())
+      return gfx::Size();  // Avoids divide by zero below.
+  }
   gfx::Vector2dF scale(window_bounds.width() / window_size.width(),
                        window_bounds.height() / window_size.height());
-  return gfx::Size(gfx::ToRoundedInt(union_rect.width() * scale.x()),
-                   gfx::ToRoundedInt(union_rect.height() * scale.y()));
+  return gfx::ToRoundedSize(
+      gfx::ScaleSize(union_rect.size(), scale.x(), scale.y()));
 }
 
 void WindowPreviewView::Layout() {
+  const gfx::RectF union_rect = GetUnionRect();
+  if (union_rect.IsEmpty())
+    return;  // Avoids divide by zero below.
+
   // Layout the windows in |mirror_view_| by keeping the same ratio of the
   // original windows to the union of all windows in |mirror_views_|.
   const gfx::RectF local_bounds = gfx::RectF(GetLocalBounds());
-  const gfx::RectF union_rect = GetUnionRect();
   const gfx::Point union_origin = gfx::ToRoundedPoint(union_rect.origin());
 
   gfx::Vector2dF scale(local_bounds.width() / union_rect.width(),
                        local_bounds.height() / union_rect.height());
   for (auto entry : mirror_views_) {
-    const gfx::Rect bounds(GetClientAreaBoundsInScreen(entry.first));
-    gfx::Rect mirror_bounds;
-    mirror_bounds.set_x(
-        gfx::ToRoundedInt((bounds.x() - union_origin.x()) * scale.x()));
-    mirror_bounds.set_y(
-        gfx::ToRoundedInt((bounds.y() - union_origin.y()) * scale.y()));
-    mirror_bounds.set_width(gfx::ToRoundedInt(bounds.width() * scale.x()));
-    mirror_bounds.set_height(gfx::ToRoundedInt(bounds.height() * scale.y()));
-    entry.second->SetBoundsRect(mirror_bounds);
+    const gfx::Rect bounds = GetClientAreaBoundsInScreen(entry.first) -
+                             union_origin.OffsetFromOrigin();
+    entry.second->SetBoundsRect(
+        gfx::ScaleToRoundedRect(bounds, scale.x(), scale.y()));
   }
 }
 

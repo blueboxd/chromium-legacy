@@ -6189,7 +6189,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'example_value': ['https://www.example.com', 'http://example.edu:8080'],
       'id': 73,
       'caption': '''Allow the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
       'tags': [],
@@ -6197,7 +6197,7 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
     },
     {
       'name': 'PluginsBlockedForUrls',
@@ -6212,7 +6212,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'example_value': ['https://www.example.com', 'http://example.edu:8080'],
       'id': 74,
       'caption': '''Block the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin on these sites''',
       'tags': [],
@@ -6220,7 +6220,7 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. However, starting in M85, patterns with '*' and '[*.]' wildcards in the host are no longer supported for this policy.''',
     },
     {
       'name': 'PopupsAllowedForUrls',

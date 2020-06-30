@@ -70,7 +70,8 @@ import java.util.regex.Pattern;
  * application
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
+@CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
+        "enable-features=WebViewOriginCheckForStreamReader"})
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =

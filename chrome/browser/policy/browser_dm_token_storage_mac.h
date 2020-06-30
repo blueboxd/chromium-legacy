@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_BROWSER_DM_TOKEN_STORAGE_MAC_H_
 #define CHROME_BROWSER_POLICY_BROWSER_DM_TOKEN_STORAGE_MAC_H_
 
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 #include <string>
 

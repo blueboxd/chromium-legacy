@@ -80,7 +80,9 @@ class TestRasterTaskImpl : public TileTask {
                      unsigned id,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
-      : TileTask(true, dependencies),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes,
+                 dependencies),
         completion_handler_(completion_handler),
         id_(id),
         raster_buffer_(std::move(raster_buffer)),

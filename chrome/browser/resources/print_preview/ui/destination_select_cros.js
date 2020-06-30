@@ -121,6 +121,12 @@ Polymer({
      * @private {!Map<string, string>}
      */
     statusRequestedMap_: Map,
+
+    /** @private */
+    isCurrentDestinationCrosLocal_: {
+      type: Boolean,
+      computed: 'computeIsCurrentDestinationCrosLocal_(destination)',
+    },
   },
 
   /** @private {!IronMetaElement} */
@@ -392,5 +398,15 @@ Polymer({
    */
   shouldShowStatus_: function() {
     return !!this.statusText_;
+  },
+
+  /**
+   * True when the currently selected destination is a CrOS local printer.
+   * @return {boolean}
+   * @private
+   */
+  computeIsCurrentDestinationCrosLocal_: function() {
+    return this.destination &&
+        this.destination.origin === DestinationOrigin.CROS;
   },
 });

@@ -294,7 +294,7 @@ public class SafeBrowsingTest {
         }
     }
 
-    private static class WhitelistHelper extends CallbackHelper implements Callback<Boolean> {
+    private static class AllowlistHelper extends CallbackHelper implements Callback<Boolean> {
         public boolean success;
 
         @Override
@@ -525,10 +525,10 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSafeBrowsingWhitelistedUnsafePagesDontShowInterstitial() throws Throwable {
+    public void testSafeBrowsingAllowlistedUnsafePagesDontShowInterstitial() throws Throwable {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        verifyWhiteListRule(Uri.parse(responseUrl).getHost(), true);
+        verifyAllowlistRule(Uri.parse(responseUrl).getHost(), true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
@@ -537,21 +537,21 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSafeBrowsingWhitelistHardcodedWebUiPages() throws Throwable {
+    public void testSafeBrowsingAllowlistHardcodedWebUiPages() throws Throwable {
         loadGreenPage();
-        verifyWhiteListRule(WEB_UI_HOST, true);
+        verifyAllowlistRule(WEB_UI_HOST, true);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_MALWARE_URL);
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), WEB_UI_PHISHING_URL);
 
-        // Assume the pages are whitelisted, since we successfully loaded them.
+        // Assume the pages are allowed, since we successfully loaded them.
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSafeBrowsingWhitelistHardcodedWebUiPageBackToSafety() throws Throwable {
+    public void testSafeBrowsingAllowlistHardcodedWebUiPageBackToSafety() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
 
         loadGreenPage();
@@ -576,24 +576,24 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testCallbackCalledOnSafeBrowsingBadWhitelistRule() throws Throwable {
-        verifyWhiteListRule("http://www.google.com", false);
+    public void testCallbackCalledOnSafeBrowsingBadAllowlistRule() throws Throwable {
+        verifyAllowlistRule("http://www.google.com", false);
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testCallbackCalledOnSafeBrowsingGoodWhitelistRule() throws Throwable {
-        verifyWhiteListRule("www.google.com", true);
+    public void testCallbackCalledOnSafeBrowsingGoodAllowlistRule() throws Throwable {
+        verifyAllowlistRule("www.google.com", true);
     }
 
-    private void verifyWhiteListRule(final String rule, boolean expected) throws Throwable {
-        final WhitelistHelper helper = new WhitelistHelper();
+    private void verifyAllowlistRule(final String rule, boolean expected) throws Throwable {
+        final AllowlistHelper helper = new AllowlistHelper();
         final int count = helper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ArrayList<String> s = new ArrayList<String>();
             s.add(rule);
-            AwContentsStatics.setSafeBrowsingWhitelist(s, helper);
+            AwContentsStatics.setSafeBrowsingAllowlist(s, helper);
         });
         helper.waitForCallback(count);
         Assert.assertEquals(expected, helper.success);

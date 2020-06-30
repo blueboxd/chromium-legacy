@@ -83,6 +83,10 @@ void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(
   auto_advance_ = auto_advance;
 }
 
+base::TimeTicks TestingPlatformSupportWithMockScheduler::NowTicks() const {
+  return test_task_runner_->NowTicks();
+}
+
 scheduler::MainThreadSchedulerImpl*
 TestingPlatformSupportWithMockScheduler::GetMainThreadScheduler() const {
   return scheduler_.get();

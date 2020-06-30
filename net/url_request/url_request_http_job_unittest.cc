@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "net/base/auth.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
@@ -192,7 +193,12 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
   EXPECT_EQ("Test Content", delegate_.data_received());
 }
 
-class URLRequestHttpJobWithProxy : public WithTaskEnvironment {
+// TaskEnvironment is required to instantiate a
+// net::ConfiguredProxyResolutionService, which registers itself as an IP
+// Address Observer with the NetworkChangeNotifier.
+using URLRequestHttpJobWithProxyTest = TestWithTaskEnvironment;
+
+class URLRequestHttpJobWithProxy {
  public:
   explicit URLRequestHttpJobWithProxy(
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service)
@@ -215,7 +221,7 @@ class URLRequestHttpJobWithProxy : public WithTaskEnvironment {
 
 // Tests that when proxy is not used, the proxy server is set correctly on the
 // URLRequest.
-TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
+TEST_F(URLRequestHttpJobWithProxyTest, TestFailureWithoutProxy) {
   URLRequestHttpJobWithProxy http_job_with_proxy(nullptr);
 
   MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
@@ -243,7 +249,7 @@ TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
 
 // Tests that when one proxy is in use and the connection to the proxy server
 // fails, the proxy server is still set correctly on the URLRequest.
-TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
+TEST_F(URLRequestHttpJobWithProxyTest, TestSuccessfulWithOneProxy) {
   const char kSimpleProxyGetMockWrite[] =
       "GET http://www.example.com/ HTTP/1.1\r\n"
       "Host: www.example.com\r\n"
@@ -289,8 +295,8 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
 
 // Tests that when two proxies are in use and the connection to the first proxy
 // server fails, the proxy server is set correctly on the URLRequest.
-TEST(URLRequestHttpJobWithProxy,
-     TestContentLengthSuccessfulRequestWithTwoProxies) {
+TEST_F(URLRequestHttpJobWithProxyTest,
+       TestContentLengthSuccessfulRequestWithTwoProxies) {
   const ProxyServer proxy_server =
       ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
 

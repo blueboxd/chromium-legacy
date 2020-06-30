@@ -1,0 +1,97 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Brought at CL 316140872
+
+syntax = "proto3";
+
+package chrome_browser_nearby_sharing_instantmessaging;
+
+// Required in Chrome.
+option optimize_for = LITE_RUNTIME;
+
+message InboxMessage {
+  string message_id = 1;
+
+  enum MessageType {
+    UNKNOWN = 0;
+    BASIC = 4;
+  }
+  MessageType message_type = 2;
+
+  bytes message = 12;
+
+  enum MessageClass {
+    USER = 0;
+    EPHEMERAL = 2;
+  }
+  MessageClass message_class = 5;
+}
+
+message IdType {
+  enum Type {
+    UNSET = 0;
+    NEARBY_ID = 27;
+  }
+}
+
+message Id {
+  IdType.Type type = 1;
+  string id = 2;
+  string app = 3;
+}
+
+message ApiVersion {
+  enum Value {
+    UNKNOWN = 0;
+    V4 = 4;
+  }
+}
+
+message Platform {
+  enum Type {
+    UNKNOWN = 0;
+    DESKTOP = 6;
+  }
+}
+
+message ClientInfo {
+  int32 version_major = 3;
+  int32 version_minor = 4;
+  int32 version_point = 5;
+  ApiVersion.Value api_version = 7;
+  Platform.Type platform_type = 9;
+}
+
+message RequestHeader {
+  string request_id = 1;
+  string app = 3;
+  ClientInfo client_info = 7;
+  Id requester_id = 10;
+}
+
+message SendMessageExpressRequest {
+  RequestHeader header = 1;
+  Id dest_id = 3;
+  InboxMessage message = 4;
+}
+
+message ReceiveMessagesExpressRequest {
+  RequestHeader header = 1;
+}
+
+message ReceiveMessagesResponse {
+  message Header {}
+  Header header = 1;
+  message FastPathReady {}
+
+  oneof body {
+    InboxMessage inbox_message = 2;
+    FastPathReady fast_path_ready = 7;
+  }
+}
+
+message StreamBody {
+  repeated bytes messages = 1;
+}

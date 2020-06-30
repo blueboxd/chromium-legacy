@@ -107,24 +107,24 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
 }
 
 void FFmpegAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                const DecodeCB& decode_cb) {
+                                DecodeCB decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(decode_cb);
   CHECK_NE(state_, kUninitialized);
-  DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);
+  DecodeCB decode_cb_bound = BindToCurrentLoop(std::move(decode_cb));
 
   if (state_ == kError) {
-    decode_cb_bound.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb_bound).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   // Do nothing if decoding has finished.
   if (state_ == kDecodeFinished) {
-    decode_cb_bound.Run(DecodeStatus::OK);
+    std::move(decode_cb_bound).Run(DecodeStatus::OK);
     return;
   }
 
-  DecodeBuffer(*buffer, decode_cb_bound);
+  DecodeBuffer(*buffer, std::move(decode_cb_bound));
 }
 
 void FFmpegAudioDecoder::Reset(base::OnceClosure closure) {
@@ -137,7 +137,7 @@ void FFmpegAudioDecoder::Reset(base::OnceClosure closure) {
 }
 
 void FFmpegAudioDecoder::DecodeBuffer(const DecoderBuffer& buffer,
-                                      const DecodeCB& decode_cb) {
+                                      DecodeCB decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
@@ -147,20 +147,20 @@ void FFmpegAudioDecoder::DecodeBuffer(const DecoderBuffer& buffer,
   // occurs with some damaged files.
   if (!buffer.end_of_stream() && buffer.timestamp() == kNoTimestamp) {
     DVLOG(1) << "Received a buffer without timestamps!";
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   if (!FFmpegDecode(buffer)) {
     state_ = kError;
-    decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   if (buffer.end_of_stream())
     state_ = kDecodeFinished;
 
-  decode_cb.Run(DecodeStatus::OK);
+  std::move(decode_cb).Run(DecodeStatus::OK);
 }
 
 bool FFmpegAudioDecoder::FFmpegDecode(const DecoderBuffer& buffer) {

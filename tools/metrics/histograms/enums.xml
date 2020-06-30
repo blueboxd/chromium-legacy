@@ -5898,7 +5898,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonChrome">
-<!-- Generated from chrome/browser/bad_message.h.-->
+<!-- Generated from chrome/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
   <int value="1" label="PPH_EXTRA_PREVIEW_MESSAGE"/>
@@ -5907,7 +5908,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonContent">
-<!-- Generated from content/browser/bad_message.h.-->
+<!-- Generated from content/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
   <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
@@ -6156,7 +6158,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonExtensions">
-<!-- Generated from extensions/browser/bad_message.h.-->
+<!-- Generated from extensions/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="0" label="EOG_BAD_ORIGIN"/>
   <int value="1" label="EVG_BAD_ORIGIN"/>
@@ -6175,7 +6178,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonGuestView">
-<!-- Generated from components/guest_view/browser/bad_message.h.-->
+<!-- Generated from components/guest_view/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="0" label="GVM_EMBEDDER_FORBIDDEN_ACCESS_TO_GUEST"/>
   <int value="1" label="GVM_INVALID_GUESTVIEW_TYPE"/>
@@ -6183,7 +6187,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonNaCl">
-<!-- Generated from components/nacl/browser/bad_message.h.-->
+<!-- Generated from components/nacl/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="0" label="NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID"/>
   <int value="1" label="NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID"/>
@@ -6191,7 +6196,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BadMessageReasonPasswordManager">
-<!-- Generated from components/password_manager/content/browser/bad_message.h.-->
+<!-- Generated from components/password_manager/content/browser/bad_message.h.
+Called by update_bad_message_reasons.py.-->
 
   <int value="1" label="CPMD_BAD_ORIGIN_FORMS_PARSED"/>
   <int value="2" label="CPMD_BAD_ORIGIN_FORMS_RENDERED"/>
@@ -15850,6 +15856,25 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="0" label="Dual-screen or fold device selected"/>
   <int value="1" label="Dual-screen span mode selected"/>
   <int value="2" label="Platform dual-screen support used"/>
+</enum>
+
+<enum name="DevtoolsGridSettingChanged">
+  <int value="0" label="showGridBorder.none"/>
+  <int value="1" label="showGridBorder.dashed"/>
+  <int value="2" label="showGridBorder.solid"/>
+  <int value="3" label="showGridLines.none"/>
+  <int value="4" label="showGridLines.dashed"/>
+  <int value="5" label="showGridLines.solid"/>
+  <int value="6" label="showGridLines.extended-dashed"/>
+  <int value="7" label="showGridLines.extended-solid"/>
+  <int value="8" label="showGridLineNumbers.none"/>
+  <int value="9" label="showGridLineNumbers.positive"/>
+  <int value="10" label="showGridLineNumbers.negative"/>
+  <int value="11" label="showGridLineNumbers.both"/>
+  <int value="12" label="showGridGaps.none"/>
+  <int value="13" label="showGridGaps.row-gaps"/>
+  <int value="14" label="showGridGaps.column-gaps"/>
+  <int value="15" label="showGridGaps.both"/>
 </enum>
 
 <enum name="DevToolsIssuesPanelOpenedFrom">

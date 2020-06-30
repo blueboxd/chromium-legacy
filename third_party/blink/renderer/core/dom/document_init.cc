@@ -469,6 +469,19 @@ DocumentInit& DocumentInit::WithReportOnlyFeaturePolicyHeader(
   return *this;
 }
 
+DocumentInit& DocumentInit::WithPermissionsPolicyHeader(const String& header) {
+  DCHECK(permissions_policy_header_.IsEmpty());
+  permissions_policy_header_ = header;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithReportOnlyPermissionsPolicyHeader(
+    const String& header) {
+  DCHECK(report_only_permissions_policy_header_.IsEmpty());
+  report_only_permissions_policy_header_ = header;
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
   DCHECK(origin_trials_header_.IsEmpty());
   origin_trials_header_ = header;

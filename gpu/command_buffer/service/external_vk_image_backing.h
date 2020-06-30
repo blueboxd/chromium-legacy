@@ -170,6 +170,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   bool WritePixelsWithCallback(size_t data_size,
                                size_t stride,
                                FillBufferCallback callback);
+  bool WritePixelsWithData(base::span<const uint8_t> pixel_data, size_t stride);
   bool WritePixels();
   void CopyPixelsFromGLTextureToVkImage();
   void CopyPixelsFromShmToGLTexture();

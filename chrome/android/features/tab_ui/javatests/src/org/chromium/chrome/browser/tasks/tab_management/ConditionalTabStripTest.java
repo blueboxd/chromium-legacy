@@ -45,6 +45,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,6 +86,7 @@ import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -652,8 +654,8 @@ public class ConditionalTabStripTest {
     private void verifyAccessibilityTabClosing(int index, boolean isClosing) {
         CriteriaHelper.pollUiThread(() -> {
             AccessibilityTabModelListItem item = getAccessibilityOverviewListItem(index);
-            assertEquals(isClosing ? View.VISIBLE : View.INVISIBLE,
-                    item.findViewById(R.id.undo_contents).getVisibility());
+            Criteria.checkThat(item.findViewById(R.id.undo_contents).getVisibility(),
+                    Matchers.is(isClosing ? View.VISIBLE : View.INVISIBLE));
         });
     }
 

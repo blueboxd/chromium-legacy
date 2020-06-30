@@ -179,6 +179,8 @@ struct PaintPropertyTreeBuilderContext {
   // If not, subtree invalidations occur on every property tree change.
   unsigned supports_composited_raster_invalidation : 1;
 
+  unsigned is_affected_by_outer_viewport_bounds_delta : 1;
+
   // This is always recalculated in PaintPropertyTreeBuilder::UpdateForSelf()
   // which overrides the inherited value.
   CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -266,6 +268,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateRepeatingTableSectionPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
   ALWAYS_INLINE void UpdateRepeatingTableFooterPaintOffsetAdjustment();
+  ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
 
   bool IsInNGFragmentTraversal() const { return pre_paint_info_; }
 

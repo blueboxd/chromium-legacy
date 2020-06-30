@@ -96,13 +96,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabPinned) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
 }
 
-// Flaky on windows: http://crbug.com/238667
-#if defined(OS_WIN)
-#define MAYBE_TabMove DISABLED_TabMove
-#else
-#define MAYBE_TabMove TabMove
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabMove) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabMove) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
@@ -119,13 +113,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabQuery) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "query.html")) << message_;
 }
 
-// Flaky on windows: http://crbug.com/239022
-#if defined(OS_WIN)
-#define MAYBE_TabHighlight DISABLED_TabHighlight
-#else
-#define MAYBE_TabHighlight TabHighlight
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabHighlight) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabHighlight) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "highlight.html")) << message_;
 }
 

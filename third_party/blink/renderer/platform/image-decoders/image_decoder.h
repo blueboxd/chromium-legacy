@@ -149,6 +149,22 @@ class PLATFORM_EXPORT ImageDecoder {
     kDeny,
   };
 
+  // For images which contain both animations and still images, indicates which
+  // is preferred. When unspecified the decoder will use hints from the data
+  // stream to make a decision.
+  //
+  // Note: |animation_option| is unused by formats like GIF or APNG since they
+  // do not have distinct still and animated tracks. I.e., there is either only
+  // an animation or only a still image. If a caller only wants a still image
+  // from a GIF or APNG animation, they can choose to only decode the first
+  // frame. With a format like AVIF where there are distinct still and animation
+  // tracks, callers need a mechanism to choose.
+  enum class AnimationOption {
+    kUnspecified,
+    kPreferAnimation,
+    kPreferStillImage,
+  };
+
   virtual ~ImageDecoder() = default;
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
@@ -163,7 +179,8 @@ class PLATFORM_EXPORT ImageDecoder {
       const ColorBehavior&,
       const OverrideAllowDecodeToYuv allow_decode_to_yuv =
           OverrideAllowDecodeToYuv::kDefault,
-      const SkISize& desired_size = SkISize::MakeEmpty());
+      const SkISize& desired_size = SkISize::MakeEmpty(),
+      AnimationOption animation_option = AnimationOption::kUnspecified);
   static std::unique_ptr<ImageDecoder> Create(
       scoped_refptr<SharedBuffer> data,
       bool data_complete,
@@ -172,10 +189,12 @@ class PLATFORM_EXPORT ImageDecoder {
       const ColorBehavior& color_behavior,
       const OverrideAllowDecodeToYuv allow_decode_to_yuv =
           OverrideAllowDecodeToYuv::kDefault,
-      const SkISize& desired_size = SkISize::MakeEmpty()) {
+      const SkISize& desired_size = SkISize::MakeEmpty(),
+      AnimationOption animation_option = AnimationOption::kUnspecified) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
                   data_complete, alpha_option, high_bit_depth_decoding_option,
-                  color_behavior, allow_decode_to_yuv, desired_size);
+                  color_behavior, allow_decode_to_yuv, desired_size,
+                  animation_option);
   }
 
   // Similar to above, but does not allow mime sniffing. Creates explicitly
@@ -189,7 +208,8 @@ class PLATFORM_EXPORT ImageDecoder {
       const ColorBehavior& color_behavior,
       const OverrideAllowDecodeToYuv allow_decode_to_yuv =
           OverrideAllowDecodeToYuv::kDefault,
-      const SkISize& desired_size = SkISize::MakeEmpty());
+      const SkISize& desired_size = SkISize::MakeEmpty(),
+      AnimationOption animation_option = AnimationOption::kUnspecified);
 
   virtual String FilenameExtension() const = 0;
 
@@ -390,6 +410,9 @@ class PLATFORM_EXPORT ImageDecoder {
   void SetImagePlanes(std::unique_ptr<ImagePlanes> image_planes) {
     image_planes_ = std::move(image_planes);
   }
+
+  // Indicates if the data contains both an animation and still image.
+  virtual bool ImageHasBothStillAndAnimatedSubImages() const { return false; }
 
  protected:
   ImageDecoder(AlphaOption alpha_option,

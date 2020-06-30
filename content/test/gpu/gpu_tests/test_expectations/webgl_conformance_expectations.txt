@@ -50,7 +50,7 @@
 [ mac no-swiftshader-gl opengl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ mac no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/808744 [ android no-swiftshader-gl no-angle ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
-crbug.com/808744 [ fuchsia no-swiftshader-gl no-angle ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/808744 [ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
 
@@ -85,8 +85,8 @@ crbug.com/867718 [ win d3d9 no-swiftshader-gl ] WebglExtension_EXT_disjoint_time
 [ android qualcomm-adreno-(tm)-430 no-swiftshader-gl ] WebglExtension_EXT_sRGB [ Failure ]
 
 # Fuchsia specific
-[ fuchsia no-swiftshader-gl no-angle ] WebglExtension_EXT_shader_texture_lod [ Skip ]
-[ fuchsia no-swiftshader-gl no-angle ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+[ fuchsia no-swiftshader-gl no-passthrough ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 
 # Fails on Android Nvidia Tegra driver version 343, passes on 361
 # We don't have tags for specific driver version so just skip all

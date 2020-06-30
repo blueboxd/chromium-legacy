@@ -24,8 +24,6 @@ class ASH_EXPORT ShelfButton : public views::Button {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void NotifyClick(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  void OnLayerTransformed(const gfx::Transform& old_transform,
-                          ui::PropertyChangeReason reason) override;
 
   Shelf* shelf() { return shelf_; }
   const Shelf* shelf() const { return shelf_; }

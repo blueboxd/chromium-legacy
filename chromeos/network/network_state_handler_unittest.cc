@@ -2098,7 +2098,7 @@ TEST_F(NetworkStateHandlerTest, UpdateCaptivePortalProvider) {
   EXPECT_EQ(kProviderName, info->name);
 }
 
-TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlacklisted) {
+TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlocked) {
   NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
       kShillManagerClientStubDefaultWifi);
   NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(
@@ -2110,12 +2110,12 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlacklisted) {
   EXPECT_FALSE(wifi1->blocked_by_policy());
   EXPECT_FALSE(wifi2->blocked_by_policy());
 
-  std::vector<std::string> blacklist;
-  blacklist.push_back(wifi1->GetHexSsid());
-  network_state_handler_->UpdateBlockedWifiNetworks(false, false, blacklist);
+  std::vector<std::string> blocked;
+  blocked.push_back(wifi1->GetHexSsid());
+  network_state_handler_->UpdateBlockedWifiNetworks(false, false, blocked);
 
   EXPECT_FALSE(network_state_handler_->OnlyManagedWifiNetworksAllowed());
-  EXPECT_EQ(blacklist, network_state_handler_->blacklisted_hex_ssids_);
+  EXPECT_EQ(blocked, network_state_handler_->blocked_hex_ssids_);
   EXPECT_TRUE(wifi1->blocked_by_policy());
   EXPECT_FALSE(wifi2->blocked_by_policy());
 
@@ -2128,7 +2128,7 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlacklisted) {
   SetProperties(wifi1, properties);
 
   EXPECT_FALSE(network_state_handler_->OnlyManagedWifiNetworksAllowed());
-  EXPECT_EQ(blacklist, network_state_handler_->blacklisted_hex_ssids_);
+  EXPECT_EQ(blocked, network_state_handler_->blocked_hex_ssids_);
   EXPECT_TRUE(wifi1->IsManagedByPolicy());
   EXPECT_FALSE(wifi2->IsManagedByPolicy());
   EXPECT_FALSE(wifi1->blocked_by_policy());

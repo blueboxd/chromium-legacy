@@ -7,7 +7,7 @@
 // language policy. If a language is both blocked and forced, forced wins. It is
 // only practical to test this interaction in a single unit test covering both
 // header files.
-#include "chrome/browser/spellchecker/spellcheck_language_blacklist_policy_handler.h"
+#include "chrome/browser/spellchecker/spellcheck_language_blocklist_policy_handler.h"
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
 
 #include <ostream>
@@ -151,7 +151,7 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
   forced_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Apply policy to the blocked languages handler.
-  SpellcheckLanguageBlacklistPolicyHandler blocked_languages_handler;
+  SpellcheckLanguageBlocklistPolicyHandler blocked_languages_handler;
   blocked_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Check if forced languages preferences are as expected.

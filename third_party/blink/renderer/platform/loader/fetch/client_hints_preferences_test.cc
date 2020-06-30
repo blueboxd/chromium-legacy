@@ -61,9 +61,8 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     SCOPED_TRACE(testing::Message() << test_case.header_value);
     ClientHintsPreferences preferences;
     const KURL kurl(String::FromUTF8("https://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader(
-        test_case.header_value, kurl,
-        ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+    preferences.UpdateFromHttpEquivAcceptCH(test_case.header_value, kurl,
+                                            nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -94,10 +93,9 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
         test_case.expectation_ua_model,
         preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-    // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
-    // have no impact on client hint preferences, for either mode.
-    preferences.UpdateFromAcceptClientHintsHeader(
-        "1, 42,", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+    // Calling UpdateFromHttpEquivAcceptCH with an invalid header should
+    // have no impact on client hint preferences.
+    preferences.UpdateFromHttpEquivAcceptCH("1, 42,", kurl, nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -107,8 +105,10 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kViewportWidth));
 
-    preferences.UpdateFromAcceptClientHintsHeader(
-        "1, 42,", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
+    // Calling UpdateFromHttpEquivAcceptCH with empty header is also a
+    // no-op, since ClientHintsPreferences only deals with http-equiv, and
+    // hence merge.
+    preferences.UpdateFromHttpEquivAcceptCH("", kurl, nullptr);
     EXPECT_EQ(test_case.expectation_resource_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kResourceWidth));
@@ -117,147 +117,16 @@ TEST_F(ClientHintsPreferencesTest, BasicSecure) {
     EXPECT_EQ(test_case.expectation_viewport_width,
               preferences.ShouldSend(
                   network::mojom::WebClientHintsType::kViewportWidth));
-
-    // Calling UpdateFromAcceptClientHintsHeader with empty header in merge
-    // mode is also a no-op.
-    preferences.UpdateFromAcceptClientHintsHeader(
-        "", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
-    EXPECT_EQ(test_case.expectation_resource_width,
-              preferences.ShouldSend(
-                  network::mojom::WebClientHintsType::kResourceWidth));
-    EXPECT_EQ(test_case.expectation_dpr,
-              preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
-    EXPECT_EQ(test_case.expectation_viewport_width,
-              preferences.ShouldSend(
-                  network::mojom::WebClientHintsType::kViewportWidth));
-
-    // Calling UpdateFromAcceptClientHintsHeader with empty header in replace
-    // mode should clear client hint preferences.
-    preferences.UpdateFromAcceptClientHintsHeader(
-        "", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
-    EXPECT_EQ(false, preferences.ShouldSend(
-                         network::mojom::WebClientHintsType::kResourceWidth));
-    EXPECT_EQ(false,
-              preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
-    EXPECT_EQ(false, preferences.ShouldSend(
-                         network::mojom::WebClientHintsType::kViewportWidth));
   }
 }
 
-// Verify that the set of enabled client hints is overwritten every time
-// Update*() methods are called with replace mode.
-TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesReplace) {
-  ClientHintsPreferences preferences;
-  const KURL kurl(String::FromUTF8("https://www.google.com/"));
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "rtt, downlink", kurl, ClientHintsPreferences::UpdateMode::kReplace,
-      nullptr);
-
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
-  EXPECT_FALSE(preferences.ShouldSend(
-      network::mojom::WebClientHintsType::kResourceWidth));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
-  EXPECT_FALSE(preferences.ShouldSend(
-      network::mojom::WebClientHintsType::kViewportWidth));
-  EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
-  EXPECT_TRUE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
-  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
-
-  // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
-  // have no impact on client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "1,,42", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
-  EXPECT_FALSE(preferences.ShouldSend(
-      network::mojom::WebClientHintsType::kResourceWidth));
-  EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
-  EXPECT_TRUE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
-  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
-
-  // Calling UpdateFromAcceptClientHintsHeader with "width" header should
-  // replace preferences with just width.
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "width", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
-  EXPECT_TRUE(preferences.ShouldSend(
-      network::mojom::WebClientHintsType::kResourceWidth));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
-  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
-
-  // Calling UpdateFromAcceptClientHintsHeader with empty header should empty
-  // client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
-  EXPECT_FALSE(preferences.ShouldSend(
-      network::mojom::WebClientHintsType::kResourceWidth));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kDownlink));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kEct));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kLang));
-  EXPECT_FALSE(preferences.ShouldSend(network::mojom::WebClientHintsType::kUA));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAArch));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
-  EXPECT_FALSE(
-      preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
-
-  preferences.UpdateFromAcceptClientHintsLifetimeHeader("1000", kurl, nullptr);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1000),
-            preferences.GetPersistDuration());
-}
-
 // Verify that the set of enabled client hints is merged every time
-// Update*() methods are called with merge mode.
+// Update*() methods are called.
 TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
   ClientHintsPreferences preferences;
   const KURL kurl(String::FromUTF8("https://www.google.com/"));
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "rtt, downlink", kurl, ClientHintsPreferences::UpdateMode::kMerge,
-      nullptr);
+  preferences.UpdateFromHttpEquivAcceptCH("rtt, downlink", kurl, nullptr);
 
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
   EXPECT_FALSE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
   EXPECT_FALSE(
@@ -279,11 +148,9 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-  // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
+  // Calling UpdateFromHttpEquivAcceptCH with an invalid header should
   // have no impact on client hint preferences.
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "1,,42", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  preferences.UpdateFromHttpEquivAcceptCH("1,,42", kurl, nullptr);
   EXPECT_FALSE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
   EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
@@ -301,11 +168,9 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-  // Calling UpdateFromAcceptClientHintsHeader with "width" header should
+  // Calling UpdateFromHttpEquivAcceptCH with "width" header should
   // replace add width to preferences
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "width", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  preferences.UpdateFromHttpEquivAcceptCH("width", kurl, nullptr);
   EXPECT_TRUE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
   EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
@@ -323,11 +188,9 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
 
-  // Calling UpdateFromAcceptClientHintsHeader with empty header should not
-  // change anything with the mode is merge.
-  preferences.UpdateFromAcceptClientHintsHeader(
-      "", kurl, ClientHintsPreferences::UpdateMode::kMerge, nullptr);
-  EXPECT_EQ(base::TimeDelta(), preferences.GetPersistDuration());
+  // Calling UpdateFromHttpEquivAcceptCH with empty header should not
+  // change anything.
+  preferences.UpdateFromHttpEquivAcceptCH("", kurl, nullptr);
   EXPECT_TRUE(preferences.ShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth));
   EXPECT_TRUE(preferences.ShouldSend(network::mojom::WebClientHintsType::kRtt));
@@ -344,10 +207,6 @@ TEST_F(ClientHintsPreferencesTest, SecureEnabledTypesMerge) {
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAPlatform));
   EXPECT_FALSE(
       preferences.ShouldSend(network::mojom::WebClientHintsType::kUAModel));
-
-  preferences.UpdateFromAcceptClientHintsLifetimeHeader("1000", kurl, nullptr);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1000),
-            preferences.GetPersistDuration());
 }
 
 TEST_F(ClientHintsPreferencesTest, Insecure) {
@@ -356,8 +215,7 @@ TEST_F(ClientHintsPreferencesTest, Insecure) {
     const KURL kurl = use_secure_url
                           ? KURL(String::FromUTF8("https://www.google.com/"))
                           : KURL(String::FromUTF8("http://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader(
-        "dpr", kurl, ClientHintsPreferences::UpdateMode::kReplace, nullptr);
+    preferences.UpdateFromHttpEquivAcceptCH("dpr", kurl, nullptr);
     EXPECT_EQ(use_secure_url,
               preferences.ShouldSend(network::mojom::WebClientHintsType::kDpr));
   }
@@ -368,8 +226,6 @@ TEST_F(ClientHintsPreferencesTest, Insecure) {
 TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
   struct TestCase {
     const char* accept_ch_header_value;
-    const char* accept_lifetime_header_value;
-    int64_t expect_persist_duration_seconds;
     bool expect_device_memory;
     bool expect_width;
     bool expect_dpr;
@@ -384,23 +240,22 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
     bool expect_ua_model;
     bool expect_ua_full_version;
   } test_cases[] = {
-      {"width, dpr, viewportWidth, lang", "", 0, false, true, true, false,
-       false, false, false, true, false, false, false, false, false},
-      {"width, dpr, viewportWidth", "-1000", 0, false, true, true, false, false,
-       false, false, false, false, false, false, false, false},
-      {"width, dpr, viewportWidth", "1000s", 0, false, true, true, false, false,
-       false, false, false, false, false, false, false, false},
-      {"width, dpr, viewportWidth", "1000.5", 0, false, true, true, false,
-       false, false, false, false, false, false, false, false, false},
-      {"width, dpr, rtt, downlink, ect", "1000", 1000, false, true, true, false,
-       true, true, true, false, false, false, false, false, false},
-      {"device-memory", "-1000", 0, true, false, false, false, false, false,
+      {"width, dpr, viewportWidth, lang", false, true, true, false, false,
+       false, false, true, false, false, false, false, false},
+      {"width, dpr, viewportWidth", false, true, true, false, false, false,
        false, false, false, false, false, false, false},
-      {"dpr rtt", "1000", 1000, false, false, false, false, false, false, false,
-       false, false, false, false, false, false},
-      {"ua, ua-arch, ua-platform, ua-model, ua-full-version", "1000", 1000,
-       false, false, false, false, false, false, false, false, true, true, true,
-       true, true},
+      {"width, dpr, viewportWidth", false, true, true, false, false, false,
+       false, false, false, false, false, false, false},
+      {"width, dpr, viewportWidth", false, true, true, false, false, false,
+       false, false, false, false, false, false, false},
+      {"width, dpr, rtt, downlink, ect", false, true, true, false, true, true,
+       true, false, false, false, false, false, false},
+      {"device-memory", true, false, false, false, false, false, false, false,
+       false, false, false, false, false},
+      {"dpr rtt", false, false, false, false, false, false, false, false, false,
+       false, false, false, false},
+      {"ua, ua-arch, ua-platform, ua-model, ua-full-version", false, false,
+       false, false, false, false, false, false, true, true, true, true, true},
   };
 
   for (const auto& test : test_cases) {
@@ -431,21 +286,12 @@ TEST_F(ClientHintsPreferencesTest, ParseHeaders) {
         network::mojom::WebClientHintsType::kUAPlatform));
     EXPECT_FALSE(
         enabled_types.IsEnabled(network::mojom::WebClientHintsType::kUAModel));
-    base::TimeDelta persist_duration = preferences.GetPersistDuration();
-    EXPECT_EQ(base::TimeDelta(), persist_duration);
 
     const KURL kurl(String::FromUTF8("https://www.google.com/"));
-    preferences.UpdateFromAcceptClientHintsHeader(
-        test.accept_ch_header_value, kurl,
-        ClientHintsPreferences::UpdateMode::kReplace, nullptr);
-    preferences.UpdateFromAcceptClientHintsLifetimeHeader(
-        test.accept_lifetime_header_value, kurl, nullptr);
+    preferences.UpdateFromHttpEquivAcceptCH(test.accept_ch_header_value, kurl,
+                                            nullptr);
 
     enabled_types = preferences.GetWebEnabledClientHints();
-    persist_duration = preferences.GetPersistDuration();
-
-    EXPECT_EQ(test.expect_persist_duration_seconds,
-              persist_duration.InSeconds());
 
     EXPECT_EQ(test.expect_device_memory,
               enabled_types.IsEnabled(

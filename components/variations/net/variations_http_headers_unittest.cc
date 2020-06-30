@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "net/base/isolation_info.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -180,6 +181,14 @@ class PopulateRequestContextHistogramTest
     : public testing::TestWithParam<PopulateRequestContextHistogramData> {
  public:
   static const PopulateRequestContextHistogramData kCases[];
+
+  // Required to use ObserverListThreadSafe::AddObserver() from:
+  //    base::FieldTrialList::AddObserver
+  //    variations::VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded
+  //    variations::VariationsHttpHeaderProvider::GetClientDataHeader
+  //    variations::VariationsHeaderHelper::VariationsHeaderHelper
+  //    variations::AppendVariationsHeaderUnknownSignedIn
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 const PopulateRequestContextHistogramData

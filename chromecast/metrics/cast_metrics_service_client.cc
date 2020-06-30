@@ -288,10 +288,10 @@ void CastMetricsServiceClient::InitializeMetricsService() {
   DCHECK(!metrics_state_manager_);
   metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(),
-      base::Bind(&CastMetricsServiceClient::StoreClientInfo,
-                 base::Unretained(this)),
-      base::Bind(&CastMetricsServiceClient::LoadClientInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&CastMetricsServiceClient::StoreClientInfo,
+                          base::Unretained(this)),
+      base::BindRepeating(&CastMetricsServiceClient::LoadClientInfo,
+                          base::Unretained(this)));
   metrics_service_.reset(new ::metrics::MetricsService(
       metrics_state_manager_.get(), this, pref_service_));
 

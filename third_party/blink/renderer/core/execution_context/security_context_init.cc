@@ -167,17 +167,27 @@ void SecurityContextInit::InitializeFeaturePolicy(
   if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty())
     frame_for_opener_feature_state_ = frame;
 
+  const String& permissions_policy_header =
+      RuntimeEnabledFeatures::PermissionsPolicyHeaderEnabled()
+          ? initializer.PermissionsPolicyHeader()
+          : g_empty_string;
+  const String& report_only_permissions_policy_header =
+      RuntimeEnabledFeatures::PermissionsPolicyHeaderEnabled()
+          ? initializer.ReportOnlyPermissionsPolicyHeader()
+          : g_empty_string;
+
   PolicyParserMessageBuffer feature_policy_logger(
       "Error with Feature-Policy header: ");
   PolicyParserMessageBuffer report_only_feature_policy_logger(
       "Error with Report-Only-Feature-Policy header: ");
 
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      initializer.FeaturePolicyHeader(), security_origin_,
-      feature_policy_logger, this);
+      initializer.FeaturePolicyHeader(), permissions_policy_header,
+      security_origin_, feature_policy_logger, this);
 
   report_only_feature_policy_header_ = FeaturePolicyParser::ParseHeader(
-      initializer.ReportOnlyFeaturePolicyHeader(), security_origin_,
+      initializer.ReportOnlyFeaturePolicyHeader(),
+      report_only_permissions_policy_header, security_origin_,
       report_only_feature_policy_logger, this);
 
   if (!report_only_feature_policy_header_.empty()) {

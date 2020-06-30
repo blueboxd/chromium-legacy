@@ -863,10 +863,10 @@ namespace networking.onc {
     // or configured. Defaults to false.
     boolean? AllowOnlyPolicyNetworksToConnectIfAvailable;
 
-    // List of blacklisted networks. Connections to blacklisted networks are
-    // prohibited. Networks can be whitelisted again by specifying an explicit
+    // List of blocked networks. Connections to blocked networks are
+    // prohibited. Networks can be unblocked again by specifying an explicit
     // network configuration. Defaults to an empty list.
-    DOMString[]? BlacklistedHexSSIDs;
+    DOMString[]? BlockedHexSSIDs;
   };
 
   callback VoidCallback = void();

@@ -6,7 +6,11 @@ import {Destination, DestinationConnectionStatus, DestinationOrigin, Destination
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyDownOn, move} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
+
+import {getGoogleDriveDestination, getSaveAsPdfDestination} from './print_preview_test_utils.js';
 
 window.destination_dropdown_cros_test = {};
 const destination_dropdown_cros_test = window.destination_dropdown_cros_test;
@@ -19,10 +23,11 @@ destination_dropdown_cros_test.TestNames = {
   ClickCloses: 'click closes dropdown',
   TabCloses: 'tab closes dropdown',
   HighlightedAfterUpDown: 'highlighted after keyboard press up and down',
+  DestinationChangeAfterUpDown:
+      'destination changes after keyboard press up and down',
   EnterOpensCloses: 'enter opens and closes dropdown',
   HighlightedFollowsMouse: 'highlighted follows mouse',
   Disabled: 'disabled',
-  HiddenDestinationBadge: 'hidden destination badge',
   NewStatusUpdatesDestinationIcon: 'new status updates destination icon',
   ChangingDestinationUpdatesIcon: 'changing destination updates icon',
   HighlightedWhenOpened: 'highlighted when opened',
@@ -99,6 +104,8 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         (document.createElement('print-preview-destination-dropdown-cros'));
     document.body.appendChild(dropdown);
     dropdown.noDestinations = false;
+    dropdown.driveDestinationKey = getGoogleDriveDestination('account').key;
+    dropdown.pdfDestinationKey = getSaveAsPdfDestination().key;
   });
 
   test(
@@ -181,16 +188,48 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         down();
         assertEquals('See more…', getHighlightedElementText());
         down();
-        assertEquals('One', getHighlightedElementText());
-
-        up();
         assertEquals('See more…', getHighlightedElementText());
+
         up();
         assertEquals('Save to Google Drive', getHighlightedElementText());
         up();
         assertEquals('Save as PDF', getHighlightedElementText());
         up();
         assertEquals('One', getHighlightedElementText());
+        up();
+        assertEquals('One', getHighlightedElementText());
+      });
+
+  test(
+      assert(destination_dropdown_cros_test.TestNames
+                 .DestinationChangeAfterUpDown),
+      function() {
+        const destinationOne = createDestination('One', DestinationOrigin.CROS);
+        const pdfDestination = getSaveAsPdfDestination();
+        setItemList([destinationOne]);
+        dropdown.value = pdfDestination;
+
+        // Verify an up press sends |destinationOne| as the next value selected.
+        const whenSelectedAfterUpPress =
+            eventToPromise('dropdown-value-selected', dropdown);
+        up();
+        whenSelectedAfterUpPress.then(event => {
+          assertEquals(destinationOne.key, event.detail.value);
+        });
+
+        // Key press does not directly update |value| so it is expected for the
+        // |value| to not change here in this test.
+        assert(dropdown.value === pdfDestination);
+
+        // Verify a down press sends the Save to Google Drive destination as the
+        // next value selected.
+        const whenSelectedAfterDownPress =
+            eventToPromise('dropdown-value-selected', dropdown);
+        down();
+        whenSelectedAfterDownPress.then(event => {
+          assertEquals(
+              getGoogleDriveDestination('account').key, event.detail.value);
+        });
       });
 
   test(
@@ -246,26 +285,6 @@ suite(destination_dropdown_cros_test.suiteName, function() {
     pointerDown(dropdown.$$('#dropdownInput'));
     assertTrue(dropdown.$$('iron-dropdown').opened);
   });
-
-  test(
-      assert(destination_dropdown_cros_test.TestNames.HiddenDestinationBadge),
-      function() {
-        setItemList([
-          createDestination('One', DestinationOrigin.CROS),
-          createDestination('Two', DestinationOrigin.PRIVET)
-        ]);
-
-        // A DestinationOrigin.CROS printer destination.
-        dropdown.value = dropdown.itemList[0];
-        assertFalse(dropdown.$$('#destination-badge').hidden);
-        assertTrue(dropdown.$$('iron-icon').hidden);
-
-        // A non-local printer destination that should not have a printer status
-        // icon.
-        dropdown.value = dropdown.itemList[1];
-        assertTrue(dropdown.$$('#destination-badge').hidden);
-        assertFalse(dropdown.$$('iron-icon').hidden);
-      });
 
   test(
       assert(destination_dropdown_cros_test.TestNames

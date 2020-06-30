@@ -1911,6 +1911,15 @@ void RenderFrameHostImpl::AccessibilityHitTest(
     int opt_request_id,
     base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
                             int hit_node_id)> opt_callback) {
+  // This is called by BrowserAccessibilityManager. During teardown it's
+  // possible that render_accessibility_ is null but the corresponding
+  // BrowserAccessibilityManager still exists and could call this.
+  if (IsInactiveAndDisallowReactivation() || !render_accessibility_) {
+    if (opt_callback)
+      std::move(opt_callback).Run(nullptr, 0);
+    return;
+  }
+
   render_accessibility_->HitTest(
       point_in_frame_pixels, opt_event_to_fire, opt_request_id,
       base::BindOnce(&RenderFrameHostImpl::AccessibilityHitTestCallback,
@@ -8210,6 +8219,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   RecordCrossOriginIsolationMetrics(this);
+
+  CrossOriginOpenerPolicyReporter::InstallAccessMonitorsIfNeeded(
+      frame_tree_node_);
 
   return true;
 }

@@ -86,6 +86,19 @@ class SynchronousSimpleTaskRunner : public base::TestSimpleTaskRunner {
   bool run_tasks_synchronously_ = false;
 };
 
+class FakeRasterBuffer : public RasterBuffer {
+ public:
+  void Playback(const RasterSource* raster_source,
+                const gfx::Rect& raster_full_rect,
+                const gfx::Rect& raster_dirty_rect,
+                uint64_t new_content_id,
+                const gfx::AxisTransform2d& transform,
+                const RasterSource::PlaybackSettings& playback_settings,
+                const GURL& url) override {}
+
+  bool SupportsBackgroundThreadPriority() const override { return true; }
+};
+
 class TileManagerTilePriorityQueueTest : public TestLayerTreeHostBase {
  public:
   LayerTreeSettings CreateSettings() override {
@@ -1568,6 +1581,8 @@ class TestSoftwareRasterBufferProvider : public FakeRasterBufferProviderImpl {
           gfx::ColorSpace(), kIsGpuCompositing, playback_settings);
     }
 
+    bool SupportsBackgroundThreadPriority() const override { return true; }
+
    private:
     gfx::Size size_;
     void* pixels_;
@@ -2188,17 +2203,6 @@ class InvalidResourceRasterBufferProvider
         uint64_t tracing_process_id,
         int importance) const override {}
   };
-
-  class FakeRasterBuffer : public RasterBuffer {
-   public:
-    void Playback(const RasterSource* raster_source,
-                  const gfx::Rect& raster_full_rect,
-                  const gfx::Rect& raster_dirty_rect,
-                  uint64_t new_content_id,
-                  const gfx::AxisTransform2d& transform,
-                  const RasterSource::PlaybackSettings& playback_settings,
-                  const GURL& url) override {}
-  };
 };
 
 class InvalidResourceTileManagerTest : public TileManagerTest {
@@ -2273,18 +2277,6 @@ class MockReadyToDrawRasterBufferProviderImpl
       resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
     return std::make_unique<FakeRasterBuffer>();
   }
-
- private:
-  class FakeRasterBuffer : public RasterBuffer {
-   public:
-    void Playback(const RasterSource* raster_source,
-                  const gfx::Rect& raster_full_rect,
-                  const gfx::Rect& raster_dirty_rect,
-                  uint64_t new_content_id,
-                  const gfx::AxisTransform2d& transform,
-                  const RasterSource::PlaybackSettings& playback_settings,
-                  const GURL& url) override {}
-  };
 };
 
 class TileManagerReadyToDrawTest : public TileManagerTest {
@@ -3240,6 +3232,8 @@ class VerifyImageProviderRasterBuffer : public RasterBuffer {
     did_raster_ = true;
     EXPECT_TRUE(playback_settings.image_provider);
   }
+
+  bool SupportsBackgroundThreadPriority() const override { return true; }
 
  private:
   bool did_raster_ = false;

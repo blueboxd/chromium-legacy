@@ -325,9 +325,7 @@ void AcceleratedStaticBitmapImage::InitializeTextureBacking(
       sk_image_info_.alphaType(), sk_image_info_.refColorSpace(),
       &ReleaseTexture, release_ctx);
 
-  if (!sk_image) {
-    ReleaseTexture(release_ctx);
-  } else {
+  if (sk_image) {
     skia_context_provider_wrapper_ = std::move(context_provider_wrapper);
     texture_backing_ = sk_sp<MailboxTextureBacking>(
         new MailboxTextureBacking(std::move(sk_image)));

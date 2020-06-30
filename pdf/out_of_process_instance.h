@@ -24,7 +24,6 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/find_private.h"
-#include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -263,20 +262,38 @@ class OutOfProcessInstance : public pp::Instance,
   pp::FloatPoint BoundScrollOffsetToDocument(
       const pp::FloatPoint& scroll_offset);
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PdfHasAttachment {
+    kNo = 0,
+    kYes = 1,
+    kMaxValue = kYes,
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PdfIsTagged {
+    kNo = 0,
+    kYes = 1,
+    kMaxValue = kYes,
+  };
+
   // Add a sample to an enumerated histogram and filter out print preview usage.
   template <typename T>
   void HistogramEnumeration(const char* name, T sample);
 
-  // Wrappers for |uma_| so histogram reporting only occurs when the PDF Viewer
-  // is not being used for print preview.
-  void HistogramCustomCountsDeprecated(const std::string& name,
-                                       int32_t sample,
-                                       int32_t min,
-                                       int32_t max,
-                                       uint32_t bucket_count);
-  void HistogramEnumerationDeprecated(const std::string& name,
-                                      int32_t sample,
-                                      int32_t boundary_value);
+  // Add a sample to an enumerated legacy histogram and filter out print preview
+  // usage.
+  template <typename T>
+  void HistogramEnumeration(const char* name, T sample, T enum_size);
+
+  // Add a sample to a custom counts histogram and filter out print preview
+  // usage.
+  void HistogramCustomCounts(const char* name,
+                             int32_t sample,
+                             int32_t min,
+                             int32_t max,
+                             uint32_t bucket_count);
 
   // Callback to print without re-entrancy issues.
   void OnPrint(int32_t /*unused_but_required*/);
@@ -393,9 +410,6 @@ class OutOfProcessInstance : public pp::Instance,
 
   DocumentLoadState document_load_state_ = LOAD_STATE_LOADING;
   DocumentLoadState preview_document_load_state_ = LOAD_STATE_COMPLETE;
-
-  // A UMA resource for histogram reporting.
-  pp::UMAPrivate uma_;
 
   // Used so that we only tell the browser once about an unsupported feature, to
   // avoid the infobar going up more than once.

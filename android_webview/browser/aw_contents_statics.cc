@@ -6,7 +6,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_allowlist_manager.h"
 #include "android_webview/browser_jni_headers/AwContentsStatics_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -48,11 +48,11 @@ void NotifyClientCertificatesChanged() {
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
-void SafeBrowsingWhitelistAssigned(const JavaRef<jobject>& callback,
+void SafeBrowsingAllowlistAssigned(const JavaRef<jobject>& callback,
                                    bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
-  Java_AwContentsStatics_safeBrowsingWhitelistAssigned(env, callback, success);
+  Java_AwContentsStatics_safeBrowsingAllowlistAssigned(env, callback, success);
 }
 
 }  // namespace
@@ -96,17 +96,17 @@ ScopedJavaLocalRef<jstring> JNI_AwContentsStatics_GetProductVersion(
 }
 
 // static
-void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
+void JNI_AwContentsStatics_SetSafeBrowsingAllowlist(
     JNIEnv* env,
     const JavaParamRef<jobjectArray>& jrules,
     const JavaParamRef<jobject>& callback) {
   std::vector<std::string> rules;
   base::android::AppendJavaStringArrayToStringVector(env, jrules, &rules);
-  AwSafeBrowsingWhitelistManager* whitelist_manager =
-      AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager();
-  whitelist_manager->SetWhitelistOnUIThread(
+  AwSafeBrowsingAllowlistManager* allowlist_manager =
+      AwBrowserProcess::GetInstance()->GetSafeBrowsingAllowlistManager();
+  allowlist_manager->SetAllowlistOnUIThread(
       std::move(rules),
-      base::BindOnce(&SafeBrowsingWhitelistAssigned,
+      base::BindOnce(&SafeBrowsingAllowlistAssigned,
                      ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 

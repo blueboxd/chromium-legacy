@@ -4,6 +4,7 @@
 
 #include "base/profiler/stack_copier.h"
 
+#include "base/bits.h"
 #include "base/compiler_specific.h"
 
 namespace base {
@@ -42,8 +43,7 @@ const uint8_t* StackCopier::CopyStackContentsAndRewritePointers(
   // RewritePointerIfInOriginalStack(). Bytes before this cannot be a pointer
   // because they occupy less space than a pointer would.
   const uint8_t* first_aligned_address = reinterpret_cast<uint8_t*>(
-      (reinterpret_cast<uintptr_t>(byte_src) + sizeof(uintptr_t) - 1) &
-      ~(sizeof(uintptr_t) - 1));
+      base::bits::Align(reinterpret_cast<size_t>(byte_src), sizeof(uintptr_t)));
 
   // The stack copy bottom, which is offset from |stack_buffer_bottom| by the
   // same alignment as in the original stack. This guarantees identical

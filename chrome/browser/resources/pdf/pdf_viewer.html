@@ -26,6 +26,7 @@
       has-edits="[[hasEdits_]]"
       has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
       is-form-field-focused="[[isFormFieldFocused_]]"
+      doc-length="[[docLength_]]" page-no="[[pageNo_]]"
       on-save="onToolbarSave_" on-print="onPrint_"
       on-annotation-mode-toggled="onAnnotationModeToggled_"
       on-annotation-tool-changed="onAnnotationToolChanged_"
@@ -34,7 +35,8 @@
   </viewer-pdf-toolbar>
 </template>
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
-  <viewer-pdf-toolbar-new id="toolbar" hidden>
+  <viewer-pdf-toolbar-new id="toolbar"
+      doc-length="[[docLength_]]" page-no="[[pageNo_]]" hidden>
   </viewer-pdf-toolbar-new>
 </template>
 

@@ -197,9 +197,10 @@ class AutofillCounterTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, AutocompleteSuggestions) {
   Profile* profile = browser()->profile();
   browsing_data::AutofillCounter counter(GetWebDataService(), nullptr);
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::BindRepeating(&AutofillCounterTest::Callback,
+                                   base::Unretained(this)));
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0, GetNumSuggestions());
@@ -234,9 +235,10 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, AutocompleteSuggestions) {
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
   Profile* profile = browser()->profile();
   browsing_data::AutofillCounter counter(GetWebDataService(), nullptr);
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::BindRepeating(&AutofillCounterTest::Callback,
+                                   base::Unretained(this)));
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0, GetNumCreditCards());
@@ -271,9 +273,10 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, CreditCards) {
 IN_PROC_BROWSER_TEST_F(AutofillCounterTest, Addresses) {
   Profile* profile = browser()->profile();
   browsing_data::AutofillCounter counter(GetWebDataService(), nullptr);
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::BindRepeating(&AutofillCounterTest::Callback,
+                                   base::Unretained(this)));
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(0, GetNumAddresses());
@@ -322,9 +325,10 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, ComplexResult) {
 
   Profile* profile = browser()->profile();
   browsing_data::AutofillCounter counter(GetWebDataService(), nullptr);
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::BindRepeating(&AutofillCounterTest::Callback,
+                                   base::Unretained(this)));
   counter.Restart();
   WaitForCounting();
   EXPECT_EQ(5, GetNumSuggestions());
@@ -370,9 +374,10 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
 
   Profile* profile = browser()->profile();
   browsing_data::AutofillCounter counter(GetWebDataService(), nullptr);
-  counter.Init(
-      profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
-      base::Bind(&AutofillCounterTest::Callback, base::Unretained(this)));
+  counter.Init(profile->GetPrefs(),
+               browsing_data::ClearBrowsingDataTab::ADVANCED,
+               base::BindRepeating(&AutofillCounterTest::Callback,
+                                   base::Unretained(this)));
 
   for (const TestCase& test_case : test_cases) {
     counter.SetPeriodStartForTesting(test_case.period_start);

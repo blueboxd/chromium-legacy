@@ -17,6 +17,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +31,7 @@ using testing::ReturnRef;
 
 namespace net {
 
-class CachingCertVerifierTest : public ::testing::Test {
+class CachingCertVerifierTest : public TestWithTaskEnvironment {
  public:
   CachingCertVerifierTest() : verifier_(std::make_unique<MockCertVerifier>()) {}
   ~CachingCertVerifierTest() override = default;

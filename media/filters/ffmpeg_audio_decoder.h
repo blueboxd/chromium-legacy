@@ -45,8 +45,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
                   InitCB init_cb,
                   const OutputCB& output_cb,
                   const WaitingCB& waiting_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
+  void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure closure) override;
 
   // Callback called from within FFmpeg to allocate a buffer based on the
@@ -85,7 +84,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   void DoReset();
 
   // Handles decoding an unencrypted encoded buffer.
-  void DecodeBuffer(const DecoderBuffer& buffer, const DecodeCB& decode_cb);
+  void DecodeBuffer(const DecoderBuffer& buffer, DecodeCB decode_cb);
   bool FFmpegDecode(const DecoderBuffer& buffer);
   bool OnNewFrame(const DecoderBuffer& buffer,
                   bool* decoded_frame_this_loop,

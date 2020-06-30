@@ -243,7 +243,7 @@ Refer to README.md for content description and update process.
  <item id="quic_chromium_packet_writer" hash_code="20153177" type="0" content_hash_code="29657765" os_list="linux,windows" file_path="net/quic/quic_chromium_packet_writer.cc"/>
  <item id="ranker_url_fetcher" hash_code="95682324" type="0" content_hash_code="45958626" os_list="linux,windows" file_path="components/assist_ranker/ranker_url_fetcher.cc"/>
  <item id="rappor_report" hash_code="44606780" type="0" content_hash_code="111287826" os_list="linux,windows" file_path="components/rappor/log_uploader.cc"/>
- <item id="receive_messages_express" hash_code="29506140" type="0" content_hash_code="38581365" os_list="linux,windows" file_path="chrome/browser/nearby_sharing/tachyon/receive_messages_express.cc"/>
+ <item id="receive_messages_express" hash_code="29506140" type="0" content_hash_code="38581365" os_list="linux,windows" file_path="chrome/browser/nearby_sharing/instantmessaging/receive_messages_express.cc"/>
  <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" deprecated="2018-01-17" content_hash_code="137103383" file_path=""/>
  <item id="remote_copy_message_handler" hash_code="80255301" type="0" content_hash_code="117673331" os_list="linux,windows" file_path="chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.cc"/>
  <item id="remote_suggestions_provider" hash_code="49544361" type="0" content_hash_code="126329742" os_list="linux,windows" file_path="components/ntp_snippets/remote/cached_image_fetcher.cc"/>
@@ -273,7 +273,7 @@ Refer to README.md for content description and update process.
  <item id="sdch_dictionary_fetch" hash_code="47152935" type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="search_suggest_service" hash_code="57785193" type="0" content_hash_code="132247652" os_list="linux,windows" file_path="chrome/browser/search/search_suggest/search_suggest_loader_impl.cc"/>
  <item id="security_key_socket" hash_code="31074955" type="0" content_hash_code="13741232" os_list="linux,windows" file_path="remoting/host/security_key/security_key_socket.cc"/>
- <item id="send_message_express" hash_code="23527666" type="0" content_hash_code="96850228" os_list="linux,windows" file_path="chrome/browser/nearby_sharing/tachyon/send_message_express.cc"/>
+ <item id="send_message_express" hash_code="23527666" type="0" content_hash_code="96850228" os_list="linux,windows" file_path="chrome/browser/nearby_sharing/instantmessaging/send_message_express.cc"/>
  <item id="service_worker_navigation_preload" hash_code="129872904" type="0" content_hash_code="79473248" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_fetch_dispatcher.cc"/>
  <item id="service_worker_update_checker" hash_code="130931413" type="0" content_hash_code="46608086" os_list="linux,windows" file_path="content/browser/service_worker/service_worker_single_script_update_checker.cc"/>
  <item id="services_http_server_error_response" hash_code="59302801" type="0" content_hash_code="127774041" os_list="linux,windows" file_path="services/network/public/cpp/server/http_server.cc"/>

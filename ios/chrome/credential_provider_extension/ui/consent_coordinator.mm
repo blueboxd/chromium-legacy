@@ -95,8 +95,8 @@
   [self.reauthenticationHandler
       verifyUserWithCompletionHandler:^(ReauthenticationResult result) {
         if (result != ReauthenticationResult::kFailure) {
-          NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
-          [shared_defaults
+          NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+          [user_defaults
               setBool:YES
                forKey:kUserDefaultsCredentialProviderConsentVerified];
           if (self.isInitialConfigurationRequest) {

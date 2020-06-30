@@ -36,8 +36,6 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   TestingPlatformSupportWithMockScheduler();
   ~TestingPlatformSupportWithMockScheduler() override;
 
-  std::unique_ptr<Thread> CreateMainThread();
-
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner() {
     return test_task_runner_;
   }
@@ -70,9 +68,10 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // be advanced to the next timer when there's no more immediate work to do.
   void SetAutoAdvanceNowToPendingTasks(bool);
 
- protected:
-  static double GetTestTime();
+  // Returns the current mock time.
+  base::TimeTicks NowTicks() const;
 
+ protected:
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   bool auto_advance_ = true;
 

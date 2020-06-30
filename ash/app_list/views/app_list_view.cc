@@ -5,6 +5,7 @@
 #include "ash/app_list/views/app_list_view.h"
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <utility>
 #include <vector>
@@ -241,8 +242,7 @@ class AppListEventTargeter : public aura::WindowTargeter {
 };
 
 float ComputeSubpixelOffset(const display::Display& display, float value) {
-  float pixel_position =
-      gfx::ToRoundedInt(display.device_scale_factor() * value);
+  float pixel_position = std::round(display.device_scale_factor() * value);
   float dp_position = pixel_position / display.device_scale_factor();
   return dp_position - static_cast<int>(value);
 }

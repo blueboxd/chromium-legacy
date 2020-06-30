@@ -45,11 +45,6 @@ void GetGuestViewDefaultContentSettingRules(
       base::Value::FromUniquePtrValue(
           content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
       std::string(), incognito));
-  rules->client_hints_rules.push_back(ContentSettingPatternSource(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      base::Value::FromUniquePtrValue(
-          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
-      std::string(), incognito));
   rules->mixed_content_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
       base::Value::FromUniquePtrValue(

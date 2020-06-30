@@ -24,13 +24,10 @@
 #include "content/public/common/url_constants.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/web_test/web_test_browser_main_runner.h"
-#include "content/shell/browser/web_test/web_test_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
-#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
 #include "ipc/ipc_buildflags.h"
 #include "net/cookies/cookie_monster.h"
@@ -42,6 +39,12 @@
 #include "content/public/common/content_ipc_logging.h"
 #define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
     content::RegisterIPCLogger(msg_id, logger)
+#endif
+
+#if !defined(OS_ANDROID)
+#include "content/shell/browser/web_test/web_test_browser_main_runner.h"  // nogncheck
+#include "content/shell/browser/web_test/web_test_content_browser_client.h"  // nogncheck
+#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"  // nogncheck
 #endif
 
 #if defined(OS_ANDROID)
@@ -168,6 +171,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 
   InitLogging(command_line);
 
+#if !defined(OS_ANDROID)
   if (switches::IsRunWebTestsSwitchPresent()) {
     const bool browser_process =
         command_line.GetSwitchValueASCII(switches::kProcessType).empty();
@@ -176,6 +180,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       web_test_runner_->Initialize();
     }
   }
+#endif
 
   return false;
 }
@@ -224,6 +229,7 @@ int ShellMainDelegate::RunProcess(
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 
+#if !defined(OS_ANDROID)
   if (switches::IsRunWebTestsSwitchPresent()) {
     // Web tests implement their own BrowserMain() replacement.
     web_test_runner_->RunBrowserMain(main_function_params);
@@ -234,7 +240,6 @@ int ShellMainDelegate::RunProcess(
     return 0;
   }
 
-#if !defined(OS_ANDROID)
   // On non-Android, we can return -1 and have the caller run BrowserMain()
   // normally.
   return -1;
@@ -326,10 +331,13 @@ ContentClient* ShellMainDelegate::CreateContentClient() {
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  if (switches::IsRunWebTestsSwitchPresent())
+#if !defined(OS_ANDROID)
+  if (switches::IsRunWebTestsSwitchPresent()) {
     browser_client_ = std::make_unique<WebTestContentBrowserClient>();
-  else
-    browser_client_ = std::make_unique<ShellContentBrowserClient>();
+    return browser_client_.get();
+  }
+#endif
+  browser_client_ = std::make_unique<ShellContentBrowserClient>();
   return browser_client_.get();
 }
 
@@ -339,10 +347,13 @@ ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  if (switches::IsRunWebTestsSwitchPresent())
+#if !defined(OS_ANDROID)
+  if (switches::IsRunWebTestsSwitchPresent()) {
     renderer_client_ = std::make_unique<WebTestContentRendererClient>();
-  else
-    renderer_client_ = std::make_unique<ShellContentRendererClient>();
+    return renderer_client_.get();
+  }
+#endif
+  renderer_client_ = std::make_unique<ShellContentRendererClient>();
   return renderer_client_.get();
 }
 

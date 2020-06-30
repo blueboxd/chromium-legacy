@@ -99,6 +99,15 @@ class FeaturePolicyParserTest : public ::testing::Test {
       {"fullscreen", blink::mojom::blink::FeaturePolicyFeature::kFullscreen},
       {"payment", blink::mojom::blink::FeaturePolicyFeature::kPayment},
       {"geolocation", blink::mojom::blink::FeaturePolicyFeature::kGeolocation}};
+
+  ParsedFeaturePolicy ParseFeaturePolicyHeader(
+      const String& feature_policy_header,
+      scoped_refptr<const SecurityOrigin> origin,
+      PolicyParserMessageBuffer& logger,
+      FeaturePolicyParserDelegate* delegate = nullptr) {
+    return FeaturePolicyParser::ParseHeader(
+        feature_policy_header, g_empty_string, origin, logger, delegate);
+  }
 };
 
 struct ParsedPolicyDeclarationForTest {
@@ -530,30 +539,30 @@ TEST_F(FeaturePolicyParserParsingTest,
   PolicyParserMessageBuffer logger;
   // When there is conflict take the value from permission policy.
   // Non-conflicting entries will be merged.
-  CheckParsedPolicy(
-      FeaturePolicyParser::ParseHeader(
-          "geolocation 'none', fullscreen 'self'", origin_a_.get(), logger,
-          nullptr /* delegate */, "geolocation=self, payment=*"),
-      {
-          {
-              mojom::blink::FeaturePolicyFeature::kGeolocation,
-              /* matches_all_origins */ false,
-              /* matches_opaque_src */ false,
-              {ORIGIN_A},
-          },
-          {
-              mojom::blink::FeaturePolicyFeature::kPayment,
-              /* matches_all_origins */ true,
-              /* matches_opaque_src */ true,
-              {},
-          },
-          {
-              mojom::blink::FeaturePolicyFeature::kFullscreen,
-              /* matches_all_origins */ false,
-              /* matches_opaque_src */ false,
-              {ORIGIN_A},
-          },
-      });
+  CheckParsedPolicy(FeaturePolicyParser::ParseHeader(
+                        "geolocation 'none', fullscreen 'self'",
+                        "geolocation=self, payment=*", origin_a_.get(), logger,
+                        nullptr /* delegate */),
+                    {
+                        {
+                            mojom::blink::FeaturePolicyFeature::kGeolocation,
+                            /* matches_all_origins */ false,
+                            /* matches_opaque_src */ false,
+                            {ORIGIN_A},
+                        },
+                        {
+                            mojom::blink::FeaturePolicyFeature::kPayment,
+                            /* matches_all_origins */ true,
+                            /* matches_opaque_src */ true,
+                            {},
+                        },
+                        {
+                            mojom::blink::FeaturePolicyFeature::kFullscreen,
+                            /* matches_all_origins */ false,
+                            /* matches_opaque_src */ false,
+                            {ORIGIN_A},
+                        },
+                    });
 }
 
 TEST_F(FeaturePolicyParserTest, ParseValidPolicy) {
@@ -698,8 +707,8 @@ TEST_F(FeaturePolicyParserTest, CommaSeparatedUseCounter) {
   // Declarations without a semicolon should not trigger the use counter.
   {
     auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment", origin_a_.get(), logger,
-                                     dummy->GetFrame().DomWindow());
+    ParseFeaturePolicyHeader("payment", origin_a_.get(), logger,
+                             dummy->GetFrame().DomWindow());
     EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
         WebFeature::kFeaturePolicyCommaSeparatedDeclarations));
   }
@@ -707,8 +716,8 @@ TEST_F(FeaturePolicyParserTest, CommaSeparatedUseCounter) {
   // Validate that declarations which should trigger the use counter do.
   {
     auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment, fullscreen", origin_a_.get(),
-                                     logger, dummy->GetFrame().DomWindow());
+    ParseFeaturePolicyHeader("payment, fullscreen", origin_a_.get(), logger,
+                             dummy->GetFrame().DomWindow());
     EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
         WebFeature::kFeaturePolicyCommaSeparatedDeclarations))
         << "'payment, fullscreen' should trigger the comma separated use "
@@ -723,8 +732,8 @@ TEST_F(FeaturePolicyParserTest, SemicolonSeparatedUseCounter) {
   // Declarations without a semicolon should not trigger the use counter.
   {
     auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment", origin_a_.get(), logger,
-                                     dummy->GetFrame().DomWindow());
+    ParseFeaturePolicyHeader("payment", origin_a_.get(), logger,
+                             dummy->GetFrame().DomWindow());
     EXPECT_FALSE(dummy->GetDocument().IsUseCounted(
         WebFeature::kFeaturePolicySemicolonSeparatedDeclarations));
   }
@@ -732,8 +741,8 @@ TEST_F(FeaturePolicyParserTest, SemicolonSeparatedUseCounter) {
   // Validate that declarations which should trigger the use counter do.
   {
     auto dummy = std::make_unique<DummyPageHolder>();
-    FeaturePolicyParser::ParseHeader("payment; fullscreen", origin_a_.get(),
-                                     logger, dummy->GetFrame().DomWindow());
+    ParseFeaturePolicyHeader("payment; fullscreen", origin_a_.get(), logger,
+                             dummy->GetFrame().DomWindow());
     EXPECT_TRUE(dummy->GetDocument().IsUseCounted(
         WebFeature::kFeaturePolicySemicolonSeparatedDeclarations))
         << "'payment; fullscreen' should trigger the semicolon separated use "
@@ -844,8 +853,8 @@ TEST_P(FeaturePolicyAllowlistHistogramTest, HeaderHistogram) {
   AllowlistHistogramData data = GetParam();
 
   auto dummy = std::make_unique<DummyPageHolder>();
-  FeaturePolicyParser::ParseHeader(data.policy_declaration, origin_a_.get(),
-                                   logger, dummy->GetFrame().DomWindow());
+  ParseFeaturePolicyHeader(data.policy_declaration, origin_a_.get(), logger,
+                           dummy->GetFrame().DomWindow());
   for (FeaturePolicyAllowlistType expected_bucket : data.expected_buckets) {
     tester.ExpectBucketCount(kAllowlistHeaderHistogram,
                              static_cast<int>(expected_bucket), 1);
@@ -860,8 +869,8 @@ TEST_F(FeaturePolicyAllowlistHistogramTest, MixedInHeaderHistogram) {
 
   auto dummy = std::make_unique<DummyPageHolder>();
   const char* declaration = "fullscreen *; geolocation 'self' " ORIGIN_A;
-  FeaturePolicyParser::ParseHeader(declaration, origin_a_.get(), logger,
-                                   dummy->GetFrame().DomWindow());
+  ParseFeaturePolicyHeader(declaration, origin_a_.get(), logger,
+                           dummy->GetFrame().DomWindow());
 
   tester.ExpectBucketCount(kAllowlistHeaderHistogram,
                            static_cast<int>(FeaturePolicyAllowlistType::kStar),

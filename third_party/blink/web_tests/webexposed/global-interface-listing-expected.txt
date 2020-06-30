@@ -4547,10 +4547,12 @@ interface ImageDecoder
     getter complete
     getter frameCount
     getter repetitionCount
+    getter tracks
     getter type
     method constructor
     method decode
     method decodeMetadata
+    method selectTrack
 interface Ink
     attribute @@toStringTag
     method constructor

@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 
 class ChromeBrowserState;
-class SyncedWindowDelegateBrowserAgent;
 class WebStateList;
 class Browser;
 
@@ -19,10 +18,6 @@ class Browser;
 // consistency between multiple views that need the current tab to be
 // synchronized.
 @interface TabModel : NSObject
-
-// The delegate for sync.
-@property(nonatomic, readonly)
-    SyncedWindowDelegateBrowserAgent* syncedWindowDelegate;
 
 // BrowserState associated with this TabModel.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;

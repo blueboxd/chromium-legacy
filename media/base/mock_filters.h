@@ -273,8 +273,7 @@ class MockAudioDecoder : public AudioDecoder {
                     InitCB& init_cb,
                     const OutputCB& output_cb,
                     const WaitingCB& waiting_cb));
-  MOCK_METHOD2(Decode,
-               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
+  MOCK_METHOD2(Decode, void(scoped_refptr<DecoderBuffer> buffer, DecodeCB));
   void Reset(base::OnceClosure cb) override { Reset_(cb); }
   MOCK_METHOD1(Reset_, void(base::OnceClosure&));
 

@@ -66,6 +66,7 @@ class AssistantHeaderViewBinder
 
         void disableAnimations(boolean disable) {
             mProgressBar.disableAnimations(disable);
+            mStepProgressBar.disableAnimations(disable);
             // Hiding the animated poodle seems to be the easiest way to disable its animation since
             // {@link LogoView#setAnimationEnabled(boolean)} is private.
             mPoodle.getView().setVisibility(View.INVISIBLE);
@@ -102,6 +103,8 @@ class AssistantHeaderViewBinder
         } else if (AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS == propertyKey) {
             view.mStepProgressBar.setSteps(model.get(AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS));
             view.mStepProgressBar.setError(model.get(AssistantHeaderModel.PROGRESS_BAR_ERROR));
+            view.mStepProgressBar.disableAnimations(
+                    model.get(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING));
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {
             view.mPoodle.setSpinEnabled(model.get(AssistantHeaderModel.SPIN_POODLE));
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {

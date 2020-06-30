@@ -157,8 +157,10 @@ void MediaHistoryKeyedService::OnURLsDeleted(
     const auto& origin_count =
         deletion_info.deleted_urls_origin_map().find(origin.GetURL());
 
-    if (origin_count->second.first > 0)
+    if (origin_count == deletion_info.deleted_urls_origin_map().end() ||
+        origin_count->second.first > 0) {
       continue;
+    }
 
     deleted_origins.insert(origin);
   }

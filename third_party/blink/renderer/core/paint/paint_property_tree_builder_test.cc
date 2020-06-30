@@ -289,6 +289,37 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbars) {
             overflow_clip->UnsnappedClipRectExcludingOverlayScrollbars());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverlapNoPaintOffsetTranslation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { width: 100px; height: 100px }
+    </style>
+    <div style='will-change: transform'></div>
+    <div id=target style='margin-top: -50px; position: relative; opacity: 0.5'></div>
+  )HTML");
+  CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
+  Element* abs_pos = GetDocument().getElementById("target");
+  LOG(ERROR) << "obj: " << abs_pos->GetLayoutObject();
+  const auto* properties = PaintPropertiesForElement("target");
+  EXPECT_EQ(nullptr, properties->PaintOffsetTranslation());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, AssumeOverlapNoPaintOffsetTranslation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { width: 100px; height: 100px }
+    </style>
+    <div style='position: fixed'></div>
+    <div id=target style='position: relative; opacity: 0.5'></div>
+    <div style="height: 1000px"></div>
+  )HTML");
+  CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
+  Element* abs_pos = GetDocument().getElementById("target");
+  LOG(ERROR) << "obj: " << abs_pos->GetLayoutObject();
+  const auto* properties = PaintPropertiesForElement("target");
+  EXPECT_EQ(nullptr, properties->PaintOffsetTranslation());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   SetBodyInnerHTML(R"HTML(
     <div id='scroller'

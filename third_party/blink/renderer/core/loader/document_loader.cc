@@ -404,8 +404,7 @@ void DocumentLoader::MarkAsCommitted() {
 }
 
 // static
-WebHistoryCommitType DocumentLoader::LoadTypeToCommitType(
-    WebFrameLoadType type) {
+WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
   switch (type) {
     case WebFrameLoadType::kStandard:
       return kWebStandardCommit;
@@ -1251,7 +1250,7 @@ void DocumentLoader::StartLoadingInternal() {
   }
   MixedContentChecker::CheckMixedPrivatePublic(GetFrame(),
                                                response_.RemoteIPAddress());
-  ParseAndPersistClientHints(response_);
+  ApplyClientHintsConfig(params_->enabled_client_hints);
   PreloadHelper::LoadLinksFromHeader(
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
@@ -1574,6 +1573,10 @@ void DocumentLoader::CommitNavigation() {
           // TODO(iclelland): Add Feature-Policy-Report-Only to Origin Policy.
           .WithReportOnlyFeaturePolicyHeader(
               response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly))
+          .WithPermissionsPolicyHeader(
+              response_.HttpHeaderField(http_names::kPermissionsPolicy))
+          .WithReportOnlyPermissionsPolicyHeader(response_.HttpHeaderField(
+              http_names::kPermissionsPolicyReportOnly))
           .WithDocumentPolicy(document_policy_)
           // |document_policy_| is parsed in document loader because it is
           // compared with |frame_policy.required_document_policy| to decide
@@ -1611,9 +1614,9 @@ void DocumentLoader::CommitNavigation() {
   // object.
   init.CalculateAndCacheDocumentOrigin();
 
-  global_object_reuse_policy_ = init.ShouldReuseDOMWindow()
-                                    ? GlobalObjectReusePolicy::kUseExisting
-                                    : GlobalObjectReusePolicy::kCreateNew;
+  GlobalObjectReusePolicy global_object_reuse_policy =
+      init.ShouldReuseDOMWindow() ? GlobalObjectReusePolicy::kUseExisting
+                                  : GlobalObjectReusePolicy::kCreateNew;
 
   if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
     GetFrameLoader().StateMachine()->AdvanceTo(
@@ -1630,7 +1633,7 @@ void DocumentLoader::CommitNavigation() {
   // commits. To make that happen, we "securely transition" the existing
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
-  if (global_object_reuse_policy_ != GlobalObjectReusePolicy::kUseExisting) {
+  if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
     // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
     // dynamically change.
     bool has_potential_universal_access_privilege =
@@ -1764,6 +1767,38 @@ void DocumentLoader::CommitNavigation() {
     // TODO(yoav): copy the ServerTiming info directly.
     navigation_timing_info_->SetFinalResponse(response_);
   }
+
+  {
+    // Notify the browser process about the commit.
+    FrameNavigationDisabler navigation_disabler(*frame_);
+    if (commit_reason_ == CommitReason::kInitialization) {
+      GetLocalFrameClient().DidCreateInitialEmptyDocument();
+    } else if (IsJavaScriptURLOrXSLTCommit()) {
+      GetLocalFrameClient().DidCommitDocumentReplacementNavigation(this);
+    } else {
+      GetLocalFrameClient().DispatchDidCommitLoad(
+          history_item_.Get(), LoadTypeToCommitType(load_type_),
+          global_object_reuse_policy);
+    }
+    // TODO(dgozman): make DidCreateScriptContext notification call currently
+    // triggered by installing new document happen here, after commit.
+  }
+  // Note: this must be called after DispatchDidCommitLoad() for
+  // metrics to be correctly sent to the browser process.
+  if (commit_reason_ != CommitReason::kInitialization)
+    use_counter_.DidCommitLoad(frame_);
+  if (load_type_ == WebFrameLoadType::kBackForward) {
+    if (Page* page = frame_->GetPage())
+      page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
+  }
+
+  // FeaturePolicy is reset in the browser process on commit, so this needs to
+  // be initialized and replicated to the browser process after commit messages
+  // are sent.
+  document->ApplyPendingFramePolicyHeaders();
+
+  // Load the document if needed.
+  StartLoadingResponse();
 }
 
 void DocumentLoader::CreateParserPostCommit() {
@@ -1844,11 +1879,6 @@ void DocumentLoader::CreateParserPostCommit() {
   if (scriptable_parser && cached_metadata_handler_)
     scriptable_parser->SetInlineScriptCacheHandler(cached_metadata_handler_);
 
-  // FeaturePolicy is reset in the browser process on commit, so this needs to
-  // be initialized and replicated to the browser process after commit messages
-  // are sent in didCommitNavigation().
-  document->ApplyPendingFramePolicyHeaders();
-
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 
   parser_->SetDocumentWasLoadedAsPartOfNavigation();
@@ -1892,10 +1922,6 @@ void DocumentLoader::CountUse(mojom::WebFeature feature) {
   return use_counter_.Count(feature, GetFrame());
 }
 
-void DocumentLoader::CountDeprecation(mojom::WebFeature feature) {
-  return Deprecation::CountDeprecation(this, feature);
-}
-
 void DocumentLoader::ReportPreviewsIntervention() const {
   // Only send reports for main frames.
   if (!frame_->IsMainFrame())
@@ -1925,60 +1951,10 @@ void DocumentLoader::ReportPreviewsIntervention() const {
       "https://www.chromestatus.com/feature/5148050062311424");
 }
 
-void DocumentLoader::ParseAndPersistClientHints(
-    const ResourceResponse& response) {
-  const KURL& url = response.CurrentRequestUrl();
-
-  // The accept-ch header is honored only on the navigation responses from a top
-  // level frame.
-  if (!frame_->IsMainFrame())
-    return;
-
-  if (!response.HttpHeaderFields().Contains(http_names::kAcceptCH))
-    return;
-
-  FrameClientHintsPreferencesContext hints_context(GetFrame());
-  // TODO(crbug.com/1017166): Kill ACHL header completely once feature ships.
-  client_hints_preferences_.UpdateFromAcceptClientHintsLifetimeHeader(
-      response.HttpHeaderField(http_names::kAcceptCHLifetime), url,
-      &hints_context);
-  client_hints_preferences_.UpdateFromAcceptClientHintsHeader(
-      response.HttpHeaderField(http_names::kAcceptCH), url,
-      ClientHintsPreferences::UpdateMode::kReplace, &hints_context);
-
-  base::TimeDelta persist_duration;
-
-  // If the FeaturePolicyForClientHints feature is enabled, the lifetime
-  // should not expire. Setting the duration to "max" should essentially
-  // do the same thing.
-
-  if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
-    // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
-    // base::TimeDelta::Max cannot be used. As this will be removed once
-    // the FeaturePolicyForClientHints feature is shipped, a reasonably
-    // large was chosen instead
-    persist_duration = base::TimeDelta::FromDays(1000000);
-  } else {
-    persist_duration = client_hints_preferences_.GetPersistDuration();
-  }
-
-  // Notify content settings client of persistent client hints.
-  if (persist_duration.InSeconds() <= 0)
-    return;
-
-  auto* settings_client = frame_->GetContentSettingsClient();
-  if (!settings_client)
-    return;
-
-  // Do not persist client hint preferences if the JavaScript is disabled.
-  // TODO(yoav): this seems buggy, and settings doesn't seem notified in
-  // ClientHintBrowserTest.ClientHintsNoLifetimeScriptNotAllowed.
-  bool allow_script = frame_->GetSettings()->GetScriptEnabled();
-  if (!settings_client->AllowScriptFromSource(allow_script, url))
-    return;
-  settings_client->PersistClientHints(
-      client_hints_preferences_.GetWebEnabledClientHints(), persist_duration,
-      url);
+void DocumentLoader::ApplyClientHintsConfig(
+    const WebVector<network::mojom::WebClientHintsType>& enabled_client_hints) {
+  for (auto ch : enabled_client_hints)
+    client_hints_preferences_.SetShouldSend(ch);
 }
 
 void DocumentLoader::InitializePrefetchedSignedExchangeManager() {

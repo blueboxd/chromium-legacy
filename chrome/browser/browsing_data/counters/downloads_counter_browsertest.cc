@@ -239,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Count) {
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&DownloadsCounterTest::ResultCallback,
-                          base::Unretained(this)));
+               base::BindRepeating(&DownloadsCounterTest::ResultCallback,
+                                   base::Unretained(this)));
   counter.Restart();
   EXPECT_EQ(0u, GetResult());
 
@@ -269,8 +269,8 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, Types) {
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&DownloadsCounterTest::ResultCallback,
-                          base::Unretained(this)));
+               base::BindRepeating(&DownloadsCounterTest::ResultCallback,
+                                   base::Unretained(this)));
 
   AddDownload();
   AddDownloadWithProperties(download::DownloadItem::COMPLETE,
@@ -300,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
   DownloadsCounter counter(profile);
   counter.Init(profile->GetPrefs(),
                browsing_data::ClearBrowsingDataTab::ADVANCED,
-               base::Bind(&DownloadsCounterTest::ResultCallback,
-                          base::Unretained(this)));
+               base::BindRepeating(&DownloadsCounterTest::ResultCallback,
+                                   base::Unretained(this)));
 
   // Extension and user scripts download are not persisted.
   AddDownload();

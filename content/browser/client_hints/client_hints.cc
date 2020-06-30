@@ -367,6 +367,10 @@ bool IsValidURLForClientHints(const GURL& url) {
   return true;
 }
 
+bool LangClientHintEnabled() {
+  return base::FeatureList::IsEnabled(features::kLangClientHintHeader);
+}
+
 void AddUAHeader(net::HttpRequestHeaders* headers,
                  network::mojom::WebClientHintsType type,
                  const std::string& value) {
@@ -657,7 +661,8 @@ void AddNavigationRequestClientHintsHeaders(
   // scheme or a change in the origin.
 }
 
-void PersistAcceptCHAfterNagivationRequestRedirect(
+base::Optional<std::vector<network::mojom::WebClientHintsType>>
+ParseAndPersistAcceptCHForNagivation(
     const GURL& url,
     const ::network::mojom::ParsedHeadersPtr& headers,
     BrowserContext* context,
@@ -668,10 +673,10 @@ void PersistAcceptCHAfterNagivationRequestRedirect(
   DCHECK(headers);
 
   if (!headers->accept_ch)
-    return;
+    return base::nullopt;
 
   if (!IsValidURLForClientHints(url))
-    return;
+    return base::nullopt;
 
   // Client hints should only be enabled when JavaScript is enabled. Platforms
   // which enable/disable JavaScript on a per-origin basis should implement
@@ -680,28 +685,56 @@ void PersistAcceptCHAfterNagivationRequestRedirect(
   // WebPreferences setting.
   if (!delegate->IsJavaScriptAllowed(url) ||
       !IsJavascriptEnabled(frame_tree_node)) {
-    return;
+    return base::nullopt;
   }
 
   // Only the main frame should parse accept-CH.
   if (!frame_tree_node->IsMainFrame())
-    return;
+    return base::nullopt;
 
-  // TODO(morlovich): No browser-side knowledge on what permit_lang_hints should
-  // be, so this is failing shut for now.
   base::Optional<std::vector<network::mojom::WebClientHintsType>> parsed =
-      blink::FilterAcceptCH(headers->accept_ch.value(),
-                            false /* permit_lang_hints */,
+      blink::FilterAcceptCH(headers->accept_ch.value(), LangClientHintEnabled(),
                             delegate->UserAgentClientHintEnabled());
   if (!parsed.has_value())
-    return;
+    return base::nullopt;
 
-  // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
-  // base::TimeDelta::Max cannot be used. As accept-ch-lifetime will be removed
-  // once the FeaturePolicyForClientHints feature is shipped, a reasonably large
-  // value was chosen instead.
+  base::TimeDelta persist_duration;
+  if (IsFeaturePolicyForClientHintsEnabled()) {
+    // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
+    // base::TimeDelta::Max cannot be used. As this will be removed once
+    // the FeaturePolicyForClientHints feature is shipped, a reasonably
+    // large was chosen instead
+    persist_duration = base::TimeDelta::FromDays(1000000);
+  } else {
+    persist_duration = headers->accept_ch_lifetime;
+    if (persist_duration.is_zero())
+      return parsed;
+  }
+
   delegate->PersistClientHints(url::Origin::Create(url), parsed.value(),
-                               base::TimeDelta::FromDays(1000000));
+                               persist_duration);
+  return parsed;
+}
+
+CONTENT_EXPORT std::vector<::network::mojom::WebClientHintsType>
+LookupAcceptCHForCommit(const GURL& url,
+                        ClientHintsControllerDelegate* delegate,
+                        FrameTreeNode* frame_tree_node) {
+  std::vector<::network::mojom::WebClientHintsType> result;
+  if (!ShouldAddClientHints(url, IsJavascriptEnabled(frame_tree_node),
+                            delegate)) {
+    return result;
+  }
+
+  const ClientHintsExtendedData data(url, frame_tree_node, delegate);
+  for (int v = 0;
+       v <= static_cast<int>(network::mojom::WebClientHintsType::kMaxValue);
+       ++v) {
+    auto hint = static_cast<network::mojom::WebClientHintsType>(v);
+    if (data.hints.IsEnabled(hint))
+      result.push_back(hint);
+  }
+  return result;
 }
 
 }  // namespace content

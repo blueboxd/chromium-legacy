@@ -35,7 +35,7 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Callback for Decode(). Called after the decoder has accepted corresponding
   // DecoderBuffer, indicating that the pipeline can send next buffer to decode.
-  using DecodeCB = base::RepeatingCallback<void(DecodeStatus)>;
+  using DecodeCB = base::OnceCallback<void(DecodeStatus)>;
 
   AudioDecoder();
 
@@ -86,7 +86,7 @@ class MEDIA_EXPORT AudioDecoder {
   // |output_cb| must be called for each frame pending in the queue and
   // |decode_cb| must be called after that.
   virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
-                      const DecodeCB& decode_cb) = 0;
+                      DecodeCB decode_cb) = 0;
 
   // Resets decoder state. All pending Decode() requests will be finished or
   // aborted before |closure| is called.

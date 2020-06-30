@@ -114,8 +114,8 @@
 
 - (void)prepareInterfaceForExtensionConfiguration {
   // Reset the consent if the extension was disabled and reenabled.
-  NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
-  [shared_defaults
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  [user_defaults
       removeObjectForKey:kUserDefaultsCredentialProviderConsentVerified];
   self.consentCoordinator = [[ConsentCoordinator alloc]
          initWithBaseViewController:self
@@ -203,7 +203,7 @@
   };
 
   NSString* validationID = [app_group::GetGroupUserDefaults()
-      stringForKey:kUserDefaultsCredentialProviderManagedUserID];
+      stringForKey:AppGroupUserDefaultsCredentialProviderManagedUserID()];
   if (validationID) {
     [self.accountVerificator
         validateValidationID:validationID

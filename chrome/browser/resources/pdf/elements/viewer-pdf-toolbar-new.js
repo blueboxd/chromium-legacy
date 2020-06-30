@@ -18,6 +18,13 @@ class ViewerPdfToolbarNewElement extends PolymerElement {
   static get template() {
     return html`{__html_template__}`;
   }
+
+  static get properties() {
+    return {
+      docLength: Number,
+      pageNo: Number,
+    };
+  }
 }
 customElements.define(
     ViewerPdfToolbarNewElement.is, ViewerPdfToolbarNewElement);

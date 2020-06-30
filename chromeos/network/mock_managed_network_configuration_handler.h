@@ -83,7 +83,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockManagedNetworkConfigurationHandler
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnect, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToConnectIfAvailable, bool());
   MOCK_CONST_METHOD0(AllowOnlyPolicyNetworksToAutoconnect, bool());
-  MOCK_CONST_METHOD0(GetBlacklistedHexSSIDs, std::vector<std::string>());
+  MOCK_CONST_METHOD0(GetBlockedHexSSIDs, std::vector<std::string>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockManagedNetworkConfigurationHandler);

@@ -851,8 +851,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 // have to do with preview, e.g. the ImageReader and its associated Surface.
                 configureCommonCaptureSettings(mPreviewRequestBuilder);
 
+                mPreviewRequest = mPreviewRequestBuilder.build();
+
                 try {
-                    mPreviewSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
+                    mPreviewSession.setRepeatingRequest(mPreviewRequest, null, null);
                 } catch (CameraAccessException | SecurityException | IllegalStateException
                         | IllegalArgumentException ex) {
                     Log.e(TAG, "setRepeatingRequest: ", ex);

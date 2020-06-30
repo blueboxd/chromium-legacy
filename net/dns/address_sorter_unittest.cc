@@ -42,9 +42,9 @@ void OnSortComplete(AddressList* result_buf,
 }
 
 TEST(AddressSorterTest, Sort) {
+  base::test::TaskEnvironment task_environment;
   int expected_result = OK;
 #if defined(OS_WIN)
-  base::test::TaskEnvironment task_environment;
   EnsureWinsockInit();
   SOCKET sock = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
   if (sock == INVALID_SOCKET) {

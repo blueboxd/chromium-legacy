@@ -229,7 +229,7 @@ Pickle::Pickle()
       header_size_(sizeof(Header)),
       capacity_after_header_(0),
       write_offset_(0) {
-  static_assert((Pickle::kPayloadUnit & (Pickle::kPayloadUnit - 1)) == 0,
+  static_assert(base::bits::IsPowerOfTwo(Pickle::kPayloadUnit),
                 "Pickle::kPayloadUnit must be a power of two");
   Resize(kPayloadUnit);
   header_->payload_size = 0;

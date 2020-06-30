@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
+#include "base/run_loop.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
@@ -57,7 +58,12 @@ void SimTest::SetUp() {
 
 void SimTest::TearDown() {
   // Pump the message loop to process the load event.
-  test::RunPendingTasks();
+  //
+  // Use RunUntilIdle() instead of blink::test::RunPendingTask(), because
+  // blink::test::RunPendingTask() posts directly to
+  // Thread::Current()->GetTaskRunner(), which makes it incompatible with a
+  // TestingPlatformSupportWithMockScheduler.
+  base::RunLoop().RunUntilIdle();
 
   // Shut down this stuff before settings change to keep the world
   // consistent, and before the subclass tears down.
@@ -68,7 +74,7 @@ void SimTest::TearDown() {
   compositor_.reset();
   network_.reset();
   local_frame_root_ = nullptr;
-  test::RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
 }
 
 void SimTest::InitializeRemote() {

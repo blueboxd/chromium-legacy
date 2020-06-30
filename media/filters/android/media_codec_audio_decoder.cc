@@ -173,13 +173,13 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
 }
 
 void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
-                                    const DecodeCB& decode_cb) {
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
+                                    DecodeCB decode_cb) {
+  DecodeCB bound_decode_cb = BindToCurrentLoop(std::move(decode_cb));
 
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp) {
     DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": no timestamp, skipping this buffer";
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -189,7 +189,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": Error state, returning decode error for all buffers";
     ClearInputQueue(DecodeStatus::DECODE_ERROR);
-    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
+    std::move(bound_decode_cb).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -203,7 +203,8 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   // time".
   DCHECK(input_queue_.empty());
 
-  input_queue_.push_back(std::make_pair(std::move(buffer), bound_decode_cb));
+  input_queue_.push_back(
+      std::make_pair(std::move(buffer), std::move(bound_decode_cb)));
 
   codec_loop_->ExpectWork();
 }
@@ -339,16 +340,16 @@ void MediaCodecAudioDecoder::OnInputDataQueued(bool success) {
   if (input_queue_.front().first->end_of_stream() && success)
     return;
 
-  input_queue_.front().second.Run(success ? DecodeStatus::OK
-                                          : DecodeStatus::DECODE_ERROR);
+  std::move(input_queue_.front().second)
+      .Run(success ? DecodeStatus::OK : DecodeStatus::DECODE_ERROR);
   input_queue_.pop_front();
 }
 
 void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
   DVLOG(2) << __func__;
 
-  for (const auto& entry : input_queue_)
-    entry.second.Run(decode_status);
+  for (auto& entry : input_queue_)
+    std::move(entry.second).Run(decode_status);
 
   input_queue_.clear();
 }
@@ -384,7 +385,7 @@ bool MediaCodecAudioDecoder::OnDecodedEos(
   // So, we shouldn't be in that state.  So, just DCHECK here.
   DCHECK_NE(state_, STATE_ERROR);
 
-  input_queue_.front().second.Run(DecodeStatus::OK);
+  std::move(input_queue_.front()).second.Run(DecodeStatus::OK);
   input_queue_.pop_front();
 
   return true;

@@ -186,7 +186,6 @@ class FragmentPaintPropertyTreeBuilder {
  private:
   ALWAYS_INLINE void UpdatePaintOffset();
   ALWAYS_INLINE void UpdateForPaintOffsetTranslation(base::Optional<IntPoint>&);
-  ALWAYS_INLINE bool IsAffectedByOuterViewportBoundsDelta() const;
   ALWAYS_INLINE void UpdatePaintOffsetTranslation(
       const base::Optional<IntPoint>&);
   ALWAYS_INLINE void SetNeedsPaintPropertyUpdateIfNeeded();
@@ -372,7 +371,8 @@ static bool NeedsStickyTranslation(const LayoutObject& object) {
 
 static bool NeedsPaintOffsetTranslation(
     const LayoutObject& object,
-    CompositingReasons direct_compositing_reasons) {
+    CompositingReasons direct_compositing_reasons,
+    bool is_affected_by_outer_viewport_bounds_delta) {
   if (!object.IsBoxModelObject())
     return false;
 
@@ -429,19 +429,27 @@ static bool NeedsPaintOffsetTranslation(
   // paint property tree states for floating objects and column spans.
   if ((box_model.IsLayoutBlock() || object.IsLayoutReplaced()) &&
       // TODO(wangxianzhu): Don't depend on PaintLayer for CompositeAfterPaint.
-      object.HasLayer() &&
-      !ToLayoutBoxModelObject(object).Layer()->EnclosingPaginationLayer()) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      if (direct_compositing_reasons != CompositingReason::kNone)
-        return true;
-      // In CompositeAfterPaint though we don't treat hidden backface as
-      // a direct compositing reason, it's very likely that the object will
-      // be composited, so a paint offset translation will be beneficial.
-      if (box_model.StyleRef().BackfaceVisibility() ==
-          EBackfaceVisibility::kHidden)
-        return true;
-    } else if (box_model.GetCompositingState() == kPaintsIntoOwnBacking) {
-      return true;
+      object.HasLayer()) {
+    PaintLayer* layer = ToLayoutBoxModelObject(object).Layer();
+    if (!layer->EnclosingPaginationLayer()) {
+      if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+        if (direct_compositing_reasons != CompositingReason::kNone)
+          return true;
+        // In CompositeAfterPaint though we don't treat hidden backface as
+        // a direct compositing reason, it's very likely that the object will
+        // be composited, so a paint offset translation will be beneficial.
+        if (box_model.StyleRef().BackfaceVisibility() ==
+            EBackfaceVisibility::kHidden)
+          return true;
+      } else {
+        if (layer->GetCompositingReasons() &
+            ~(CompositingReason::kComboSquashableReasons |
+              CompositingReason::kSquashingDisallowed)) {
+          return true;
+        }
+        if (is_affected_by_outer_viewport_bounds_delta)
+          return true;
+      }
     }
   }
 
@@ -450,8 +458,9 @@ static bool NeedsPaintOffsetTranslation(
 
 void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
     base::Optional<IntPoint>& paint_offset_translation) {
-  if (!NeedsPaintOffsetTranslation(object_,
-                                   full_context_.direct_compositing_reasons))
+  if (!NeedsPaintOffsetTranslation(
+          object_, full_context_.direct_compositing_reasons,
+          full_context_.is_affected_by_outer_viewport_bounds_delta))
     return;
 
   // We should use the same subpixel paint offset values for snapping regardless
@@ -484,25 +493,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
   context_.current.paint_offset = subpixel_accumulation;
 }
 
-bool FragmentPaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta()
-    const {
-  if (object_.StyleRef().GetPosition() != EPosition::kFixed ||
-      !object_.StyleRef().IsFixedToBottom())
-    return false;
-
-  // Objects inside an iframe that's the root scroller should get the same
-  // "pushed by top controls" behavior as for the main frame.
-  auto& controller =
-      object_.GetFrame()->GetPage()->GlobalRootScrollerController();
-  if (!object_.GetFrame()->IsMainFrame() &&
-      object_.GetFrame()->GetDocument() != controller.GlobalRootScroller())
-    return false;
-
-  // It's affected by viewport only if the container is the LayoutView.
-  DCHECK_EQ(full_context_.container_for_fixed_position, object_.Container());
-  return IsA<LayoutView>(full_context_.container_for_fixed_position);
-}
-
 void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     const base::Optional<IntPoint>& paint_offset_translation) {
   DCHECK(properties_);
@@ -518,7 +508,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
     state.flags.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
     state.flags.affected_by_outer_viewport_bounds_delta =
-        IsAffectedByOuterViewportBoundsDelta();
+        full_context_.is_affected_by_outer_viewport_bounds_delta;
     state.direct_compositing_reasons =
         full_context_.direct_compositing_reasons &
         CompositingReason::kDirectReasonsForPaintOffsetTranslationProperty;
@@ -3435,8 +3425,9 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
       // If DCHECK is not on, use fast path for text.
       !object_.IsText() &&
 #endif
-      (NeedsPaintOffsetTranslation(object_,
-                                   context_.direct_compositing_reasons) ||
+      (NeedsPaintOffsetTranslation(
+           object_, context_.direct_compositing_reasons,
+           context_.is_affected_by_outer_viewport_bounds_delta) ||
        NeedsStickyTranslation(object_) ||
        NeedsTransform(object_, context_.direct_compositing_reasons) ||
        // Note: It is important to use MayNeedClipPathClip() instead of
@@ -3536,10 +3527,33 @@ void PaintPropertyTreeBuilder::UpdatePaintingLayer() {
   DCHECK(context_.painting_layer == object_.PaintingLayer());
 }
 
+bool PaintPropertyTreeBuilder::IsAffectedByOuterViewportBoundsDelta() const {
+  if (!object_.IsBox())
+    return false;
+
+  if (object_.StyleRef().GetPosition() != EPosition::kFixed ||
+      !object_.StyleRef().IsFixedToBottom())
+    return false;
+
+  // Objects inside an iframe that's the root scroller should get the same
+  // "pushed by top controls" behavior as for the main frame.
+  auto& controller =
+      object_.GetFrame()->GetPage()->GlobalRootScrollerController();
+  if (!object_.GetFrame()->IsMainFrame() &&
+      object_.GetFrame()->GetDocument() != controller.GlobalRootScroller())
+    return false;
+
+  // It's affected by viewport only if the container is the LayoutView.
+  DCHECK_EQ(context_.container_for_fixed_position, object_.Container());
+  return IsA<LayoutView>(context_.container_for_fixed_position);
+}
+
 PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
   // This is not inherited from the parent context and we always recalculate it.
   context_.direct_compositing_reasons =
       CompositingReasonFinder::DirectReasonsForPaintProperties(object_);
+  context_.is_affected_by_outer_viewport_bounds_delta =
+      IsAffectedByOuterViewportBoundsDelta();
 
   UpdatePaintingLayer();
 

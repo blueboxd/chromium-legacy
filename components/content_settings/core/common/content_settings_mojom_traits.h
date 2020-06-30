@@ -134,11 +134,6 @@ struct StructTraits<
     return r.script_rules;
   }
 
-  static const std::vector<ContentSettingPatternSource>& client_hints_rules(
-      const RendererContentSettingRules& r) {
-    return r.client_hints_rules;
-  }
-
   static const std::vector<ContentSettingPatternSource>& popup_redirect_rules(
       const RendererContentSettingRules& r) {
     return r.popup_redirect_rules;

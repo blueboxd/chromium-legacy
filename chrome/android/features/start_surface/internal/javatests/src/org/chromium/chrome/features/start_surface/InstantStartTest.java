@@ -15,7 +15,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
@@ -51,7 +53,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
@@ -268,22 +269,18 @@ public class InstantStartTest {
             mBitmap = bitmap;
         };
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertThat(mActivityTestRule.getActivity().getTabContentManager(),
-                                Matchers.notNullValue()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mActivityTestRule.getActivity().getTabContentManager(), notNullValue());
+        });
 
         TabContentManager tabContentManager =
                 mActivityTestRule.getActivity().getTabContentManager();
 
         final Bitmap thumbnailBitmap = createThumbnailBitmapAndWriteToFile(tabId);
         tabContentManager.getTabThumbnailWithCallback(tabId, thumbnailFetchListener, false, false);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mThumbnailFetchCount > 0;
-            }
-        });
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Criteria.checkThat(mThumbnailFetchCount, greaterThan(0)));
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         Assert.assertEquals(1, mThumbnailFetchCount);
@@ -354,10 +351,7 @@ public class InstantStartTest {
             startSurfaceCoordinator.getController().setOverviewState(
                     OverviewModeState.SHOWN_TABSWITCHER);
         });
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertTrue(
-                                startSurfaceCoordinator.isSecondaryTaskInitPendingForTesting()));
+        CriteriaHelper.pollUiThread(startSurfaceCoordinator::isSecondaryTaskInitPendingForTesting);
 
         // Initializes native.
         startAndWaitNativeInitialization();
@@ -387,10 +381,8 @@ public class InstantStartTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(()
-                                            -> Assert.assertTrue(mActivityTestRule.getActivity()
-                                                                         .getLayoutManager()
-                                                                         .overviewVisible()));
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         TopToolbarCoordinator topToolbarCoordinator =
@@ -466,10 +458,9 @@ public class InstantStartTest {
         Assert.assertTrue(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
 
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertThat(mActivityTestRule.getActivity().getLayoutManager(),
-                                Matchers.notNullValue()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityTestRule.getActivity().getLayoutManager(), notNullValue());
+        });
 
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -573,8 +564,7 @@ public class InstantStartTest {
                 mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(true, () -> allCardsHaveThumbnail(recyclerView)));
+        CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
         mRenderTestRule.render(recyclerView, "tabSwitcher_3tabs");
 
         // Resume native initialization and make sure the GTS looks the same.
@@ -622,8 +612,7 @@ public class InstantStartTest {
                 mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
-        CriteriaHelper.pollUiThread(
-                Criteria.equals(true, () -> allCardsHaveThumbnail(recyclerView)));
+        CriteriaHelper.pollUiThread(() -> allCardsHaveThumbnail(recyclerView));
         // TODO(crbug.com/1065314): Tab group cards should not have favicons.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_tabGroups");

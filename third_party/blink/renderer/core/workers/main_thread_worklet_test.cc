@@ -33,13 +33,6 @@ class MainThreadWorkletReportingProxyForTest final
     MainThreadWorkletReportingProxy::CountFeature(feature);
   }
 
-  void CountDeprecation(WebFeature feature) override {
-    // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
-    reported_features_.set(static_cast<size_t>(feature));
-    MainThreadWorkletReportingProxy::CountDeprecation(feature);
-  }
-
  private:
   std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
       reported_features_;
@@ -61,7 +54,7 @@ class MainThreadWorkletTest : public PageTestBase {
     csp->DidReceiveHeader(csp_header,
                           network::mojom::ContentSecurityPolicyType::kEnforce,
                           network::mojom::ContentSecurityPolicySource::kHTTP);
-    window->document()->InitContentSecurityPolicy(csp);
+    window->GetSecurityContext().SetContentSecurityPolicy(csp);
 
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(window);

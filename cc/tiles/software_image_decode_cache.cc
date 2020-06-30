@@ -61,7 +61,8 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
       const PaintImage& paint_image,
       SoftwareImageDecodeCache::DecodeTaskType task_type,
       const ImageDecodeCache::TracingInfo& tracing_info)
-      : TileTask(true),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         cache_(cache),
         image_key_(image_key),
         paint_image_(paint_image),

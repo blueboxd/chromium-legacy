@@ -181,29 +181,27 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
                   onc::kEmptyUnencryptedConfiguration))
             : test_utils::ReadTestDictionary(path_to_onc);
 
-    base::ListValue validated_network_configs;
+    onc::Validator validator(true,   // error_on_unknown_field
+                             true,   // error_on_wrong_recommended
+                             false,  // error_on_missing_field
+                             true,   // managed_onc
+                             true);  // log_warnings
+    validator.SetOncSource(onc_source);
+    onc::Validator::Result validation_result;
+    policy = validator.ValidateAndRepairObject(
+        &onc::kToplevelConfigurationSignature, *policy, &validation_result);
+    if (validation_result == onc::Validator::INVALID) {
+      ADD_FAILURE() << "Network configuration invalid.";
+      return;
+    }
+
+    base::ListValue network_configs;
     const base::Value* found_network_configs =
         policy->FindKeyOfType(::onc::toplevel_config::kNetworkConfigurations,
                               base::Value::Type::LIST);
     if (found_network_configs) {
       for (const auto& network_config : found_network_configs->GetList()) {
-        onc::Validator validator(true,    // error_on_unknown_field
-                                 true,    // error_on_wrong_recommended
-                                 false,   // error_on_missing_field
-                                 true,    // managed_onc
-                                 false);  // log_warnings
-        validator.SetOncSource(onc_source);
-        onc::Validator::Result validation_result;
-        std::unique_ptr<base::DictionaryValue> validated_network_config =
-            validator.ValidateAndRepairObject(
-                &onc::kNetworkConfigurationSignature, network_config,
-                &validation_result);
-        if (validation_result == onc::Validator::INVALID) {
-          ADD_FAILURE() << "Network configuration invalid.";
-          return;
-        }
-        validated_network_configs.Append(
-            std::move(*(validated_network_config)));
+        network_configs.Append(network_config.Clone());
       }
     }
 
@@ -217,7 +215,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
     }
 
     managed_network_configuration_handler_->SetPolicy(
-        onc_source, userhash, validated_network_configs, global_config);
+        onc_source, userhash, network_configs, global_config);
   }
 
   void SetUpEntry(const std::string& path_to_shill_json,
@@ -826,7 +824,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   EXPECT_FALSE(
       managed_handler()->AllowOnlyPolicyNetworksToConnectIfAvailable());
   EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
-  EXPECT_TRUE(managed_handler()->GetBlacklistedHexSSIDs().empty());
+  EXPECT_TRUE(managed_handler()->GetBlockedHexSSIDs().empty());
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest,
@@ -850,7 +848,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToConnect());
   EXPECT_TRUE(managed_handler()->AllowOnlyPolicyNetworksToConnectIfAvailable());
   EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
-  EXPECT_TRUE(managed_handler()->GetBlacklistedHexSSIDs().empty());
+  EXPECT_TRUE(managed_handler()->GetBlockedHexSSIDs().empty());
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest,
@@ -874,21 +872,22 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
   EXPECT_FALSE(
       managed_handler()->AllowOnlyPolicyNetworksToConnectIfAvailable());
   EXPECT_TRUE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
-  EXPECT_TRUE(managed_handler()->GetBlacklistedHexSSIDs().empty());
+  EXPECT_TRUE(managed_handler()->GetBlockedHexSSIDs().empty());
 }
 
+// Test deprecated BlacklistedHexSSIDs property.
 TEST_F(ManagedNetworkConfigurationHandlerTest, GetBlacklistedHexSSIDs) {
   InitializeStandardProfiles();
-  std::vector<std::string> blacklist = {"476F6F676C65477565737450534B"};
+  std::vector<std::string> blocked = {"476F6F676C65477565737450534B"};
 
   // Check transfer to NetworkStateHandler
   EXPECT_CALL(*network_state_handler_,
-              UpdateBlockedWifiNetworks(false, false, blacklist))
+              UpdateBlockedWifiNetworks(false, false, blocked))
       .Times(1);
 
   // Set 'BlacklistedHexSSIDs' policy and a random user policy.
   SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
-            "policy/policy_blacklisted_hex_ssids.onc");
+            "policy/policy_deprecated_blacklisted_hex_ssids.onc");
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   base::RunLoop().RunUntilIdle();
 
@@ -897,7 +896,30 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, GetBlacklistedHexSSIDs) {
   EXPECT_FALSE(
       managed_handler()->AllowOnlyPolicyNetworksToConnectIfAvailable());
   EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
-  EXPECT_EQ(blacklist, managed_handler()->GetBlacklistedHexSSIDs());
+  EXPECT_EQ(blocked, managed_handler()->GetBlockedHexSSIDs());
+}
+
+TEST_F(ManagedNetworkConfigurationHandlerTest, GetBlockedHexSSIDs) {
+  InitializeStandardProfiles();
+  std::vector<std::string> blocked = {"476F6F676C65477565737450534B"};
+
+  // Check transfer to NetworkStateHandler
+  EXPECT_CALL(*network_state_handler_,
+              UpdateBlockedWifiNetworks(false, false, blocked))
+      .Times(1);
+
+  // Set 'BlockedHexSSIDs' policy and a random user policy.
+  SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+            "policy/policy_blocked_hex_ssids.onc");
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  base::RunLoop().RunUntilIdle();
+
+  // Check ManagedNetworkConfigurationHandler policy accessors.
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToConnect());
+  EXPECT_FALSE(
+      managed_handler()->AllowOnlyPolicyNetworksToConnectIfAvailable());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
+  EXPECT_EQ(blocked, managed_handler()->GetBlockedHexSSIDs());
 }
 
 // Proxy settings can come from different sources. Proxy enforced by user policy

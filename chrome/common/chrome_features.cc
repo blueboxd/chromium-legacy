@@ -710,10 +710,6 @@ const base::Feature kUserActivityEventLogging{"UserActivityEventLogging",
 #endif
 
 #if defined(OS_CHROMEOS)
-// Enables support of libcups APIs from ARC
-const base::Feature kArcCupsApi{"ArcCupsApi",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables pin quick unlock.
 // TODO(https://crbug.com/935613): Remove this & the backing code.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",

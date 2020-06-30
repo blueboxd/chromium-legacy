@@ -80,6 +80,8 @@ class BitmapRasterBufferImpl : public RasterBuffer {
         /*gpu_compositing=*/false, playback_settings);
   }
 
+  bool SupportsBackgroundThreadPriority() const override { return true; }
+
  private:
   const gfx::Size resource_size_;
   const gfx::ColorSpace color_space_;

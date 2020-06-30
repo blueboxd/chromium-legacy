@@ -50,7 +50,6 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -90,11 +89,10 @@ public class TabGridAccessibilityHelperTest {
         mActivityTestRule.startMainActivityFromLauncher();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
+        CriteriaHelper.pollUiThread(mActivityTestRule.getActivity()
+                                            .getTabModelSelector()
+                                            .getTabModelFilterProvider()
+                                            .getCurrentTabModelFilter()::isTabModelRestored);
     }
 
     @After

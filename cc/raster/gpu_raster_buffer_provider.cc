@@ -352,6 +352,11 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
       depends_on_hardware_accelerated_webp_candidates_);
 }
 
+bool GpuRasterBufferProvider::RasterBufferImpl::
+    SupportsBackgroundThreadPriority() const {
+  return true;
+}
+
 GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,

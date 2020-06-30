@@ -168,9 +168,9 @@ void CheckForSanitizedWhitelistOnTaskRunner(
     const std::string& crx_id,
     const base::FilePath& whitelist_path,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   if (base::PathExists(GetSanitizedWhitelistPath(crx_id))) {
-    task_runner->PostTask(FROM_HERE, callback);
+    task_runner->PostTask(FROM_HERE, std::move(callback));
     return;
   }
 
@@ -183,7 +183,7 @@ void CheckForSanitizedWhitelistOnTaskRunner(
   data_decoder::JsonSanitizer::Sanitize(
       unsafe_json,
       base::BindOnce(&OnWhitelistSanitizationResult, whitelist_path, crx_id,
-                     task_runner, callback));
+                     task_runner, std::move(callback)));
 }
 
 void RemoveUnregisteredWhitelistsOnTaskRunner(
@@ -482,7 +482,7 @@ void SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady(
       base::BindOnce(
           &CheckForSanitizedWhitelistOnTaskRunner, crx_id, whitelist_path,
           base::ThreadTaskRunnerHandle::Get(),
-          base::Bind(
+          base::BindOnce(
               &SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady,
               weak_ptr_factory_.GetWeakPtr(), crx_id, title, large_icon_path)));
 }

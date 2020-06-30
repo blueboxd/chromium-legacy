@@ -20,7 +20,6 @@ class CORE_EXPORT MainThreadWorkletReportingProxy
 
   // Implements WorkerReportingProxy.
   void CountFeature(WebFeature) override;
-  void CountDeprecation(WebFeature) override;
   void DidTerminateWorkerThread() override;
 
  private:

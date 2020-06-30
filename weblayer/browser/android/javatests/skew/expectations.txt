@@ -22,25 +22,28 @@
 [ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testBeforeUnloadNoHandler [ Skip ]
 [ impl_lte_83 ] org.chromium.weblayer.test.TabTest#testBeforeUnloadNoInteraction [ Skip ]
 
-# Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
-[ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
+# Replace was removed in https://crrev.com/c/2150968.
+crbug.com/1070851 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
 
-# Fixed in https://crrev.com/c/2180022, see https://crbug.com/1077243.
-[ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
+# Fixed in https://crrev.com/c/2180022.
+crbug.com/1077243 [ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
 
-# https://crbug.com/1079491.
-[ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
+crbug.com/1079491 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
+
+crbug.com/1096570 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithNoRedirectLaunched [ Skip ]
 
 # -------------------------------------
 # Tests against older WebLayer clients.
 # -------------------------------------
 
-# Intentionally changed in M84, https://crrev.com/c/2130790. See https://crbug.com/1078973.
-[ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentLaunchedViaOnLoad [ Skip ]
-[ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent [ Skip ]
+# Intentionally changed in M84, https://crrev.com/c/2130790.
+crbug.com/1078973 [ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentLaunchedViaOnLoad [ Skip ]
+crbug.com/1078973 [ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent [ Skip ]
 
-# Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
-[ client_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
+# Replace was removed in https://crrev.com/c/2150968.
+crbug.com/1070851 [ client_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
 
-# Test was made private, https://crbug.com/1087451.
-[ client_lte_84 ] org.chromium.weblayer.test.TopControlsTest#testBasic [ Skip ]
+# Test was made private.
+crbug.com/1087451 [ client_lte_84 ] org.chromium.weblayer.test.TopControlsTest#testBasic [ Skip ]
+
+crbug.com/1096570 [ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithNoRedirectBlocked [ Skip ]

@@ -181,7 +181,7 @@ TEST_F(ProfilePolicyConnectorTest, PrimaryUserPoliciesProxied) {
       enterprise_management::PolicyData::ACTIVE);
   cloud_policy_store_.policy_map_.Set(
       key::kAutofillAddressEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   cloud_policy_store_.NotifyStoreLoaded();
   base::RunLoop().RunUntilIdle();
 
@@ -242,7 +242,7 @@ TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
   // Set the policy at the cloud provider.
   cloud_policy_store_.policy_map_.Set(
       key::kAutofillAddressEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false), nullptr);
+      POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   cloud_policy_store_.NotifyStoreLoaded();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(connector.IsProfilePolicy(key::kAutofillAddressEnabled));
@@ -255,8 +255,7 @@ TEST_F(ProfilePolicyConnectorTest, IsProfilePolicy) {
   // Now test with a higher-priority provider also setting the policy.
   PolicyMap map;
   map.Set(key::kAutofillAddressEnabled, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(true), nullptr);
+          POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   mock_platform_provider.UpdateChromePolicy(map);
   EXPECT_FALSE(connector.IsProfilePolicy(key::kAutofillAddressEnabled));
   value = connector.policy_service()->GetPolicies(chrome_ns).GetValue(

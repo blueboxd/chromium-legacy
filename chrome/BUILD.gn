@@ -31,12 +31,12 @@ if (is_android) {
 } else if (is_linux) {
   import("//build/linux/extract_symbols.gni")
 } else if (is_mac) {
+  import("//build/apple/tweak_info_plist.gni")
   import("//build/compiled_action.gni")
   import("//build/config/mac/base_rules.gni")
   import("//build/config/mac/mac_sdk.gni")
   import("//build/config/mac/rules.gni")
   import("//build/config/mac/symbols.gni")
-  import("//build/mac/tweak_info_plist.gni")
   import("//build/util/branding.gni")
   import("//build/util/version.gni")
   import("//content/public/app/mac_helpers.gni")

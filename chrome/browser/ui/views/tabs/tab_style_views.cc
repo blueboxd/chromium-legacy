@@ -266,7 +266,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
     bottom_radius -= stroke_adjustment;
     if (ShouldExtendHitTest()) {
       extend_to_top = true;
-      if (tab_->controller()->IsFirstVisibleTab(tab_)) {
+      if (tab_->controller()->IsTabFirst(tab_)) {
         // The path is not mirrored in RTL and thus we must manually choose the
         // correct "leading" edge.
         if (base::i18n::IsRTL())

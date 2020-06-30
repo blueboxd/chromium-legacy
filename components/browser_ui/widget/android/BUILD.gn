@@ -213,6 +213,7 @@ android_library("javatests") {
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/DualControlLayoutTest.java",
     "java/src/org/chromium/components/browser_ui/widget/MoreProgressButtonTest.java",
+    "java/src/org/chromium/components/browser_ui/widget/PromoDialogRenderTest.java",
     "java/src/org/chromium/components/browser_ui/widget/PromoDialogTest.java",
     "java/src/org/chromium/components/browser_ui/widget/RadioButtonLayoutTest.java",
     "java/src/org/chromium/components/browser_ui/widget/RadioButtonRenderTest.java",

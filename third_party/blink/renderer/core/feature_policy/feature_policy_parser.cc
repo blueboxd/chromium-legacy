@@ -471,10 +471,10 @@ internal::FeaturePolicyNode ParsingContext::ParsePermissionsPolicyToIR(
 
 ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
     const String& feature_policy_header,
+    const String& permissions_policy_header,
     scoped_refptr<const SecurityOrigin> origin,
     PolicyParserMessageBuffer& logger,
-    FeaturePolicyParserDelegate* delegate,
-    const String& permissions_policy_header) {
+    FeaturePolicyParserDelegate* delegate) {
   ParsingContext context(logger, origin, nullptr, GetDefaultFeatureNameMap(),
                          delegate);
   auto policy_ir =

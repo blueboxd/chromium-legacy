@@ -4,11 +4,10 @@
 
 #include "ui/views/animation/ink_drop_util.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "base/check_op.h"
 #include "ui/gfx/geometry/point3_f.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
@@ -30,8 +29,8 @@ gfx::Transform GetTransformSubpixelCorrection(const gfx::Transform& transform,
   // Compute the rounded offset in screen space and finally unscale it back to
   // DIP space.
   gfx::Vector2dF aligned_offset_in_dip = origin.AsPointF().OffsetFromOrigin();
-  aligned_offset_in_dip.set_x(gfx::ToRoundedInt(aligned_offset_in_dip.x()));
-  aligned_offset_in_dip.set_y(gfx::ToRoundedInt(aligned_offset_in_dip.y()));
+  aligned_offset_in_dip.set_x(std::round(aligned_offset_in_dip.x()));
+  aligned_offset_in_dip.set_y(std::round(aligned_offset_in_dip.y()));
   aligned_offset_in_dip.Scale(1.f / device_scale_factor);
 
   // Compute the subpixel offset correction and apply it to the transform.
@@ -47,9 +46,9 @@ gfx::Transform GetTransformSubpixelCorrection(const gfx::Transform& transform,
   offset.Scale(device_scale_factor);
 
   if (!std::isnan(offset.x()))
-    DCHECK_LT(std::abs(gfx::ToRoundedInt(offset.x()) - offset.x()), kEpsilon);
+    DCHECK_LT(std::abs(std::round(offset.x()) - offset.x()), kEpsilon);
   if (!std::isnan(offset.y()))
-    DCHECK_LT(std::abs(gfx::ToRoundedInt(offset.y()) - offset.y()), kEpsilon);
+    DCHECK_LT(std::abs(std::round(offset.y()) - offset.y()), kEpsilon);
 #endif
   return subpixel_correction;
 }

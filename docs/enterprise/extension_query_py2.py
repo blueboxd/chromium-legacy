@@ -99,7 +99,7 @@ def DictToList(data, key_name='id'):
     yield value
 
 
-def Flatten(data):
+def Flatten(data, all_columns):
   """Flattens lists inside |data|, one level deep.
 
   This function will flatten each dictionary key in |data| into a single row
@@ -107,24 +107,63 @@ def Flatten(data):
 
   Args:
     data: the data to be flattened.
+    all_columns: set of all columns that are found in the result (this will be
+      filled by the function).
 
   Yields:
     A list of dict objects whose lists or sets have been flattened.
   """
+  SEPARATOR = ', '
+
+  # Max length of a cell in Excel is technically 32767 characters but if we get
+  # too close to this limit Excel seems to create weird results when we open
+  # the CSV file. To protect against this, give a little more buffer to the max
+  # characters.
+  MAX_CELL_LENGTH = 32700
+
   for item in data:
-    counts = {}
+    added_item = {}
     for prop, value in item.items():
-      if isinstance(value, (list, set)):
-        item[prop] = ', '.join(sorted(value))
-        counts['num_' + prop] = len(value)
+      # Non-container properties can be added directly.
+      if not isinstance(value, (list, set)):
+        added_item[prop] = value
+        continue
+
+      # Otherwise join the container together into a single cell.
+      num_prop = 'num_' + prop
+      added_item[num_prop] = len(value)
+
+      # For long lists, the cell contents may go over MAX_CELL_LENGTH, so
+      # split the list into chunks that will fit into MAX_CELL_LENGTH.
+      flat_list = SEPARATOR.join(sorted(value))
+      overflow_prop_index = 0
+      while True:
+        current_column = prop
+        if overflow_prop_index:
+          current_column = prop + '_' + str(overflow_prop_index)
+
+        flat_list_len = len(flat_list)
+        if flat_list_len > MAX_CELL_LENGTH:
+          last_separator = flat_list.rfind(SEPARATOR, 0,
+                                           MAX_CELL_LENGTH - flat_list_len)
+          if last_separator != -1:
+            added_item[current_column] = flat_list[0:last_separator]
+            flat_list = flat_list[last_separator + 2:]
+            overflow_prop_index = overflow_prop_index + 1
+            continue
+
+        # Fall-through case where no more splitting is possible, this is the
+        # lass cell to add for this list.
+        added_item[current_column] = flat_list
+        break
 
       assert isinstance(
-          item[prop],
+          added_item[prop],
           (int, bool, str, unicode)), ('unexpected type for item: %s' %
-                                       type(item[prop]).__name__)
+                                       type(added_item[prop]).__name__)
 
-    item.update(counts)
-    yield item
+    all_columns.update(added_item.keys())
+    yield added_item
 
 
 def ExtensionListAsCsv(extensions_list, csv_filename, sort_column='name'):
@@ -135,9 +174,10 @@ def ExtensionListAsCsv(extensions_list, csv_filename, sort_column='name'):
     csv_filename: the name of the CSV file to save
     sort_column: the name of the column by which to sort the data
   """
-  flattened_list = [x for x in ToUtf8(Flatten(DictToList(extensions_list)))]
-  fieldnames = flattened_list[0].keys() if flattened_list else []
-
+  all_columns = set()
+  flattened_list = [
+      x for x in ToUtf8(Flatten(DictToList(extensions_list), all_columns))
+  ]
   desired_column_order = [
       'id', 'name', 'num_permissions', 'num_installed', 'num_disabled',
       'num_forced', 'permissions', 'installed', 'disabled', 'forced'
@@ -145,7 +185,13 @@ def ExtensionListAsCsv(extensions_list, csv_filename, sort_column='name'):
 
   # Order the columns as desired. Columns other than those in
   # |desired_column_order| will be in an unspecified order after these columns.
-  ordered_fieldnames = list(c for c in desired_column_order if c in fieldnames)
+  ordered_fieldnames = []
+  for c in desired_column_order:
+    matching_columns = []
+    for f in all_columns:
+      if f == c or f.startswith(c):
+        matching_columns.append(f)
+    ordered_fieldnames.extend(sorted(matching_columns))
 
   ordered_fieldnames.extend(
       [x for x in desired_column_order if x not in ordered_fieldnames])

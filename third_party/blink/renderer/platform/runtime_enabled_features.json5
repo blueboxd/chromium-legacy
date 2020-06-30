@@ -1420,6 +1420,10 @@
       status: "stable",
     },
     {
+      name: "PermissionsPolicyHeader",
+      status: "experimental"
+    },
+    {
       name: "PermissionsRequestRevoke",
       status: "experimental",
     },

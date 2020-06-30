@@ -4,6 +4,7 @@ include_rules = [
   "+components/browser_ui/client_certificate",
   "+components/browser_ui/util/android/url_constants.h",
   "+components/country_codes",
+  "+components/enterprise",
   "+components/infobars/android",
   "+components/page_load_metrics/browser",
   "+components/safety_check",

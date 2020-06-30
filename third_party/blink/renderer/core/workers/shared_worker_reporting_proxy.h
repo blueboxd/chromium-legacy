@@ -27,7 +27,6 @@ class SharedWorkerReportingProxy final
 
   // WorkerReportingProxy methods:
   void CountFeature(WebFeature) override;
-  void CountDeprecation(WebFeature) override;
   void ReportException(const WTF::String&,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;

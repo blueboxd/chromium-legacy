@@ -187,6 +187,10 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // with the SquareInkDropRipple animation durations.
   static gfx::Size CalculateLargeInkDropSize(const gfx::Size& small_size);
 
+  // View:
+  void OnLayerTransformed(const gfx::Transform& old_transform,
+                          ui::PropertyChangeReason reason) override;
+
  private:
   friend class test::InkDropHostViewTestApi;
 

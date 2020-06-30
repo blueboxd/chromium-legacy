@@ -13,6 +13,7 @@ import android.view.View;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
@@ -154,16 +156,13 @@ public class MediaRouterIntegrationTest {
         try {
             JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, UNSET_RESULT_SCRIPT);
             JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents, script);
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        String result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                webContents, GET_RESULT_SCRIPT);
-                        return !result.equals("null");
-                    } catch (Exception e) {
-                        return false;
-                    }
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                try {
+                    String result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                            webContents, GET_RESULT_SCRIPT);
+                    Criteria.checkThat(result, Matchers.not("null"));
+                } catch (Exception e) {
+                    throw new CriteriaNotSatisfiedException(e);
                 }
             }, maxTimeoutMs, intervalMs);
             String unescapedResult =

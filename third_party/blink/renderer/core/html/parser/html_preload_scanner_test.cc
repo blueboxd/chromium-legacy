@@ -616,16 +616,14 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
   ClientHintsPreferences resource_width;
   ClientHintsPreferences all;
   ClientHintsPreferences viewport_width;
-  dpr.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
-  all.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
-  resource_width.SetShouldSendForTesting(
+  dpr.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  resource_width.SetShouldSend(
       network::mojom::WebClientHintsType::kResourceWidth);
-  all.SetShouldSendForTesting(
-      network::mojom::WebClientHintsType::kResourceWidth);
-  viewport_width.SetShouldSendForTesting(
+  all.SetShouldSend(network::mojom::WebClientHintsType::kResourceWidth);
+  viewport_width.SetShouldSend(
       network::mojom::WebClientHintsType::kViewportWidth);
-  all.SetShouldSendForTesting(
-      network::mojom::WebClientHintsType::kViewportWidth);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kViewportWidth);
   PreloadScannerTestCase test_cases[] = {
       {"http://example.test",
        "<meta http-equiv='accept-ch' content='bla'><img srcset='bla.gif 320w, "
@@ -684,11 +682,9 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH) {
 
 TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   ClientHintsPreferences all;
-  all.SetShouldSendForTesting(network::mojom::WebClientHintsType::kDpr);
-  all.SetShouldSendForTesting(
-      network::mojom::WebClientHintsType::kResourceWidth);
-  all.SetShouldSendForTesting(
-      network::mojom::WebClientHintsType::kViewportWidth);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kDpr);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kResourceWidth);
+  all.SetShouldSend(network::mojom::WebClientHintsType::kViewportWidth);
 
   const PreloadScannerTestCase expect_no_client_hint = {
       "http://example.test",

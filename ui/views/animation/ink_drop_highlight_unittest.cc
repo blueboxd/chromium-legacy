@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/ink_drop_highlight.h"
 
+#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -226,9 +227,9 @@ TEST_F(InkDropHighlightTest, TransformIsPixelAligned) {
     dsf_transform.Scale(dsf, dsf);
     dsf_transform.TransformPoint(&transformed_layer_origin);
     EXPECT_NEAR(transformed_layer_origin.x(),
-                gfx::ToRoundedInt(transformed_layer_origin.x()), kEpsilon);
+                std::round(transformed_layer_origin.x()), kEpsilon);
     EXPECT_NEAR(transformed_layer_origin.y(),
-                gfx::ToRoundedInt(transformed_layer_origin.y()), kEpsilon);
+                std::round(transformed_layer_origin.y()), kEpsilon);
   }
 }
 

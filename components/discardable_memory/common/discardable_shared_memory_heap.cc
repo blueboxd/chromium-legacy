@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bits.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/discardable_shared_memory.h"
@@ -19,10 +20,6 @@
 
 namespace discardable_memory {
 namespace {
-
-bool IsPowerOfTwo(size_t x) {
-  return (x & (x - 1)) == 0;
-}
 
 bool IsInFreeList(DiscardableSharedMemoryHeap::Span* span) {
   return span->previous() || span->next();
@@ -97,7 +94,7 @@ void DiscardableSharedMemoryHeap::ScopedMemorySegment::OnMemoryDump(
 DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap(size_t block_size)
     : block_size_(block_size), num_blocks_(0), num_free_blocks_(0) {
   DCHECK_NE(block_size_, 0u);
-  DCHECK(IsPowerOfTwo(block_size_));
+  DCHECK(base::bits::IsPowerOfTwo(block_size_));
 }
 
 DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {

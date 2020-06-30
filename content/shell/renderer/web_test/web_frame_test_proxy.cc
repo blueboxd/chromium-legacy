@@ -478,6 +478,13 @@ void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
+  // This check for whether the test is running ensures we do not intercept
+  // the about:blank navigation between tests.
+  if (!test_runner()->TestIsRunning()) {
+    RenderFrameImpl::BeginNavigation(std::move(info));
+    return;
+  }
+
   if (test_runner()->ShouldDumpNavigationPolicy()) {
     blink_test_runner()->PrintMessage(
         "Default policy for navigation to '" +

@@ -283,6 +283,10 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
+// Experimental handling of accept-language via client hints.
+const base::Feature kLangClientHintHeader{"LangClientHintHeader",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics {
@@ -403,6 +407,10 @@ const base::Feature kOverscrollHistoryNavigation {
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable permission policy for configuring and restricting feature behavior.
+const base::Feature kPermissionsPolicyHeader{"PermissionsPolicyHeader",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.

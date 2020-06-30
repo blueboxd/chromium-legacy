@@ -146,17 +146,19 @@ void CastActivityManager::LaunchSessionParsed(
            << ", route_id: " << route_id << ", sink_id=" << sink_id;
   DoLaunchSessionParams params(route, cast_source, sink, origin, tab_id,
                                std::move(result.value), std::move(callback));
+
   // If there is currently a session on the sink, it must be terminated before
   // the new session can be launched.
-  auto it = std::find_if(
+  auto activity_it = std::find_if(
       activities_.begin(), activities_.end(), [&sink_id](const auto& activity) {
         return activity.second->route().media_sink_id() == sink_id;
       });
-  if (it == activities_.end()) {
+
+  if (activity_it == activities_.end()) {
     DoLaunchSession(std::move(params));
   } else {
     const MediaRoute::Id& existing_route_id =
-        it->second->route().media_route_id();
+        activity_it->second->route().media_route_id();
     // We cannot launch the new session in the TerminateSession() callback
     // because if we create a session there, then it may get deleted when
     // OnSessionRemoved() is called to notify that the previous session was
@@ -173,6 +175,7 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const CastMediaSource& cast_source = params.cast_source;
   const MediaRoute::Id& route_id = route.media_route_id();
   const MediaSinkInternal& sink = params.sink;
+  const int tab_id = params.tab_id;
 
   if (IsSiteInitiatedMirroringSource(cast_source.source_id())) {
     base::UmaHistogramBoolean(kHistogramAudioSender,
@@ -186,16 +189,25 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
 
   ActivityRecord* activity_ptr =
       cast_source.ContainsStreamingApp()
-          ? AddMirroringActivityRecord(route, app_id, params.tab_id,
-                                       sink.cast_data())
+          ? AddMirroringActivityRecord(route, app_id, tab_id, sink.cast_data())
           : AddCastActivityRecord(route, app_id);
   const std::string& client_id = cast_source.client_id();
   if (!client_id.empty()) {
     presentation_connection =
-        activity_ptr->AddClient(cast_source, params.origin, params.tab_id);
+        activity_ptr->AddClient(cast_source, params.origin, tab_id);
     activity_ptr->SendMessageToClient(
         client_id,
         CreateReceiverActionCastMessage(client_id, sink, hash_token_));
+  }
+
+  if (tab_id != -1) {
+    // If there is a route from this tab already, stop it.
+    auto route_it = routes_by_tab_.find(tab_id);
+    if (route_it != routes_by_tab_.end()) {
+      TerminateSession(route_it->second, base::DoNothing());
+    }
+
+    routes_by_tab_[tab_id] = route_id;
   }
 
   NotifyAllOnRoutesUpdated();
@@ -365,6 +377,9 @@ void CastActivityManager::RemoveActivityWithoutNotification(
       DLOG(ERROR) << "Invalid state: " << state;
   }
 
+  base::EraseIf(routes_by_tab_, [activity_it](const auto& pair) {
+    return pair.second == activity_it->first;
+  });
   cast_activities_.erase(activity_it->first);
   activities_.erase(activity_it);
 }

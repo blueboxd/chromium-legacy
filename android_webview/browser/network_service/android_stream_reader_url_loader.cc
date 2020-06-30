@@ -153,8 +153,11 @@ void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 void AndroidStreamReaderURLLoader::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (reject_cors_request_ && response_head_->response_type ==
-                                  network::mojom::FetchResponseType::kCors) {
+  if (base::FeatureList::IsEnabled(
+          features::kWebViewOriginCheckForStreamReader) &&
+      reject_cors_request_ &&
+      response_head_->response_type ==
+          network::mojom::FetchResponseType::kCors) {
     RequestCompleteWithStatus(
         network::URLLoaderCompletionStatus(network::CorsErrorStatus(
             network::mojom::CorsError::kCorsDisabledScheme)));

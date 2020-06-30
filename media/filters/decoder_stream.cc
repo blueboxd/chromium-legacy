@@ -487,9 +487,9 @@ void DecoderStream<StreamType>::DecodeInternal(
   const int buffer_size = is_eos ? 0 : buffer->data_size();
   decoder_->Decode(
       std::move(buffer),
-      base::BindRepeating(&DecoderStream<StreamType>::OnDecodeDone,
-                          fallback_weak_factory_.GetWeakPtr(), buffer_size,
-                          decoding_eos_, base::Passed(&trace_event)));
+      base::BindOnce(&DecoderStream<StreamType>::OnDecodeDone,
+                     fallback_weak_factory_.GetWeakPtr(), buffer_size,
+                     decoding_eos_, base::Passed(&trace_event)));
 }
 
 template <DemuxerStream::Type StreamType>

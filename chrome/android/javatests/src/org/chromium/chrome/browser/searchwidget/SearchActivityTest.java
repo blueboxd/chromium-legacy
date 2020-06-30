@@ -15,6 +15,7 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -40,6 +41,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -563,6 +565,8 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
+    @DisableIf.
+    Build(message = "https://crbug.com/1100967", sdk_is_less_than = Build.VERSION_CODES.M)
     @Features.
     EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
     public void testImageSearch() throws InterruptedException, Exception {
@@ -646,6 +650,8 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
+    @DisableIf.
+    Build(message = "https://crbug.com/1100967", sdk_is_less_than = Build.VERSION_CODES.M)
     @Features.
     EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
     public void testImageSearch_OnlyTrustedIntentCanPost() throws InterruptedException, Exception {

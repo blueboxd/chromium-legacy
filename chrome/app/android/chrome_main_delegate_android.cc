@@ -33,9 +33,6 @@ ChromeMainDelegateAndroid::ChromeMainDelegateAndroid() = default;
 ChromeMainDelegateAndroid::~ChromeMainDelegateAndroid() = default;
 
 bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
-  // Start the sampling profiler as early as possible.
-  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
-
 #if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   safe_browsing_api_handler_.reset(
       new safe_browsing::SafeBrowsingApiHandlerBridge());
@@ -48,9 +45,11 @@ bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
   return ChromeMainDelegate::BasicStartupComplete(exit_code);
 }
 
-void ChromeMainDelegateAndroid::SandboxInitialized(
-    const std::string& process_type) {
-  ChromeMainDelegate::SandboxInitialized(process_type);
+void ChromeMainDelegateAndroid::PreSandboxStartup() {
+  ChromeMainDelegate::PreSandboxStartup();
+
+  // Start the sampling profiler after crashpad initialization.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 }
 
 void ChromeMainDelegateAndroid::SecureDataDirectory() {

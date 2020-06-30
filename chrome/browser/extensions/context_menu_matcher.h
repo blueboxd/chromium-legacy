@@ -56,6 +56,9 @@ class ContextMenuMatcher {
                             int* index,
                             bool is_action_menu);
 
+  // Returns true if the given menu_model has any visible items.
+  bool HasVisibleItems(ui::MenuModel* menu_model) const;
+
   void Clear();
 
   // This function returns the top level context menu title of an extension

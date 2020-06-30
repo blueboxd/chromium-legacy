@@ -22,21 +22,21 @@
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
-      "bounds": [304, 304],
-      "transform": 3
+      "position": [250, 0],
+      "bounds": [304, 304]
     },
     {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 1018],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [285, 0],
       "bounds": [15, 300],
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -65,17 +65,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [250, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [2, 2, 0, 1]
+        [252, 2, 0, 1]
       ]
     }
   ]

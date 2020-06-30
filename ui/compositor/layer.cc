@@ -5,6 +5,7 @@
 #include "ui/compositor/layer.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 
@@ -59,7 +60,7 @@ void CheckSnapped(float snapped_position) {
   // artifacts as well as large enough to not cause false crashes when an
   // uncommon device scale factor is applied.
   const float kEplison = 0.003f;
-  float diff = std::abs(snapped_position - gfx::ToRoundedInt(snapped_position));
+  float diff = std::abs(snapped_position - std::round(snapped_position));
   DCHECK_LT(diff, kEplison);
 }
 #endif

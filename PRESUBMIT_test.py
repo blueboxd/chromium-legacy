@@ -2768,6 +2768,10 @@ class StringTest(unittest.TestCase):
                      translateable="false">
                    Non translateable message 1, should be ignored
                  </message>
+                 <message name="IDS_TEST_STRING_ACCESSIBILITY"
+                     is_accessibility="true">
+                   Accessibility label 1, should be ignored
+                 </message>
                </messages>
              </release>
            </grit>

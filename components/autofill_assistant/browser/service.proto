@@ -1149,12 +1149,12 @@ message ShowProgressBarProto {
     // will be capped to 100, values below 0 will be capped to 0 by the client.
     int32 progress = 6;
 
-    // Value between 0 and |N - 1| (where N is the size of the initial
-    // |step_icons|) indicating the current state the flow is in,
-    // marking all previous steps as active. Setting the value to 0 will mark
-    // only the first step as active, up to |N - 1|, which marks everything up
-    // to the final step as active.
-    // If this is used over |progress| the step progress bar will be used.
+    // Value between 0 and |N| (where N is the size of the initial
+    // |step_icons|) indicating the current step the flow is in, marking
+    // all previous steps as complete. The active step will not be marked as
+    // complete but instead be marked as active with a pulsating animation.
+    // Setting the value to |N| will mark all steps as complete with no step
+    // being active anymore.
     int32 active_step = 8;
   }
 

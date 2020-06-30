@@ -444,8 +444,7 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
     : pp::Instance(instance),
       pp::Find_Private(this),
       pp::Printing_Dev(this),
-      paint_manager_(this, this, true),
-      uma_(this) {
+      paint_manager_(this, this, true) {
   callback_factory_.Initialize(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
@@ -1482,15 +1481,16 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  HistogramCustomCountsDeprecated("PDF.PageCount", document_features.page_count,
-                                  1, 1000000, 50);
-  HistogramEnumerationDeprecated("PDF.HasAttachment",
-                                 document_features.has_attachments ? 1 : 0, 2);
-  HistogramEnumerationDeprecated("PDF.IsTagged",
-                                 document_features.is_tagged ? 1 : 0, 2);
-  HistogramEnumerationDeprecated(
-      "PDF.FormType", static_cast<int32_t>(document_features.form_type),
-      static_cast<int32_t>(PDFEngine::FormType::kCount));
+  HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
+                        1000000, 50);
+  HistogramEnumeration("PDF.HasAttachment", document_features.has_attachments
+                                                ? PdfHasAttachment::kYes
+                                                : PdfHasAttachment::kNo);
+  HistogramEnumeration("PDF.IsTagged", document_features.is_tagged
+                                           ? PdfIsTagged::kYes
+                                           : PdfIsTagged::kNo);
+  HistogramEnumeration("PDF.FormType", document_features.form_type,
+                       PDFEngine::FormType::kCount);
   HistogramEnumeration("PDF.Version", engine_->GetDocumentMetadata().version);
 }
 
@@ -2130,25 +2130,23 @@ void OutOfProcessInstance::HistogramEnumeration(const char* name, T sample) {
   base::UmaHistogramEnumeration(name, sample);
 }
 
-void OutOfProcessInstance::HistogramCustomCountsDeprecated(
-    const std::string& name,
-    int32_t sample,
-    int32_t min,
-    int32_t max,
-    uint32_t bucket_count) {
+template <typename T>
+void OutOfProcessInstance::HistogramEnumeration(const char* name,
+                                                T sample,
+                                                T enum_size) {
   if (IsPrintPreview())
     return;
-
-  uma_.HistogramCustomCounts(name, sample, min, max, bucket_count);
+  base::UmaHistogramEnumeration(name, sample, enum_size);
 }
 
-void OutOfProcessInstance::HistogramEnumerationDeprecated(
-    const std::string& name,
-    int32_t sample,
-    int32_t boundary_value) {
+void OutOfProcessInstance::HistogramCustomCounts(const char* name,
+                                                 int32_t sample,
+                                                 int32_t min,
+                                                 int32_t max,
+                                                 uint32_t bucket_count) {
   if (IsPrintPreview())
     return;
-  uma_.HistogramEnumeration(name, sample, boundary_value);
+  base::UmaHistogramCustomCounts(name, sample, min, max, bucket_count);
 }
 
 void OutOfProcessInstance::OnPrint(int32_t /*unused_but_required*/) {

@@ -146,6 +146,8 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
     gpu_memory_buffer_->Unmap();
   }
 
+  bool SupportsBackgroundThreadPriority() const override { return true; }
+
  private:
   // This field may only be used on the compositor thread.
   ZeroCopyGpuBacking* backing_;

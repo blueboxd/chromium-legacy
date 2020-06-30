@@ -9222,8 +9222,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Live caption. -->
-      <message name="IDS_LIVE_CAPTION_BUBBLE_TITLE" desc="Title for the Live Caption bubble">
-        Live Caption
+      <message name="IDS_LIVE_CAPTION_BUBBLE_WAIT_TEXT" desc="Text displayed in the Live Caption bubble when it is waiting for captions from the speech service">
+        Detecting speech...
+      </message>
+      <message name="IDS_LIVE_CAPTION_BUBBLE_CLOSE" desc="Tooltip for the Live Caption close button">
+        Turn off Live Caption for now
       </message>
       <message name="IDS_LIVE_CAPTION_BUBBLE_ERROR" desc="Error message for the Live Caption bubble when Live Captions are unavailable.">
         Live Caption is not available right now

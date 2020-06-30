@@ -104,8 +104,8 @@ void ApplyValueAsRecommendedPolicy(const base::Value* value,
                                    PolicyMap* user_policy_map) {
   if (value) {
     user_policy_map->Set(user_policy, POLICY_LEVEL_RECOMMENDED,
-                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                         value->CreateDeepCopy(), nullptr);
+                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, value->Clone(),
+                         nullptr);
   }
 }
 
@@ -127,7 +127,7 @@ void ApplyValueAsMandatoryPolicy(const base::Value* value,
                                  PolicyMap* user_policy_map) {
   if (value) {
     user_policy_map->Set(user_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD, value->CreateDeepCopy(), nullptr);
+                         POLICY_SOURCE_CLOUD, value->Clone(), nullptr);
   }
 }
 
@@ -138,8 +138,7 @@ void ApplyDevicePolicyWithPolicyOptions(const std::string& device_policy,
   const PolicyMap::Entry* entry = device_policy_map.Get(device_policy);
   if (entry) {
     user_policy_map->Set(user_policy, entry->level, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD, entry->value()->CreateDeepCopy(),
-                         nullptr);
+                         POLICY_SOURCE_CLOUD, entry->value()->Clone(), nullptr);
   }
 }
 }  // namespace

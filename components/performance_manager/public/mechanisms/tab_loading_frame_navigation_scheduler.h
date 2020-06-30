@@ -37,6 +37,9 @@ class TabLoadingFrameNavigationScheduler
  public:
   class PolicyDelegate;
 
+  using ResumeCallback =
+      base::RepeatingCallback<void(content::NavigationThrottle*)>;
+
   ~TabLoadingFrameNavigationScheduler() override;
 
   // Invoked by the embedder hooks. Depending on policy decisions this may end
@@ -59,18 +62,23 @@ class TabLoadingFrameNavigationScheduler
                              int64_t last_navigation_id);
 
   // Testing seams.
+  static TabLoadingFrameNavigationScheduler* GetRootForTesting();
   static void SetPolicyDelegateForTesting(PolicyDelegate* policy_delegate);
   static bool IsThrottlingEnabledForTesting();
   static bool IsMechanismRegisteredForTesting();
   void StopThrottlingForTesting() { StopThrottlingImpl(); }
   size_t GetThrottleCountForTesting() const { return throttles_.size(); }
   int64_t GetNavigationIdForTesting() const { return navigation_id_; }
+  void SetResumeCallbackForTesting(ResumeCallback resume_callback) {
+    resume_callback_ = resume_callback;
+  }
 
  private:
   friend class content::WebContentsUserData<TabLoadingFrameNavigationScheduler>;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   class Throttle;
+  using ThrottleMap = base::flat_map<content::NavigationHandle*, Throttle*>;
 
   explicit TabLoadingFrameNavigationScheduler(content::WebContents* contents);
 
@@ -83,13 +91,24 @@ class TabLoadingFrameNavigationScheduler
   // be taken in using this.
   void StopThrottlingImpl();
 
+  // Called by instances of Throttle as they tear down. Allows this class to
+  // maintain the list of throttles it has issued, and observe them as they are
+  // destroyed.
+  void NotifyThrottleDestroyed(Throttle* throttle);
+
+  // Called by both "NotifyThrottleDestroyed" and "DidFinishNavigation".
+  void RemoveThrottleForHandle(content::NavigationHandle* handle);
+
   // The navigation ID that this scheduler applies to. Set immediately after
   // object creation.
   int64_t navigation_id_ = 0;
 
   // The set of Throttles that have been created by this object, and the
   // navigation handles to which they are associated.
-  base::flat_map<content::NavigationHandle*, Throttle*> throttles_;
+  ThrottleMap throttles_;
+
+  // Used as a testing seam.
+  ResumeCallback resume_callback_;
 
   // Linked list mechanism for the collection of all mechanism instances. This
   // is used to implement StopThrottlingEverything.

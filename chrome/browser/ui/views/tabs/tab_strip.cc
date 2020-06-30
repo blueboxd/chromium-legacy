@@ -1824,12 +1824,8 @@ bool TabStrip::IsTabPinned(const Tab* tab) const {
          controller_->IsTabPinned(model_index);
 }
 
-bool TabStrip::IsFirstVisibleTab(const Tab* tab) const {
+bool TabStrip::IsTabFirst(const Tab* tab) const {
   return GetModelIndexOf(tab) == 0;
-}
-
-bool TabStrip::IsLastVisibleTab(const Tab* tab) const {
-  return GetLastVisibleTab() == tab;
 }
 
 bool TabStrip::IsFocusInTabs() const {

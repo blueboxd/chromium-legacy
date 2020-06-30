@@ -103,7 +103,6 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
 
   // WorkerReportingProxy overrides:
   void CountFeature(WebFeature) override;
-  void CountDeprecation(WebFeature) override;
   void ReportException(const String& error_message,
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;

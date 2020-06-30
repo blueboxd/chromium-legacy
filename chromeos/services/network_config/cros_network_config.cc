@@ -2403,7 +2403,7 @@ void CrosNetworkConfig::GetGlobalPolicy(GetGlobalPolicyCallback callback) {
         global_policy_dict, ::onc::global_network_config::
                                 kAllowOnlyPolicyNetworksToConnectIfAvailable);
     base::Optional<std::vector<std::string>> blocked_hex_ssids = GetStringList(
-        global_policy_dict, ::onc::global_network_config::kBlacklistedHexSSIDs);
+        global_policy_dict, ::onc::global_network_config::kBlockedHexSSIDs);
     if (blocked_hex_ssids)
       result->blocked_hex_ssids = std::move(*blocked_hex_ssids);
   }

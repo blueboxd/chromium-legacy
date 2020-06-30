@@ -44,13 +44,6 @@ class ThreadedWorkletObjectProxyForTest final
     ThreadedWorkletObjectProxy::CountFeature(feature);
   }
 
-  void CountDeprecation(WebFeature feature) final {
-    // Any feature should be reported only one time.
-    EXPECT_FALSE(reported_features_[static_cast<size_t>(feature)]);
-    reported_features_.set(static_cast<size_t>(feature));
-    ThreadedWorkletObjectProxy::CountDeprecation(feature);
-  }
-
  private:
   std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
       reported_features_;
@@ -152,7 +145,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   // Emulates deprecated API use on threaded WorkletGlobalScope.
   void CountDeprecation(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
-    GlobalScope()->CountDeprecation(feature);
+    Deprecation::CountDeprecation(GlobalScope(), feature);
 
     // countDeprecation() should add a warning message.
     EXPECT_EQ(1u, GetConsoleMessageStorage()->size());
@@ -312,7 +305,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
   csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
                         network::mojom::ContentSecurityPolicyType::kEnforce,
                         network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetDocument().InitContentSecurityPolicy(csp);
+  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 
@@ -329,7 +322,7 @@ TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
   csp->DidReceiveHeader("invalid-csp",
                         network::mojom::ContentSecurityPolicyType::kEnforce,
                         network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetDocument().InitContentSecurityPolicy(csp);
+  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 

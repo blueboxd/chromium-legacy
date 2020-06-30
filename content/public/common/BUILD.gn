@@ -326,8 +326,6 @@ mojom("interfaces") {
     sources += [ "font_cache_win.mojom" ]
   }
 
-  public_deps = [ ":client_hints_mojom" ]
-
   deps = [
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
@@ -362,16 +360,6 @@ mojom("web_preferences_mojom") {
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
   component_deps = [ "//third_party/blink/public/common" ]
-}
-
-mojom("client_hints_mojom") {
-  sources = [ "client_hints.mojom" ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//services/network/public/mojom",
-    "//url/mojom:url_mojom_origin",
-  ]
 }
 
 mojom("service_names") {

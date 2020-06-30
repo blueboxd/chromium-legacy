@@ -77,6 +77,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   title_ = title;
   query_ = title;
   context_ = context;
+  quick_answer_.reset();
 
   QuickAnswersRequest request = BuildRequest();
   if (chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {

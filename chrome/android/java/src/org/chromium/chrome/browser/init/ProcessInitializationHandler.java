@@ -436,7 +436,8 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(
                 () -> SharedClipboardShareActivity.updateComponentEnabledState());
         deferredStartupHandler.addDeferredTask(() -> ExploreOfflineStatusProvider.getInstance());
-        deferredStartupHandler.addDeferredTask(() -> EnterpriseInfo.logDeviceEnterpriseInfo());
+        deferredStartupHandler.addDeferredTask(
+                () -> EnterpriseInfo.getInstance().logDeviceEnterpriseInfo());
     }
 
     private void initChannelsAsync() {

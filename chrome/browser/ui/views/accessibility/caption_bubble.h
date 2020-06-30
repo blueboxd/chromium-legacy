@@ -98,7 +98,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // the model has an error, otherwise displays the latest text.
   void OnErrorChange();
 
-  void UpdateBubbleAndTitleVisibility();
+  void UpdateBubbleAndWaitTextVisibility();
   // The caption bubble manages its own visibility based on whether there's
   // space for it to be shown, and if it has an error or text to display.
   void UpdateBubbleVisibility();
@@ -108,9 +108,10 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
-  views::Label* title_;
-  views::Label* error_message_;
+  views::Label* wait_text_;
+  views::Label* error_text_;
   views::ImageView* error_icon_;
+  views::View* error_message_;
   views::ImageButton* close_button_;
   CaptionBubbleFrameView* frame_;
   views::View* content_container_;

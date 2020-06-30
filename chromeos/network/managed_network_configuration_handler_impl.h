@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   bool AllowOnlyPolicyNetworksToConnect() const override;
   bool AllowOnlyPolicyNetworksToConnectIfAvailable() const override;
   bool AllowOnlyPolicyNetworksToAutoconnect() const override;
-  std::vector<std::string> GetBlacklistedHexSSIDs() const override;
+  std::vector<std::string> GetBlockedHexSSIDs() const override;
 
   // NetworkProfileObserver overrides
   void OnProfileAdded(const NetworkProfile& profile) override;

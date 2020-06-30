@@ -509,17 +509,18 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   bool ended() const { return ended_; }
 
   void DecodeDecoder(scoped_refptr<DecoderBuffer> buffer,
-                     const AudioDecoder::DecodeCB& decode_cb) {
+                     AudioDecoder::DecodeCB decode_cb) {
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
     if (!main_thread_task_runner_->BelongsToCurrentThread()) {
       main_thread_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&AudioRendererImplTest::DecodeDecoder,
-                                    base::Unretained(this), buffer, decode_cb));
+          FROM_HERE,
+          base::BindOnce(&AudioRendererImplTest::DecodeDecoder,
+                         base::Unretained(this), buffer, std::move(decode_cb)));
       return;
     }
 
     CHECK(!decode_cb_) << "Overlapping decodes are not permitted";
-    decode_cb_ = decode_cb;
+    decode_cb_ = std::move(decode_cb);
 
     // Wake up WaitForPendingRead() if needed.
     if (wait_for_pending_decode_cb_)

@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
@@ -58,6 +56,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -401,21 +400,16 @@ class AutofillAssistantUiTestUtil {
     /** @see {@link #waitUntilViewMatchesCondition(Matcher, Matcher)} */
     public static void waitUntilViewMatchesCondition(
             Matcher<View> matcher, Matcher<View> condition, long maxTimeoutMs) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Timeout while waiting for " + matcher + " to satisfy " + condition) {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            onView(matcher).check(matches(condition));
-                            return true;
-                        } catch (NoMatchingViewException | AssertionError e) {
-                            // Note: all other exceptions are let through, in particular
-                            // AmbiguousViewMatcherException.
-                            return false;
-                        }
-                    }
-                },
-                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                onView(matcher).check(matches(condition));
+            } catch (NoMatchingViewException | AssertionError e) {
+                // Note: all other exceptions are let through, in particular
+                // AmbiguousViewMatcherException.
+                throw new CriteriaNotSatisfiedException(
+                        "Timeout while waiting for " + matcher + " to satisfy " + condition);
+            }
+        }, maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -424,22 +418,16 @@ class AutofillAssistantUiTestUtil {
      */
     public static void waitUntilViewAssertionTrue(
             Matcher<View> matcher, ViewAssertion viewAssertion, long maxTimeoutMs) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria(
-                        "Timeout while waiting for " + matcher + " to satisfy " + viewAssertion) {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            onView(matcher).check(viewAssertion);
-                            return true;
-                        } catch (NoMatchingViewException | AssertionError e) {
-                            // Note: all other exceptions are let through, in particular
-                            // AmbiguousViewMatcherException.
-                            return false;
-                        }
-                    }
-                },
-                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                onView(matcher).check(viewAssertion);
+            } catch (NoMatchingViewException | AssertionError e) {
+                // Note: all other exceptions are let through, in particular
+                // AmbiguousViewMatcherException.
+                throw new CriteriaNotSatisfiedException(
+                        "Timeout while waiting for " + matcher + " to satisfy " + viewAssertion);
+            }
+        }, maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
@@ -448,40 +436,27 @@ class AutofillAssistantUiTestUtil {
      */
     public static void waitUntilKeyboardMatchesCondition(
             ChromeActivityTestRule testRule, boolean isShowing) {
-        CriteriaHelper.pollInstrumentationThread(new Criteria(
-                "Timeout while waiting for the keyboard to be "
-                + (isShowing ? "visible" : "hidden")) {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    boolean isKeyboardShowing =
-                            testRule.getActivity()
-                                    .getWindowAndroid()
-                                    .getKeyboardDelegate()
-                                    .isKeyboardShowing(testRule.getActivity(),
-                                            testRule.getActivity().getCompositorViewHolder());
-                    assertThat("", isKeyboardShowing == isShowing);
-                    return true;
-                } catch (AssertionError e) {
-                    return false;
-                }
-            }
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            boolean isKeyboardShowing =
+                    testRule.getActivity()
+                            .getWindowAndroid()
+                            .getKeyboardDelegate()
+                            .isKeyboardShowing(testRule.getActivity(),
+                                    testRule.getActivity().getCompositorViewHolder());
+            String errorMsg = "Timeout while waiting for the keyboard to be "
+                    + (isShowing ? "visible" : "hidden");
+            Criteria.checkThat(errorMsg, isKeyboardShowing, Matchers.is(isShowing));
         });
     }
 
     public static void waitUntil(Callable<Boolean> condition) {
-        CriteriaHelper.pollInstrumentationThread(
-                new Criteria("Timeout while waiting for condition") {
-                    @Override
-                    public boolean isSatisfied() {
-                        try {
-                            return condition.call();
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                },
-                DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(condition.call(), Matchers.is(true));
+            } catch (Exception e) {
+                throw new CriteriaNotSatisfiedException(e);
+            }
+        }, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 
     /**

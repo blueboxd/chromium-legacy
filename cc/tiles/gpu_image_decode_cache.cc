@@ -594,7 +594,8 @@ class GpuImageDecodeTaskImpl : public TileTask {
                          const DrawImage& draw_image,
                          const ImageDecodeCache::TracingInfo& tracing_info,
                          GpuImageDecodeCache::DecodeTaskType task_type)
-      : TileTask(true),
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         cache_(cache),
         image_(draw_image),
         tracing_info_(tracing_info),
@@ -646,7 +647,8 @@ class ImageUploadTaskImpl : public TileTask {
                       const DrawImage& draw_image,
                       scoped_refptr<TileTask> decode_dependency,
                       const ImageDecodeCache::TracingInfo& tracing_info)
-      : TileTask(false),
+      : TileTask(TileTask::SupportsConcurrentExecution::kNo,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
         cache_(cache),
         image_(draw_image),
         tracing_info_(tracing_info) {

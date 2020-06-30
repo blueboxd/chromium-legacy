@@ -201,12 +201,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_DISABLE_REDUCE_OPLIST_SPLITTING
 #endif
 
-// This is temporarily required to land a change in MakeFromTexture's clean up
-// behavior.
-#ifndef SK_LEGACY_MAKEFROMTEXTURE_BEHAVIOR
-#define SK_LEGACY_MAKEFROMTEXTURE_BEHAVIOR
-#endif
-
 // Many layout tests and unit tests need to updated/rebased to move to less
 // buggy GPU blur.
 #ifndef SK_USE_LEGACY_GPU_BLUR

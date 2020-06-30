@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

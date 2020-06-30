@@ -12,8 +12,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/user_manager/user.h"
 #else
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #endif
 
 namespace safe_browsing {

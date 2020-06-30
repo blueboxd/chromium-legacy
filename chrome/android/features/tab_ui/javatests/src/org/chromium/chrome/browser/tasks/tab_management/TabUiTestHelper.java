@@ -17,6 +17,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -329,10 +330,14 @@ public class TabUiTestHelper {
      */
     public static void verifyTabModelTabCount(
             ChromeTabbedActivity cta, int normalTabs, int incognitoTabs) {
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                normalTabs, () -> cta.getTabModelSelector().getModel(false).getCount()));
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                incognitoTabs, () -> cta.getTabModelSelector().getModel(true).getCount()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    cta.getTabModelSelector().getModel(false).getCount(), is(normalTabs));
+        });
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    cta.getTabModelSelector().getModel(true).getCount(), is(incognitoTabs));
+        });
     }
 
     /**
@@ -408,8 +413,9 @@ public class TabUiTestHelper {
         cta.setRequestedOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE
                         ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                         : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                orientation, () -> cta.getResources().getConfiguration().orientation));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(cta.getResources().getConfiguration().orientation, is(orientation));
+        });
     }
 
     /**
@@ -532,8 +538,11 @@ public class TabUiTestHelper {
         assertEquals(numTabs + previousTabCount,
                 rule.getActivity().getTabModelSelector().getModel(isIncognito).getCount());
 
-        CriteriaHelper.pollUiThread(Criteria.equals(0,
-                () -> rule.getActivity().getTabContentManager().getPendingReadbacksForTesting()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    rule.getActivity().getTabContentManager().getPendingReadbacksForTesting(),
+                    is(0));
+        });
     }
 
     public static void verifyAllTabsHaveThumbnail(TabModel tabModel) {
@@ -653,8 +662,9 @@ public class TabUiTestHelper {
                                : R.string.accessibility_tab_switcher_standard_stack))
                 .perform(click());
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                isIncognito, () -> cta.getTabModelSelector().isIncognitoSelected()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(cta.getTabModelSelector().isIncognitoSelected(), is(isIncognito));
+        });
         // Wait for tab list recyclerView to finish animation after tab model switch.
         RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
         waitForStableRecyclerView(recyclerView);

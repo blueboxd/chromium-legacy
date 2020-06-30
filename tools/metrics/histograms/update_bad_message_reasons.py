@@ -10,6 +10,7 @@ If the file was pretty-printed, the updated version is pretty-printed too.
 
 from __future__ import print_function
 
+import os
 import sys
 
 from update_histogram_enum import UpdateHistogramEnum

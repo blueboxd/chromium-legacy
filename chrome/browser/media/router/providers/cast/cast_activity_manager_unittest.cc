@@ -55,8 +55,10 @@ namespace media_router {
 
 namespace {
 constexpr int kChannelId = 42;
+constexpr int kChannelId2 = 43;
 constexpr char kOrigin[] = "https://google.com";
 constexpr int kTabId = 1;
+constexpr int kTabId2 = 2;
 constexpr char kAppId1[] = "ABCDEFGH";
 constexpr char kAppId2[] = "BBBBBBBB";
 constexpr char kAppParams[] = R"(
@@ -391,6 +393,7 @@ class CastActivityManagerTest : public testing::Test,
   cast_channel::MockCastSocket socket_;
   cast_channel::MockCastMessageHandler message_handler_;
   MediaSinkInternal sink_ = CreateCastSink(kChannelId);
+  MediaSinkInternal sink2_ = CreateCastSink(kChannelId2);
   std::unique_ptr<MediaRoute> route_;  // TODO(jrw): Is this needed?
   cast_channel::LaunchSessionCallback launch_session_callback_;
   TestMediaSinkService media_sink_service_;
@@ -497,7 +500,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
   // LaunchSessionParsed() is called asynchronously and will fail the test.
   manager_->LaunchSessionParsed(
       // TODO(jrw): Verify that presentation ID is used correctly.
-      *source, sink_, "presentationId2", origin_, kTabId, /*incognito*/
+      *source, sink_, "presentationId2", origin_, kTabId2, /*incognito*/
       false,
       base::BindOnce(&CastActivityManagerTest::ExpectLaunchSessionSuccess,
                      base::Unretained(this)),
@@ -513,6 +516,23 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
                             /* base::Optional<base::Value> appParams */
                             testing::Eq(base::nullopt), _));
   manager_->OnSessionRemoved(sink_);
+}
+
+TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionFromTab) {
+  LaunchCastAppSession();
+
+  EXPECT_CALL(*cast_activities_[0], SendStopSessionMessageToClients);
+
+  // Launch a new session on the same sink.
+  auto source = CastMediaSource::FromMediaSourceId(MakeSourceId(kAppId2));
+  // Use LaunchSessionParsed() instead of LaunchSession() here because
+  // LaunchSessionParsed() is called asynchronously and will fail the test.
+  manager_->LaunchSessionParsed(
+      *source, sink2_, "presentationId2", origin_, kTabId, /*incognito*/
+      false,
+      base::BindOnce(&CastActivityManagerTest::ExpectLaunchSessionSuccess,
+                     base::Unretained(this)),
+      data_decoder::DataDecoder::ValueOrError());
 }
 
 TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {

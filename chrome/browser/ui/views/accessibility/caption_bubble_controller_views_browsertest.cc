@@ -61,16 +61,20 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     return controller_ ? controller_->caption_bubble_->label_ : nullptr;
   }
 
-  views::Label* GetTitle() {
-    return controller_ ? controller_->caption_bubble_->title_ : nullptr;
+  views::Label* GetWaitText() {
+    return controller_ ? controller_->caption_bubble_->wait_text_ : nullptr;
   }
 
   views::Button* GetCloseButton() {
     return controller_ ? controller_->caption_bubble_->close_button_ : nullptr;
   }
 
-  views::Label* GetErrorMessage() {
+  views::View* GetErrorMessage() {
     return controller_ ? controller_->caption_bubble_->error_message_ : nullptr;
+  }
+
+  views::Label* GetErrorText() {
+    return controller_ ? controller_->caption_bubble_->error_text_ : nullptr;
   }
 
   views::ImageView* GetErrorIcon() {
@@ -109,7 +113,7 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     EXPECT_LT(
         abs(bubble_bounds.CenterPoint().x() - anchor_bounds.CenterPoint().x()),
         2);
-    EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
+    EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 20);
   }
 
   bool OnPartialTranscription(std::string text, int tab_index = 0) {
@@ -175,11 +179,16 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsCaptionInBubble) {
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
   // A short caption is bottom-aligned with the bubble. The bubble bounds
-  // are inset by 4 dip of margin, add another 2 dip of margin for the label's
-  // container bounds to get 6 dip (spec).
+  // are inset by 24 dip on the the sides and 28 dip on the bottom. The label
+  // top can change, but the bubble height and width should not change.
   OnPartialTranscription("Cats rock");
-  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom() + 2,
-            GetBubble()->GetBoundsInScreen().bottom());
+  gfx::Rect label_bounds = GetLabel()->GetBoundsInScreen();
+  gfx::Rect bubble_bounds = GetBubble()->GetBoundsInScreen();
+  int bubble_height = bubble_bounds.height();
+  int bubble_width = bubble_bounds.width();
+  EXPECT_EQ(label_bounds.x() - 24, bubble_bounds.x());  // left
+  EXPECT_EQ(label_bounds.right() + 24, bubble_bounds.right());
+  EXPECT_EQ(label_bounds.bottom() + 28, bubble_bounds.bottom());
 
   // Ensure overflow by using a very long caption, should still be aligned
   // with the bottom of the bubble.
@@ -189,21 +198,26 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, LaysOutCaptionLabel) {
       "life, which have received widespread media coverage. At age 14, Swift "
       "became the youngest artist signed by the Sony/ATV Music publishing "
       "house and, at age 15, she signed her first record deal.");
-  EXPECT_EQ(GetLabel()->GetBoundsInScreen().bottom() + 2,
-            GetBubble()->GetBoundsInScreen().bottom());
+  label_bounds = GetLabel()->GetBoundsInScreen();
+  bubble_bounds = GetBubble()->GetBoundsInScreen();
+  EXPECT_EQ(label_bounds.x() - 24, bubble_bounds.x());  // left
+  EXPECT_EQ(label_bounds.right() + 24, bubble_bounds.right());
+  EXPECT_EQ(label_bounds.bottom() + 28, bubble_bounds.bottom());
+  EXPECT_EQ(bubble_height, bubble_bounds.height());
+  EXPECT_EQ(bubble_width, bubble_bounds.width());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
-                       CaptionTitleShownAtFirst) {
-  // With one line of text, the title is visible and positioned between the
+                       CaptionWaitTextShownAtFirst) {
+  // With one line of text, the wait text is visible and positioned between the
   // top of the bubble and top of the label.
   OnPartialTranscription("Cats rock");
-  EXPECT_TRUE(GetTitle()->GetVisible());
-  EXPECT_EQ(GetTitle()->GetBoundsInScreen().bottom(),
+  EXPECT_TRUE(GetWaitText()->GetVisible());
+  EXPECT_EQ(GetWaitText()->GetBoundsInScreen().bottom(),
             GetLabel()->GetBoundsInScreen().y());
 
   OnPartialTranscription("Cats rock\nDogs too");
-  EXPECT_FALSE(GetTitle()->GetVisible());
+  EXPECT_FALSE(GetWaitText()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
@@ -332,30 +346,26 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
   OnPartialTranscription("Elephants' trunks average 6 feet long.");
-  EXPECT_TRUE(GetTitle()->GetVisible());
+  EXPECT_TRUE(GetWaitText()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
-  EXPECT_FALSE(GetErrorIcon()->GetVisible());
 
   SetHasError(true);
-  EXPECT_FALSE(GetTitle()->GetVisible());
+  EXPECT_FALSE(GetWaitText()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
-  EXPECT_TRUE(GetErrorIcon()->GetVisible());
 
   // Setting text during an error shouldn't cause the error to disappear.
   OnPartialTranscription("Elephant tails average 4-5 feet long.");
-  EXPECT_FALSE(GetTitle()->GetVisible());
+  EXPECT_FALSE(GetWaitText()->GetVisible());
   EXPECT_FALSE(GetLabel()->GetVisible());
   EXPECT_TRUE(GetErrorMessage()->GetVisible());
-  EXPECT_TRUE(GetErrorIcon()->GetVisible());
 
   // Clear the error and everything should be visible again.
   SetHasError(false);
-  EXPECT_TRUE(GetTitle()->GetVisible());
+  EXPECT_TRUE(GetWaitText()->GetVisible());
   EXPECT_TRUE(GetLabel()->GetVisible());
   EXPECT_FALSE(GetErrorMessage()->GetVisible());
-  EXPECT_FALSE(GetErrorIcon()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
@@ -467,13 +477,14 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   int textSize = 16;
   int lineHeight = 24;
   int bubbleHeight = 48;
+  int errorIconHeight = 20;
 
   GetController()->UpdateCaptionStyle(base::nullopt);
   OnPartialTranscription("Hamsters' teeth never stop growing");
   EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
 
   // Set the text size to 200%.
@@ -481,53 +492,53 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   caption_style.text_size = "200%";
   GetController()->UpdateCaptionStyle(caption_style);
   EXPECT_EQ(textSize * 2, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize * 2, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize * 2, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight * 2, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight * 2, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight * 2, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight * 2);
 
   // Set the text size to the empty string.
   caption_style.text_size = "";
   GetController()->UpdateCaptionStyle(caption_style);
   EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
 
   // Set the text size to 50% !important.
   caption_style.text_size = "50% !important";
   GetController()->UpdateCaptionStyle(caption_style);
   EXPECT_EQ(textSize / 2, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize / 2, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize / 2, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight / 2, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight / 2, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight / 2, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight / 2);
 
   // Set the text size to a bad string.
   caption_style.text_size = "Ostriches can run up to 45mph";
   GetController()->UpdateCaptionStyle(caption_style);
   EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
 
   // Set the caption style to nullopt.
   GetController()->UpdateCaptionStyle(base::nullopt);
   EXPECT_EQ(textSize, GetLabel()->font_list().GetFontSize());
-  EXPECT_EQ(textSize, GetTitle()->font_list().GetFontSize());
+  EXPECT_EQ(textSize, GetWaitText()->font_list().GetFontSize());
   EXPECT_EQ(lineHeight, GetLabel()->GetLineHeight());
-  EXPECT_EQ(lineHeight, GetTitle()->GetLineHeight());
+  EXPECT_EQ(lineHeight, GetWaitText()->GetLineHeight());
   EXPECT_GT(GetBubble()->GetPreferredSize().height(), bubbleHeight);
 
   // Set the error message.
   caption_style.text_size = "50%";
   GetController()->UpdateCaptionStyle(caption_style);
   SetHasError(true);
-  EXPECT_EQ(lineHeight / 2, GetErrorMessage()->GetLineHeight());
-  // The error icon height remains unchanged at 20.
-  EXPECT_GT(GetBubble()->GetPreferredSize().height(), lineHeight / 2 + 20);
+  EXPECT_EQ(lineHeight / 2, GetErrorText()->GetLineHeight());
+  EXPECT_EQ(errorIconHeight / 2, GetErrorIcon()->GetImageBounds().height());
+  EXPECT_GT(GetBubble()->GetPreferredSize().height(), lineHeight / 2);
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,

@@ -9,16 +9,26 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":app",
+    ":nearby_confirmation_page",
     ":nearby_discovery_page",
+    ":nearby_progress",
   ]
 }
 
 js_library("app") {
   deps = [
+    ":nearby_confirmation_page",
     ":nearby_discovery_page",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_components/nearby_share:nearby_onboarding_page.m",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
+  ]
+}
+
+js_library("nearby_confirmation_page") {
+  deps = [
+    ":nearby_progress",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -28,9 +38,19 @@ js_library("nearby_discovery_page") {
   ]
 }
 
+js_library("nearby_progress") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/iron-icon",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 html_to_js("web_components") {
   js_files = [
     "app.js",
+    "icons.js",
+    "nearby_confirmation_page.js",
     "nearby_discovery_page.js",
+    "nearby_progress.js",
   ]
 }

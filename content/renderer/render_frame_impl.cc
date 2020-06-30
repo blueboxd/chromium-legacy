@@ -1013,6 +1013,11 @@ void FillMiscNavigationParams(
 
   navigation_params->origin_isolation_restricted =
       commit_params.origin_isolation_restricted;
+
+  navigation_params->enabled_client_hints.reserve(
+      commit_params.enabled_client_hints.size());
+  for (auto enabled_hint : commit_params.enabled_client_hints)
+    navigation_params->enabled_client_hints.emplace_back(enabled_hint);
 }
 
 // Fills in the origin policy associated with this response, if any is present.

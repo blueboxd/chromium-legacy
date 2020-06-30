@@ -138,9 +138,10 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
-      : network_change_notifier_(
-            net::test::MockNetworkChangeNotifier::Create()),
-        task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>(
+            base::test::TaskEnvironment::MainThreadType::IO)),
+        network_change_notifier_(
+            net::test::MockNetworkChangeNotifier::Create()) {
     // Because the network service is enabled we need a system Connector or
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
@@ -161,6 +162,11 @@ class NavigationURLLoaderImplTest : public testing::Test {
   ~NavigationURLLoaderImplTest() override {
     browser_context_.reset();
     SetSystemConnectorForTesting(nullptr);
+    // Reset the BrowserTaskEnvironment to force destruction of the local
+    // NetworkService, which is held in SequenceLocalStorage. This must happen
+    // before destruction of |network_change_notifier_|, to allow observers to
+    // be unregistered.
+    task_environment_.reset();
   }
 
   std::unique_ptr<NavigationURLLoader> CreateTestLoader(
@@ -311,9 +317,9 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       network_change_notifier_;
-  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   net::EmbeddedTestServer http_test_server_;
   base::Optional<network::ResourceRequest> most_recent_resource_request_;

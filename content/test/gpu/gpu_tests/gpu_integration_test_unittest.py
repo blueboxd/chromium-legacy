@@ -11,9 +11,8 @@ import shutil
 import tempfile
 import unittest
 import mock
-import sys
-import run_gpu_integration_test
 import gpu_project_config
+import run_gpu_integration_test
 
 from gpu_tests import context_lost_integration_test
 from gpu_tests import gpu_helper
@@ -26,8 +25,6 @@ from telemetry.internal.platform import system_info
 from telemetry.testing import browser_test_runner
 from telemetry.testing import fakes
 from telemetry.testing import run_browser_tests
-
-from unittest_data import integration_tests
 
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
@@ -99,22 +96,26 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.close()
     test_argv = [
-        run_gpu_integration_test.__file__, test_name,
-        '--write-full-results-to=%s' % temp_file.name
+        test_name, '--write-full-results-to=%s' % temp_file.name
     ] + extra_args
     unittest_config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
             os.path.join(path_util.GetGpuTestDir(), 'unittest_data')
         ])
-    with mock.patch.object(sys, 'argv', test_argv):
-      with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
-        try:
-          run_gpu_integration_test.main()
-          with open(temp_file.name) as f:
-            self._test_result = json.load(f)
-        finally:
-          temp_file.close()
+    old_manager = binary_manager._binary_manager
+    with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
+      processed_args = run_gpu_integration_test.ProcessArgs(test_argv)
+      telemetry_args = browser_test_runner.ProcessConfig(
+          unittest_config, processed_args)
+      try:
+        binary_manager._binary_manager = None
+        run_browser_tests.RunTests(telemetry_args)
+        with open(temp_file.name) as f:
+          self._test_result = json.load(f)
+      finally:
+        binary_manager._binary_manager = old_manager
+        temp_file.close()
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests('run_tests_with_expectations_files',
@@ -260,20 +261,16 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
   def _RunTestsWithExpectationsFiles(self):
-    try:
-      self._RunIntegrationTest(
-          test_name='run_tests_with_expectations_files',
-          failures=['a/b/unexpected-fail.html'],
-          successes=['a/b/expected-fail.html', 'a/b/expected-flaky.html'],
-          skips=['should_skip'],
-          additional_args=[
-              '--retry-limit=3', '--retry-only-retry-on-failure-tests',
-              ('--test-name-prefix=unittest_data.integration_tests.'
-               'RunTestsWithExpectationsFiles.')
-          ])
-    finally:
-      # Make sure the flaky failure counter is set to 0 after each test run
-      integration_tests.RunTestsWithExpectationsFiles._flaky_test_run = 0
+    self._RunIntegrationTest(
+        test_name='run_tests_with_expectations_files',
+        failures=['a/b/unexpected-fail.html'],
+        successes=['a/b/expected-fail.html', 'a/b/expected-flaky.html'],
+        skips=['should_skip'],
+        additional_args=[
+            '--retry-limit=3', '--retry-only-retry-on-failure-tests',
+            ('--test-name-prefix=unittest_data.integration_tests.'
+             'RunTestsWithExpectationsFiles.')
+        ])
 
   def testTestFilterCommandLineArg(self):
     self._RunIntegrationTest(

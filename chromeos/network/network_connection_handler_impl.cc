@@ -512,7 +512,7 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
       return;
     }
     if (network_state_handler_->OnlyManagedWifiNetworksAllowed() ||
-        base::Contains(managed_configuration_handler_->GetBlacklistedHexSSIDs(),
+        base::Contains(managed_configuration_handler_->GetBlockedHexSSIDs(),
                        hex_ssid_value->GetString())) {
       ErrorCallbackForPendingRequest(service_path, kErrorBlockedByPolicy);
       return;

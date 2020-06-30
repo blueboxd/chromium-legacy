@@ -163,7 +163,9 @@ class DecodeClient {
 // A dummy task that does nothing.
 class SimpleTask : public TileTask {
  public:
-  SimpleTask() : TileTask(true /* supports_concurrent_execution */) {
+  SimpleTask()
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes) {
     EXPECT_TRUE(thread_checker_.CalledOnValidThread());
   }
   SimpleTask(const SimpleTask&) = delete;
@@ -191,7 +193,9 @@ class SimpleTask : public TileTask {
 class BlockingTask : public TileTask {
  public:
   BlockingTask()
-      : TileTask(true /* supports_concurrent_execution */), run_cv_(&lock_) {
+      : TileTask(TileTask::SupportsConcurrentExecution::kYes,
+                 TileTask::SupportsBackgroundThreadPriority::kYes),
+        run_cv_(&lock_) {
     EXPECT_TRUE(thread_checker_.CalledOnValidThread());
   }
   BlockingTask(const BlockingTask&) = delete;

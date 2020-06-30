@@ -4,8 +4,9 @@
 
 #include "device/fido/cable/v2_handshake.h"
 
+#include "base/bits.h"
 #include "base/numerics/safe_math.h"
-#include "base/strings/string_number_conversions.h"  // TODO REMOVE
+#include "base/strings/string_number_conversions.h"  // TODO(agl): REMOVE
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
@@ -78,9 +79,8 @@ bool Crypter::Encrypt(std::vector<uint8_t>* message_to_encrypt) {
   // Messages will be padded in order to round their length up to a multiple
   // of kPaddingGranularity.
   constexpr size_t kPaddingGranularity = 32;
-  static_assert(kPaddingGranularity > 0, "padding too small");
   static_assert(kPaddingGranularity < 256, "padding too large");
-  static_assert((kPaddingGranularity & (kPaddingGranularity - 1)) == 0,
+  static_assert(base::bits::IsPowerOfTwo(kPaddingGranularity),
                 "padding must be a power of two");
 
   // Padding consists of a some number of zero bytes appended to the message

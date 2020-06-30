@@ -226,6 +226,7 @@ ci.chromium_builder(
         category = 'android',
         short_name = 'off',
     ),
+    cores = 32,
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 6 * time.hour,
@@ -240,6 +241,7 @@ ci.chromium_builder(
         category = 'fuchsia',
         short_name = 'off',
     ),
+    cores = 32,
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
@@ -254,6 +256,7 @@ ci.chromium_builder(
         category = 'linux',
         short_name = 'off',
     ),
+    cores = 32,
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,

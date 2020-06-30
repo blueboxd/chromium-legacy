@@ -1803,10 +1803,11 @@ void Document::UpdateTitle(const String& title) {
 }
 
 void Document::DispatchDidReceiveTitle() {
-  if (GetFrame() && !GetFrame()->Tree().Parent()) {
+  if (IsInMainFrame()) {
     String shortened_title = title_.Substring(0, mojom::blink::kMaxTitleChars);
     GetFrame()->GetLocalFrameHostRemote().UpdateTitle(
         shortened_title, base::i18n::TextDirection::LEFT_TO_RIGHT);
+    GetFrame()->GetPage()->GetPageScheduler()->OnTitleOrFaviconUpdated();
   }
   GetFrame()->Client()->DispatchDidReceiveTitle(title_);
 }
@@ -3408,7 +3409,7 @@ void Document::SetIsPaintingPreview(bool is_painting_preview) {
 }
 
 // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
-void Document::open(Document* entered_document,
+void Document::open(LocalDOMWindow* entered_window,
                     ExceptionState& exception_state) {
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
@@ -3437,18 +3438,18 @@ void Document::open(Document* entered_document,
   if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
     return;
 
+  if (entered_window && !entered_window->GetFrame())
+    return;
+
   // If |document|'s origin is not same origin to the origin of the responsible
   // document specified by the entry settings object, then throw a
   // "SecurityError" DOMException.
-  if (entered_document && !GetSecurityOrigin()->IsSameOriginWith(
-                              entered_document->GetSecurityOrigin())) {
+  if (entered_window && !GetSecurityOrigin()->IsSameOriginWith(
+                            entered_window->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call open() on same-origin documents.");
     return;
   }
-
-  if (entered_document && !entered_document->GetExecutionContext())
-    return;
 
   // If |document| has an active parser whose script nesting level is greater
   // than 0, then return |document|.
@@ -3468,26 +3469,28 @@ void Document::open(Document* entered_document,
 
   // If this document is fully active, change |document|'s URL to the URL of the
   // responsible document specified by the entry settings object.
-  if (dom_window_ && entered_document && this != entered_document) {
+  if (dom_window_ && entered_window && dom_window_ != entered_window) {
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->CopyStateFrom(entered_document->GetContentSecurityPolicy());
+    csp->CopyStateFrom(entered_window->GetContentSecurityPolicy());
     // We inherit the sandbox flags of the entered document, so mask on
     // the ones contained in the CSP.
     GetSecurityContext().ApplySandboxFlags(csp->GetSandboxMask());
-    InitContentSecurityPolicy(csp);
+    GetSecurityContext().SetContentSecurityPolicy(csp);
+    GetContentSecurityPolicy()->BindToDelegate(
+        GetExecutionContext()->GetContentSecurityPolicyDelegate());
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
-    KURL new_url = entered_document->Url();
+    KURL new_url = entered_window->Url();
     new_url.SetFragmentIdentifier(String());
     SetURL(new_url);
     if (Loader())
       Loader()->UpdateUrlForDocumentOpen(new_url);
 
     GetSecurityContext().SetSecurityOrigin(
-        entered_document->GetMutableSecurityOrigin());
+        entered_window->GetMutableSecurityOrigin());
     GetExecutionContext()->SetReferrerPolicy(
-        entered_document->GetExecutionContext()->GetReferrerPolicy());
-    SetCookieURL(entered_document->CookieURL());
+        entered_window->GetReferrerPolicy());
+    cookie_url_ = entered_window->document()->CookieURL();
   }
 
   open();
@@ -3729,7 +3732,7 @@ Document* Document::open(v8::Isolate* isolate,
   if (replace == "replace") {
     CountUse(WebFeature::kDocumentOpenTwoArgsWithReplace);
   }
-  open(EnteredDOMWindow(isolate)->document(), exception_state);
+  open(EnteredDOMWindow(isolate), exception_state);
   return this;
 }
 
@@ -4250,7 +4253,7 @@ bool Document::ShouldScheduleLayout() const {
 }
 
 void Document::write(const String& text,
-                     Document* entered_document,
+                     LocalDOMWindow* entered_window,
                      ExceptionState& exception_state) {
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
@@ -4272,15 +4275,15 @@ void Document::write(const String& text,
     return;
   }
 
-  if (entered_document && !GetSecurityOrigin()->IsSameOriginWith(
-                              entered_document->GetSecurityOrigin())) {
+  if (entered_window && !entered_window->GetFrame())
+    return;
+
+  if (entered_window && !GetSecurityOrigin()->IsSameOriginWith(
+                            entered_window->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call write() on same-origin documents.");
     return;
   }
-
-  if (entered_document && !entered_document->GetExecutionContext())
-    return;
 
   if (ignore_opens_and_writes_for_abort_)
     return;
@@ -4313,7 +4316,7 @@ void Document::write(const String& text,
     if (ignore_opens_during_unload_count_)
       return;
 
-    open(entered_document, ASSERT_NO_EXCEPTION);
+    open(entered_window, ASSERT_NO_EXCEPTION);
   }
 
   DCHECK(parser_);
@@ -4328,12 +4331,12 @@ void Document::write(const String& text,
 }
 
 void Document::writeln(const String& text,
-                       Document* entered_document,
+                       LocalDOMWindow* entered_window,
                        ExceptionState& exception_state) {
-  write(text, entered_document, exception_state);
+  write(text, entered_window, exception_state);
   if (exception_state.HadException())
     return;
-  write("\n", entered_document);
+  write("\n", entered_window);
 }
 
 void Document::write(v8::Isolate* isolate,
@@ -4350,7 +4353,7 @@ void Document::write(v8::Isolate* isolate,
   if (exception_state.HadException())
     return;
 
-  write(string, EnteredDOMWindow(isolate)->document(), exception_state);
+  write(string, EnteredDOMWindow(isolate), exception_state);
 }
 
 void Document::writeln(v8::Isolate* isolate,
@@ -4367,23 +4370,21 @@ void Document::writeln(v8::Isolate* isolate,
   if (exception_state.HadException())
     return;
 
-  writeln(string, EnteredDOMWindow(isolate)->document(), exception_state);
+  writeln(string, EnteredDOMWindow(isolate), exception_state);
 }
 
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
-  write(text->toString(), EnteredDOMWindow(isolate)->document(),
-        exception_state);
+  write(text->toString(), EnteredDOMWindow(isolate), exception_state);
 }
 
 void Document::writeln(v8::Isolate* isolate,
                        TrustedHTML* text,
                        ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()));
-  writeln(text->toString(), EnteredDOMWindow(isolate)->document(),
-          exception_state);
+  writeln(text->toString(), EnteredDOMWindow(isolate), exception_state);
 }
 
 KURL Document::urlForBinding() const {
@@ -7126,12 +7127,6 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   return font_matching_metrics_.get();
 }
 
-void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {
-  GetSecurityContext().SetContentSecurityPolicy(csp);
-  GetContentSecurityPolicy()->BindToDelegate(
-      GetExecutionContext()->GetContentSecurityPolicyDelegate());
-}
-
 void Document::InitSecurityContext(const DocumentInit& initializer) {
   DCHECK(GetSecurityOrigin());
   // If the CSP was provided by the DocumentLoader or is from ImportsController
@@ -8416,11 +8411,6 @@ void Document::CountUse(mojom::WebFeature feature) {
     use_counter_during_construction_->CountUse(feature);
   else if (DocumentLoader* loader = Loader())
     loader->CountUse(feature);
-}
-
-void Document::CountDeprecation(mojom::WebFeature feature) {
-  if (GetExecutionContext())
-    GetExecutionContext()->CountDeprecation(feature);
 }
 
 void Document::CountProperty(CSSPropertyID property) const {

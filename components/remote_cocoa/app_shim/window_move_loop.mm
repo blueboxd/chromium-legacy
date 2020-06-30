@@ -100,9 +100,10 @@ bool CocoaWindowMoveLoop::Run() {
     if ([event type] == NSLeftMouseDragged) {
       const NSPoint mouse_in_screen = [NSEvent mouseLocation];
 
-      const NSRect ns_frame = NSOffsetRect(
+      NSRect ns_frame = NSOffsetRect(
           initial_frame, mouse_in_screen.x - initial_mouse_in_screen_.x,
           mouse_in_screen.y - initial_mouse_in_screen_.y);
+      ns_frame = [window constrainFrameRect:ns_frame toScreen:window.screen];
       [window setFrame:ns_frame display:NO animate:NO];
 
       return event;

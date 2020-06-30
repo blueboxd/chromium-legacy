@@ -4170,12 +4170,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
 #endif
 
-#if defined(OS_CHROMEOS)
-    {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
-     flag_descriptions::kArcCupsApiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kArcCupsApi)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_ANDROID)
     {"background-task-component-update",
      flag_descriptions::kBackgroundTaskComponentUpdateName,

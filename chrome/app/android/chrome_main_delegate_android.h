@@ -27,7 +27,7 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
   ~ChromeMainDelegateAndroid() override;
 
   bool BasicStartupComplete(int* exit_code) override;
-  void SandboxInitialized(const std::string& process_type) override;
+  void PreSandboxStartup() override;
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;

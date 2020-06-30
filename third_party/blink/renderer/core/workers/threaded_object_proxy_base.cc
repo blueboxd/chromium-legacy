@@ -23,14 +23,6 @@ void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
                           MessagingProxyWeakPtr(), feature));
 }
 
-void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
-  PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
-      FROM_HERE,
-      CrossThreadBindOnce(&ThreadedMessagingProxyBase::CountDeprecation,
-                          MessagingProxyWeakPtr(), feature));
-}
-
 void ThreadedObjectProxyBase::ReportConsoleMessage(
     mojom::ConsoleMessageSource source,
     mojom::ConsoleMessageLevel level,

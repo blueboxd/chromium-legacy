@@ -106,21 +106,21 @@ void AwBrowserProcess::CreateBrowserPolicyConnector() {
 
 void AwBrowserProcess::InitSafeBrowsing() {
   CreateSafeBrowsingUIManager();
-  CreateSafeBrowsingWhitelistManager();
+  CreateSafeBrowsingAllowlistManager();
 }
 
 void AwBrowserProcess::CreateSafeBrowsingUIManager() {
   safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
 }
 
-void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
+void AwBrowserProcess::CreateSafeBrowsingAllowlistManager() {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       content::GetIOThreadTaskRunner({});
-  safe_browsing_whitelist_manager_ =
-      std::make_unique<AwSafeBrowsingWhitelistManager>(background_task_runner,
+  safe_browsing_allowlist_manager_ =
+      std::make_unique<AwSafeBrowsingAllowlistManager>(background_task_runner,
                                                        io_task_runner);
 }
 
@@ -159,9 +159,9 @@ AwBrowserProcess::GetSafeBrowsingTriggerManager() {
   return safe_browsing_trigger_manager_.get();
 }
 
-AwSafeBrowsingWhitelistManager*
-AwBrowserProcess::GetSafeBrowsingWhitelistManager() const {
-  return safe_browsing_whitelist_manager_.get();
+AwSafeBrowsingAllowlistManager*
+AwBrowserProcess::GetSafeBrowsingAllowlistManager() const {
+  return safe_browsing_allowlist_manager_.get();
 }
 
 AwSafeBrowsingUIManager* AwBrowserProcess::GetSafeBrowsingUIManager() const {

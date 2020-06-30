@@ -20,6 +20,7 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -203,7 +204,9 @@ void OnSortComplete(AddressList* result_buf,
 
 }  // namespace
 
-class AddressSorterPosixTest : public testing::Test {
+// TaskEnvironment is required to register an IPAddressObserver from the
+// constructor of AddressSorterPosix.
+class AddressSorterPosixTest : public TestWithTaskEnvironment {
  protected:
   AddressSorterPosixTest() : sorter_(&socket_factory_) {}
 

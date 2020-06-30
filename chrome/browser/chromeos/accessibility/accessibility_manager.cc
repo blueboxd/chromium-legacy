@@ -1214,6 +1214,10 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
     bool autoclick_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled);
     base::UmaHistogramBoolean("Accessibility.CrosAutoclick", autoclick_enabled);
+
+    base::UmaHistogramBoolean(
+        "Accessibility.CrosCursorColor",
+        prefs->GetBoolean(ash::prefs::kAccessibilityCursorColorEnabled));
   }
   base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
                             IsCaretHighlightEnabled());

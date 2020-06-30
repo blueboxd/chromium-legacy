@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 
+#include "base/bits.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -59,19 +60,19 @@ class Deserializer {
  private:
   bool AlignMemory(uint32_t size, size_t alignment) {
     // Due to the math below, alignment must be a power of two.
-    DCHECK_GT(alignment, 0u);
-    DCHECK_EQ(alignment & (alignment - 1), 0u);
+    DCHECK(base::bits::IsPowerOfTwo(alignment));
 
-    uintptr_t memory = reinterpret_cast<uintptr_t>(memory_);
-    size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
+    size_t memory = reinterpret_cast<size_t>(memory_);
+    size_t padding = base::bits::Align(memory, alignment) - memory;
 
     base::CheckedNumeric<uint32_t> checked_padded_size = bytes_read_;
     checked_padded_size += padding;
     checked_padded_size += size;
     uint32_t padded_size = 0;
     if (!checked_padded_size.AssignIfValid(&padded_size) ||
-        padded_size > memory_size_)
+        padded_size > memory_size_) {
       return false;
+    }
 
     memory_ += padding;
     bytes_read_ += padding;
@@ -87,7 +88,8 @@ class Deserializer {
 class ServiceFontManager::SkiaDiscardableManager
     : public SkStrikeClient::DiscardableHandleManager {
  public:
-  SkiaDiscardableManager(scoped_refptr<ServiceFontManager> font_manager)
+  explicit SkiaDiscardableManager(
+      scoped_refptr<ServiceFontManager> font_manager)
       : font_manager_(std::move(font_manager)) {}
   ~SkiaDiscardableManager() override = default;
 

@@ -244,15 +244,15 @@ void NetworkDeviceHandlerImpl::SetDeviceProperty(
     const base::Value& value,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
-  const char* const property_blacklist[] = {
+  const char* const property_blocked[] = {
       // Must only be changed by policy/owner through.
       shill::kCellularAllowRoamingProperty};
 
-  for (size_t i = 0; i < base::size(property_blacklist); ++i) {
-    if (property_name == property_blacklist[i]) {
+  for (size_t i = 0; i < base::size(property_blocked); ++i) {
+    if (property_name == property_blocked[i]) {
       InvokeErrorCallback(
           device_path, error_callback,
-          "SetDeviceProperty called on blacklisted property " + property_name);
+          "SetDeviceProperty called on blocked property " + property_name);
       return;
     }
   }

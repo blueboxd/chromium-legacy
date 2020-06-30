@@ -43,6 +43,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/metadata_header_macros.h"
@@ -358,9 +359,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
       // Since pixels cannot be fractional, we need to round the offset to get
       // the correct physical pixel coordinate.
-      gfx::Vector2dF integral_pixel_offset(
-          gfx::ToRoundedInt(fractional_pixel_offset.x()),
-          gfx::ToRoundedInt(fractional_pixel_offset.y()));
+      gfx::Vector2d integral_pixel_offset =
+          gfx::ToRoundedVector2d(fractional_pixel_offset);
 
       // |integral_pixel_offset - fractional_pixel_offset| gives the subpixel
       // offset amount for |offset_to_parent|. This is added to

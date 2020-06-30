@@ -321,13 +321,53 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
   VerifyMenuItem("child2", submodel, 1, ui::MenuModel::TYPE_COMMAND, false);
 }
 
-// Tests showing a top-level parent menu item, when all of its child items are
+// Tests showing a single top-level parent menu item, when it is visible and has
+// a visible submenu, but submenu has child items where all of submenu's child
+// items are hidden. Recall that a top-level item can be either a parent item
+// specified by the developer or parent item labeled with the extension's name.
+// In this case, we test the former.
+IN_PROC_BROWSER_TEST_F(
+    ExtensionContextMenuApiTest,
+    ShowTopLevelItemWithASubmenuWhereAllSubmenusChildrenAreHidden) {
+  SetUpTestExtension();
+
+  CallAPI("create({id: 'parent', title: 'parent', visible: true});");
+  CallAPI(
+      "create({id: 'child1', title: 'child1', parentId: 'parent', visible: "
+      "true});");
+  CallAPI("create({title: 'child2', parentId: 'child1', visible: false});");
+  CallAPI("create({title: 'child3', parentId: 'child1', visible: false});");
+
+  ASSERT_TRUE(SetupTopLevelMenuModel());
+  VerifyNumContextMenuItems(4);
+
+  VerifyMenuItem("parent", top_level_model_, top_level_index(),
+                 ui::MenuModel::TYPE_SUBMENU, true);
+
+  ui::MenuModel* submodel =
+      top_level_model_->GetSubmenuModelAt(top_level_index());
+  ASSERT_TRUE(submodel);
+  EXPECT_EQ(1, submodel->GetItemCount());
+
+  // When a parent item is specified by the developer (as opposed to generated),
+  // its visibility is determined by the specified state.
+  VerifyMenuItem("child1", submodel, 0, ui::MenuModel::TYPE_SUBMENU, true);
+
+  submodel = submodel->GetSubmenuModelAt(0);
+  ASSERT_TRUE(submodel);
+  EXPECT_EQ(2, submodel->GetItemCount());
+
+  VerifyMenuItem("child2", submodel, 0, ui::MenuModel::TYPE_COMMAND, false);
+  VerifyMenuItem("child3", submodel, 1, ui::MenuModel::TYPE_COMMAND, false);
+}
+
+// Tests hiding a top-level parent menu item, when all of its child items are
 // hidden. Recall that a top-level item can be either a parent item specified by
 // the developer or parent item labeled with the extension's name. In this case,
-// we test the latter. This extension-named top-level item should always be
-// visible.
+// we test the latter. This extension-named top-level item should be hidden,
+// when all of its child items are hidden.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
-                       ShowExtensionNamedTopLevelItemIfAllChildrenAreHidden) {
+                       HideExtensionNamedTopLevelItemIfAllChildrenAreHidden) {
   SetUpTestExtension();
   CallAPI("create({title: 'item1', visible: false});");
   CallAPI("create({title: 'item2', visible: false});");
@@ -338,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
   VerifyNumContextMenuItems(3);
 
   VerifyMenuItem(extension()->name(), top_level_model_, top_level_index(),
-                 ui::MenuModel::TYPE_SUBMENU, true);
+                 ui::MenuModel::TYPE_SUBMENU, false);
 
   ui::MenuModel* submodel =
       top_level_model_->GetSubmenuModelAt(top_level_index());
@@ -348,6 +388,54 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
   VerifyMenuItem("item1", submodel, 0, ui::MenuModel::TYPE_COMMAND, false);
   VerifyMenuItem("item2", submodel, 1, ui::MenuModel::TYPE_COMMAND, false);
   VerifyMenuItem("item3", submodel, 2, ui::MenuModel::TYPE_COMMAND, false);
+}
+
+// Tests updating a top-level parent menu item, when the submenu item is not
+// visible first and is then updated to visible. Recall that a top-level item
+// can be either a parent item specified by the developer or parent item labeled
+// with the extension's name. In this case, we test the former.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest, UpdateTopLevelItem) {
+  SetUpTestExtension();
+
+  CallAPI("create({id: 'parent', title: 'parent', visible: true});");
+  CallAPI(
+      "create({id: 'child1', title: 'child1', parentId: 'parent', visible: "
+      "false});");
+
+  // Verify that the child item is hidden.
+  ASSERT_TRUE(SetupTopLevelMenuModel());
+  VerifyNumContextMenuItems(2);
+  VerifyMenuItem("parent", top_level_model_, top_level_index(),
+                 ui::MenuModel::TYPE_SUBMENU, true);
+
+  ui::MenuModel* submodel =
+      top_level_model_->GetSubmenuModelAt(top_level_index());
+  ASSERT_TRUE(submodel);
+  EXPECT_EQ(1, submodel->GetItemCount());
+  VerifyMenuItem("child1", submodel, 0, ui::MenuModel::TYPE_COMMAND, false);
+
+  // Update child1 to visible.
+  CallAPI("update('child1', {visible: true});");
+
+  // Verify that the child item is visible.
+  VerifyMenuItem("child1", submodel, 0, ui::MenuModel::TYPE_COMMAND, true);
+}
+
+// Tests updating a top-level parent menu item, when the menu item is not
+// visible first and is then updated to visible. Recall that a top-level item
+// can be either a parent item specified by the developer or parent item labeled
+// with the extension's name. In this case, we test the latter.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuApiTest,
+                       UpdateExtensionNamedTopLevelItem) {
+  SetUpTestExtension();
+  CallAPI("create({id: 'item1', title: 'item1', visible: false});");
+  CallAPI("update('item1', {visible: true});");
+
+  ASSERT_TRUE(SetupTopLevelMenuModel());
+
+  VerifyNumContextMenuItems(1);
+  VerifyMenuItem("item1", top_level_model_, top_level_index(),
+                 ui::MenuModel::TYPE_COMMAND, true);
 }
 
 // Tests showing a top-level parent menu item, when some of its child items are

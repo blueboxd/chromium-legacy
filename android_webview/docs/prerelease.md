@@ -41,7 +41,7 @@ On Android 7 (Nougat) and later, you can install multiple channels at the same
 time. This allows you to play with our latest code, while still keeping a tested
 version of WebView around.
 
-## How do I try a pre-release channel?
+## How do I try a pre-release channel? {#switch-channel}
 
 Steps depend on your version of Android:
 
@@ -131,7 +131,7 @@ Any WebView-related bugs can be filed
 To best enable us to resolve the issue, please ensure you provide all of the
 information requested in the bug report template.
 
-## Work profile, multiple users, or Samsung Secure Folder
+## Work profile, multiple users, or Samsung Secure Folder {#multiple-profiles}
 
 *** aside
 This only applies to Android 8 (Oreo) and above.

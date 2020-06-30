@@ -1,0 +1,8 @@
+{
+  "enrollmentRestoreAfterRollback":true,
+  "eulaAutoAccept":true,
+  "eulaSendStatistics":true,
+  "networkUseConnected" : true,
+  "updateSkipNonCritical":true,
+  "welcomeNext":true
+}

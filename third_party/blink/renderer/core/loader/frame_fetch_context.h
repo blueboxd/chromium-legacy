@@ -178,8 +178,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                             const url::Origin& resource_origin,
                             bool is_1p_origin,
                             network::mojom::blink::WebClientHintsType,
-                            const ClientHintsPreferences&,
-                            const WebEnabledClientHints&) const;
+                            const ClientHintsPreferences&) const;
   void SetFirstPartyCookie(ResourceRequest&);
 
   // Returns true if execution of scripts from the url are allowed. Compared to

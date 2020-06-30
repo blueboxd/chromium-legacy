@@ -40,7 +40,9 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
   std::string BuildRequestHeader(bool is_header_request,
                                  const GURL& url,
                                  const std::string& gaia_id,
-                                 int profile_mode_mask);
+                                 int profile_mode_mask,
+                                 const std::string& source,
+                                 bool force_account_consistency);
 
   // SigninHeaderHelper implementation:
   bool ShouldBuildRequestHeader(

@@ -622,12 +622,18 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   VLOG(1) << "SortManagerServices";
 
   // ServiceCompleteList contains string path values for each service.
-  base::Value* complete_path_list = stub_properties_.FindKeyOfType(
-      shill::kServiceCompleteListProperty, base::Value::Type::LIST);
+  base::Value* complete_path_list =
+      stub_properties_.FindListKey(shill::kServiceCompleteListProperty);
   if (!complete_path_list || complete_path_list->GetList().empty())
     return;
-
   base::Value prev_complete_path_list = complete_path_list->Clone();
+
+  base::Value* visible_services =
+      stub_properties_.FindListKey(shill::kServicesProperty);
+  if (!visible_services) {
+    visible_services = stub_properties_.SetKey(
+        shill::kServicesProperty, base::Value(base::Value::Type::LIST));
+  }
 
   // Networks for disabled services get appended to the end without sorting.
   std::vector<std::string> disabled_path_list;
@@ -662,11 +668,15 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   std::sort(complete_dict_list.begin(), complete_dict_list.end(),
             CompareNetworks);
 
-  // Rebuild |complete_path_list| with the new sort order.
+  // Rebuild |complete_path_list| and |visible_services| with the new sort
+  // order.
   complete_path_list->ClearList();
+  visible_services->ClearList();
   for (const base::Value& dict : complete_dict_list) {
     std::string service_path = GetStringValue(dict, kPathKey);
     complete_path_list->Append(base::Value(service_path));
+    if (dict.FindBoolKey(shill::kVisibleProperty).value_or(false))
+      visible_services->Append(base::Value(service_path));
   }
   // Append disabled networks to the end of the complete path list.
   for (const std::string& path : disabled_path_list)

@@ -5,6 +5,7 @@
 #include "base/memory/memory_pressure_listener.h"
 
 #include "base/observer_list_threadsafe.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/base_tracing.h"
 
 namespace base {
@@ -18,7 +19,13 @@ class MemoryPressureObserver {
   ~MemoryPressureObserver() = delete;
 
   void AddObserver(MemoryPressureListener* listener, bool sync) {
-    async_observers_->AddObserver(listener);
+    // TODO(crbug.com/1063868): DCHECK instead of silently failing when a
+    // MemoryPressureListener is created in a non-sequenced context. Tests will
+    // need to be adjusted for that to work.
+    if (SequencedTaskRunnerHandle::IsSet()) {
+      async_observers_->AddObserver(listener);
+    }
+
     if (sync) {
       AutoLock lock(sync_observers_lock_);
       sync_observers_.AddObserver(listener);

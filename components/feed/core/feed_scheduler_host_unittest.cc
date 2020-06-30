@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/common/refresh_throttler.h"
 #include "components/feed/core/common/user_classifier.h"
@@ -163,6 +164,10 @@ class FeedSchedulerHostTest : public ::testing::Test {
   }
 
   void CancelWakeUp() { cancel_wake_up_call_count_++; }
+
+  // Required to instantiate a net::test::MockNetworkChangeNotifier, because it
+  // uses ObserverListThreadSafe.
+  base::test::TaskEnvironment task_environment_;
 
   TestingPrefServiceSimple profile_prefs_;
   TestingPrefServiceSimple local_state_;

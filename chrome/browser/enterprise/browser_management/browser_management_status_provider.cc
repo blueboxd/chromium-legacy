@@ -6,10 +6,10 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 
 #if defined(OS_WIN)
 #include "components/policy/core/common/management/platform_management_status_provider_win.h"

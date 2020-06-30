@@ -1012,4 +1012,17 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   }
 }
 
+TEST_P(MediaHistoryKeyedServiceTest, SecurityRegressionTest) {
+  history::URLRows urls_to_delete = {
+      history::URLRow(GURL("https://www.google.com/test1A"))};
+  history::DeletionInfo deletion_info =
+      history::DeletionInfo::ForUrls(urls_to_delete, std::set<GURL>());
+  deletion_info.set_deleted_urls_origin_map({
+      {GURL("https://www.google.com/test1B"), {0, base::Time::Now()}},
+      {GURL("https://www.google.com/test1C"), {0, base::Time::Now()}},
+  });
+
+  service()->OnURLsDeleted(nullptr, deletion_info);
+}
+
 }  // namespace media_history

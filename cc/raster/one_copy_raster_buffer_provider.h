@@ -105,6 +105,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                   const gfx::AxisTransform2d& transform,
                   const RasterSource::PlaybackSettings& playback_settings,
                   const GURL& url) override;
+    bool SupportsBackgroundThreadPriority() const override;
 
    private:
     // These fields may only be used on the compositor thread.

@@ -8,6 +8,7 @@
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/frame_node.h"
@@ -21,6 +22,19 @@
 #include "content/public/browser/render_process_host.h"
 
 namespace performance_manager {
+
+// This class is allowed to access the private
+// V8PerFrameMemoryDecorator::NotifyObserversOnMeasurementAvailable.
+class V8PerFrameMemoryDecorator::ObserverNotifier {
+ public:
+  void NotifyObserversOnMeasurementAvailable(
+      const ProcessNode* const process_node) {
+    auto* decorator =
+        V8PerFrameMemoryDecorator::GetFromGraph(process_node->GetGraph());
+    if (decorator)
+      decorator->NotifyObserversOnMeasurementAvailable(process_node);
+  }
+};
 
 namespace {
 
@@ -38,8 +52,48 @@ void BindReceiverOnUIThread(
 
 internal::BindV8PerFrameMemoryReporterCallback* g_test_bind_callback = nullptr;
 
-// Private implementations of the node attached data. This keeps the complexity
-// out of the header file.
+// Per-frame memory measurement involves the following classes that live on the
+// PM sequence:
+//
+// V8PerFrameMemoryDecorator: Central rendezvous point. Coordinates
+//     MeasurementRequest and Observer objects. Owned by the graph; created the
+//     first time MeasurementRequest::StartMeasurement is called.
+//     TODO(b/1080672): Currently this lives forever; should be cleaned up when
+//     there are no more measurements scheduled.
+//
+// V8PerFrameMemoryDecorator::MeasurementRequest: Indicates that a caller wants
+//     memory to be measured at a specific interval. Owned by the caller but
+//     must live on the PM sequence. MeasurementRequest objects register
+//     themselves with V8PerFrameMemoryDecorator on creation and unregister
+//     themselves on deletion, which cancels the corresponding measurement.
+//
+// NodeAttachedProcessData: Private class that schedules measurements and holds
+//     the results for an individual process. Owned by the ProcessNode; created
+//     when measurements start.
+//     TODO(b/1080672): Currently this lives forever; should be cleaned up when
+//     there are no more measurements scheduled.
+//
+// V8PerFrameMemoryDecorator::ProcessData: Public accessor to the measurement
+//     results held in a NodeAttachedProcessData, which owns it.
+//
+// NodeAttachedFrameData: Private class that holds the measurement results for
+//     a frame. Owned by the FrameNode; created when a measurement result
+//     arrives.
+//     TODO(b/1080672): Currently this lives forever; should be cleaned up when
+//     there are no more measurements scheduled.
+//
+// V8PerProcessMemoryDecorator::FrameData: Public accessor to the measurement
+//     results held in a NodeAttachedFrameData, which owns it.
+//
+// V8PerProcessMemoryDecorator::Observer: Callers can implement this and
+//     register with V8PerFrameMemoryDecorator::AddObserver() to be notified
+//     when measurements are available for a process. Owned by the caller but
+//     must live on the PM sequence.
+//
+// Additional wrapper classes can access these classes from other sequences:
+//
+// V8PerFrameMemoryRequest: Wraps MeasurementRequest. Owned by the caller and
+//     lives on any sequence.
 
 class NodeAttachedFrameData
     : public ExternalNodeAttachedDataImpl<NodeAttachedFrameData> {
@@ -66,8 +120,7 @@ class NodeAttachedFrameData
 class NodeAttachedProcessData
     : public ExternalNodeAttachedDataImpl<NodeAttachedProcessData> {
  public:
-  explicit NodeAttachedProcessData(const ProcessNode* process_node)
-      : process_node_(process_node) {}
+  explicit NodeAttachedProcessData(const ProcessNode* process_node);
   ~NodeAttachedProcessData() override = default;
 
   NodeAttachedProcessData(const NodeAttachedProcessData&) = delete;
@@ -78,7 +131,6 @@ class NodeAttachedProcessData
     return data_available_ ? &data_ : nullptr;
   }
 
-  void Initialize(const V8PerFrameMemoryDecorator* decorator);
   void ScheduleNextMeasurement();
 
  private:
@@ -88,18 +140,16 @@ class NodeAttachedProcessData
       performance_manager::mojom::PerProcessV8MemoryUsageDataPtr result);
 
   const ProcessNode* const process_node_;
-  const V8PerFrameMemoryDecorator* decorator_ = nullptr;
 
   mojo::Remote<performance_manager::mojom::V8PerFrameMemoryReporter>
       resource_usage_reporter_;
 
   enum class State {
-    kUninitialized,
     kWaiting,    // Waiting to take a measurement.
     kMeasuring,  // Waiting for measurement results.
     kIdle,       // No measurements scheduled.
   };
-  State state_ = State::kUninitialized;
+  State state_ = State::kIdle;
 
   // Used to schedule the next measurement.
   base::TimeTicks last_request_time_;
@@ -107,24 +157,20 @@ class NodeAttachedProcessData
 
   V8PerFrameMemoryDecorator::ProcessData data_;
   bool data_available_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<NodeAttachedProcessData> weak_factory_{this};
 };
 
-void NodeAttachedProcessData::Initialize(
-    const V8PerFrameMemoryDecorator* decorator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(nullptr, decorator_);
-  decorator_ = decorator;
-  DCHECK_EQ(state_, State::kUninitialized);
-
-  state_ = State::kWaiting;
+NodeAttachedProcessData::NodeAttachedProcessData(
+    const ProcessNode* process_node)
+    : process_node_(process_node) {
   ScheduleNextMeasurement();
 }
 
 void NodeAttachedProcessData::ScheduleNextMeasurement() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(nullptr, decorator_);
-  DCHECK_NE(state_, State::kUninitialized);
 
   if (state_ == State::kMeasuring) {
     // Don't restart the timer until the current measurement finishes.
@@ -132,8 +178,12 @@ void NodeAttachedProcessData::ScheduleNextMeasurement() {
     return;
   }
 
-  if (decorator_->GetMinTimeBetweenRequestsPerProcess().is_zero()) {
-    // All measurements have been cancelled.
+  auto* decorator =
+      V8PerFrameMemoryDecorator::GetFromGraph(process_node_->GetGraph());
+  if (!decorator ||
+      decorator->GetMinTimeBetweenRequestsPerProcess().is_zero()) {
+    // All measurements have been cancelled, or decorator was removed from
+    // graph.
     state_ = State::kIdle;
     timer_.Stop();
     last_request_time_ = base::TimeTicks();
@@ -148,7 +198,7 @@ void NodeAttachedProcessData::ScheduleNextMeasurement() {
   }
 
   base::TimeTicks next_request_time =
-      last_request_time_ + decorator_->GetMinTimeBetweenRequestsPerProcess();
+      last_request_time_ + decorator->GetMinTimeBetweenRequestsPerProcess();
   timer_.Start(FROM_HERE, next_request_time - base::TimeTicks::Now(), this,
                &NodeAttachedProcessData::StartMeasurement);
 }
@@ -160,9 +210,16 @@ void NodeAttachedProcessData::StartMeasurement() {
   last_request_time_ = base::TimeTicks::Now();
 
   EnsureRemote();
+
+  // TODO(b/1080672): WeakPtr is used in case NodeAttachedProcessData is
+  // cleaned up while a request to a renderer is outstanding. Currently this
+  // never actually happens (it is destroyed only when the graph is torn down,
+  // which should happen after renderers are destroyed). Should clean up
+  // NodeAttachedProcessData when the last MeasurementRequest is deleted, which
+  // could happen at any time.
   resource_usage_reporter_->GetPerFrameV8MemoryUsageData(
       base::BindOnce(&NodeAttachedProcessData::OnPerFrameV8MemoryUsageData,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
@@ -227,6 +284,9 @@ void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
   // Schedule another measurement for this process node.
   state_ = State::kIdle;
   ScheduleNextMeasurement();
+
+  V8PerFrameMemoryDecorator::ObserverNotifier()
+      .NotifyObserversOnMeasurementAvailable(process_node_);
 }
 
 void NodeAttachedProcessData::EnsureRemote() {
@@ -361,9 +421,8 @@ void V8PerFrameMemoryDecorator::OnProcessNodeAdded(
   if (process_node->GetProcessType() != content::PROCESS_TYPE_RENDERER)
     return;
 
-  NodeAttachedProcessData* process_data =
-      NodeAttachedProcessData::GetOrCreate(process_node);
-  process_data->Initialize(this);
+  // Creating the NodeAttachedProcessData will start a measurement.
+  NodeAttachedProcessData::GetOrCreate(process_node);
 }
 
 base::Value V8PerFrameMemoryDecorator::DescribeFrameNodeData(
@@ -400,6 +459,14 @@ base::TimeDelta V8PerFrameMemoryDecorator::GetMinTimeBetweenRequestsPerProcess()
   return measurement_requests_.empty()
              ? base::TimeDelta()
              : measurement_requests_.front()->sample_frequency();
+}
+
+void V8PerFrameMemoryDecorator::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void V8PerFrameMemoryDecorator::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void V8PerFrameMemoryDecorator::AddMeasurementRequest(
@@ -456,6 +523,12 @@ void V8PerFrameMemoryDecorator::UpdateProcessMeasurementSchedules() const {
     }
     process_data->ScheduleNextMeasurement();
   }
+}
+
+void V8PerFrameMemoryDecorator::NotifyObserversOnMeasurementAvailable(
+    const ProcessNode* const process_node) const {
+  for (Observer& observer : observers_)
+    observer.OnV8MemoryMeasurementAvailable(process_node);
 }
 
 V8PerFrameMemoryRequest::V8PerFrameMemoryRequest(

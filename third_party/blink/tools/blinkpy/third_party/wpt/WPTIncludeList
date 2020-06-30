@@ -1,5 +1,6 @@
 ./.gitignore
 ./CONTRIBUTING.md
+./docs/commands.json
 ./LICENSE.md
 ./serve.py
 ./tools/__init__.py
@@ -36,6 +37,9 @@
 ./tools/serve/commands.json
 ./tools/serve/serve.py
 ./tools/taskcluster/commands.json
+./tools/third_party/atomicwrites/LICENSE
+./tools/third_party/atomicwrites/README.rst
+./tools/third_party/atomicwrites/atomicwrites/__init__.py
 ./tools/third_party/enum/enum/LICENSE
 ./tools/third_party/enum/enum/README
 ./tools/third_party/enum/enum/__init__.py

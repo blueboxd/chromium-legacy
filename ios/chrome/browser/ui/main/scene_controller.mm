@@ -338,17 +338,23 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                  startupInformation:self.mainController];
         }
         self.sceneState.connectionOptions = nil;
-
-        // Handle URL opening from
-        // |UIWindowSceneDelegate scene:openURLContexts:|.
-        if (self.sceneState.URLContextsToOpen) {
-          // When multiwindow is supported we already pass the external URLs
-          // through the scene state, therefore we do not need to rely on
-          // startup parameters.
-          [self openURLContexts:self.sceneState.URLContextsToOpen];
-          self.sceneState.URLContextsToOpen = nil;
-        }
       }
+
+      if (self.startupParameters) {
+        ApplicationModeForTabOpening mode =
+            self.startupParameters.applicationMode;
+        UrlLoadParams params =
+            UrlLoadParams::InNewTab(self.startupParameters.externalURL);
+        BOOL dismissOmnibox =
+            [self.startupParameters postOpeningAction] != FOCUS_OMNIBOX;
+        [self dismissModalsAndOpenSelectedTabInMode:mode
+                                  withUrlLoadParams:params
+                                     dismissOmnibox:dismissOmnibox
+                                         completion:^{
+                                           self.startupParameters = nil;
+                                         }];
+      }
+
     } else {
       NSDictionary* launchOptions = self.mainController.launchOptions;
       URLOpenerParams* params =
@@ -451,16 +457,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)sceneState:(SceneState*)sceneState
     hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13)) {
-  if (URLContexts &&
-      sceneState.activationLevel == SceneActivationLevelForegroundActive) {
-    // It is necessary to reset the URLContextsToOpen after opening them.
-    // Handle the opening asynchronously to avoid interfering with potential
-    // other observers.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self openURLContexts:sceneState.URLContextsToOpen];
-      self.sceneState.URLContextsToOpen = nil;
-    });
-  }
+  DCHECK(URLContexts);
+  // It is necessary to reset the URLContextsToOpen after opening them.
+  // Handle the opening asynchronously to avoid interfering with potential
+  // other observers.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self openURLContexts:sceneState.URLContextsToOpen];
+    self.sceneState.URLContextsToOpen = nil;
+  });
 }
 
 - (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
@@ -1395,11 +1399,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                  startupInformation:(id<StartupInformation>)startupInformation
                            appState:(AppState*)appState {
   if (params) {
-    BOOL sceneIsActive =
-        self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
-
     [URLOpener handleLaunchOptions:params
-                 applicationActive:sceneIsActive
                          tabOpener:self
              connectionInformation:self
                 startupInformation:startupInformation

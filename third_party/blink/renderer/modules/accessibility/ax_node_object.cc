@@ -2273,7 +2273,7 @@ AXObject* AXNodeObject::ChooserPopup() const {
     case ax::mojom::blink::Role::kColorWell:
     case ax::mojom::blink::Role::kDate:
     case ax::mojom::blink::Role::kDateTime: {
-      for (const auto& child : children_) {
+      for (const auto& child : ChildrenIncludingIgnored()) {
         if (child->IsWebArea())
           return child;
       }
@@ -3022,7 +3022,7 @@ void AXNodeObject::LoadInlineTextBoxes() {
     return;
   }
 
-  for (const auto& child : children_) {
+  for (const auto& child : ChildrenIncludingIgnored()) {
     child->LoadInlineTextBoxes();
   }
 }
@@ -3034,8 +3034,9 @@ void AXNodeObject::AddInlineTextBoxChildren(bool force) {
 
   Settings* settings = document->GetSettings();
   if (!force &&
-      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled()))
+      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled())) {
     return;
+  }
 
   if (!GetLayoutObject() || !GetLayoutObject()->IsText())
     return;

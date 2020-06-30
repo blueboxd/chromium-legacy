@@ -304,13 +304,11 @@ To<Longhand>(resolved_property).{{apply_call}};
     {% set is_visited = property.style_builder_template == 'visited_color' %}
     {% set main_getter = is_visited and property.unvisited_property.getter or property.getter %}
     {% call(property) apply_initial(property) %}
-  auto color = {{initial_color}}();
-  {{set_value(property)}}(color);
+  {{set_value(property)}}({{initial_color}}());
     {% endcall %}
 
     {% call(property) apply_inherit(property) %}
-  auto color = state.ParentStyle()->{{main_getter}}();
-  {{set_value(property)}}(color);
+  {{set_value(property)}}(state.ParentStyle()->{{main_getter}}());
     {% endcall %}
 
     {% call(property) apply_value(property) %}

@@ -13,18 +13,20 @@
 namespace local_search_service {
 
 TEST(LocalSearchMojomTraitsTest, ContentTraits) {
-  Content input("id", base::UTF8ToUTF16("content"));
+  Content input("id", base::UTF8ToUTF16("content"), 0.3);
   Content output;
 
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::Content>(&input, &output));
   EXPECT_EQ(input.id, output.id);
   EXPECT_EQ(input.content, output.content);
+  EXPECT_EQ(input.weight, output.weight);
 }
 
 TEST(LocalSearchMojomTraitsTest, DataTraits) {
-  std::vector<Content> contents{Content("id1", base::UTF8ToUTF16("contents1")),
-                                Content("id2", base::UTF8ToUTF16("contents2"))};
+  std::vector<Content> contents{
+      Content("id1", base::UTF8ToUTF16("contents1"), 0.1),
+      Content("id2", base::UTF8ToUTF16("contents2"), 0.2)};
   Data input("id", contents);
   Data output;
 
@@ -33,21 +35,21 @@ TEST(LocalSearchMojomTraitsTest, DataTraits) {
   EXPECT_EQ(input.id, output.id);
   EXPECT_EQ(input.contents[0].id, output.contents[0].id);
   EXPECT_EQ(input.contents[0].content, output.contents[0].content);
+  EXPECT_EQ(input.contents[0].weight, output.contents[0].weight);
   EXPECT_EQ(input.contents[1].id, output.contents[1].id);
   EXPECT_EQ(input.contents[1].content, output.contents[1].content);
+  EXPECT_EQ(input.contents[1].weight, output.contents[1].weight);
 }
 
 TEST(LocalSearchMojomTraitsTest, SearchParamsTraits) {
-  SearchParams input{0.1, 0.2, true, false};
+  SearchParams input{0.1, 0.2, 0.3};
   SearchParams output;
 
   ASSERT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SearchParams>(
       &input, &output));
   EXPECT_EQ(input.relevance_threshold, output.relevance_threshold);
-  EXPECT_EQ(input.partial_match_penalty_rate,
-            output.partial_match_penalty_rate);
-  EXPECT_EQ(input.use_prefix_only, output.use_prefix_only);
-  EXPECT_EQ(input.use_edit_distance, output.use_edit_distance);
+  EXPECT_EQ(input.prefix_threshold, output.prefix_threshold);
+  EXPECT_EQ(input.fuzzy_threshold, output.fuzzy_threshold);
 }
 
 TEST(LocalSearchMojomTraitsTest, PositionTraits) {

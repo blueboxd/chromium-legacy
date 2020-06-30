@@ -215,9 +215,6 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const String& value));
   MOCK_METHOD1(TrackOnRenegotiationNeeded,
                void(RTCPeerConnectionHandler* pc_handler));
-  MOCK_METHOD2(TrackCreateDTMFSender,
-               void(RTCPeerConnectionHandler* pc_handler,
-                    const blink::WebMediaStreamTrack& track));
 };
 
 class DummyRTCVoidRequest final : public RTCVoidRequest {

@@ -9,6 +9,8 @@
 
 #include <map>
 
+enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
+
 enum NTPTabOpeningPostOpeningAction {
   // No action should be done
   NO_ACTION = 0,
@@ -42,6 +44,8 @@ class GURL;
 
 // Boolean to track if the app should launch in incognito mode.
 @property(nonatomic, readwrite, assign) BOOL launchInIncognito;
+// The mode in which the tab must be opened.
+@property(nonatomic, readonly) ApplicationModeForTabOpening applicationMode;
 // Action to be taken after opening the initial NTP.
 @property(nonatomic, readwrite, assign)
     NTPTabOpeningPostOpeningAction postOpeningAction;

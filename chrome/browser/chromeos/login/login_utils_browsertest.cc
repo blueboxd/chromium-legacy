@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsTest, RlzInitialized) {
     UserSessionInitializer::Get()->set_init_rlz_impl_closure_for_testing(
         loop.QuitClosure());
 
-    login_manager_.LoginAsNewReguarUser();
+    login_manager_.LoginAsNewRegularUser();
     login_manager_.WaitForActiveSession();
 
     loop.Run();

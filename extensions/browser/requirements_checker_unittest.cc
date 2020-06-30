@@ -139,7 +139,7 @@ TEST_F(RequirementsCheckerTest, RequirementsFailMultiple) {
 
 // Tests a requirement that might fail asynchronously.
 TEST_F(RequirementsCheckerTest, RequirementsFailWebGL) {
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
   RequireFeature(kFeatureWebGL);
   CreateExtension();
   StartChecker();

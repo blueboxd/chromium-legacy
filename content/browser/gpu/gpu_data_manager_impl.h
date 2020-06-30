@@ -51,7 +51,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   static bool Initialized();
 
   // GpuDataManager implementation.
-  void BlacklistWebGLForTesting() override;
+  void BlocklistWebGLForTesting() override;
   gpu::GPUInfo GetGPUInfo() override;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) override;
   bool GpuAccessAllowed(std::string* reason) override;

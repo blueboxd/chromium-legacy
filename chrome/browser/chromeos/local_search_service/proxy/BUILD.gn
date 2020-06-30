@@ -43,6 +43,10 @@ mojom("mojom") {
           mojom = "local_search_service.mojom.ResponseStatus"
           cpp = "::local_search_service::ResponseStatus"
         },
+        {
+          mojom = "local_search_service.mojom.Backend"
+          cpp = "::local_search_service::Backend"
+        },
       ]
       traits_headers = [ "//chrome/browser/chromeos/local_search_service/proxy/types_mojom_traits.h" ]
       traits_sources = [ "//chrome/browser/chromeos/local_search_service/proxy/types_mojom_traits.cc" ]

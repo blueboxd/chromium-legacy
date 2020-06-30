@@ -5853,6 +5853,7 @@ grit("resources") {
   }
   if (is_chromeos) {
     deps += [
+      "//chrome/browser/resources/chromeos/account_manager/components:web_components",
       "//chrome/browser/resources/chromeos/crostini_installer:polymer3_elements",
       "//chrome/browser/resources/chromeos/crostini_upgrader:polymer3_elements",
       "//chrome/browser/resources/chromeos/edu_login:polymer3_elements",

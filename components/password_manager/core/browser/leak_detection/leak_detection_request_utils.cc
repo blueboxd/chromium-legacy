@@ -137,13 +137,14 @@ void PrepareSingleLeakRequestData(const std::string& username,
 }
 
 void PrepareSingleLeakRequestData(
-    base::TaskRunner* task_runner,
+    base::CancelableTaskTracker& task_tracker,
+    base::TaskRunner& task_runner,
     const std::string& encryption_key,
     const std::string& username,
     const std::string& password,
     base::OnceCallback<void(LookupSingleLeakPayload)> callback) {
-  base::PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
+  task_tracker.PostTaskAndReplyWithResult(
+      &task_runner, FROM_HERE,
       base::BindOnce(&PrepareLookupSingleLeakDataWithKey, encryption_key,
                      username, password),
       std::move(callback));

@@ -583,11 +583,11 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_Loaded,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Unloaded,
                      std::string)
 
-// Updates the scripting whitelist for extensions in the render process. This is
+// Updates the scripting allowlist for extensions in the render process. This is
 // only used for testing.
-IPC_MESSAGE_CONTROL1(ExtensionMsg_SetScriptingWhitelist,
+IPC_MESSAGE_CONTROL1(ExtensionMsg_SetScriptingAllowlist,
                      // extension ids
-                     extensions::ExtensionsClient::ScriptingWhitelist)
+                     extensions::ExtensionsClient::ScriptingAllowlist)
 
 // Notification that renderer should run some JavaScript code.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,

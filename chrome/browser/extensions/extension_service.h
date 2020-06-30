@@ -414,8 +414,8 @@ class ExtensionService : public ExtensionServiceInterface,
   void AddProviderForTesting(
       std::unique_ptr<ExternalProviderInterface> test_provider);
 
-  // Simulate an extension being blacklisted for tests.
-  void BlacklistExtensionForTest(const std::string& extension_id);
+  // Simulate an extension being blocklisted for tests.
+  void BlocklistExtensionForTest(const std::string& extension_id);
 
 #if defined(UNIT_TEST)
   void FinishInstallationForTest(const Extension* extension) {

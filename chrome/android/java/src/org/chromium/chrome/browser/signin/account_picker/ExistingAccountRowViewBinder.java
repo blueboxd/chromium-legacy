@@ -42,22 +42,7 @@ class ExistingAccountRowViewBinder {
                     -> model.get(ExistingAccountRowProperties.ON_CLICK_LISTENER)
                                .onResult(profileData));
         } else if (propertyKey == ExistingAccountRowProperties.PROFILE_DATA) {
-            ImageView accountImage = view.findViewById(R.id.account_image);
-            accountImage.setImageDrawable(profileData.getImage());
-
-            TextView accountTextPrimary = view.findViewById(R.id.account_text_primary);
-            TextView accountTextSecondary = view.findViewById(R.id.account_text_secondary);
-
-            String fullName = profileData.getFullName();
-            if (!TextUtils.isEmpty(fullName)) {
-                accountTextPrimary.setText(fullName);
-                accountTextSecondary.setText(profileData.getAccountName());
-                accountTextSecondary.setVisibility(View.VISIBLE);
-            } else {
-                // Full name is not available, show the email in the primary TextView.
-                accountTextPrimary.setText(profileData.getAccountName());
-                accountTextSecondary.setVisibility(View.GONE);
-            }
+            bindAccountView(profileData, view);
         } else if (propertyKey == ExistingAccountRowProperties.IS_SELECTED_ACCOUNT) {
             ImageView selectionMark = view.findViewById(R.id.account_selection_mark);
             selectionMark.setVisibility(model.get(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT)
@@ -66,6 +51,31 @@ class ExistingAccountRowViewBinder {
         } else {
             throw new IllegalArgumentException(
                     "Cannot update the view for propertyKey: " + propertyKey);
+        }
+    }
+
+    /**
+     * Binds the view with the given profile data.
+     *
+     * @param profileData profile data needs to bind.
+     * @param view A view object inflated from @layout/account_picker_row.
+     */
+    static void bindAccountView(DisplayableProfileData profileData, View view) {
+        ImageView accountImage = view.findViewById(R.id.account_image);
+        accountImage.setImageDrawable(profileData.getImage());
+
+        TextView accountTextPrimary = view.findViewById(R.id.account_text_primary);
+        TextView accountTextSecondary = view.findViewById(R.id.account_text_secondary);
+
+        String fullName = profileData.getFullName();
+        if (!TextUtils.isEmpty(fullName)) {
+            accountTextPrimary.setText(fullName);
+            accountTextSecondary.setText(profileData.getAccountName());
+            accountTextSecondary.setVisibility(View.VISIBLE);
+        } else {
+            // Full name is not available, show the email in the primary TextView.
+            accountTextPrimary.setText(profileData.getAccountName());
+            accountTextSecondary.setVisibility(View.GONE);
         }
     }
 }

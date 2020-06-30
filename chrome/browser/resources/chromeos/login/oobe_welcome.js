@@ -95,7 +95,6 @@ Polymer({
       resetAllowed: true,
       enableDebuggingAllowed: true,
       enterDemoModeAllowed: true,
-      noAnimatedTransition: true,
       postponeEnrollmentAllowed: true,
     });
     this.updateLocalizedContent();
@@ -434,8 +433,11 @@ Polymer({
   onA11yOptionChanged_(event) {
     var a11ytarget = /** @type {{chromeMessage: string, checked: boolean}} */ (
         event.currentTarget);
-    chrome.send(
-        'WelcomeScreen.' + a11ytarget.chromeMessage, [a11ytarget.checked]);
+    if (a11ytarget.checked) {
+      this.userActed(a11ytarget.id + '-enable');
+    } else {
+      this.userActed(a11ytarget.id + '-disable');
+    }
   },
 
   /** ******************** Timezone section ******************* */

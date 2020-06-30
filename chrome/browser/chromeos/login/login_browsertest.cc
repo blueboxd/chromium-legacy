@@ -168,12 +168,7 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-#if defined(OS_LINUX) && defined(MEMORY_SANITIZER)
-#define MAYBE_GaiaAuthOffline DISABLED_GaiaAuthOffline
-#else
-#define MAYBE_GaiaAuthOffline GaiaAuthOffline
-#endif
-IN_PROC_BROWSER_TEST_F(LoginOfflineTest, MAYBE_GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginOfflineTest, GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
   offline_gaia_test_mixin_.InitOfflineLogin(test_account_id_,
                                             LoginManagerTest::kPassword);

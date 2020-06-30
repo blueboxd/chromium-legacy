@@ -32,7 +32,7 @@ class CecPrivateKioskApiTest : public ShellApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestAppId);
+        extensions::switches::kAllowlistedExtensionID, kTestAppId);
     ShellApiTest::SetUpCommandLine(command_line);
   }
 

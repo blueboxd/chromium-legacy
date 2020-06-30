@@ -2052,7 +2052,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        RemoveCompromisedCredentialsByTimeOnly) {
   RemovePasswordsTester tester(GetProfile());
-  base::Callback<bool(const GURL&)> empty_filter;
+  base::RepeatingCallback<bool(const GURL&)> empty_filter;
 
   EXPECT_CALL(*tester.store(), RemoveCompromisedCredentialsByUrlAndTimeImpl(
                                    ProbablySameFilter(empty_filter),

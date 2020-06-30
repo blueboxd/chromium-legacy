@@ -44,6 +44,11 @@ enum IconEffects : uint32_t {
   kCrOsStandardMask = 0x80,  // Apply the mask to the standard icon.
 };
 
+// Encode the ImageSkia to the compressed PNG data with the image's 1.0f scale
+// factor representation. Return the encoded PNG data.
+// This function should not be called on the UI thread.
+std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image);
+
 // Modifies |image_skia| to apply icon post-processing effects like badging and
 // desaturation to gray.
 void ApplyIconEffects(IconEffects icon_effects,

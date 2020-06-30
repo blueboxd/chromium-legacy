@@ -281,6 +281,11 @@ void ChromeCleanerControllerImpl::SetStateForTesting(State state) {
     idle_reason_ = IdleReason::kInitial;
 }
 
+void ChromeCleanerControllerImpl::SetIdleForTesting(IdleReason idle_reason) {
+  state_ = State::kIdle;
+  idle_reason_ = idle_reason;
+}
+
 // static
 void ChromeCleanerControllerImpl::ResetInstanceForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

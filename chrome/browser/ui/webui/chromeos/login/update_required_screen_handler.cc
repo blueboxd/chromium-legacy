@@ -57,7 +57,7 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
   builder->Add(
       "updateOverCellularPromptTitle",
       ui::SubstituteChromeOSDeviceType(IDS_UPDATE_OVER_CELLULAR_PROMPT_TITLE));
-  builder->Add("updateOverCellularPromptMessage",
+  builder->Add("updateOverMeteredNetworkMessage",
                IDS_UPDATE_REQUIRED_SCREEN_METERED_MESSAGE);
   builder->Add("AcceptUpdateOverCellularButton",
                IDS_UPDATE_REQUIRED_SCREEN_ALLOW_METERED);

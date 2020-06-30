@@ -239,7 +239,8 @@ public class PasswordSettings
         if (mSearchQuery == null) {
             createSavePasswordsSwitch();
             createAutoSignInCheckbox();
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)) {
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)
+                    && PasswordUIView.hasAccountForLeakCheckRequest()) {
                 createCheckPasswords();
             }
         }

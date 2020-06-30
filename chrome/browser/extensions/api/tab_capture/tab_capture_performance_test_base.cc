@@ -82,7 +82,7 @@ void TabCapturePerformanceTestBase::SetUpCommandLine(
   // won't (which means use the default hardware-accelerated compositor).
   command_line->AppendSwitch(switches::kUseGpuInTests);
 
-  command_line->AppendSwitchASCII(extensions::switches::kWhitelistedExtensionID,
+  command_line->AppendSwitchASCII(extensions::switches::kAllowlistedExtensionID,
                                   kExtensionId);
 
   InProcessBrowserTest::SetUpCommandLine(command_line);

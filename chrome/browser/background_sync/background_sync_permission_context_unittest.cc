@@ -50,10 +50,10 @@ class BackgroundSyncPermissionContextTest
     run_loop.Run();
   }
 
-  void TrackPermissionDecision(base::Closure done_closure,
+  void TrackPermissionDecision(base::RepeatingClosure done_closure,
                                ContentSetting content_setting) {
     permission_granted_ = content_setting == CONTENT_SETTING_ALLOW;
-    done_closure.Run();
+    std::move(done_closure).Run();
   }
 
   bool permission_granted() const { return permission_granted_; }

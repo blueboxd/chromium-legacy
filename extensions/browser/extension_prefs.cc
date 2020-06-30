@@ -1999,8 +1999,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kInstallSignature);
   registry->RegisterListPref(kExternalUninstalls);
 
-  registry->RegisterListPref(pref_names::kNativeMessagingBlacklist);
-  registry->RegisterListPref(pref_names::kNativeMessagingWhitelist);
+  registry->RegisterListPref(pref_names::kNativeMessagingBlocklist);
+  registry->RegisterListPref(pref_names::kNativeMessagingAllowlist);
   registry->RegisterBooleanPref(pref_names::kNativeMessagingUserLevelHosts,
                                 true);
   registry->RegisterIntegerPref(kCorruptedDisableCount, 0);

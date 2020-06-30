@@ -47,9 +47,9 @@ class TabCaptureApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
   }
 
-  void AddExtensionToCommandLineWhitelist() {
+  void AddExtensionToCommandLineAllowlist() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, kExtensionId);
+        switches::kAllowlistedExtensionID, kExtensionId);
   }
 
  protected:
@@ -158,7 +158,7 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 #endif
 // Tests API behaviors, including info queries, and constraints violations.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
 // Tests that there is a maximum limitation to the number of simultaneous
 // off-screen tabs.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_MaxOffscreenTabs) {
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "max_offscreen_tabs.html"))
       << message_;
 }
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest,
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
   }
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   // Note: The range of acceptable colors is quite large because there's no way
   // to know whether software compositing is being used for screen capture; and,
   // if software compositing is being used, there is no color space management
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, DISABLED_EndToEndThroughWebRTC) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
   }
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   // See note in EndToEndWithoutRemoting test about why |colorDeviation| is
   // being set so high.
   ASSERT_TRUE(RunExtensionSubtest(
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
   }
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_end_to_end.html"))
       << message_;
   // Verify that offscreen profile has been destroyed.
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, MAYBE_OffscreenTabEvilTests) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
   }
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "offscreen_evil_tests.html"))
       << message_;
   // Verify that offscreen profile has been destroyed.
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ActiveTabPermission) {
 
   // Add extension to whitelist and make sure capture succeeds.
   EXPECT_TRUE(before_whitelist_extension.WaitUntilSatisfied());
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   before_whitelist_extension.Reply("");
 
   ResultCatcher catcher;
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ActiveTabPermission) {
 // fullscreen mode, using the Fullscreen Javascript API, in response to mouse
 // clicks.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, FullscreenEvents) {
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
 
   ExtensionTestMessageListener capture_started("tab_capture_started", false);
   ExtensionTestMessageListener entered_fullscreen("entered_fullscreen", false);
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_GrantForChromePages) {
 
 // Tests that a tab in incognito mode can be captured.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, CaptureInSplitIncognitoMode) {
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html",
                                   kFlagEnableIncognito, kFlagUseIncognito))
       << message_;
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, CaptureInSplitIncognitoMode) {
 // Tests that valid constraints allow tab capture to start, while invalid ones
 // do not.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, Constraints) {
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
       << message_;
 }
@@ -429,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, TabIndicator) {
 
   // Run an extension test that just turns on tab capture, which should cause
   // the indicator to turn on.
-  AddExtensionToCommandLineWhitelist();
+  AddExtensionToCommandLineAllowlist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html"))
       << message_;
 

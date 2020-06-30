@@ -22,6 +22,27 @@ using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
 using State = password_manager::BulkLeakCheckServiceInterface::State;
 
+// Key used to attach UserData to a LeakCheckCredential.
+constexpr char kPasswordCheckDataKey[] = "password-check-manager-data-key";
+
+// Class which ensures that IOSChromePasswordCheckManager will stay alive
+// until password check is completed even if class what initially created
+// IOSChromePasswordCheckManager was destroyed.
+class IOSChromePasswordCheckManagerHolder : public LeakCheckCredential::Data {
+ public:
+  explicit IOSChromePasswordCheckManagerHolder(
+      scoped_refptr<IOSChromePasswordCheckManager> manager)
+      : manager_(std::move(manager)) {}
+  ~IOSChromePasswordCheckManagerHolder() override = default;
+
+  std::unique_ptr<Data> Clone() override {
+    return std::make_unique<IOSChromePasswordCheckManagerHolder>(manager_);
+  }
+
+ private:
+  scoped_refptr<IOSChromePasswordCheckManager> manager_;
+};
+
 PasswordCheckState ConvertBulkCheckState(State state) {
   switch (state) {
     case State::kIdle:
@@ -73,7 +94,10 @@ IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
 IOSChromePasswordCheckManager::~IOSChromePasswordCheckManager() = default;
 
 void IOSChromePasswordCheckManager::StartPasswordCheck() {
-  bulk_leak_check_service_adapter_.StartBulkLeakCheck();
+  IOSChromePasswordCheckManagerHolder data(
+      scoped_refptr<IOSChromePasswordCheckManager>(this));
+  bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
+                                                      &data);
   is_check_running_ = true;
 }
 

@@ -275,6 +275,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
       if (settings) {
         if (mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
           settings->SetInlineTextBoxAccessibilityEnabled(true);
+          tree_source_.GetRoot().UpdateLayoutAndCheckValidity();
           tree_source_.GetRoot().LoadInlineTextBoxes();
         } else {
           settings->SetInlineTextBoxAccessibilityEnabled(false);

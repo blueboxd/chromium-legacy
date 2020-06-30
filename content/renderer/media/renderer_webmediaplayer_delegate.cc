@@ -99,8 +99,7 @@ void RendererWebMediaPlayerDelegate::DidPlay(
   }
 
   Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      routing_id(), player_id, has_video, has_audio, false,
-      media_content_type));
+      routing_id(), player_id, has_video, has_audio, media_content_type));
 
   ScheduleUpdateTask();
 }

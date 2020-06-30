@@ -41,6 +41,13 @@ class AndroidEnterpriseInfo {
   // Use from the UI thread.
   void GetAndroidEnterpriseInfoState(EnterpriseInfoCallback callback);
 
+  void set_skip_jni_call_for_testing(bool value) {
+    skip_jni_call_for_testing_ = value;
+  }
+  void ServiceCallbacksForTesting(bool profile_owned, bool device_owned) {
+    ServiceCallbacks(profile_owned, device_owned);
+  }
+
  private:
   friend base::NoDestructor<AndroidEnterpriseInfo>;
   friend AndroidEnterpriseInfoFriendHelper;
@@ -52,6 +59,8 @@ class AndroidEnterpriseInfo {
   void ServiceCallbacks(bool profile_owned, bool device_owned);
 
   std::queue<EnterpriseInfoCallback> callback_queue_;
+
+  bool skip_jni_call_for_testing_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(AndroidEnterpriseInfo);

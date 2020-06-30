@@ -13656,11 +13656,23 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="CrostiniFailureClasses">
-  <int value="0" label="Concierge stopped"/>
-  <int value="1" label="Cicerone stopped"/>
-  <int value="2" label="Seneschal stopped"/>
-  <int value="3" label="Chunneld stopped"/>
-  <int value="4" label="VM hypervisor stopped"/>
+  <int value="0" label="Concierge"/>
+  <int value="1" label="Cicerone"/>
+  <int value="2" label="Seneschal"/>
+  <int value="3" label="Chunneld"/>
+  <int value="4" label="VM hypervisor"/>
+  <int value="5" label="In-VM syslog daemon"/>
+  <int value="6" label="VM ssh daemon"/>
+  <int value="7" label="LXCFS daemon"/>
+  <int value="8" label="Tremplin"/>
+  <int value="9" label="Ndproxyd"/>
+  <int value="10" label="Mcastd"/>
+  <int value="11" label="Lxd"/>
+  <int value="12" label="Garcon"/>
+  <int value="13" label="Sommelier wayland proxy"/>
+  <int value="14" label="Sommelier X11 proxy"/>
+  <int value="15" label="Cros-Sftp"/>
+  <int value="16" label="Cros-Notificationd"/>
 </enum>
 
 <enum name="CrostiniImportContainerResult">
@@ -39072,6 +39084,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LocalRendererSinkStates">
   <int value="0" label="SinkStarted"/>
   <int value="1" label="SinkNeverStarted"/>
+</enum>
+
+<enum name="LocalSearchServiceBackend">
+  <int value="0" label="LinearMap"/>
+  <int value="1" label="InvertedIndex"/>
 </enum>
 
 <enum name="LocalSearchServiceResponseStatus">
@@ -73410,6 +73427,23 @@ Called by update_scheduler_enums.py.-->
 <enum name="WebViewVisibility">
   <int value="0" label="Visible"/>
   <int value="1" label="NotVisible"/>
+</enum>
+
+<enum name="WelcomeScreenA11yUserAction">
+  <int value="0" label="Enable spoken feedback"/>
+  <int value="1" label="Disable spoken feedback"/>
+  <int value="2" label="Enable large cursor"/>
+  <int value="3" label="Disable large cursor"/>
+  <int value="4" label="Enable high contrast"/>
+  <int value="5" label="Disable high contrast"/>
+  <int value="6" label="Enable screen magnifier"/>
+  <int value="7" label="Disable screen magnifier"/>
+  <int value="8" label="Enable select to speak option"/>
+  <int value="9" label="Disable select to speak option"/>
+  <int value="10" label="Enable docked magnifier"/>
+  <int value="11" label="Disable docked magnifier"/>
+  <int value="12" label="Enable virtual keyboard"/>
+  <int value="13" label="Disable virtual keyboard"/>
 </enum>
 
 <enum name="WelcomeSignInPromptOutcome">

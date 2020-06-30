@@ -14,6 +14,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
@@ -48,6 +50,19 @@
 
 namespace {
 
+void CompleteWithCompressed(apps::mojom::Publisher::LoadIconCallback callback,
+                            std::vector<uint8_t> data) {
+  if (data.empty()) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+    return;
+  }
+  apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
+  iv->icon_type = apps::mojom::IconType::kCompressed;
+  iv->compressed = std::move(data);
+  iv->is_placeholder_icon = false;
+  std::move(callback).Run(std::move(iv));
+}
+
 void OnArcAppIconCompletelyLoaded(
     apps::mojom::IconType icon_type,
     int32_t size_hint_in_dip,
@@ -64,23 +79,26 @@ void OnArcAppIconCompletelyLoaded(
   iv->is_placeholder_icon = false;
 
   switch (icon_type) {
-    case apps::mojom::IconType::kCompressed: {
-      auto& compressed_images = icon->compressed_images();
-      auto iter =
-          compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
-      if (iter == compressed_images.end()) {
-        std::move(callback).Run(apps::mojom::IconValue::New());
-        return;
+    case apps::mojom::IconType::kCompressed:
+      if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+        auto& compressed_images = icon->compressed_images();
+        auto iter =
+            compressed_images.find(apps_util::GetPrimaryDisplayUIScaleFactor());
+        if (iter == compressed_images.end()) {
+          std::move(callback).Run(apps::mojom::IconValue::New());
+          return;
+        }
+        const std::string& data = iter->second;
+        iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
+        if (icon_effects != apps::IconEffects::kNone) {
+          // TODO(crbug.com/988321): decompress the image, apply icon effects
+          // then re-compress.
+        }
+        break;
       }
-      const std::string& data = iter->second;
-      iv->compressed = std::vector<uint8_t>(data.begin(), data.end());
-      if (icon_effects != apps::IconEffects::kNone) {
-        // TODO(crbug.com/988321): decompress the image, apply icon effects then
-        // re-compress.
-      }
-      break;
-    }
+      FALLTHROUGH;
     case apps::mojom::IconType::kUncompressed:
+      FALLTHROUGH;
     case apps::mojom::IconType::kStandard: {
       if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
         iv->uncompressed = gfx::ImageSkiaOperations::CreateSuperimposedImage(
@@ -99,6 +117,15 @@ void OnArcAppIconCompletelyLoaded(
       break;
   }
 
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      icon_type == apps::mojom::IconType::kCompressed) {
+    iv->uncompressed.MakeThreadSafe();
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed),
+        base::BindOnce(&CompleteWithCompressed, std::move(callback)));
+    return;
+  }
   std::move(callback).Run(std::move(iv));
 }
 

@@ -117,7 +117,9 @@ absl_source_set("compare") {
 # absl_source_set("variant_test") {
 #   testonly = true
 #   sources = [ "variant_test.cc" ]
-#   cflags_cc = [ "-Wno-unused-function" ]
+#   if (is_clang) {
+#     cflags_cc = [ "-Wno-unused-function" ]
+#   }
 #   deps = [
 #     ":variant",
 #     "//third_party/abseil-cpp/absl/base:config",

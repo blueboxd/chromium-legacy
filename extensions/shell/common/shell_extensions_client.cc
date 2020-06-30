@@ -94,15 +94,15 @@ void ShellExtensionsClient::FilterHostPermissions(
   NOTIMPLEMENTED();
 }
 
-void ShellExtensionsClient::SetScriptingWhitelist(
-    const ScriptingWhitelist& whitelist) {
-  scripting_whitelist_ = whitelist;
+void ShellExtensionsClient::SetScriptingAllowlist(
+    const ScriptingAllowlist& allowlist) {
+  scripting_allowlist_ = allowlist;
 }
 
-const ExtensionsClient::ScriptingWhitelist&
-ShellExtensionsClient::GetScriptingWhitelist() const {
-  // TODO(jamescook): Real whitelist.
-  return scripting_whitelist_;
+const ExtensionsClient::ScriptingAllowlist&
+ShellExtensionsClient::GetScriptingAllowlist() const {
+  // TODO(jamescook): Real allowlist.
+  return scripting_allowlist_;
 }
 
 URLPatternSet ShellExtensionsClient::GetPermittedChromeSchemeHosts(

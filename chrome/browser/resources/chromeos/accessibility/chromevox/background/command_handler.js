@@ -1023,7 +1023,7 @@ CommandHandler.onCommand = function(command) {
       }
       let word = '';
       for (let z = 0; z < wordStarts.length; ++z) {
-        if (wordStarts[z] <= index && wordEnds[z] >= index) {
+        if (wordStarts[z] <= index && wordEnds[z] > index) {
           word = text.substring(wordStarts[z], wordEnds[z]);
           break;
         }

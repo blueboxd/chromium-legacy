@@ -37,6 +37,8 @@ android_resources("java_resources") {
 
 static_library("android") {
   sources = [
+    "confirm_infobar.cc",
+    "confirm_infobar.h",
     "infobar_android.cc",
     "infobar_android.h",
   ]
@@ -45,11 +47,13 @@ static_library("android") {
     ":jni_headers",
     "//base",
     "//components/infobars/core",
+    "//ui/gfx",
   ]
 }
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/infobars/ConfirmInfoBar.java",
     "java/src/org/chromium/components/infobars/InfoBar.java",
     "java/src/org/chromium/components/infobars/InfoBarCompactLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarControlLayout.java",
@@ -84,7 +88,10 @@ android_library("infobar_android_enums_java") {
 }
 
 generate_jni("jni_headers") {
-  sources = [ "java/src/org/chromium/components/infobars/InfoBar.java" ]
+  sources = [
+    "java/src/org/chromium/components/infobars/ConfirmInfoBar.java",
+    "java/src/org/chromium/components/infobars/InfoBar.java",
+  ]
 }
 
 android_library("javatests") {

@@ -178,7 +178,7 @@ ChromeOS uses PaintedOverlayScrollbarLayer, which is a nine-patch bitmap version
 ### HeadsUpDisplayLayer
 
 This layer supports [devtools rendering settings](https://developer.chrome.com/devtools/docs/rendering-settings).
-It draws an FPS meter, as well as overlays for paint invalidation or damage.
+It draws an Frame Rendering Stats, as well as overlays for paint invalidation or damage.
 This layer is special because it must be updated last because its inputs depend on all of the other layers’ damage calculations.
 
 ### UIResourceLayer / NinePatchLayer

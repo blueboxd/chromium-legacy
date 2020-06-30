@@ -12,22 +12,6 @@
 namespace blink {
 namespace test {
 
-class AccessibilityLayoutTest : public testing::WithParamInterface<bool>,
-                                private ScopedLayoutNGForTest,
-                                public AccessibilityTest {
- public:
-  AccessibilityLayoutTest() : ScopedLayoutNGForTest(GetParam()) {}
-
- protected:
-  bool LayoutNGEnabled() const {
-    return RuntimeEnabledFeatures::LayoutNGEnabled();
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(AccessibilityTest,
-                         AccessibilityLayoutTest,
-                         testing::Bool());
-
 TEST_F(AccessibilityTest, IsDescendantOf) {
   SetBodyInnerHTML(R"HTML(<button id="button">button</button>)HTML");
 
@@ -390,7 +374,7 @@ TEST_F(AccessibilityTest, AxNodeObjectContainsInPageLinkTarget) {
   EXPECT_EQ(anchor->Url(), KURL("http://test.com/#target"));
 }
 
-TEST_P(AccessibilityLayoutTest, NextOnLine) {
+TEST_P(ParameterizedAccessibilityTest, NextOnLine) {
   SetBodyInnerHTML(R"HTML(
     <style>
     html {

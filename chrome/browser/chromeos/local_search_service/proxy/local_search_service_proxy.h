@@ -29,6 +29,7 @@ class LocalSearchServiceProxy : public mojom::LocalSearchServiceProxy,
   // mojom::LocalSearchServiceProxy:
   void GetIndex(
       IndexId index_id,
+      Backend backend,
       mojo::PendingReceiver<mojom::IndexProxy> index_receiver) override;
 
   void BindReceiver(

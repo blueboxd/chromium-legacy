@@ -121,7 +121,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
                       int delegate_id,
                       bool has_video,
                       bool has_audio,
-                      bool is_remote,
                       media::MediaContentType media_content_type);
   void OnMediaEffectivelyFullscreenChanged(
       RenderFrameHost* render_frame_host,

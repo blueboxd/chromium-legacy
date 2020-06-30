@@ -212,7 +212,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestingExtensionId);
+        extensions::switches::kAllowlistedExtensionID, kTestingExtensionId);
   }
 
   // Sets up fake Drive service for tests (this has to be injected before the

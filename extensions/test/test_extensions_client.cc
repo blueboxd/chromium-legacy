@@ -67,14 +67,14 @@ void TestExtensionsClient::FilterHostPermissions(
     PermissionIDSet* permissions) const {
 }
 
-void TestExtensionsClient::SetScriptingWhitelist(
-    const ExtensionsClient::ScriptingWhitelist& whitelist) {
-  scripting_whitelist_ = whitelist;
+void TestExtensionsClient::SetScriptingAllowlist(
+    const ExtensionsClient::ScriptingAllowlist& allowlist) {
+  scripting_allowlist_ = allowlist;
 }
 
-const ExtensionsClient::ScriptingWhitelist&
-TestExtensionsClient::GetScriptingWhitelist() const {
-  return scripting_whitelist_;
+const ExtensionsClient::ScriptingAllowlist&
+TestExtensionsClient::GetScriptingAllowlist() const {
+  return scripting_allowlist_;
 }
 
 URLPatternSet TestExtensionsClient::GetPermittedChromeSchemeHosts(

@@ -53,7 +53,7 @@ class GpuDataManager {
   CONTENT_EXPORT static bool Initialized();
 
   // This is only called by extensions testing.
-  virtual void BlacklistWebGLForTesting() = 0;
+  virtual void BlocklistWebGLForTesting() = 0;
 
   virtual gpu::GPUInfo GetGPUInfo() = 0;
 

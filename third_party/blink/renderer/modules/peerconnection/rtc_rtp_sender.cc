@@ -429,14 +429,14 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
                                            "The peer connection is closed."));
     return promise;
   }
-  WebMediaStreamTrack web_track;
+  MediaStreamComponent* component = nullptr;
   if (with_track) {
     pc_->RegisterTrack(with_track);
-    web_track = with_track->Component();
+    component = with_track->Component();
   }
   ReplaceTrackRequest* request =
       MakeGarbageCollected<ReplaceTrackRequest>(this, with_track, resolver);
-  sender_->ReplaceTrack(web_track, request);
+  sender_->ReplaceTrack(component, request);
   return promise;
 }
 

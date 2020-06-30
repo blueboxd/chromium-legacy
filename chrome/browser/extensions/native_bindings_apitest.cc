@@ -38,11 +38,10 @@ class NativeBindingsApiTest : public ExtensionApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    // We whitelist the extension so that it can use the cast.streaming.* APIs,
+    // We allowlist the extension so that it can use the cast.streaming.* APIs,
     // which are the only APIs that are prefixed twice.
-    command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID,
-        "ddchlicdkolnonkihahngkmmmjnjlkkf");
+    command_line->AppendSwitchASCII(switches::kAllowlistedExtensionID,
+                                    "ddchlicdkolnonkihahngkmmmjnjlkkf");
   }
 
   void SetUpOnMainThread() override {

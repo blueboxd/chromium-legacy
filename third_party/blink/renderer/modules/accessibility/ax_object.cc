@@ -2613,7 +2613,7 @@ bool AXObject::ContainerLiveRegionBusy() const {
 
 AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   // Check if there are any mock elements that need to be handled.
-  for (const auto& child : children_) {
+  for (const auto& child : ChildrenIncludingIgnored()) {
     if (child->IsMockObject() &&
         child->GetBoundsInFrameCoordinates().Contains(point))
       return child->ElementAccessibilityHitTest(point);

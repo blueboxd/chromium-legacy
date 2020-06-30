@@ -57,7 +57,7 @@ void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
 
 // Helper functions for 'installation_mode' manipulation -----------------------
 
-void ExtensionManagementPrefUpdaterBase::SetBlacklistedByDefault(bool value) {
+void ExtensionManagementPrefUpdaterBase::SetBlocklistedByDefault(bool value) {
   pref_->SetString(make_path(schema::kWildcard, schema::kInstallationMode),
                    value ? schema::kBlocked : schema::kAllowed);
 }

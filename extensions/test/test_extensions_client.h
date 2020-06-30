@@ -36,8 +36,8 @@ class TestExtensionsClient : public ExtensionsClient {
   void FilterHostPermissions(const URLPatternSet& hosts,
                              URLPatternSet* new_hosts,
                              PermissionIDSet* permissions) const override;
-  void SetScriptingWhitelist(const ScriptingWhitelist& whitelist) override;
-  const ScriptingWhitelist& GetScriptingWhitelist() const override;
+  void SetScriptingAllowlist(const ScriptingAllowlist& allowlist) override;
+  const ScriptingAllowlist& GetScriptingAllowlist() const override;
   URLPatternSet GetPermittedChromeSchemeHosts(
       const Extension* extension,
       const APIPermissionSet& api_permissions) const override;
@@ -48,11 +48,11 @@ class TestExtensionsClient : public ExtensionsClient {
   std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension) override;
 
-  // A whitelist of extensions that can script anywhere. Do not add to this
+  // A allowlist of extensions that can script anywhere. Do not add to this
   // list (except in tests) without consulting the Extensions team first.
   // Note: Component extensions have this right implicitly and do not need to be
   // added to this list.
-  ScriptingWhitelist scripting_whitelist_;
+  ScriptingAllowlist scripting_allowlist_;
 
   std::set<BrowserImagePathsFilter*> browser_image_filters_;
 

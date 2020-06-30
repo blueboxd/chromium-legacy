@@ -284,12 +284,29 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
   return ModelTypeSet(PASSWORDS, WIFI_CONFIGURATIONS);
 }
 
-// This is the subset of UserTypes() that have priority over other types.  These
-// types are synced before other user types.
+// This is the subset of UserTypes() that have priority over other types. These
+// types are synced before other user types (both for get_updates and commits).
+// This mostly matters during initial sync, since priority types can become
+// active before all the data for non-prio types has been downloaded (which may
+// be a lot of data).
 constexpr ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
-                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE, THEMES);
+  return ModelTypeSet(
+      // The "Send to Your Devices" feature needs fast updating of the list of
+      // your devices and also fast sending of the actual messages.
+      DEVICE_INFO, SHARING_MESSAGE,
+      // For supervised users, it is important to quickly deliver changes in
+      // settings and in allowed sites to the supervised user.
+      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+      // These are by definition preferences for which it is important that the
+      // client picks them up quickly (also because these can get changed
+      // server-side). For example, such a pref could control whether a
+      // non-priority type gets enabled (Wallet has such a pref).
+      PRIORITY_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      // Speed matters for the user experience when sync gets enabled directly
+      // in the creation flow for a new profile. If the user has no theme in
+      // their sync data, the browser offers a theme customization bubble which
+      // should appear soon after opening the browser.
+      THEMES);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real

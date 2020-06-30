@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -98,6 +99,9 @@ class WelcomeScreenBrowserTest : public OobeBaseTest {
   void WaitForScreenExit() {
     OobeScreenExitWaiter(WelcomeView::kScreenId).Wait();
   }
+
+  base::HistogramTester histogram_tester_;
+
  private:
   std::unique_ptr<base::ScopedPathOverride> path_override_;
   base::ScopedTempDir data_dir_;
@@ -243,9 +247,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   ToggleAccessibilityFeature("accessibility-spoken-feedback", true);
   ASSERT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableSpokenFeedback, 1);
 
   ToggleAccessibilityFeature("accessibility-spoken-feedback", false);
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableSpokenFeedback, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -257,9 +269,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(AccessibilityManager::Get()->IsLargeCursorEnabled());
   ToggleAccessibilityFeature("accessibility-large-cursor", true);
   ASSERT_TRUE(AccessibilityManager::Get()->IsLargeCursorEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableLargeCursor, 1);
 
   ToggleAccessibilityFeature("accessibility-large-cursor", false);
   ASSERT_FALSE(AccessibilityManager::Get()->IsLargeCursorEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableLargeCursor, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -271,9 +291,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(AccessibilityManager::Get()->IsHighContrastEnabled());
   ToggleAccessibilityFeature("accessibility-high-contrast", true);
   ASSERT_TRUE(AccessibilityManager::Get()->IsHighContrastEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableHighContrast, 1);
 
   ToggleAccessibilityFeature("accessibility-high-contrast", false);
   ASSERT_FALSE(AccessibilityManager::Get()->IsHighContrastEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableHighContrast, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -285,9 +313,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
   ToggleAccessibilityFeature("accessibility-select-to-speak", true);
   ASSERT_TRUE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableSelectToSpeak, 1);
 
   ToggleAccessibilityFeature("accessibility-select-to-speak", false);
   ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableSelectToSpeak, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -299,9 +335,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
   ToggleAccessibilityFeature("accessibility-screen-magnifier", true);
   ASSERT_TRUE(MagnificationManager::Get()->IsMagnifierEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableScreenMagnifier, 1);
 
   ToggleAccessibilityFeature("accessibility-screen-magnifier", false);
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableScreenMagnifier, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
@@ -313,9 +357,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
   ToggleAccessibilityFeature("accessibility-docked-magnifier", true);
   ASSERT_TRUE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableDockedMagnifier, 1);
 
   ToggleAccessibilityFeature("accessibility-docked-magnifier", false);
   ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableDockedMagnifier, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
@@ -347,9 +399,17 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yVirtualKeyboard) {
   ASSERT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
   ToggleAccessibilityFeature("accessibility-virtual-keyboard", true);
   ASSERT_TRUE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kEnableVirtualKeyboard, 1);
 
   ToggleAccessibilityFeature("accessibility-virtual-keyboard", false);
   ASSERT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+  histogram_tester_.ExpectBucketCount(
+      "OOBE.WelcomeScreen.A11yUserActions",
+      WelcomeScreen::A11yUserAction::kDisableVirtualKeyboard, 1);
+
+  histogram_tester_.ExpectTotalCount("OOBE.WelcomeScreen.A11yUserActions", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenSystemDevModeBrowserTest,

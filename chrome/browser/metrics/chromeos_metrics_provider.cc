@@ -33,6 +33,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features_parser.h"
@@ -211,6 +213,16 @@ void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
                         is_spoken_feedback_enabled);
 }
 
+void ChromeOSMetricsProvider::ProvideSuggestedContentMetrics() {
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kSuggestedContentToggle)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Apps.AppList.SuggestedContent.Enabled",
+        ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+            chromeos::prefs::kSuggestedContentEnabled));
+  }
+}
+
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   metrics::SystemProfileProto::Stability* stability_proto =
@@ -247,6 +259,7 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
 void ChromeOSMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ProvideAccessibilityMetrics();
+  ProvideSuggestedContentMetrics();
   ProvideStabilityMetrics(uma_proto->mutable_system_profile());
   std::vector<SampledProfile> sampled_profiles;
   if (profile_provider_->GetSampledProfiles(&sampled_profiles)) {

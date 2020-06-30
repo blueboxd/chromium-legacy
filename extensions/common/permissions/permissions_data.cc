@@ -98,10 +98,10 @@ bool PermissionsData::CanExecuteScriptEverywhere(
   if (location == Manifest::COMPONENT)
     return true;
 
-  const ExtensionsClient::ScriptingWhitelist& whitelist =
-      ExtensionsClient::Get()->GetScriptingWhitelist();
+  const ExtensionsClient::ScriptingAllowlist& allowlist =
+      ExtensionsClient::Get()->GetScriptingAllowlist();
 
-  return base::Contains(whitelist, extension_id);
+  return base::Contains(allowlist, extension_id);
 }
 
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,

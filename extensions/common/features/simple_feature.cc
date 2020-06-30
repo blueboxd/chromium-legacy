@@ -34,7 +34,7 @@ struct AllowlistInfo {
   AllowlistInfo()
       : hashed_id(HashedIdInHex(
             base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kWhitelistedExtensionID))) {}
+                switches::kAllowlistedExtensionID))) {}
   std::string hashed_id;
 };
 // A singleton copy of the --whitelisted-extension-id so that we don't need to

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task_runner.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 
@@ -63,10 +64,11 @@ void PrepareSingleLeakRequestData(const std::string& username,
                                   SingleLeakRequestDataCallback callback);
 
 // Asynchronously creates a data payload for a credential check with the given
-// encryption key. The task is posted to |task_runner|.
+// encryption key. The task is posted to |task_runner| via |task_tracker|.
 // Callback is invoked on the calling thread with the protobuf.
 void PrepareSingleLeakRequestData(
-    base::TaskRunner* task_runner,
+    base::CancelableTaskTracker& task_tracker,
+    base::TaskRunner& task_runner,
     const std::string& encryption_key,
     const std::string& username,
     const std::string& password,

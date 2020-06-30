@@ -58,8 +58,8 @@ class ModuleWatcherTest : public testing::Test {
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   std::unique_ptr<ModuleWatcher> Create() {
-    return ModuleWatcher::Create(
-        base::Bind(&ModuleWatcherTest::OnModuleEvent, base::Unretained(this)));
+    return ModuleWatcher::Create(base::BindRepeating(
+        &ModuleWatcherTest::OnModuleEvent, base::Unretained(this)));
   }
 
   base::test::TaskEnvironment task_environment_;

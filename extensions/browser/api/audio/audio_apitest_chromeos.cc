@@ -280,7 +280,7 @@ class WhitelistedAudioApiTest : public AudioApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         "jlgnoeceollaejlkenecblnjmdcfhfgc");
   }
 };

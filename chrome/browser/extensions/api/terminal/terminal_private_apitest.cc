@@ -11,7 +11,7 @@ class ExtensionTerminalPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         "kidcpjlbjdmcnmccjhjdckhbngnhnepk");
   }
 };

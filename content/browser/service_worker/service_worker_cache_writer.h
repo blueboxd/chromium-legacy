@@ -265,10 +265,10 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // If observer is set, the argument |response_info| or |data| is first sent
   // to observer then WriteResponseHeadToResponseWriter() or
   // WriteDataToResponseWriter() is called.
-  int WriteResponseHead(const network::mojom::URLResponseHead& response_head);
+  int WriteResponseHead(network::mojom::URLResponseHeadPtr response_head);
   int WriteData(scoped_refptr<net::IOBuffer> data, int length);
   int WriteResponseHeadToResponseWriter(
-      const network::mojom::URLResponseHead& response_head);
+      network::mojom::URLResponseHeadPtr response_head);
   int WriteDataToResponseWriter(scoped_refptr<net::IOBuffer> data, int length);
 
   // Called when |write_observer_| finishes its WillWriteData() operation.
@@ -310,6 +310,10 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // full block of network data is compared, to avoid having to use only
   // fragments of the buffered network data.
   size_t bytes_compared_;
+
+  // The total size of the body for copying. Used only when IsCopying() returns
+  // true.
+  size_t bytes_to_copy_ = 0;
 
   // Count of bytes copied from |copy_reader_| to |writer_|.
   size_t bytes_copied_;

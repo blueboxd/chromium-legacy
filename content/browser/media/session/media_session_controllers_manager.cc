@@ -43,7 +43,6 @@ void MediaSessionControllersManager::RenderFrameDeleted(
 bool MediaSessionControllersManager::RequestPlay(
     const MediaPlayerId& id,
     bool has_audio,
-    bool is_remote,
     media::MediaContentType media_content_type,
     bool has_video) {
   if (!IsMediaSessionEnabled())
@@ -69,8 +68,8 @@ bool MediaSessionControllersManager::RequestPlay(
   // controller. A later playback attempt will create a new controller.
   auto it = controllers_map_.find(id);
   if (it != controllers_map_.end()) {
-    if (it->second->Initialize(has_audio, is_remote, media_content_type,
-                               position, is_pip_available, has_video)) {
+    if (it->second->Initialize(has_audio, media_content_type, position,
+                               is_pip_available, has_video)) {
       return true;
     }
 
@@ -80,8 +79,8 @@ bool MediaSessionControllersManager::RequestPlay(
   std::unique_ptr<MediaSessionController> controller(
       new MediaSessionController(id, media_web_contents_observer_));
 
-  if (!controller->Initialize(has_audio, is_remote, media_content_type,
-                              position, is_pip_available, has_video)) {
+  if (!controller->Initialize(has_audio, media_content_type, position,
+                              is_pip_available, has_video)) {
     return false;
   }
 

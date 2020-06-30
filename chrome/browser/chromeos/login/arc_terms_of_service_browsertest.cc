@@ -212,7 +212,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
 
   void LoginAsRegularUser() {
     SetUpExitCallback();
-    login_manager_mixin_.LoginAsNewReguarUser();
+    login_manager_mixin_.LoginAsNewRegularUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   }
 

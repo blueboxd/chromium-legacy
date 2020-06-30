@@ -17,8 +17,8 @@ class ChromeDisplaySourceApiTest :
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
-          "hajchajepegmmcdjhpfnhmblfhigkcmj");
+        extensions::switches::kAllowlistedExtensionID,
+        "hajchajepegmmcdjhpfnhmblfhigkcmj");
     command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
   }
 

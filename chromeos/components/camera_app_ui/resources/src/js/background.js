@@ -10,6 +10,7 @@ import {browserProxy} from './browser_proxy/browser_proxy.js';
 // eslint-disable-next-line no-unused-vars
 import {TestingErrorCallback} from './error.js';
 import {Intent} from './intent.js';
+import {initMetrics, setMetricsEnabled} from './metrics.js';
 import {PerfEvent, PerfLogger} from './perf.js';
 
 /**
@@ -156,8 +157,14 @@ class CCAWindow {
 
   /**
    * Creates app window and launches app.
+   * @return {!Promise}
    */
-  launch() {
+  async launch() {
+    // Disables the metrics sending if it is testing window.
+    if (this.testingCallbacks_ !== null) {
+      await setMetricsEnabled(false);
+    }
+
     this.state_ = WindowState.LAUNCHING;
 
     // The height will be later calculated to match video aspect ratio once the
@@ -319,6 +326,10 @@ class Background {
      * @type {?Intent}
      */
     this.pendingIntent_ = null;
+
+    // By default, we enable the metrics sending on background page and will
+    // turn it off when launching testing windows.
+    initMetrics();
   }
 
   /**

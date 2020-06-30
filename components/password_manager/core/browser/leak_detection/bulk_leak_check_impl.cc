@@ -96,7 +96,7 @@ void BulkLeakCheckImpl::CheckCredentials(
     const LeakCheckCredential& credential =
         waiting_encryption_.back()->credential;
     PrepareSingleLeakRequestData(
-        payload_task_runner_.get(), encryption_key_,
+        task_tracker_, *payload_task_runner_, encryption_key_,
         base::UTF16ToUTF8(credential.username()),
         base::UTF16ToUTF8(credential.password()),
         base::BindOnce(&BulkLeakCheckImpl::OnPayloadReady,

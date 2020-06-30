@@ -57,6 +57,7 @@ KioskTest.*
 KioskUpdateTest.*
 KioskVirtualKeyboardTest.*
 LoginCursorTest.*
+LoginOfflineTest.*
 LoginPolicyTestBase.*
 MarketingOptInScreenTest.*
 MarketingOptInScreenTestDisabled.*

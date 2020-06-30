@@ -230,8 +230,8 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnSetSessionInfo(version_info::Channel channel,
                         FeatureSessionType session_type,
                         bool lock_screen_context);
-  void OnSetScriptingWhitelist(
-      const ExtensionsClient::ScriptingWhitelist& extension_ids);
+  void OnSetScriptingAllowlist(
+      const ExtensionsClient::ScriptingAllowlist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,
                        const std::string& font_size);
   void OnSetWebViewPartitionID(const std::string& partition_id);

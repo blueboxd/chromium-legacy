@@ -157,12 +157,14 @@ export class CameraIntent extends Camera {
         }
       })();
       const result = this.photoResult_ || this.videoResult_;
-      metrics.log(
-          metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
-          result.resolution,
-          confirmed ? metrics.IntentResultType.CONFIRMED :
-                      metrics.IntentResultType.CANCELED,
-          this.shutterType_);
+      metrics.log(metrics.Type.CAPTURE, {
+        facing: this.facingMode_,
+        duration: result.duration || undefined,
+        resolution: result.resolution,
+        intentResult: confirmed ? metrics.IntentResultType.CONFIRMED :
+                                  metrics.IntentResultType.CANCELED,
+        shutterType: this.shutterType_
+      });
       if (confirmed) {
         await this.intent_.finish();
         window.close();

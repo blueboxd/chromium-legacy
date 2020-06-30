@@ -141,7 +141,7 @@ class RecommendAppsScreenTest : public OobeBaseTest {
   }
 
   void ShowRecommendAppsScreen() {
-    login_manager_.LoginAsNewReguarUser();
+    login_manager_.LoginAsNewRegularUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     LoginDisplayHost::default_host()->StartWizard(
         RecommendAppsScreenView::kScreenId);

@@ -3604,6 +3604,11 @@ test("unit_tests") {
     sources += [ "../common/media/cdm_manifest_unittest.cc" ]
   }
 
+  if (is_android) {
+    sources +=
+        [ "../browser/enterprise/util/android_enterprise_info_unittest.cc" ]
+  }
+
   if (!is_android) {
     sources += [
       "../browser/browsing_data/access_context_audit_database_unittest.cc",

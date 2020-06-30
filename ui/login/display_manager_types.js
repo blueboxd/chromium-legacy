@@ -11,7 +11,6 @@
  * @typedef {{
  *   enableDebuggingAllowed: (boolean|undefined),
  *   enterDemoModeAllowed: (boolean|undefined),
- *   noAnimatedTransition: (boolean|undefined),
  *   postponeEnrollmentAllowed: (boolean|undefined),
  *   resetAllowed: (boolean|undefined),
  *   startEnrollmentAllowed: (boolean|undefined),
@@ -32,12 +31,6 @@ DisplayManagerScreenAttributes.enableDebuggingAllowed;
  * @type {boolean|undefined}
  */
 DisplayManagerScreenAttributes.enterDemoModeAllowed;
-
-/**
- * True if screen does not use left-current-right animation.
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.noAnimatedTransition;
 
 /**
  * True if enrollment accelerator should schedule postponed enrollment.

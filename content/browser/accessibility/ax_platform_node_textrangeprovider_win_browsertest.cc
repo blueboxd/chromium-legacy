@@ -2237,30 +2237,30 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        EntireMarkupSuccessiveMoveByWord) {
-  AssertMoveByUnitForMarkup(TextUnit_Word, "this is a test.",
-                            {L"this ", L"is ", L"a ", L"test."});
+  AssertMoveByUnitForMarkup(TextUnit_Word, "This is a test.",
+                            {L"This ", L"is ", L"a ", L"test", L"."});
 
   AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "    this    is      a      test.    ",
-                            {L"this ", L"is ", L"a ", L"test."});
+                            "    This    is      a      test.    ",
+                            {L"This ", L"is ", L"a ", L"test", L"."});
 
   AssertMoveByUnitForMarkup(
       TextUnit_Word, "It said: to be continued...",
-      {L"It ", L"said: ", L"to ", L"be ", L"continued..."});
+      {L"It ", L"said", L": ", L"to ", L"be ", L"continued", L"..."});
 
   AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "a <a>link with multiple words</a> and text after.",
-                            {L"a ", L"link ", L"with ", L"multiple ", L"words",
-                             L"and ", L"text ", L"after."});
+                            "A <a>link with multiple words</a> and text after.",
+                            {L"A ", L"link ", L"with ", L"multiple ", L"words",
+                             L"and ", L"text ", L"after", L"."});
 
   AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "a <span aria-hidden='true'>span with ignored "
+                            "A <span aria-hidden='true'>span with ignored "
                             "text</span> and text after.",
-                            {L"a ", L"and ", L"text ", L"after."});
+                            {L"A ", L"and ", L"text ", L"after", L"."});
 
   AssertMoveByUnitForMarkup(
       TextUnit_Word, "<ol><li>item one</li><li>item two</li></ol>",
-      {L"1. ", L"item ", L"one", L"2. ", L"item ", L"two"});
+      {L"1", L". ", L"item ", L"one", L"2", L". ", L"item ", L"two"});
 
   // The following test should be enabled when crbug.com/1028830 is fixed.
   // AssertMoveByUnitForMarkup(TextUnit_Word,

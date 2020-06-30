@@ -33,7 +33,7 @@ class LocalSearchServiceProxyTest : public testing::Test {
 
 TEST_F(LocalSearchServiceProxyTest, GetIndex) {
   mojo::Remote<mojom::IndexProxy> index_remote;
-  service_remote_->GetIndex(IndexId::kCrosSettings,
+  service_remote_->GetIndex(IndexId::kCrosSettings, Backend::kLinearMap,
                             index_remote.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();
 

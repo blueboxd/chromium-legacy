@@ -779,8 +779,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ActiveTabFileUrls) {
   EXPECT_FALSE(info->file_access.is_active);
 }
 
-// Tests that blacklisted extensions are returned by the ExtensionInfoGenerator.
-TEST_F(ExtensionInfoGeneratorUnitTest, Blacklisted) {
+// Tests that blocklisted extensions are returned by the ExtensionInfoGenerator.
+TEST_F(ExtensionInfoGeneratorUnitTest, Blocklisted) {
   const scoped_refptr<const Extension> extension1 = CreateExtension(
       "test1", std::make_unique<base::ListValue>(), Manifest::INTERNAL);
   const scoped_refptr<const Extension> extension2 = CreateExtension(
@@ -799,7 +799,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, Blacklisted) {
   EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info1->state);
   EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info2->state);
 
-  service()->BlacklistExtensionForTest(id1);
+  service()->BlocklistExtensionForTest(id1);
 
   info_list = GenerateExtensionsInfo();
   info1 = GetInfoFromList(info_list, id1);

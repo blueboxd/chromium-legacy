@@ -48,7 +48,7 @@ class MetricKitSubscriberTest : public PlatformTest {
 };
 
 // Tests that Metrickit reports are correctly saved in the document directory.
-TEST_F(MetricKitSubscriberTest, SaveReport) {
+TEST_F(MetricKitSubscriberTest, SaveMetricsReport) {
   if (@available(iOS 13, *)) {
     id mock_report = OCMClassMock([MXMetricPayload class]);
     NSDate* date = [NSDate date];
@@ -58,8 +58,8 @@ TEST_F(MetricKitSubscriberTest, SaveReport) {
     NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
     [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
-    NSString* file_name =
-        [NSString stringWithFormat:@"%@.json", [formatter stringFromDate:date]];
+    NSString* file_name = [NSString
+        stringWithFormat:@"Metrics-%@.json", [formatter stringFromDate:date]];
 
     base::FilePath file_path =
         MetricKitReportDirectory().Append(base::SysNSStringToUTF8(file_name));
@@ -78,3 +78,37 @@ TEST_F(MetricKitSubscriberTest, SaveReport) {
     EXPECT_EQ(content, file_data);
   }
 }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+TEST_F(MetricKitSubscriberTest, SaveDiagnosticReport) {
+  if (@available(iOS 14, *)) {
+    id mock_report = OCMClassMock([MXDiagnosticPayload class]);
+    NSDate* date = [NSDate date];
+    std::string file_data("report content");
+    NSData* data = [NSData dataWithBytes:file_data.c_str()
+                                  length:file_data.size()];
+    NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+    [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
+    NSString* file_name =
+        [NSString stringWithFormat:@"Diagnostic-%@.json",
+                                   [formatter stringFromDate:date]];
+
+    base::FilePath file_path =
+        MetricKitReportDirectory().Append(base::SysNSStringToUTF8(file_name));
+    OCMStub([mock_report timeStampEnd]).andReturn(date);
+    OCMStub([mock_report JSONRepresentation]).andReturn(data);
+    NSArray* array = @[ mock_report ];
+    [[MetricKitSubscriber sharedInstance] didReceiveDiagnosticPayloads:array];
+
+    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+        base::test::ios::kWaitForFileOperationTimeout, ^bool() {
+          base::RunLoop().RunUntilIdle();
+          return base::PathExists(file_path);
+        }));
+    std::string content;
+    base::ReadFileToString(file_path, &content);
+    EXPECT_EQ(content, file_data);
+  }
+}
+#endif

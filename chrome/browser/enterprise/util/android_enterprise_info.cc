@@ -25,6 +25,9 @@ void AndroidEnterpriseInfo::GetAndroidEnterpriseInfoState(
   if (callback_queue_.size() > 1)
     return;
 
+  if (skip_jni_call_for_testing_)
+    return;
+
   Java_EnterpriseInfo_getManagedStateForNative(
       base::android::AttachCurrentThread());
 }

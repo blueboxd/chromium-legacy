@@ -71,7 +71,7 @@ class CrashReportPrivateApiTest : public ShellApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
+        extensions::switches::kAllowlistedExtensionID, kTestExtensionId);
     ShellApiTest::SetUpCommandLine(command_line);
   }
 

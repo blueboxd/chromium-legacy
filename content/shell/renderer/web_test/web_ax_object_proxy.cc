@@ -584,7 +584,7 @@ void GetBoundariesForOneWord(const blink::WebAXObject& object,
 
     // Look for a character within any word other than the last.
     for (size_t j = 0; j < word_count - 1; j++) {
-      if (local_index <= ends[j]) {
+      if (local_index < ends[j]) {
         word_start = start + starts[j];
         word_end = start + ends[j];
         return;

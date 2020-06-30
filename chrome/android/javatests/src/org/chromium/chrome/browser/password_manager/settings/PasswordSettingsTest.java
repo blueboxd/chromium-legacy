@@ -721,19 +721,38 @@ public class PasswordSettingsTest {
     }
 
     /**
-     * Check that the check passwords preference is shown when the corresponding feature is enabled.
+     * Check that the check passwords preference is shown when the corresponding feature is enabled
+     * and the user is signed in.
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
-    public void testCheckPasswordsEnabled() {
+    public void testCheckPasswordsEnabledSignedIn() {
+        mBrowserTestRule.addAndSignInTestAccount();
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PasswordSettings passwordPrefs = mSettingsActivityTestRule.getFragment();
             Assert.assertNotNull(
                     passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS));
+        });
+    }
+
+    /**
+     * Check that the check passwords preference is not shown when the corresponding feature is
+     * enabled but the user is not signed in.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PASSWORD_CHECK)
+    public void testCheckPasswordsEnabledNotSignedIn() {
+        final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PasswordSettings passwordPrefs = mSettingsActivityTestRule.getFragment();
+            Assert.assertNull(passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS));
         });
     }
 
@@ -746,6 +765,7 @@ public class PasswordSettingsTest {
     @Feature({"Preferences"})
     @DisableFeatures(ChromeFeatureList.PASSWORD_CHECK)
     public void testCheckPasswordsDisabled() {
+        mBrowserTestRule.addAndSignInTestAccount();
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {

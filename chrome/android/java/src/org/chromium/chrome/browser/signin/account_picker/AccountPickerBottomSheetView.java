@@ -7,33 +7,103 @@ package org.chromium.chrome.browser.signin.account_picker;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.ui.widget.ButtonCompat;
 
 /**
  * This class is the AccountPickerBottomsheet view for the web sign-in flow.
+ *
+ * The bottom sheet shows a single account with a |Continue as ...| button by default, clicking
+ * on the account will expand the bottom sheet to an account list together with other sign-in
+ * options like "Add account" and "Go incognito mode".
  */
 class AccountPickerBottomSheetView implements BottomSheetContent {
     private final Context mContext;
     private final View mContentView;
-    private final RecyclerView mAccountPickerItemView;
+    private final RecyclerView mAccountListView;
+    private final View mSelectedAccountView;
+    private final ButtonCompat mContinueAsButton;
 
     AccountPickerBottomSheetView(Context context) {
         mContext = context;
         mContentView = LayoutInflater.from(mContext).inflate(
                 R.layout.account_picker_bottom_sheet_view, null);
-        mAccountPickerItemView = mContentView.findViewById(R.id.account_picker_item);
-        mAccountPickerItemView.setLayoutManager(new LinearLayoutManager(
-                mAccountPickerItemView.getContext(), LinearLayoutManager.VERTICAL, false));
+        mAccountListView = mContentView.findViewById(R.id.account_picker_account_list);
+        mAccountListView.setLayoutManager(new LinearLayoutManager(
+                mAccountListView.getContext(), LinearLayoutManager.VERTICAL, false));
+        mSelectedAccountView = mContentView.findViewById(R.id.account_picker_selected_account);
+        mContinueAsButton = mContentView.findViewById(R.id.account_picker_continue_as_button);
     }
 
-    RecyclerView getAccountPickerItemView() {
-        return mAccountPickerItemView;
+    /**
+     * The account list view is visible when the account list is expanded.
+     */
+    RecyclerView getAccountListView() {
+        return mAccountListView;
+    }
+
+    /**
+     * The selected account is visible when the account list is collapsed.
+     */
+    View getSelectedAccountView() {
+        return mSelectedAccountView;
+    }
+
+    /**
+     * The |Continue As| button on the bottom sheet.
+     */
+    ButtonCompat getContinueAsButton() {
+        return mContinueAsButton;
+    }
+
+    /**
+     * Expands the account list.
+     */
+    void expandAccountList() {
+        mSelectedAccountView.setVisibility(View.GONE);
+        mContinueAsButton.setVisibility(View.GONE);
+        mAccountListView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Collapses the account list.
+     * If there is a non null selected account, the account list will collapse to that account,
+     * otherwise, the account list will just collapse the remaining.
+     *
+     * @param isSelectedAccountNonNull Flag indicates if the selected profile data exists
+     *                                 in model.
+     */
+    void collapseAccountList(boolean isSelectedAccountNonNull) {
+        mAccountListView.setVisibility(View.GONE);
+        mSelectedAccountView.setVisibility(isSelectedAccountNonNull ? View.VISIBLE : View.GONE);
+        mContinueAsButton.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Updates the view of the collapsed account list.
+     */
+    void updateCollapsedAccountList(DisplayableProfileData accountProfileData) {
+        if (accountProfileData == null) {
+            mContinueAsButton.setText(R.string.signin_add_account);
+        } else {
+            ExistingAccountRowViewBinder.bindAccountView(accountProfileData, mSelectedAccountView);
+
+            ImageView rowEndImage = mSelectedAccountView.findViewById(R.id.account_selection_mark);
+            rowEndImage.setImageResource(R.drawable.ic_expand_more_black_24dp);
+            rowEndImage.setColorFilter(R.color.default_icon_color);
+
+            String continueAsButtonText = mContext.getString(R.string.signin_promo_continue_as,
+                    accountProfileData.getGivenNameOrFullNameOrEmail());
+            mContinueAsButton.setText(continueAsButtonText);
+        }
     }
 
     @Override
@@ -49,7 +119,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
 
     @Override
     public int getVerticalScrollOffset() {
-        return mAccountPickerItemView.computeVerticalScrollOffset();
+        return mAccountListView.computeVerticalScrollOffset();
     }
 
     @Override

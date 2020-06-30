@@ -3012,23 +3012,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 }
 
 // This test makes sure loading <webview> does not crash when there is an
-// extension which has content script whitelisted/forced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
-  // Whitelist the extension for running content script we are going to load.
-  extensions::ExtensionsClient::ScriptingWhitelist whitelist;
+// extension which has content script allowlisted/forced.
+IN_PROC_BROWSER_TEST_F(WebViewTest, AllowlistedContentScript) {
+  // Allowlist the extension for running content script we are going to load.
+  extensions::ExtensionsClient::ScriptingAllowlist allowlist;
   const std::string extension_id = "imeongpbjoodlnmlakaldhlcmijmhpbb";
-  whitelist.push_back(extension_id);
-  extensions::ExtensionsClient::Get()->SetScriptingWhitelist(whitelist);
+  allowlist.push_back(extension_id);
+  extensions::ExtensionsClient::Get()->SetScriptingAllowlist(allowlist);
 
   // Load the extension.
-  const extensions::Extension* content_script_whitelisted_extension =
+  const extensions::Extension* content_script_allowlisted_extension =
       LoadExtension(test_data_dir_.AppendASCII(
-                        "platform_apps/web_view/extension_api/content_script"));
-  ASSERT_TRUE(content_script_whitelisted_extension);
-  ASSERT_EQ(extension_id, content_script_whitelisted_extension->id());
+          "platform_apps/web_view/extension_api/content_script"));
+  ASSERT_TRUE(content_script_allowlisted_extension);
+  ASSERT_EQ(extension_id, content_script_allowlisted_extension->id());
 
   // Now load an app with <webview>.
-  LoadAndLaunchPlatformApp("web_view/content_script_whitelisted",
+  LoadAndLaunchPlatformApp("web_view/content_script_allowlisted",
                            "TEST_PASSED");
 }
 

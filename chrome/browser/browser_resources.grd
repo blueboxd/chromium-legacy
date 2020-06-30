@@ -226,7 +226,8 @@
         <include name="IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\edu_login\edu_login_signin.js" use_base_dir="false" type ="BINDATA" />
         <include name="IDR_FAMILY_LINK_LOGO_SVG" file="resources\chromeos\family_link_logo.svg" type="BINDATA" />
 
-        <!-- Chrome OS Account Manager welcome screen resources -->
+        <!-- Chrome OS Account Manager resources -->
+        <include name="IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\account_manager\components\error_screen.js" use_base_dir="false" type ="BINDATA"/>
         <include name="IDR_ACCOUNT_MANAGER_SHARED_CSS" file="resources\chromeos\account_manager\account_manager_shared.css" type="BINDATA" />
         <include name="IDR_ACCOUNT_MANAGER_WELCOME_HTML" file="resources\chromeos\account_manager\account_manager_welcome.html" allowexternalscript="true" type="BINDATA" preprocess="true"/>
         <include name="IDR_ACCOUNT_MANAGER_WELCOME_JS" file="resources\chromeos\account_manager\account_manager_welcome.js" type="BINDATA" />

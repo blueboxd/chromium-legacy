@@ -41,7 +41,7 @@ void HeadsUpDisplayLayer::UpdateLocationAndSize(
     bounds = device_viewport_in_layout_pixels;
   } else {
     // If the HUD is not displaying full-viewport rects (e.g., it is showing the
-    // FPS meter), use a fixed size.
+    // Frame Rendering Stats), use a fixed size.
     constexpr int kDefaultHUDSize = 256;
     bounds.SetSize(kDefaultHUDSize, kDefaultHUDSize);
   }

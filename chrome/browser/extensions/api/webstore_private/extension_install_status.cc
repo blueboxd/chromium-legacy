@@ -108,7 +108,7 @@ ExtensionInstallStatus GetWebstoreExtensionInstallStatus(
     return kTerminated;
 
   if (registry->blocklisted_extensions().Contains(extension_id))
-    return kBlacklisted;
+    return kBlocklisted;
 
   // If an installed extension is disabled due to policy, returns
   // kBlockedByPolicy, kCanRequest or kRequestPending instead of kDisabled.

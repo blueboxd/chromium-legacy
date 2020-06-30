@@ -2538,7 +2538,7 @@ const CSSValue* FloodColor::ParseSingleValue(
 const blink::Color FloodColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = style.FloodColor();
+  const StyleColor& result = style.FloodColor();
   if (!result.IsCurrentColor())
     return result.GetColor();
   return visited_link ? style.GetInternalVisitedCurrentColor()
@@ -3745,7 +3745,7 @@ const CSSValue* LightingColor::ParseSingleValue(
 const blink::Color LightingColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = style.LightingColor();
+  const StyleColor& result = style.LightingColor();
   if (!result.IsCurrentColor())
     return result.GetColor();
   return visited_link ? style.GetInternalVisitedCurrentColor()
@@ -5846,7 +5846,7 @@ const CSSValue* StopColor::ParseSingleValue(
 const blink::Color StopColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = style.StopColor();
+  const StyleColor& result = style.StopColor();
   if (!result.IsCurrentColor())
     return result.GetColor();
   return visited_link ? style.GetInternalVisitedCurrentColor()
@@ -7578,7 +7578,7 @@ const CSSValue* WebkitTapHighlightColor::ParseSingleValue(
 const blink::Color WebkitTapHighlightColor::ColorIncludingFallback(
     bool visited_link,
     const ComputedStyle& style) const {
-  StyleColor result = style.TapHighlightColor();
+  const StyleColor& result = style.TapHighlightColor();
   if (!result.IsCurrentColor())
     return result.GetColor();
   return visited_link ? style.GetInternalVisitedCurrentColor()

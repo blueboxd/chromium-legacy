@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
+#include "chrome/common/chrome_features.h"
 
 namespace apps {
 
@@ -73,10 +74,16 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
   switch (icon_type_) {
     case apps::mojom::IconType::kUnknown:
     case apps::mojom::IconType::kUncompressed:
-      icon_type = ArcAppIcon::IconType::kUncompressed;
+      icon_type =
+          base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
+              ? ArcAppIcon::IconType::kAdaptive
+              : ArcAppIcon::IconType::kUncompressed;
       break;
     case apps::mojom::IconType::kCompressed:
-      icon_type = ArcAppIcon::IconType::kCompressed;
+      icon_type =
+          base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)
+              ? ArcAppIcon::IconType::kAdaptive
+              : ArcAppIcon::IconType::kCompressed;
       break;
     case apps::mojom::IconType::kStandard:
       icon_type = ArcAppIcon::IconType::kAdaptive;

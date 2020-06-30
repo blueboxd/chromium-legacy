@@ -431,7 +431,7 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
     // Allow the test extension to be run on the login screen despite not being
     // conformant to the "signin_screen" behavior feature.
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         kNoImmediateUpdateExtensionId);
   }
 

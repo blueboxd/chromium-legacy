@@ -245,12 +245,12 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   const std::string& extension_id = extension()->id();
 
   // Make sure either we have been granted permission to capture through an
-  // extension icon click or our extension is whitelisted.
+  // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) != extension_id &&
+          switches::kAllowlistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInArray(extension_id, kMediaRouterExtensionIds,
                                   base::size(kMediaRouterExtensionIds))) {
     return RespondNow(Error(kGrantError));
@@ -306,12 +306,12 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   //
   // TODO(miu): Use _api_features.json and extensions::Feature library instead.
   // http://crbug.com/537732
-  const bool is_whitelisted_extension =
+  const bool is_allowlisted_extension =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) == extension()->id() ||
+          switches::kAllowlistedExtensionID) == extension()->id() ||
       SimpleFeature::IsIdInArray(extension()->id(), kMediaRouterExtensionIds,
                                  base::size(kMediaRouterExtensionIds));
-  if (!is_whitelisted_extension)
+  if (!is_allowlisted_extension)
     return RespondNow(Error(kNotWhitelistedForOffscreenTabApi));
 
   const GURL start_url(params->start_url);
@@ -324,11 +324,12 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
   content::WebContents* const extension_web_contents = GetSenderWebContents();
   EXTENSION_FUNCTION_VALIDATE(extension_web_contents);
   OffscreenTab* const offscreen_tab =
-      OffscreenTabsOwner::Get(extension_web_contents)->OpenNewTab(
-          start_url,
-          DetermineInitialSize(params->options),
-          (is_whitelisted_extension && params->options.presentation_id) ?
-              *params->options.presentation_id : std::string());
+      OffscreenTabsOwner::Get(extension_web_contents)
+          ->OpenNewTab(
+              start_url, DetermineInitialSize(params->options),
+              (is_allowlisted_extension && params->options.presentation_id)
+                  ? *params->options.presentation_id
+                  : std::string());
   if (!offscreen_tab)
     return RespondNow(Error(kTooManyOffscreenTabs));
 
@@ -432,12 +433,12 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
   const std::string& extension_id = extension()->id();
 
   // Make sure either we have been granted permission to capture through an
-  // extension icon click or our extension is whitelisted.
+  // extension icon click or our extension is allowlisted.
   if (!extension()->permissions_data()->HasAPIPermissionForTab(
           sessions::SessionTabHelper::IdForTab(target_contents).id(),
           APIPermission::kTabCaptureForTab) &&
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWhitelistedExtensionID) != extension_id) {
+          switches::kAllowlistedExtensionID) != extension_id) {
     return RespondNow(Error(kGrantError));
   }
 

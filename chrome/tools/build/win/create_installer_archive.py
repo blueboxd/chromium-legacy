@@ -94,7 +94,8 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file, verbose):
 
 
 def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
-                             enable_hidpi, include_snapshotblob, verbose):
+                             enable_hidpi, include_snapshotblob,
+                             component_build, component_ffmpeg_build, verbose):
   """Copies the files required for installer archive.
   Copies all common files required for various distributions of Chromium and
   also files for the specific Chromium build specified by distribution.
@@ -115,6 +116,10 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
 
   if include_snapshotblob == '1':
     CopySectionFilesToStagingDir(config, 'SNAPSHOTBLOB', staging_dir, build_dir,
+                                 verbose)
+
+  if component_build != '1' and component_ffmpeg_build == '1':
+    CopySectionFilesToStagingDir(config, 'FFMPEG', staging_dir, build_dir,
                                  verbose)
 
 # The 'SafeConfigParser' makes all strings lowercase - which works fine on
@@ -538,6 +543,8 @@ def main(options):
                            staging_dir, options.build_dir,
                            options.enable_hidpi,
                            options.include_snapshotblob,
+                           options.component_build,
+                           options.component_ffmpeg_build,
                            options.verbose)
 
   if options.component_build == '1':
@@ -603,6 +610,8 @@ def _ParseOptions():
       help='Whether to include the V8 snapshot blob.')
   parser.add_option('--component_build', default='0',
       help='Whether this archive is packaging a component build.')
+  parser.add_option('--component_ffmpeg_build', default='0',
+      help='Whether this archive is packaging with ffmpeg component build.')
   parser.add_option('--skip_archive_compression',
       action='store_true', default=False,
       help='This will turn off compression of chrome.7z into chrome.packed.7z '

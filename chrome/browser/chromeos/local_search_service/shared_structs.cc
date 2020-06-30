@@ -15,11 +15,13 @@
 
 namespace local_search_service {
 
-Content::Content(const std::string& id, const base::string16& content)
-    : id(id), content(content) {}
-Content::Content() = default;
-Content::Content(const Content& content) = default;
-Content::~Content() = default;
+local_search_service::Content::Content(const std::string& id,
+                                       const base::string16& content,
+                                       double weight)
+    : id(id), content(content), weight(weight) {}
+local_search_service::Content::Content() = default;
+local_search_service::Content::Content(const Content& content) = default;
+local_search_service::Content::~Content() = default;
 
 Data::Data(const std::string& id, const std::vector<Content>& contents)
     : id(id), contents(contents) {}

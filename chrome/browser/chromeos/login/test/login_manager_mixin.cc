@@ -183,7 +183,7 @@ void LoginManagerMixin::LoginWithDefaultContext(const TestUserInfo& user_info) {
       user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
 }
 
-void LoginManagerMixin::LoginAsNewReguarUser() {
+void LoginManagerMixin::LoginAsNewRegularUser() {
   ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
   const std::string email = "test_user" + std::string(kGmailDomain);
   const std::string gaia_id = "111111111";

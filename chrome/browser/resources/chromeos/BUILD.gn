@@ -39,6 +39,7 @@ group("closure_compile") {
     "accessibility/braille_ime:closure_compile",
     "accessibility/select_to_speak:closure_compile",
     "accessibility/switch_access:closure_compile",
+    "account_manager/components:closure_compile",
     "add_supervision:closure_compile",
     "bluetooth_pairing_dialog:closure_compile",
     "crostini_installer:closure_compile",

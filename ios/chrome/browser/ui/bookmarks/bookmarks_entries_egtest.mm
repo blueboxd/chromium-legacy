@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -206,6 +207,41 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   [BookmarkEarlGreyUI verifyContextMenuForSingleURLWithEditEnabled:YES];
+}
+
+// Tests display and selection of 'Open in New Window' in a context menu on a
+// bookmarks entry.
+- (void)testContextMenuOpenInNewWindow {
+  // TODO(crbug.com/1035764): EG1 Test fails on iOS 12.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
+  }
+
+  if (!IsMultiwindowSupported()) {
+    EARL_GREY_TEST_DISABLED(@"MultiWindow is not Supported.");
+  }
+
+  [BookmarkEarlGrey setupStandardBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  [ChromeEarlGrey waitForBrowserCount:1];
+
+  // Open a bookmark in a new window (through a long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          GetFirstUrl().GetContent())]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForBrowserCount:2];
+
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey waitForBrowserCount:1];
 }
 
 // Verify Edit Text functionality on single URL selection.

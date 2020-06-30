@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "components/infobars/android/confirm_infobar.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/ui/messages/android/jni_headers/ConfirmInfoBar_jni.h"
+#include "components/infobars/android/jni_headers/ConfirmInfoBar_jni.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -20,14 +20,13 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate,
                                const ResourceIdMapper& resource_id_mapper)
     : InfoBarAndroid(std::move(delegate), resource_id_mapper) {}
 
-ConfirmInfoBar::~ConfirmInfoBar() {
-}
+ConfirmInfoBar::~ConfirmInfoBar() {}
 
 base::string16 ConfirmInfoBar::GetTextFor(
     ConfirmInfoBarDelegate::InfoBarButton button) {
   ConfirmInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->GetButtons() & button) ?
-      delegate->GetButtonLabel(button) : base::string16();
+  return (delegate->GetButtons() & button) ? delegate->GetButtonLabel(button)
+                                           : base::string16();
 }
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
@@ -61,7 +60,7 @@ ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   if (!owner())
-      return; // We're closing; don't call anything, it might access the owner.
+    return;  // We're closing; don't call anything, it might access the owner.
 
   if (GetDelegate()->LinkClicked(WindowOpenDisposition::NEW_FOREGROUND_TAB))
     RemoveSelf();
@@ -69,12 +68,12 @@ void ConfirmInfoBar::OnLinkClicked(JNIEnv* env,
 
 void ConfirmInfoBar::ProcessButton(int action) {
   if (!owner())
-    return; // We're closing; don't call anything, it might access the owner.
+    return;  // We're closing; don't call anything, it might access the owner.
 
   DCHECK((action == InfoBarAndroid::ACTION_OK) ||
-      (action == InfoBarAndroid::ACTION_CANCEL));
+         (action == InfoBarAndroid::ACTION_CANCEL));
   ConfirmInfoBarDelegate* delegate = GetDelegate();
-  if ((action == InfoBarAndroid::ACTION_OK) ?
-      delegate->Accept() : delegate->Cancel())
+  if ((action == InfoBarAndroid::ACTION_OK) ? delegate->Accept()
+                                            : delegate->Cancel())
     RemoveSelf();
 }

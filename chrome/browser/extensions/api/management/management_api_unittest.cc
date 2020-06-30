@@ -477,13 +477,13 @@ TEST_F(ManagementApiUnitTest, ManagementProgrammaticUninstall) {
     extensions::ExtensionUninstallDialog::SetOnShownCallbackForTesting(nullptr);
   }
 }
-// Tests uninstalling a blacklisted extension via management.uninstall.
-TEST_F(ManagementApiUnitTest, ManagementUninstallBlacklisted) {
+// Tests uninstalling a blocklisted extension via management.uninstall.
+TEST_F(ManagementApiUnitTest, ManagementUninstallBlocklisted) {
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string id = extension->id();
 
-  service()->BlacklistExtensionForTest(id);
+  service()->BlocklistExtensionForTest(id);
   EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
 
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
@@ -496,12 +496,12 @@ TEST_F(ManagementApiUnitTest, ManagementUninstallBlacklisted) {
   EXPECT_EQ(nullptr, registry()->GetInstalledExtension(id));
 }
 
-TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlacklisted) {
+TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlocklisted) {
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string id = extension->id();
 
-  service()->BlacklistExtensionForTest(id);
+  service()->BlocklistExtensionForTest(id);
   EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
 
   scoped_refptr<ExtensionFunction> function;
@@ -555,7 +555,7 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
     EXPECT_FALSE(info->may_enable.get());
   }
 
-  // Simulate blacklisting the extension and verify that the extension shows as
+  // Simulate blocklisting the extension and verify that the extension shows as
   // disabled with a false value of |may_enable|.
   ManagementPolicy* policy =
       ExtensionSystem::Get(profile())->management_policy();
@@ -1328,7 +1328,7 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_UnsupportedRequirement) {
   ASSERT_EQ(0, supervised_user_delegate_->show_dialog_count());
 
   // No WebGL will be the unsupported requirement.
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   base::FilePath base_path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path = base_path.AppendASCII("v1_good.pem");

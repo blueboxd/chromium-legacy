@@ -12,7 +12,9 @@ absl_source_set("type_traits") {
 absl_source_set("type_traits_test") {
   testonly = true
   sources = [ "type_traits_test.cc" ]
-  cflags_cc = [ "-Wno-unused-private-field" ]
+  if (is_clang) {
+    cflags_cc = [ "-Wno-unused-private-field" ]
+  }
   deps = [
     ":type_traits",
     "//third_party/googletest:gtest",

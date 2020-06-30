@@ -7,8 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
@@ -22,6 +20,8 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -365,10 +365,10 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
   // Setup video element.
   Persistent<HTMLVideoElement> video =
       MakeGarbageCollected<HTMLVideoElement>(*GetDocument());
-  blink::WebMediaStream web_media_stream;
-  blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
-  web_media_stream.Initialize(dummy_tracks, dummy_tracks);
-  video->SetSrcObject(web_media_stream);
+  MediaStreamComponentVector dummy_components;
+  auto* media_stream_descriptor = MakeGarbageCollected<MediaStreamDescriptor>(
+      dummy_components, dummy_components);
+  video->SetSrcObject(media_stream_descriptor);
   GetDocument()->body()->AppendChild(video);
   test::RunPendingTasks();
   SetReadyState(video.Get(), HTMLMediaElement::kHaveMetadata);

@@ -65,6 +65,9 @@ MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
 [HIDPI]
 chrome_200_percent.pak: %(VersionDir)s\
 
+[FFMPEG]
+ffmpeg.dll: %(VersionDir)s\
+
 [TOUCH]
 
 [GOOGLE_CHROME]

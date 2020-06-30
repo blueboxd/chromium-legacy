@@ -151,10 +151,10 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnUninstall) {
 }
 
 // Tests that proxy settings corresponding to an extension are removed when
-// the extension is blacklisted by management policy. Regression test for
+// the extension is blocklisted by management policy. Regression test for
 // crbug.com/709264.
 IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
-                       PRE_SettingsRemovedOnPolicyBlacklist) {
+                       PRE_SettingsRemovedOnPolicyBlocklist) {
   ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
   extension_service()->CheckManagementPolicy();
   ExpectNoSettings(pref_service);
 
-  // Remove the extension from policy blacklist. It should get enabled again.
+  // Remove the extension from policy blocklist. It should get enabled again.
   GetManagementPolicy()->UnregisterAllProviders();
   extension_service()->CheckManagementPolicy();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
 }
 
 // Tests that proxy settings corresponding to an extension take effect again
-// on browser restart, when the extension is removed from the policy blacklist.
-IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnPolicyBlacklist) {
+// on browser restart, when the extension is removed from the policy blocklist.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnPolicyBlocklist) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);

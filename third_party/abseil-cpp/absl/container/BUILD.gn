@@ -351,7 +351,11 @@ absl_source_set("btree") {
 absl_source_set("inlined_vector_test") {
   testonly = true
   sources = [ "inlined_vector_test.cc" ]
-  cflags_cc = [ "-Wno-deprecated-declarations" ]
+  if (is_win && !is_clang) {
+    cflags_cc = [ "/wd4996" ]
+  } else {
+    cflags_cc = [ "-Wno-deprecated-declarations" ]
+  }
   deps = [
     ":counting_allocator",
     ":inlined_vector",

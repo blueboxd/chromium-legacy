@@ -121,7 +121,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
 
   // Logs in as a regular user with default user context. Should be used for
   // proceeding into the session from the login screen.
-  void LoginAsNewReguarUser();
+  void LoginAsNewRegularUser();
 
  private:
   UserList initial_users_;

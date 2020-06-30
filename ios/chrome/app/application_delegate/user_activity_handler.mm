@@ -196,9 +196,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // The app is already active so the applicationDidBecomeActive: method will
     // never be called. Open the requested URL immediately.
     ApplicationModeForTabOpening targetMode =
-        [[connectionInformation startupParameters] launchInIncognito]
-            ? ApplicationModeForTabOpening::INCOGNITO
-            : ApplicationModeForTabOpening::NORMAL;
+        [[connectionInformation startupParameters] applicationMode];
     UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
     if (![[connectionInformation startupParameters] launchInIncognito] &&
         [tabOpener URLIsOpenedInRegularMode:webpageGURL]) {
@@ -291,9 +289,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // been dismissed. |_startupParameters| must be retained until all deferred
     // modal UIs are dismissed and tab opened with requested URL.
     ApplicationModeForTabOpening targetMode =
-        [[connectionInformation startupParameters] launchInIncognito]
-            ? ApplicationModeForTabOpening::INCOGNITO
-            : ApplicationModeForTabOpening::NORMAL;
+        [[connectionInformation startupParameters] applicationMode];
     GURL URL;
     GURL virtualURL;
     GURL completeURL = connectionInformation.startupParameters.completeURL;

@@ -16,6 +16,9 @@ const char kAllowHTTPBackgroundPage[] = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[] =
     "allow-legacy-extension-manifests";
 
+// Adds the given extension ID to all the permission allowlists.
+const char kAllowlistedExtensionID[] = "whitelisted-extension-id";
+
 // Enables extension options to be embedded in chrome://extensions rather than
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
@@ -73,9 +76,6 @@ const char kSetExtensionThrottleTestParams[] =
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";
-
-// Adds the given extension ID to all the permission whitelists.
-const char kWhitelistedExtensionID[] = "whitelisted-extension-id";
 
 // Pass launch source to platform apps.
 const char kTraceAppSource[] = "enable-trace-app-source";

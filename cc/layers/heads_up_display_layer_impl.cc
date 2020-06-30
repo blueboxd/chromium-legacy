@@ -664,7 +664,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFrameThroughputDisplay(
       SkRect::MakeXYWH(left + kPadding, text_bounds.bottom() + 2 * kPadding,
                        kGraphWidth, kGraphHeight);
 
-  // Draw the fps meter.
+  // Draw the frame rendering stats.
   const std::string title("Frames");
   const std::string value_text = base::StringPrintf("%d %%", throughput_value_);
   const std::string dropped_frames_text =

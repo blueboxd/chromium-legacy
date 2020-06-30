@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
+import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
@@ -94,6 +95,7 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -408,6 +410,52 @@ public class InstantStartTest {
         startAndWaitNativeInitialization();
         Assert.assertNotNull(
                 startSurfaceToolbarCoordinator.getIncognitoSwitchCoordinatorForTesting());
+    }
+
+    /**
+     * Tests that clicking the "more_tabs" button won't make Omnibox get focused when single tab is
+     * shown on the StartSurface.
+     */
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group", IMMEDIATE_RETURN_PARAMS +
+            "/start_surface_variation/single/show_last_active_tab_only/true"})
+    public void startSurfaceMoreTabsButtonTest() throws IOException {
+        // clang-format on
+        createTabStateFile(new int[] {0});
+        createThumbnailBitmapAndWriteToFile(0);
+        TabAttributeCache.setTitleForTesting(0, "Google");
+
+        startMainActivityFromLauncher();
+        Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
+        Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
+        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
+        Assert.assertTrue(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
+        Assert.assertFalse(
+                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
+
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
+
+        // Note that onView(R.id.more_tabs).perform(click()) can not be used since it requires 90
+        // percent of the view's area is displayed to the users. However, this view has negative
+        // margin which makes the percentage is less than 90.
+        // TODO(crbug.com/1025296): Investigate whether this would be a problem for real users.
+        try {
+            TestThreadUtils.runOnUiThreadBlocking(()
+                                                          -> mActivityTestRule.getActivity()
+                                                                     .findViewById(R.id.more_tabs)
+                                                                     .performClick());
+        } catch (ExecutionException e) {
+            Assert.fail("Failed to tap 'more tabs' " + e.toString());
+        }
+
+        onViewWaiting(withId(R.id.tab_list_view));
+        Assert.assertFalse(mActivityTestRule.getActivity().findViewById(R.id.url_bar).isFocused());
     }
 
     @Test

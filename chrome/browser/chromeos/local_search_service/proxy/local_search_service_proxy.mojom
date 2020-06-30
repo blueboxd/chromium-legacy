@@ -12,6 +12,11 @@ enum IndexId {
   // Add new client IDs here.
 };
 
+enum Backend {
+  kLinearMap = 0,
+  kInvertedIndex = 1
+};
+
 // LocalSearchServiceProxy creates and owns content-specific IndexProxies.
 // Clients can call |GetIndex| to get an IndexProxy for a given index id.
 interface LocalSearchServiceProxy {
@@ -21,7 +26,8 @@ interface LocalSearchServiceProxy {
   // Note, there should be one primary client that is the owner of the data and
   // can read/write the data to the Index. The other clients should only use
   // the Index for query search.
-  GetIndex(IndexId index_id, pending_receiver<IndexProxy> index_receiver);
+  GetIndex(IndexId index_id, Backend backend,
+      pending_receiver<IndexProxy> index_receiver);
 };
 
 // A proxy to a local search service Index.
@@ -47,4 +53,3 @@ interface IndexProxy {
   Find(mojo_base.mojom.String16 query, uint32 max_results)
       => (ResponseStatus status, array<Result>? results);
 };
-

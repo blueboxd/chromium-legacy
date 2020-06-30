@@ -21,6 +21,12 @@ using content::WebContents;
 
 namespace android_webview {
 
+namespace {
+
+const int kLargestIconSize = 192;
+
+}  // namespace
+
 IconHelper::IconHelper(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       listener_(NULL),
@@ -76,10 +82,10 @@ void IconHelper::DidUpdateFaviconURL(
         }
         web_contents()->DownloadImage(
             candidate->icon_url,
-            true,   // Is a favicon
-            0,      // No preferred size
-            0,      // No maximum size
-            false,  // Normal cache policy
+            true,              // Is a favicon
+            0,                 // No preferred size
+            kLargestIconSize,  // Max bitmap size
+            false,             // Normal cache policy
             base::BindOnce(&IconHelper::DownloadFaviconCallback,
                            base::Unretained(this)));
         break;

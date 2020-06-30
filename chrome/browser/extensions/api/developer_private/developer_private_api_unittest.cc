@@ -1229,7 +1229,7 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithoutDevMode) {
   prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
 }
 
-TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
+TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlocklistingPolicy) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
@@ -1239,11 +1239,11 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
   {
     ExtensionManagementPrefUpdater<sync_preferences::TestingPrefServiceSyncable>
         pref_updater(testing_profile()->GetTestingPrefService());
-    pref_updater.SetBlacklistedByDefault(true);
+    pref_updater.SetBlocklistedByDefault(true);
   }
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault());
+          ->BlocklistedByDefault());
 
   EXPECT_FALSE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
@@ -1262,7 +1262,7 @@ TEST_F(DeveloperPrivateApiUnitTest, LoadUnpackedFailsWithBlacklistingPolicy) {
 }
 
 TEST_F(DeveloperPrivateApiUnitTest,
-       LoadUnpackedWorksWithBlacklistingPolicyAlongWhitelistingPolicy) {
+       LoadUnpackedWorksWithBlocklistingPolicyAlongWhitelistingPolicy) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
@@ -1272,13 +1272,13 @@ TEST_F(DeveloperPrivateApiUnitTest,
   {
     ExtensionManagementPrefUpdater<sync_preferences::TestingPrefServiceSyncable>
         pref_updater(testing_profile()->GetTestingPrefService());
-    pref_updater.SetBlacklistedByDefault(true);
+    pref_updater.SetBlocklistedByDefault(true);
     pref_updater.SetIndividualExtensionInstallationAllowed(kGoodCrx, true);
   }
 
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault());
+          ->BlocklistedByDefault());
 
   EXPECT_TRUE(
       ExtensionManagementFactory::GetForBrowserContext(browser_context())

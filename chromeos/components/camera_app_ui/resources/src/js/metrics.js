@@ -17,6 +17,12 @@ import {
 } from './type.js';
 
 /**
+ * The tracker ID of the GA metrics.
+ * @type {string}
+ */
+const GA_ID = 'UA-134822711-1';
+
+/**
  * @type {?Map<number, Object>}
  */
 let baseDimen = null;
@@ -46,17 +52,25 @@ function sendEvent(event, dimen = null) {
 }
 
 /**
- * Initializes metrics with parameters.
- * @param {!boolean} isTesting Whether is collecting logs for running
- *     testing.
+ * Set if the metrics is enabled. Note that the metrics will only be sent if it
+ * is enabled AND the logging consent option is enabled in OS settings.
+ * @param {boolean} enabled True if the metrics is enabled.
  */
-export function initMetrics(isTesting) {
-  ready = (async () => {
-    const GA_ID = 'UA-134822711-1';
-    const canSendMetrics =
-        !isTesting && await browserProxy.isCrashReportingEnabled();
-    window[`ga-disable-${GA_ID}`] = !canSendMetrics;
+export function setMetricsEnabled(enabled) {
+  assert(ready !== null);
 
+  ready.then(async() => {
+    // This value reflects the logging constent option in OS settings.
+    const canSendMetrics = await browserProxy.isCrashReportingEnabled();
+    window[`ga-disable-${GA_ID}`] = !enabled || !canSendMetrics;
+  });
+}
+
+/**
+ * Initializes metrics with parameters.
+ */
+export function initMetrics() {
+  ready = (async () => {
     browserProxy.addDummyHistoryIfNotAvailable();
 
     // GA initialization function which is mostly copied from
@@ -104,6 +118,11 @@ export function initMetrics(isTesting) {
     // check here since we are "chrome-extension://".
     window.ga('set', 'checkProtocolTask', null);
   })();
+
+  ready.then(async() => {
+    // The metrics is default enabled.
+    await setMetricsEnabled(true);
+  });
 }
 
 /**

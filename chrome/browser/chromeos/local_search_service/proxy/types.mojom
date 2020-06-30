@@ -10,6 +10,7 @@ struct Content {
   // An identifier for the content in Data.
   string id;
   mojo_base.mojom.String16 content;
+  double weight = 1.0;
 };
 
 struct Data {
@@ -26,9 +27,8 @@ struct Data {
 
 struct SearchParams {
   double relevance_threshold = 0.32;
-  double partial_match_penalty_rate = 0.9;
-  bool use_prefix_only = false;
-  bool use_edit_distance = false;
+  double prefix_threshold = 0.6;
+  double fuzzy_threshold = 0.6;
 };
 
 struct Position {
@@ -68,4 +68,3 @@ enum ResponseStatus {
   // Index is empty (i.e. no data).
   kEmptyIndex
 };
-

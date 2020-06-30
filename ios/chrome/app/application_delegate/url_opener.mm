@@ -85,9 +85,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
       }
       UrlLoadParams urlLoadParams = UrlLoadParams::InNewTab(URL, virtualURL);
 
-      ApplicationModeForTabOpening targetMode =
-          [params launchInIncognito] ? ApplicationModeForTabOpening::INCOGNITO
-                                     : ApplicationModeForTabOpening::NORMAL;
+      ApplicationModeForTabOpening targetMode = params.applicationMode;
       // If the call is coming from the app, it should be opened in the current
       // mode to avoid changing mode.
       if (callerApp == CALLER_APP_GOOGLE_CHROME)
@@ -117,14 +115,17 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
 }
 
 + (void)handleLaunchOptions:(URLOpenerParams*)options
-          applicationActive:(BOOL)applicationActive
                   tabOpener:(id<TabOpening>)tabOpener
       connectionInformation:(id<ConnectionInformation>)connectionInformation
          startupInformation:(id<StartupInformation>)startupInformation
                    appState:(AppState*)appState {
   if (options.URL) {
+    // This method is always called when the SceneState transitions to
+    // SceneActivationLevelForegroundActive, and before the handling of
+    // startupInformation is done.
+    // Pass |NO| as active to avoid double processing.
     BOOL openURLResult = [URLOpener openURL:options
-                          applicationActive:applicationActive
+                          applicationActive:NO
                                   tabOpener:tabOpener
                       connectionInformation:connectionInformation
                          startupInformation:startupInformation];

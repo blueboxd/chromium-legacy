@@ -28,13 +28,11 @@ MediaSessionController::~MediaSessionController() {
 
 bool MediaSessionController::Initialize(
     bool has_audio,
-    bool is_remote,
     media::MediaContentType media_content_type,
     media_session::MediaPosition* position,
     bool is_pip_available,
     bool has_video) {
   // Store these as we will need them later.
-  is_remote_ = is_remote;
   has_audio_ = has_audio;
   has_video_ = has_video;
   media_content_type_ = media_content_type;
@@ -170,9 +168,8 @@ bool MediaSessionController::IsMediaSessionNeeded() const {
   const bool has_audio =
       has_audio_ &&
       !media_web_contents_observer_->web_contents()->IsAudioMuted();
-  return !is_remote_ &&
-         (has_audio || media_web_contents_observer_->web_contents()
-                           ->HasPictureInPictureVideo());
+  return has_audio || media_web_contents_observer_->web_contents()
+                          ->HasPictureInPictureVideo();
 }
 
 void MediaSessionController::AddOrRemovePlayer() {

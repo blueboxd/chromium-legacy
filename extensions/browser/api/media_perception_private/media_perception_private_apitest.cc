@@ -95,9 +95,9 @@ class MediaPerceptionPrivateApiTest : public ShellApiTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ShellApiTest::SetUpCommandLine(command_line);
-    // Whitelist of the extension ID of the test extension.
+    // Allowlist of the extension ID of the test extension.
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 

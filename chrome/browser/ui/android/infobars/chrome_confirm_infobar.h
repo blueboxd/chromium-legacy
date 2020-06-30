@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_CHROME_CONFIRM_INFOBAR_H_
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_CHROME_CONFIRM_INFOBAR_H_
 
-#include "chrome/browser/ui/android/infobars/confirm_infobar.h"
+#include "components/infobars/android/confirm_infobar.h"
 
 class TabAndroid;
 

@@ -32,7 +32,7 @@ class ExtensionManagementPrefUpdaterBase {
   void ClearPerExtensionSettings(const ExtensionId& id);
 
   // Helper functions for 'installation_mode' manipulation.
-  void SetBlacklistedByDefault(bool value);
+  void SetBlocklistedByDefault(bool value);
   void ClearInstallationModesForIndividualExtensions();
   void SetIndividualExtensionInstallationAllowed(const ExtensionId& id,
                                                  bool allowed);

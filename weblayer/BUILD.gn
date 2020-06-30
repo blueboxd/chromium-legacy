@@ -152,8 +152,6 @@ source_set("weblayer_lib_base") {
     "browser/browsing_data_remover_delegate_factory.h",
     "browser/client_hints_factory.cc",
     "browser/client_hints_factory.h",
-    "browser/confirm_infobar_android.cc",
-    "browser/confirm_infobar_android.h",
     "browser/content_browser_client_impl.cc",
     "browser/content_browser_client_impl.h",
     "browser/content_browser_client_impl_receiver_bindings.cc",

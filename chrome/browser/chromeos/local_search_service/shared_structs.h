@@ -12,13 +12,33 @@
 
 namespace local_search_service {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class IndexId { kCrosSettings = 0, kMaxValue = kCrosSettings };
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class Backend {
+  kLinearMap = 0,
+  kInvertedIndex = 1,
+  kMaxValue = kInvertedIndex
+};
 
 struct Content {
   // An identifier for the content in Data.
   std::string id;
   base::string16 content;
-  Content(const std::string& id, const base::string16& content);
+  // |weight| represents how important this Content is and is used in
+  // calculating overall matching score of its enclosing Data item. When a query
+  // matches a Data item it is matching some Content of the Data. If the
+  // matching Content has a larger weight, the overall matching score will be
+  // higher. The range is in [0,1].
+  // TODO(jiameng): it will be used by kInvertedIndex only. We may consider
+  // extending to kLinearMap.
+  double weight = 1.0;
+  Content(const std::string& id,
+          const base::string16& content,
+          double weight = 1.0);
   Content();
   Content(const Content& content);
   ~Content();
@@ -42,10 +62,19 @@ struct Data {
 };
 
 struct SearchParams {
+  // |relevance_threshold| will be applicable if the backend is kLinearMap.
+  // Relevance score will be calculated as a combination of prefix and fuzzy
+  // matching. A Data item is relevant if the overall relevance score is above
+  // this threshold. The threshold should be in [0,1].
   double relevance_threshold = 0.32;
-  double partial_match_penalty_rate = 0.9;
-  bool use_prefix_only = false;
-  bool use_edit_distance = false;
+  // |prefix_threshold| and |fuzzy_threshold| will be applicable if the backend
+  // is kInvertedIndex. When a query term is matched against a Data item, it
+  // will be considered relevant if either its prefix score is above
+  // |prefix_threshold| or fuzzy score is above |fuzzy_threshold|. Both of these
+  // thresholds should be in [0,1].
+  // TODO(jiameng): revise default values.
+  double prefix_threshold = 0.6;
+  double fuzzy_threshold = 0.6;
 };
 
 struct Position {

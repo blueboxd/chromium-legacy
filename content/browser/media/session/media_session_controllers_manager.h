@@ -50,7 +50,6 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   // Returns whether the player was added to the session and can start playing.
   bool RequestPlay(const MediaPlayerId& id,
                    bool has_audio,
-                   bool is_remote,
                    media::MediaContentType media_content_type,
                    bool has_video);
 

@@ -30,6 +30,28 @@ struct LanguageSwitchResult;
 class WelcomeScreen : public BaseScreen,
                       public input_method::InputMethodManager::Observer {
  public:
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other).  Entries should be never modified
+  // or deleted.  Only additions possible.
+  enum class A11yUserAction {
+    kEnableSpokenFeedback = 0,
+    kDisableSpokenFeedback = 1,
+    kEnableLargeCursor = 2,
+    kDisableLargeCursor = 3,
+    kEnableHighContrast = 4,
+    kDisableHighContrast = 5,
+    kEnableScreenMagnifier = 6,
+    kDisableScreenMagnifier = 7,
+    kEnableSelectToSpeak = 8,
+    kDisableSelectToSpeak = 9,
+    kEnableDockedMagnifier = 10,
+    kDisableDockedMagnifier = 11,
+    kEnableVirtualKeyboard = 12,
+    kDisableVirtualKeyboard = 13,
+    kMaxValue = kDisableVirtualKeyboard
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}

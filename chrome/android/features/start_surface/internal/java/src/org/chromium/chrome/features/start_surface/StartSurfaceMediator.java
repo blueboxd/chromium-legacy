@@ -412,12 +412,11 @@ class StartSurfaceMediator
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER) {
             mPropertyModel.set(IS_SHOWING_STACK_TAB_SWITCHER, mShowStackTabSwitcher);
 
-            setExploreSurfaceVisibility(false);
             setTabCarouselVisibility(false);
             setMVTilesVisibility(false);
             setFakeBoxVisibility(false);
             setSecondaryTasksSurfaceVisibility(true);
-
+            setExploreSurfaceVisibility(false);
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES) {
             // Show Explore Surface if last visible pane explore.
             setExploreSurfaceVisibility(

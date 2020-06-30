@@ -4,12 +4,28 @@
 
 #include "weblayer/browser/infobar_service.h"
 
+#include "build/build_config.h"
+
+#if defined(OS_ANDROID)
+#include "base/bind.h"
+#include "components/infobars/android/confirm_infobar.h"
+#include "weblayer/browser/android/resource_mapper.h"
+#endif
+
 namespace weblayer {
 
 InfoBarService::InfoBarService(content::WebContents* web_contents)
     : infobars::ContentInfoBarManager(web_contents) {}
 
 InfoBarService::~InfoBarService() {}
+
+#if defined(OS_ANDROID)
+std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
+  return std::make_unique<ConfirmInfoBar>(
+      std::move(delegate), base::BindRepeating(&MapToJavaDrawableId));
+}
+#endif  // if defined(OS_ANDROID)
 
 void InfoBarService::WebContentsDestroyed() {
   // The WebContents is going away; be aggressively paranoid and delete

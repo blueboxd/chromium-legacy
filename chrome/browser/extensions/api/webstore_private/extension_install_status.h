@@ -29,8 +29,8 @@ enum ExtensionInstallStatus {
   kDisabled,
   // Extension has been installed but it's terminated.
   kTerminated,
-  // Extension is blacklisted.
-  kBlacklisted,
+  // Extension is blocklisted.
+  kBlocklisted,
   // Extension requires custodian approval to enable.
   kCustodianApprovalRequired,
   // Extension is force installed or recommended by policy.

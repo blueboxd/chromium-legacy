@@ -79,7 +79,7 @@ class LockScreenNoteTakingTest : public extensions::ExtensionBrowserTest {
   ~LockScreenNoteTakingTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* cmd_line) override {
-    cmd_line->AppendSwitchASCII(extensions::switches::kWhitelistedExtensionID,
+    cmd_line->AppendSwitchASCII(extensions::switches::kAllowlistedExtensionID,
                                 kTestAppId);
     cmd_line->AppendSwitch(ash::switches::kAshForceEnableStylusTools);
 

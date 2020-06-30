@@ -3829,22 +3829,22 @@ TEST_F(ExtensionServiceTest, IsEnabledExtensionBlockedAndNotInstalled) {
   service()->IsExtensionEnabled(theme_crx);
 }
 
-// Will not install extension blacklisted by policy.
-TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
+// Will not install extension blocklisted by policy.
+TEST_F(ExtensionServiceTest, BlocklistedByPolicyWillNotInstall) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
-  // Blacklist everything.
+  // Blocklist everything.
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    pref.SetBlacklistedByDefault(true);
+    pref.SetBlocklistedByDefault(true);
   }
 
-  // Blacklist prevents us from installing good_crx.
+  // Blocklist prevents us from installing good_crx.
   base::FilePath path = data_dir().AppendASCII("good.crx");
   InstallCRX(path, INSTALL_FAILED);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 
-  // Now whitelist this particular extension.
+  // Now allowlist this particular extension.
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
     pref.SetIndividualExtensionInstallationAllowed(good_crx, true);
@@ -3855,8 +3855,8 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
 }
 
-// Extension blacklisted by policy get unloaded after installing.
-TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
+// Extension blocklisted by policy get unloaded after installing.
+TEST_F(ExtensionServiceTest, BlocklistedByPolicyRemovedIfRunning) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
   // Install good_crx.
@@ -3866,7 +3866,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    // Blacklist this extension.
+    // Blocklist this extension.
     pref.SetIndividualExtensionInstallationAllowed(good_crx, false);
   }
 
@@ -3875,14 +3875,14 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 }
 
-// Tests that component extensions are not blacklisted by policy.
-TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
+// Tests that component extensions are not blocklisted by policy.
+TEST_F(ExtensionServiceTest, ComponentExtensionAllowlisted) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
-  // Blacklist everything.
+  // Blocklist everything.
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    pref.SetBlacklistedByDefault(true);
+    pref.SetBlocklistedByDefault(true);
   }
 
   // Install a component extension.
@@ -3897,7 +3897,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   service()->component_loader()->Add(manifest, path);
   service()->Init();
 
-  // Extension should be installed despite blacklist.
+  // Extension should be installed despite blocklist.
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good0));
 
@@ -3906,7 +3906,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   ASSERT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good0));
 
-  // Extension should not be uninstalled on blacklist changes.
+  // Extension should not be uninstalled on blocklist changes.
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
     pref.SetIndividualExtensionInstallationAllowed(good0, false);
@@ -3957,14 +3957,14 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelistedPermission) {
                   .HasAPIPermission(APIPermission::kTab));
 }
 
-// Tests that policy-installed extensions are not blacklisted by policy.
-TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
+// Tests that policy-installed extensions are not blocklisted by policy.
+TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsAllowlisted) {
   InitializeEmptyExtensionServiceWithTestingPrefs();
 
   {
     ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    // Blacklist everything.
-    pref.SetBlacklistedByDefault(true);
+    // Blocklist everything.
+    pref.SetBlocklistedByDefault(true);
     // Mark good.crx for force-installation.
     pref.SetIndividualExtensionAutoInstalled(
         good_crx, "http://example.com/update_url", true);
@@ -4696,7 +4696,7 @@ TEST_F(ExtensionServiceTest, NoEnableRemotelyDisabledExtension) {
                               disable_reason::DISABLE_REMOTELY_FOR_MALWARE |
                                   disable_reason::DISABLE_USER_ACTION);
   EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
-  service()->BlacklistExtensionForTest(good_crx);
+  service()->BlocklistExtensionForTest(good_crx);
   EXPECT_TRUE(prefs->IsExtensionBlocklisted(good_crx));
 
   base::Value empty_attr(base::Value::Type::DICTIONARY);
@@ -4865,7 +4865,7 @@ TEST_F(ExtensionServiceTest, UninstallTerminatedExtension) {
 // other disable reasons.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   InitializeEmptyExtensionService();
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4894,7 +4894,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
 // Extensions disabled through user action should stay disabled.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   InitializeEmptyExtensionService();
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4925,7 +4925,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
 // permission increase.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   InitializeEmptyExtensionService();
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4957,7 +4957,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
 // requirements.
 TEST_F(ExtensionServiceTest, UnpackedRequirements) {
   InitializeEmptyExtensionService();
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   base::FilePath path =
       data_dir().AppendASCII("requirements").AppendASCII("v2_bad_requirements");
@@ -6461,7 +6461,7 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
 TEST_F(ExtensionServiceTest, InstallWhitelistedExtension) {
   std::string test_id = "hdkklepkcpckhnpgjnmbdfhehckloojk";
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWhitelistedExtensionID, test_id);
+      switches::kAllowlistedExtensionID, test_id);
 
   InitializeEmptyExtensionService();
   base::FilePath path = data_dir().AppendASCII("permissions");
@@ -7313,15 +7313,15 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
       ExtensionPrefs::Get(profile())->IsBlocklistedExtensionAcknowledged(id));
 }
 
-// Test that we won't allow enabling a blacklisted extension.
-TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
+// Test that we won't allow enabling a blocklisted extension.
+TEST_F(ExtensionServiceTest, CannotEnableBlocklistedExtension) {
   InitializeGoodInstalledExtensionService();
   service()->Init();
   ASSERT_FALSE(registry()->enabled_extensions().is_empty());
 
-  // Blacklist the first extension; then try enabling it.
+  // Blocklist the first extension; then try enabling it.
   std::string id = (*(registry()->enabled_extensions().begin()))->id();
-  service()->BlacklistExtensionForTest(id);
+  service()->BlocklistExtensionForTest(id);
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
   service()->EnableExtension(id);
@@ -7358,15 +7358,15 @@ TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
 }
 
-// Make sure we can uninstall a blacklisted extension
-TEST_F(ExtensionServiceTest, UninstallBlacklistedExtension) {
+// Make sure we can uninstall a blocklisted extension
+TEST_F(ExtensionServiceTest, UninstallBlocklistedExtension) {
   InitializeGoodInstalledExtensionService();
   service()->Init();
   ASSERT_FALSE(registry()->enabled_extensions().is_empty());
 
-  // Blacklist the first extension; then try uninstalling it.
+  // Blocklist the first extension; then try uninstalling it.
   std::string id = (*(registry()->enabled_extensions().begin()))->id();
-  service()->BlacklistExtensionForTest(id);
+  service()->BlocklistExtensionForTest(id);
   EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
   base::string16 error;
   EXPECT_TRUE(service()->UninstallExtension(id, UNINSTALL_REASON_USER_INITIATED,

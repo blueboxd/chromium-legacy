@@ -42,9 +42,9 @@ class ArcAppsPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
-    // Whitelist the test platform app.
+    // Allowlist the test platform app.
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         "fgkfegllpjfhppblcabhjjipnfelohej");
   }
 

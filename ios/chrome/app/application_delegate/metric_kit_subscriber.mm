@@ -35,8 +35,9 @@ void WriteMetricPayloads(NSArray<MXMetricPayload*>* payloads)
   [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
   for (MXMetricPayload* payload : payloads) {
     NSDate* end_date = payload.timeStampEnd;
-    NSString* file_name = [NSString
-        stringWithFormat:@"%@.json", [formatter stringFromDate:end_date]];
+    NSString* file_name =
+        [NSString stringWithFormat:@"Metrics-%@.json",
+                                   [formatter stringFromDate:end_date]];
     base::FilePath file_path(
         base::SysNSStringToUTF8([metric_kit_report_directory
             stringByAppendingPathComponent:file_name]));
@@ -45,6 +46,37 @@ void WriteMetricPayloads(NSArray<MXMetricPayload*>* payloads)
                     file_data.length);
   }
 }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
+    API_AVAILABLE(ios(14.0)) {
+  NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                       NSUserDomainMask, YES);
+  NSString* documents_directory = [paths objectAtIndex:0];
+  NSString* metric_kit_report_directory = [documents_directory
+      stringByAppendingPathComponent:kChromeMetricKitPayloadsDirectory];
+  base::FilePath metric_kit_report_path(
+      base::SysNSStringToUTF8(metric_kit_report_directory));
+  if (!base::CreateDirectory(metric_kit_report_path)) {
+    return;
+  }
+  NSDateFormatter* formatter = [[NSDateFormatter alloc] init];
+  [formatter setDateFormat:@"yyyyMMdd_HHmmss"];
+  [formatter setTimeZone:[NSTimeZone timeZoneWithName:@"UTC"]];
+  for (MXDiagnosticPayload* payload : payloads) {
+    NSDate* end_date = payload.timeStampEnd;
+    NSString* file_name =
+        [NSString stringWithFormat:@"Diagnostic-%@.json",
+                                   [formatter stringFromDate:end_date]];
+    base::FilePath file_path(
+        base::SysNSStringToUTF8([metric_kit_report_directory
+            stringByAppendingPathComponent:file_name]));
+    NSData* file_data = payload.JSONRepresentation;
+    base::WriteFile(file_path, static_cast<const char*>(file_data.bytes),
+                    file_data.length);
+  }
+}
+#endif
 
 }  // namespace
 
@@ -64,5 +96,17 @@ void WriteMetricPayloads(NSArray<MXMetricPayload*>* payloads)
        base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
       base::BindOnce(WriteMetricPayloads, payloads));
 }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+- (void)didReceiveDiagnosticPayloads:(NSArray<MXDiagnosticPayload*>*)payloads
+    API_AVAILABLE(ios(14.0)) {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+       base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
+      base::BindOnce(WriteDiagnosticPayloads, payloads));
+}
+#endif
 
 @end

@@ -17,8 +17,6 @@ class GURL;
 struct UrlLoadParams;
 @class URLOpenerParams;
 
-enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
-
 // Protocol for object that can open new tabs during application launch.
 @protocol TabOpening<NSObject>
 

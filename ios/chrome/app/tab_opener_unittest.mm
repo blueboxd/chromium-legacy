@@ -27,7 +27,6 @@ namespace {
 // returns nothing.
 typedef void (^HandleLaunchOptions)(id self,
                                     NSDictionary* options,
-                                    BOOL applicationActive,
                                     id<TabOpening> tabOpener,
                                     id<StartupInformation> startupInformation,
                                     AppState* appState);
@@ -47,8 +46,7 @@ class TabOpenerTest : public PlatformTest {
       AppState* expectedAppState) {
     swizzle_block_executed_ = NO;
     swizzle_block_ =
-        [^(id self, URLOpenerParams* params, BOOL applicationActive,
-           id<TabOpening> tabOpener,
+        [^(id self, URLOpenerParams* params, id<TabOpening> tabOpener,
            id<ConnectionInformation> connectionInformation,
            id<StartupInformation> startupInformation, AppState* appState) {
           swizzle_block_executed_ = YES;
@@ -61,8 +59,8 @@ class TabOpenerTest : public PlatformTest {
     URL_opening_handle_launch_swizzler_.reset(new ScopedBlockSwizzler(
         [URLOpener class],
         @selector(handleLaunchOptions:
-                    applicationActive:tabOpener:connectionInformation
-                                     :startupInformation:appState:),
+                            tabOpener:connectionInformation:startupInformation
+                                     :appState:),
         swizzle_block_));
   }
 

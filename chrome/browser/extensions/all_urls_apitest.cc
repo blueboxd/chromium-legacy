@@ -35,10 +35,10 @@ class AllUrlsApiTest : public ExtensionApiTest {
   const Extension* execute_script() const { return execute_script_.get(); }
 
   void WhitelistExtensions() {
-    ExtensionsClient::ScriptingWhitelist whitelist;
-    whitelist.push_back(content_script_->id());
-    whitelist.push_back(execute_script_->id());
-    ExtensionsClient::Get()->SetScriptingWhitelist(whitelist);
+    ExtensionsClient::ScriptingAllowlist allowlist;
+    allowlist.push_back(content_script_->id());
+    allowlist.push_back(execute_script_->id());
+    ExtensionsClient::Get()->SetScriptingAllowlist(allowlist);
     // Extensions will have certain permissions withheld at initialization if
     // they aren't whitelisted, so we need to reload them.
     ExtensionTestMessageListener listener("execute: ready", false);

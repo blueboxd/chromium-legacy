@@ -170,8 +170,8 @@ std::string GetMacAddress(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  mach_port_t master_port;
-  kern_return_t kr = IOMasterPort(MACH_PORT_NULL, &master_port);
+  mach_port_t port;
+  kern_return_t kr = IOMasterPort(MACH_PORT_NULL, &port);
   if (kr != KERN_SUCCESS) {
     LOG(ERROR) << "IOMasterPort failed: " << kr;
     return "";
@@ -185,7 +185,7 @@ std::string GetMacAddress(
   }
 
   io_iterator_t iterator_ref;
-  kr = IOServiceGetMatchingServices(master_port, match_classes, &iterator_ref);
+  kr = IOServiceGetMatchingServices(port, match_classes, &iterator_ref);
   if (kr != KERN_SUCCESS) {
     LOG(ERROR) << "IOServiceGetMatchingServices failed: " << kr;
     return "";

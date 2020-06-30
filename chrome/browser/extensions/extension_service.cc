@@ -209,13 +209,13 @@ void ExtensionService::AddProviderForTesting(
   external_extension_providers_.push_back(std::move(test_provider));
 }
 
-void ExtensionService::BlacklistExtensionForTest(
+void ExtensionService::BlocklistExtensionForTest(
     const std::string& extension_id) {
-  ExtensionIdSet blacklisted;
-  blacklisted.insert(extension_id);
+  ExtensionIdSet blocklisted;
+  blocklisted.insert(extension_id);
   // Don't change existing blocklisted extensions.
   ExtensionIdSet unchanged = registry_->blocklisted_extensions().GetIDs();
-  UpdateBlacklistedExtensions(blacklisted, unchanged);
+  UpdateBlacklistedExtensions(blocklisted, unchanged);
 }
 
 bool ExtensionService::OnExternalExtensionUpdateUrlFound(

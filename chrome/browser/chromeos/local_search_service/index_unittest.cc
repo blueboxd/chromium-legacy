@@ -27,10 +27,8 @@ using ContentWithId = std::pair<std::string, std::string>;
 void CheckSearchParams(const SearchParams& actual,
                        const SearchParams& expected) {
   EXPECT_DOUBLE_EQ(actual.relevance_threshold, expected.relevance_threshold);
-  EXPECT_DOUBLE_EQ(actual.partial_match_penalty_rate,
-                   expected.partial_match_penalty_rate);
-  EXPECT_EQ(actual.use_prefix_only, expected.use_prefix_only);
-  EXPECT_EQ(actual.use_edit_distance, expected.use_edit_distance);
+  EXPECT_DOUBLE_EQ(actual.prefix_threshold, expected.prefix_threshold);
+  EXPECT_DOUBLE_EQ(actual.fuzzy_threshold, expected.fuzzy_threshold);
 }
 
 void FindAndCheckResults(Index* index,
@@ -72,7 +70,8 @@ void FindAndCheckResults(Index* index,
 
 class IndexTest : public testing::Test {
   void SetUp() override {
-    index_ = std::make_unique<Index>(IndexId::kCrosSettings);
+    index_ =
+        std::make_unique<Index>(IndexId::kCrosSettings, Backend::kLinearMap);
   }
 
  protected:
@@ -92,10 +91,8 @@ TEST_F(IndexTest, SetSearchParams) {
     SearchParams search_params;
     const SearchParams default_params;
     search_params.relevance_threshold = default_params.relevance_threshold / 2;
-    search_params.partial_match_penalty_rate =
-        default_params.partial_match_penalty_rate / 2;
-    search_params.use_prefix_only = !default_params.use_prefix_only;
-    search_params.use_edit_distance = !default_params.use_edit_distance;
+    search_params.prefix_threshold = default_params.prefix_threshold / 2;
+    search_params.fuzzy_threshold = default_params.fuzzy_threshold / 2;
 
     index_->SetSearchParams(search_params);
 

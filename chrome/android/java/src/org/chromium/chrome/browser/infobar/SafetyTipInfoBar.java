@@ -9,7 +9,7 @@ import android.graphics.Bitmap;
 import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
+import org.chromium.components.infobars.ConfirmInfoBar;
 import org.chromium.components.infobars.InfoBarLayout;
 
 /**

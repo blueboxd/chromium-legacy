@@ -47,7 +47,6 @@ Polymer({
 
   ready() {
     this.initializeLoginScreen('EnableAdbSideloadingScreen', {
-      noAnimatedTransition: true,
       resetAllowed: true,
     });
   },

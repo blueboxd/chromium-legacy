@@ -38,7 +38,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
   virtual ~GpuDataManagerImplPrivate();
 
-  void BlacklistWebGLForTesting();
+  void BlocklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   bool GpuAccessAllowed(std::string* reason) const;

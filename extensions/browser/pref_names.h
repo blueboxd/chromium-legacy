@@ -84,9 +84,9 @@ extern const char kLoginScreenExtensions[];
 // loaded.
 extern const char kLastChromeVersion[];
 
-// Blacklist and whitelist for Native Messaging Hosts.
-extern const char kNativeMessagingBlacklist[];
-extern const char kNativeMessagingWhitelist[];
+// Blocklist and allowlist for Native Messaging Hosts.
+extern const char kNativeMessagingBlocklist[];
+extern const char kNativeMessagingAllowlist[];
 
 // Flag allowing usage of Native Messaging hosts installed on user level.
 extern const char kNativeMessagingUserLevelHosts[];

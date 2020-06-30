@@ -34,7 +34,6 @@ class CONTENT_EXPORT MediaSessionController
   // returns false.  May be called more than once; does nothing if none of the
   // input parameters have changed since the last call.
   bool Initialize(bool has_audio,
-                  bool is_remote,
                   media::MediaContentType media_content_type,
                   media_session::MediaPosition* position,
                   bool is_pip_available,
@@ -98,7 +97,6 @@ class CONTENT_EXPORT MediaSessionController
   bool has_session_ = false;
   bool has_audio_ = false;
   bool has_video_ = false;
-  bool is_remote_ = false;
   bool is_picture_in_picture_available_ = false;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;

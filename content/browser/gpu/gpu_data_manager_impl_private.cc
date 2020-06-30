@@ -587,7 +587,7 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
   FallBackToNextGpuMode();
 }
 
-void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
+void GpuDataManagerImplPrivate::BlocklistWebGLForTesting() {
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
 

@@ -124,17 +124,6 @@ cr.define('cr.ui.login', function() {
   ];
 
   /**
-   * Group of screens (screen IDs) that are not participating in
-   * left-current-right animation.
-   * @type Array<string>
-   * @const
-   */
-  var NOT_ANIMATED_SCREEN_GROUP = [
-    SCREEN_OOBE_ENABLE_DEBUGGING,
-    SCREEN_OOBE_RESET,
-  ];
-
-  /**
    * As Polymer behaviors do not provide true inheritance, when two behaviors
    * would declare same method one of them will be hidden. Also, if element
    * re-declares the method it needs explicitly iterate over behaviors and call
@@ -488,35 +477,6 @@ cr.define('cr.ui.login', function() {
       }
     },
 
-    screenIsAnimated_: function(screenId) {
-      return NOT_ANIMATED_SCREEN_GROUP.indexOf(screenId) != -1;
-    },
-
-    /**
-     * Updates a step's css classes to reflect left, current, or right position.
-     * @param {number} stepIndex step index.
-     * @param {string} state one of 'left', 'current', 'right'.
-     */
-    updateStep_: function(stepIndex, state) {
-      var stepId = this.screens_[stepIndex];
-      var step = $(stepId);
-      var header = $('header-' + stepId);
-      var states = ['left', 'right', 'current'];
-      for (var i = 0; i < states.length; ++i) {
-        if (states[i] != state) {
-          step.classList.remove(states[i]);
-          if (header) {
-            header.classList.remove(states[i]);
-          }
-        }
-      }
-
-      step.classList.add(state);
-      if (header) {
-        header.classList.add(state);
-      }
-    },
-
     /**
      * Switches to the next OOBE step.
      * @param {number} nextStepIndex Index of the next step.
@@ -565,32 +525,9 @@ cr.define('cr.ui.login', function() {
 
       newStep.classList.remove('hidden');
 
-      var currentIsAnimated = !currentStepAttributes.noAnimatedTransition &&
-                              this.screenIsAnimated_(currentStepId);
-      var newIsAnimated = !newStepAttributes.noAnimatedTransition &&
-                          this.screenIsAnimated_(nextStepId);
-
-      if (this.isOobeUI() && currentIsAnimated && newIsAnimated) {
-        // Start gliding animation for OOBE steps.
-        if (nextStepIndex > this.currentStep_) {
-          for (var i = this.currentStep_; i < nextStepIndex; ++i)
-            this.updateStep_(i, 'left');
-          this.updateStep_(nextStepIndex, 'current');
-        } else if (nextStepIndex < this.currentStep_) {
-          for (var i = this.currentStep_; i > nextStepIndex; --i)
-            this.updateStep_(i, 'right');
-          this.updateStep_(nextStepIndex, 'current');
-        }
-      } else {
-        // Start fading animation for login display or reset screen.
-        oldStep.classList.add('faded');
-        newStep.classList.remove('faded');
-        if (newStepAttributes.noAnimatedTransition ||
-            !this.screenIsAnimated_(nextStepId)) {
-          newStep.classList.remove('left');
-          newStep.classList.remove('right');
-        }
-      }
+      // Start fading animation for login display or reset screen.
+      oldStep.classList.add('faded');
+      newStep.classList.remove('faded');
 
       this.disableButtons_(newStep, false);
 
@@ -605,30 +542,10 @@ cr.define('cr.ui.login', function() {
       var isOOBE = this.isOobeUI();
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
-        if (oldStep.classList.contains('animated')) {
-          innerContainer.classList.add('animation');
-          oldStep.addEventListener('transitionend', function f(e) {
-            oldStep.removeEventListener('transitionend', f);
-            if (oldStep.classList.contains('faded') ||
-                oldStep.classList.contains('left') ||
-                oldStep.classList.contains('right')) {
-              innerContainer.classList.remove('animation');
-              oldStep.classList.add('hidden');
-              if (!isOOBE)
-                oldStep.hidden = true;
-            }
-            // Refresh defaultControl. It could have changed.
-            var defaultControl = newStep.defaultControl;
-            if (defaultControl)
-              defaultControl.focus();
-          });
-          ensureTransitionEndEvent(oldStep, MAX_SCREEN_TRANSITION_DURATION);
-        } else {
-          oldStep.classList.add('hidden');
-          oldStep.hidden = true;
-          if (defaultControl)
-            defaultControl.focus();
-        }
+        oldStep.classList.add('hidden');
+        oldStep.hidden = true;
+        if (defaultControl)
+          defaultControl.focus();
       } else {
         // First screen on OOBE launch.
         if (this.isOobeUI() && innerContainer.classList.contains('down')) {
@@ -868,12 +785,6 @@ cr.define('cr.ui.login', function() {
      * Prepares screens to use in login display.
      */
     prepareForLoginDisplay_: function() {
-      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
-        var screen = $(screenId);
-        screen.classList.add('faded');
-        screen.classList.remove('right');
-        screen.classList.remove('left');
-      }
       if (this.showingViewsLogin) {
         $('top-header-bar').hidden = true;
       }

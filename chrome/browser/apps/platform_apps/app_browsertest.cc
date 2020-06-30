@@ -592,12 +592,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
       << message_;
 }
 
-// Tests that launch data is sent through to a whitelisted extension if the file
-// extension matches.
+// Tests that launch data is sent through to an allowlisted extension if the
+// file extension matches.
 IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest,
-                       LaunchWhiteListedExtensionWithFile) {
+                       LaunchAllowListedExtensionWithFile) {
   ASSERT_TRUE(RunPlatformAppTestWithFileInTestDataDir(
-      "platform_apps/launch_whitelisted_ext_with_file", kTestFilePath))
+      "platform_apps/launch_allowlisted_ext_with_file", kTestFilePath))
       << message_;
 }
 

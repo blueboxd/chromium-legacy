@@ -332,7 +332,7 @@ class AssistantOptInFlowTest : public OobeBaseTest {
   }
 
   void ShowAssistantOptInFlowScreen() {
-    login_manager_.LoginAsNewReguarUser();
+    login_manager_.LoginAsNewRegularUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(

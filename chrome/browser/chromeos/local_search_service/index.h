@@ -26,7 +26,7 @@ class LinearMapSearch;
 // backends that provide actual data storage/indexing/search functions.
 class Index {
  public:
-  explicit Index(IndexId index_id);
+  Index(IndexId index_id, Backend backend);
   ~Index();
 
   Index(const Index&) = delete;

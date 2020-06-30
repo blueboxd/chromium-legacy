@@ -181,21 +181,6 @@ void WelcomeScreenHandler::DeclareJSCallbacks() {
               &WelcomeScreenHandler::HandleSetInputMethodId);
   AddCallback("WelcomeScreen.setTimezoneId",
               &WelcomeScreenHandler::HandleSetTimezoneId);
-
-  AddCallback("WelcomeScreen.enableHighContrast",
-              &WelcomeScreenHandler::HandleEnableHighContrast);
-  AddCallback("WelcomeScreen.enableLargeCursor",
-              &WelcomeScreenHandler::HandleEnableLargeCursor);
-  AddCallback("WelcomeScreen.enableVirtualKeyboard",
-              &WelcomeScreenHandler::HandleEnableVirtualKeyboard);
-  AddCallback("WelcomeScreen.enableScreenMagnifier",
-              &WelcomeScreenHandler::HandleEnableScreenMagnifier);
-  AddCallback("WelcomeScreen.enableSpokenFeedback",
-              &WelcomeScreenHandler::HandleEnableSpokenFeedback);
-  AddCallback("WelcomeScreen.enableSelectToSpeak",
-              &WelcomeScreenHandler::HandleEnableSelectToSpeak);
-  AddCallback("WelcomeScreen.enableDockedMagnifier",
-              &WelcomeScreenHandler::HandleEnableDockedMagnifier);
 }
 
 void WelcomeScreenHandler::GetAdditionalParameters(
@@ -280,44 +265,6 @@ void WelcomeScreenHandler::HandleSetInputMethodId(
 void WelcomeScreenHandler::HandleSetTimezoneId(const std::string& timezone_id) {
   if (screen_)
     screen_->SetTimezone(timezone_id);
-}
-
-void WelcomeScreenHandler::HandleEnableHighContrast(bool enabled) {
-  AccessibilityManager::Get()->EnableHighContrast(enabled);
-}
-
-void WelcomeScreenHandler::HandleEnableLargeCursor(bool enabled) {
-  AccessibilityManager::Get()->EnableLargeCursor(enabled);
-}
-
-void WelcomeScreenHandler::HandleEnableVirtualKeyboard(bool enabled) {
-  AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
-}
-
-void WelcomeScreenHandler::HandleEnableScreenMagnifier(bool enabled) {
-  DCHECK(MagnificationManager::Get());
-  MagnificationManager::Get()->SetMagnifierEnabled(enabled);
-}
-
-void WelcomeScreenHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
-  // Checkbox is initialized on page init and updates when spoken feedback
-  // setting is changed so just toggle spoken feedback here.
-  AccessibilityManager::Get()->EnableSpokenFeedback(
-      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-}
-
-void WelcomeScreenHandler::HandleEnableSelectToSpeak(bool /* enabled */) {
-  // Checkbox is initialized on page init and updates when Select to Speak
-  // setting is changed so just toggle Select to Speak here.
-  AccessibilityManager::Get()->SetSelectToSpeakEnabled(
-      !AccessibilityManager::Get()->IsSelectToSpeakEnabled());
-}
-
-void WelcomeScreenHandler::HandleEnableDockedMagnifier(bool enabled) {
-  // Checkbox is initialized on page init and updates when the docked magnifier
-  // setting is changed so just toggle Select to Speak here.
-  DCHECK(MagnificationManager::Get());
-  MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
 }
 
 void WelcomeScreenHandler::OnAccessibilityStatusChanged(

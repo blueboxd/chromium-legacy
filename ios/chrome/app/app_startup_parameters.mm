@@ -83,4 +83,9 @@
   return description;
 }
 
+- (ApplicationModeForTabOpening)applicationMode {
+  return self.launchInIncognito ? ApplicationModeForTabOpening::INCOGNITO
+                                : ApplicationModeForTabOpening::NORMAL;
+}
+
 @end

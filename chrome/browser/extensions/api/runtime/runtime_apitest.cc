@@ -281,10 +281,10 @@ IN_PROC_BROWSER_TEST_F(RuntimeAPIUpdateTest,
   }
 }
 
-// Tests that when a blacklisted extension with a set uninstall url is
+// Tests that when a blocklisted extension with a set uninstall url is
 // uninstalled, its uninstall url does not open.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DoNotOpenUninstallUrlForBlacklistedExtensions) {
+                       DoNotOpenUninstallUrlForBlocklistedExtensions) {
   // Load an extension that has set an uninstall url.
   scoped_refptr<const extensions::Extension> extension =
       LoadExtension(test_data_dir_.AppendASCII("runtime")
@@ -310,18 +310,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   EXPECT_EQ(1, tabs->count());
   EXPECT_EQ("about:blank", GetActiveUrl(browser()));
 
-  // Load the same extension again, except blacklist it after installation.
+  // Load the same extension again, except blocklist it after installation.
   extension = LoadExtension(test_data_dir_.AppendASCII("runtime")
                                 .AppendASCII("uninstall_url")
                                 .AppendASCII("sets_uninstall_url"));
   extension_service()->AddExtension(extension.get());
   ASSERT_TRUE(extension_service()->IsExtensionEnabled(extension->id()));
 
-  // Blacklist extension.
+  // Blocklist extension.
   extensions::ExtensionPrefs::Get(profile())->SetExtensionBlocklistState(
       extension->id(), extensions::BlocklistState::BLOCKLISTED_MALWARE);
 
-  // Uninstalling a blacklisted extension should not open its uninstall url.
+  // Uninstalling a blocklisted extension should not open its uninstall url.
   TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
                                          extension->id());
   extension_service()->UninstallExtension(

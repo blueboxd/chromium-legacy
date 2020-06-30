@@ -44,11 +44,11 @@ namespace extensions {
 
 namespace {
 
-// TODO(battre): Delete the HTTP URL once the blacklist is downloaded via HTTPS.
+// TODO(battre): Delete the HTTP URL once the blocklist is downloaded via HTTPS.
 const char kExtensionBlocklistUrlPrefix[] =
-    "http://www.gstatic.com/chrome/extensions/blacklist";
+    "http://www.gstatic.com/chrome/extensions/blocklist";
 const char kExtensionBlocklistHttpsUrlPrefix[] =
-    "https://www.gstatic.com/chrome/extensions/blacklist";
+    "https://www.gstatic.com/chrome/extensions/blocklist";
 
 const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
@@ -63,13 +63,13 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
 void ChromeExtensionsClient::Initialize() {
-  // Set up the scripting whitelist.
-  // Whitelist ChromeVox, an accessibility extension from Google that needs
+  // Set up the scripting allowlist.
+  // Allowlist ChromeVox, an accessibility extension from Google that needs
   // the ability to script webui pages. This is temporary and is not
   // meant to be a general solution.
   // TODO(dmazzoni): remove this once we have an extension API that
   // allows any extension to request read-only access to webui pages.
-  scripting_whitelist_.push_back(extension_misc::kChromeVoxExtensionId);
+  scripting_allowlist_.push_back(extension_misc::kChromeVoxExtensionId);
   InitializeWebStoreUrls(base::CommandLine::ForCurrentProcess());
 }
 
@@ -119,14 +119,14 @@ void ChromeExtensionsClient::FilterHostPermissions(
   }
 }
 
-void ChromeExtensionsClient::SetScriptingWhitelist(
-    const ExtensionsClient::ScriptingWhitelist& whitelist) {
-  scripting_whitelist_ = whitelist;
+void ChromeExtensionsClient::SetScriptingAllowlist(
+    const ExtensionsClient::ScriptingAllowlist& allowlist) {
+  scripting_allowlist_ = allowlist;
 }
 
-const ExtensionsClient::ScriptingWhitelist&
-ChromeExtensionsClient::GetScriptingWhitelist() const {
-  return scripting_whitelist_;
+const ExtensionsClient::ScriptingAllowlist&
+ChromeExtensionsClient::GetScriptingAllowlist() const {
+  return scripting_allowlist_;
 }
 
 URLPatternSet ChromeExtensionsClient::GetPermittedChromeSchemeHosts(
@@ -178,12 +178,12 @@ const GURL& ChromeExtensionsClient::GetWebstoreUpdateURL() const {
 }
 
 bool ChromeExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
-  // The extension blacklist URL is returned from the update service and
-  // therefore not determined by Chromium. If the location of the blacklist file
+  // The extension blocklist URL is returned from the update service and
+  // therefore not determined by Chromium. If the location of the blocklist file
   // ever changes, we need to update this function. A DCHECK in the
   // ExtensionUpdater ensures that we notice a change. This is the full URL
   // of a blacklist:
-  // http://www.gstatic.com/chrome/extensions/blacklist/l_0_0_0_7.txt
+  // http://www.gstatic.com/chrome/extensions/blocklist/l_0_0_0_7.txt
   return base::StartsWith(url.spec(), kExtensionBlocklistUrlPrefix,
                           base::CompareCase::SENSITIVE) ||
          base::StartsWith(url.spec(), kExtensionBlocklistHttpsUrlPrefix,

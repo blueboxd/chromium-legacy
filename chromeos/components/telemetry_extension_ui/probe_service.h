@@ -38,10 +38,14 @@ class ProbeService : public health::mojom::ProbeService {
 
   void OnDisconnect();
 
-  mojo::Receiver<health::mojom::ProbeService> receiver_;
-
   // Pointer to real implementation.
   mojo::Remote<cros_healthd::mojom::CrosHealthdProbeService> service_;
+
+  // We must destroy |receiver_| before destroying |service_|, so we will close
+  // interface pipe before destroying pending response callbacks owned by
+  // |service_|. It is an error to drop response callbacks which still
+  // correspond to an open interface pipe.
+  mojo::Receiver<health::mojom::ProbeService> receiver_;
 };
 
 }  // namespace chromeos

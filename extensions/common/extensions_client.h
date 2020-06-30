@@ -35,7 +35,7 @@ class URLPatternSet;
 // process. This should be implemented by the client of the extensions system.
 class ExtensionsClient {
  public:
-  typedef std::vector<std::string> ScriptingWhitelist;
+  using ScriptingAllowlist = std::vector<std::string>;
 
   // Return the extensions client.
   static ExtensionsClient* Get();
@@ -92,13 +92,13 @@ class ExtensionsClient {
                                      URLPatternSet* new_hosts,
                                      PermissionIDSet* permissions) const = 0;
 
-  // Replaces the scripting whitelist with |whitelist|. Used in the renderer;
+  // Replaces the scripting allowlist with |allowlist|. Used in the renderer;
   // only used for testing in the browser process.
-  virtual void SetScriptingWhitelist(const ScriptingWhitelist& whitelist) = 0;
+  virtual void SetScriptingAllowlist(const ScriptingAllowlist& allowlist) = 0;
 
-  // Return the whitelist of extensions that can run content scripts on
+  // Return the allowlist of extensions that can run content scripts on
   // any origin.
-  virtual const ScriptingWhitelist& GetScriptingWhitelist() const = 0;
+  virtual const ScriptingAllowlist& GetScriptingAllowlist() const = 0;
 
   // Get the set of chrome:// hosts that |extension| can have host permissions
   // for.

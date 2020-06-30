@@ -233,7 +233,6 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
 
   // Action.
   [URLOpener handleLaunchOptions:urlOpenerParams
-               applicationActive:NO
                        tabOpener:tabOpenerMock
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock
@@ -256,7 +255,6 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsNil) {
 
   // Action.
   [URLOpener handleLaunchOptions:nil
-               applicationActive:YES
                        tabOpener:nil
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock
@@ -278,6 +276,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
 
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
+  [[startupInformationMock expect] resetFirstUserActionRecorder];
   [[[startupInformationMock expect] andReturnValue:@NO] isPresentingFirstRunUI];
   id connectionInformationMock =
       [OCMockObject mockForProtocol:@protocol(ConnectionInformation)];
@@ -296,11 +295,10 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
 #endif
 
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
-  [[appStateMock expect] launchFromURLHandled:YES];
+  [[appStateMock expect] launchFromURLHandled:NO];
 
   // Action.
   [URLOpener handleLaunchOptions:urlOpenerParams
-               applicationActive:YES
                        tabOpener:tabOpenerMock
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock
@@ -329,7 +327,6 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
 
   // Action.
   [URLOpener handleLaunchOptions:urlOpenerParams
-               applicationActive:YES
                        tabOpener:nil
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock
@@ -365,7 +362,6 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
 
   // Action.
   [URLOpener handleLaunchOptions:urlOpenerParams
-               applicationActive:NO
                        tabOpener:tabOpenerMock
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock
@@ -398,7 +394,6 @@ TEST_F(URLOpenerTest, PresentingFirstRunUI) {
 
   // Action.
   [URLOpener handleLaunchOptions:urlOpenerParams
-               applicationActive:NO
                        tabOpener:tabOpenerMock
            connectionInformation:connectionInformationMock
               startupInformation:startupInformationMock

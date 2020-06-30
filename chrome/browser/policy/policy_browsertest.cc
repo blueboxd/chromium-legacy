@@ -2143,9 +2143,9 @@ class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // An app requires lockScreen permission to be enabled as a lock screen app.
     // This permission is protected by a whitelist, so the test app has to be
-    // whitelisted as well.
+    // allowlisted as well.
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestAppId);
+        extensions::switches::kAllowlistedExtensionID, kTestAppId);
     command_line->AppendSwitch(ash::switches::kAshForceEnableStylusTools);
     PolicyTest::SetUpCommandLine(command_line);
   }

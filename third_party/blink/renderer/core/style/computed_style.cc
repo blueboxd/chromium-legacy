@@ -1335,13 +1335,6 @@ void ComputedStyle::SetListStyleImage(StyleImage* v) {
   SetListStyleImageInternal(v);
 }
 
-StyleColor ComputedStyle::GetColor() const {
-  return ColorInternal();
-}
-void ComputedStyle::SetColor(const StyleColor& v) {
-  SetColorInternal(v);
-}
-
 bool ComputedStyle::SetEffectiveZoom(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
   // enough) range, to avoid overflow in derived computations.

@@ -494,27 +494,27 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   std::unique_ptr<developer::ExtensionInfo> info(
       new developer::ExtensionInfo());
 
-  // Blacklist text.
-  int blacklist_text = -1;
+  // Blocklist text.
+  int blocklist_text = -1;
   switch (extension_prefs_->GetExtensionBlocklistState(extension.id())) {
     case BLOCKLISTED_MALWARE:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_MALWARE;
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_MALWARE;
       break;
     case BLOCKLISTED_SECURITY_VULNERABILITY:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_SECURITY_VULNERABILITY;
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_SECURITY_VULNERABILITY;
       break;
     case BLOCKLISTED_CWS_POLICY_VIOLATION:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_CWS_POLICY_VIOLATION;
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_CWS_POLICY_VIOLATION;
       break;
     case BLOCKLISTED_POTENTIALLY_UNWANTED:
-      blacklist_text = IDS_EXTENSIONS_BLACKLISTED_POTENTIALLY_UNWANTED;
+      blocklist_text = IDS_EXTENSIONS_BLOCKLISTED_POTENTIALLY_UNWANTED;
       break;
     default:
       break;
   }
-  if (blacklist_text != -1) {
+  if (blocklist_text != -1) {
     info->blacklist_text.reset(
-        new std::string(l10n_util::GetStringUTF8(blacklist_text)));
+        new std::string(l10n_util::GetStringUTF8(blocklist_text)));
   }
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);

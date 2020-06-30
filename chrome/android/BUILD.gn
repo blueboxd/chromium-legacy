@@ -357,6 +357,7 @@ android_library("chrome_java") {
     "//components/browser_ui/android/bottomsheet:factory_java",
     "//components/browser_ui/android/bottomsheet:java",
     "//components/browser_ui/android/bottomsheet:manager_java",
+    "//components/browser_ui/banners/android:java",
     "//components/browser_ui/client_certificate/android:java",
     "//components/browser_ui/http_auth/android:java",
     "//components/browser_ui/media/android:java",

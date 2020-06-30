@@ -160,10 +160,10 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
   BrowserAccessibility* button = button_container->PlatformGetChild(0);
   ASSERT_EQ(0U, button->PlatformChildCount());
 
-  ASSERT_EQ(base::ASCIIToUTF16("'O', 'n', 'e', ',', ' ', 't', 'w', 'o', "
+  EXPECT_EQ(base::ASCIIToUTF16("'O', 'n', 'e', ',', ' ', 't', 'w', 'o', "
                                "',', ' ', 't', 'h', 'r', 'e', 'e', '!'"),
             TraverseNodeAtGranularity(para, GRANULARITY_CHARACTER));
-  ASSERT_EQ(
+  EXPECT_EQ(
       base::ASCIIToUTF16("'S', 'e', 'v', 'e', 'n', ',', ' ', 'e', 'i', 'g', "
                          "'h', 't', ',', ' ', 'n', 'i', 'n', 'e', '!'"),
       TraverseNodeAtGranularity(button, GRANULARITY_CHARACTER));
@@ -187,9 +187,9 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest, NavigateByWords) {
   BrowserAccessibility* button = button_container->PlatformGetChild(0);
   ASSERT_EQ(0U, button->PlatformChildCount());
 
-  ASSERT_EQ(base::ASCIIToUTF16("'One', 'two', 'three'"),
+  EXPECT_EQ(base::ASCIIToUTF16("'One', ',', 'two', ',', 'three', '!'"),
             TraverseNodeAtGranularity(para, GRANULARITY_WORD));
-  ASSERT_EQ(base::ASCIIToUTF16("'Seven', 'eight', 'nine'"),
+  EXPECT_EQ(base::ASCIIToUTF16("'Seven', 'eight', 'nine'"),
             TraverseNodeAtGranularity(button, GRANULARITY_WORD));
 }
 
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest, NavigateByLine) {
   BrowserAccessibility* pre = root->PlatformGetChild(0);
   ASSERT_EQ(0U, pre->PlatformChildCount());
 
-  ASSERT_EQ(base::ASCIIToUTF16("'One,', 'two,', 'three!'"),
+  EXPECT_EQ(base::ASCIIToUTF16("'One,', 'two,', 'three!'"),
             TraverseNodeAtGranularity(pre, GRANULARITY_LINE));
 }
 

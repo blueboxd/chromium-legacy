@@ -115,10 +115,10 @@ TEST_F(ExtensionInstallStatusTest, ExtensionTerminated) {
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 
-TEST_F(ExtensionInstallStatusTest, ExtensionBlacklisted) {
+TEST_F(ExtensionInstallStatusTest, ExtensionBlocklisted) {
   ExtensionRegistry::Get(profile())->AddBlocklisted(
       CreateExtension(kExtensionId));
-  EXPECT_EQ(ExtensionInstallStatus::kBlacklisted,
+  EXPECT_EQ(ExtensionInstallStatus::kBlocklisted,
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 

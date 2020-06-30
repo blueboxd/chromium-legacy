@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ui.messages.infobar;
+package org.chromium.components.infobars;
 
 import android.graphics.Bitmap;
 
@@ -10,8 +10,6 @@ import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.infobar.ActionType;
-import org.chromium.components.infobars.InfoBar;
-import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * An infobar that presents the user with several buttons.

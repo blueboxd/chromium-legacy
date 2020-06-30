@@ -3678,57 +3678,62 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
-  // Trailing punctuation should be included as part of the previous word.
-  CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
-  CheckTextAtOffset(input_text, 2, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
+  // Trailing punctuation should not be included as part of the previous word.
+  CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_WORD, 0, 3, L"Moz");
+  CheckTextAtOffset(input_text, 2, IA2_TEXT_BOUNDARY_WORD, 0, 3, L"Moz");
 
   // If the offset is at the punctuation, it should return
-  // the previous word.
-  CheckTextAtOffset(input_text, 3, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
+  // the punctuation as a word.
+  CheckTextAtOffset(input_text, 3, IA2_TEXT_BOUNDARY_WORD, 3, 4, L"/");
 
   // Numbers with a decimal point ("." for U.S), should be treated as one word.
-  // Also, trailing punctuation that occurs after empty space should be part of
-  // the word. ("5.0 (" and not "5.0 ".)
-  CheckTextAtOffset(input_text, 4, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(input_text, 5, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(input_text, 6, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(input_text, 7, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
+  // Also, trailing punctuation that occurs after empty space should not be part
+  // of the word. ("5.0 " and not "5.0 (".)
+  CheckTextAtOffset(input_text, 4, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(input_text, 5, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(input_text, 6, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(input_text, 7, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
 
   // Leading punctuation should not be included with the word after it.
-  CheckTextAtOffset(input_text, 8, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
+  CheckTextAtOffset(input_text, 8, IA2_TEXT_BOUNDARY_WORD, 8, 9, L"(");
   CheckTextAtOffset(input_text, 11, IA2_TEXT_BOUNDARY_WORD, 9, 12, L"ST ");
 
   // Numbers separated from letters with trailing punctuation should
-  // be split into two words. Same for abreviations like "i.e.".
-  CheckTextAtOffset(input_text, 12, IA2_TEXT_BOUNDARY_WORD, 12, 14, L"6.");
-  CheckTextAtOffset(input_text, 15, IA2_TEXT_BOUNDARY_WORD, 14, 17, L"x; ");
+  // be split into multiple words. Same for abbreviations like "i.e.".
+  CheckTextAtOffset(input_text, 12, IA2_TEXT_BOUNDARY_WORD, 12, 13, L"6");
+  CheckTextAtOffset(input_text, 13, IA2_TEXT_BOUNDARY_WORD, 13, 14, L".");
+  CheckTextAtOffset(input_text, 14, IA2_TEXT_BOUNDARY_WORD, 14, 15, L"x");
+  CheckTextAtOffset(input_text, 15, IA2_TEXT_BOUNDARY_WORD, 15, 17, L"; ");
 
   // Words with numbers should be treated like ordinary words.
-  CheckTextAtOffset(input_text, 17, IA2_TEXT_BOUNDARY_WORD, 17, 24, L"WWW33) ");
-  CheckTextAtOffset(input_text, 23, IA2_TEXT_BOUNDARY_WORD, 17, 24, L"WWW33) ");
+  CheckTextAtOffset(input_text, 17, IA2_TEXT_BOUNDARY_WORD, 17, 22, L"WWW33");
+  CheckTextAtOffset(input_text, 23, IA2_TEXT_BOUNDARY_WORD, 22, 24, L") ");
 
   // Multiple trailing empty spaces should be part of the word preceding it.
-  CheckTextAtOffset(input_text, 28, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit  \"");
-  CheckTextAtOffset(input_text, 31, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit  \"");
-  CheckTextAtOffset(input_text, 32, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit  \"");
+  CheckTextAtOffset(input_text, 28, IA2_TEXT_BOUNDARY_WORD, 24, 32,
+                    L"WebKit  ");
+  CheckTextAtOffset(input_text, 31, IA2_TEXT_BOUNDARY_WORD, 24, 32,
+                    L"WebKit  ");
+  CheckTextAtOffset(input_text, 32, IA2_TEXT_BOUNDARY_WORD, 32, 33, L"\"");
 
-  // Leading punctuation such as quotation marks should not be part of the word.
-  CheckTextAtOffset(input_text, 33, IA2_TEXT_BOUNDARY_WORD, 33, 40, L"KHTML, ");
-  CheckTextAtOffset(input_text, 38, IA2_TEXT_BOUNDARY_WORD, 33, 40, L"KHTML, ");
+  // Leading and trailing punctuation such as quotation marks should not be part
+  // of the word.
+  CheckTextAtOffset(input_text, 33, IA2_TEXT_BOUNDARY_WORD, 33, 38, L"KHTML");
+  CheckTextAtOffset(input_text, 38, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
+  CheckTextAtOffset(input_text, 39, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
 
-  // Trailing final punctuation should be part of the last word.
+  // Trailing final punctuation should not be part of the last word.
   int contents_string_length = int{InputContentsString().size()};
-  CheckTextAtOffset(input_text, 41, IA2_TEXT_BOUNDARY_WORD, 40,
-                    contents_string_length, L"like\".");
-  CheckTextAtOffset(input_text, 45, IA2_TEXT_BOUNDARY_WORD, 40,
-                    contents_string_length, L"like\".");
+  CheckTextAtOffset(input_text, 40, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
+  CheckTextAtOffset(input_text, 41, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
+  CheckTextAtOffset(input_text, 44, IA2_TEXT_BOUNDARY_WORD, 44,
+                    contents_string_length, L"\".");
+  CheckTextAtOffset(input_text, 45, IA2_TEXT_BOUNDARY_WORD, 44,
+                    contents_string_length, L"\".");
 
   // Test special offsets.
   CheckTextAtOffset(input_text, IA2_TEXT_OFFSET_CARET, IA2_TEXT_BOUNDARY_WORD,
-                    40, contents_string_length, L"like\".");
+                    44, contents_string_length, L"\".");
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -3736,62 +3741,64 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
-  // Trailing punctuation should be included as part of the previous word.
-  CheckTextAtOffset(textarea_text, 0, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
-  CheckTextAtOffset(textarea_text, 2, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
+  // Trailing punctuation should not be included as part of the previous word.
+  CheckTextAtOffset(textarea_text, 0, IA2_TEXT_BOUNDARY_WORD, 0, 3, L"Moz");
+  CheckTextAtOffset(textarea_text, 2, IA2_TEXT_BOUNDARY_WORD, 0, 3, L"Moz");
 
   // If the offset is at the punctuation, it should return
-  // the previous word.
-  CheckTextAtOffset(textarea_text, 3, IA2_TEXT_BOUNDARY_WORD, 0, 4, L"Moz/");
+  // the punctuation as a word.
+  CheckTextAtOffset(textarea_text, 3, IA2_TEXT_BOUNDARY_WORD, 3, 4, L"/");
 
   // Numbers with a decimal point ("." for U.S), should be treated as one word.
-  // Also, trailing punctuation that occurs after empty space should be part of
-  // the word. ("5.0 (" and not "5.0 ".)
-  CheckTextAtOffset(textarea_text, 4, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(textarea_text, 5, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(textarea_text, 6, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
-  CheckTextAtOffset(textarea_text, 7, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
+  // Also, trailing punctuation that occurs after empty space should not be part
+  // of the word. ("5.0 " and not "5.0 (".)
+  CheckTextAtOffset(textarea_text, 4, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(textarea_text, 5, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(textarea_text, 6, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
+  CheckTextAtOffset(textarea_text, 7, IA2_TEXT_BOUNDARY_WORD, 4, 8, L"5.0 ");
 
   // Leading punctuation should not be included with the word after it.
-  CheckTextAtOffset(textarea_text, 8, IA2_TEXT_BOUNDARY_WORD, 4, 9, L"5.0 (");
+  CheckTextAtOffset(textarea_text, 8, IA2_TEXT_BOUNDARY_WORD, 8, 9, L"(");
   CheckTextAtOffset(textarea_text, 11, IA2_TEXT_BOUNDARY_WORD, 9, 12, L"ST ");
 
   // Numbers separated from letters with trailing punctuation should
-  // be split into two words. Same for abreviations like "i.e.".
-  CheckTextAtOffset(textarea_text, 12, IA2_TEXT_BOUNDARY_WORD, 12, 14, L"6.");
-  CheckTextAtOffset(textarea_text, 15, IA2_TEXT_BOUNDARY_WORD, 14, 17, L"x; ");
+  // be split into multiple words. Same for abbreviations like "i.e.".
+  CheckTextAtOffset(textarea_text, 12, IA2_TEXT_BOUNDARY_WORD, 12, 13, L"6");
+  CheckTextAtOffset(textarea_text, 13, IA2_TEXT_BOUNDARY_WORD, 13, 14, L".");
+  CheckTextAtOffset(textarea_text, 14, IA2_TEXT_BOUNDARY_WORD, 14, 15, L"x");
+  CheckTextAtOffset(textarea_text, 15, IA2_TEXT_BOUNDARY_WORD, 15, 17, L"; ");
 
   // Words with numbers should be treated like ordinary words.
-  CheckTextAtOffset(textarea_text, 17, IA2_TEXT_BOUNDARY_WORD, 17, 24,
-                    L"WWW33)\n");
-  CheckTextAtOffset(textarea_text, 23, IA2_TEXT_BOUNDARY_WORD, 17, 24,
-                    L"WWW33)\n");
+  CheckTextAtOffset(textarea_text, 17, IA2_TEXT_BOUNDARY_WORD, 17, 22,
+                    L"WWW33");
+  CheckTextAtOffset(textarea_text, 23, IA2_TEXT_BOUNDARY_WORD, 22, 24, L")\n");
 
   // Multiple trailing empty spaces should be part of the word preceding it.
-  CheckTextAtOffset(textarea_text, 28, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit \n\"");
-  CheckTextAtOffset(textarea_text, 31, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit \n\"");
-  CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_WORD, 24, 33,
-                    L"WebKit \n\"");
+  CheckTextAtOffset(textarea_text, 28, IA2_TEXT_BOUNDARY_WORD, 24, 32,
+                    L"WebKit \n");
+  CheckTextAtOffset(textarea_text, 31, IA2_TEXT_BOUNDARY_WORD, 24, 32,
+                    L"WebKit \n");
+  CheckTextAtOffset(textarea_text, 32, IA2_TEXT_BOUNDARY_WORD, 32, 33, L"\"");
 
-  // Leading punctuation such as quotation marks should not be part of the word.
-  CheckTextAtOffset(textarea_text, 33, IA2_TEXT_BOUNDARY_WORD, 33, 40,
-                    L"KHTML, ");
-  CheckTextAtOffset(textarea_text, 38, IA2_TEXT_BOUNDARY_WORD, 33, 40,
-                    L"KHTML, ");
+  // Leading and trailing punctuation such as quotation marks should not be part
+  // of the word.
+  CheckTextAtOffset(textarea_text, 33, IA2_TEXT_BOUNDARY_WORD, 33, 38,
+                    L"KHTML");
+  CheckTextAtOffset(textarea_text, 38, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
+  CheckTextAtOffset(textarea_text, 39, IA2_TEXT_BOUNDARY_WORD, 38, 40, L", ");
 
-  // Trailing final punctuation should be part of the last word.
+  // Trailing final punctuation should not be part of the last word.
   int contents_string_length = int{InputContentsString().size()};
-  CheckTextAtOffset(textarea_text, 41, IA2_TEXT_BOUNDARY_WORD, 40,
-                    contents_string_length, L"like\".");
-  CheckTextAtOffset(textarea_text, 45, IA2_TEXT_BOUNDARY_WORD, 40,
-                    contents_string_length, L"like\".");
+  CheckTextAtOffset(textarea_text, 40, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
+  CheckTextAtOffset(textarea_text, 41, IA2_TEXT_BOUNDARY_WORD, 40, 44, L"like");
+  CheckTextAtOffset(textarea_text, 44, IA2_TEXT_BOUNDARY_WORD, 44,
+                    contents_string_length, L"\".");
+  CheckTextAtOffset(textarea_text, 45, IA2_TEXT_BOUNDARY_WORD, 44,
+                    contents_string_length, L"\".");
 
   // Test special offsets.
   CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
-                    IA2_TEXT_BOUNDARY_WORD, 40, contents_string_length,
-                    L"like\".");
+                    IA2_TEXT_BOUNDARY_WORD, 44, contents_string_length, L"\".");
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -3800,23 +3807,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   SetUpSampleParagraph(&paragraph_text);
   base::string16 embedded_character(
       1, BrowserAccessibilityComWin::kEmbeddedCharacter);
-  std::vector<std::wstring> words;
-  words.push_back(L"Game ");
-  words.push_back(L"theory ");
-  words.push_back(L"is \"");
-  words.push_back(L"the ");
-  words.push_back(L"study ");
-  words.push_back(L"of ");
-  words.push_back(embedded_character);
-  words.push_back(L"of ");
-  words.push_back(L"conflict ");
-  words.push_back(L"and\n");
-  words.push_back(L"cooperation ");
-  words.push_back(L"between ");
-  words.push_back(L"intelligent ");
-  words.push_back(L"rational ");
-  words.push_back(L"decision-");
-  words.push_back(L"makers.\"");
+  std::vector<std::wstring> words = {
+      L"Game ",    L"theory ",      L"is ",       L"\"",
+      L"the ",     L"study ",       L"of ",       embedded_character,
+      L"of ",      L"conflict ",    L"and\n",     L"cooperation ",
+      L"between ", L"intelligent ", L"rational ", L"decision",
+      L"-",        L"makers",       L".\""};
 
   // Try to retrieve one word after another.
   LONG word_start_offset = 0;

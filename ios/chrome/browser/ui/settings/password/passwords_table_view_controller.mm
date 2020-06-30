@@ -33,6 +33,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/save_passwords_consumer.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -194,7 +195,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
   // The service responsible for password check feature.
-  std::unique_ptr<IOSChromePasswordCheckManager> _passwordCheck;
+  scoped_refptr<IOSChromePasswordCheckManager> _passwordCheck;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> _passwordStore;
   // A helper object for passing data about saved passwords from a finished
@@ -268,7 +269,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     _passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         _browserState, ServiceAccessType::EXPLICIT_ACCESS);
     DCHECK(_passwordStore);
-    _passwordCheck.reset(new IOSChromePasswordCheckManager(_browserState));
+    _passwordCheck =
+        IOSChromePasswordCheckManagerFactory::GetForBrowserState(_browserState);
     _mediator =
         [[PasswordsMediator alloc] initWithConsumer:self
                                passwordCheckManager:_passwordCheck.get()];

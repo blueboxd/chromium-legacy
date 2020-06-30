@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_bulk_leak_check_service_factory.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -146,8 +147,9 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
       : browser_state_(TestChromeBrowserState::Builder().Build()),
         bulk_leak_check_service_(
             CreateAndUseBulkLeakCheckService(browser_state_.get())),
-        store_(CreateAndUseTestPasswordStore(browser_state_.get())),
-        manager_(browser_state_.get()) {
+        store_(CreateAndUseTestPasswordStore(browser_state_.get())) {
+    manager_ = IOSChromePasswordCheckManagerFactory::GetForBrowserState(
+        browser_state_.get());
     scoped_feature_list_.InitAndEnableFeature(
         password_manager::features::kPasswordCheck);
   }
@@ -157,7 +159,7 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
   ChromeBrowserState* browser_state() { return browser_state_.get(); }
   TestPasswordStore& store() { return *store_; }
   MockBulkLeakCheckService* service() { return bulk_leak_check_service_; }
-  IOSChromePasswordCheckManager& manager() { return manager_; }
+  IOSChromePasswordCheckManager& manager() { return *manager_; }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -167,7 +169,7 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
   std::unique_ptr<ChromeBrowserState> browser_state_;
   MockBulkLeakCheckService* bulk_leak_check_service_;
   scoped_refptr<TestPasswordStore> store_;
-  IOSChromePasswordCheckManager manager_;
+  scoped_refptr<IOSChromePasswordCheckManager> manager_;
 };
 }  // namespace
 

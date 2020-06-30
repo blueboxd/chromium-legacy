@@ -32,10 +32,10 @@
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
-#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 
@@ -202,23 +202,71 @@ void LegacyAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
 
 void AbstractInlineTextBox::GetWordBoundaries(
     Vector<WordBoundaries>& words) const {
-  if (Len() == 0)
-    return;
-
   String text = GetText();
-  int len = text.length();
-  TextBreakIterator* iterator = WordBreakIterator(text, 0, len);
-
-  // FIXME: When http://crbug.com/411764 is fixed, replace this with an ASSERT.
-  if (!iterator)
+  if (!text.length())
     return;
 
-  int pos = iterator->first();
-  while (pos >= 0 && pos < len) {
-    int next = iterator->next();
-    if (IsWordTextBreak(iterator))
-      words.push_back(WordBoundaries(pos, next));
-    pos = next;
+  TextBreakIterator* it = WordBreakIterator(text, 0, text.length());
+  base::Optional<int> word_start;
+  for (int offset = 0; offset != kTextBreakDone && offset < int{text.length()};
+       offset = it->following(offset)) {
+    // Unlike in ICU's WordBreakIterator, a word boundary is valid only if it is
+    // before, or immediately preceded by, an alphanumeric character, a series
+    // of punctuation marks, an underscore or a line break. We therefore need to
+    // filter the boundaries returned by ICU's WordBreakIterator and return a
+    // subset of them. For example we should exclude a word boundary that is
+    // between two space characters, "Hello | there".
+
+    // Case 1: A new word should start if |offset| is before an alphanumeric
+    // character, an underscore or a hard line break
+    if (WTF::unicode::IsAlphanumeric(text[offset]) ||
+        text[offset] == kLowLineCharacter ||
+        text[offset] == kNewlineCharacter ||
+        text[offset] == kCarriageReturnCharacter) {
+      // We found a new word start or end. Append the previous word (if it
+      // exists) to the results, otherwise save this offset as a word start.
+      if (word_start)
+        words.emplace_back(*word_start, offset);
+      word_start = offset;
+
+      // Case 2: A new word should start before and end after a series of
+      // punctuation marks, i.e., Consecutive punctuation marks should be
+      // accumulated into a single word. For example, "|Hello|+++---|there|".
+    } else if (WTF::unicode::IsPunct(text[offset])) {
+      // At beginning of text, or the previous character was a punctuation
+      // symbol.
+      if (offset == 0 || !WTF::unicode::IsPunct(text[offset - 1])) {
+        if (word_start)
+          words.emplace_back(*word_start, offset);
+        word_start = offset;
+      }
+      continue;  // Skip to the end of the punctuation run.
+
+      // Case 3: A word should end if |offset| is proceeded by an alphanumeric
+      // character, a series of punctuation marks, an underscore or a hard line
+      // break.
+    } else if (offset > 0) {
+      UChar prev_character = text[offset - 1];
+      if (WTF::unicode::IsAlphanumeric(prev_character) ||
+          WTF::unicode::IsPunct(prev_character) ||
+          prev_character == kLowLineCharacter ||
+          prev_character == kNewlineCharacter ||
+          prev_character == kCarriageReturnCharacter) {
+        if (word_start) {
+          words.emplace_back(*word_start, offset);
+          word_start = base::nullopt;
+        }
+      }
+    }
+  }
+
+  // Case 4: If the character at last |offset| in |text| was an alphanumeric
+  // character, a punctuation mark, an underscore, or a line break, then it
+  // would have started a new word. We need to add its corresponding word end
+  // boundary which should be at |text|'s length.
+  if (word_start) {
+    words.emplace_back(*word_start, text.length());
+    word_start = base::nullopt;
   }
 }
 
@@ -228,7 +276,7 @@ String LegacyAbstractInlineTextBox::GetText() const {
 
   String result = inline_text_box_->GetText();
 
-  // Simplify all whitespace to just a space character, except for
+  // Change all whitespace to just a space character, except for
   // actual line breaks.
   if (!inline_text_box_->IsLineBreak())
     result = result.SimplifyWhiteSpace(WTF::kDoNotStripWhiteSpace);

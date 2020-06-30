@@ -23,7 +23,7 @@ namespace blink {
 
 // TODO(https://crbug.com/868868): Similar methods to this exist in many blink
 // unittests. Move to a separate file and reuse it in all of them.
-MediaStreamComponent* CreateWebMediaStreamTrack(
+MediaStreamComponent* CreateMediaStreamComponent(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

@@ -9,7 +9,6 @@ import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
   sources = [
-    "res/drawable/weblayer_infobar_wrapper_bg.xml",
     "res/drawable/weblayer_tab_indicator.xml",
     "res/layout/site_settings_layout.xml",
     "res/layout/weblayer_infobar_translate_compact_content.xml",
@@ -83,7 +82,6 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserViewController.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
-    "org/chromium/weblayer_private/ConfirmInfoBar.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/CookieManagerImpl.java",
     "org/chromium/weblayer_private/CrashReporterControllerImpl.java",
@@ -97,7 +95,6 @@ android_library("java") {
     "org/chromium/weblayer_private/InfoBarContainer.java",
     "org/chromium/weblayer_private/InfoBarContainerLayout.java",
     "org/chromium/weblayer_private/InfoBarContainerView.java",
-    "org/chromium/weblayer_private/InfoBarWrapper.java",
     "org/chromium/weblayer_private/IntentUtils.java",
     "org/chromium/weblayer_private/InterceptNavigationDelegateClientImpl.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
@@ -272,7 +269,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
     "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
-    "org/chromium/weblayer_private/ConfirmInfoBar.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/CookieManagerImpl.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",

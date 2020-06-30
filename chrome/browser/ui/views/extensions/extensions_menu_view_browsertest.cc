@@ -253,7 +253,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
             extension_id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
         break;
       case ExtensionRemovalMethod::kBlocklist:
-        extension_service->BlacklistExtensionForTest(extension_id);
+        extension_service->BlocklistExtensionForTest(extension_id);
         break;
       case ExtensionRemovalMethod::kTerminate:
         extension_service->TerminateExtension(extension_id);

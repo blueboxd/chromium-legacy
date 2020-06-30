@@ -19,14 +19,27 @@ extern const char kCrostiniStabilityHistogram[];
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
-// CrostiniFailureClasses in src/tools/metrics/histograms/enums.xml.
+// CrostiniFailureClasses in src/tools/metrics/histograms/enums.xml and the copy
+// in src/platform2/vm_tools/cicerone/crash_listener_impl.cc
 enum class FailureClasses {
   ConciergeStopped = 0,
   CiceroneStopped = 1,
   SeneschalStopped = 2,
   ChunneldStopped = 3,
   VmStopped = 4,
-  kMaxValue = VmStopped,
+  VmSyslogStopped = 5,
+  VshdStopped = 6,
+  LxcFsStopped = 7,
+  TremplinStopped = 8,
+  NdproxydStopped = 9,
+  McastdStopped = 10,
+  LxdStopped = 11,
+  GarconStopped = 12,
+  SommelierStopped = 13,
+  SommelierXStopped = 14,
+  CrosSftpStopped = 15,
+  CrosNotificationdStopped = 16,
+  kMaxValue = CrosNotificationdStopped,
 };
 
 class CrostiniStabilityMonitor : chromeos::ConciergeClient::Observer,

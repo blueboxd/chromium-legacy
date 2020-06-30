@@ -269,7 +269,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const /** !BackgroundOps */ bgOps = window['backgroundOps'];
 
   const testErrorCallback = bgOps.getTestingErrorCallback();
-  metrics.initMetrics(testErrorCallback !== null);
+  metrics.initMetrics();
+  if (testErrorCallback !== null) {
+    metrics.setMetricsEnabled(false);
+  }
+
   // TODO(crbug/1082585): Initializes it before any other javascript loaded.
   error.initialize(testErrorCallback);
 

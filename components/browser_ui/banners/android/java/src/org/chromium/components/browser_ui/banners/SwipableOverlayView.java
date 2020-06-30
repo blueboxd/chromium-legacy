@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.banners;
+package org.chromium.components.browser_ui.banners;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -233,8 +233,8 @@ public abstract class SwipableOverlayView extends FrameLayout {
 
                 boolean isVisibleInitially = mInitialTranslationY < mTotalHeight;
                 float percentageVisible = 1.0f - (getTranslationY() / mTotalHeight);
-                float visibilityThreshold = isVisibleInitially
-                        ? VERTICAL_FLING_HIDE_THRESHOLD : VERTICAL_FLING_SHOW_THRESHOLD;
+                float visibilityThreshold = isVisibleInitially ? VERTICAL_FLING_HIDE_THRESHOLD
+                                                               : VERTICAL_FLING_SHOW_THRESHOLD;
                 boolean isVisibleEnough = percentageVisible > visibilityThreshold;
                 boolean isNearTopOfPage = scrollOffsetY < (mTotalHeight * FULL_THRESHOLD);
 

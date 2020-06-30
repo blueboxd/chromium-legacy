@@ -111,7 +111,7 @@ ExtensionManagement::GetProviders() const {
   return providers_;
 }
 
-bool ExtensionManagement::BlacklistedByDefault() const {
+bool ExtensionManagement::BlocklistedByDefault() const {
   return (default_settings_->installation_mode == INSTALLATION_BLOCKED ||
           default_settings_->installation_mode == INSTALLATION_REMOVED);
 }

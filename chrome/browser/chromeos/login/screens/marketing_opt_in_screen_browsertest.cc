@@ -179,7 +179,7 @@ void MarketingOptInScreenTest::SetUpOnMainThread() {
       &MarketingOptInScreenTest::HandleScreenExit, base::Unretained(this)));
 
   OobeBaseTest::SetUpOnMainThread();
-  login_manager_mixin_.LoginAsNewReguarUser();
+  login_manager_mixin_.LoginAsNewRegularUser();
   OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       ash::prefs::kGestureEducationNotificationShown, true);

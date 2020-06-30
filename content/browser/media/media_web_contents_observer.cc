@@ -217,14 +217,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     int delegate_id,
     bool has_video,
     bool has_audio,
-    bool is_remote,
     media::MediaContentType media_content_type) {
-  // TODO(mlamouri): this used to be done to avoid video wake lock. However, it
-  // was doing much more. Removing will be done in a follow-up CL to avoid
-  // regressions to be pinpoint to the wake lock refactor.
-  if (is_remote)
-    return;
-
   const MediaPlayerId id(render_frame_host, delegate_id);
   if (has_audio)
     AddMediaPlayerEntry(id, &active_audio_players_);
@@ -233,7 +226,7 @@ void MediaWebContentsObserver::OnMediaPlaying(
     AddMediaPlayerEntry(id, &active_video_players_);
 
   if (!session_controllers_manager_.RequestPlay(
-          id, has_audio, is_remote, media_content_type, has_video)) {
+          id, has_audio, media_content_type, has_video)) {
     return;
   }
 

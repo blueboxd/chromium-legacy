@@ -14,15 +14,28 @@ namespace local_search_service {
 
 namespace {
 
-void LogSearchResultsStats(const std::string& histogram_prefix,
-                           ResponseStatus status,
-                           size_t num_results) {
+// Only logs metrics if |histogram_prefix| is not empty.
+void MaybeLogSearchResultsStats(const std::string& histogram_prefix,
+                                ResponseStatus status,
+                                size_t num_results) {
+  if (histogram_prefix.empty())
+    return;
+
   base::UmaHistogramEnumeration(histogram_prefix + ".ResponseStatus", status);
   if (status == ResponseStatus::kSuccess) {
     // Only logs number of results if search is a success.
     base::UmaHistogramCounts100(histogram_prefix + ".NumberResults",
                                 num_results);
   }
+}
+
+// Only logs metrics if |histogram_prefix| is not empty.
+void MaybeLogIndexIdAndBackendType(const std::string& histogram_prefix,
+                                   Backend backend) {
+  if (histogram_prefix.empty())
+    return;
+
+  base::UmaHistogramEnumeration(histogram_prefix + ".Backend", backend);
 }
 
 std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
@@ -37,7 +50,10 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
 
 }  // namespace
 
-Index::Index(IndexId index_id) : index_id_(index_id) {
+Index::Index(IndexId index_id, Backend backend) : index_id_(index_id) {
+  // TODO(jiameng): currently only support linear map.
+  DCHECK_EQ(backend, Backend::kLinearMap);
+
   histogram_prefix_ = IndexIdBasedHistogramPrefix(*index_id_);
   linear_map_search_ = std::make_unique<LinearMapSearch>();
   if (!g_browser_process || !g_browser_process->local_state()) {
@@ -48,6 +64,8 @@ Index::Index(IndexId index_id) : index_id_(index_id) {
       std::make_unique<SearchMetricsReporter>(g_browser_process->local_state());
   DCHECK(reporter_);
   reporter_->SetIndexId(*index_id_);
+
+  MaybeLogIndexIdAndBackendType(histogram_prefix_, backend);
 }
 
 Index::~Index() = default;
@@ -73,8 +91,8 @@ ResponseStatus Index::Find(const base::string16& query,
                            std::vector<Result>* results) {
   DCHECK(linear_map_search_);
   ResponseStatus status = linear_map_search_->Find(query, max_results, results);
-  if (!histogram_prefix_.empty())
-    LogSearchResultsStats(histogram_prefix_, status, results->size());
+  MaybeLogSearchResultsStats(histogram_prefix_, status, results->size());
+
   if (reporter_)
     reporter_->OnSearchPerformed();
 

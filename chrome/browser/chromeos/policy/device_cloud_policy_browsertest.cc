@@ -299,9 +299,9 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    // The test app has to be whitelisted for sign-in screen.
+    // The test app has to be allowlisted for sign-in screen.
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
+        extensions::switches::kAllowlistedExtensionID, kTestExtensionId);
   }
 
   void SetUpInProcessBrowserTestFixture() override {

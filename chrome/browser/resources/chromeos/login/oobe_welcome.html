@@ -118,9 +118,8 @@
       </hd-iron-icon>
       <div slot="footer" class="layout vertical scroll">
         <oobe-a11y-option id="accessibility-spoken-feedback"
-        checked="[[a11yStatus.spokenFeedbackEnabled]]"
+            checked="[[a11yStatus.spokenFeedbackEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableSpokenFeedback"
             label-for-aria="[[i18nDynamic(locale, 'spokenFeedbackOption')]]"
             class="focus-on-show">
           <span slot="title">
@@ -135,7 +134,7 @@
         </oobe-a11y-option>
         <oobe-a11y-option id="accessibility-large-cursor"
             checked="[[a11yStatus.largeCursorEnabled]]"
-            on-change="onA11yOptionChanged_" chrome-message="enableLargeCursor"
+            on-change="onA11yOptionChanged_"
             label-for-aria="[[i18nDynamic(locale, 'largeCursorOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'largeCursorOption')]]
@@ -149,7 +148,7 @@
         </oobe-a11y-option>
         <oobe-a11y-option id="accessibility-high-contrast"
             checked="[[a11yStatus.highContrastEnabled]]"
-            on-change="onA11yOptionChanged_" chrome-message="enableHighContrast"
+            on-change="onA11yOptionChanged_"
             label-for-aria="[[i18nDynamic(locale, 'highContrastOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'highContrastOption')]]
@@ -164,7 +163,6 @@
         <oobe-a11y-option id="accessibility-screen-magnifier"
             checked="[[a11yStatus.screenMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableScreenMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'screenMagnifierOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'screenMagnifierOption')]]
@@ -179,7 +177,6 @@
         <oobe-a11y-option id="accessibility-select-to-speak"
             checked="[[a11yStatus.selectToSpeakEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableSelectToSpeak"
             label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
             id="selectToSpeakOobeOption">
           <span slot="title">
@@ -195,7 +192,6 @@
         <oobe-a11y-option id="accessibility-docked-magnifier"
             checked="[[a11yStatus.dockedMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableDockedMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'dockedMagnifierOption')]]
@@ -210,7 +206,6 @@
         <oobe-a11y-option id="accessibility-virtual-keyboard"
             checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
-            chrome-message="enableVirtualKeyboard"
             label-for-aria="[[i18nDynamic(locale, 'virtualKeyboardOption')]]">
           <span slot="title">
             [[i18nDynamic(locale, 'virtualKeyboardOption')]]

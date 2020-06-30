@@ -35,9 +35,6 @@ void TokenizeSearchTags(const std::vector<Content>& contents,
 bool IsItemRelevant(const TokenizedString& query,
                     const std::vector<TokenizedStringWithId>& search_tags,
                     double relevance_threshold,
-                    bool use_prefix_only,
-                    bool use_edit_distance,
-                    double partial_match_penalty_rate,
                     double* relevance_score,
                     Positions* positions) {
   DCHECK(relevance_score);
@@ -49,8 +46,10 @@ bool IsItemRelevant(const TokenizedString& query,
   for (const auto& tag : search_tags) {
     FuzzyTokenizedStringMatch match;
     if (match.IsRelevant(query, *(tag.second), relevance_threshold,
-                         use_prefix_only, true /* use_weighted_ratio */,
-                         use_edit_distance, partial_match_penalty_rate, 0.1)) {
+                         false /* use_prefix_only */,
+                         true /* use_weighted_ratio */,
+                         false /* use_edit_distance */,
+                         0.9 /* partial_match_penalty_rate */, 0.1)) {
       *relevance_score = match.relevance();
       Position position;
       position.content_id = tag.first;
@@ -137,11 +136,9 @@ std::vector<Result> LinearMapSearch::GetSearchResults(
   for (const auto& item : data_) {
     double relevance_score = 0.0;
     Positions positions;
-    if (IsItemRelevant(
-            tokenized_query, item.second, search_params_.relevance_threshold,
-            search_params_.use_prefix_only, search_params_.use_edit_distance,
-            search_params_.partial_match_penalty_rate, &relevance_score,
-            &positions)) {
+    if (IsItemRelevant(tokenized_query, item.second,
+                       search_params_.relevance_threshold, &relevance_score,
+                       &positions)) {
       Result result;
       result.id = item.first;
       result.score = relevance_score;

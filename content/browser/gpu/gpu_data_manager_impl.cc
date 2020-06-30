@@ -34,9 +34,9 @@ bool GpuDataManagerImpl::Initialized() {
   return g_initialized;
 }
 
-void GpuDataManagerImpl::BlacklistWebGLForTesting() {
+void GpuDataManagerImpl::BlocklistWebGLForTesting() {
   base::AutoLock auto_lock(lock_);
-  private_->BlacklistWebGLForTesting();
+  private_->BlocklistWebGLForTesting();
 }
 
 gpu::GPUInfo GpuDataManagerImpl::GetGPUInfo() {

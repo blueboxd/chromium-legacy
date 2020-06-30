@@ -27,7 +27,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * It is responsible for the sign-in and adding account functions needed for the
  * web sign-in flow.
  */
-public class AccountPickerDelegate implements AccountPickerCoordinator.Listener {
+public class AccountPickerDelegate {
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
     private final String mContinueUrl;
@@ -39,13 +39,9 @@ public class AccountPickerDelegate implements AccountPickerCoordinator.Listener 
         mContinueUrl = continueUrl;
     }
     /**
-     * Notifies that the user has selected an account.
-     *
-     * @param accountName The email of the selected account.
-     * @param isDefaultAccount Whether the selected account is the first in the account list.
+     * Signs the user into the account of the given accountName.
      */
-    @Override
-    public void onAccountSelected(String accountName, boolean isDefaultAccount) {
+    public void signIn(String accountName) {
         Account account = AccountUtils.findAccountByName(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
         IdentityServicesProvider.get().getSigninManager().signIn(
@@ -70,7 +66,6 @@ public class AccountPickerDelegate implements AccountPickerCoordinator.Listener 
     /**
      * Notifies when the user clicked the "add account" button.
      */
-    @Override
     public void addAccount() {
         // TODO(https//crbug.com/1097031): We should select the added account
         // and collapse the account chooser after the account is actually added.

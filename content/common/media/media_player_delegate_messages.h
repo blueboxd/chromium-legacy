@@ -89,11 +89,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaPaused,
                     int /* delegate_id, distinguishes instances */,
                     bool /* reached end of stream */)
 
-IPC_MESSAGE_ROUTED5(MediaPlayerDelegateHostMsg_OnMediaPlaying,
+IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                     int /* delegate_id, distinguishes instances */,
                     bool /* has_video */,
                     bool /* has_audio */,
-                    bool /* is_remote */,
                     media::MediaContentType /* media_content_type */)
 
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,

@@ -89,7 +89,7 @@ void InstallChromeApp(const std::string& app_id) {
   browser->OpenURL(params);
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser->profile());
-  // Skip if this app is already installed or blacklisted. For disabled or
+  // Skip if this app is already installed or blocklisted. For disabled or
   // or terminated apps, going through the installation flow should re-enable
   // them.
   const extensions::Extension* installed_extension = registry->GetExtensionById(

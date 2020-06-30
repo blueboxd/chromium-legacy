@@ -1103,7 +1103,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
         Error("Must be in developer mode to load unpacked extensions."));
   }
   if (ExtensionManagementFactory::GetForBrowserContext(browser_context())
-          ->BlacklistedByDefault()) {
+          ->BlocklistedByDefault()) {
     return RespondNow(Error("Extension installation is blocked by policy."));
   }
 

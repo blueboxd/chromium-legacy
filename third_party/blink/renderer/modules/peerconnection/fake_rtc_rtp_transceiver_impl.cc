@@ -9,7 +9,7 @@
 
 namespace blink {
 
-MediaStreamComponent* CreateWebMediaStreamTrack(
+MediaStreamComponent* CreateMediaStreamComponent(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::WebMediaStreamSource web_source;
@@ -70,7 +70,7 @@ FakeRTCRtpSenderImpl::DtlsTransportInformation() {
 }
 
 MediaStreamComponent* FakeRTCRtpSenderImpl::Track() const {
-  return track_id_ ? CreateWebMediaStreamTrack(*track_id_, task_runner_)
+  return track_id_ ? CreateMediaStreamComponent(*track_id_, task_runner_)
                    : nullptr;
 }
 
@@ -120,7 +120,7 @@ FakeRTCRtpReceiverImpl::FakeRTCRtpReceiverImpl(
     const std::string& track_id,
     std::vector<std::string> stream_ids,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : component_(CreateWebMediaStreamTrack(track_id, task_runner)),
+    : component_(CreateMediaStreamComponent(track_id, task_runner)),
       stream_ids_(std::move(stream_ids)) {}
 
 FakeRTCRtpReceiverImpl::FakeRTCRtpReceiverImpl(const FakeRTCRtpReceiverImpl&) =

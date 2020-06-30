@@ -287,10 +287,11 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
 bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
   if (!service_weak_.get())
     return true;
-  // If there is a "*" in the extension blacklist, then no extensions should be
+  // If there is a "*" in the extension blocklist, then no extensions should be
   // allowed at all (except explicitly whitelisted extensions).
   return !ExtensionManagementFactory::GetForBrowserContext(
-              service_weak_->profile())->BlacklistedByDefault();
+              service_weak_->profile())
+              ->BlocklistedByDefault();
 }
 
 void UnpackedInstaller::GetAbsolutePath() {

@@ -26,12 +26,24 @@ struct EnumTraits<local_search_service::mojom::IndexId,
 };
 
 template <>
+struct EnumTraits<local_search_service::mojom::Backend,
+                  local_search_service::Backend> {
+  static local_search_service::mojom::Backend ToMojom(
+      local_search_service::Backend input);
+  static bool FromMojom(local_search_service::mojom::Backend input,
+                        local_search_service::Backend* output);
+};
+
+template <>
 struct StructTraits<local_search_service::mojom::ContentDataView,
                     local_search_service::Content> {
  public:
   static std::string id(const local_search_service::Content& c) { return c.id; }
   static base::string16 content(const local_search_service::Content& c) {
     return c.content;
+  }
+  static double weight(const local_search_service::Content& c) {
+    return c.weight;
   }
 
   static bool Read(local_search_service::mojom::ContentDataView data,
@@ -60,15 +72,11 @@ struct StructTraits<local_search_service::mojom::SearchParamsDataView,
       const local_search_service::SearchParams& s) {
     return s.relevance_threshold;
   }
-  static double partial_match_penalty_rate(
-      const local_search_service::SearchParams& s) {
-    return s.partial_match_penalty_rate;
+  static double prefix_threshold(const local_search_service::SearchParams& s) {
+    return s.prefix_threshold;
   }
-  static bool use_prefix_only(const local_search_service::SearchParams& s) {
-    return s.use_prefix_only;
-  }
-  static bool use_edit_distance(const local_search_service::SearchParams& s) {
-    return s.use_edit_distance;
+  static double fuzzy_threshold(const local_search_service::SearchParams& s) {
+    return s.fuzzy_threshold;
   }
 
   static bool Read(local_search_service::mojom::SearchParamsDataView data,

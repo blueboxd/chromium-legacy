@@ -209,36 +209,6 @@ void LoadCompressedDataFromExtension(
       std::move(compressed_data_callback));
 }
 
-// Encode the ImageSkia to the compressed PNG data with the image's 1.0f scale
-// factor representation. Return the encoded PNG data.
-//
-// This function should not be called on the UI thread.
-std::vector<uint8_t> EncodeImage(const gfx::ImageSkia image) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-
-  std::vector<uint8_t> image_data;
-
-  const gfx::ImageSkiaRep& image_skia_rep = image.GetRepresentation(1.0f);
-  if (image_skia_rep.scale() != 1.0f) {
-    return image_data;
-  }
-
-  const SkBitmap& bitmap = image_skia_rep.GetBitmap();
-  if (bitmap.drawsNothing()) {
-    return image_data;
-  }
-
-  base::AssertLongCPUWorkAllowed();
-  constexpr bool discard_transparency = false;
-  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, discard_transparency,
-                                                   &image_data);
-  if (!success) {
-    return std::vector<uint8_t>();
-  }
-  return image_data;
-}
-
 // This pipeline is meant to:
 // * Simplify loading icons, as things like effects and type are common
 //   to all loading.
@@ -362,19 +332,20 @@ void IconLoadingPipeline::LoadWebAppIcon(
           return;
         }
         FALLTHROUGH;
-      case apps::mojom::IconType::kUncompressed: {
-        // For uncompressed icon, apply the resize and pad effect.
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ | apps::IconEffects::kResizeAndPad);
+      case apps::mojom::IconType::kUncompressed:
+        if (icon_type_ == apps::mojom::IconType::kUncompressed) {
+          // For uncompressed icon, apply the resize and pad effect.
+          icon_effects_ = static_cast<apps::IconEffects>(
+              icon_effects_ | apps::IconEffects::kResizeAndPad);
 
-        // For uncompressed icon, clear the standard icon effects: kBackground
-        // and kMask.
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
+          // For uncompressed icon, clear the standard icon effects: kBackground
+          // and kMask.
+          icon_effects_ = static_cast<apps::IconEffects>(
+              icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
+          icon_effects_ = static_cast<apps::IconEffects>(
+              icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
+        }
         FALLTHROUGH;
-      }
       case apps::mojom::IconType::kStandard:
         // If |icon_effects| are requested, we must always load the
         // uncompressed image to apply the icon effects, and then re-encode the
@@ -553,7 +524,7 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
   processed_image.MakeThreadSafe();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&EncodeImage, processed_image),
+      base::BindOnce(&apps::EncodeImageToPngBytes, processed_image),
       base::BindOnce(&IconLoadingPipeline::CompleteWithCompressed,
                      base::WrapRefCounted(this)));
 }
@@ -648,6 +619,32 @@ void IconLoadingPipeline::MaybeLoadFallbackOrCompleteEmpty() {
 }  // namespace
 
 namespace apps {
+
+std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
+  std::vector<uint8_t> image_data;
+
+  const gfx::ImageSkiaRep& image_skia_rep = image.GetRepresentation(1.0f);
+  if (image_skia_rep.scale() != 1.0f) {
+    return image_data;
+  }
+
+  const SkBitmap& bitmap = image_skia_rep.GetBitmap();
+  if (bitmap.drawsNothing()) {
+    return image_data;
+  }
+
+  base::AssertLongCPUWorkAllowed();
+  constexpr bool discard_transparency = false;
+  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, discard_transparency,
+                                                   &image_data);
+  if (!success) {
+    return std::vector<uint8_t>();
+  }
+  return image_data;
+}
 
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,

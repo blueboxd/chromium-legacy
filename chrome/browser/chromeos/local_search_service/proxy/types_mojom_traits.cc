@@ -34,6 +34,38 @@ bool EnumTraits<local_search_service::mojom::IndexId,
 }
 
 // static
+local_search_service::mojom::Backend
+EnumTraits<local_search_service::mojom::Backend,
+           local_search_service::Backend>::ToMojom(local_search_service::Backend
+                                                       input) {
+  switch (input) {
+    case local_search_service::Backend::kLinearMap:
+      return local_search_service::mojom::Backend::kLinearMap;
+    case local_search_service::Backend::kInvertedIndex:
+      return local_search_service::mojom::Backend::kInvertedIndex;
+  }
+  NOTREACHED();
+  return local_search_service::mojom::Backend::kLinearMap;
+}
+
+// static
+bool EnumTraits<local_search_service::mojom::Backend,
+                local_search_service::Backend>::
+    FromMojom(local_search_service::mojom::Backend input,
+              local_search_service::Backend* output) {
+  switch (input) {
+    case local_search_service::mojom::Backend::kLinearMap:
+      *output = local_search_service::Backend::kLinearMap;
+      return true;
+    case local_search_service::mojom::Backend::kInvertedIndex:
+      *output = local_search_service::Backend::kInvertedIndex;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<local_search_service::mojom::ContentDataView,
                   local_search_service::Content>::
     Read(local_search_service::mojom::ContentDataView data,
@@ -43,7 +75,7 @@ bool StructTraits<local_search_service::mojom::ContentDataView,
   if (!data.ReadId(&id) || !data.ReadContent(&content))
     return false;
 
-  *out = local_search_service::Content(id, content);
+  *out = local_search_service::Content(id, content, data.weight());
   return true;
 }
 
@@ -68,9 +100,8 @@ bool StructTraits<local_search_service::mojom::SearchParamsDataView,
          local_search_service::SearchParams* out) {
   *out = local_search_service::SearchParams();
   out->relevance_threshold = data.relevance_threshold();
-  out->partial_match_penalty_rate = data.partial_match_penalty_rate();
-  out->use_prefix_only = data.use_prefix_only();
-  out->use_edit_distance = data.use_edit_distance();
+  out->prefix_threshold = data.prefix_threshold();
+  out->fuzzy_threshold = data.fuzzy_threshold();
   return true;
 }
 

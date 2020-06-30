@@ -2538,7 +2538,7 @@ class KioskVirtualKeyboardTest : public KioskTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     KioskTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
+        extensions::switches::kAllowlistedExtensionID,
         kTestVirtualKeyboardKioskApp);
     command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }

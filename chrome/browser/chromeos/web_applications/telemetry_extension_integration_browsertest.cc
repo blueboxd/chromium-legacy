@@ -23,14 +23,7 @@ class TelemetryExtensionIntegrationTest : public SystemWebAppIntegrationTest {
 
 // Test that the Telemetry Extension installs and launches correctly. Runs
 // some spot checks on the manifest.
-#if defined(ADDRESS_SANITIZER)
-// Flaky under asan/lsan: https://crbug.com/1098764
-#define MAYBE_TelemetryExtension DISABLED_TelemetryExtension
-#else
-#define MAYBE_TelemetryExtension TelemetryExtension
-#endif
-IN_PROC_BROWSER_TEST_P(TelemetryExtensionIntegrationTest,
-                       MAYBE_TelemetryExtension) {
+IN_PROC_BROWSER_TEST_P(TelemetryExtensionIntegrationTest, TelemetryExtension) {
   const GURL url(chromeos::kChromeUITelemetryExtensionURL);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
       web_app::SystemAppType::TELEMETRY, url, "Telemetry Extension"));

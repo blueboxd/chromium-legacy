@@ -114,6 +114,7 @@ content::WebUIDataSource* CreateWebUIDataSource() {
     {"inline_login.js", IDR_INLINE_LOGIN_JS},
     {"gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS},
 #if defined(OS_CHROMEOS)
+    {"error_screen.js", IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_JS},
     {"edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML},
     {"app.js", IDR_EDU_LOGIN_EDU_LOGIN_JS},
     {"edu_login_button.js", IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS},

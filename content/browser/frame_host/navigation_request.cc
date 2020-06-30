@@ -726,7 +726,7 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
     network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
     network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
     const url::Origin& initiator_origin,
-    bool is_initiator_aboutblank,
+    bool is_initial_navigation,
     network::mojom::CrossOriginOpenerPolicyValue destination_coop,
     network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
     const url::Origin& destination_origin) {
@@ -756,7 +756,7 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
   // ```
   // [1]
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
-  if (is_initiator_aboutblank &&
+  if (is_initial_navigation &&
       initiator_coop == CrossOriginOpenerPolicyValue::kSameOriginAllowPopups &&
       destination_coop == CrossOriginOpenerPolicyValue::kUnsafeNone) {
     return false;

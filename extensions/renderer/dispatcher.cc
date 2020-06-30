@@ -864,8 +864,8 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchEvent, OnDispatchEvent)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSessionInfo, OnSetSessionInfo)
-  IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
-                      OnSetScriptingWhitelist)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingAllowlist,
+                      OnSetScriptingAllowlist)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetWebViewPartitionID,
                       OnSetWebViewPartitionID)
@@ -1093,9 +1093,9 @@ void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
       blink::WebString::FromUTF8(extensions::kExtensionScheme));
 }
 
-void Dispatcher::OnSetScriptingWhitelist(
-    const ExtensionsClient::ScriptingWhitelist& extension_ids) {
-  ExtensionsClient::Get()->SetScriptingWhitelist(extension_ids);
+void Dispatcher::OnSetScriptingAllowlist(
+    const ExtensionsClient::ScriptingAllowlist& extension_ids) {
+  ExtensionsClient::Get()->SetScriptingAllowlist(extension_ids);
 }
 
 void Dispatcher::OnSetSystemFont(const std::string& font_family,

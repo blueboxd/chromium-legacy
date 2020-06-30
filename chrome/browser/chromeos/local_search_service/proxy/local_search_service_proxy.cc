@@ -19,10 +19,11 @@ LocalSearchServiceProxy::~LocalSearchServiceProxy() = default;
 
 void LocalSearchServiceProxy::GetIndex(
     IndexId index_id,
+    Backend backend,
     mojo::PendingReceiver<mojom::IndexProxy> index_receiver) {
   auto it = indices_.find(index_id);
   if (it == indices_.end()) {
-    Index* index = service_->GetIndex(index_id);
+    Index* index = service_->GetIndex(index_id, backend);
     it = indices_.emplace(index_id, std::make_unique<IndexProxy>(index)).first;
   }
   it->second->BindReceiver(std::move(index_receiver));

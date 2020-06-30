@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
@@ -120,6 +121,9 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   // Task runner for preparing the payload. It takes a lot of memory. Therefore,
   // those tasks aren't parallelized.
   scoped_refptr<base::SequencedTaskRunner> payload_task_runner_;
+
+  // Cancels pending encryption tasks when destructing.
+  base::CancelableTaskTracker task_tracker_;
 
   // Weak pointers for different callbacks.
   base::WeakPtrFactory<BulkLeakCheckImpl> weak_ptr_factory_{this};

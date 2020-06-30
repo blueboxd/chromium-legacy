@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_PASSWORD_CHECK_MANAGER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
@@ -13,6 +14,11 @@
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+
+class IOSChromePasswordCheckManager;
+namespace {
+class IOSChromePasswordCheckManagerProxy;
+}
 
 // Enum which represents possible states of Password Check on UI.
 // It's created based on BulkLeakCheckService::State.
@@ -28,7 +34,9 @@ enum class PasswordCheckState {
 
 // This class handles the bulk password check feature.
 class IOSChromePasswordCheckManager
-    : public password_manager::SavedPasswordsPresenter::Observer,
+    : public base::SupportsWeakPtr<IOSChromePasswordCheckManager>,
+      public base::RefCounted<IOSChromePasswordCheckManager>,
+      public password_manager::SavedPasswordsPresenter::Observer,
       public password_manager::CompromisedCredentialsManager::Observer,
       public password_manager::BulkLeakCheckServiceInterface::Observer {
  public:
@@ -39,9 +47,6 @@ class IOSChromePasswordCheckManager
         password_manager::CompromisedCredentialsManager::CredentialsView
             credentials) {}
   };
-
-  explicit IOSChromePasswordCheckManager(ChromeBrowserState* browser_state);
-  ~IOSChromePasswordCheckManager() override;
 
   // Requests to start a check for compromised passwords.
   void StartPasswordCheck();
@@ -62,6 +67,12 @@ class IOSChromePasswordCheckManager
   }
 
  private:
+  friend class RefCounted<IOSChromePasswordCheckManager>;
+  friend class IOSChromePasswordCheckManagerProxy;
+
+  explicit IOSChromePasswordCheckManager(ChromeBrowserState* browser_state);
+  ~IOSChromePasswordCheckManager() override;
+
   // password_manager::SavedPasswordsPresenter::Observer:
   void OnSavedPasswordsChanged(
       password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)

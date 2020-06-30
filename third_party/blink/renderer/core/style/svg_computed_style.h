@@ -245,18 +245,14 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
       misc.Access()->flood_opacity = obj;
   }
 
-  void SetFloodColor(const StyleColor& style_color) {
-    if (FloodColor() != style_color) {
-      StyleMiscData* mutable_misc = misc.Access();
-      mutable_misc->flood_color = style_color;
-    }
+  void SetFloodColor(const StyleColor& color) {
+    if (!(misc->flood_color == color))
+      misc.Access()->flood_color = color;
   }
 
-  void SetLightingColor(const StyleColor& style_color) {
-    if (LightingColor() != style_color) {
-      StyleMiscData* mutable_misc = misc.Access();
-      mutable_misc->lighting_color = style_color;
-    }
+  void SetLightingColor(const StyleColor& color) {
+    if (!(misc->lighting_color == color))
+      misc.Access()->lighting_color = color;
   }
 
   void SetBaselineShiftValue(const Length& baseline_shift_value) {
@@ -322,8 +318,8 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   float StopOpacity() const { return stops->opacity; }
   const StyleColor& StopColor() const { return stops->color; }
   float FloodOpacity() const { return misc->flood_opacity; }
-  StyleColor FloodColor() const { return misc->flood_color; }
-  StyleColor LightingColor() const { return misc->lighting_color; }
+  const StyleColor& FloodColor() const { return misc->flood_color; }
+  const StyleColor& LightingColor() const { return misc->lighting_color; }
   const Length& BaselineShiftValue() const {
     return misc->baseline_shift_value;
   }

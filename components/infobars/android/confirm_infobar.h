@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
-#define CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
+#ifndef COMPONENTS_INFOBARS_ANDROID_CONFIRM_INFOBAR_H_
+#define COMPONENTS_INFOBARS_ANDROID_CONFIRM_INFOBAR_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -34,4 +34,4 @@ class ConfirmInfoBar : public InfoBarAndroid {
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
 
-#endif  // CHROME_BROWSER_UI_ANDROID_INFOBARS_CONFIRM_INFOBAR_H_
+#endif  // COMPONENTS_INFOBARS_ANDROID_CONFIRM_INFOBAR_H_

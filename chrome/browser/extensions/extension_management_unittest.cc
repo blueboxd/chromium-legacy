@@ -331,7 +331,7 @@ bool ExtensionAdminPolicyTest::BlacklistedByDefault(
   SetUpPolicyProvider();
   if (blacklist)
     SetPref(true, pref_names::kInstallDenyList, blacklist->CreateDeepCopy());
-  return extension_management_->BlacklistedByDefault();
+  return extension_management_->BlocklistedByDefault();
 }
 
 bool ExtensionAdminPolicyTest::UserMayLoad(
@@ -499,7 +499,7 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   SetExampleDictPref(kExampleDictPreference);
 
   // Verifies the installation mode settings.
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -723,11 +723,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
   // Set the new dictionary preference.
   {
     PrefUpdater updater(pref_service_);
-    updater.SetBlacklistedByDefault(false);  // Allowed by default.
+    updater.SetBlocklistedByDefault(false);  // Allowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, false);
     updater.ClearPerExtensionSettings(kTargetExtension2);
   }
-  EXPECT_FALSE(extension_management_->BlacklistedByDefault());
+  EXPECT_FALSE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
@@ -746,7 +746,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
           allowed_list_pref.CreateDeepCopy());
 
   // Verifies that the new one have higher priority over the legacy ones.
-  EXPECT_FALSE(extension_management_->BlacklistedByDefault());
+  EXPECT_FALSE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -761,11 +761,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
   // Set the new dictionary preference.
   {
     PrefUpdater updater(pref_service_);
-    updater.SetBlacklistedByDefault(true);  // Disallowed by default.
+    updater.SetBlocklistedByDefault(true);  // Disallowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, true);
     updater.ClearPerExtensionSettings(kTargetExtension2);
   }
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
@@ -783,7 +783,7 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
           allowed_list_pref.CreateDeepCopy());
 
   // Verifies that the new one have higher priority over the legacy ones.
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
   EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
@@ -840,7 +840,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
 
   // Set BlacklistedByDefault() to false.
   PrefUpdater pref(pref_service_);
-  pref.SetBlacklistedByDefault(false);
+  pref.SetBlocklistedByDefault(false);
 
   // The result should remain the same.
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
@@ -876,7 +876,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
       extension_management_->IsInstallationExplicitlyBlocked(not_specified));
 
   PrefUpdater pref(pref_service_);
-  pref.SetBlacklistedByDefault(false);
+  pref.SetBlocklistedByDefault(false);
 
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(allowed));
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(forced));
@@ -894,7 +894,7 @@ TEST_F(ExtensionManagementServiceTest,
   // default.
   SetPref(true, prefs::kCloudExtensionRequestEnabled,
           std::make_unique<base::Value>(true));
-  EXPECT_TRUE(extension_management_->BlacklistedByDefault());
+  EXPECT_TRUE(extension_management_->BlocklistedByDefault());
   EXPECT_EQ(ExtensionManagement::INSTALLATION_BLOCKED,
             GetInstallationModeById(kTargetExtension));
   // However, it will be overridden by ExtensionSettings

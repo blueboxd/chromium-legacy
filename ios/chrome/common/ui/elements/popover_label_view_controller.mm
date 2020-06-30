@@ -13,8 +13,8 @@
 
 namespace {
 
-// Inset for the text content.
-constexpr CGFloat kInsetValue = 20;
+// Vertical inset for the text content.
+constexpr CGFloat kVerticalInsetValue = 20;
 // Desired percentage of the width of the presented view controller.
 constexpr CGFloat kWidthProportion = 0.75;
 // Distance between the primary text label and the secondary text label.
@@ -80,9 +80,13 @@ constexpr CGFloat kVerticalDistance = 24;
   [self.view addSubview:scrollView];
   AddSameConstraints(self.view.layoutMarginsGuide, scrollView);
 
-  UILayoutGuide* textLayoutGuide = [[UILayoutGuide alloc] init];
-  [self.view addLayoutGuide:textLayoutGuide];
-  AddSameConstraints(textLayoutGuide, scrollView);
+  // TODO(crbug.com/1100884): Remove the following workaround:
+  // Using a UIView instead of UILayoutGuide as the later behaves weirdly with
+  // the scroll view.
+  UIView* textContainerView = [[UIView alloc] init];
+  textContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+  [scrollView addSubview:textContainerView];
+  AddSameConstraints(textContainerView, scrollView);
 
   UILabel* primaryLabel = [[UILabel alloc] init];
   primaryLabel.numberOfLines = 0;
@@ -122,17 +126,6 @@ constexpr CGFloat kVerticalDistance = 24;
   heightConstraint.priority = UILayoutPriorityDefaultHigh - 1;
   heightConstraint.active = YES;
 
-  // Set the compression resistance to high priority to avoid the text
-  // being trimmed when using large font size. Set the primary text with higher
-  // priority so if the space can't contain both text, the secondary text will
-  // be trimmed.
-  [primaryLabel
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 2
-                                      forAxis:UILayoutConstraintAxisVertical];
-  [secondaryLabel
-      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
-                                      forAxis:UILayoutConstraintAxisVertical];
-
   CGFloat verticalOffset =
       (secondaryLabel.attributedText) ? -kVerticalDistance : 0;
   NSLayoutConstraint* verticalConstraint = [primaryLabel.bottomAnchor
@@ -140,22 +133,22 @@ constexpr CGFloat kVerticalDistance = 24;
                      constant:verticalOffset];
 
   [NSLayoutConstraint activateConstraints:@[
-    [textLayoutGuide.widthAnchor
+    [textContainerView.widthAnchor
         constraintEqualToAnchor:scrollView.widthAnchor],
-    [textLayoutGuide.leadingAnchor
+    [textContainerView.leadingAnchor
         constraintEqualToAnchor:primaryLabel.leadingAnchor],
-    [textLayoutGuide.leadingAnchor
+    [textContainerView.leadingAnchor
         constraintEqualToAnchor:secondaryLabel.leadingAnchor],
-    [textLayoutGuide.trailingAnchor
+    [textContainerView.trailingAnchor
         constraintEqualToAnchor:primaryLabel.trailingAnchor],
-    [textLayoutGuide.trailingAnchor
+    [textContainerView.trailingAnchor
         constraintEqualToAnchor:secondaryLabel.trailingAnchor],
     verticalConstraint,
-    [textLayoutGuide.topAnchor constraintEqualToAnchor:primaryLabel.topAnchor
-                                              constant:-kInsetValue],
-    [textLayoutGuide.bottomAnchor
+    [textContainerView.topAnchor constraintEqualToAnchor:primaryLabel.topAnchor
+                                                constant:-kVerticalInsetValue],
+    [textContainerView.bottomAnchor
         constraintEqualToAnchor:secondaryLabel.bottomAnchor
-                       constant:kInsetValue],
+                       constant:kVerticalInsetValue],
   ]];
 }
 
@@ -191,10 +184,14 @@ constexpr CGFloat kVerticalDistance = 24;
 - (void)updatePreferredContentSize {
   CGFloat width =
       self.presentingViewController.view.bounds.size.width * kWidthProportion;
-
   CGSize size = [self.view systemLayoutSizeFittingSize:CGSizeMake(width, 0)
                          withHorizontalFittingPriority:UILayoutPriorityRequired
                                verticalFittingPriority:500];
+  // Add the vertical inset so it accounts for the arrow. This will become the
+  // top layout margin once the view is inside the popover. In practice it is 13
+  // pts instead of kVerticalInsetValue, using kVerticalInsetValue won't break
+  // if the system modifies this a bit, and still looks good.
+  size.height += kVerticalInsetValue;
   self.preferredContentSize = size;
 }
 

@@ -503,10 +503,11 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForCopy(int result) {
   state_ = STATE_WRITE_HEADERS_FOR_COPY_DONE;
   if (IsCopying()) {
     DCHECK(response_head_to_read_);
-    return WriteResponseHead(*response_head_to_read_);
+    bytes_to_copy_ = response_head_to_read_->content_length;
+    return WriteResponseHead(std::move(response_head_to_read_));
   } else {
     DCHECK(response_head_to_write_);
-    return WriteResponseHead(*response_head_to_write_);
+    return WriteResponseHead(std::move(response_head_to_write_));
   }
 }
 
@@ -524,8 +525,7 @@ int ServiceWorkerCacheWriter::DoReadDataForCopy(int result) {
 
   // If the cache writer is only for copy, get the total size to read from
   // header data instead of |bytes_compared_| as no comparison is done.
-  size_t total_size_to_read =
-      IsCopying() ? response_head_to_read_->content_length : bytes_compared_;
+  size_t total_size_to_read = IsCopying() ? bytes_to_copy_ : bytes_compared_;
   size_t to_read =
       std::min(kCopyBufferSize, total_size_to_read - bytes_copied_);
 
@@ -575,7 +575,7 @@ int ServiceWorkerCacheWriter::DoWriteHeadersForPassthrough(int result) {
   DCHECK(writer_);
   DCHECK(response_head_to_write_);
   state_ = STATE_WRITE_HEADERS_FOR_PASSTHROUGH_DONE;
-  return WriteResponseHead(*response_head_to_write_);
+  return WriteResponseHead(std::move(response_head_to_write_));
 }
 
 int ServiceWorkerCacheWriter::DoWriteHeadersForPassthroughDone(int result) {
@@ -720,15 +720,15 @@ int ServiceWorkerCacheWriter::ReadDataHelper(
 }
 
 int ServiceWorkerCacheWriter::WriteResponseHeadToResponseWriter(
-    const network::mojom::URLResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
+  DCHECK(response_head);
   did_replace_ = true;
   net::CompletionOnceCallback run_callback = base::BindOnce(
       &ServiceWorkerCacheWriter::AsyncDoLoop, weak_factory_.GetWeakPtr());
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
-  // TODO(crbug.com/1055677): Avoid copying |response_head| if possible.
   writer_->WriteResponseHead(
-      response_head.Clone(),
+      std::move(response_head),
       base::BindOnce(&AsyncOnlyCompletionCallbackAdaptor::WrappedCallback,
                      adaptor));
   adaptor->set_async(true);
@@ -736,16 +736,17 @@ int ServiceWorkerCacheWriter::WriteResponseHeadToResponseWriter(
 }
 
 int ServiceWorkerCacheWriter::WriteResponseHead(
-    const network::mojom::URLResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
+  DCHECK(response_head);
   if (write_observer_) {
-    int result = write_observer_->WillWriteResponseHead(response_head);
+    int result = write_observer_->WillWriteResponseHead(*response_head);
     if (result != net::OK) {
       DCHECK_NE(result, net::ERR_IO_PENDING);
       state_ = STATE_DONE;
       return result;
     }
   }
-  return WriteResponseHeadToResponseWriter(response_head);
+  return WriteResponseHeadToResponseWriter(std::move(response_head));
 }
 
 int ServiceWorkerCacheWriter::WriteDataToResponseWriter(

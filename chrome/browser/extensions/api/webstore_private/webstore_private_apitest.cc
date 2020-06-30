@@ -682,9 +682,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Allowed) {
   RunTest(webgl_allowed);
 }
 
-// Tests getWebGLStatus function when WebGL is blacklisted.
+// Tests getWebGLStatus function when WebGL is blocklisted.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
-  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
+  content::GpuDataManager::GetInstance()->BlocklistWebGLForTesting();
 
   bool webgl_allowed = false;
   RunTest(webgl_allowed);

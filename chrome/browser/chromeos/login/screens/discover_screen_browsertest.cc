@@ -43,7 +43,7 @@ class DiscoverScreenTest : public OobeBaseTest {
   }
 
   void ShowDiscoverScreen() {
-    login_manager_mixin_.LoginAsNewReguarUser();
+    login_manager_mixin_.LoginAsNewRegularUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(

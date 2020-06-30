@@ -88,10 +88,10 @@ class ExtensionManagement : public KeyedService {
   const std::vector<std::unique_ptr<ManagementPolicy::Provider>>& GetProviders()
       const;
 
-  // Checks if extensions are blacklisted by default, by policy. When true,
-  // this means that even extensions without an ID should be blacklisted (e.g.
+  // Checks if extensions are blocklisted by default, by policy. When true,
+  // this means that even extensions without an ID should be blocklisted (e.g.
   // from the command line, or when loaded as an unpacked extension).
-  bool BlacklistedByDefault() const;
+  bool BlocklistedByDefault() const;
 
   // Returns installation mode for an extension.
   InstallationMode GetInstallationMode(const Extension* extension) const;

@@ -118,7 +118,7 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
 
   // Verify the playing message.
   {
-    const bool kHasVideo = true, kHasAudio = false, kIsRemote = false;
+    const bool kHasVideo = true, kHasAudio = false;
     const media::MediaContentType kMediaContentType =
         media::MediaContentType::Transient;
     delegate_manager_->DidPlay(delegate_id, kHasVideo, kHasAudio,
@@ -128,13 +128,12 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
         MediaPlayerDelegateHostMsg_OnMediaPlaying::ID);
     ASSERT_TRUE(msg);
 
-    std::tuple<int, bool, bool, bool, media::MediaContentType> result;
+    std::tuple<int, bool, bool, media::MediaContentType> result;
     ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPlaying::Read(msg, &result));
     EXPECT_EQ(delegate_id, std::get<0>(result));
     EXPECT_EQ(kHasVideo, std::get<1>(result));
     EXPECT_EQ(kHasAudio, std::get<2>(result));
-    EXPECT_EQ(kIsRemote, std::get<3>(result));
-    EXPECT_EQ(kMediaContentType, std::get<4>(result));
+    EXPECT_EQ(kMediaContentType, std::get<3>(result));
   }
 
   // Verify the paused message.
